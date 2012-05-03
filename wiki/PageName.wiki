@@ -1,10 +1,10 @@
 #summary One-sentence summary of this page.
 
-= Introduction =
+= Introducción =
 
 Para el desarrollo del proyecto haremos uso de diferentes herramientas que inicialmente serán nombras a continuación;
 
-= Details =
+= Detalles =
 
   * Entorno de desarrollo: *NET BEANS 7.1*
   * *JSF*: Java Server Faces
