@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scene Scope="Project" version="2">
+    <Scope Scope="Faces Configuration Only"/>
+    <Scope Scope="Project">
+        <Node id="web/templates/layoutTemplate.xhtml" x="37" y="59" zoom="true"/>
+        <Node id="index.xhtml" x="160" y="361" zoom="true"/>
+        <Node id="web/fileProcessing/fileProcessing.xhtml" x="369" y="366" zoom="true"/>
+        <Node id="web/homepage.xhtml" x="169" y="187" zoom="true"/>
+        <Node id="web/Forms/LCENF.xhtml" x="400" y="150" zoom="true"/>
+    </Scope>
+    <Scope Scope="All Faces Configurations"/>
+</Scene>

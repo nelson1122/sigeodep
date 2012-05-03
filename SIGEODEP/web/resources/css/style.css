@@ -1,0 +1,67 @@
+.ui-layout-north {
+    z-index:20 !important;
+    overflow:visible !important;;
+}
+
+.ui-layout-north .ui-layout-unit-content {
+    overflow:visible !important;
+}
+body {
+    background: url(../img/background.png) top center repeat-x #CFDEEA;
+    margin: 0px;
+    padding: 16px 0;
+    font: 11px "Lucida Sans Unicode", "Lucida Sans", "Lucida Grande", verdana, arial, helvetica;
+    color: #282828;
+}
+
+
+#welcome {
+    position: relative;
+    background: url(../img/center_banner.gif);
+    margin-top: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    
+    margin-left: 50%;
+    left: -375px;
+    width: 750px;
+    height:30px;  
+    z-index: 20;
+}
+#entrada2 {
+    position:absolute;
+    background: url(../img/entrada2.png) ;    
+    background-repeat: no-repeat;
+    margin-top: 20px;
+    width: 500px;
+    height: 380px;
+    margin-left: 50%;
+    left: -250px;
+}
+
+#welcome h1{
+    padding:5px 40px 0 0;
+    text-align:right;
+    margin:0px;
+    font-weight:bold;
+    font-size:14px;
+    color:#FFFFFF;
+}
+
+
+a {
+    color: #2E9FED;
+    text-decoration: none;
+}
+a:hover {
+    color: #1471B1;
+}
+
+#logo2 {
+    width: 120px;
+    height: 60px;
+    background: url(../img/logo2.png);
+    background-repeat: no-repeat;
+    margin-top: 20px;
+    margin-left: 160px;
+}

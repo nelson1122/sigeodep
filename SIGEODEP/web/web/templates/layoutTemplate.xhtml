@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>        
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" href="./../../resources/css/style.css" type="text/css" />
+        <ui:insert name="head">           
+
+        </ui:insert>
+        <title>
+            <ui:insert name="titlePage">
+
+            </ui:insert>
+        </title>
+    </h:head>
+
+    <h:body>
+
+        <p:layout fullPage="true" >  
+            <!-- ****************************** MENU SUPERIOR ************************ 
+            <p:layoutUnit position="north" size="60" >  
+                <h:form>
+                    <div id="logo2"></div>
+                    <div id="divMenu">             	
+                        <p:menubar>
+                            <p:submenu label="Archivo" icon="ui-icon-document">
+                                <p:submenu label="Nuevo" icon="ui-icon-contact">
+                                    <p:menuitem 
+                                        value="Carga de Archivo" 
+                                        action="procesFile" 
+                                        ajax="false"/>
+                                    <p:menuitem value="Otro" url="#" />
+                                </p:submenu>
+                                <p:menuitem value="Abrir" url="#" />
+                                <p:separator />
+                                <p:menuitem value="Salir" url="#" />
+                            </p:submenu>
+                            <p:submenu label="Ayuda" icon="ui-icon-help">
+                                <p:menuitem value="Contenido" url="#" />
+                                <p:submenu label="B&uacute;squeda" icon="ui-icon-search">                            
+                                </p:submenu>
+                            </p:submenu>
+                            <p:menuitem value="Salir" icon="ui-icon-close" />
+                        </p:menubar>
+                    </div>
+                </h:form>
+            </p:layoutUnit>  
+            -->
+
+
+            <!-- ****************************** MENU LATERAL (PARTE IZQUIERDA) ************************ -->
+            <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
+
+                <h:form>
+                    <div id="logo2"></div>                    
+                    <p:accordionPanel activeIndex="-1" >
+                        <p:tab title="REGISTRO DE DATOS">
+                            <p:menu style="width: 240px; z-index:23; overflow:visible">                               
+                                <p:submenu label="Registros desde Archivo" >  
+                                    <p:menuitem 
+                                        icon="ui-icon-disk"
+                                        value="Registros desde Archivo" 
+                                        action="procesFile" 
+                                        ajax="false"/>  
+                                </p:submenu>  
+                                <p:submenu label="Formularios" icon="ui-icon-disk">  
+                                    <p:menuitem 
+                                        value="Homicidios" 
+                                        actionListener="#"  
+                                        icon="ui-icon-document"/>
+                                    <p:menuitem 
+                                        value="Muertes por accidente de tránsito" 
+                                        actionListener="#"  
+                                        icon="ui-icon-document"/>
+                                    <p:menuitem 
+                                        value="Suicidios" 
+                                        actionListener="#"  
+                                        icon="ui-icon-document"/>
+                                    <p:menuitem 
+                                        value="Muertes accidentales" 
+                                        actionListener="#"  
+                                        icon="ui-icon-document"/>
+                                    <p:menuitem 
+                                        value="LCENF" 
+                                        action="LCENF"  
+                                        icon="ui-icon-document"/>
+                                    <p:menuitem 
+                                        value="VIF" 
+                                        actionListener="#"  
+                                        icon="ui-icon-document"/>
+                                </p:submenu>
+                                <p:submenu 
+                                    label="Lotes Registrados"> 
+                                    <p:menuitem 
+                                        value="Lotes Registrados" 
+                                        actionListener="#"  
+                                        ajax="false" 
+                                        icon="ui-icon-calculator"/>  
+                                </p:submenu>
+                            </p:menu> 
+                        </p:tab>
+                        <p:tab title="REPORTES">
+                        </p:tab>
+                        <p:tab title="GEOREFERENCIACION">
+                        </p:tab>
+                        <p:tab title="CONFIGURACIONES">
+                        </p:tab>
+                    </p:accordionPanel>
+                </h:form>  
+            </p:layoutUnit>  
+
+            <!-- ****************************** CONTENIDO (PARTE CENTRAL) ************************ -->
+            <p:layoutUnit position="center" > 
+                <p:ajaxStatus style="width:17px;height:17px; z-index: 21;" id="ajaxStatusPanel">  
+                    <f:facet name="start">  
+                        <h:graphicImage value="../../resources/img/ajaxloading.gif" />                      
+                    </f:facet>          
+                    <f:facet name="complete">  
+                        <h:outputText value="&nbsp;" />  
+                    </f:facet>  
+                </p:ajaxStatus>
+                <div id="welcome">
+                    <h1>
+                        <ui:insert name="title" >      
+
+                        </ui:insert>
+                    </h1>
+                </div>
+                <div id="algo">
+                    <ui:insert name="content">   
+                    </ui:insert>
+                </div>
+            </p:layoutUnit>  
+
+            <!-- ****************************** OPCIONES (PARTE DERECHA) ************************ >
+            <p:layoutUnit position="east" size="200" header="Opciones" resizable="true" collapsible="true">  
+                <h:outputText value="Right unit content." />  
+            </p:layoutUnit>  
+            < ****************************** SALIDA (PARTE INFERIOR) ************************ >
+            <p:layoutUnit position="south" size="100" header="Salida" resizable="true" closable="true" collapsible="true">  
+                <h:outputText value="Sesión Iniciada" />  
+            </p:layoutUnit>  -->
+
+        </p:layout> 
+    </h:body>
+</html>
