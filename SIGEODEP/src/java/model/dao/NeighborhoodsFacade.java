@@ -27,4 +27,17 @@ public class NeighborhoodsFacade extends AbstractFacade<Neighborhoods> {
         super(Neighborhoods.class);
     }
     
+     public Neighborhoods findByName(String name) {
+        String hql = "Select x from Neighborhoods x where x.neighborhoodName=:name";
+        try
+        {
+            return (Neighborhoods)em.createQuery(hql).setParameter("name", name).getSingleResult();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e.toString()+"----------------------------------------------------");
+            return null;
+        }
+    }
+    
 }

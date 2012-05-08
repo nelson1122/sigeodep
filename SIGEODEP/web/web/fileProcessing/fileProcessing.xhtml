@@ -460,26 +460,12 @@
                                                             IdSelectOneListValuesExpected2
                                                             IdSelectOneListValuesFound2 
                                                             IdSelectOneListValuesRelated
+                                                            IdSelectOneListValuesDiscarded
                                                             IdBtnAssociateValues 
                                                             IdBtnAutomaticRelationValues
-                                                            IdBtnRemoveRelationValues"/>
-                                                        <p:commandButton 
-                                                            id="IdBtnDiscardRelationVar" 
-                                                            disabled="#{relationshipOfVariablesMB.btnAssociateRelationVarDisabled}" 
-                                                            actionListener="#{relationshipOfVariablesMB.btnAssociateVarClick}"
-                                                            value="Descartar" 
-                                                            style="size: 10px;"
-                                                            update="IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListVarRelated
-                                                            IdSelectOneListValuesFound IdSelectOneListValuesExpected
-                                                            IdBtnValidateRelationVar IdBtnAssociateRelationVar IdBtnRemoveRelationVar   
-                                                            IdVariableDescription IdCheckCompareForCode IdSelectDateFormat  
-                                                            IdSelectOneListCategoricalVarsRelated 
-                                                            IdSelectOneListValuesExpected2
-                                                            IdSelectOneListValuesFound2 
-                                                            IdSelectOneListValuesRelated
-                                                            IdBtnAssociateValues 
-                                                            IdBtnAutomaticRelationValues
-                                                            IdBtnRemoveRelationValues"/>
+                                                            IdBtnRemoveRelationValues
+                                                            IdBtnDiscardValue
+                                                            IdBtnRemoveDiscardedValues"/>                                                        
                                                     </td>
                                                     <td>
                                                         <h:outputText value="Por&nbsp;Codigo:&nbsp;"/>
@@ -545,9 +531,12 @@
                                                                 render="IdSelectOneListValuesExpected2
                                                                 IdSelectOneListValuesFound2 
                                                                 IdSelectOneListValuesRelated
+                                                                IdSelectOneListValuesDiscarded
                                                                 IdBtnAssociateValues 
                                                                 IdBtnAutomaticRelationValues
-                                                                IdBtnRemoveRelationValues"/>
+                                                                IdBtnRemoveRelationValues
+                                                                IdBtnDiscardValue
+                                                                IdBtnRemoveDiscardedValues"/>
                                                         </p:selectOneListbox> 
                                                     </p:column>                                                                        
                                                 </p:row>
@@ -586,6 +575,7 @@
                                                             update="IdSelectOneListValuesExpected2
                                                             IdSelectOneListValuesFound2 
                                                             IdSelectOneListValuesRelated
+                                                            IdSelectOneListValuesDiscarded
                                                             IdBtnAssociateValues 
                                                             IdBtnAutomaticRelationValues
                                                             IdBtnRemoveRelationValues"/>
@@ -619,7 +609,8 @@
                                                             <f:ajax 
                                                                 event="change"                                            
                                                                 listener="#{relationshipOfValuesMB.changeValuesExpected}" 
-                                                                render="IdBtnAssociateValues IdBtnAutomaticRelationValues"/>
+                                                                render="IdBtnAssociateValues
+                                                                IdBtnAutomaticRelationValues"/>
                                                         </p:selectOneListbox> 
                                                     </p:column>
                                                     <p:column>
@@ -632,15 +623,19 @@
                                                             <f:ajax 
                                                                 event="change"                                            
                                                                 listener="#{relationshipOfValuesMB.changeValuesFound}" 
-                                                                render="IdBtnAssociateValues IdBtnAutomaticRelationValues"/>
+                                                                render="IdBtnAssociateValues 
+                                                                IdBtnAutomaticRelationValues
+                                                                IdBtnDiscardValue
+                                                                IdBtnRemoveDiscardedValues"/>
                                                         </p:selectOneListbox> 
                                                     </p:column>  
                                                     <p:column>
                                                         <!--LISTA DE VALORES DESCARTADOS-->
                                                         <p:selectOneListbox                                                             
                                                             id="IdSelectOneListValuesDiscarded" 
+                                                            value="#{relationshipOfValuesMB.currentValueDiscarded}"
                                                             style="height:95px; width: 211px;">
-                                                            <f:selectItems value="#{relationshipOfVariablesMB.valuesDiscarded}"/>							    
+                                                            <f:selectItems value="#{relationshipOfValuesMB.valuesDiscarded}"/>							    
                                                             <f:ajax 
                                                                 event="change"                                            
                                                                 listener="#{relationshipOfValuesMB.changeValuesDiscarded}" 
@@ -658,9 +653,12 @@
                                                             update="IdSelectOneListValuesExpected2
                                                             IdSelectOneListValuesFound2 
                                                             IdSelectOneListValuesRelated
+                                                            IdSelectOneListValuesDiscarded
                                                             IdBtnAssociateValues 
                                                             IdBtnAutomaticRelationValues
-                                                            IdBtnRemoveRelationValues" />                                                                     
+                                                            IdBtnRemoveRelationValues
+                                                            IdBtnDiscardValue
+                                                            IdBtnRemoveDiscardedValues" />
                                                         <p:commandButton 
                                                             id="IdBtnAutomaticRelationValues" 
                                                             disabled="#{relationshipOfValuesMB.btnAutomaticRelationValueDisabled}" 
@@ -670,9 +668,27 @@
                                                             update="IdSelectOneListValuesExpected2
                                                             IdSelectOneListValuesFound2 
                                                             IdSelectOneListValuesRelated
+                                                            IdSelectOneListValuesDiscarded
                                                             IdBtnAssociateValues 
                                                             IdBtnAutomaticRelationValues
-                                                            IdBtnRemoveRelationValues"/> 
+                                                            IdBtnRemoveRelationValues
+                                                            IdBtnDiscardValue
+                                                            IdBtnRemoveDiscardedValues"/> 
+                                                        <p:commandButton 
+                                                            id="IdBtnDiscardValue" 
+                                                            disabled="#{relationshipOfValuesMB.btnDiscardValueDisabled}" 
+                                                            actionListener="#{relationshipOfValuesMB.btnDiscardValueClick}"
+                                                            value="Descartar" 
+                                                            style="size: 10px;"
+                                                            update="IdSelectOneListValuesExpected2
+                                                            IdSelectOneListValuesFound2 
+                                                            IdSelectOneListValuesRelated
+                                                            IdSelectOneListValuesDiscarded
+                                                            IdBtnAssociateValues 
+                                                            IdBtnAutomaticRelationValues
+                                                            IdBtnRemoveRelationValues
+                                                            IdBtnDiscardValue
+                                                            IdBtnRemoveDiscardedValues"/> 
                                                     </p:column>   
                                                     <p:column colspan="2" styleClass="ui-widget-header">
                                                         <p:commandButton 
@@ -684,9 +700,12 @@
                                                             update="IdSelectOneListValuesExpected2
                                                             IdSelectOneListValuesFound2 
                                                             IdSelectOneListValuesRelated
+                                                            IdSelectOneListValuesDiscarded
                                                             IdBtnAssociateValues 
                                                             IdBtnAutomaticRelationValues
-                                                            IdBtnRemoveRelationValues"/>
+                                                            IdBtnRemoveRelationValues
+                                                            IdBtnDiscardValue
+                                                            IdBtnRemoveDiscardedValues"/>
                                                     </p:column>
                                                 </p:row>
                                             </p:panelGrid>
@@ -1050,8 +1069,8 @@
                                                             header="Datos del registro que presenta Errores" 
                                                             widgetVar="seeRecordDialog" 
                                                             modal="false" >
-                                                            <div style="width: 600px; overflow:scroll; padding-right: 10px; background:black;">
-                                                                <h:panelGroup id="IdDataTable" binding="#{errorsControlMB.dynamicDataTableGroup}"/>
+                                                            <div style="width: 600px; overflow:scroll; padding-right: 10px; ">
+                                                                <h:panelGroup id="IdDataTable" binding="#{errorsControlMB.dynamicDataTableGroup}" style="background: #1471B1; column-width: 300px;"/>
                                                             </div>
                                                             <p:commandButton                                                                         
                                                                 value="Cerrar" 
@@ -1097,8 +1116,10 @@
                                         <p:column styleClass="ui-widget-header">
                                             <p:commandButton  
                                                 disabled="#{errorsControlMB.btnUndoDisabled}"
+                                                actionListener="#{errorsControlMB.btnUndoErrorClick}"
                                                 id="IdBtnDeshacer"
-                                                value="Deshacer"/>
+                                                value="Deshacer"
+                                                update="IdHistorialList"/>
                                         </p:column></p:row>
                                 </p:panelGrid>
 

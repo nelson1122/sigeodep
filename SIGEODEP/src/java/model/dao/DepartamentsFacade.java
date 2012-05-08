@@ -27,4 +27,9 @@ public class DepartamentsFacade extends AbstractFacade<Departaments> {
         super(Departaments.class);
     }
     
+    public Departaments findByName(String name) {
+        String hql = "Select x from Departaments x where x.departamentName=:name";
+        return (Departaments)em.createQuery(hql).setParameter("name", name).getSingleResult();
+    }
+    
 }

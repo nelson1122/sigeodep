@@ -51,7 +51,7 @@ public class ErrorsControlMB {
     private String currentCorrection;
     private boolean btnUndoDisabled = true;
     private ArrayList<ErrorControl> errorControlArrayList;
-    private ArrayList<ErrorControl> errorFixedArrayList;
+    private ArrayList<ErrorControl> errorCorrectionArrayList;
     private int sizeErrorsList = 0;
     private String solution = " ";
     private String currentDateFormat;
@@ -75,7 +75,7 @@ public class ErrorsControlMB {
     public ErrorsControlMB() {
         correctionList = new SelectItem[0];
         errorControlArrayList = new ArrayList<ErrorControl>();
-        errorFixedArrayList = new ArrayList<ErrorControl>();
+        errorCorrectionArrayList = new ArrayList<ErrorControl>();
     }
     /////////////////////////////////////////////////44444444444444444444444444444444444444444444444
 
@@ -136,16 +136,16 @@ public class ErrorsControlMB {
 
             if (currentE != null) {
                 ResultSet rs = conx.consult("SELECT * FROM temp WHERE id='" + currentE.getRowId() + "'");
-                
+
                 // determino las cabeceras
                 for (int j = 1; j < rs.getMetaData().getColumnCount(); j++) {
                     columnas.add(rs.getMetaData().getColumnName(j));
                 }
                 dynamicHeaders = new String[columnas.size()];
                 for (int i = 0; i < columnas.size(); i++) {
-                    dynamicHeaders[i]=columnas.get(i);
+                    dynamicHeaders[i] = columnas.get(i);
                 }
-                
+
                 // determino los datos                
                 rs.next();
                 for (int k = 1; k < rs.getMetaData().getColumnCount(); k++) {
@@ -153,7 +153,7 @@ public class ErrorsControlMB {
                 }
                 String[] auxArray = new String[datos.size()];
                 for (int i = 0; i < datos.size(); i++) {
-                    auxArray[i]=datos.get(i);
+                    auxArray[i] = datos.get(i);
                 }
                 dynamicList = new ArrayList<List<String>>();
                 //dynamicList.add(Arrays.asList(new String[]{"ID1", "Name1", "Value1"}));
@@ -188,14 +188,14 @@ public class ErrorsControlMB {
         updateErrors();
     }
 
-    private void updateFixedArrayList() {
-        correctionList = new SelectItem[errorFixedArrayList.size()];
-        for (int j = 0; j < errorFixedArrayList.size(); j++) {
+    private void updateCorrectionArrayList() {
+        correctionList = new SelectItem[errorCorrectionArrayList.size()];
+        for (int j = 0; j < errorCorrectionArrayList.size(); j++) {
             correctionList[j] = new SelectItem(
-                    String.valueOf(j + 1) + ". Se cambio el valor (" + errorFixedArrayList.get(j).getValue()
-                    + ") por (" + errorFixedArrayList.get(j).getNewValue() + ") en la fila ("
-                    + errorFixedArrayList.get(j).getRowId()
-                    + ") columna (" + errorFixedArrayList.get(j).getVarFoundName() + ")");
+                    String.valueOf(j + 1) + ". Se cambio el valor (" + errorCorrectionArrayList.get(j).getValue()
+                    + ") por (" + errorCorrectionArrayList.get(j).getNewValue() + ") en la fila ("
+                    + errorCorrectionArrayList.get(j).getRowId()
+                    + ") columna (" + errorCorrectionArrayList.get(j).getVarFoundName() + ")");
         }
     }
 
@@ -218,11 +218,11 @@ public class ErrorsControlMB {
                         conx.update("temp", errorControlArrayList.get(i).getVarFoundName() + "='" + currentNewValue + "'", "id=" + errorControlArrayList.get(i).getRowId());
                         //quitamos el error de la lista
                         errorControlArrayList.get(i).setNewValue(currentNewValue);
-                        errorFixedArrayList.add(errorControlArrayList.get(i));
+                        errorCorrectionArrayList.add(errorControlArrayList.get(i));
                         errorControlArrayList.remove(i);
 
                         sizeErrorsList--;
-                        reload();
+                        updateErrorsArrayList();
                         btnSolveDisabled = true;
 
                         FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
@@ -241,10 +241,10 @@ public class ErrorsControlMB {
                         conx.update("temp", errorControlArrayList.get(i).getVarFoundName() + "='" + currentNewValue + "'", "id=" + errorControlArrayList.get(i).getRowId());
                         //quitamos el error de la lista
                         errorControlArrayList.get(i).setNewValue(currentNewValue);
-                        errorFixedArrayList.add(errorControlArrayList.get(i));
+                        errorCorrectionArrayList.add(errorControlArrayList.get(i));
                         errorControlArrayList.remove(i);
                         sizeErrorsList--;
-                        reload();
+                        updateErrorsArrayList();
                         btnSolveDisabled = true;
                         FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
                         FacesContext.getCurrentInstance().addMessage(null, msg);
@@ -265,13 +265,13 @@ public class ErrorsControlMB {
                         conx.update("temp", errorControlArrayList.get(i).getVarFoundName() + "='" + currentNewValue + "'", "id=" + errorControlArrayList.get(i).getRowId());
                         //quitamos el error de la lista
                         errorControlArrayList.get(i).setNewValue(currentNewValue);
-                        errorFixedArrayList.add(errorControlArrayList.get(i));
+                        errorCorrectionArrayList.add(errorControlArrayList.get(i));
                         errorControlArrayList.remove(i);
                         sizeErrorsList--;
-                        reload();
+                        
                         btnSolveDisabled = true;
-
-                        updateFixedArrayList();
+                        updateErrorsArrayList();
+                        updateCorrectionArrayList();
 
                         FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
                         FacesContext.getCurrentInstance().addMessage(null, msg);
@@ -353,12 +353,42 @@ public class ErrorsControlMB {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
 
+    public void btnUndoErrorClick() {
+        for (int i = 0; i < correctionList.length; i++) {
+            //String i_str=String.valueOf(i+1)+". ";
+            if (correctionList[i].getValue().toString().compareTo(currentCorrection) == 0) {
+            
+                try {
+                    conx = new ConnectionJDBC();
+                    conx.connect();
+                    //determino el error que esta seleccionado en la lista
+                    //ErrorControl currentE = null;
+                    //ResultSet rs = conx.consult("SELECT * FROM temp WHERE id='" + currentE.getRowId() + "'");
+                    int id_int=Integer.parseInt(errorControlArrayList.get(i).getRowId())+1;
+                    
+                    conx.update("temp",
+                            errorControlArrayList.get(i).getVarFoundName()+"='"+errorControlArrayList.get(i).getValue()+"'",
+                            "id="+String.valueOf(id_int));
+                    //elimino del historial
+                    errorControlArrayList.remove(i);
+                    updateErrorsArrayList();
+                    updateCorrectionArrayList();
+                    conx.disconnect();
+                } catch (Exception ex) {
+                    System.out.println("Error en la creación de columnas dinamicas: " + ex.toString());
+                }
+
+                break;
+            }
+        }
+    }
+
     public void changeCorrectionList() {
         btnUndoDisabled = false;
     }
 
     public void changeErrorsList() {
-        reload();
+        updateErrorsArrayList();
         for (int i = 0; i < errorControlArrayList.size(); i++) {
             if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
                 //descripcion
@@ -401,7 +431,7 @@ public class ErrorsControlMB {
         }
     }
 
-    public void reload() {
+    public void updateErrorsArrayList() {
         errors = new SelectItem[errorControlArrayList.size()];
         for (int i = 0; i < errorControlArrayList.size(); i++) {
             errors[i] = new SelectItem(errorControlArrayList.get(i).getErrorDescription());
