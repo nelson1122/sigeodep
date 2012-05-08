@@ -5,6 +5,7 @@
 package beans.errorsControl;
 
 import beans.relations.RelationVar;
+import javax.faces.model.SelectItem;
 import managedBeans.fileProcessing.RelationshipOfVariablesMB;
 
 /**
@@ -45,7 +46,7 @@ public class ErrorControl {
                         + " el valor (" + value+")"
                         + " No es de tipo: "+varExeptedName;
         errorSubject="Este error fue provocado por que se esperaba encontrar un valor de tipo "+typeExepted;        
-	String type;
+	
 	if(typeExepted.compareTo("integer")==0)
 	{
 	    errorSolution="Digite un en la casilla 'nuevo valor' un número entero  y presione resolver";
@@ -56,11 +57,21 @@ public class ErrorControl {
 	}
 	else 
 	{ //se esperaba una valor categorico
-	    
 	    errorSolution="El valor esperado debe ser: ("+this.relationDescription+") seleccione un valor de la lista de valores aceptados o digite un valor válido en la casilla: (nuevo valor) y presione resolver";
 	}
         
     }
+    
+//    private String updateCorrectionArrayList() {
+//        correctionList = new SelectItem[errorCorrectionArrayList.size()];
+//        for (int j = 0; j < errorCorrectionArrayList.size(); j++) {
+//            correctionList[j] = new SelectItem(
+//                    String.valueOf(j + 1) + ". Se cambio el valor (" + errorCorrectionArrayList.get(j).getValue()
+//                    + ") por (" + errorCorrectionArrayList.get(j).getNewValue() + ") en la fila ("
+//                    + errorCorrectionArrayList.get(j).getRowId()
+//                    + ") columna (" + errorCorrectionArrayList.get(j).getVarFoundName() + ")");
+//        }
+//    }
     
     public String getValue() {
         return value;

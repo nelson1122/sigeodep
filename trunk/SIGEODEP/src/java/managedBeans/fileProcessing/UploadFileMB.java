@@ -196,11 +196,11 @@ public class UploadFileMB {
 
                     if (numeroLineas == 0) {
                         /*
-                         * DEJAMOS UNA CABECERA VALIDA SIN ESPACIOS NI SIBOLOS
+                         * DEJAMOS UNA CABECERA VALIDA SIN ESPACIOS NI SIMBOLOS
                          * NO VALIDOS Y QUE NO INICIE CON UN NUMERO
                          */
                         String salida = "";
-                        
+
                         line = line.toLowerCase();//pasar a minusculas
                         line = line.replaceAll(" ", "_");//quitar espacion y acentos
                         line = line.replaceAll("ñ", "n");
@@ -208,8 +208,8 @@ public class UploadFileMB {
                         line = line.replaceAll("é", "e");
                         line = line.replaceAll("í", "i");
                         line = line.replaceAll("ó", "o");
-                        line = line.replaceAll("ú", "u");                        
-                        
+                        line = line.replaceAll("ú", "u");
+
                         for (int i = 0; i < line.length(); i++) {//quitar caracteres no aceptados
                             int k = (int) line.charAt(i);
                             if (k >= 97 && k <= 122 || k >= 65 && k <= 90 || k >= 48 && k <= 57 || k == '\t' || k == '_') {
@@ -227,16 +227,31 @@ public class UploadFileMB {
                         } else {
                             headerFile = line.split(";");
                         }
-                        //le asigno a los nombres un numero(cosecutivo) para que no se repitan los nombrs
-                        //verifico que los nombres de la cabecera no se repitan
+                        //le asigno a los nombres un numero(cosecutivo) para que no se repitan los nombres                        
+                        int count;
+                        String currentName = "";
                         for (int i = 0; i < headerFile.length; i++) {
-                            headerFile[i] = headerFile[i] + "_" + String.valueOf(i);
-                            //si la cadena inicia con un numero, le antepongo una raya baja
+                            currentName = headerFile[i];
+                            count = 1;
+                            for (int j = i + 1; j < headerFile.length; j++) {
+                                if (currentName.compareTo(headerFile[j]) == 0) {
+                                    count++;
+                                    headerFile[j] = headerFile[j] + "_" + String.valueOf(count);
+
+                                }
+                            }
+                            if (count != 1) {//hubo repetidos
+                                headerFile[i] = headerFile[i] + "_1";
+                            }
+                            
+                        }
+                        //si la cadena inicia con un numero, le antepongo una raya baja
+                        for (int i = 0; i < headerFile.length; i++) {
                             if (headerFile[i].startsWith("0") || headerFile[i].startsWith("1") || headerFile[i].startsWith("2")
                                     || headerFile[i].startsWith("3") || headerFile[i].startsWith("4") || headerFile[i].startsWith("5")
                                     || headerFile[i].startsWith("6") || headerFile[i].startsWith("7") || headerFile[i].startsWith("8")
                                     || headerFile[i].startsWith("9")) {
-                                headerFile[i]="_"+headerFile[i];
+                                headerFile[i] = "_" + headerFile[i];
                             }
                         }
                         if (!continuar) {

@@ -254,23 +254,26 @@ public class RecordDataMB {
                                 errorsNumber++;//error = "No es entero";
                                 errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "Entero"));
                             }
-                        } else if (type.compareTo("date") == 0) {//si el dato no es fecha validala adiciono el error 
+                        } else if (type.compareTo("date") == 0) {//si el dato no es fecha válida adiciono el error 
                             if (!isDate(resultSetFileData.getString(columnsNames[i]), relationVar.getDateFormat())) {
                                 errorsNumber++;//error = "fecha no corresponde al formato";
                                 errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "Fecha"));
                             }
                         } else {//se espera un valorcategorico
-
                             if (!isCategorical(
                                     resultSetFileData.getString(relationVar.getNameFound()), relationVar.getNameExpected(),
                                     relationVar.getTypeComparisonForCode(), relationVar.getRelationValueList())) {
-                                errorsNumber++;//error = "no esta en la categoria";
-                                errorsControlMB.addError(
-                                        new ErrorControl(
-                                        relationVar,
-                                        resultSetFileData.getString(relationVar.getNameFound()),
-                                        String.valueOf(count),
-                                        formsAndFieldsDataMB.variableDescription(relationVar.getNameExpected())));
+                                //verifico si el valor se encuentra dentro de los valores descartados
+                                if (!isDiscarded(resultSetFileData.getString(columnsNames[i]), relationVar.getDiscardedValues())) {
+                                    errorsNumber++;//error = "no esta en la categoria ni es un valor descartado";
+                                    errorsControlMB.addError(
+                                            new ErrorControl(
+                                            relationVar,
+                                            resultSetFileData.getString(relationVar.getNameFound()),
+                                            String.valueOf(count),
+                                            formsAndFieldsDataMB.variableDescription(relationVar.getNameExpected())));
+                                }
+
                             }
                         }
                     }
@@ -279,7 +282,7 @@ public class RecordDataMB {
                 count++;
             } while (resultSetFileData.next());
             errorsControlMB.setSizeErrorsList(errorsNumber);
-            errorsControlMB.reload();
+            errorsControlMB.updateErrorsArrayList();
             progress = 100;
             conx.disconnect();
             if (errorsNumber != 0) {
@@ -1049,6 +1052,18 @@ public class RecordDataMB {
     //VALIDACIONES ---------------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    private boolean isDiscarded(String name, ArrayList<String> discardedValues) {
+        /*
+         * validacion de si un string se encuentra dentro de una lista.
+         */
+        for (int i = 0; i < discardedValues.size(); i++) {
+            if (name.compareTo(discardedValues.get(i)) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean isNumeric(String str) {
         /*
          * validacion de si un string es entero
@@ -1089,8 +1104,8 @@ public class RecordDataMB {
             return true;
         }
         ArrayList<String> categoryList = new ArrayList<String>();
-        //se valida con respecto a las relaciones de variables
-        for (int i = 0; i < relationValueList.size(); i++) {//le paso a categori list los valores encontrados en la relacion de valores
+        //se valida con respecto a las relaciones de valores
+        for (int i = 0; i < relationValueList.size(); i++) {//le paso a categoriList los valores encontrados en la relacion de valores
             categoryList.add(relationValueList.get(i).getNameFound());
         }
         for (int i = 0; i < categoryList.size(); i++) {
@@ -1154,6 +1169,4 @@ public class RecordDataMB {
     public void setLoginMB(LoginMB loginMB) {
         this.loginMB = loginMB;
     }
-    
-    
 }

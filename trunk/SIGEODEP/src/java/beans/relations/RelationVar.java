@@ -18,6 +18,7 @@ public class RelationVar {
     private String nameFound;//nombre encontrado
     private String dateFormat;//si el campo es de tipo fecha saber que formato tiene
     private ArrayList<RelationValue> relationValueList;//conjunto de relaciones entre valores
+    private ArrayList<String> discardedValues;
 
     public RelationVar(String nameExpected, String nameFound, String fieldType, boolean comparisonForcode,String dateFormat) {
         this.nameExpected = nameExpected;
@@ -26,6 +27,7 @@ public class RelationVar {
         this.nameFound = nameFound;
         this.dateFormat=dateFormat;
         this.relationValueList = new ArrayList<RelationValue>();
+        this.discardedValues=new ArrayList<String>();
     }
     
     public boolean compareNames(String e, String f) {
@@ -43,6 +45,20 @@ public class RelationVar {
         }
     }
 
+    public void addDiscartedValue(String n) {        
+        discardedValues.add(n);
+    }
+    
+    public void removeDiscartedValue(String n) {
+        for (int i = 0; i < discardedValues.size(); i++) {
+            if(discardedValues.get(i).compareTo(n)==0)
+            {
+                discardedValues.remove(i);
+                break;
+            }
+        }
+    }
+    
     //valor esperada(Expected), variable encontrada(Found)
     public void addRelationValue(String e, String f) {
         RelationValue newRelationValue=new RelationValue(e,f);
@@ -105,6 +121,15 @@ public class RelationVar {
     public void setDateFormat(String dateFormat) {
         this.dateFormat = dateFormat;
     }
+
+    public ArrayList<String> getDiscardedValues() {
+        return discardedValues;
+    }
+
+    public void setDiscardedValues(ArrayList<String> discardedValues) {
+        this.discardedValues = discardedValues;
+    }
+    
     
     
 }
