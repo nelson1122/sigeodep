@@ -1,0 +1,888 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+
+    <ui:composition template="../templates/layoutTemplate.xhtml">
+        <!--==================================================================-->
+        <!--========================CABECERA SCRIPTS==========================-->                    
+        <ui:define name="header">
+            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
+            <script type="text/javascript">  
+                
+            </script> 
+        </ui:define>
+        <!--=================================================================-->
+        <!--================================TITULOS==========================-->
+        <ui:define name="titlePage">
+            SIGEODEP -  NOTIFICACIÓN DE VIOLENCIA INTRAFAMILIAR, VIOLENCIA SEXUAL Y MALTRATO INFANTIL
+        </ui:define>
+        <ui:define name="title">
+            SIGEODEP -  NOTIFICACIÓN DE VIOLENCIA INTRAFAMILIAR, VIOLENCIA SEXUAL Y MALTRATO INFANTIL
+        </ui:define>
+        <!--=================================================================-->
+        <!--==============================CONTENIDO==========================-->
+        <ui:define name="content">
+            <h:form enctype="multipart/form-data" id="IdForm2"> 
+                <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
+                <!--===================================================================================-->
+                <br/>
+                <p:panelGrid style="position: absolute;  width: 750px;  margin-left: -375px; left: 50%; " >                            
+                    <p:row>  
+                        <p:column styleClass="ui-widget-header" style="text-align: center;">
+                            <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
+                            <h:outputLabel value="RED DE APOYO AL BUEN TRATO"/>  <br/>
+                            <h:outputLabel value="NOTIFICACIÓN DE VIOLENCIA INTRAFAMILIAR, VIOLENCIA SEXUAL Y MALTRATO INFANTIL"/>                              
+                        </p:column>                                       
+                    </p:row>
+                    <p:row >  
+                        <p:column style="background-color: #ebf4fb;">
+                            <!--=====================================DATOS DEL REGISTO==============================================-->
+                            <br/>                            
+                            <p:panelGrid  >                            
+                                <p:row>  
+                                    <p:column><h:outputLabel value="REGISTRO:   "/></p:column>
+                                    <p:column><p:inputText value="2337" disabled="true"/></p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="CLAVE:   "/> </p:column>
+                                    <p:column>
+                                        <p:inputText value="E2337" disabled="true"/>
+                                    </p:column>                                       
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <!--=====================================INSTITUCION DE SALUD==============================================-->
+                            <p:panelGrid>                            
+                                <p:row>  
+                                    <p:column style="text-align: center;">
+                                        <h:outputLabel value="INSTITUCION RECEPTORA:   "/>                                          
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu value="#{lcenfMB.currentHealthInstitution}" > 
+                                            <f:selectItems value="#{lcenfMB.healthInstitutions}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>                                    
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <!--=====================================DATOS DE IDENTIFICACION PERSONAL==============================================-->
+                            <p:panelGrid>                            
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" style="text-align: center;">
+                                        <h:outputLabel value="DATOS DE IDENTIFICACION PERSONAL:   "/>                                          
+                                    </p:column>  
+                                </p:row>
+                                <p:row>  
+                                    <p:column style="background-color: #f6fbff;">
+                                        <!-- ///////////// DATOS ///////////////// -->
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column>
+                                                    <h:outputLabel value="APELLIDO 1:   "/>   
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>                                       
+                                                </p:column>                                                  
+                                                <p:column>
+                                                    <h:outputLabel value="APELLIDO 2:   "/>                                          
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>
+                                                </p:column>  
+                                            </p:row>
+                                            <p:row>  
+                                                <p:column>
+                                                    <h:outputLabel value="NOMBRE 1:   "/>    
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>
+                                                </p:column>                                                  
+                                                <p:column>
+                                                    <h:outputLabel value="NOMBRE 2:   "/>                                          
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>
+                                                </p:column>                                                  
+                                            </p:row>
+                                        </p:panelGrid>
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column>
+                                                    <h:outputLabel value="TIPO DE IDENTIFICACION:   "/>                                          
+                                                </p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu value="#{lcenfMB.currentIdentification}" > 
+                                                        <f:selectItems value="#{lcenfMB.identifications}"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>  
+                                                <p:column>
+                                                    <h:outputLabel value="NUMERO DE IDENTIFICACION:   "/>                                          
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>
+                                                </p:column>
+                                            </p:row>
+                                        </p:panelGrid>
+                                        <br/>
+                                        <p:panelGrid >                            
+                                            <p:row>  
+                                                <p:column >
+                                                    <h:outputLabel value="MEDIDA EDAD:   "/>
+                                                </p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu value="#{lcenfMB.currentMeasureOfAge}" > 
+                                                        <f:selectItems value="#{lcenfMB.measuresOfAge}"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column  >
+                                                    <h:outputLabel value="EDAD CANTIDAD:   "/>                                          
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>
+                                                </p:column>                                                                                             
+                                                <p:column>
+                                                    <h:outputLabel value="SEXO:   "/>    
+                                                </p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu value="#{lcenfMB.currentGender}" > 
+                                                        <f:selectItem itemLabel="MASCULINO" itemValue="1" />  
+                                                        <f:selectItem itemLabel="FEMENINO" itemValue="2" />  
+                                                        <f:selectItem itemLabel="INDETERMINADO" itemValue="3" />
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>
+                                                <p:column>
+                                                    <h:outputLabel value="OCUPACION:   "/>                                          
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputLabel value="ASEGURADORA:   "/>                                        
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>
+                                                </p:column>
+                                                <p:column colspan="2">
+                                                    &nbsp;
+                                                </p:column>
+                                            </p:row>
+
+                                        </p:panelGrid>
+                                        <br/>
+                                    </p:column>  
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <!--=====================================DATOS DEL DOMICILIO / RESIDENCIA==============================================-->                            
+                            <p:panelGrid>                            
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" style="text-align: center;">
+                                        <h:outputLabel value="DATOS DEL DOMICILIO / RESIDENCIA:   "/>                                          
+                                    </p:column>  
+                                </p:row>
+                                <p:row>  
+                                    <p:column style="background-color: #f6fbff;">
+                                        <!-- ///////////// DATOS ///////////////// -->
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column>DEPARTAMENTO DE RESIDENCIA:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu value="#{lcenfMB.currentDepartamentHome}" > 
+                                                        <f:selectItems value="#{lcenfMB.departaments}"/>
+                                                        <f:ajax 
+                                                            event="change"                                                            
+                                                            render="IdDepartamentHomeCode"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column>CODIGO DEPARTAMENTO:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:inputText 
+                                                        id="IdDepartamentHomeCode"
+                                                        disabled="true"
+                                                        value="#{lcenfMB.currentDepartamentHomeCode}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>  
+                                                <p:column>MUNICIPIO DE  RESIDENCIA:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu value="#{lcenfMB.currentMunicipalitie}"  > 
+                                                        <f:selectItems value="#{lcenfMB.municipalities}"/>
+                                                        <f:ajax 
+                                                            event="change"                                                            
+                                                            render="IdMunicipalitiesHomeCode"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column>CODIGO MUNICIPIO:&nbsp;</p:column>
+                                                <p:column><p:inputText 
+                                                        id="IdMunicipalitiesHomeCode"                                                        
+                                                        disabled="true"
+                                                        value="#{lcenfMB.currentMunicipalitieCode}"/></p:column>
+                                            </p:row>
+                                            <p:row>  
+                                                <p:column>BARRIO / VEREDA:&nbsp; </p:column>
+                                                <p:column>
+                                                    <p:autoComplete 
+                                                        value="#{lcenfMB.currentNeighborhoodHomeName}"                                                                    
+                                                        completeMethod="#{lcenfMB.suggestNeighborhoods}" 
+                                                        size="40" >                                                        
+                                                        <p:ajax 
+                                                            event="itemSelect" 
+                                                            listener="#{lcenfMB.changeNeighborhoodHomeName}" 
+                                                            update="IdNeighborhoodsHomeCode" process="@this"/>
+                                                    </p:autoComplete>
+                                                </p:column>
+                                                <p:column>CODIGO BARRIO:&nbsp;  </p:column>
+                                                <p:column>
+                                                    <p:inputText
+                                                        id="IdNeighborhoodsHomeCode"
+                                                        disabled="true"
+                                                        value="#{lcenfMB.currentNeighborhoodHomeCode}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>  
+                                                <p:column>DIRECCION DE  RESIDENCIA:&nbsp;</p:column>
+                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column>TELEFONO DE  RESIDENCIA:&nbsp;</p:column>
+                                                <p:column><p:inputText value=""/></p:column>
+                                            </p:row>
+                                        </p:panelGrid>
+                                        <br/>
+                                        <!-- ///////////// DATOS ///////////////// -->
+                                    </p:column>  
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <!--=====================================DATOS DEL LUGAR GEOGRAFICO DEL EVENTO==============================================-->                            
+                            <p:panelGrid>                            
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" style="text-align: center;">
+                                        <h:outputLabel value="LUGAR GEOGRAFICO DEL EVENTO:   "/>                                          
+                                    </p:column>  
+                                </p:row>
+                                <p:row>  
+                                    <p:column style="background-color: #f6fbff;">
+                                        <!-- ///////////// DATOS ///////////////// -->
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column>DEPARTAMENTO DEL EVENTO&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu value="#{lcenfMB.currentDepartamentHome}" > 
+                                                        <f:selectItems value="#{lcenfMB.departaments}"/>
+                                                        <f:ajax 
+                                                            event="change"                                                            
+                                                            render="IdDepartamentHomeCode2"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column>CODIGO DEPARTAMENTO:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:inputText 
+                                                        id="IdDepartamentHomeCode2"
+                                                        disabled="true"
+                                                        value="#{lcenfMB.currentDepartamentHomeCode}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>  
+                                                <p:column>MUNICIPIO DEL EVENTO:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu value="#{lcenfMB.currentMunicipalitie}"  > 
+                                                        <f:selectItems value="#{lcenfMB.municipalities}"/>
+                                                        <f:ajax 
+                                                            event="change"                                                            
+                                                            render="IdMunicipalitiesHomeCode2"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column>CODIGO MUNICIPIO:&nbsp;</p:column>
+                                                <p:column><p:inputText 
+                                                        id="IdMunicipalitiesHomeCode2"                                                        
+                                                        disabled="true"
+                                                        value="#{lcenfMB.currentMunicipalitieCode}"/></p:column>
+                                            </p:row>
+                                            <p:row>  
+                                                <p:column>BARRIO / CORREGIMIENTO / VEREDA:&nbsp; </p:column>
+                                                <p:column>
+                                                    <p:autoComplete 
+                                                        value="#{lcenfMB.currentNeighborhoodHomeName}"                                                                    
+                                                        completeMethod="#{lcenfMB.suggestNeighborhoods}" 
+                                                        size="40" >                                                        
+                                                        <p:ajax 
+                                                            event="itemSelect" 
+                                                            listener="#{lcenfMB.changeNeighborhoodHomeName}" 
+                                                            update="IdNeighborhoodsHomeCode2" process="@this"/>
+                                                    </p:autoComplete>
+                                                </p:column>
+                                                <p:column>CODIGO BARRIO:&nbsp;  </p:column>
+                                                <p:column>
+                                                    <p:inputText
+                                                        id="IdNeighborhoodsHomeCode2"
+                                                        disabled="true"
+                                                        value="#{lcenfMB.currentNeighborhoodHomeCode}"/>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row>  
+                                                <p:column>DIRECCION DEL EVENTO:&nbsp;</p:column>
+                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column colspan="2">&nbsp;</p:column>
+
+                                            </p:row>
+                                        </p:panelGrid>
+                                        <br/>
+                                        <!-- ///////////// DATOS ///////////////// -->
+                                    </p:column>  
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <!--=====================================DATOS GENERALES DEL EVENTO==============================================-->                            
+                            <p:panelGrid>                            
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" style="text-align: center;">
+                                        <h:outputLabel value="DATOS GENERALES DEL EVENTO:   "/>                                          
+                                    </p:column>  
+                                </p:row>
+                                <p:row>  
+                                    <p:column style="background-color: #f6fbff;">                                        
+                                        <!-- ///////////// DATOS ///////////////// -->
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column>FECHA EVENTO:</p:column>
+                                                <p:column colspan="2">
+                                                    DIA:&nbsp;
+                                                    <p:inputText value="#{lcenfMB.currentDayEvent}" size="2" >  
+                                                        <f:ajax 
+                                                            event="keyup"                                                                                                            
+                                                            render="IdDateEvent IdWeekdayEvent"/>
+                                                    </p:inputText>
+                                                    MES:&nbsp;
+                                                    <p:inputText value="#{lcenfMB.currentMonthEvent}" size="2" maxlength="2">
+                                                        <f:ajax 
+                                                            event="keyup"                                                                                                            
+                                                            render="IdDateEvent IdWeekdayEvent"/>
+                                                    </p:inputText>  
+                                                    AÑO:&nbsp;
+                                                    <p:inputText value="#{lcenfMB.currentYearEvent}" size="5" maxlength="4">
+                                                        <f:ajax 
+                                                            event="keyup"                                                                                                            
+                                                            render="IdDateEvent IdWeekdayEvent"/>
+                                                    </p:inputText> 
+                                                </p:column>
+                                            </p:row>                                            
+                                            <p:row>  
+                                                <p:column colspan="2" >
+                                                    FECHA EVENTO(dd/mm/yyyy):  <p:inputText disabled="true" id="IdDateEvent" value="#{lcenfMB.currentDateEvent}"/> 
+                                                </p:column>
+                                                <p:column>
+                                                    DIA SEMANA DEL  EVENTO:&nbsp;<p:inputText disabled="true" id="IdWeekdayEvent" value="#{lcenfMB.currentWeekdayEvent}" size="2"/> 
+                                                </p:column>
+                                            </p:row>                                            
+                                            <p:row>                                                
+                                                <p:column>
+                                                    HORA EVENTO:
+                                                </p:column>
+                                                <p:column>
+                                                    HORAS:&nbsp;
+                                                    <p:inputText value="#{lcenfMB.currentHourEvent}" size="2">
+                                                        <f:ajax 
+                                                            event="keyup"                                                                                                            
+                                                            render="IdTimeEvent"/>
+                                                    </p:inputText> 
+                                                    MINUTOS:&nbsp;
+                                                    <p:inputText value="#{lcenfMB.currentMinuteEvent}" size="2">
+                                                        <f:ajax 
+                                                            event="keyup"                                                                                                            
+                                                            render="IdTimeEvent"/>
+                                                    </p:inputText> 
+                                                    AMPM:&nbsp;
+                                                    <p:selectOneMenu value="#{lcenfMB.currentAmPmEvent}" > 
+                                                        <f:selectItem itemLabel=" " itemValue="-" />  
+                                                        <f:selectItem itemLabel="AM" itemValue="AM" />  
+                                                        <f:selectItem itemLabel="PM" itemValue="PM" />
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column>
+                                                    HORA MILITAR EVENTO:&nbsp;                                                    
+                                                    <p:inputText id="IdTimeEvent" value="#{lcenfMB.currentMilitaryHourEvent}" 
+                                                                 maxlength="4" size="4"/>
+                                                </p:column>
+                                            </p:row>
+                                        </p:panelGrid>
+
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column>FECHA ATENCION:</p:column>
+                                                <p:column colspan="2">
+                                                    DIA:&nbsp;
+                                                    <p:inputText value="#{lcenfMB.currentDayConsult}" size="2" >
+                                                        <f:ajax 
+                                                            event="keyup"                                                                                                            
+                                                            render="IdDateConsult IdWeekdayConsult"/>
+                                                    </p:inputText>
+                                                    MES:&nbsp;
+                                                    <p:inputText value="#{lcenfMB.currentMonthConsult}" size="2" maxlength="2">  
+                                                        <f:ajax 
+                                                            event="keyup"                                                                                                            
+                                                            render="IdDateConsult IdWeekdayConsult"/>
+                                                    </p:inputText>
+                                                    AÑO:&nbsp;
+                                                    <p:inputText value="#{lcenfMB.currentYearConsult}" size="2" maxlength="4">
+                                                        <f:ajax 
+                                                            event="keyup"                                                                                                            
+                                                            render="IdDateConsult IdWeekdayConsult"/>
+                                                    </p:inputText>
+                                                </p:column>
+                                            </p:row>                                            
+                                            <p:row>  
+                                                <p:column colspan="2">
+                                                    FECHA DE LA ATENCION (dd/mm/yyyy):  
+                                                    <p:inputText 
+                                                        disabled="true" 
+                                                        id="IdDateConsult" 
+                                                        value="#{lcenfMB.currentDateConsult}"/> 
+                                                </p:column>
+                                                <p:column>
+                                                    DIA SEMANA DEL LA ATENCION&nbsp;
+                                                    <p:inputText 
+                                                        disabled="true" 
+                                                        id="IdWeekdayConsult" 
+                                                        value="#{lcenfMB.currentWeekdayConsult}" size="2"/> 
+                                                </p:column>
+                                            </p:row>                                            
+                                            <p:row>                                                
+                                                <p:column>
+                                                    HORA DE ATENCION
+                                                </p:column>
+                                                <p:column>
+                                                    HORAS:&nbsp;<p:inputText value="#{lcenfMB.currentHourConsult}" size="2"/> 
+                                                    MINUTOS:&nbsp;<p:inputText value="#{lcenfMB.currentMinuteConsult}" size="2"/> 
+                                                    AMPM:&nbsp;
+                                                    <p:selectOneMenu value="#{lcenfMB.currentAmPmConsult}" > 
+                                                        <f:selectItem itemLabel=" " itemValue="" />  
+                                                        <f:selectItem itemLabel="AM" itemValue="AM" />  
+                                                        <f:selectItem itemLabel="PM" itemValue="PM" />
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column>
+                                                    HORA MILITAR DE LA ATENCIONA&nbsp;<p:inputText value="#{lcenfMB.currentMilitaryHourConsult}" maxlength="4"  size="4"/> Hrs
+                                                </p:column>
+                                            </p:row>
+                                        </p:panelGrid>
+
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column>REMITIDO:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu  > 
+                                                        <f:selectItem itemLabel="SI" itemValue="1" />  
+                                                        <f:selectItem itemLabel="NO" itemValue="2" />  
+                                                        <f:selectItem itemLabel="NO SE SABE" itemValue="3" />
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column>DE DONDE?:&nbsp;</p:column>
+                                                <p:column><p:inputText value=""/></p:column>
+                                            </p:row>  
+                                        </p:panelGrid> 
+                                        <br/>
+                                        <p:panelGrid>                                                            
+                                            <p:row>  
+                                                <p:column>LUGAR DEL HECHO:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu value="#{lcenfMB.currentPlace}" > 
+                                                        <f:selectItems value="#{lcenfMB.places}"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column colspan="2">CUAL OTRO LUGAR?:&nbsp;</p:column>
+                                                <p:column><p:inputText value=""/></p:column>
+                                            </p:row>  
+                                            <p:row>  
+                                                <p:column>ACTIVIDAD DURANTE EL EVENTO:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu value="#{lcenfMB.currentActivities}" > 
+                                                        <f:selectItems value="#{lcenfMB.activities}"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column colspan="2">CUAL  OTRA  ACTIVIDAD?:&nbsp;</p:column>
+                                                <p:column><p:inputText value=""/></p:column>
+                                            </p:row>  
+                                        </p:panelGrid>  
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column>MECANISMO / OBJETO DE LA LESION:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu value="#{lcenfMB.currentMechanisms}" > 
+                                                        <f:selectItems value="#{lcenfMB.mechanisms}"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                            </p:row>  
+                                            <p:row>  
+                                                <p:column>ALTURA?:&nbsp;</p:column>
+                                                <p:column><p:inputText value=""/></p:column>
+                                            </p:row>  
+                                            <p:row>  
+                                                <p:column>CUAL POLVORA:&nbsp;</p:column>
+                                                <p:column><p:inputText value=""/></p:column>
+                                            </p:row>  
+                                            <p:row>  
+                                                <p:column>CUAL DESASTRE  NATURAL:&nbsp;</p:column>
+                                                <p:column><p:inputText value=""/></p:column>
+                                            </p:row>  
+                                            <p:row>  
+                                                <p:column>OTRO MECANISMO/ OBJETO:&nbsp;</p:column>
+                                                <p:column><p:inputText value=""/></p:column>
+                                            </p:row>  
+                                        </p:panelGrid>  
+
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column>
+                                                    USO DE ALCOHOL:&nbsp;
+                                                </p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu  > 
+                                                        <f:selectItem itemLabel="SI HA CONSUMIDO" itemValue="1" />  
+                                                        <f:selectItem itemLabel="SOSPECHA DE USO" itemValue="2" />  
+                                                        <f:selectItem itemLabel="NO HA CONSUMIDO" itemValue="3" />
+                                                        <f:selectItem itemLabel="NO SE SABE" itemValue="4" />
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column>
+                                                    USO DE DROGAS:&nbsp;
+                                                </p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu  > 
+                                                        <f:selectItem itemLabel="SI HA CONSUMIDO" itemValue="1" />  
+                                                        <f:selectItem itemLabel="SOSPECHA DE USO" itemValue="2" />  
+                                                        <f:selectItem itemLabel="NO HA CONSUMIDO" itemValue="3" />
+                                                        <f:selectItem itemLabel="NO SE SABE" itemValue="4" />
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                            </p:row>
+                                        </p:panelGrid>
+                                        <br/>
+                                        <p:panelGrid>                                                                                    
+                                            <p:row>  
+                                                <p:column colspan="2">
+                                                    PARA LOS QUEMADOS:&nbsp;
+                                                </p:column>
+                                            </p:row>
+                                            <p:row> 
+                                                <p:column>
+                                                    GRADO MAS  GRAVE:&nbsp;
+                                                </p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu  > 
+                                                        <f:selectItem itemLabel="GRADO 1" itemValue="1" />  
+                                                        <f:selectItem itemLabel="GRADO 2" itemValue="2" />  
+                                                        <f:selectItem itemLabel="GRADO 3" itemValue="3" />                                                        
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                            </p:row> 
+                                            <p:row>
+                                                <p:column>
+                                                    PORCENTAJE: &nbsp;
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>
+                                                </p:column>
+                                            </p:row>  					    
+                                        </p:panelGrid>                                         
+                                        <br/>
+                                        <!-- ///////////// DATOS ///////////////// -->
+                                    </p:column>  
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <!--=====================================GRUPOS ESPECIALES==============================================-->                            
+                            <p:panelGrid>                            
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" style="text-align: center;">
+                                        <h:outputLabel value="GRUPOS ESPECIALES:   "/>                                          
+                                    </p:column>  
+                                </p:row>
+                                <p:row>  
+                                    <p:column style="background-color: #f6fbff;">                                        
+                                        <!-- ///////////// DATOS ///////////////// -->
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>
+                                                <p:column>
+                                                    <h:outputLabel value="GRUPO ETNICO:   "/>                                          
+                                                </p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu  > 
+                                                        <f:selectItem itemLabel="AFROCOLOMBIANO" itemValue="1" />  
+                                                        <f:selectItem itemLabel="INDIGENA" itemValue="2" />  
+                                                        <f:selectItem itemLabel="OTRO" itemValue="3" />
+                                                        <f:selectItem itemLabel="NINGUNO" itemValue="4" />
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputLabel value="CUAL:   "/>                                        
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>
+                                                </p:column>                                                
+                                            </p:row> 
+                                            <p:row>
+                                                <p:column>
+                                                    <h:outputLabel value="GRUPO VULNERABLE:   "/>                                          
+                                                </p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu  > 
+                                                        <f:selectItem itemLabel=".." itemValue="1" />  
+                                                        <f:selectItem itemLabel=".." itemValue="2" />  
+                                                        <f:selectItem itemLabel=".." itemValue="3" />
+                                                        <f:selectItem itemLabel=".." itemValue="4" />
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputLabel value="CUAL:   "/>                                        
+                                                </p:column>
+                                                <p:column>
+                                                    <p:inputText value=""/>
+                                                </p:column> 
+                                            </p:row>
+                                        </p:panelGrid>
+                                        <br/>
+                                        <!-- ///////////// DATOS ///////////////// -->
+                                    </p:column>  
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+			    <!--===================================== DATOS ESPECIFICOS DEL EVENTO==============================================-->                                        
+                            <p:panelGrid>                            
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" style="text-align: center;">
+                                        <h:outputLabel value="DATOS ESPECIFICOS DEL EVENTO   "/>                                          
+                                    </p:column>  
+                                </p:row>
+                                <p:row>  
+                                    <p:column style="background-color: #f6fbff;"> 
+					<!--===================================== VIOLENCIA INTRAFAMILIAR==============================================-->                                        
+					<br/>
+					<p:panelGrid>                            
+					    <p:row>  
+						<p:column styleClass="ui-widget-header" style="text-align: center;">
+						    <h:outputLabel value="VIOLENCIA INTRAFAMILIAR:   "/>                                          
+						</p:column>  
+					    </p:row>
+					    <p:row>  
+						<p:column>                                        
+						    <!-- ///////////// DATOS ///////////////// -->
+						    <br/> 
+						    <p:panelGrid>                            
+							<p:row>  
+							    <p:column colspan="2" styleClass="ui-widget-header">TIPO DE MALTRATO</p:column>
+							    <p:column  colspan="2" styleClass="ui-widget-header">TIPO AGRESOR</p:column>
+							</p:row>
+							<p:row>  
+							    <p:column>MA1. FISICO</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							    <p:column>AG1. PADRE</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							</p:row>
+							<p:row>  
+							    <p:column>MA2. PSICOLOGICO/VERBAL</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							    <p:column>AG2. MADRE</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							</p:row>
+							<p:row>  
+							    <p:column>MA3. ABUSO SEXUAL</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							    <p:column>AG3. PADRASTRO</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							</p:row>
+							<p:row>  
+							    <p:column>MA4. NEGLIGENCIA</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							    <p:column>AG4. MADRASTRA</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							</p:row>
+							<p:row>  
+							    <p:column>MA5. ABANDONO</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							    <p:column>AG5. CONYUGE/COMP</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							</p:row>
+							<p:row>  
+							    <p:column>MA6. INSTITUCIONAL</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							    <p:column>AG6. HERMANO/A</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							</p:row>
+							<p:row>  
+							    <p:column>MA7. SIN DATO</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							    <p:column>AG7. HIJO</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							</p:row>
+							<p:row>  
+							    <p:column>MA8. OTRO</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							    <p:column>AG8. OTRO</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							</p:row>
+							<p:row>  
+							    <p:column>CUAL OTRO</p:column>
+							    <p:column><p:inputText value="#" /></p:column>
+							    <p:column>CUAL OTRO</p:column>
+							    <p:column><p:inputText value="#" /></p:column>
+							</p:row>
+							<p:row>  
+							    <p:column colspan="2">&nbsp;</p:column>
+							    <p:column>AG9. SIN DATO</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							</p:row>	
+							<p:row>  
+							    <p:column colspan="2">&nbsp;</p:column>
+							    <p:column>AG10. NOVIO</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
+							</p:row>	
+						    </p:panelGrid>                                        
+						    <br/>   
+						    <!-- ///////////// DATOS ///////////////// -->
+						</p:column>  
+					    </p:row>
+					</p:panelGrid>
+					<br/>
+					<!--=====================================  ACCION A REALIZAR==============================================-->                                        
+					<p:panelGrid>                            
+					    <p:row>  
+						<p:column styleClass="ui-widget-header" style="text-align: center;">
+						    <h:outputLabel value=" ACCION A REALIZAR:   "/>                                          
+						</p:column>  
+					    </p:row>
+					    <p:row>  
+						<p:column>                                        
+						    <!-- ///////////// DATOS ///////////////// -->
+						    <br/> 
+						    <p:panelGrid>                            
+
+							<p:row>  
+							    <p:column>CONCILIACION</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+							<p:row>  
+							    <p:column>CAUCION</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+							<p:row>  
+							    <p:column>DICTAMEN MEDICINALEGAL</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+							<p:row>  
+							    <p:column>REMISION FISCALIA</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+							<p:row>  
+							    <p:column>REMISION MEDICINA LEGAL</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+
+							<p:row>  
+							    <p:column>REMISIONCOM FAMILIA</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+							<p:row>  
+							    <p:column>REMISIONICBF</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+							<p:row>  
+							    <p:column>{MEDI}DAS {PRO}TECCION </p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+
+							<p:row>  
+							    <p:column>REMISION A SALUD</p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+							<p:row>  
+							    <p:column>ATENCION PSICOSOCIAL </p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+							<p:row>  
+							    <p:column>RESTABLECIMIENTO DERECHOS </p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+							<p:row>  
+							    <p:column>OTRA </p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+							<p:row>  
+							    <p:column>CUAL OTRA </p:column>
+							    <p:column><p:inputText value="" /></p:column>    
+							</p:row>                                                        
+							<p:row>  
+							    <p:column>SIN DATO </p:column>
+							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
+							</p:row>
+						    </p:panelGrid>                                        
+						    <br/>   
+						    <!-- ///////////// DATOS ///////////////// -->
+						</p:column>  
+					    </p:row>
+					</p:panelGrid>
+					<!--=====================================RESPONSABLE:==============================================-->
+					<br/>                            
+					<p:panelGrid>                            
+					    <p:row>  
+						<p:column><h:outputLabel value="RESPONSABLE:   "/></p:column>
+						<p:column><p:inputText value="" /></p:column>
+					    </p:row>
+					</p:panelGrid>
+					<br/>
+				    </p:column>
+				</p:row>
+				<br/>
+			    </p:panelGrid>
+			    <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                        </p:column>                                       
+                    </p:row>
+                </p:panelGrid>
+                <div style="position:fixed; bottom: 3px; right: 20px; ">
+                    <p:panelGrid>
+                        <p:row >
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton icon="ui-icon-seek-first" title="Primero"/>
+                                <p:commandButton icon="ui-icon-seek-prev" title="Anterior"/>
+                            </p:column>
+                            <p:column styleClass="ui-widget-header">
+                                <p:inputText value="new/91"/>
+                            </p:column>
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton  icon="ui-icon-seek-next" title="Siguiente"/>
+                                <p:commandButton  icon="ui-icon-seek-end" title="Guadar"/>
+                            </p:column>
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton icon="ui-icon-disk" title="Guadar"/>
+                                <p:commandButton icon="ui-icon-plus" title="Nuevo"/>
+                                <p:commandButton icon="ui-icon-close" title="Eliminar"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>                   
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>

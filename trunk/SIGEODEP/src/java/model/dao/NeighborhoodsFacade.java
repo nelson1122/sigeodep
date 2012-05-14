@@ -39,5 +39,17 @@ public class NeighborhoodsFacade extends AbstractFacade<Neighborhoods> {
             return null;
         }
     }
+     public Neighborhoods findById(int id) {
+        String hql = "Select x from Neighborhoods x where x.neighborhoodId=:id";
+        try
+        {
+            return (Neighborhoods)em.createQuery(hql).setParameter("id", id).getSingleResult();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e.toString()+"----------------------------------------------------");
+            return null;
+        }
+    }
     
 }

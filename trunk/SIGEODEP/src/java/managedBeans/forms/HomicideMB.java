@@ -14,32 +14,18 @@ import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.model.SelectItem;
+import javax.validation.constraints.Size;
 import managedBeans.preload.FormsAndFieldsDataMB;
-import model.dao.ActivitiesFacade;
-import model.dao.AggressorGendersFacade;
-import model.dao.ContextsFacade;
-import model.dao.DepartamentsFacade;
-import model.dao.DestinationsOfPatientFacade;
-import model.dao.DiagnosesFacade;
-import model.dao.HealthProfessionalsFacade;
-import model.dao.IntentionalitiesFacade;
-import model.dao.MechanismsFacade;
-import model.dao.MunicipalitiesFacade;
-import model.dao.NeighborhoodsFacade;
-import model.dao.PlacesFacade;
-import model.dao.PrecipitatingFactorsFacade;
-import model.dao.RelationshipsToVictimFacade;
-import model.dao.TransportTypesFacade;
-import model.dao.TransportUsersFacade;
+import model.dao.*;
 import model.pojo.*;
 
 /**
  *
  * @author SANTOS
  */
-@ManagedBean(name = "lcenfMB")
+@ManagedBean(name = "homicideMB")
 @SessionScoped
-public class LcenfMB {
+public class HomicideMB {
 
     private SelectItem[] healthInstitutions;
     private String currentHealthInstitution;
@@ -58,10 +44,12 @@ public class LcenfMB {
     private SelectItem[] activities;
     private String currentMechanisms;
     private SelectItem[] mechanisms;
-    private String currentTransportTypesCounterpart;
+    //private String currentTransportTypesCounterpart;
     private String currentTransportTypes;
     private SelectItem[] transportTypes;
     private String currentTransportUser;
+    private SelectItem[] transportCounterparts;
+    private String currentTransportCounterpart;
     private SelectItem[] transportUsers;
     private String currentRelationshipToVictim;
     private SelectItem[] relationshipsToVictim;
@@ -85,7 +73,10 @@ public class LcenfMB {
     private String idCIE10_3;
     private String idCIE10_4;
     private String currentGender;
-    private String currentMedicalHistory;
+    
+    @Size(min = 6, max = 8)
+    private int currentMedicalHistory;
+    
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private String currentNeighborhoodHomeName;
     private String currentNeighborhoodHomeCode;
@@ -135,6 +126,8 @@ public class LcenfMB {
     @EJB
     TransportTypesFacade transportTypesFacade;
     @EJB
+    TransportCounterpartsFacade transportCounterpartsFacade;
+    @EJB
     TransportUsersFacade transportUsersFacade;
     @EJB
     RelationshipsToVictimFacade relationshipsToVictimFacade;
@@ -144,11 +137,73 @@ public class LcenfMB {
     AggressorGendersFacade agreAggressorGendersFacade;
     @EJB
     PrecipitatingFactorsFacade precipitatingFactorsFacade;
+    //valores para el otro formulario+++++++++++++++++++++++++++++++++++++++++
+    @EJB
+    AreasFacade areasFacade;
+    @EJB
+    WeaponTypesFacade weaponTypesFacade;
+    @EJB
+    MurderContextsFacade murderContextsFacade;
+    private SelectItem[] areas;
+    private String currentArea;
+    private String currentWeaponType;
+    private SelectItem[] weaponTypes;
+    private String currentMurderContext;
+    private SelectItem[] murderContexts;
 
+    public SelectItem[] getAreas() {
+        return areas;
+    }
+
+    public void setAreas(SelectItem[] areas) {
+        this.areas = areas;
+    }
+
+    public String getCurrentArea() {
+        return currentArea;
+    }
+
+    public void setCurrentArea(String currentArea) {
+        this.currentArea = currentArea;
+    }
+
+    public String getCurrentMurderContext() {
+        return currentMurderContext;
+    }
+
+    public void setCurrentMurderContext(String currentMurderContext) {
+        this.currentMurderContext = currentMurderContext;
+    }
+
+    public String getCurrentWeaponType() {
+        return currentWeaponType;
+    }
+
+    public void setCurrentWeaponType(String currentWeaponType) {
+        this.currentWeaponType = currentWeaponType;
+    }
+
+    public SelectItem[] getMurderContexts() {
+        return murderContexts;
+    }
+
+    public void setMurderContexts(SelectItem[] murderContexts) {
+        this.murderContexts = murderContexts;
+    }
+
+    public SelectItem[] getWeaponTypes() {
+        return weaponTypes;
+    }
+
+    public void setWeaponTypes(SelectItem[] weaponTypes) {
+        this.weaponTypes = weaponTypes;
+    }
+
+    //valores para el otro formulario+++++++++++++++++++++++++++++++++++++++++
     /**
      * Creates a new instance of LcenfMB
      */
-    public LcenfMB() {
+    public HomicideMB() {
     }
 
     public List<String> suggestNeighborhoods(String entered) {
@@ -277,6 +332,14 @@ public class LcenfMB {
                 transportTypes[i] = new SelectItem(transportTypesList.get(i).getTransportTypeName());
             }
 
+            //cargo los Tipos de transporte de la contraparte en lesiones de tránsito y transporte.
+            List<TransportCounterparts> transportCounterpartsList = transportCounterpartsFacade.findAll();
+            transportCounterparts = new SelectItem[transportCounterpartsList.size()];
+            for (int i = 0; i < transportCounterpartsList.size(); i++) {
+                transportCounterparts[i] = new SelectItem(transportCounterpartsList.get(i).getTransportCounterpartName());
+            }
+
+
             //cargo los usuarios en una lesion de tránsito y trasporte
             List<TransportUsers> transportUsersList = transportUsersFacade.findAll();
             transportUsers = new SelectItem[transportUsersList.size()];
@@ -312,6 +375,29 @@ public class LcenfMB {
                 precipitatingFactors[i] = new SelectItem(precipitatingFactorsList.get(i).getPrecipitatingFactorName());
             }
 
+            //valores para el otro formulario+++++++++++++++++++++++++++++++++++++++++
+
+            //cargo los Factores precipitantes en lesiones autoinflingidas.
+            List<MurderContexts> murderContextsList = murderContextsFacade.findAll();
+            murderContexts = new SelectItem[murderContextsList.size()];
+            for (int i = 0; i < murderContextsList.size(); i++) {
+                murderContexts[i] = new SelectItem(murderContextsList.get(i).getMurderContextName());
+            }
+            //cargo los Factores precipitantes en lesiones autoinflingidas.
+            List<WeaponTypes> weaponTypesList = weaponTypesFacade.findAll();
+            weaponTypes = new SelectItem[weaponTypesList.size()];
+            for (int i = 0; i < weaponTypesList.size(); i++) {
+                weaponTypes[i] = new SelectItem(weaponTypesList.get(i).getWeaponTypeName());
+            }
+            //cargo los Factores precipitantes en lesiones autoinflingidas.
+            List<Areas> areasList = areasFacade.findAll();
+            areas = new SelectItem[areasList.size()];
+            for (int i = 0; i < areasList.size(); i++) {
+                areas[i] = new SelectItem(areasList.get(i).getAreaName());
+            }
+
+            //valores para el otro formulario+++++++++++++++++++++++++++++++++++++++++
+
 
         } catch (Exception e) {
             System.out.println("*******************************************ERROR: " + e.toString());
@@ -344,6 +430,125 @@ public class LcenfMB {
 //        }
     }
 
+    private void calculateDate1() {
+        try {
+            fechaI = formato.parse(currentDayEvent + "/" + currentMonthEvent + "/" + currentYearEvent);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(fechaI);
+            currentDateEvent = formato.format(fechaI);
+            currentWeekdayEvent = String.valueOf(cal.get(Calendar.DAY_OF_WEEK));
+
+        } catch (ParseException ex) {
+            // POR FAVOR CORRIJA LA FECHA DEL PRIMER PAGO
+            currentDateEvent = "";
+            currentWeekdayEvent = "";
+        }
+    }
+
+    private void calculateDate2() {
+        try {
+            fechaI = formato.parse(currentDayConsult + "/" + currentMonthConsult + "/" + currentYearConsult);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(fechaI);
+            currentDateConsult = formato.format(fechaI);
+            currentWeekdayConsult = String.valueOf(cal.get(Calendar.DAY_OF_WEEK));
+
+        } catch (ParseException ex) {
+            // POR FAVOR CORRIJA LA FECHA DEL PRIMER PAGO
+            currentDateConsult = "";
+            currentWeekdayConsult = "";
+        }
+    }
+
+    private void calculateTime1() {
+        int hourInt;
+        int minuteInt;
+        int timeInt;
+        try {
+            hourInt = Integer.parseInt(currentHourEvent);
+        } catch (Exception ex) {
+            hourInt = 0;
+        }
+        try {
+            minuteInt = Integer.parseInt(currentMinuteEvent);
+        } catch (Exception ex) {
+            minuteInt = 0;
+        }
+        try {
+            if (currentAmPmEvent.length() == 0) {                            
+               currentAmPmEvent="AM"; 
+            }
+        } catch (Exception ex) {
+            currentAmPmEvent="AM";
+        }
+
+
+        try {
+
+
+            if (currentAmPmEvent.length() != 0) {                
+                String hourStr;
+                String minuteStr;
+                String timeStr;
+                if (hourInt > 0 && hourInt < 13 && minuteInt > -1 && minuteInt < 60) {
+                    if (currentAmPmEvent.compareTo("PM") == 0) {
+                        hourInt = hourInt + 12;
+                    }
+                    hourStr = String.valueOf(hourInt);
+                    minuteStr = String.valueOf(minuteInt);
+                    if (hourStr.length() == 1) {
+                        hourStr = "0" + hourStr;
+                    }
+                    if (minuteStr.length() == 1) {
+                        minuteStr = "0" + minuteStr;
+                    }
+                    timeStr = hourStr + minuteStr;
+                    timeInt = Integer.parseInt(timeStr);
+                    if (timeInt > 2400) {
+                        timeStr = "00" + minuteStr;
+                    }
+                    currentMilitaryHourEvent = timeStr;
+                }
+                else
+                {
+                    currentMilitaryHourEvent = "";
+                }
+            }
+        } catch (Exception ex) {
+
+            currentMilitaryHourEvent = "-" + ex.toString();
+        }
+//        try {
+//            
+//            if (currentAmPmEvent.length() != 0) {
+//                int hourInt=Integer.parseInt(currentHourEvent);
+//                int minuteInt=Integer.parseInt(currentMinuteEvent);
+//                int timeInt;
+//                String hourStr;
+//                String minuteStr;
+//                String timeStr;
+//                if(hourInt>0&&hourInt<13&&minuteInt>-1&&minuteInt<60)
+//                {
+//                    if (currentAmPmEvent.compareTo("PM") == 0) hourInt=hourInt+24;
+//                    hourStr=String.valueOf(hourInt);
+//                    minuteStr=String.valueOf(minuteInt);
+//                    if(hourStr.length()==1)hourStr="0"+hourStr;
+//                    if(minuteStr.length()==1)minuteStr="0"+minuteStr;
+//                    timeStr=hourStr+minuteStr;
+//                    timeInt=Integer.parseInt(timeStr);
+//                    if(timeInt>2400)
+//                    { 
+//                        timeStr="00"+minuteStr;
+//                    }
+//                    currentMilitaryHourEvent = timeStr;
+//                }
+//            }
+//        } catch (Exception ex) {
+//            
+//            currentMilitaryHourEvent = "-"+ex.toString();
+//        }
+    }
+
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES GET Y SET DE LAS VARIABLES ---------------------------------
@@ -373,11 +578,11 @@ public class LcenfMB {
         this.formsAndFieldsDataMB = formsAndFieldsDataMB;
     }
 
-    public String getCurrentMedicalHistory() {
+    public int getCurrentMedicalHistory() {
         return currentMedicalHistory;
     }
 
-    public void setCurrentMedicalHistory(String currentMedicalHistory) {
+    public void setCurrentMedicalHistory(int currentMedicalHistory) {
         this.currentMedicalHistory = currentMedicalHistory;
     }
 
@@ -421,13 +626,6 @@ public class LcenfMB {
         this.currentGender = currentGender;
     }
 
-//    public SelectItem[] getGenders() {
-//        return genders;
-//    }
-//
-//    public void setGenders(SelectItem[] genders) {
-//        this.genders = genders;
-//    }
     public String getCurrentDepartamentHome() {
         return currentDepartamentHome;
     }
@@ -435,7 +633,7 @@ public class LcenfMB {
     public void setCurrentDepartamentHome(String currentDepartamentHome) {
         this.currentDepartamentHome = currentDepartamentHome;
         //cargo el codigo del departamento departamentos
-        this.currentDepartamentHomeCode = departamentsFacade.findByName(currentDepartamentHome).getDepartamentId();
+        //this.currentDepartamentHomeCode = departamentsFacade.findByName(currentDepartamentHome).getDepartamentId();
     }
 
     public SelectItem[] getDepartaments() {
@@ -461,7 +659,7 @@ public class LcenfMB {
 
     public void setCurrentMunicipalitie(String currentMunicipalitie) {
         this.currentMunicipalitie = currentMunicipalitie;
-        this.currentMunicipalitieCode = municipalitiesFacade.findByName(currentMunicipalitie).getMunicipalityId().toString();
+        //this.currentMunicipalitieCode = municipalitiesFacade.findByName(currentMunicipalitie).getMunicipalityId().toString();
     }
 
     public String getCurrentNeighborhoodEventCode() {
@@ -703,6 +901,7 @@ public class LcenfMB {
 
     public void setCurrentDayConsult(String currentDayConsult) {
         this.currentDayConsult = currentDayConsult;
+        calculateDate2();
     }
 
     public String getCurrentDayEvent() {
@@ -711,21 +910,7 @@ public class LcenfMB {
 
     public void setCurrentDayEvent(String currentDayEvent) {
         this.currentDayEvent = currentDayEvent;
-
-        try {
-            fechaI = formato.parse(currentDayEvent + "/" + currentMonthEvent + "/" + currentYearEvent);
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(fechaI);
-
-            currentDateEvent = "si";
-            currentWeekdayEvent = String.valueOf(cal.get(Calendar.DAY_OF_WEEK));
-
-        } catch (ParseException ex) {
-            // POR FAVOR CORRIJA LA FECHA DEL PRIMER PAGO
-            currentDateEvent = "no";
-            currentWeekdayEvent = "no";
-        }
-
+        calculateDate1();
     }
 
     public String getCurrentHourConsult() {
@@ -742,6 +927,7 @@ public class LcenfMB {
 
     public void setCurrentHourEvent(String currentHourEvent) {
         this.currentHourEvent = currentHourEvent;
+        calculateTime1();
     }
 
     public String getCurrentIntentionality() {
@@ -790,6 +976,7 @@ public class LcenfMB {
 
     public void setCurrentMinuteEvent(String currentMinuteEvent) {
         this.currentMinuteEvent = currentMinuteEvent;
+        calculateTime1();
     }
 
     public String getCurrentMonthConsult() {
@@ -798,6 +985,7 @@ public class LcenfMB {
 
     public void setCurrentMonthConsult(String currentMonthConsult) {
         this.currentMonthConsult = currentMonthConsult;
+        calculateDate2();
     }
 
     public String getCurrentMonthEvent() {
@@ -806,6 +994,7 @@ public class LcenfMB {
 
     public void setCurrentMonthEvent(String currentMonthEvent) {
         this.currentMonthEvent = currentMonthEvent;
+        calculateDate1();
     }
 
     public String getCurrentPlace() {
@@ -866,10 +1055,12 @@ public class LcenfMB {
 
     public String getCurrentYearConsult() {
         return currentYearConsult;
+
     }
 
     public void setCurrentYearConsult(String currentYearConsult) {
         this.currentYearConsult = currentYearConsult;
+        calculateDate2();
     }
 
     public String getCurrentYearEvent() {
@@ -878,6 +1069,7 @@ public class LcenfMB {
 
     public void setCurrentYearEvent(String currentYearEvent) {
         this.currentYearEvent = currentYearEvent;
+        calculateDate1();
     }
 
     public SelectItem[] getIntentionalities() {
@@ -936,11 +1128,19 @@ public class LcenfMB {
         this.relationshipsToVictim = relationshipsToVictim;
     }
 
-    public String getCurrentTransportTypesCounterpart() {
-        return currentTransportTypesCounterpart;
+    public String getCurrentTransportCounterpart() {
+        return currentTransportCounterpart;
     }
 
-    public void setCurrentTransportTypesCounterpart(String currentTransportTypesCounterpart) {
-        this.currentTransportTypesCounterpart = currentTransportTypesCounterpart;
+    public void setCurrentTransportCounterpart(String currentTransportCounterpart) {
+        this.currentTransportCounterpart = currentTransportCounterpart;
+    }
+
+    public SelectItem[] getTransportCounterparts() {
+        return transportCounterparts;
+    }
+
+    public void setTransportCounterparts(SelectItem[] transportCounterparts) {
+        this.transportCounterparts = transportCounterparts;
     }
 }

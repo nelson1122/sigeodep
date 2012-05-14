@@ -60,47 +60,21 @@
                     <p:accordionPanel activeIndex="-1" >
                         <p:tab title="REGISTRO DE DATOS">
                             <p:menu style="width: 240px; z-index:23; overflow:visible">                               
-                                <p:submenu label="Registros desde Archivo" >  
-                                    <p:menuitem 
-                                        icon="ui-icon-disk"
-                                        value="Registros desde Archivo" 
-                                        action="procesFile" 
-                                        ajax="false"/>  
-                                </p:submenu>  
-                                <p:submenu label="Formularios" icon="ui-icon-disk">  
-                                    <p:menuitem 
-                                        value="Homicidios" 
-                                        actionListener="#"  
-                                        icon="ui-icon-document"/>
-                                    <p:menuitem 
-                                        value="Muertes por accidente de tránsito" 
-                                        actionListener="#"  
-                                        icon="ui-icon-document"/>
-                                    <p:menuitem 
-                                        value="Suicidios" 
-                                        actionListener="#"  
-                                        icon="ui-icon-document"/>
-                                    <p:menuitem 
-                                        value="Muertes accidentales" 
-                                        actionListener="#"  
-                                        icon="ui-icon-document"/>
-                                    <p:menuitem 
-                                        value="LCENF" 
-                                        action="LCENF"  
-                                        icon="ui-icon-document"/>
-                                    <p:menuitem 
-                                        value="VIF" 
-                                        actionListener="#"  
-                                        icon="ui-icon-document"/>
-                                </p:submenu>
-                                <p:submenu 
-                                    label="Lotes Registrados"> 
-                                    <p:menuitem 
-                                        value="Lotes Registrados" 
-                                        actionListener="#"  
-                                        ajax="false" 
-                                        icon="ui-icon-calculator"/>  
-                                </p:submenu>
+                                <p:menuitem 
+                                    icon="ui-icon-disk"
+                                    value="Carga desde Archivo" 
+                                    action="proccesFile" 
+                                    ajax="false"/>  
+                                <p:menuitem 
+                                    icon="ui-icon-document"
+                                    value="Registro desde Formularios" 
+                                    action="forms" 
+                                    ajax="false"/>  
+                                <p:menuitem 
+                                    icon="ui-icon-folder-collapsed" 
+                                    value="Lotes Registrados" 
+                                    actionListener="#"  
+                                    ajax="false"/>
                             </p:menu> 
                         </p:tab>
                         <p:tab title="REPORTES">
@@ -134,6 +108,7 @@
                     <ui:insert name="content">   
                     </ui:insert>
                 </div>
+
             </p:layoutUnit>  
 
             <!-- ****************************** OPCIONES (PARTE DERECHA) ************************ >
@@ -141,9 +116,11 @@
                 <h:outputText value="Right unit content." />  
             </p:layoutUnit>  
             < ****************************** SALIDA (PARTE INFERIOR) ************************ >
-            <p:layoutUnit position="south" size="100" header="Salida" resizable="true" closable="true" collapsible="true">  
-                <h:outputText value="Sesión Iniciada" />  
-            </p:layoutUnit>  -->
+            <p:layoutUnit position="south" size="100" header="Salida" resizable="true" closable="false" collapsible="true">  
+                    <h:outputText value="Sesión Iniciada" />  
+                </p:layoutUnit> 
+            -->
+
 
         </p:layout> 
     </h:body>

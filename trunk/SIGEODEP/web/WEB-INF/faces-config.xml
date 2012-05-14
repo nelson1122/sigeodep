@@ -13,40 +13,51 @@
         </resource-bundle>
     </application>
     <navigation-rule>
-        <from-view-id>/index.xhtml</from-view-id>
+        <from-view-id>*</from-view-id>
+        <navigation-case>
+            <from-outcome>transit</from-outcome>
+            <to-view-id>/web/Forms/transit.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>VIF</from-outcome>
+            <to-view-id>/web/Forms/VIF.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>accidental</from-outcome>
+            <to-view-id>/web/Forms/accidental.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>LCENF</from-outcome>
+            <to-view-id>/web/Forms/LCENF.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>homicide</from-outcome>
+            <to-view-id>/web/Forms/homicide.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>suicide</from-outcome>
+            <to-view-id>/web/Forms/suicide.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>proccesFile</from-outcome>
+            <to-view-id>/web/fileProcessing/fileProcessing.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
         <navigation-case>
             <from-outcome>homePage</from-outcome>
             <to-view-id>/web/homepage.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
-    </navigation-rule>
-    <navigation-rule>
-        <from-view-id>/web/homepage.xhtml</from-view-id>        
         <navigation-case>
-            <from-outcome>procesFile</from-outcome>
-            <to-view-id>/web/fileProcessing/fileProcessing.xhtml</to-view-id>
+            <from-outcome>forms</from-outcome>
+            <to-view-id>/web/Forms/forms.xhtml</to-view-id>
             <redirect/>
-        </navigation-case>
-        <navigation-case>
-            <from-outcome>LCENF</from-outcome>
-            <to-view-id>/web/Forms/LCENF.xhtml</to-view-id>
-            <redirect/>
-        </navigation-case>
-    </navigation-rule>
-    <navigation-rule>
-        <from-view-id>/web/Forms/LCENF.xhtml</from-view-id>
-        <navigation-case>
-            <from-outcome>procesFile</from-outcome>
-            <to-view-id>/web/fileProcessing/fileProcessing.xhtml</to-view-id>
-	    <redirect/>
-        </navigation-case>
-    </navigation-rule>
-    <navigation-rule>
-        <from-view-id>/web/fileProcessing/fileProcessing.xhtml</from-view-id>
-        <navigation-case>
-            <from-outcome>LCENF</from-outcome>
-            <to-view-id>/web/Forms/LCENF.xhtml</to-view-id>
-	    <redirect/>
         </navigation-case>
     </navigation-rule>
 </faces-config>
