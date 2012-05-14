@@ -27,9 +27,18 @@ public class MunicipalitiesFacade extends AbstractFacade<Municipalities> {
         super(Municipalities.class);
     }
     
-    public Municipalities findByName(String name) {
-        String hql = "Select x from Municipalities x where x.municipalityName=:name";
-        return (Municipalities)em.createQuery(hql).setParameter("name", name).getSingleResult();
+    public Municipalities findByName(String name, short depId) {
+	try
+	{
+        String hql = "Select x from Municipalities x where x.municipalityName=:name AND x.municipalitiesPK.departamentId=:depId";
+        return (Municipalities)em.createQuery(hql).setParameter("name", name).setParameter("depId", depId).getSingleResult();
+	}
+	catch(Exception e)
+	{
+	    System.out.println("Error: "+e.toString()+"-------------");
+	    return null;
+	}
     }
+    
     
 }

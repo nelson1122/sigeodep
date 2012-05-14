@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+
+    <ui:composition template="../templates/layoutTemplate.xhtml">
+        <!--==================================================================-->
+        <!--========================CABECERA SCRIPTS==========================-->                    
+        <ui:define name="header">
+            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
+            <script type="text/javascript">  
+                
+            </script> 
+        </ui:define>
+        <!--=================================================================-->
+        <!--================================TITULOS==========================-->
+        <ui:define name="titlePage">
+            SIGEODEP - FICHA PARA SUICIDIOS
+        </ui:define>
+        <ui:define name="title">
+            SIGEODEP - FICHA PARA SUICIDIOS
+        </ui:define>
+        <!--=================================================================-->
+        <!--==============================CONTENIDO==========================-->
+        <ui:define name="content">
+            <h:form enctype="multipart/form-data" id="IdForm2"> 
+                <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
+                <!--===================================================================================-->
+                <br/>
+                <p:panelGrid style="position: absolute;  width: 750px;  margin-left: -375px; left: 50%;" >                            
+                    <p:row>  
+                        <p:column styleClass="ui-widget-header" style="text-align: center;">
+                            <h:outputLabel value=" OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
+                            <h:outputLabel value=" SECRETARIA DE GOBIERNO MUNICIPAL"/>  <br/>
+                            <h:outputLabel value="FICHA PARA  SUICIDIOS"/>                              
+                        </p:column>                                       
+                    </p:row>
+                    <p:row>  
+                        <p:column style="background-color: #ebf4fb;">                            
+                            <br/>
+                            <p:panelGrid> 
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" style="text-align: center;" colspan="2">
+                                        <h:outputLabel value="INFOMACION DEL HECHO"/>                                          
+                                    </p:column>  
+                                </p:row>
+                                <p:row>  
+                                    <p:column>CODIGO:</p:column>
+                                    <p:column >
+                                        <p:inputText />
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>FECHA DE LOS HECHOS:</p:column>
+                                    <p:column >
+                                        DIA:&nbsp;
+                                        <p:inputText value="#{lcenfMB.currentDayEvent}" size="2" >  
+                                            <f:ajax 
+                                                event="keyup"                                                                                                            
+                                                render="IdDateEvent IdWeekdayEvent"/>
+                                        </p:inputText>
+                                        MES:&nbsp;
+                                        <p:inputText value="#{lcenfMB.currentMonthEvent}" size="2" maxlength="2">
+                                            <f:ajax 
+                                                event="keyup"                                                                                                            
+                                                render="IdDateEvent IdWeekdayEvent"/>
+                                        </p:inputText>  
+                                        AÑO:&nbsp;
+                                        <p:inputText value="#{lcenfMB.currentYearEvent}" size="5" maxlength="4">
+                                            <f:ajax 
+                                                event="keyup"                                                                                                            
+                                                render="IdDateEvent IdWeekdayEvent"/>
+                                        </p:inputText> 
+                                    </p:column>
+                                </p:row>                                            
+                                <p:row>  
+                                    <p:column >
+                                        FECHA DE LOS HECHOS(dd/mm/yyyy):  
+                                    </p:column>
+                                    <p:column >
+                                        <p:inputText disabled="true" id="IdDateEvent" value="#{lcenfMB.currentDateEvent}"/> 
+                                    </p:column>
+                                </p:row>                                            
+                                <p:row>  
+                                    <p:column >
+                                        DIA SEMANA DE LOS HECHOS:&nbsp;
+                                    </p:column>
+                                    <p:column >
+                                        <p:inputText disabled="true" id="IdWeekdayEvent" value="#{lcenfMB.currentWeekdayEvent}" size="1" maxlength="1"/> 
+                                    </p:column>
+                                </p:row>                                            
+                                <p:row>                                                
+                                    <p:column>
+                                        HORA DEL  HECHO:
+                                    </p:column>
+                                    <p:column >
+                                        HORAS:&nbsp;
+                                        <p:inputText value="#{lcenfMB.currentHourEvent}" size="2">
+                                            <f:ajax 
+                                                event="keyup"                                                                                                            
+                                                render="IdTimeEvent"/>
+                                        </p:inputText> 
+                                        MINUTOS:&nbsp;
+                                        <p:inputText value="#{lcenfMB.currentMinuteEvent}" size="2">
+                                            <f:ajax 
+                                                event="keyup"                                                                                                            
+                                                render="IdTimeEvent"/>
+                                        </p:inputText> 
+                                        AMPM:&nbsp;
+                                        <p:selectOneMenu value="#{lcenfMB.currentAmPmEvent}" > 
+                                            <f:selectItem itemLabel=" " itemValue="-" />  
+                                            <f:selectItem itemLabel="AM" itemValue="AM" />  
+                                            <f:selectItem itemLabel="PM" itemValue="PM" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>                                            
+                                <p:row>  
+                                    <p:column>
+                                        HORA MILITAR DEL HECHO:&nbsp;                                                    
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="IdTimeEvent" value="#{lcenfMB.currentMilitaryHourEvent}" 
+                                                     maxlength="4" size="4"/>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <!--=====================================LUGAR DE OCURRENCIA DE LOS HECHOS==============================================-->
+                            <p:panelGrid>  
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" style="text-align: center;" colspan="2">
+                                        <h:outputLabel value="LUGAR DE OCURRENCIA DE LOS HECHOS"/>                                          
+                                    </p:column>  
+                                </p:row>
+                                <p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="DIRECCION:   "/>   
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value="" size="40"/>                                       
+                                    </p:column>   
+                                </p:row>
+                                <p:row>  
+                                    <p:column>BARRIO / VEREDA:&nbsp; </p:column>
+                                    <p:column>
+                                        <p:autoComplete 
+                                            value="#{lcenfMB.currentNeighborhoodHomeName}"                                                                    
+                                            completeMethod="#{lcenfMB.suggestNeighborhoods}" 
+                                            size="40" >                                                        
+                                            <p:ajax 
+                                                event="itemSelect" 
+                                                listener="#{lcenfMB.changeNeighborhoodHomeName}" 
+                                                update="IdNeighborhoodsHomeCode2" process="@this"/>
+                                        </p:autoComplete>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>CODIGO BARRIO:&nbsp;  </p:column>
+                                    <p:column>
+                                        <p:inputText
+                                            id="IdNeighborhoodsHomeCode2"
+                                            disabled="true"
+                                            value="#{lcenfMB.currentNeighborhoodHomeCode}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>AREA DEL HECHO:&nbsp;  </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu value="#{lcenfMB.currentArea}" > 
+                                            <f:selectItems value="#{lcenfMB.areas}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>CLASE DEL LUGAR DE LOS HECHOS:&nbsp;  </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu value="#{lcenfMB.currentPlace}" > 
+                                            <f:selectItems value="#{lcenfMB.places}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>DIA DE LA SEMANA:&nbsp;  </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu  > 
+                                            <f:selectItem itemLabel="LUNES" itemValue="1" />  
+                                            <f:selectItem itemLabel="MARTES" itemValue="2" />  
+                                            <f:selectItem itemLabel="MIERCOLES" itemValue="3" />
+                                            <f:selectItem itemLabel="JUEVES" itemValue="4" />
+                                            <f:selectItem itemLabel="VIERNES" itemValue="5" />
+                                            <f:selectItem itemLabel="SABADO" itemValue="6" />
+                                            <f:selectItem itemLabel="DOMINGO" itemValue="7" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>NUMERO DE VICTIMAS FATALES EN EL MISMO HECHO:&nbsp;  </p:column>
+                                    <p:column>
+                                        <p:inputText value="" size="20"/>                                          
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <!--=====================================INFORMACION DE LA VICTIMA==============================================-->
+                            <p:panelGrid>  
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" style="text-align: center;" colspan="2">
+                                        <h:outputLabel value="INFORMACION DE LA VICTIMA"/>                                          
+                                    </p:column>  
+                                </p:row>
+                                <p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="NOMBRES:   "/>   
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value="" size="40"/>                                       
+                                    </p:column>   
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputLabel value="APELLIDOS:   "/>                                          
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value="" size="40"/>
+                                    </p:column>  
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputLabel value="SEXO:   "/>    
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu value="#{lcenfMB.currentGender}" > 
+                                            <f:selectItem itemLabel="MASCULINO" itemValue="1" />  
+                                            <f:selectItem itemLabel="FEMENINO" itemValue="2" />  
+                                            <f:selectItem itemLabel="INDETERMINADO" itemValue="3" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column >
+                                        <h:outputLabel value="TIPO EDAD:   "/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu value="#{lcenfMB.currentMeasureOfAge}" > 
+                                            <f:selectItems value="#{lcenfMB.measuresOfAge}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column  >
+                                        <h:outputLabel value="EDAD CANTIDAD:   "/>                                          
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value=""/>
+                                    </p:column>                                                                                             
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <h:outputLabel value="OCUPACION:   "/>                                          
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value=""/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>MUNICIPIO DE  RESIDENCIA:&nbsp;</p:column>
+                                    <p:column>
+                                        <p:selectOneMenu value="#{lcenfMB.currentMunicipalitie}"  > 
+                                            <f:selectItems value="#{lcenfMB.municipalities}"/>
+                                            <f:ajax 
+                                                event="change"                                                            
+                                                render="IdMunicipalitiesHomeCode"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>CODIGO MUNICIPIO:&nbsp;</p:column>
+                                    <p:column><p:inputText 
+                                            id="IdMunicipalitiesHomeCode"                                                        
+                                            disabled="true"
+                                            value="#{lcenfMB.currentMunicipalitieCode}"/></p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>BARRIO / VEREDA:&nbsp; </p:column>
+                                    <p:column>
+                                        <p:autoComplete 
+                                            value="#{lcenfMB.currentNeighborhoodHomeName}"                                                                    
+                                            completeMethod="#{lcenfMB.suggestNeighborhoods}" 
+                                            size="40" >                                                        
+                                            <p:ajax 
+                                                event="itemSelect" 
+                                                listener="#{lcenfMB.changeNeighborhoodHomeName}" 
+                                                update="IdNeighborhoodsHomeCode" process="@this"/>
+                                        </p:autoComplete>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>CODIGO BARRIO:&nbsp;  </p:column>
+                                    <p:column>
+                                        <p:inputText
+                                            id="IdNeighborhoodsHomeCode"
+                                            disabled="true"
+                                            value="#{lcenfMB.currentNeighborhoodHomeCode}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="TIPO DE IDENTIFICACION:   "/>                                          
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu value="#{lcenfMB.currentIdentification}" > 
+                                            <f:selectItems value="#{lcenfMB.identifications}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="NUMERO DE IDENTIFICACION:   "/>                                          
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value=""/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="PROCEDENCIA:   "/>                                          
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value=""/>
+                                    </p:column>
+                                </p:row> 
+				
+                            </p:panelGrid>
+                            <br/>
+                            <!--=====================================DATOS DEL HECHO==============================================-->
+                            <p:panelGrid>  
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" style="text-align: center;" colspan="2">
+                                        <h:outputLabel value="DATOS DEL HECHO"/>                                          
+                                    </p:column>  
+                                </p:row>
+                                <p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="ARMA O CAUSA DE MUERTE:   "/>                                          
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu value="#{lcenfMB.currentWeaponType}"  > 
+                                            <f:selectItems value="#{lcenfMB.weaponTypes}"/>					    
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="EVENTOS RELACIONADOS CON EL HECHO:   "/>                                          
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu value="#{lcenfMB.currentMurderContext}"  > 
+                                            <f:selectItems value="#{lcenfMB.murderContexts}"/>					    
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row> 
+				<p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="INTENTOS PREVIOS DE SUICIDIO:"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value=""/>
+                                    </p:column>
+                                </p:row> 				
+				<p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="ANTECEDENTES DE SALUD MENTAL"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value=""/>
+                                    </p:column>
+                                </p:row> 
+                                <p:row>  
+                                    <p:column>
+                                        <h:outputLabel value="NARRACION DEL HECHO:   "/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputTextarea value="" style="width: 250px; height: 150px;"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column colspan="2">
+                                        <h:outputLabel value="NIVEL DE ALCOHOL DE LA VICTIMA:   "/>
+                                        <p:inputText value=""/>
+                                        <h:outputLabel value="sin dato"/>                                        
+                                        <p:selectBooleanCheckbox value="#" />
+                                        <h:outputLabel value="Pendiente"/>
+                                        <p:selectBooleanCheckbox value="#" />
+                                        <h:outputLabel value="ns"/>
+                                        <p:selectBooleanCheckbox value="#" />
+                                        <h:outputLabel value="negativo"/>
+                                        <p:selectBooleanCheckbox value="#" />					
+                                    </p:column>
+                                </p:row>
+				    
+                            </p:panelGrid>
+                            <!--===================================================================================-->
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                        </p:column>                                     
+                    </p:row>
+                </p:panelGrid>
+		<div style="position:fixed; bottom: 3px; right: 20px; ">
+                    <p:panelGrid>
+                        <p:row >
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton icon="ui-icon-seek-first" title="Primero"/>
+                                <p:commandButton icon="ui-icon-seek-prev" title="Anterior"/>
+                            </p:column>
+                            <p:column styleClass="ui-widget-header">
+                                <p:inputText value="new/91"/>
+                            </p:column>
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton  icon="ui-icon-seek-next" title="Siguiente"/>
+                                <p:commandButton  icon="ui-icon-seek-end" title="Guadar"/>
+                            </p:column>
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton icon="ui-icon-disk" title="Guadar"/>
+                                <p:commandButton icon="ui-icon-plus" title="Nuevo"/>
+                                <p:commandButton icon="ui-icon-close" title="Eliminar"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>                   
+                </div>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>

@@ -23,8 +23,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @NamedQueries({
     @NamedQuery(name = "Diagnoses.findAll", query = "SELECT d FROM Diagnoses d"),
     @NamedQuery(name = "Diagnoses.findByDiagnosisId", query = "SELECT d FROM Diagnoses d WHERE d.diagnosisId = :diagnosisId"),
-    @NamedQuery(name = "Diagnoses.findByDiagnosisName", query = "SELECT d FROM Diagnoses d WHERE d.diagnosisName = :diagnosisName"),
-    @NamedQuery(name = "Diagnoses.findByDiagnosisGroup", query = "SELECT d FROM Diagnoses d WHERE d.diagnosisGroup = :diagnosisGroup")})
+    @NamedQuery(name = "Diagnoses.findByDiagnosisName", query = "SELECT d FROM Diagnoses d WHERE d.diagnosisName = :diagnosisName")})
 public class Diagnoses implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -38,9 +37,7 @@ public class Diagnoses implements Serializable {
     @Size(min = 1, max = 400)
     @Column(name = "diagnosis_name", nullable = false, length = 400)
     private String diagnosisName;
-    @Size(max = 10)
-    @Column(name = "diagnosis_group", length = 10)
-    private String diagnosisGroup;
+    
     @JoinTable(name = "non_fatal_diagnosis", joinColumns = {
         @JoinColumn(name = "diagnosis_id", referencedColumnName = "diagnosis_id", nullable = false)}, inverseJoinColumns = {
         @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
@@ -73,14 +70,6 @@ public class Diagnoses implements Serializable {
 
     public void setDiagnosisName(String diagnosisName) {
         this.diagnosisName = diagnosisName;
-    }
-
-    public String getDiagnosisGroup() {
-        return diagnosisGroup;
-    }
-
-    public void setDiagnosisGroup(String diagnosisGroup) {
-        this.diagnosisGroup = diagnosisGroup;
     }
 
     @XmlTransient

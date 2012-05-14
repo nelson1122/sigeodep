@@ -9,7 +9,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.fileProcessing.*;
-import managedBeans.forms.LcenfMB;
+import managedBeans.forms.LCENFMB;
 import managedBeans.preload.FormsAndFieldsDataMB;
 
 /**
@@ -30,7 +30,7 @@ public class LoginMB {
     StoredRelationsMB storedRelationsMB;
     RecordDataMB recordDataMB;
     ErrorsControlMB errorsControlMB;
-    LcenfMB lcenfMB;
+    LCENFMB lcenfMB;
     //progreso de carga de la aplicacion ***********************************    
     private Integer progress;
 
@@ -98,7 +98,7 @@ public class LoginMB {
 	    storedRelationsMB = (StoredRelationsMB) context.getApplication().evaluateExpressionGet(context, "#{storedRelationsMB}", StoredRelationsMB.class);
 	    recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
 	    errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
-	    lcenfMB = (LcenfMB) context.getApplication().evaluateExpressionGet(context, "#{lcenfMB}", LcenfMB.class);
+	    lcenfMB = (LCENFMB) context.getApplication().evaluateExpressionGet(context, "#{lcenfMB}", LCENFMB.class);
 
 	    recordDataMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
 	    recordDataMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
@@ -108,7 +108,7 @@ public class LoginMB {
 	    formsAndFieldsDataMB.loadFormsData();
 	    formsAndFieldsDataMB.setNameForm("SCC-F-032");
 
-	    lcenfMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
+	    
 	    lcenfMB.reset();
 	    
 	    uploadFileMB.reset();

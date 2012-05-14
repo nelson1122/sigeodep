@@ -6,6 +6,17 @@
 .ui-layout-north .ui-layout-unit-content {
     overflow:visible !important;
 }
+
+.content1 {
+    background-color: #f6fbff;
+}
+.content2 {
+    background-color: #ebf4fb;
+}
+.content3 {
+    background-color: #f6fbff;
+}
+
 body {
     background: url(../img/background.png) top center repeat-x #CFDEEA;
     margin: 0px;
