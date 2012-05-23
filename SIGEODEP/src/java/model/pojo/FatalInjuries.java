@@ -30,7 +30,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "FatalInjuries.findByInjuryDescription", query = "SELECT f FROM FatalInjuries f WHERE f.injuryDescription = :injuryDescription"),
     @NamedQuery(name = "FatalInjuries.findByInputTimestamp", query = "SELECT f FROM FatalInjuries f WHERE f.inputTimestamp = :inputTimestamp"),
     @NamedQuery(name = "FatalInjuries.findByInjuryDayOfWeek", query = "SELECT f FROM FatalInjuries f WHERE f.injuryDayOfWeek = :injuryDayOfWeek"),
-    @NamedQuery(name = "FatalInjuries.findByFatalInjuryId", query = "SELECT f FROM FatalInjuries f WHERE f.fatalInjuryId = :fatalInjuryId")})
+    @NamedQuery(name = "FatalInjuries.findByFatalInjuryId", query = "SELECT f FROM FatalInjuries f WHERE f.fatalInjuryId = :fatalInjuryId"),
+    @NamedQuery(name = "FatalInjuries.findByAlcoholLevelVictim", query = "SELECT f FROM FatalInjuries f WHERE f.alcoholLevelVictim = :alcoholLevelVictim")})
 public class FatalInjuries implements Serializable {
     private static final long serialVersionUID = 1L;
     @Column(name = "injury_date")
@@ -60,18 +61,18 @@ public class FatalInjuries implements Serializable {
     @NotNull
     @Column(name = "fatal_injury_id", nullable = false)
     private Integer fatalInjuryId;
-    @JoinTable(name = "counterpart_service_type", joinColumns = {
-        @JoinColumn(name = "fatal_injury_id", referencedColumnName = "fatal_injury_id", nullable = false)}, inverseJoinColumns = {
-        @JoinColumn(name = "service_type_id", referencedColumnName = "service_type_id", nullable = false)})
-    @ManyToMany
-    private List<ServiceTypes> serviceTypesList;
+    @Column(name = "alcohol_level_victim")
+    private Short alcoholLevelVictim;
     @JoinTable(name = "counterpart_involved_vehicle", joinColumns = {
         @JoinColumn(name = "fatal_injury_id", referencedColumnName = "fatal_injury_id", nullable = false)}, inverseJoinColumns = {
         @JoinColumn(name = "involved_vehicle_id", referencedColumnName = "involved_vehicle_id", nullable = false)})
     @ManyToMany
     private List<InvolvedVehicles> involvedVehiclesList;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "fatalInjuries")
-    private FatalInjuryMurder fatalInjuryMurder;
+    @JoinTable(name = "counterpart_service_type", joinColumns = {
+        @JoinColumn(name = "fatal_injury_id", referencedColumnName = "fatal_injury_id", nullable = false)}, inverseJoinColumns = {
+        @JoinColumn(name = "service_type_id", referencedColumnName = "service_type_id", nullable = false)})
+    @ManyToMany
+    private List<ServiceTypes> serviceTypesList;
     @JoinColumn(name = "victim_id", referencedColumnName = "victim_id")
     @ManyToOne
     private Victims victimId;
@@ -84,13 +85,15 @@ public class FatalInjuries implements Serializable {
     @JoinColumn(name = "injury_id", referencedColumnName = "injury_id", nullable = false)
     @ManyToOne(optional = false)
     private Injuries injuryId;
+    @JoinColumn(name = "alcohol_level_victim_id", referencedColumnName = "alcohol_level_id")
+    @ManyToOne
+    private AlcoholLevels alcoholLevelVictimId;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "fatalInjuries")
     private FatalInjuryTraffic fatalInjuryTraffic;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "fatalInjuries")
-    private FatalInjuryAccident fatalInjuryAccident;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "fatalInjuries")
-    private FatalInjurySuicide fatalInjurySuicide;
-
+    @Size(max = 2147483647)
+    @Column(name = "code", length = 2147483647)
+    private String code;
+    
     public FatalInjuries() {
     }
 
@@ -170,13 +173,12 @@ public class FatalInjuries implements Serializable {
         this.fatalInjuryId = fatalInjuryId;
     }
 
-    @XmlTransient
-    public List<ServiceTypes> getServiceTypesList() {
-        return serviceTypesList;
+    public Short getAlcoholLevelVictim() {
+        return alcoholLevelVictim;
     }
 
-    public void setServiceTypesList(List<ServiceTypes> serviceTypesList) {
-        this.serviceTypesList = serviceTypesList;
+    public void setAlcoholLevelVictim(Short alcoholLevelVictim) {
+        this.alcoholLevelVictim = alcoholLevelVictim;
     }
 
     @XmlTransient
@@ -188,12 +190,13 @@ public class FatalInjuries implements Serializable {
         this.involvedVehiclesList = involvedVehiclesList;
     }
 
-    public FatalInjuryMurder getFatalInjuryMurder() {
-        return fatalInjuryMurder;
+    @XmlTransient
+    public List<ServiceTypes> getServiceTypesList() {
+        return serviceTypesList;
     }
 
-    public void setFatalInjuryMurder(FatalInjuryMurder fatalInjuryMurder) {
-        this.fatalInjuryMurder = fatalInjuryMurder;
+    public void setServiceTypesList(List<ServiceTypes> serviceTypesList) {
+        this.serviceTypesList = serviceTypesList;
     }
 
     public Victims getVictimId() {
@@ -228,6 +231,14 @@ public class FatalInjuries implements Serializable {
         this.injuryId = injuryId;
     }
 
+    public AlcoholLevels getAlcoholLevelVictimId() {
+        return alcoholLevelVictimId;
+    }
+
+    public void setAlcoholLevelVictimId(AlcoholLevels alcoholLevelVictimId) {
+        this.alcoholLevelVictimId = alcoholLevelVictimId;
+    }
+
     public FatalInjuryTraffic getFatalInjuryTraffic() {
         return fatalInjuryTraffic;
     }
@@ -236,21 +247,14 @@ public class FatalInjuries implements Serializable {
         this.fatalInjuryTraffic = fatalInjuryTraffic;
     }
 
-    public FatalInjuryAccident getFatalInjuryAccident() {
-        return fatalInjuryAccident;
+    public String getCode() {
+        return code;
     }
 
-    public void setFatalInjuryAccident(FatalInjuryAccident fatalInjuryAccident) {
-        this.fatalInjuryAccident = fatalInjuryAccident;
+    public void setCode(String code) {
+        this.code = code;
     }
-
-    public FatalInjurySuicide getFatalInjurySuicide() {
-        return fatalInjurySuicide;
-    }
-
-    public void setFatalInjurySuicide(FatalInjurySuicide fatalInjurySuicide) {
-        this.fatalInjurySuicide = fatalInjurySuicide;
-    }
+    
 
     @Override
     public int hashCode() {

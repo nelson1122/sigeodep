@@ -5,8 +5,6 @@
 package beans.errorsControl;
 
 import beans.relations.RelationVar;
-import javax.faces.model.SelectItem;
-import managedBeans.fileProcessing.RelationshipOfVariablesMB;
 
 /**
  *
@@ -61,17 +59,6 @@ public class ErrorControl {
 	}
         
     }
-    
-//    private String updateCorrectionArrayList() {
-//        correctionList = new SelectItem[errorCorrectionArrayList.size()];
-//        for (int j = 0; j < errorCorrectionArrayList.size(); j++) {
-//            correctionList[j] = new SelectItem(
-//                    String.valueOf(j + 1) + ". Se cambio el valor (" + errorCorrectionArrayList.get(j).getValue()
-//                    + ") por (" + errorCorrectionArrayList.get(j).getNewValue() + ") en la fila ("
-//                    + errorCorrectionArrayList.get(j).getRowId()
-//                    + ") columna (" + errorCorrectionArrayList.get(j).getVarFoundName() + ")");
-//        }
-//    }
     
     public String getValue() {
         return value;

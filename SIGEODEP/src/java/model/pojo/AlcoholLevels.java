@@ -5,12 +5,10 @@
 package model.pojo;
 
 import java.io.Serializable;
-import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -36,10 +34,6 @@ public class AlcoholLevels implements Serializable {
     @Size(min = 1, max = 2147483647)
     @Column(name = "alcohol_level_name", nullable = false, length = 2147483647)
     private String alcoholLevelName;
-    @OneToMany(mappedBy = "alcoholLevelVictimId")
-    private List<FatalInjuryTraffic> fatalInjuryTrafficList;
-    @OneToMany(mappedBy = "alcoholLevelCounterpartId")
-    private List<FatalInjuryTraffic> fatalInjuryTrafficList1;
 
     public AlcoholLevels() {
     }
@@ -67,24 +61,6 @@ public class AlcoholLevels implements Serializable {
 
     public void setAlcoholLevelName(String alcoholLevelName) {
         this.alcoholLevelName = alcoholLevelName;
-    }
-
-    @XmlTransient
-    public List<FatalInjuryTraffic> getFatalInjuryTrafficList() {
-        return fatalInjuryTrafficList;
-    }
-
-    public void setFatalInjuryTrafficList(List<FatalInjuryTraffic> fatalInjuryTrafficList) {
-        this.fatalInjuryTrafficList = fatalInjuryTrafficList;
-    }
-
-    @XmlTransient
-    public List<FatalInjuryTraffic> getFatalInjuryTrafficList1() {
-        return fatalInjuryTrafficList1;
-    }
-
-    public void setFatalInjuryTrafficList1(List<FatalInjuryTraffic> fatalInjuryTrafficList1) {
-        this.fatalInjuryTrafficList1 = fatalInjuryTrafficList1;
     }
 
     @Override

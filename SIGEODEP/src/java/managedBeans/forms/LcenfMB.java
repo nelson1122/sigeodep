@@ -23,23 +23,15 @@ import model.pojo.*;
  *
  * @author SANTOS
  */
-@ManagedBean(name = "vifMB")
+@ManagedBean(name = "lcenfMB")
 @SessionScoped
-public class VIFMB {
+public class LcenfMB {
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    // DECLARACION DE VARIABLES --------------------------------------------
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
 
-    //---------------------
-    @EJB
-    DomesticViolenceDataSourcesFacade domesticViolenceDataSourcesFacade;
-    private Short currentDomesticViolenceDataSource;
-    private SelectItem[] violenceDataSources;
-    //------------------------
-    @EJB
-    VulnerableGroupsFacade vulnerableGroupsFacade;
-    private Short currentVulnerableGroup;
-    private SelectItem[] vulnerableGroups;
-    private boolean otherVulnerableGroupDisabled = true;
-    private String otherVulnerableGroup;
-    //--------------------------
     @EJB
     DepartamentsFacade departamentsFacade;
     private Short currentDepartamentHome = 52;//nariño
@@ -86,18 +78,58 @@ public class VIFMB {
     EthnicGroupsFacade ethnicGroupsFacade;
     private Short currentEthnicGroup;
     private SelectItem[] ethnicGroups;
+    private boolean ethnicGroupsDisabled = true;
     private String otherEthnicGroup;
-    private boolean otherEthnicGroupDisabled = true;
+    //--------------------
+    @EJB
+    TransportTypesFacade transportTypesFacade;
+    private Short currentTransportTypes;
+    private SelectItem[] transportTypes;
+    //--------------------
+    @EJB
+    TransportCounterpartsFacade transportCounterpartsFacade;
+    private Short currentTransportUser;
+    private SelectItem[] transportCounterparts;
+    //--------------------
+    @EJB
+    TransportUsersFacade transportUsersFacade;
+    private Short currentTransportCounterpart;
+    private SelectItem[] transportUsers;
     //--------------------
     @EJB
     GendersFacade gendersFacade;
     private Short currentGender;
     private SelectItem[] genders;
+    //--------------------
+    @EJB
+    RelationshipsToVictimFacade relationshipsToVictimFacade;
+    private Short currentRelationshipToVictim;
+    private SelectItem[] relationshipsToVictim;
+    //--------------------
+    @EJB
+    ContextsFacade contextsFacade;
+    private Short currentContext;
+    private SelectItem[] contexts;
+    //--------------------
+    @EJB
+    AggressorGendersFacade agreAggressorGendersFacade;
+    private Short currentAggressorGenders;
+    private SelectItem[] aggressorGenders;
+    //--------------------
+    @EJB
+    PrecipitatingFactorsFacade precipitatingFactorsFacade;
+    private Short currentPrecipitatingFactor;
+    private SelectItem[] precipitatingFactors;
     //--------------------    
     @EJB
     JobsFacade jobsFacade;
     private Short currentJob;
     private SelectItem[] jobs;
+    //--------------------
+    @EJB
+    DestinationsOfPatientFacade destinationsOfPatientFacade;
+    private Short currentDestinationPatient;
+    private SelectItem[] destinationsPatient;
     //--------------------
     @EJB
     NeighborhoodsFacade neighborhoodsFacade;
@@ -106,6 +138,18 @@ public class VIFMB {
     private String currentNeighborhoodEvent;
     private int currentNeighborhoodEventCode;
     boolean neighborhoodHomeNameDisabled = true;
+    //--------------------
+    @EJB
+    HealthProfessionalsFacade healthProfessionalsFacade;
+    private String currentHealthProfessionals;
+    //--------------------
+    @EJB
+    DiagnosesFacade diagnosesFacade;
+    private String currentDiagnoses;
+    private SelectItem[] diagnoses;
+    //--------------------
+    private SelectItem[] healthInstitutions;
+    private Short currentHealthInstitution;
     //------------------
     @EJB
     IdTypesFacade idTypesFacade;
@@ -121,23 +165,11 @@ public class VIFMB {
     //-------
     private boolean isSubmitted = false;
     private boolean IPSDisabled = true;
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
-    // DECLARACION DE VARIABLES --------------------------------------------
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
-    //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "entro"+String.valueOf(currentEthnicGroup), "entro");
-    //FacesContext.getCurrentInstance().addMessage(null, msg);
+    //-------
     private boolean otherIntentDisabled = true;
     private boolean otherPlaceDisabled = true;
     private boolean otherActivityDisabled = true;
-    private boolean otherMechanismDisabled = true;//otro mecanismo  
-    private boolean otherAGDisabled = true;
-    private String otherAG;
-    private boolean otherMADisabled = true;
-    private String otherMA;
-    private boolean otherActionDisabled = true;
-    private String otherAction;
+    private boolean otherMechanismDisabled = true;//otro mecanismo    
     private String otherMechanism;//otro mecanismo       
     private boolean powderWhichDisabled = true;//cual polvora
     private String powderWhich;//cual polvora
@@ -146,6 +178,42 @@ public class VIFMB {
     private boolean heightWhichDisabled = true;//cual altura
     private String heightWhich;//cual altura    
     private String forBurned = "none";//para los quemados
+    private String displaySecurityElements = "block";
+    private String displayInterpersonalViolence = "none";
+    private String displayTransport = "block";
+    private String displayIntentional = "none";
+    private boolean otherTransportTypeDisabled = true;//otro tipo de transporte
+    private String otherTransportType;//otro tipo de transporte    
+    private boolean otherTransportCounterpartsTypeDisabled = true;//otro tipo de transporte contraparte
+    private String otherTransportCounterpartsType;//otro tipo de transporte contraparte   
+    private boolean otherTransportUserTypeDisabled = true;//otro tipo de transporte usuario
+    private String otherTransportUserType;//otro tipo de transporte usuario   
+    private boolean aggressionPast = false;
+    private String otherFactor;
+    private boolean otherFactorDisabled = true;
+    private boolean relationshipToVictimDisabled = true;
+    private boolean contextDisabled = true;
+    private String otherRelation;
+    private boolean otherRelationDisabled = true;
+    private boolean aggressorGendersDisabled = true;
+    private boolean checkOtherInjury;
+    private boolean checkOtherPlace;
+    private boolean otherInjuryDisabled = true;
+    private boolean otherInjuryPlaceDisabled = true;
+    private boolean otherDestinationPatientDisabled = true;
+    private String otherDestinationPatient;
+    private String txtOtherInjury;
+    private String txtOtherPlace;
+    private String txtCIE10_1;
+    private String txtCIE10_2;
+    private String txtCIE10_3;
+    private String txtCIE10_4;
+    private String idCIE10_1;
+    private String idCIE10_2;
+    private String idCIE10_3;
+    private String idCIE10_4;
+    private String currentSecurityElements;
+    private String currentMedicalHistory;//@Size(min = 6, max = 8) 
     private String currentDayEvent;
     private String currentMonthEvent;
     private String currentYearEvent;
@@ -153,7 +221,7 @@ public class VIFMB {
     private String currentWeekdayEvent;
     private String currentHourEvent;
     private String currentMinuteEvent;
-    private String currentAmPmEvent = "AM";
+    private String currentAmPmEvent="AM";
     private String currentMilitaryHourEvent;
     private String currentDayConsult;
     private String currentMonthConsult;
@@ -162,9 +230,10 @@ public class VIFMB {
     private String currentWeekdayConsult;
     private String currentHourConsult;
     private String currentMinuteConsult;
-    private String currentAmPmConsult = "AM";
+    private String currentAmPmConsult="AM";
     private String currentMilitaryHourConsult;
     private String currentName;
+    private String currentSurame;
     private String currentIdentificationNumber;
     private String currentInsurance;
     private String currentDirectionHome;
@@ -176,6 +245,35 @@ public class VIFMB {
     private String currentSurname;
     private Short currentLevelBurned;
     private Short currentPercentBurned;
+    private boolean isDisplaced;
+    private boolean isHandicapped;
+    private boolean isBeltUse;
+    private boolean isHelmetUse;
+    private boolean isBicycleHelmetUse;
+    private boolean isVestUse;
+    private boolean isPreviousAttempt;
+    private boolean isMentalDisorder;
+    private boolean isUnknownNatureOfInjurye;
+    private boolean isNatureOfInjurye1;
+    private boolean isNatureOfInjurye2;
+    private boolean isNatureOfInjurye3;
+    private boolean isNatureOfInjurye4;
+    private boolean isNatureOfInjurye5;
+    private boolean isNatureOfInjurye6;
+    private boolean isNatureOfInjurye7;
+    private boolean isNatureOfInjurye8;
+    private boolean isNatureOfInjurye9;
+    private boolean isAnatomicalSite1;
+    private boolean isAnatomicalSite2;
+    private boolean isAnatomicalSite3;
+    private boolean isAnatomicalSite4;
+    private boolean isAnatomicalSite5;
+    private boolean isAnatomicalSite6;
+    private boolean isAnatomicalSite7;
+    private boolean isAnatomicalSite8;
+    private boolean isAnatomicalSite9;
+    private boolean isAnatomicalSite10;
+    private boolean isAnatomicalSite11;
     private boolean isAG1;
     private boolean isAG2;
     private boolean isAG3;
@@ -185,65 +283,39 @@ public class VIFMB {
     private boolean isAG7;
     private boolean isAG8;
     private boolean isUnknownAG;
-    private boolean isAG10;
     private boolean isMA1;
     private boolean isMA2;
     private boolean isMA3;
     private boolean isMA4;
     private boolean isMA5;
     private boolean isMA6;
-    private boolean isUnknownMA;
-    private boolean isMA8;
-    private boolean isAction1;
-    private boolean isAction2;
-    private boolean isAction3;
-    private boolean isAction4;
-    private boolean isAction5;
-    private boolean isAction6;
-    private boolean isAction7;
-    private boolean isAction8;
-    private boolean isAction9;
-    private boolean isAction10;
-    private boolean isAction11;
-    private boolean isAction12;
-    private boolean isUnknownAction;
+    private boolean isUnknownMA;    
+    
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
     private Date fechaI;
+    private int CIE_selected = 1;
+    //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "entro", "entro");
+    //FacesContext.getCurrentInstance().addMessage(null, msg);
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    public VIFMB() {
+    
+    public LcenfMB() {
     }
-
+    
     public void reset() {
         try {
-            //cargo las instituciones receptoras
-            List<DomesticViolenceDataSources> violenceDataSourcesList = domesticViolenceDataSourcesFacade.findAll();
-            violenceDataSources = new SelectItem[violenceDataSourcesList.size()];
-            for (int i = 0; i < violenceDataSourcesList.size(); i++) {
-                violenceDataSources[i] = new SelectItem(violenceDataSourcesList.get(i).getDomesticViolenceDataSourcesId(), violenceDataSourcesList.get(i).getDomesticViolenceDataSourcesName());
-            }
-
-            //cargo los grupos vulnerables
-            List<VulnerableGroups> vulnerableGroupsList = vulnerableGroupsFacade.findAll();
-            vulnerableGroups = new SelectItem[vulnerableGroupsList.size()];
-            for (int i = 0; i < vulnerableGroupsList.size(); i++) {
-                vulnerableGroups[i] = new SelectItem(vulnerableGroupsList.get(i).getVulnerableGroupId(), vulnerableGroupsList.get(i).getVulnerableGroupName());
-            }
-            //-------------------------------
-            //-------------------------------
-            //-------------------------------
-
             //cargo las instituciones de salud e IPS
             List<NonFatalDataSources> sourcesList = nonFatalDataSourcesFacade.findAll();
             IPSs = new SelectItem[sourcesList.size()];
+            healthInstitutions = new SelectItem[sourcesList.size()];
             for (int i = 0; i < sourcesList.size(); i++) {
                 IPSs[i] = new SelectItem(sourcesList.get(i).getNonFatalDataSourceName());
+                healthInstitutions[i] = new SelectItem(sourcesList.get(i).getNonFatalDataSourceId(), sourcesList.get(i).getNonFatalDataSourceName());
             }
-
             //cargo los tipos de identificacion
             List<IdTypes> idTypesList = idTypesFacade.findAll();
             identifications = new SelectItem[idTypesList.size()];
@@ -251,11 +323,19 @@ public class VIFMB {
                 identifications[i] = new SelectItem(idTypesList.get(i).getTypeId(), idTypesList.get(i).getTypeName());
             }
 
+
             //cargo las medidas de edad
             List<AgeTypes> ageTypesList = ageTypesFacade.findAll();
             measuresOfAge = new SelectItem[ageTypesList.size()];
             for (int i = 0; i < ageTypesList.size(); i++) {
                 measuresOfAge[i] = new SelectItem(ageTypesList.get(i).getAgeTypeId(), ageTypesList.get(i).getAgeTypeName());
+            }
+
+            //cargo los destinos del paciente
+            List<DestinationsOfPatient> destinationsList = destinationsOfPatientFacade.findAll();
+            destinationsPatient = new SelectItem[destinationsList.size()];
+            for (int i = 0; i < destinationsList.size(); i++) {
+                destinationsPatient[i] = new SelectItem(destinationsList.get(i).getDestinationPatientId(), destinationsList.get(i).getDestinationPatientName());
             }
 
             //cargo los departamentos
@@ -297,6 +377,55 @@ public class VIFMB {
                 mechanisms[i] = new SelectItem(mechanismsList.get(i).getMechanismId(), mechanismsList.get(i).getMechanismName());
             }
 
+            //cargo los tipos de transporte en lesiones de tránsito
+            List<TransportTypes> transportTypesList = transportTypesFacade.findAll();
+            transportTypes = new SelectItem[transportTypesList.size()];
+            for (int i = 0; i < transportTypesList.size(); i++) {
+                transportTypes[i] = new SelectItem(transportTypesList.get(i).getTransportTypeId(), transportTypesList.get(i).getTransportTypeName());
+            }
+
+            //cargo los Tipos de transporte de la contraparte en lesiones de tránsito y transporte.
+            List<TransportCounterparts> transportCounterpartsList = transportCounterpartsFacade.findAll();
+            transportCounterparts = new SelectItem[transportCounterpartsList.size()];
+            for (int i = 0; i < transportCounterpartsList.size(); i++) {
+                transportCounterparts[i] = new SelectItem(transportCounterpartsList.get(i).getTransportCounterpartId(), transportCounterpartsList.get(i).getTransportCounterpartName());
+            }
+
+            //cargo los usuarios en una lesion de tránsito y trasporte
+            List<TransportUsers> transportUsersList = transportUsersFacade.findAll();
+            transportUsers = new SelectItem[transportUsersList.size()];
+            for (int i = 0; i < transportUsersList.size(); i++) {
+                transportUsers[i] = new SelectItem(transportUsersList.get(i).getTransportUserId(), transportUsersList.get(i).getTransportUserName());
+            }
+
+            //cargo las relaciones entre agresos y victima
+            List<RelationshipsToVictim> relationshipsToVictimList = relationshipsToVictimFacade.findAll();
+            relationshipsToVictim = new SelectItem[relationshipsToVictimList.size()];
+            for (int i = 0; i < relationshipsToVictimList.size(); i++) {
+                relationshipsToVictim[i] = new SelectItem(relationshipsToVictimList.get(i).getRelationshipVictimId(), relationshipsToVictimList.get(i).getRelationshipVictimName());
+            }
+
+            //cargo los contextos en que ocurrió una lesión
+            List<Contexts> contextsList = contextsFacade.findAll();
+            contexts = new SelectItem[contextsList.size()];
+            for (int i = 0; i < contextsList.size(); i++) {
+                contexts[i] = new SelectItem(contextsList.get(i).getContextId(), contextsList.get(i).getContextName());
+            }
+
+            //cargo el genero de el/los agresor/es
+            List<AggressorGenders> aggressorGendersList = agreAggressorGendersFacade.findAll();
+            aggressorGenders = new SelectItem[aggressorGendersList.size()];
+            for (int i = 0; i < aggressorGendersList.size(); i++) {
+                aggressorGenders[i] = new SelectItem(aggressorGendersList.get(i).getGenderId(), aggressorGendersList.get(i).getGenderName());
+            }
+
+            //cargo los Factores precipitantes en lesiones autoinflingidas.
+            List<PrecipitatingFactors> precipitatingFactorsList = precipitatingFactorsFacade.findAll();
+            precipitatingFactors = new SelectItem[precipitatingFactorsList.size()];
+            for (int i = 0; i < precipitatingFactorsList.size(); i++) {
+                precipitatingFactors[i] = new SelectItem(precipitatingFactorsList.get(i).getPrecipitatingFactorId(), precipitatingFactorsList.get(i).getPrecipitatingFactorName());
+            }
+
             //grupos etnicos
             List<EthnicGroups> ethnicGroupsList = ethnicGroupsFacade.findAll();
             ethnicGroups = new SelectItem[ethnicGroupsList.size()];
@@ -327,9 +456,62 @@ public class VIFMB {
                 useDrugs[i] = new SelectItem(useAlcoholDrugsList.get(i).getUseAlcoholDrugsId(), useAlcoholDrugsList.get(i).getUseAlcoholDrugsName());
             }
 
+            //listado de diagnosticos
+            List<Diagnoses> diagnosesList = diagnosesFacade.findAll();
+            diagnoses = new SelectItem[diagnosesList.size()];
+            for (int i = 0; i < diagnosesList.size(); i++) {
+                diagnoses[i] = new SelectItem(diagnosesList.get(i).getDiagnosisId() + " - " + diagnosesList.get(i).getDiagnosisName());
+            }
+            currentDiagnoses = "S000";
+
         } catch (Exception e) {
             System.out.println("*******************************************ERROR: " + e.toString());
         }
+    }
+
+    public void loadDiagnose() {
+        //llenas las casillas CIE_CASMPO_1 y TXT_CIE_10_1 seleccionadas del dialog que lista los diagnosticos
+        String[] splitDiagnose;
+        splitDiagnose = currentDiagnoses.split(" - ");
+        switch (CIE_selected) {
+            case 1:
+                idCIE10_1 = splitDiagnose[0];
+                txtCIE10_1 = splitDiagnose[1];
+                break;
+            case 2:
+                idCIE10_2 = splitDiagnose[0];
+                txtCIE10_2 = splitDiagnose[1];
+                break;
+            case 3:
+                idCIE10_3 = splitDiagnose[0];
+                txtCIE10_3 = splitDiagnose[1];
+                break;
+            case 4:
+                idCIE10_4 = splitDiagnose[0];
+                txtCIE10_4 = splitDiagnose[1];
+                break;
+        }
+
+    }
+
+    public void setCIE_1() {
+        //fincion para saber que se dio clik sobre la casilla txt de diagnostico 1
+        CIE_selected = 1;
+    }
+
+    public void setCIE_2() {
+        //fincion para saber que se dio clik sobre la casilla txt de diagnostico 2
+        CIE_selected = 2;
+    }
+
+    public void setCIE_3() {
+        //fincion para saber que se dio clik sobre la casilla txt de diagnostico 3
+        CIE_selected = 3;
+    }
+
+    public void setCIE_4() {
+        //fincion para saber que se dio clik sobre la casilla txt de diagnostico 4
+        CIE_selected = 4;
     }
 
     //----------------------------------------------------------------------
@@ -337,6 +519,7 @@ public class VIFMB {
     // FUNCIONES PARA AUTOCOMPLETAR ----------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    
     public List<String> suggestNeighborhoods(String entered) {
         List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
         List<String> list = new ArrayList<String>();
@@ -354,11 +537,46 @@ public class VIFMB {
         return list;
     }
 
+    public List<String> suggestCIE10(String entered) {
+        List<Diagnoses> diagnosesesList = diagnosesFacade.findAll();
+        List<String> list = new ArrayList<String>();
+        entered = entered.toUpperCase();
+        int amount = 0;
+        for (int i = 0; i < diagnosesesList.size(); i++) {
+            if (diagnosesesList.get(i).getDiagnosisId().startsWith(entered)) {
+                list.add(diagnosesesList.get(i).getDiagnosisId());
+                amount++;
+            }
+            if (amount == 10) {
+                break;
+            }
+        }
+        return list;
+    }
+
+    public List<String> suggestHealthProfessionals(String entered) {
+        List<HealthProfessionals> professionalsList = healthProfessionalsFacade.findAll();
+        List<String> list = new ArrayList<String>();
+        entered = entered.toUpperCase();
+        int amount = 0;
+        for (int i = 0; i < professionalsList.size(); i++) {
+            if (professionalsList.get(i).getHealthProfessionalName().startsWith(entered)) {
+                list.add(professionalsList.get(i).getHealthProfessionalName());
+                amount++;
+            }
+            if (amount == 10) {
+                break;
+            }
+        }
+        return list;
+    }
+    
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES CUANDO LISTAS CAMBIAN DE VALOR ----------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    
     public void findMunicipalities() {
         Departaments d = departamentsFacade.findById(currentDepartamentHome);
         //currentDepartamentHomeCode = d.getDepartamentId().toString();
@@ -392,6 +610,79 @@ public class VIFMB {
         }
     }
 
+    public void changeOtherFactor() {
+        if (currentPrecipitatingFactor == 98) {//98. otro
+            otherFactorDisabled = false;
+        } else {
+            otherFactorDisabled = true;
+            otherFactor = "";
+        }
+    }
+
+    public void changeRelationshipToVictim() {
+        if (currentRelationshipToVictim == 3) {//3. otro
+            otherRelationDisabled = false;
+        } else {
+            otherRelationDisabled = true;
+            otherRelation = "";
+        }
+    }
+
+    public void changeAggressionPast() {
+        if (aggressionPast) {
+            relationshipToVictimDisabled = false;
+            contextDisabled = false;
+            aggressorGendersDisabled = false;
+        } else {
+            relationshipToVictimDisabled = true;
+            contextDisabled = true;
+            aggressorGendersDisabled = true;
+        }
+        if (currentRelationshipToVictim == 3) {//3. otro
+            otherRelationDisabled = false;
+        } else {
+            otherRelationDisabled = true;
+            otherRelation = "";
+        }
+    }
+
+    public void changeOtherInjury() {
+        if (checkOtherInjury) {
+            otherInjuryDisabled = false;
+
+        } else {
+            otherInjuryDisabled = true;
+            txtOtherInjury = "";
+        }
+    }
+
+    public void changeDestinationPatient() {
+        if (currentDestinationPatient == 10) {//10. otro
+            otherDestinationPatientDisabled = false;
+            otherDestinationPatient = "";
+        } else {
+            otherDestinationPatientDisabled = true;
+            otherDestinationPatient = "";
+        }
+    }
+
+    public void changeOtherPlace() {
+        if (checkOtherPlace) {
+            otherPlaceDisabled = false;
+        } else {
+            otherPlaceDisabled = true;
+            txtOtherPlace = "";
+        }
+    }
+
+    public void changeSecurityElements() {
+        if (currentSecurityElements.compareTo("SI") == 0) {
+            displaySecurityElements = "block";
+        } else {
+            displaySecurityElements = "none";
+        }
+    }
+
     public void changeNeighborhoodHomeName() {
         List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
         for (int i = 0; i < neighborhoodsList.size(); i++) {
@@ -399,14 +690,6 @@ public class VIFMB {
                 currentNeighborhoodHomeCode = neighborhoodsList.get(i).getNeighborhoodId();
                 break;
             }
-        }
-    }
-
-    public void changeIntentionality() {
-        if (currentIntentionality == 8) {//otro 8
-            otherIntentDisabled = false;
-        } else {
-            otherIntentDisabled = true;
         }
     }
 
@@ -447,6 +730,11 @@ public class VIFMB {
         } else if (currentMechanisms == 27) {//Otro, cual"
             otherMechanismDisabled = false;
         }
+        if (currentMechanisms == 1) {//lesion de transporte"        
+            displayTransport = "block";
+        } else {
+            displayTransport = "none";
+        }
 
         if (currentMechanisms == 10//Fuego / llama
                 || currentMechanisms == 11//objeto caliente
@@ -459,24 +747,41 @@ public class VIFMB {
         }
     }
 
-    public void changeEthnicGroups() {
+    public void changeTransportCounterpart() {
 
-        if (currentEthnicGroup == 3) {//3. otro
-            otherEthnicGroupDisabled = false;
-
+        if (currentTransportCounterpart == 12) {//12. otro
+            otherTransportCounterpartsTypeDisabled = false;
+            otherTransportCounterpartsType = "";
         } else {
-            otherEthnicGroupDisabled = true;
-            otherEthnicGroup = "";
+            otherTransportCounterpartsTypeDisabled = true;
         }
     }
 
-    public void changeVulnerableGroup() {
-        if (currentVulnerableGroup == 98) {//98. otro
-            otherVulnerableGroupDisabled = false;
+    public void changeTransportType() {
+        if (currentTransportTypes == 8) {//10. otro
+            otherTransportTypeDisabled = false;
+            otherTransportType = "";
+        } else {
+            otherTransportTypeDisabled = true;
+        }
+    }
+
+    public void changeTransportUser() {
+        if (currentTransportUser == 8) {//8. otro
+            otherTransportUserTypeDisabled = false;
+            otherTransportUserType = "";
+        } else {
+            otherTransportUserTypeDisabled = true;
+        }
+    }
+    
+    public void changeEthnicGroups() {
+        if (currentEthnicGroup == 3) {//3. otro
+            ethnicGroupsDisabled = false;
 
         } else {
-            otherVulnerableGroupDisabled = true;
-            otherVulnerableGroup = "";
+            ethnicGroupsDisabled = true;
+            otherEthnicGroup = "";
         }
     }
 
@@ -509,41 +814,36 @@ public class VIFMB {
         }
     }
 
-    public void changeOtherAG() {
-        if (isAG8) {
-            otherAGDisabled = false;
-
+    public void changeIntentionality() {
+        if (currentIntentionality == 8) {//otro 8
+            otherIntentDisabled = false;
+            displayInterpersonalViolence = "none";
+            displayIntentional = "none";
         } else {
-            otherAGDisabled = true;
-            otherAG = "";
+            otherIntentDisabled = true;
+        }
+
+        if (currentIntentionality == 1 || currentIntentionality == 9) {
+            //no intencional 1 //no se sabe 9
+            displayInterpersonalViolence = "none";
+            displayIntentional = "none";
+        }
+        if (currentIntentionality == 2) {//Autoinflingida 2
+            displayInterpersonalViolence = "none";
+            displayIntentional = "block";
+        }
+        if (currentIntentionality == 3) {//Violencia / agresión o sospecha 3
+            displayInterpersonalViolence = "block";
+            displayIntentional = "none";
         }
     }
-
-    public void changeOtherMA() {
-        if (isMA8) {
-            otherMADisabled = false;
-
-        } else {
-            otherMADisabled = true;
-            otherMA = "";
-        }
-    }
-
-    public void changeOtherAction() {
-        if (isAction12) {
-            otherActionDisabled = false;
-
-        } else {
-            otherActionDisabled = true;
-            otherAction = "";
-        }
-    }
-
+    
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES DE CALCULO DE FECHA Y HORA MILITAR ------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+
     private void calculateDate1() {
         try {
             fechaI = formato.parse(currentDayEvent + "/" + currentMonthEvent + "/" + currentYearEvent);
@@ -755,146 +1055,27 @@ public class VIFMB {
             currentMilitaryHourConsult = "Error  " + ex.toString();
         }
     }
-
+    
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // GET Y SET DE VARIABLES ----------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    public Short getCurrentDomesticViolenceDataSource() {
-        return currentDomesticViolenceDataSource;
+    
+    public SelectItem[] getHealthInstitutions() {
+        return healthInstitutions;
     }
 
-    public void setCurrentDomesticViolenceDataSource(Short currentDomesticViolenceDataSource) {
-        this.currentDomesticViolenceDataSource = currentDomesticViolenceDataSource;
+    public void setHealthInstitutions(SelectItem[] healthInstitutions) {
+        this.healthInstitutions = healthInstitutions;
     }
 
-    public SelectItem[] getViolenceDataSources() {
-        return violenceDataSources;
+    public String getCurrentMedicalHistory() {
+        return currentMedicalHistory;
     }
 
-    public void setViolenceDataSources(SelectItem[] violenceDataSources) {
-        this.violenceDataSources = violenceDataSources;
-    }
-
-    public Short getCurrentVulnerableGroup() {
-        return currentVulnerableGroup;
-    }
-
-    public void setCurrentVulnerableGroup(Short currentVulnerableGroup) {
-        this.currentVulnerableGroup = currentVulnerableGroup;
-    }
-
-    public SelectItem[] getVulnerableGroups() {
-        return vulnerableGroups;
-    }
-
-    public void setVulnerableGroups(SelectItem[] vulnerableGroups) {
-        this.vulnerableGroups = vulnerableGroups;
-    }
-
-    public boolean isIsAction1() {
-        return isAction1;
-    }
-
-    public void setIsAction1(boolean isAction1) {
-        this.isAction1 = isAction1;
-    }
-
-    public boolean isIsAction10() {
-        return isAction10;
-    }
-
-    public void setIsAction10(boolean isAction10) {
-        this.isAction10 = isAction10;
-    }
-
-    public boolean isIsAction11() {
-        return isAction11;
-    }
-
-    public void setIsAction11(boolean isAction11) {
-        this.isAction11 = isAction11;
-    }
-
-    public boolean isIsAction12() {
-        return isAction12;
-    }
-
-    public void setIsAction12(boolean isAction12) {
-        this.isAction12 = isAction12;
-    }
-
-    public boolean isIsAction2() {
-        return isAction2;
-    }
-
-    public void setIsAction2(boolean isAction2) {
-        this.isAction2 = isAction2;
-    }
-
-    public boolean isIsAction3() {
-        return isAction3;
-    }
-
-    public void setIsAction3(boolean isAction3) {
-        this.isAction3 = isAction3;
-    }
-
-    public boolean isIsAction4() {
-        return isAction4;
-    }
-
-    public void setIsAction4(boolean isAction4) {
-        this.isAction4 = isAction4;
-    }
-
-    public boolean isIsAction5() {
-        return isAction5;
-    }
-
-    public void setIsAction5(boolean isAction5) {
-        this.isAction5 = isAction5;
-    }
-
-    public boolean isIsAction6() {
-        return isAction6;
-    }
-
-    public void setIsAction6(boolean isAction6) {
-        this.isAction6 = isAction6;
-    }
-
-    public boolean isIsAction7() {
-        return isAction7;
-    }
-
-    public void setIsAction7(boolean isAction7) {
-        this.isAction7 = isAction7;
-    }
-
-    public boolean isIsAction8() {
-        return isAction8;
-    }
-
-    public void setIsAction8(boolean isAction8) {
-        this.isAction8 = isAction8;
-    }
-
-    public boolean isIsAction9() {
-        return isAction9;
-    }
-
-    public void setIsAction9(boolean isAction9) {
-        this.isAction9 = isAction9;
-    }
-
-    public boolean isIsUnknownAction() {
-        return isUnknownAction;
-    }
-
-    public void setIsUnknownAction(boolean isUnknownAction) {
-        this.isUnknownAction = isUnknownAction;
+    public void setCurrentMedicalHistory(String currentMedicalHistory) {
+        this.currentMedicalHistory = currentMedicalHistory;
     }
 
     public SelectItem[] getIdentifications() {
@@ -938,12 +1119,124 @@ public class VIFMB {
         this.municipalities = municipalities;
     }
 
+    public SelectItem[] getDestinationsPatient() {
+        return destinationsPatient;
+    }
+
+    public void setDestinationsPatient(SelectItem[] destinationsPatient) {
+        this.destinationsPatient = destinationsPatient;
+    }
+
+    public String getTxtCIE10_1() {
+        return txtCIE10_1;
+    }
+
+    public void setTxtCIE10_1(String txtCIE10_1) {
+        this.txtCIE10_1 = txtCIE10_1;
+    }
+
+    public String getTxtCIE10_2() {
+        return txtCIE10_2;
+    }
+
+    public void setTxtCIE10_2(String txtCIE10_2) {
+        this.txtCIE10_2 = txtCIE10_2;
+    }
+
+    public String getIdCIE10_1() {
+        return idCIE10_1;
+    }
+
+    public void setIdCIE10_1(String idCIE10_1) {
+        this.idCIE10_1 = idCIE10_1;
+        Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_1);
+        if (selectDiagnoses != null) {
+            txtCIE10_1 = selectDiagnoses.getDiagnosisName();
+        } else {
+            txtCIE10_1 = "";
+        }
+    }
+
+    public String getIdCIE10_2() {
+        return idCIE10_2;
+    }
+
+    public void setIdCIE10_2(String idCIE10_2) {
+        this.idCIE10_2 = idCIE10_2;
+        Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_2);
+        if (selectDiagnoses != null) {
+            txtCIE10_2 = selectDiagnoses.getDiagnosisName();
+        } else {
+            txtCIE10_2 = "";
+        }
+    }
+
+    public String getIdCIE10_3() {
+        return idCIE10_3;
+    }
+
+    public void setIdCIE10_3(String idCIE10_3) {
+        this.idCIE10_3 = idCIE10_3;
+        Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_3);
+        if (selectDiagnoses != null) {
+            txtCIE10_3 = selectDiagnoses.getDiagnosisName();
+        } else {
+            txtCIE10_3 = "";
+        }
+    }
+
+    public String getIdCIE10_4() {
+        return idCIE10_4;
+    }
+
+    public void setIdCIE10_4(String idCIE10_4) {
+        this.idCIE10_4 = idCIE10_4;
+        Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_4);
+        if (selectDiagnoses != null) {
+            txtCIE10_4 = selectDiagnoses.getDiagnosisName();
+        } else {
+            txtCIE10_4 = "";
+        }
+    }
+
+    public String getTxtCIE10_3() {
+        return txtCIE10_3;
+    }
+
+    public void setTxtCIE10_3(String txtCIE10_4) {
+        this.txtCIE10_4 = txtCIE10_4;
+    }
+
+    public String getTxtCIE10_4() {
+        return txtCIE10_4;
+    }
+
+    public void setTxtCIE10_4(String txtCIE10_4) {
+        this.txtCIE10_4 = txtCIE10_4;
+    }
+
     public SelectItem[] getActivities() {
         return activities;
     }
 
     public void setActivities(SelectItem[] activities) {
         this.activities = activities;
+    }
+
+    public SelectItem[] getAggressorGenders() {
+        return aggressorGenders;
+    }
+
+    public void setAggressorGenders(SelectItem[] aggressorGenders) {
+        this.aggressorGenders = aggressorGenders;
+    }
+
+    public SelectItem[] getContexts() {
+        return contexts;
+    }
+
+    public void setContexts(SelectItem[] contexts) {
+        this.contexts = contexts;
     }
 
     public String getCurrentAmPmConsult() {
@@ -999,7 +1292,7 @@ public class VIFMB {
     }
 
     public String getCurrentHourConsult() {
-        return currentHourConsult;
+        return currentHourConsult;        
     }
 
     public void setCurrentHourConsult(String currentHourConsult) {
@@ -1127,12 +1420,60 @@ public class VIFMB {
         this.places = places;
     }
 
+    public SelectItem[] getPrecipitatingFactors() {
+        return precipitatingFactors;
+    }
+
+    public void setPrecipitatingFactors(SelectItem[] precipitatingFactors) {
+        this.precipitatingFactors = precipitatingFactors;
+    }
+
+    public SelectItem[] getTransportTypes() {
+        return transportTypes;
+    }
+
+    public void setTransportTypes(SelectItem[] transportTypes) {
+        this.transportTypes = transportTypes;
+    }
+
+    public SelectItem[] getTransportUsers() {
+        return transportUsers;
+    }
+
+    public void setTransportUsers(SelectItem[] transportUsers) {
+        this.transportUsers = transportUsers;
+    }
+
+    public SelectItem[] getRelationshipsToVictim() {
+        return relationshipsToVictim;
+    }
+
+    public void setRelationshipsToVictim(SelectItem[] relationshipsToVictim) {
+        this.relationshipsToVictim = relationshipsToVictim;
+    }
+
+    public SelectItem[] getTransportCounterparts() {
+        return transportCounterparts;
+    }
+
+    public void setTransportCounterparts(SelectItem[] transportCounterparts) {
+        this.transportCounterparts = transportCounterparts;
+    }
+
     public SelectItem[] getEthnicGroups() {
         return ethnicGroups;
     }
 
     public void setEthnicGroups(SelectItem[] ethnicGroups) {
         this.ethnicGroups = ethnicGroups;
+    }
+
+    public boolean isEthnicGroupsDisabled() {
+        return ethnicGroupsDisabled;
+    }
+
+    public void setEthnicGroupsDisabled(boolean ethnicGroupsDisabled) {
+        this.ethnicGroupsDisabled = ethnicGroupsDisabled;
     }
 
     public String getOtherEthnicGroup() {
@@ -1299,6 +1640,230 @@ public class VIFMB {
         this.forBurned = forBurned;
     }
 
+    public String getOtherTransportCounterpartsType() {
+        return otherTransportCounterpartsType;
+    }
+
+    public void setOtherTransportCounterpartsType(String otherTransportCounterpartsType) {
+        this.otherTransportCounterpartsType = otherTransportCounterpartsType;
+    }
+
+    public String getOtherTransportType() {
+        return otherTransportType;
+    }
+
+    public void setOtherTransportType(String otherTransportType) {
+        this.otherTransportType = otherTransportType;
+    }
+
+    public boolean isOtherTransportCounterpartsTypeDisabled() {
+        return otherTransportCounterpartsTypeDisabled;
+    }
+
+    public void setOtherTransportCounterpartsTypeDisabled(boolean otherTransportCounterpartsTypeDisabled) {
+        this.otherTransportCounterpartsTypeDisabled = otherTransportCounterpartsTypeDisabled;
+    }
+
+    public boolean isOtherTransportTypeDisabled() {
+        return otherTransportTypeDisabled;
+    }
+
+    public void setOtherTransportTypeDisabled(boolean otherTransportTypeDisabled) {
+        this.otherTransportTypeDisabled = otherTransportTypeDisabled;
+    }
+
+    public String getOtherTransportUserType() {
+        return otherTransportUserType;
+    }
+
+    public void setOtherTransportUserType(String otherTransportUserType) {
+        this.otherTransportUserType = otherTransportUserType;
+    }
+
+    public boolean isOtherTransportUserTypeDisabled() {
+        return otherTransportUserTypeDisabled;
+    }
+
+    public void setOtherTransportUserTypeDisabled(boolean otherTransportUserTypeDisabled) {
+        this.otherTransportUserTypeDisabled = otherTransportUserTypeDisabled;
+    }
+
+    public String getDisplaySecurityElements() {
+        return displaySecurityElements;
+    }
+
+    public void setDisplaySecurityElements(String displaySecurityElements) {
+        this.displaySecurityElements = displaySecurityElements;
+    }
+
+    public String getCurrentSecurityElements() {
+        return currentSecurityElements;
+    }
+
+    public void setCurrentSecurityElements(String currentSecurityElements) {
+        this.currentSecurityElements = currentSecurityElements;
+    }
+
+    public boolean isAggressionPast() {
+        return aggressionPast;
+    }
+
+    public void setAggressionPast(boolean aggressionPast) {
+        this.aggressionPast = aggressionPast;
+    }
+
+    public boolean isAggressorGendersDisabled() {
+        return aggressorGendersDisabled;
+    }
+
+    public void setAggressorGendersDisabled(boolean aggressorGendersDisabled) {
+        this.aggressorGendersDisabled = aggressorGendersDisabled;
+    }
+
+    public boolean isContextDisabled() {
+        return contextDisabled;
+    }
+
+    public void setContextDisabled(boolean contextDisabled) {
+        this.contextDisabled = contextDisabled;
+    }
+
+    public boolean isOtherRelationDisabled() {
+        return otherRelationDisabled;
+    }
+
+    public void setOtherRelationDisabled(boolean otherRelationDisabled) {
+        this.otherRelationDisabled = otherRelationDisabled;
+    }
+
+    public boolean isRelationshipToVictimDisabled() {
+        return relationshipToVictimDisabled;
+    }
+
+    public void setRelationshipToVictimDisabled(boolean relationshipToVictimDisabled) {
+        this.relationshipToVictimDisabled = relationshipToVictimDisabled;
+    }
+
+    public String getOtherRelation() {
+        return otherRelation;
+    }
+
+    public void setOtherRelation(String otherRelation) {
+        this.otherRelation = otherRelation;
+    }
+
+    public String getOtherFactor() {
+        return otherFactor;
+    }
+
+    public void setOtherFactor(String otherFactor) {
+        this.otherFactor = otherFactor;
+    }
+
+    public boolean isOtherFactorDisabled() {
+        return otherFactorDisabled;
+    }
+
+    public void setOtherFactorDisabled(boolean otherFactorDisabled) {
+        this.otherFactorDisabled = otherFactorDisabled;
+    }
+
+    public boolean isCheckOtherInjury() {
+        return checkOtherInjury;
+    }
+
+    public void setCheckOtherInjury(boolean checkOtherInjury) {
+        this.checkOtherInjury = checkOtherInjury;
+    }
+
+    public boolean isCheckOtherPlace() {
+        return checkOtherPlace;
+    }
+
+    public void setCheckOtherPlace(boolean checkOtherPlace) {
+        this.checkOtherPlace = checkOtherPlace;
+    }
+
+    public boolean isOtherInjuryDisabled() {
+        return otherInjuryDisabled;
+    }
+
+    public void setOtherInjuryDisabled(boolean otherInjuryDisabled) {
+        this.otherInjuryDisabled = otherInjuryDisabled;
+    }
+
+    public boolean isOtherInjuryPlaceDisabled() {
+        return otherInjuryPlaceDisabled;
+    }
+
+    public void setOtherInjuryPlaceDisabled(boolean otherInjuryPlaceDisabled) {
+        this.otherInjuryPlaceDisabled = otherInjuryPlaceDisabled;
+    }
+
+    public String getTxtOtherInjury() {
+        return txtOtherInjury;
+    }
+
+    public void setTxtOtherInjury(String txtOtherInjury) {
+        this.txtOtherInjury = txtOtherInjury;
+    }
+
+    public String getTxtOtherPlace() {
+        return txtOtherPlace;
+    }
+
+    public void setTxtOtherPlace(String txtOtherPlace) {
+        this.txtOtherPlace = txtOtherPlace;
+    }
+
+    public String getOtherDestinationPatient() {
+        return otherDestinationPatient;
+    }
+
+    public void setOtherDestinationPatient(String otherDestinationPatient) {
+        this.otherDestinationPatient = otherDestinationPatient;
+    }
+
+    public boolean isOtherDestinationPatientDisabled() {
+        return otherDestinationPatientDisabled;
+    }
+
+    public void setOtherDestinationPatientDisabled(boolean otherDestinationPatientDisabled) {
+        this.otherDestinationPatientDisabled = otherDestinationPatientDisabled;
+    }
+
+    public SelectItem[] getDiagnoses() {
+        return diagnoses;
+    }
+
+    public void setDiagnoses(SelectItem[] diagnoses) {
+        this.diagnoses = diagnoses;
+    }
+
+    public String getDisplayIntentional() {
+        return displayIntentional;
+    }
+
+    public void setDisplayIntentional(String displayIntentional) {
+        this.displayIntentional = displayIntentional;
+    }
+
+    public String getDisplayInterpersonalViolence() {
+        return displayInterpersonalViolence;
+    }
+
+    public void setDisplayInterpersonalViolence(String displayInterpersonalViolence) {
+        this.displayInterpersonalViolence = displayInterpersonalViolence;
+    }
+
+    public String getDisplayTransport() {
+        return displayTransport;
+    }
+
+    public void setDisplayTransport(String displayTransport) {
+        this.displayTransport = displayTransport;
+    }
+
     public Short getCurrentDepartamentHome() {
         return currentDepartamentHome;
     }
@@ -1315,6 +1880,38 @@ public class VIFMB {
         this.currentActivities = currentActivities;
     }
 
+    public Short getCurrentAggressorGenders() {
+        return currentAggressorGenders;
+    }
+
+    public void setCurrentAggressorGenders(Short currentAggressorGenders) {
+        this.currentAggressorGenders = currentAggressorGenders;
+    }
+
+    public Short getCurrentContext() {
+        return currentContext;
+    }
+
+    public void setCurrentContext(Short currentContext) {
+        this.currentContext = currentContext;
+    }
+
+    public Short getCurrentDestinationPatient() {
+        return currentDestinationPatient;
+    }
+
+    public void setCurrentDestinationPatient(Short currentDestinationPatient) {
+        this.currentDestinationPatient = currentDestinationPatient;
+    }
+
+    public String getCurrentDiagnoses() {
+        return currentDiagnoses;
+    }
+
+    public void setCurrentDiagnoses(String currentDiagnoses) {
+        this.currentDiagnoses = currentDiagnoses;
+    }
+
     public Short getCurrentEthnicGroup() {
         return currentEthnicGroup;
     }
@@ -1329,6 +1926,22 @@ public class VIFMB {
 
     public void setCurrentGender(Short currentGender) {
         this.currentGender = currentGender;
+    }
+
+    public Short getCurrentHealthInstitution() {
+        return currentHealthInstitution;
+    }
+
+    public void setCurrentHealthInstitution(Short currentHealthInstitution) {
+        this.currentHealthInstitution = currentHealthInstitution;
+    }
+
+    public String getCurrentHealthProfessionals() {
+        return currentHealthProfessionals;
+    }
+
+    public void setCurrentHealthProfessionals(String currentHealthProfessionals) {
+        this.currentHealthProfessionals = currentHealthProfessionals;
     }
 
     public String getCurrentIPS() {
@@ -1425,6 +2038,46 @@ public class VIFMB {
 
     public void setCurrentPlace(Short currentPlace) {
         this.currentPlace = currentPlace;
+    }
+
+    public Short getCurrentPrecipitatingFactor() {
+        return currentPrecipitatingFactor;
+    }
+
+    public void setCurrentPrecipitatingFactor(Short currentPrecipitatingFactor) {
+        this.currentPrecipitatingFactor = currentPrecipitatingFactor;
+    }
+
+    public Short getCurrentRelationshipToVictim() {
+        return currentRelationshipToVictim;
+    }
+
+    public void setCurrentRelationshipToVictim(Short currentRelationshipToVictim) {
+        this.currentRelationshipToVictim = currentRelationshipToVictim;
+    }
+
+    public Short getCurrentTransportCounterpart() {
+        return currentTransportCounterpart;
+    }
+
+    public void setCurrentTransportCounterpart(Short currentTransportCounterpart) {
+        this.currentTransportCounterpart = currentTransportCounterpart;
+    }
+
+    public Short getCurrentTransportTypes() {
+        return currentTransportTypes;
+    }
+
+    public void setCurrentTransportTypes(Short currentTransportTypes) {
+        this.currentTransportTypes = currentTransportTypes;
+    }
+
+    public Short getCurrentTransportUser() {
+        return currentTransportUser;
+    }
+
+    public void setCurrentTransportUser(Short currentTransportUser) {
+        this.currentTransportUser = currentTransportUser;
     }
 
     public Short getCurrentUseAlcohol() {
@@ -1531,12 +2184,84 @@ public class VIFMB {
         this.currentPercentBurned = currentPercentBurned;
     }
 
+    public String getCurrentSurame() {
+        return currentSurame;
+    }
+
+    public void setCurrentSurame(String currentSurame) {
+        this.currentSurame = currentSurame;
+    }
+
     public String getCurrentTelephoneHome() {
         return currentTelephoneHome;
     }
 
     public void setCurrentTelephoneHome(String currentTelephoneHome) {
         this.currentTelephoneHome = currentTelephoneHome;
+    }
+
+    public boolean isIsBeltUse() {
+        return isBeltUse;
+    }
+
+    public void setIsBeltUse(boolean isBeltUse) {
+        this.isBeltUse = isBeltUse;
+    }
+
+    public boolean isIsBicycleHelmetUse() {
+        return isBicycleHelmetUse;
+    }
+
+    public void setIsBicycleHelmetUse(boolean isBicycleHelmetUse) {
+        this.isBicycleHelmetUse = isBicycleHelmetUse;
+    }
+
+    public boolean isIsDisplaced() {
+        return isDisplaced;
+    }
+
+    public void setIsDisplaced(boolean isDisplaced) {
+        this.isDisplaced = isDisplaced;
+    }
+
+    public boolean isIsHandicapped() {
+        return isHandicapped;
+    }
+
+    public void setIsHandicapped(boolean isHandicapped) {
+        this.isHandicapped = isHandicapped;
+    }
+
+    public boolean isIsHelmetUse() {
+        return isHelmetUse;
+    }
+
+    public void setIsHelmetUse(boolean isHelmetUse) {
+        this.isHelmetUse = isHelmetUse;
+    }
+
+    public boolean isIsMentalDisorder() {
+        return isMentalDisorder;
+    }
+
+    public void setIsMentalDisorder(boolean isMentalDisorder) {
+        this.isMentalDisorder = isMentalDisorder;
+    }
+
+    public boolean isIsPreviousAttempt() {
+        return isPreviousAttempt;
+    }
+
+    public void setIsPreviousAttempt(boolean isPreviousAttempt) {
+        this.isPreviousAttempt = isPreviousAttempt;
+    }
+
+    public boolean isIsVestUse() {
+        return isVestUse;
+    }
+
+    public void setIsVestUse(boolean isVestUse) {
+        this.isVestUse = isVestUse;
     }
 
     public String getCurrentSurname() {
@@ -1611,12 +2336,92 @@ public class VIFMB {
         this.isAG8 = isAG8;
     }
 
-    public boolean isIsAG10() {
-        return isAG10;
+    public boolean isIsAnatomicalSite1() {
+        return isAnatomicalSite1;
     }
 
-    public void setIsAG10(boolean isAG10) {
-        this.isAG10 = isAG10;
+    public void setIsAnatomicalSite1(boolean isAnatomicalSite1) {
+        this.isAnatomicalSite1 = isAnatomicalSite1;
+    }
+
+    public boolean isIsAnatomicalSite10() {
+        return isAnatomicalSite10;
+    }
+
+    public void setIsAnatomicalSite10(boolean isAnatomicalSite10) {
+        this.isAnatomicalSite10 = isAnatomicalSite10;
+    }
+
+    public boolean isIsAnatomicalSite11() {
+        return isAnatomicalSite11;
+    }
+
+    public void setIsAnatomicalSite11(boolean isAnatomicalSite11) {
+        this.isAnatomicalSite11 = isAnatomicalSite11;
+    }
+
+    public boolean isIsAnatomicalSite2() {
+        return isAnatomicalSite2;
+    }
+
+    public void setIsAnatomicalSite2(boolean isAnatomicalSite2) {
+        this.isAnatomicalSite2 = isAnatomicalSite2;
+    }
+
+    public boolean isIsAnatomicalSite3() {
+        return isAnatomicalSite3;
+    }
+
+    public void setIsAnatomicalSite3(boolean isAnatomicalSite3) {
+        this.isAnatomicalSite3 = isAnatomicalSite3;
+    }
+
+    public boolean isIsAnatomicalSite4() {
+        return isAnatomicalSite4;
+    }
+
+    public void setIsAnatomicalSite4(boolean isAnatomicalSite4) {
+        this.isAnatomicalSite4 = isAnatomicalSite4;
+    }
+
+    public boolean isIsAnatomicalSite5() {
+        return isAnatomicalSite5;
+    }
+
+    public void setIsAnatomicalSite5(boolean isAnatomicalSite5) {
+        this.isAnatomicalSite5 = isAnatomicalSite5;
+    }
+
+    public boolean isIsAnatomicalSite6() {
+        return isAnatomicalSite6;
+    }
+
+    public void setIsAnatomicalSite6(boolean isAnatomicalSite6) {
+        this.isAnatomicalSite6 = isAnatomicalSite6;
+    }
+
+    public boolean isIsAnatomicalSite7() {
+        return isAnatomicalSite7;
+    }
+
+    public void setIsAnatomicalSite7(boolean isAnatomicalSite7) {
+        this.isAnatomicalSite7 = isAnatomicalSite7;
+    }
+
+    public boolean isIsAnatomicalSite8() {
+        return isAnatomicalSite8;
+    }
+
+    public void setIsAnatomicalSite8(boolean isAnatomicalSite8) {
+        this.isAnatomicalSite8 = isAnatomicalSite8;
+    }
+
+    public boolean isIsAnatomicalSite9() {
+        return isAnatomicalSite9;
+    }
+
+    public void setIsAnatomicalSite9(boolean isAnatomicalSite9) {
+        this.isAnatomicalSite9 = isAnatomicalSite9;
     }
 
     public boolean isIsMA1() {
@@ -1667,12 +2472,76 @@ public class VIFMB {
         this.isMA6 = isMA6;
     }
 
-    public boolean isIsMA8() {
-        return isMA8;
+    public boolean isIsNatureOfInjurye1() {
+        return isNatureOfInjurye1;
     }
 
-    public void setIsMA8(boolean isMA8) {
-        this.isMA8 = isMA8;
+    public void setIsNatureOfInjurye1(boolean isNatureOfInjurye1) {
+        this.isNatureOfInjurye1 = isNatureOfInjurye1;
+    }
+
+    public boolean isIsNatureOfInjurye2() {
+        return isNatureOfInjurye2;
+    }
+
+    public void setIsNatureOfInjurye2(boolean isNatureOfInjurye2) {
+        this.isNatureOfInjurye2 = isNatureOfInjurye2;
+    }
+
+    public boolean isIsNatureOfInjurye3() {
+        return isNatureOfInjurye3;
+    }
+
+    public void setIsNatureOfInjurye3(boolean isNatureOfInjurye3) {
+        this.isNatureOfInjurye3 = isNatureOfInjurye3;
+    }
+
+    public boolean isIsNatureOfInjurye4() {
+        return isNatureOfInjurye4;
+    }
+
+    public void setIsNatureOfInjurye4(boolean isNatureOfInjurye4) {
+        this.isNatureOfInjurye4 = isNatureOfInjurye4;
+    }
+
+    public boolean isIsNatureOfInjurye5() {
+        return isNatureOfInjurye5;
+    }
+
+    public void setIsNatureOfInjurye5(boolean isNatureOfInjurye5) {
+        this.isNatureOfInjurye5 = isNatureOfInjurye5;
+    }
+
+    public boolean isIsNatureOfInjurye6() {
+        return isNatureOfInjurye6;
+    }
+
+    public void setIsNatureOfInjurye6(boolean isNatureOfInjurye6) {
+        this.isNatureOfInjurye6 = isNatureOfInjurye6;
+    }
+
+    public boolean isIsNatureOfInjurye7() {
+        return isNatureOfInjurye7;
+    }
+
+    public void setIsNatureOfInjurye7(boolean isNatureOfInjurye7) {
+        this.isNatureOfInjurye7 = isNatureOfInjurye7;
+    }
+
+    public boolean isIsNatureOfInjurye8() {
+        return isNatureOfInjurye8;
+    }
+
+    public void setIsNatureOfInjurye8(boolean isNatureOfInjurye8) {
+        this.isNatureOfInjurye8 = isNatureOfInjurye8;
+    }
+
+    public boolean isIsNatureOfInjurye9() {
+        return isNatureOfInjurye9;
+    }
+
+    public void setIsNatureOfInjurye9(boolean isNatureOfInjurye9) {
+        this.isNatureOfInjurye9 = isNatureOfInjurye9;
     }
 
     public boolean isIsUnknownAG() {
@@ -1691,75 +2560,12 @@ public class VIFMB {
         this.isUnknownMA = isUnknownMA;
     }
 
-    public boolean isOtherEthnicGroupDisabled() {
-        return otherEthnicGroupDisabled;
+    public boolean isIsUnknownNatureOfInjurye() {
+        return isUnknownNatureOfInjurye;
     }
 
-    public void setOtherEthnicGroupDisabled(boolean otherEthnicGroupDisabled) {
-        this.otherEthnicGroupDisabled = otherEthnicGroupDisabled;
+    public void setIsUnknownNatureOfInjurye(boolean isUnknownNatureOfInjurye) {
+        this.isUnknownNatureOfInjurye = isUnknownNatureOfInjurye;
     }
-
-    public String getOtherVulnerableGroup() {
-        return otherVulnerableGroup;
-    }
-
-    public void setOtherVulnerableGroup(String otherVulnerableGroup) {
-        this.otherVulnerableGroup = otherVulnerableGroup;
-    }
-
-    public boolean isOtherVulnerableGroupDisabled() {
-        return otherVulnerableGroupDisabled;
-    }
-
-    public void setOtherVulnerableGroupDisabled(boolean otherVulnerableGroupDisabled) {
-        this.otherVulnerableGroupDisabled = otherVulnerableGroupDisabled;
-    }
-
-    public String getOtherAG() {
-        return otherAG;
-    }
-
-    public void setOtherAG(String otherAG) {
-        this.otherAG = otherAG;
-    }
-
-    public boolean isOtherAGDisabled() {
-        return otherAGDisabled;
-    }
-
-    public void setOtherAGDisabled(boolean otherAGDisabled) {
-        this.otherAGDisabled = otherAGDisabled;
-    }
-
-    public String getOtherMA() {
-        return otherMA;
-    }
-
-    public void setOtherMA(String otherMA) {
-        this.otherMA = otherMA;
-    }
-
-    public boolean isOtherMADisabled() {
-        return otherMADisabled;
-    }
-
-    public void setOtherMADisabled(boolean otherMADisabled) {
-        this.otherMADisabled = otherMADisabled;
-    }
-
-    public String getOtherAction() {
-        return otherAction;
-    }
-
-    public void setOtherAction(String otherAction) {
-        this.otherAction = otherAction;
-    }
-
-    public boolean isOtherActionDisabled() {
-        return otherActionDisabled;
-    }
-
-    public void setOtherActionDisabled(boolean otherActionDisabled) {
-        this.otherActionDisabled = otherActionDisabled;
-    }
+    
 }
