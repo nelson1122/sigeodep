@@ -32,11 +32,14 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Users.findByUserPassword", query = "SELECT u FROM Users u WHERE u.userPassword = :userPassword"),
     @NamedQuery(name = "Users.findByUserAddress", query = "SELECT u FROM Users u WHERE u.userAddress = :userAddress")})
 public class Users implements Serializable {
+    @OneToMany(mappedBy = "userId")
+    private List<FatalInjuries> fatalInjuriesList;
     private static final long serialVersionUID = 1L;
+    @Id
     @Basic(optional = false)
     @NotNull
     @Column(name = "user_id", nullable = false)
-    private int userId;
+    private Integer userId;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 100)
@@ -60,7 +63,6 @@ public class Users implements Serializable {
     @Size(max = 25)
     @Column(name = "user_telephone", length = 25)
     private String userTelephone;
-    @Id
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 2147483647)
@@ -76,34 +78,30 @@ public class Users implements Serializable {
     @Size(min = 1, max = 2147483647)
     @Column(name = "user_address", nullable = false, length = 2147483647)
     private String userAddress;
-    @OneToMany(mappedBy = "userId")
-    private List<NonFatalInjuries> nonFatalInjuriesList;
-    @OneToMany(mappedBy = "userId")
-    private List<FatalInjuries> fatalInjuriesList;
 
     public Users() {
     }
 
-    public Users(String userEmail) {
-        this.userEmail = userEmail;
+    public Users(Integer userId) {
+        this.userId = userId;
     }
 
-    public Users(String userEmail, int userId, String userFirstname, String userLastname, String userJob, String userInstitution, String userPassword, String userAddress) {
-        this.userEmail = userEmail;
+    public Users(Integer userId, String userFirstname, String userLastname, String userJob, String userInstitution, String userEmail, String userPassword, String userAddress) {
         this.userId = userId;
         this.userFirstname = userFirstname;
         this.userLastname = userLastname;
         this.userJob = userJob;
         this.userInstitution = userInstitution;
+        this.userEmail = userEmail;
         this.userPassword = userPassword;
         this.userAddress = userAddress;
     }
 
-    public int getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(Integer userId) {
         this.userId = userId;
     }
 
@@ -171,28 +169,10 @@ public class Users implements Serializable {
         this.userAddress = userAddress;
     }
 
-    @XmlTransient
-    public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
-    }
-
-    public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
-    }
-
-    @XmlTransient
-    public List<FatalInjuries> getFatalInjuriesList() {
-        return fatalInjuriesList;
-    }
-
-    public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
-        this.fatalInjuriesList = fatalInjuriesList;
-    }
-
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (userEmail != null ? userEmail.hashCode() : 0);
+        hash += (userId != null ? userId.hashCode() : 0);
         return hash;
     }
 
@@ -203,7 +183,7 @@ public class Users implements Serializable {
             return false;
         }
         Users other = (Users) object;
-        if ((this.userEmail == null && other.userEmail != null) || (this.userEmail != null && !this.userEmail.equals(other.userEmail))) {
+        if ((this.userId == null && other.userId != null) || (this.userId != null && !this.userId.equals(other.userId))) {
             return false;
         }
         return true;
@@ -211,7 +191,16 @@ public class Users implements Serializable {
 
     @Override
     public String toString() {
-        return "model.pojo.Users[ userEmail=" + userEmail + " ]";
+        return "model.pojo.Users[ userId=" + userId + " ]";
+    }
+
+    @XmlTransient
+    public List<FatalInjuries> getFatalInjuriesList() {
+        return fatalInjuriesList;
+    }
+
+    public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
+        this.fatalInjuriesList = fatalInjuriesList;
     }
     
 }

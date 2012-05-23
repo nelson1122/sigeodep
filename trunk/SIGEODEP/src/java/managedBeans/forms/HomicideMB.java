@@ -4,6 +4,7 @@
  */
 package managedBeans.forms;
 
+import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -11,11 +12,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import javax.validation.constraints.Size;
-import managedBeans.preload.FormsAndFieldsDataMB;
 import model.dao.*;
 import model.pojo.*;
 
@@ -26,130 +27,1236 @@ import model.pojo.*;
 @ManagedBean(name = "homicideMB")
 @SessionScoped
 public class HomicideMB {
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    // DECLARACION DE VARIABLES --------------------------------------------
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
 
-    private SelectItem[] healthInstitutions;
-    private String currentHealthInstitution;
-    private SelectItem[] identifications;
-    private String currentIdentification;
-    private SelectItem[] measuresOfAge;
-    private String currentMeasureOfAge;
-    private String currentDepartamentHome;
-    private String currentDepartamentHomeCode = "91";
-    private SelectItem[] departaments;
-    private String currentIntentionality;
-    private SelectItem[] intentionalities;
-    private String currentPlace;
-    private SelectItem[] places;
-    private String currentActivities;
-    private SelectItem[] activities;
-    private String currentMechanisms;
-    private SelectItem[] mechanisms;
-    //private String currentTransportTypesCounterpart;
-    private String currentTransportTypes;
-    private SelectItem[] transportTypes;
-    private String currentTransportUser;
-    private SelectItem[] transportCounterparts;
-    private String currentTransportCounterpart;
-    private SelectItem[] transportUsers;
-    private String currentRelationshipToVictim;
-    private SelectItem[] relationshipsToVictim;
-    private String currentContext;
-    private SelectItem[] contexts;
-    private String currentAggressorGenders;
-    private SelectItem[] aggressorGenders;
-    private String currentPrecipitatingFactor;
-    private SelectItem[] precipitatingFactors;
-    private String currentMunicipalitie;
-    private String currentMunicipalitieCode = "19";
-    private SelectItem[] municipalities;
-    private String currentDestinationPatient;
-    private SelectItem[] destinationsPatient;
-    private String txtCIE10_1;
-    private String txtCIE10_2;
-    private String txtCIE10_3;
-    private String txtCIE10_4;
-    private String idCIE10_1;
-    private String idCIE10_2;
-    private String idCIE10_3;
-    private String idCIE10_4;
-    private String currentGender;
-    
-    @Size(min = 6, max = 8)
-    private int currentMedicalHistory;
-    
-    private FormsAndFieldsDataMB formsAndFieldsDataMB;
-    private String currentNeighborhoodHomeName;
-    private String currentNeighborhoodHomeCode;
-    private String currentNeighborhoodEventName;
-    private String currentNeighborhoodEventCode;
-    private String currentHealthProfessionals;
-    private String currentDayEvent;
-    private String currentMonthEvent;
-    private String currentYearEvent;
-    private String currentDateEvent;
-    private String currentWeekdayEvent;
-    private String currentHourEvent;
-    private String currentMinuteEvent;
-    private String currentAmPmEvent;
-    private String currentMilitaryHourEvent;
-    private String currentDayConsult;
-    private String currentMonthConsult;
-    private String currentYearConsult;
-    private String currentDateConsult;
-    private String currentWeekdayConsult;
-    private String currentHourConsult;
-    private String currentMinuteConsult;
-    private String currentAmPmConsult;
-    private String currentMilitaryHourConsult;
-    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
-    private Date fechaI;
-    @EJB
-    DepartamentsFacade departamentsFacade;
-    @EJB
-    NeighborhoodsFacade neighborhoodsFacade;
-    @EJB
-    MunicipalitiesFacade municipalitiesFacade;
-    @EJB
-    DiagnosesFacade diagnosesFacade;
-    @EJB
-    HealthProfessionalsFacade healthProfessionalsFacade;
-    @EJB
-    DestinationsOfPatientFacade destinationsOfPatientFacade;
-    @EJB
-    IntentionalitiesFacade intentionalitiesFacade;
-    @EJB
-    PlacesFacade placesFacade;
-    @EJB
-    ActivitiesFacade activitiesFacade;
-    @EJB
-    MechanismsFacade mechanismsFacade;
-    @EJB
-    TransportTypesFacade transportTypesFacade;
-    @EJB
-    TransportCounterpartsFacade transportCounterpartsFacade;
-    @EJB
-    TransportUsersFacade transportUsersFacade;
-    @EJB
-    RelationshipsToVictimFacade relationshipsToVictimFacade;
-    @EJB
-    ContextsFacade contextsFacade;
-    @EJB
-    AggressorGendersFacade agreAggressorGendersFacade;
-    @EJB
-    PrecipitatingFactorsFacade precipitatingFactorsFacade;
-    //valores para el otro formulario+++++++++++++++++++++++++++++++++++++++++
     @EJB
     AreasFacade areasFacade;
+    private SelectItem[] areas;
+    private Short currentArea;
+    //-------------------- 
     @EJB
     WeaponTypesFacade weaponTypesFacade;
+    private Short currentWeaponType;
+    private SelectItem[] weaponTypes;
+    //-------------------- 
+    @EJB
+    DepartamentsFacade departamentsFacade;
+    //--------------------    
+    @EJB
+    MunicipalitiesFacade municipalitiesFacade;
+    private Short currentMunicipalitie = 1;//pasto
+    private SelectItem[] municipalities;
+    //--------------------
+    @EJB
+    PlacesFacade placesFacade;
+    private Short currentPlace;
+    private SelectItem[] places;
+    //--------------------
+    @EJB
+    GendersFacade gendersFacade;
+    private Short currentGender;
+    private SelectItem[] genders;
+    //--------------------    
+    @EJB
+    JobsFacade jobsFacade;
+    private Short currentJob;
+    private SelectItem[] jobs;
+    //--------------------
+    @EJB
+    NeighborhoodsFacade neighborhoodsFacade;
+    private String currentNeighborhoodHome = "";
+    private String currentNeighborhoodHomeCode = "";
+    private String currentNeighborhoodEvent = "";
+    private String currentNeighborhoodEventCode = "";
+    boolean neighborhoodHomeNameDisabled = true;
+    //------------------
+    @EJB
+    IdTypesFacade idTypesFacade;
+    private SelectItem[] identificationsTypes;
+    private Short currentIdentificationType;
+    //------------------
+    @EJB
+    AgeTypesFacade ageTypesFacade;
+    private SelectItem[] measuresOfAge;
+    private Short currentMeasureOfAge;
+    private String currentAge = "";
+    private boolean valueAgeDisabled;
+    //------------------
     @EJB
     MurderContextsFacade murderContextsFacade;
-    private SelectItem[] areas;
-    private String currentArea;
-    private String currentWeaponType;
-    private SelectItem[] weaponTypes;
-    private String currentMurderContext;
+    private Short currentMurderContext;
     private SelectItem[] murderContexts;
+    //------------------
+    @EJB
+    VictimsFacade victimsFacade;
+    @EJB
+    FatalInjuryMurderFacade fatalInjuryMurderFacade;
+    @EJB
+    FatalInjuriesFacade fatalInjuriesFacade;
+    @EJB
+    UsersFacade usersFacade;
+    @EJB
+    InjuriesFacade injuriesFacade;
+    @EJB
+    AlcoholLevelsFacade alcoholLevelsFacade;
+    //------------------
+    private boolean currentAlcoholLevelDisabled = false;
+    private boolean isNoDataAlcoholLevel = false;
+    private boolean isPendentAlcoholLevel = false;
+    private boolean isUnknownAlcoholLevel = false;
+    private boolean isNegativeAlcoholLevel = false;
+    private boolean isNoDataAlcoholLevelDisabled = false;
+    private boolean isPendentAlcoholLevelDisabled = false;
+    private boolean isUnknownAlcoholLevelDisabled = false;
+    private boolean isNegativeAlcoholLevelDisabled = false;
+    private boolean save = true;//variable que me dice si el registro esta guadado o no    
+    private String currentDayEvent = "";
+    private String currentMonthEvent = "";
+    private String currentYearEvent = "";
+    private String currentDateEvent = "";
+    private String currentWeekdayEvent = "";
+    private String currentNarrative = "";
+    private String currentAlcoholLevel = "";
+    private String currentAmPmEvent = "AM";
+    private String currentMilitaryHourEvent = "";
+    private String currentName = "";
+    private String currentIdentificationNumber = "";
+    private String currentCode="";
+    private String currentDirectionEvent = "";
+    private String currentSurname = "";
+    private String currentNumberVictims;
+    private String currentVictimSource = "";
+    private String currentPosition = "";
+    private int totalRegisters = 0;//cantidad total de registros en homicidios
+    private int currentFatalInjuriId = 0;//registro actual 
+    private String currentHourEvent;
+    private String currentMinuteEvent;
+    private FatalInjuryMurder currentFatalInjuryMurder;
+    private FatalInjuryMurder auxFatalInjuryMurder;
+    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+    private Date fechaI;
+
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    // FUNCIONES VARIAS ----------------------------------------------------
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    public HomicideMB() {
+    }
+
+    public void loadValues() {
+        currentFatalInjuriId = currentFatalInjuryMurder.getFatalInjuryId();
+        try {
+            currentIdentificationType = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getTypeId().getTypeId();
+        } catch (Exception e) {
+            currentIdentificationType = 0;
+        }
+        try {
+            currentIdentificationNumber = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNid();
+        } catch (Exception e) {
+            currentIdentificationNumber = "";
+        }
+        try {
+            currentName = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimFirstname();
+        } catch (Exception e) {
+            currentName = "";
+        }
+        try {
+            currentSurname = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimLastname();
+        } catch (Exception e) {
+            currentSurname = "";
+        }
+        try {
+            currentMeasureOfAge = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getAgeTypeId();
+        } catch (Exception e) {
+            currentMeasureOfAge = 0;
+        }
+        try {
+            currentAge = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimAge().toString();
+        } catch (Exception e) {
+            currentAge = "";
+        }
+        try {
+            currentGender = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getGenderId().getGenderId();
+        } catch (Exception e) {
+            currentGender = 0;
+        }
+        try {
+            currentJob = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getJobId().getJobId();
+        } catch (Exception e) {
+            currentJob = 0;
+        }
+        //newVictim.setVulnerableGroupId(v);
+        //newVictim.setEthnicGroupId(et);
+        //newVictim.setVictimTelephone();
+        try {
+            currentDirectionEvent = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimAddress();
+        } catch (Exception e) {
+            currentDirectionEvent = "";
+        }
+        try {
+            currentNeighborhoodHomeCode = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId().toString();
+            currentNeighborhoodHome=neighborhoodsFacade.find(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId()).getNeighborhoodName();
+        } catch (Exception e) {
+            currentNeighborhoodHomeCode = "";
+            currentNeighborhoodHome="";
+        }
+        //newVictim.setEpsId(null);
+        //newVictim.setVictimClass();//si victima es nn
+        
+//            //------------------------------------------------------------
+//            //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA FATAL
+//            //------------------------------------------------------------
+//            FatalInjuries newFatalInjurie = new FatalInjuries();
+//            newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+//            newFatalInjurie.setInjuryId(injuriesFacade.find((short) 10));//es 10 por ser homicidio
+//
+//
+//            if (currentDateEvent.trim().length() != 0) {
+//                try {
+//                    newFatalInjurie.setInjuryDate(formato.parse(currentDateEvent));
+//                } catch (Exception e) {
+//                    validation = validation + "\n Corregir valor de: Fecha Evento";
+//                }
+//            }
+//            if (currentHourEvent.trim().length() != 0 || currentMinuteEvent.trim().length() != 0) {
+//                try {
+//                    newFatalInjurie.setInjuryTime(new Time(
+//                            Integer.parseInt(currentHourEvent),
+//                            Integer.parseInt(currentMinuteEvent), 0));
+//                } catch (Exception e) {
+//                    validation = validation + "\n * Corregir la hora del hecho";
+//                }
+//            }
+//            if (currentDirectionEvent.trim().length() != 0) {
+//                newFatalInjurie.setInjuryAddress(currentDirectionEvent);
+//            }
+//            if (currentNeighborhoodHomeCode.trim().length() != 0) {
+//                newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(currentNeighborhoodHomeCode));
+//            }
+//            if (currentPlace != 0) {
+//                newFatalInjurie.setInjuryPlaceId(placesFacade.find(currentPlace));
+//            }
+//            if (currentNumberVictims.trim().length() != 0) {
+//                try {
+//                    newFatalInjurie.setVictimNumber(Short.parseShort(currentNumberVictims));
+//                } catch (Exception e) {
+//                    validation = validation + "\n * Corregir el numero de victimas";
+//                }
+//            }
+//            if (currentNarrative.trim().length() != 0) {
+//                newFatalInjurie.setInjuryDescription(currentNarrative);
+//            }
+//            try {
+//                newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
+//            } catch (Exception e) {
+//                
+//            }
+//            newFatalInjurie.setInputTimestamp(new Date());//momento en que se capturo el registro
+//
+//            if (currentWeekdayEvent.trim().length() != 0) {
+//                newFatalInjurie.setInjuryDayOfWeek(currentWeekdayEvent);
+//            }
+//            //valores del nivel de alcohol
+//            if (currentAlcoholLevel.trim().length() != 0) {
+//                try {
+//                    newFatalInjurie.setAlcoholLevelVictim(Short.parseShort(currentAlcoholLevel));
+//                    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find(1));
+//                } catch (Exception e) {
+//                    validation = validation + "\n * Corregir el nivel de alcohol de la victima";
+//                }
+//            } else {
+//                if (isNoDataAlcoholLevel) {
+//                    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find(2));
+//                }
+//                if (isUnknownAlcoholLevel) {
+//                    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find(3));
+//                }
+//                if (isPendentAlcoholLevel) {
+//                    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find(4));
+//                }
+//                if (isNegativeAlcoholLevel) {
+//                    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find(5));
+//                }
+//            }
+        try {
+            currentCode = currentFatalInjuryMurder.getFatalInjuries().getCode();
+        } catch (Exception e) {
+            currentCode = "";
+        }
+//            newFatalInjurie.setVictimId(newVictim);
+//
+//
+//
+//            //------------------------------------------------------------
+//            //SE CREA VARIABLE PARA LA NUEVA LESION FATAL POR HOMICIDIOS
+//            //------------------------------------------------------------
+//            FatalInjuryMurder newMurder = new FatalInjuryMurder();
+//            if (currentVictimSource.trim().length() != 0) {
+//                newMurder.setVictimPlaceOfOrigin(currentVictimSource);
+//            }
+//            if (currentMurderContext != 0) {
+//                newMurder.setMurderContextId(murderContextsFacade.find(currentMurderContext));
+//            }
+//            if (currentWeaponType != 0) {
+//                newMurder.setWeaponTypeId(weaponTypesFacade.find(currentWeaponType));
+//            }
+//            if (currentArea != 0) {
+//                newMurder.setAreaId(areasFacade.find(currentArea));
+//            }
+//
+//            newMurder.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
+//
+//
+//            if (validation.length() == 0) {
+//                victimsFacade.create(newVictim);//se persiste
+//                fatalInjuriesFacade.create(newFatalInjurie);//se persiste
+//                fatalInjuryMurderFacade.create(newMurder);
+//
+//                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "REGISTRO ALMACENADO");
+//                FacesContext.getCurrentInstance().addMessage(null, msg);
+//            } else {
+//                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de validacion", validation);
+//                FacesContext.getCurrentInstance().addMessage(null, msg);
+//            }
+//        } catch (Exception e) {
+//            System.out.println("*******************************************ERROR: " + e.toString());
+//            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
+//            FacesContext.getCurrentInstance().addMessage(null, msg);
+//        }
+
+
+    }
+
+    public void next() {
+        auxFatalInjuryMurder = fatalInjuryMurderFacade.findNext(currentFatalInjuriId);
+        totalRegisters = fatalInjuryMurderFacade.count();
+        if (auxFatalInjuryMurder != null) {
+            currentFatalInjuryMurder = auxFatalInjuryMurder;
+            currentPosition = fatalInjuryMurderFacade.findPosition(currentFatalInjuryMurder.getFatalInjuryId()) + "/" + String.valueOf(totalRegisters);
+            loadValues();
+        }
+    }
+
+    public void previous() {
+        auxFatalInjuryMurder = fatalInjuryMurderFacade.findPrevious(currentFatalInjuriId);
+        totalRegisters = fatalInjuryMurderFacade.count();
+        if (auxFatalInjuryMurder != null) {
+            currentFatalInjuryMurder = auxFatalInjuryMurder;
+            currentPosition = fatalInjuryMurderFacade.findPosition(currentFatalInjuryMurder.getFatalInjuryId()) + "/" + String.valueOf(totalRegisters);
+            loadValues();
+        }
+    }
+
+    public void first() {
+        auxFatalInjuryMurder = fatalInjuryMurderFacade.findFirst();
+        totalRegisters = fatalInjuryMurderFacade.count();
+        if (auxFatalInjuryMurder != null) {
+            currentFatalInjuryMurder = auxFatalInjuryMurder;
+            currentPosition = fatalInjuryMurderFacade.findPosition(currentFatalInjuryMurder.getFatalInjuryId()) + "/" + String.valueOf(totalRegisters);
+            loadValues();
+        }
+    }
+
+    public void last() {
+        auxFatalInjuryMurder = fatalInjuryMurderFacade.findLast();
+        totalRegisters = fatalInjuryMurderFacade.count();
+        if (auxFatalInjuryMurder != null) {
+            currentFatalInjuryMurder = auxFatalInjuryMurder;
+            currentPosition = fatalInjuryMurderFacade.findPosition(currentFatalInjuryMurder.getFatalInjuryId()) + "/" + String.valueOf(totalRegisters);
+            loadValues();
+        }
+    }
+
+    public void newForm() {
+    }
+
+    public void deleteForm() {
+    }
+
+    public void saveForm() {
+        try {
+            //------------------------------------------------------------
+            //SE CREA VARIABLE PARA LA NUEVA VICTIMA
+            //------------------------------------------------------------
+            String validation = "";
+            Victims newVictim = new Victims();
+            newVictim.setVictimId(victimsFacade.findMax() + 1);
+            if (currentIdentificationType != 0) {
+                newVictim.setTypeId(idTypesFacade.find(currentIdentificationType));
+            }
+            if (currentIdentificationNumber.trim().length() != 0) {
+                newVictim.setVictimNid(currentIdentificationNumber);
+            }
+            if (currentName.trim().length() != 0) {
+                newVictim.setVictimFirstname(currentName);
+            }
+            if (currentSurname.trim().length() != 0) {
+                newVictim.setVictimLastname(currentSurname);
+            }
+            if (currentMeasureOfAge != 0) {
+                newVictim.setAgeTypeId(currentMeasureOfAge);
+            }
+            if (currentAge.trim().length() != 0) {
+                try {
+                    newVictim.setVictimAge(Short.parseShort(currentAge));
+                } catch (Exception e) {
+                    validation = validation + "\n * Corregir valor de: Edad Cantidad";
+                }
+            }
+            if (currentGender != 0) {
+                newVictim.setGenderId(gendersFacade.find(currentGender));
+            }
+            if (currentJob != 0) {
+                newVictim.setJobId(jobsFacade.find(currentJob));
+            }
+            //newVictim.setVulnerableGroupId(v);
+            //newVictim.setEthnicGroupId(et);
+            //newVictim.setVictimTelephone();
+            if (currentDirectionEvent.trim().length() != 0) {
+                newVictim.setVictimAddress(currentDirectionEvent);
+            }
+            if (currentNeighborhoodHomeCode.trim().length() != 0) {
+                newVictim.setVictimNeighborhoodId(Integer.parseInt(currentNeighborhoodHomeCode));
+            }
+            //if (currentDateEvent.trim().length() != 0) {
+            //    try {
+            //newVictim.setVictimDateOfBirth(formato.parse(currentDateEvent));
+            //     } catch (Exception e) {
+            //        validation = validation + "\n * Corregir valor de: Fecha Evento";
+            //    }
+            //}
+
+            //newVictim.setEpsId(null);
+            //newVictim.setVictimClass();//si victima es nn
+
+            //------------------------------------------------------------
+            //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA FATAL
+            //------------------------------------------------------------
+            FatalInjuries newFatalInjurie = new FatalInjuries();
+            newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+            newFatalInjurie.setInjuryId(injuriesFacade.find((short) 10));//es 10 por ser homicidio
+
+
+            if (currentDateEvent.trim().length() != 0) {
+                try {
+                    newFatalInjurie.setInjuryDate(formato.parse(currentDateEvent));
+                } catch (Exception e) {
+                    validation = validation + "\n Corregir valor de: Fecha Evento";
+                }
+            }
+            if (currentHourEvent.trim().length() != 0 || currentMinuteEvent.trim().length() != 0) {
+                try {
+                    newFatalInjurie.setInjuryTime(new Time(
+                            Integer.parseInt(currentHourEvent),
+                            Integer.parseInt(currentMinuteEvent), 0));
+                } catch (Exception e) {
+                    validation = validation + "\n * Corregir la hora del hecho";
+                }
+            }
+            if (currentDirectionEvent.trim().length() != 0) {
+                newFatalInjurie.setInjuryAddress(currentDirectionEvent);
+            }
+            if (currentNeighborhoodHomeCode.trim().length() != 0) {
+                newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(currentNeighborhoodHomeCode));
+            }
+            if (currentPlace != 0) {
+                newFatalInjurie.setInjuryPlaceId(placesFacade.find(currentPlace));
+            }
+            if (currentNumberVictims.trim().length() != 0) {
+                try {
+                    newFatalInjurie.setVictimNumber(Short.parseShort(currentNumberVictims));
+                } catch (Exception e) {
+                    validation = validation + "\n * Corregir el numero de victimas";
+                }
+            }
+            if (currentNarrative.trim().length() != 0) {
+                newFatalInjurie.setInjuryDescription(currentNarrative);
+            }
+            try {
+                newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
+            } catch (Exception e) {
+                System.out.println("*******************************************ERROR_A1: " + e.toString());
+            }
+
+            newFatalInjurie.setInputTimestamp(new Date());//momento en que se capturo el registro
+
+            if (currentWeekdayEvent.trim().length() != 0) {
+                newFatalInjurie.setInjuryDayOfWeek(currentWeekdayEvent);
+            }
+            //valores del nivel de alcohol
+            if (currentAlcoholLevel.trim().length() != 0) {
+                try {
+                    newFatalInjurie.setAlcoholLevelVictim(Short.parseShort(currentAlcoholLevel));
+                    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find(1));
+                } catch (Exception e) {
+                    validation = validation + "\n * Corregir el nivel de alcohol de la victima";
+                }
+            } else {
+                if (isNoDataAlcoholLevel) {
+                    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find(2));
+                }
+                if (isUnknownAlcoholLevel) {
+                    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find(3));
+                }
+                if (isPendentAlcoholLevel) {
+                    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find(4));
+                }
+                if (isNegativeAlcoholLevel) {
+                    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find(5));
+                }
+            }
+            if (currentCode.trim().length() != 0) {
+                newFatalInjurie.setCode(currentCode);
+            }
+
+            newFatalInjurie.setVictimId(newVictim);
+
+
+
+            //------------------------------------------------------------
+            //SE CREA VARIABLE PARA LA NUEVA LESION FATAL POR HOMICIDIOS
+            //------------------------------------------------------------
+            FatalInjuryMurder newMurder = new FatalInjuryMurder();
+            if (currentVictimSource.trim().length() != 0) {
+                newMurder.setVictimPlaceOfOrigin(currentVictimSource);
+            }
+            if (currentMurderContext != 0) {
+                newMurder.setMurderContextId(murderContextsFacade.find(currentMurderContext));
+            }
+            if (currentWeaponType != 0) {
+                newMurder.setWeaponTypeId(weaponTypesFacade.find(currentWeaponType));
+            }
+            if (currentArea != 0) {
+                newMurder.setAreaId(areasFacade.find(currentArea));
+            }
+
+            newMurder.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
+
+
+            if (validation.length() == 0) {
+                victimsFacade.create(newVictim);//se persiste
+                fatalInjuriesFacade.create(newFatalInjurie);//se persiste
+                fatalInjuryMurderFacade.create(newMurder);
+
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "REGISTRO ALMACENADO");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            } else {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de validacion", validation);
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
+        } catch (Exception e) {
+            System.out.println("*******************************************ERROR: " + e.toString());
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+        }
+    }
+
+    public void reset() {
+        try {
+            totalRegisters = fatalInjuryMurderFacade.count();
+            currentPosition = "new/" + String.valueOf(totalRegisters);
+            //cargo los tipos de identificacion
+            List<IdTypes> idTypesList = idTypesFacade.findAll();
+            identificationsTypes = new SelectItem[idTypesList.size() + 1];
+            identificationsTypes[0] = new SelectItem(0, "");
+            for (int i = 0; i < idTypesList.size(); i++) {
+                identificationsTypes[i + 1] = new SelectItem(idTypesList.get(i).getTypeId(), idTypesList.get(i).getTypeName());
+            }
+
+            //cargo las medidas de edad
+            List<AgeTypes> ageTypesList = ageTypesFacade.findAll();
+            measuresOfAge = new SelectItem[ageTypesList.size() + 1];
+            measuresOfAge[0] = new SelectItem(0, "");
+            for (int i = 0; i < ageTypesList.size(); i++) {
+                measuresOfAge[i + 1] = new SelectItem(ageTypesList.get(i).getAgeTypeId(), ageTypesList.get(i).getAgeTypeName());
+            }
+            //contexto relacionado con el hecho
+            List<MurderContexts> murderContextsList = murderContextsFacade.findAll();
+            murderContexts = new SelectItem[murderContextsList.size() + 1];
+            murderContexts[0] = new SelectItem(0, "");
+            for (int i = 0; i < murderContextsList.size(); i++) {
+                murderContexts[i + 1] = new SelectItem(murderContextsList.get(i).getMurderContextId(), murderContextsList.get(i).getMurderContextName());
+            }
+            //cargo los municipios
+            findMunicipalities();
+
+            //clase de lugares donde ocurrieron los hechos
+            List<Places> placesList = placesFacade.findAll();
+            places = new SelectItem[placesList.size() + 1];
+            places[0] = new SelectItem(0, "");
+            for (int i = 0; i < placesList.size(); i++) {
+                places[i + 1] = new SelectItem(placesList.get(i).getPlaceId(), placesList.get(i).getPlaceName());
+            }
+            //generos
+            List<Genders> gendersList = gendersFacade.findAll();
+            genders = new SelectItem[gendersList.size() + 1];
+            genders[0] = new SelectItem(0, "");
+            for (int i = 0; i < gendersList.size(); i++) {
+                genders[i + 1] = new SelectItem(gendersList.get(i).getGenderId(), gendersList.get(i).getGenderName());
+            }
+            //trabajos
+            List<Jobs> jobsList = jobsFacade.findAll();
+            jobs = new SelectItem[jobsList.size() + 1];
+            jobs[0] = new SelectItem(0, "");
+            for (int i = 0; i < jobsList.size(); i++) {
+                jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
+            }
+            //cargo las areas del hecho
+            List<Areas> areasList = areasFacade.findAll();
+            areas = new SelectItem[areasList.size() + 1];
+            areas[0] = new SelectItem(0, "");
+            for (int i = 0; i < areasList.size(); i++) {
+                areas[i + 1] = new SelectItem(areasList.get(i).getAreaId(), areasList.get(i).getAreaName());
+            }
+
+            //cargo los tipos de armas
+            List<WeaponTypes> weaponTypesList = weaponTypesFacade.findAll();
+            weaponTypes = new SelectItem[weaponTypesList.size() + 1];
+            weaponTypes[0] = new SelectItem(0, "");
+            for (int i = 0; i < weaponTypesList.size(); i++) {
+                weaponTypes[i + 1] = new SelectItem(weaponTypesList.get(i).getWeaponTypeId(), weaponTypesList.get(i).getWeaponTypeName());
+            }
+
+        } catch (Exception e) {
+            System.out.println("*******************************************ERROR: " + e.toString());
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+        }
+    }
+
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    // FUNCIONES PARA AUTOCOMPLETAR ----------------------------------------
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    public List<String> suggestNeighborhoods(String entered) {
+        List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
+        List<String> list = new ArrayList<String>();
+        entered = entered.toUpperCase();
+        int amount = 0;
+        for (int i = 0; i < neighborhoodsList.size(); i++) {
+            if (neighborhoodsList.get(i).getNeighborhoodName().startsWith(entered)) {
+                list.add(neighborhoodsList.get(i).getNeighborhoodName());
+                amount++;
+            }
+            if (amount == 10) {
+                break;
+            }
+        }
+        return list;
+    }
+
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    // FUNCIONES CUANDO LISTAS CAMBIAN DE VALOR ----------------------------
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    public void findMunicipalities() {
+        Departaments d = departamentsFacade.findById((short) 52);
+        municipalities = new SelectItem[d.getMunicipalitiesList().size()];
+
+        for (int i = 0; i < municipalities.length; i++) {
+            municipalities[i] = new SelectItem(d.getMunicipalitiesList().get(i).getMunicipalitiesPK().getMunicipalityId(), d.getMunicipalitiesList().get(i).getMunicipalityName());
+        }
+        currentMunicipalitie = d.getMunicipalitiesList().get(0).getMunicipalitiesPK().getMunicipalityId();
+
+
+        if (currentMunicipalitie == 1) {
+            neighborhoodHomeNameDisabled = false;
+        } else {
+            neighborhoodHomeNameDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
+        }
+    }
+
+    public void findMunicipalitieCode() {
+        Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, (short) 52);
+        if (currentMunicipalitie == 1) {
+            neighborhoodHomeNameDisabled = false;
+        } else {
+            neighborhoodHomeNameDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
+        }
+    }
+
+    public void changeAlcoholLevel() {
+        if (!isNoDataAlcoholLevel && !isPendentAlcoholLevel
+                && !isUnknownAlcoholLevel && !isNegativeAlcoholLevel) {
+            currentAlcoholLevelDisabled = false;
+            currentAlcoholLevel = "";
+            isNoDataAlcoholLevelDisabled = false;
+            isPendentAlcoholLevelDisabled = false;
+            isUnknownAlcoholLevelDisabled = false;
+            isNegativeAlcoholLevelDisabled = false;
+        } else {
+            if (isNoDataAlcoholLevel) {
+                currentAlcoholLevelDisabled = true;
+                currentAlcoholLevel = "";
+                isNoDataAlcoholLevelDisabled = false;
+                isPendentAlcoholLevelDisabled = true;
+                isUnknownAlcoholLevelDisabled = true;
+                isNegativeAlcoholLevelDisabled = true;
+            }
+            if (isPendentAlcoholLevel) {
+                currentAlcoholLevelDisabled = true;
+                currentAlcoholLevel = "";
+                isNoDataAlcoholLevelDisabled = true;
+                isPendentAlcoholLevelDisabled = false;
+                isUnknownAlcoholLevelDisabled = true;
+                isNegativeAlcoholLevelDisabled = true;
+            }
+            if (isUnknownAlcoholLevel) {
+                currentAlcoholLevelDisabled = true;
+                currentAlcoholLevel = "";
+                isNoDataAlcoholLevelDisabled = true;
+                isPendentAlcoholLevelDisabled = true;
+                isUnknownAlcoholLevelDisabled = false;
+                isNegativeAlcoholLevelDisabled = true;
+            }
+            if (isNegativeAlcoholLevel) {
+                currentAlcoholLevelDisabled = true;
+                currentAlcoholLevel = "";
+                isNoDataAlcoholLevelDisabled = true;
+                isPendentAlcoholLevelDisabled = true;
+                isUnknownAlcoholLevelDisabled = true;
+                isNegativeAlcoholLevelDisabled = false;
+            }
+        }
+    }
+
+    public void changeNeighborhoodHomeName() {
+        List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
+        for (int i = 0; i < neighborhoodsList.size(); i++) {
+            if (neighborhoodsList.get(i).getNeighborhoodName().compareTo(currentNeighborhoodHome) == 0) {
+                currentNeighborhoodHomeCode = String.valueOf(neighborhoodsList.get(i).getNeighborhoodId());
+                break;
+            }
+        }
+    }
+
+    public void changeNeighborhoodEvent() {
+        Neighborhoods n = neighborhoodsFacade.findByName(currentNeighborhoodEvent);
+        if (n != null) {
+            currentNeighborhoodEventCode = String.valueOf(n.getNeighborhoodId());
+        } else {
+            currentNeighborhoodEventCode = "";
+        }
+    }
+
+    public void changeMeasuresOfAge() {
+        if (currentMeasureOfAge == 4) {//4. otro
+            valueAgeDisabled = true;
+
+        } else {
+            valueAgeDisabled = false;
+            currentAge = "";
+        }
+    }
+
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    // FUNCIONES DE CALCULO DE FECHA Y HORA MILITAR ------------------------
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    private int dayToInt(String day) {
+        if (day.compareTo("Lunes") == 0) {
+            return Calendar.MONDAY;
+        } else if (day.compareTo("Martes") == 0) {
+            return Calendar.TUESDAY;
+        } else if (day.compareTo("Miércoles") == 0) {
+            return Calendar.WEDNESDAY;
+        } else if (day.compareTo("Jueves") == 0) {
+            return Calendar.THURSDAY;
+        } else if (day.compareTo("Viernes") == 0) {
+            return Calendar.FRIDAY;
+        } else if (day.compareTo("Sábado") == 0) {
+            return Calendar.SATURDAY;
+        } else {//if (i == Calendar.SUNDAY) 
+            return Calendar.SUNDAY;
+        }
+    }
+
+    private String intToDay(int i) {
+        if (i == Calendar.MONDAY) {
+            return "Lunes";
+        } else if (i == Calendar.TUESDAY) {
+            return "Martes";
+        } else if (i == Calendar.WEDNESDAY) {
+            return "Miércoles";
+        } else if (i == Calendar.THURSDAY) {
+            return "Jueves";
+        } else if (i == Calendar.FRIDAY) {
+            return "Viernes";
+        } else if (i == Calendar.SATURDAY) {
+            return "Sábado";
+        } else {//if (i == Calendar.SUNDAY) 
+            return "Domingo";
+        }
+    }
+
+    private void calculateDate1() {
+        try {
+            fechaI = formato.parse(currentDayEvent + "/" + currentMonthEvent + "/" + currentYearEvent);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(fechaI);
+            currentDateEvent = formato.format(fechaI);
+            currentWeekdayEvent = intToDay(cal.get(Calendar.DAY_OF_WEEK));
+        } catch (ParseException ex) {
+            // POR FAVOR CORRIJA LA FECHA DEL PRIMER PAGO
+            currentDateEvent = "";
+            currentWeekdayEvent = "";
+        }
+    }
+
+    private void calculateTime1() {
+        int hourInt;
+        int minuteInt;
+        int timeInt;
+        try {
+            hourInt = Integer.parseInt(currentHourEvent);
+            //hourInt = currentHourEvent;
+        } catch (Exception ex) {
+            hourInt = 0;
+        }
+        try {
+            minuteInt = Integer.parseInt(currentMinuteEvent);
+            //minuteInt = currentMinuteEvent;
+        } catch (Exception ex) {
+            minuteInt = 0;
+        }
+        try {
+            if (currentAmPmEvent.length() != 0) {
+                String hourStr;
+                String minuteStr;
+                String timeStr;
+                boolean continuar = true;
+                if (hourInt > 0 && hourInt < 13 && minuteInt > -1 && minuteInt < 60) {
+                    if (currentAmPmEvent.compareTo("PM") == 0) {//hora PM
+                        if (hourInt == 12) {//no existe hora 12
+
+                            currentMilitaryHourEvent = "";
+                            continuar = false;
+                        }
+                        if (continuar) {
+                            hourStr = String.valueOf(hourInt);
+                            minuteStr = String.valueOf(minuteInt);
+                            if (hourStr.length() == 1) {
+                                hourStr = "0" + hourStr;
+                            }
+                            if (minuteStr.length() == 1) {
+                                minuteStr = "0" + minuteStr;
+                            }
+                            timeStr = hourStr + minuteStr;
+                            timeInt = Integer.parseInt(timeStr);
+                            if (timeInt > 2400) {
+                                timeStr = "00" + minuteStr;
+                            }
+                            currentMilitaryHourEvent = timeStr;
+                        }
+                    } else {//hora AM
+                        if (hourInt == 12) {
+                            hourInt = hourInt + 12;
+                        }
+                    }
+                    if (continuar) {
+                        hourStr = String.valueOf(hourInt);
+                        minuteStr = String.valueOf(minuteInt);
+                        if (hourStr.length() == 1) {
+                            hourStr = "0" + hourStr;
+                        }
+                        if (minuteStr.length() == 1) {
+                            minuteStr = "0" + minuteStr;
+                        }
+                        timeStr = hourStr + minuteStr;
+                        timeInt = Integer.parseInt(timeStr);
+                        if (timeInt > 2400) {
+                            timeStr = "00" + minuteStr;
+                        }
+                        currentMilitaryHourEvent = timeStr;
+                    }
+
+                } else {
+                    currentMilitaryHourEvent = "";
+                }
+            }
+        } catch (Exception ex) {
+            currentMilitaryHourEvent = "" + ex.toString();
+        }
+    }
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    // GET Y SET DE VARIABLES ----------------------------------------------
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+
+    public Short getCurrentIdentificationType() {
+        return currentIdentificationType;
+    }
+
+    public void setCurrentIdentificationType(Short currentIdentificationType) {
+        this.currentIdentificationType = currentIdentificationType;
+    }
+
+    public SelectItem[] getIdentificationsTypes() {
+        return identificationsTypes;
+    }
+
+    public void setIdentificationsTypes(SelectItem[] identificationsTypes) {
+        this.identificationsTypes = identificationsTypes;
+    }
+
+    public SelectItem[] getMeasuresOfAge() {
+        return measuresOfAge;
+    }
+
+    public void setMeasuresOfAge(SelectItem[] measuresOfAge) {
+        this.measuresOfAge = measuresOfAge;
+    }
+
+    public SelectItem[] getGenders() {
+        return genders;
+    }
+
+    public void setGenders(SelectItem[] genders) {
+        this.genders = genders;
+    }
+
+    public SelectItem[] getMunicipalities() {
+        return municipalities;
+    }
+
+    public void setMunicipalities(SelectItem[] municipalities) {
+        this.municipalities = municipalities;
+    }
+
+    public String getCurrentAmPmEvent() {
+        return currentAmPmEvent;
+    }
+
+    public void setCurrentAmPmEvent(String currentAmPmEvent) {
+        this.currentAmPmEvent = currentAmPmEvent;
+        calculateTime1();
+    }
+
+    public String getCurrentDateEvent() {
+        return currentDateEvent;
+    }
+
+    public void setCurrentDateEvent(String currentDateEvent) {
+        this.currentDateEvent = currentDateEvent;
+    }
+
+    public String getCurrentDayEvent() {
+        return currentDayEvent;
+    }
+
+    public void setCurrentDayEvent(String currentDayEvent) {
+        this.currentDayEvent = currentDayEvent;
+        calculateDate1();
+    }
+
+    public String getCurrentHourEvent() {
+        return currentHourEvent;
+    }
+
+    public void setCurrentHourEvent(String currentHourEvent) {
+        this.currentHourEvent = currentHourEvent;
+        calculateTime1();
+    }
+
+    public String getCurrentMilitaryHourEvent() {
+        return currentMilitaryHourEvent;
+    }
+
+    public void setCurrentMilitaryHourEvent(String currentMilitaryHourEvent) {
+        this.currentMilitaryHourEvent = currentMilitaryHourEvent;
+    }
+
+    public String getCurrentMinuteEvent() {
+        return currentMinuteEvent;
+    }
+
+    public void setCurrentMinuteEvent(String currentMinuteEvent) {
+        this.currentMinuteEvent = currentMinuteEvent;
+        calculateTime1();
+    }
+
+    public String getCurrentMonthEvent() {
+        return currentMonthEvent;
+    }
+
+    public void setCurrentMonthEvent(String currentMonthEvent) {
+        this.currentMonthEvent = currentMonthEvent;
+        calculateDate1();
+    }
+
+    public String getCurrentWeekdayEvent() {
+        return currentWeekdayEvent;
+    }
+
+    public void setCurrentWeekdayEvent(String currentWeekdayEvent) {
+        this.currentWeekdayEvent = currentWeekdayEvent;
+    }
+
+    public String getCurrentYearEvent() {
+        return currentYearEvent;
+    }
+
+    public void setCurrentYearEvent(String currentYearEvent) {
+        this.currentYearEvent = currentYearEvent;
+        calculateDate1();
+    }
+
+    public SelectItem[] getPlaces() {
+        return places;
+    }
+
+    public void setPlaces(SelectItem[] places) {
+        this.places = places;
+    }
+
+    public boolean isValueAgeDisabled() {
+        return valueAgeDisabled;
+    }
+
+    public void setValueAgeDisabled(boolean valueAgeDisabled) {
+        this.valueAgeDisabled = valueAgeDisabled;
+    }
+
+    public SelectItem[] getJobs() {
+        return jobs;
+    }
+
+    public boolean isNeighborhoodHomeNameDisabled() {
+        return neighborhoodHomeNameDisabled;
+    }
+
+    public void setNeighborhoodHomeNameDisabled(boolean neighborhoodHomeNameDisabled) {
+        this.neighborhoodHomeNameDisabled = neighborhoodHomeNameDisabled;
+    }
+
+    public Short getCurrentGender() {
+        return currentGender;
+    }
+
+    public void setCurrentGender(Short currentGender) {
+        this.currentGender = currentGender;
+    }
+
+    public Short getCurrentJob() {
+        return currentJob;
+    }
+
+    public void setCurrentJob(Short currentJob) {
+        this.currentJob = currentJob;
+    }
+
+    public Short getCurrentMeasureOfAge() {
+        return currentMeasureOfAge;
+    }
+
+    public void setCurrentMeasureOfAge(Short currentMeasureOfAge) {
+        this.currentMeasureOfAge = currentMeasureOfAge;
+    }
+
+    public Short getCurrentMunicipalitie() {
+        return currentMunicipalitie;
+    }
+
+    public void setCurrentMunicipalitie(Short currentMunicipalitie) {
+        this.currentMunicipalitie = currentMunicipalitie;
+    }
+
+    public String getCurrentNeighborhoodEventCode() {
+        return currentNeighborhoodEventCode;
+    }
+
+    public void setCurrentNeighborhoodEventCode(String currentNeighborhoodEventCode) {
+        this.currentNeighborhoodEventCode = currentNeighborhoodEventCode;
+    }
+
+    public String getCurrentNeighborhoodHome() {
+        return currentNeighborhoodHome;
+    }
+
+    public void setCurrentNeighborhoodHome(String currentNeighborhoodHome) {
+        this.currentNeighborhoodHome = currentNeighborhoodHome;
+    }
+
+    public String getCurrentNeighborhoodHomeCode() {
+        return currentNeighborhoodHomeCode;
+    }
+
+    public void setCurrentNeighborhoodHomeCode(String currentNeighborhoodHomeCode) {
+        this.currentNeighborhoodHomeCode = currentNeighborhoodHomeCode;
+    }
+
+    public String getCurrentNeighborhoodEvent() {
+        return currentNeighborhoodEvent;
+    }
+
+    public void setCurrentNeighborhoodEvent(String currentNeighborhoodEvent) {
+        this.currentNeighborhoodEvent = currentNeighborhoodEvent;
+    }
+
+    public Short getCurrentPlace() {
+        return currentPlace;
+    }
+
+    public void setCurrentPlace(Short currentPlace) {
+        this.currentPlace = currentPlace;
+    }
+
+    public String getCurrentAge() {
+        return currentAge;
+    }
+
+    public void setCurrentAge(String currentAge) {
+        this.currentAge = currentAge;
+    }
+
+    public String getCurrentDirectionEvent() {
+        return currentDirectionEvent;
+    }
+
+    public void setCurrentDirectionEvent(String currentDirectionEvent) {
+        this.currentDirectionEvent = currentDirectionEvent;
+    }
+
+    public String getCurrentIdentificationNumber() {
+        return currentIdentificationNumber;
+    }
+
+    public void setCurrentIdentificationNumber(String currentIdentificationNumber) {
+        this.currentIdentificationNumber = currentIdentificationNumber;
+    }
+
+    public String getCurrentName() {
+        return currentName;
+    }
+
+    public void setCurrentName(String currentName) {
+        this.currentName = currentName;
+    }
+
+    public String getCurrentSurname() {
+        return currentSurname;
+    }
+
+    public void setCurrentSurname(String currentSurname) {
+        this.currentSurname = currentSurname;
+    }
+
+    public String getCurrentNumberVictims() {
+        return currentNumberVictims;
+    }
+
+    public void setCurrentNumberVictims(String currentNumberVictims) {
+        this.currentNumberVictims = currentNumberVictims;
+    }
+
+    public String getCurrentVictimSource() {
+        return currentVictimSource;
+    }
+
+    public void setCurrentVictimSource(String currentVictimSource) {
+        this.currentVictimSource = currentVictimSource;
+    }
+
+    public String getCurrentNarrative() {
+        return currentNarrative;
+    }
+
+    public void setCurrentNarrative(String currentNarrative) {
+        this.currentNarrative = currentNarrative;
+    }
+
+    public String getCurrentAlcoholLevel() {
+        return currentAlcoholLevel;
+    }
+
+    public void setCurrentAlcoholLevel(String currentAlcoholLevel) {
+        this.currentAlcoholLevel = currentAlcoholLevel;
+    }
+
+    public boolean isIsNegativeAlcoholLevel() {
+        return isNegativeAlcoholLevel;
+    }
+
+    public void setIsNegativeAlcoholLevel(boolean isNegativeAlcoholLevel) {
+        this.isNegativeAlcoholLevel = isNegativeAlcoholLevel;
+    }
+
+    public boolean isIsNoDataAlcoholLevel() {
+        return isNoDataAlcoholLevel;
+    }
+
+    public void setIsNoDataAlcoholLevel(boolean isNoDataAlcoholLevel) {
+        this.isNoDataAlcoholLevel = isNoDataAlcoholLevel;
+    }
+
+    public boolean isIsPendentAlcoholLevel() {
+        return isPendentAlcoholLevel;
+    }
+
+    public void setIsPendentAlcoholLevel(boolean isPendentAlcoholLevel) {
+        this.isPendentAlcoholLevel = isPendentAlcoholLevel;
+    }
+
+    public boolean isIsUnknownAlcoholLevel() {
+        return isUnknownAlcoholLevel;
+    }
+
+    public void setIsUnknownAlcoholLevel(boolean isUnknownAlcoholLevel) {
+        this.isUnknownAlcoholLevel = isUnknownAlcoholLevel;
+    }
+
+    public boolean isIsNegativeAlcoholLevelDisabled() {
+        return isNegativeAlcoholLevelDisabled;
+    }
+
+    public void setIsNegativeAlcoholLevelDisabled(boolean isNegativeAlcoholLevelDisabled) {
+        this.isNegativeAlcoholLevelDisabled = isNegativeAlcoholLevelDisabled;
+    }
+
+    public boolean isIsNoDataAlcoholLevelDisabled() {
+        return isNoDataAlcoholLevelDisabled;
+    }
+
+    public void setIsNoDataAlcoholLevelDisabled(boolean isNoDataAlcoholLevelDisabled) {
+        this.isNoDataAlcoholLevelDisabled = isNoDataAlcoholLevelDisabled;
+    }
+
+    public boolean isIsPendentAlcoholLevelDisabled() {
+        return isPendentAlcoholLevelDisabled;
+    }
+
+    public void setIsPendentAlcoholLevelDisabled(boolean isPendentAlcoholLevelDisabled) {
+        this.isPendentAlcoholLevelDisabled = isPendentAlcoholLevelDisabled;
+    }
+
+    public boolean isIsUnknownAlcoholLevelDisabled() {
+        return isUnknownAlcoholLevelDisabled;
+    }
+
+    public void setIsUnknownAlcoholLevelDisabled(boolean isUnknownAlcoholLevelDisabled) {
+        this.isUnknownAlcoholLevelDisabled = isUnknownAlcoholLevelDisabled;
+    }
+
+    public boolean isCurrentAlcoholLevelDisabled() {
+        return currentAlcoholLevelDisabled;
+    }
+
+    public void setCurrentAlcoholLevelDisabled(boolean currentAlcoholLevelDisabled) {
+        this.currentAlcoholLevelDisabled = currentAlcoholLevelDisabled;
+    }
 
     public SelectItem[] getAreas() {
         return areas;
@@ -159,27 +1266,27 @@ public class HomicideMB {
         this.areas = areas;
     }
 
-    public String getCurrentArea() {
+    public Short getCurrentArea() {
         return currentArea;
     }
 
-    public void setCurrentArea(String currentArea) {
+    public void setCurrentArea(Short currentArea) {
         this.currentArea = currentArea;
     }
 
-    public String getCurrentMurderContext() {
+    public Short getCurrentMurderContext() {
         return currentMurderContext;
     }
 
-    public void setCurrentMurderContext(String currentMurderContext) {
+    public void setCurrentMurderContext(Short currentMurderContext) {
         this.currentMurderContext = currentMurderContext;
     }
 
-    public String getCurrentWeaponType() {
+    public Short getCurrentWeaponType() {
         return currentWeaponType;
     }
 
-    public void setCurrentWeaponType(String currentWeaponType) {
+    public void setCurrentWeaponType(Short currentWeaponType) {
         this.currentWeaponType = currentWeaponType;
     }
 
@@ -199,948 +1306,27 @@ public class HomicideMB {
         this.weaponTypes = weaponTypes;
     }
 
-    //valores para el otro formulario+++++++++++++++++++++++++++++++++++++++++
-    /**
-     * Creates a new instance of LcenfMB
-     */
-    public HomicideMB() {
+    public int getTotalRegisters() {
+        return totalRegisters;
     }
 
-    public List<String> suggestNeighborhoods(String entered) {
-        List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
-        List<String> list = new ArrayList<String>();
-        entered = entered.toUpperCase();
-        int amount = 0;
-        for (int i = 0; i < neighborhoodsList.size(); i++) {
-            if (neighborhoodsList.get(i).getNeighborhoodName().startsWith(entered)) {
-                list.add(neighborhoodsList.get(i).getNeighborhoodName());
-                amount++;
-            }
-            if (amount == 10) {
-                break;
-            }
-        }
-        return list;
+    public void setTotalRegisters(int totalRegisters) {
+        this.totalRegisters = totalRegisters;
     }
 
-    public List<String> suggestCIE10(String entered) {
-        List<Diagnoses> diagnosesesList = diagnosesFacade.findAll();
-        List<String> list = new ArrayList<String>();
-        entered = entered.toUpperCase();
-        int amount = 0;
-        for (int i = 0; i < diagnosesesList.size(); i++) {
-            if (diagnosesesList.get(i).getDiagnosisId().startsWith(entered)) {
-                list.add(diagnosesesList.get(i).getDiagnosisId());
-                amount++;
-            }
-            if (amount == 10) {
-                break;
-            }
-        }
-        return list;
+    public String getCurrentPosition() {
+        return currentPosition;
     }
 
-    public List<String> suggestHealthProfessionals(String entered) {
-        List<HealthProfessionals> professionalsList = healthProfessionalsFacade.findAll();
-        List<String> list = new ArrayList<String>();
-        entered = entered.toUpperCase();
-        int amount = 0;
-        for (int i = 0; i < professionalsList.size(); i++) {
-            if (professionalsList.get(i).getHealthProfessionalName().startsWith(entered)) {
-                list.add(professionalsList.get(i).getHealthProfessionalName());
-                amount++;
-            }
-            if (amount == 10) {
-                break;
-            }
-        }
-        return list;
+    public void setCurrentPosition(String currentPosition) {
+        this.currentPosition = currentPosition;
     }
 
-    public void reset() {
-        try {
-            ArrayList<String> category;
-            //cargo las instituciones de salud
-            category = formsAndFieldsDataMB.categoricalNameList("instisal", 0);
-            healthInstitutions = new SelectItem[category.size()];
-            for (int i = 0; i < category.size(); i++) {
-                healthInstitutions[i] = new SelectItem(category.get(i).toString());
-            }
-            //cargo los tipos de identificacion
-            category = formsAndFieldsDataMB.categoricalNameList("tid", 0);
-            identifications = new SelectItem[category.size()];
-            for (int i = 0; i < category.size(); i++) {
-                identifications[i] = new SelectItem(category.get(i).toString());
-            }
-            //cargo las medidas de edad
-            category = formsAndFieldsDataMB.categoricalNameList("medad", 0);
-            measuresOfAge = new SelectItem[category.size()];
-            for (int i = 0; i < category.size(); i++) {
-                measuresOfAge[i] = new SelectItem(category.get(i).toString());
-            }
-            //cargo los destinos del paciente
-            List<DestinationsOfPatient> destinationsList = destinationsOfPatientFacade.findAll();
-            destinationsPatient = new SelectItem[destinationsList.size()];
-            for (int i = 0; i < destinationsList.size(); i++) {
-                destinationsPatient[i] = new SelectItem(destinationsList.get(i).getDestinationPatientName());
-            }
-            //cargo los departamentos
-            List<Departaments> departamentsList = departamentsFacade.findAll();
-            departaments = new SelectItem[departamentsList.size()];
-            for (int i = 0; i < departamentsList.size(); i++) {
-                departaments[i] = new SelectItem(departamentsList.get(i).getDepartamentName());
-            }
-            //cargo los municipios
-            List<Municipalities> municipalitiesList = municipalitiesFacade.findAll();
-            municipalities = new SelectItem[municipalitiesList.size()];
-            for (int i = 0; i < municipalitiesList.size(); i++) {
-                municipalities[i] = new SelectItem(municipalitiesList.get(i).getMunicipalityName());
-            }
-
-            //cargo las intencionalidades
-            List<Intentionalities> intentionalitiesList = intentionalitiesFacade.findAll();
-            intentionalities = new SelectItem[intentionalitiesList.size()];
-            for (int i = 0; i < intentionalitiesList.size(); i++) {
-                intentionalities[i] = new SelectItem(intentionalitiesList.get(i).getIntentionalityName());
-            }
-
-            //cargo los lugares donde ocurrieron los hechos
-            List<Places> placesList = placesFacade.findAll();
-            places = new SelectItem[placesList.size()];
-            for (int i = 0; i < placesList.size(); i++) {
-                places[i] = new SelectItem(placesList.get(i).getPlaceName());
-            }
-
-            //cargo las Actividades realizadas cuando ocurrio la lesión
-            List<Activities> activitiesList = activitiesFacade.findAll();
-            activities = new SelectItem[activitiesList.size()];
-            for (int i = 0; i < activitiesList.size(); i++) {
-                activities[i] = new SelectItem(activitiesList.get(i).getActivityName());
-            }
-
-            //cargo los mecanismos de lesión
-            List<Mechanisms> mechanismsList = mechanismsFacade.findAll();
-            mechanisms = new SelectItem[mechanismsList.size()];
-            for (int i = 0; i < mechanismsList.size(); i++) {
-                mechanisms[i] = new SelectItem(mechanismsList.get(i).getMechanismName());
-            }
-
-            //cargo los tipos de transporte en lesiones de tránsito
-            List<TransportTypes> transportTypesList = transportTypesFacade.findAll();
-            transportTypes = new SelectItem[transportTypesList.size()];
-            for (int i = 0; i < transportTypesList.size(); i++) {
-                transportTypes[i] = new SelectItem(transportTypesList.get(i).getTransportTypeName());
-            }
-
-            //cargo los Tipos de transporte de la contraparte en lesiones de tránsito y transporte.
-            List<TransportCounterparts> transportCounterpartsList = transportCounterpartsFacade.findAll();
-            transportCounterparts = new SelectItem[transportCounterpartsList.size()];
-            for (int i = 0; i < transportCounterpartsList.size(); i++) {
-                transportCounterparts[i] = new SelectItem(transportCounterpartsList.get(i).getTransportCounterpartName());
-            }
-
-
-            //cargo los usuarios en una lesion de tránsito y trasporte
-            List<TransportUsers> transportUsersList = transportUsersFacade.findAll();
-            transportUsers = new SelectItem[transportUsersList.size()];
-            for (int i = 0; i < transportUsersList.size(); i++) {
-                transportUsers[i] = new SelectItem(transportUsersList.get(i).getTransportUserName());
-            }
-
-            //cargo las relaciones entre agresos y victima
-            List<RelationshipsToVictim> relationshipsToVictimList = relationshipsToVictimFacade.findAll();
-            relationshipsToVictim = new SelectItem[relationshipsToVictimList.size()];
-            for (int i = 0; i < relationshipsToVictimList.size(); i++) {
-                relationshipsToVictim[i] = new SelectItem(relationshipsToVictimList.get(i).getRelationshipVictimName());
-            }
-
-            //cargo los contextos en que ocurrió una lesión
-            List<Contexts> contextsList = contextsFacade.findAll();
-            contexts = new SelectItem[contextsList.size()];
-            for (int i = 0; i < contextsList.size(); i++) {
-                contexts[i] = new SelectItem(contextsList.get(i).getContextName());
-            }
-
-            //cargo el genero de el/los agresor/es
-            List<AggressorGenders> aggressorGendersList = agreAggressorGendersFacade.findAll();
-            aggressorGenders = new SelectItem[aggressorGendersList.size()];
-            for (int i = 0; i < aggressorGendersList.size(); i++) {
-                aggressorGenders[i] = new SelectItem(aggressorGendersList.get(i).getGenderName());
-            }
-
-            //cargo los Factores precipitantes en lesiones autoinflingidas.
-            List<PrecipitatingFactors> precipitatingFactorsList = precipitatingFactorsFacade.findAll();
-            precipitatingFactors = new SelectItem[precipitatingFactorsList.size()];
-            for (int i = 0; i < precipitatingFactorsList.size(); i++) {
-                precipitatingFactors[i] = new SelectItem(precipitatingFactorsList.get(i).getPrecipitatingFactorName());
-            }
-
-            //valores para el otro formulario+++++++++++++++++++++++++++++++++++++++++
-
-            //cargo los Factores precipitantes en lesiones autoinflingidas.
-            List<MurderContexts> murderContextsList = murderContextsFacade.findAll();
-            murderContexts = new SelectItem[murderContextsList.size()];
-            for (int i = 0; i < murderContextsList.size(); i++) {
-                murderContexts[i] = new SelectItem(murderContextsList.get(i).getMurderContextName());
-            }
-            //cargo los Factores precipitantes en lesiones autoinflingidas.
-            List<WeaponTypes> weaponTypesList = weaponTypesFacade.findAll();
-            weaponTypes = new SelectItem[weaponTypesList.size()];
-            for (int i = 0; i < weaponTypesList.size(); i++) {
-                weaponTypes[i] = new SelectItem(weaponTypesList.get(i).getWeaponTypeName());
-            }
-            //cargo los Factores precipitantes en lesiones autoinflingidas.
-            List<Areas> areasList = areasFacade.findAll();
-            areas = new SelectItem[areasList.size()];
-            for (int i = 0; i < areasList.size(); i++) {
-                areas[i] = new SelectItem(areasList.get(i).getAreaName());
-            }
-
-            //valores para el otro formulario+++++++++++++++++++++++++++++++++++++++++
-
-
-        } catch (Exception e) {
-            System.out.println("*******************************************ERROR: " + e.toString());
-        }
-    }
-
-    public void changeNeighborhoodHomeName() {
-        List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
-        for (int i = 0; i < neighborhoodsList.size(); i++) {
-            if (neighborhoodsList.get(i).getNeighborhoodName().compareTo(currentNeighborhoodHomeName) == 0) {
-                currentNeighborhoodHomeCode = neighborhoodsList.get(i).getNeighborhoodId().toString();
-                break;
-            }
-        }
-    }
-
-    public void changeNeighborhoodEventName() {
-        Neighborhoods n = neighborhoodsFacade.findByName(currentNeighborhoodEventName);
-        if (n != null) {
-            currentNeighborhoodEventCode = n.getNeighborhoodId().toString();
-        } else {
-            currentNeighborhoodEventCode = "";
-        }
-//        List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
-//        for (int i = 0; i < neighborhoodsList.size(); i++) {
-//            if (neighborhoodsList.get(i).getNeighborhoodName().compareTo(currentNeighborhoodEventName) == 0) {
-//                currentNeighborhoodEventCode = neighborhoodsList.get(i).getNeighborhoodId().toString();
-//                break;
-//            }
-//        }
-    }
-
-    private void calculateDate1() {
-        try {
-            fechaI = formato.parse(currentDayEvent + "/" + currentMonthEvent + "/" + currentYearEvent);
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(fechaI);
-            currentDateEvent = formato.format(fechaI);
-            currentWeekdayEvent = String.valueOf(cal.get(Calendar.DAY_OF_WEEK));
-
-        } catch (ParseException ex) {
-            // POR FAVOR CORRIJA LA FECHA DEL PRIMER PAGO
-            currentDateEvent = "";
-            currentWeekdayEvent = "";
-        }
-    }
-
-    private void calculateDate2() {
-        try {
-            fechaI = formato.parse(currentDayConsult + "/" + currentMonthConsult + "/" + currentYearConsult);
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(fechaI);
-            currentDateConsult = formato.format(fechaI);
-            currentWeekdayConsult = String.valueOf(cal.get(Calendar.DAY_OF_WEEK));
-
-        } catch (ParseException ex) {
-            // POR FAVOR CORRIJA LA FECHA DEL PRIMER PAGO
-            currentDateConsult = "";
-            currentWeekdayConsult = "";
-        }
-    }
-
-    private void calculateTime1() {
-        int hourInt;
-        int minuteInt;
-        int timeInt;
-        try {
-            hourInt = Integer.parseInt(currentHourEvent);
-        } catch (Exception ex) {
-            hourInt = 0;
-        }
-        try {
-            minuteInt = Integer.parseInt(currentMinuteEvent);
-        } catch (Exception ex) {
-            minuteInt = 0;
-        }
-        try {
-            if (currentAmPmEvent.length() == 0) {                            
-               currentAmPmEvent="AM"; 
-            }
-        } catch (Exception ex) {
-            currentAmPmEvent="AM";
-        }
-
-
-        try {
-
-
-            if (currentAmPmEvent.length() != 0) {                
-                String hourStr;
-                String minuteStr;
-                String timeStr;
-                if (hourInt > 0 && hourInt < 13 && minuteInt > -1 && minuteInt < 60) {
-                    if (currentAmPmEvent.compareTo("PM") == 0) {
-                        hourInt = hourInt + 12;
-                    }
-                    hourStr = String.valueOf(hourInt);
-                    minuteStr = String.valueOf(minuteInt);
-                    if (hourStr.length() == 1) {
-                        hourStr = "0" + hourStr;
-                    }
-                    if (minuteStr.length() == 1) {
-                        minuteStr = "0" + minuteStr;
-                    }
-                    timeStr = hourStr + minuteStr;
-                    timeInt = Integer.parseInt(timeStr);
-                    if (timeInt > 2400) {
-                        timeStr = "00" + minuteStr;
-                    }
-                    currentMilitaryHourEvent = timeStr;
-                }
-                else
-                {
-                    currentMilitaryHourEvent = "";
-                }
-            }
-        } catch (Exception ex) {
-
-            currentMilitaryHourEvent = "-" + ex.toString();
-        }
-//        try {
-//            
-//            if (currentAmPmEvent.length() != 0) {
-//                int hourInt=Integer.parseInt(currentHourEvent);
-//                int minuteInt=Integer.parseInt(currentMinuteEvent);
-//                int timeInt;
-//                String hourStr;
-//                String minuteStr;
-//                String timeStr;
-//                if(hourInt>0&&hourInt<13&&minuteInt>-1&&minuteInt<60)
-//                {
-//                    if (currentAmPmEvent.compareTo("PM") == 0) hourInt=hourInt+24;
-//                    hourStr=String.valueOf(hourInt);
-//                    minuteStr=String.valueOf(minuteInt);
-//                    if(hourStr.length()==1)hourStr="0"+hourStr;
-//                    if(minuteStr.length()==1)minuteStr="0"+minuteStr;
-//                    timeStr=hourStr+minuteStr;
-//                    timeInt=Integer.parseInt(timeStr);
-//                    if(timeInt>2400)
-//                    { 
-//                        timeStr="00"+minuteStr;
-//                    }
-//                    currentMilitaryHourEvent = timeStr;
-//                }
-//            }
-//        } catch (Exception ex) {
-//            
-//            currentMilitaryHourEvent = "-"+ex.toString();
-//        }
-    }
-
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
-    //FUNCIONES GET Y SET DE LAS VARIABLES ---------------------------------
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
-    public String getCurrentHealthInstitution() {
-        return currentHealthInstitution;
-    }
-
-    public void setCurrentHealthInstitution(String currentHealthInstitution) {
-        this.currentHealthInstitution = currentHealthInstitution;
-    }
-
-    public SelectItem[] getHealthInstitutions() {
-        return healthInstitutions;
-    }
-
-    public void setHealthInstitutions(SelectItem[] healthInstitutions) {
-        this.healthInstitutions = healthInstitutions;
-    }
-
-    public FormsAndFieldsDataMB getFormsAndFieldsDataMB() {
-        return formsAndFieldsDataMB;
-    }
-
-    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
-        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
-    }
-
-    public int getCurrentMedicalHistory() {
-        return currentMedicalHistory;
-    }
-
-    public void setCurrentMedicalHistory(int currentMedicalHistory) {
-        this.currentMedicalHistory = currentMedicalHistory;
-    }
-
-    public String getCurrentIdentification() {
-        return currentIdentification;
-    }
-
-    public void setCurrentIdentification(String currentIdentification) {
-        this.currentIdentification = currentIdentification;
-    }
-
-    public SelectItem[] getIdentifications() {
-        return identifications;
-    }
-
-    public void setIdentifications(SelectItem[] identifications) {
-        this.identifications = identifications;
-    }
-
-    public String getCurrentMeasureOfAge() {
-        return currentMeasureOfAge;
-    }
-
-    public void setCurrentMeasureOfAge(String currentMeasureOfAge) {
-        this.currentMeasureOfAge = currentMeasureOfAge;
-    }
-
-    public SelectItem[] getMeasuresOfAge() {
-        return measuresOfAge;
-    }
-
-    public void setMeasuresOfAge(SelectItem[] measuresOfAge) {
-        this.measuresOfAge = measuresOfAge;
-    }
-
-    public String getCurrentGender() {
-        return currentGender;
-    }
-
-    public void setCurrentGender(String currentGender) {
-        this.currentGender = currentGender;
-    }
-
-    public String getCurrentDepartamentHome() {
-        return currentDepartamentHome;
-    }
-
-    public void setCurrentDepartamentHome(String currentDepartamentHome) {
-        this.currentDepartamentHome = currentDepartamentHome;
-        //cargo el codigo del departamento departamentos
-        //this.currentDepartamentHomeCode = departamentsFacade.findByName(currentDepartamentHome).getDepartamentId();
-    }
-
-    public SelectItem[] getDepartaments() {
-        return departaments;
-    }
-
-    public void setDepartaments(SelectItem[] departaments) {
-        this.departaments = departaments;
-
-    }
-
-    public SelectItem[] getMunicipalities() {
-        return municipalities;
-    }
-
-    public void setMunicipalities(SelectItem[] municipalities) {
-        this.municipalities = municipalities;
-    }
-
-    public String getCurrentMunicipalitie() {
-        return currentMunicipalitie;
-    }
-
-    public void setCurrentMunicipalitie(String currentMunicipalitie) {
-        this.currentMunicipalitie = currentMunicipalitie;
-        //this.currentMunicipalitieCode = municipalitiesFacade.findByName(currentMunicipalitie).getMunicipalityId().toString();
-    }
-
-    public String getCurrentNeighborhoodEventCode() {
-        return currentNeighborhoodEventCode;
-    }
-
-    public void setCurrentNeighborhoodEventCode(String currentNeighborhoodEventCode) {
-        this.currentNeighborhoodEventCode = currentNeighborhoodEventCode;
-    }
-
-    public String getCurrentNeighborhoodEventName() {
-        return currentNeighborhoodEventName;
-    }
-
-    public void setCurrentNeighborhoodEventName(String currentNeighborhoodEventName) {
-        this.currentNeighborhoodEventName = currentNeighborhoodEventName;
-    }
-
-    public String getCurrentNeighborhoodHomeCode() {
-        return currentNeighborhoodHomeCode;
-    }
-
-    public void setCurrentNeighborhoodHomeCode(String currentNeighborhoodHomeCode) {
-        this.currentNeighborhoodHomeCode = currentNeighborhoodHomeCode;
-    }
-
-    public String getCurrentNeighborhoodHomeName() {
-        return currentNeighborhoodHomeName;
-    }
-
-    public void setCurrentNeighborhoodHomeName(String currentNeighborhoodHomeName) {
-        this.currentNeighborhoodHomeName = currentNeighborhoodHomeName;
-        //this.currentNeighborhoodHomeCode=neighborhoodsFacade.findByName(currentNeighborhoodHomeName).getNeighborhoodId().toString();
-    }
-
-    public String getCurrentHealthProfessionals() {
-        return currentHealthProfessionals;
-    }
-
-    public void setCurrentHealthProfessionals(String currentHealthProfessionals) {
-        this.currentHealthProfessionals = currentHealthProfessionals;
-    }
-
-    public String getCurrentDestinationPatient() {
-        return currentDestinationPatient;
-    }
-
-    public void setCurrentDestinationPatient(String currentDestinationPatient) {
-        this.currentDestinationPatient = currentDestinationPatient;
-    }
-
-    public SelectItem[] getDestinationsPatient() {
-        return destinationsPatient;
-    }
-
-    public void setDestinationsPatient(SelectItem[] destinationsPatient) {
-        this.destinationsPatient = destinationsPatient;
-    }
-
-    public String getTxtCIE10_1() {
-        return txtCIE10_1;
-    }
-
-    public void setTxtCIE10_1(String txtCIE10_1) {
-        this.txtCIE10_1 = txtCIE10_1;
-    }
-
-    public String getTxtCIE10_2() {
-        return txtCIE10_2;
-    }
-
-    public void setTxtCIE10_2(String txtCIE10_2) {
-        this.txtCIE10_2 = txtCIE10_2;
-    }
-
-    public String getIdCIE10_1() {
-        return idCIE10_1;
-    }
-
-    public void setIdCIE10_1(String idCIE10_1) {
-        this.idCIE10_1 = idCIE10_1;
-        Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_1);
-        if (selectDiagnoses != null) {
-            txtCIE10_1 = selectDiagnoses.getDiagnosisName();
-        } else {
-            txtCIE10_1 = "";
-        }
-    }
-
-    public String getIdCIE10_2() {
-        return idCIE10_2;
-    }
-
-    public void setIdCIE10_2(String idCIE10_2) {
-        this.idCIE10_2 = idCIE10_2;
-        Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_2);
-        if (selectDiagnoses != null) {
-            txtCIE10_2 = selectDiagnoses.getDiagnosisName();
-        } else {
-            txtCIE10_2 = "";
-        }
-    }
-
-    public String getIdCIE10_3() {
-        return idCIE10_3;
-    }
-
-    public void setIdCIE10_3(String idCIE10_3) {
-        this.idCIE10_3 = idCIE10_3;
-        Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_3);
-        if (selectDiagnoses != null) {
-            txtCIE10_3 = selectDiagnoses.getDiagnosisName();
-        } else {
-            txtCIE10_3 = "";
-        }
-    }
-
-    public String getIdCIE10_4() {
-        return idCIE10_4;
-    }
-
-    public void setIdCIE10_4(String idCIE10_4) {
-        this.idCIE10_4 = idCIE10_4;
-        Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_4);
-        if (selectDiagnoses != null) {
-            txtCIE10_4 = selectDiagnoses.getDiagnosisName();
-        } else {
-            txtCIE10_4 = "";
-        }
-    }
-
-    public String getTxtCIE10_3() {
-        return txtCIE10_3;
-    }
-
-    public String getTxtCIE10_4() {
-        return txtCIE10_4;
-    }
-
-    public void setTxtCIE10_4(String txtCIE10_4) {
-        this.txtCIE10_4 = txtCIE10_4;
-    }
-
-    public String getCurrentDepartamentHomeCode() {
-        return currentDepartamentHomeCode;
-    }
-
-    public String getCurrentMunicipalitieCode() {
-        return currentMunicipalitieCode;
-    }
-
-    public void setCurrentMunicipalitieCode(String currentMunicipalitieCode) {
-        this.currentMunicipalitieCode = currentMunicipalitieCode;
-    }
-
-    public SelectItem[] getActivities() {
-        return activities;
-    }
-
-    public void setActivities(SelectItem[] activities) {
-        this.activities = activities;
-    }
-
-    public SelectItem[] getAggressorGenders() {
-        return aggressorGenders;
-    }
-
-    public void setAggressorGenders(SelectItem[] aggressorGenders) {
-        this.aggressorGenders = aggressorGenders;
-    }
-
-    public SelectItem[] getContexts() {
-        return contexts;
-    }
-
-    public void setContexts(SelectItem[] contexts) {
-        this.contexts = contexts;
-    }
-
-    public String getCurrentActivities() {
-        return currentActivities;
-    }
-
-    public void setCurrentActivities(String currentActivities) {
-        this.currentActivities = currentActivities;
-    }
-
-    public String getCurrentAggressorGenders() {
-        return currentAggressorGenders;
-    }
-
-    public void setCurrentAggressorGenders(String currentAggressorGenders) {
-        this.currentAggressorGenders = currentAggressorGenders;
-    }
-
-    public String getCurrentAmPmConsult() {
-        return currentAmPmConsult;
-    }
-
-    public void setCurrentAmPmConsult(String currentAmPmConsult) {
-        this.currentAmPmConsult = currentAmPmConsult;
-    }
-
-    public String getCurrentAmPmEvent() {
-        return currentAmPmEvent;
-    }
-
-    public void setCurrentAmPmEvent(String currentAmPmEvent) {
-        this.currentAmPmEvent = currentAmPmEvent;
-    }
-
-    public String getCurrentContext() {
-        return currentContext;
-    }
-
-    public void setCurrentContext(String currentContext) {
-        this.currentContext = currentContext;
-    }
-
-    public String getCurrentDateConsult() {
-        return currentDateConsult;
-    }
-
-    public void setCurrentDateConsult(String currentDateConsult) {
-        this.currentDateConsult = currentDateConsult;
-    }
-
-    public String getCurrentDateEvent() {
-        return currentDateEvent;
-    }
-
-    public void setCurrentDateEvent(String currentDateEvent) {
-        this.currentDateEvent = currentDateEvent;
-    }
-
-    public String getCurrentDayConsult() {
-        return currentDayConsult;
-    }
-
-    public void setCurrentDayConsult(String currentDayConsult) {
-        this.currentDayConsult = currentDayConsult;
-        calculateDate2();
-    }
-
-    public String getCurrentDayEvent() {
-        return currentDayEvent;
-    }
-
-    public void setCurrentDayEvent(String currentDayEvent) {
-        this.currentDayEvent = currentDayEvent;
-        calculateDate1();
-    }
-
-    public String getCurrentHourConsult() {
-        return currentHourConsult;
-    }
-
-    public void setCurrentHourConsult(String currentHourConsult) {
-        this.currentHourConsult = currentHourConsult;
-    }
-
-    public String getCurrentHourEvent() {
-        return currentHourEvent;
-    }
-
-    public void setCurrentHourEvent(String currentHourEvent) {
-        this.currentHourEvent = currentHourEvent;
-        calculateTime1();
-    }
-
-    public String getCurrentIntentionality() {
-        return currentIntentionality;
-    }
-
-    public void setCurrentIntentionality(String currentIntentionality) {
-        this.currentIntentionality = currentIntentionality;
-    }
-
-    public String getCurrentMechanisms() {
-        return currentMechanisms;
-    }
-
-    public void setCurrentMechanisms(String currentMechanisms) {
-        this.currentMechanisms = currentMechanisms;
-    }
-
-    public String getCurrentMilitaryHourConsult() {
-        return currentMilitaryHourConsult;
-    }
-
-    public void setCurrentMilitaryHourConsult(String currentMilitaryHourConsult) {
-        this.currentMilitaryHourConsult = currentMilitaryHourConsult;
-    }
-
-    public String getCurrentMilitaryHourEvent() {
-        return currentMilitaryHourEvent;
-    }
-
-    public void setCurrentMilitaryHourEvent(String currentMilitaryHourEvent) {
-        this.currentMilitaryHourEvent = currentMilitaryHourEvent;
-    }
-
-    public String getCurrentMinuteConsult() {
-        return currentMinuteConsult;
-    }
-
-    public void setCurrentMinuteConsult(String currentMinuteConsult) {
-        this.currentMinuteConsult = currentMinuteConsult;
-    }
-
-    public String getCurrentMinuteEvent() {
-        return currentMinuteEvent;
-    }
-
-    public void setCurrentMinuteEvent(String currentMinuteEvent) {
-        this.currentMinuteEvent = currentMinuteEvent;
-        calculateTime1();
-    }
-
-    public String getCurrentMonthConsult() {
-        return currentMonthConsult;
-    }
-
-    public void setCurrentMonthConsult(String currentMonthConsult) {
-        this.currentMonthConsult = currentMonthConsult;
-        calculateDate2();
-    }
-
-    public String getCurrentMonthEvent() {
-        return currentMonthEvent;
-    }
-
-    public void setCurrentMonthEvent(String currentMonthEvent) {
-        this.currentMonthEvent = currentMonthEvent;
-        calculateDate1();
-    }
-
-    public String getCurrentPlace() {
-        return currentPlace;
-    }
-
-    public void setCurrentPlace(String currentPlace) {
-        this.currentPlace = currentPlace;
-    }
-
-    public String getCurrentPrecipitatingFactor() {
-        return currentPrecipitatingFactor;
-    }
-
-    public void setCurrentPrecipitatingFactor(String currentPrecipitatingFactor) {
-        this.currentPrecipitatingFactor = currentPrecipitatingFactor;
-    }
-
-    public String getCurrentRelationshipToVictim() {
-        return currentRelationshipToVictim;
-    }
-
-    public void setCurrentRelationshipToVictim(String currentRelationshipToVictim) {
-        this.currentRelationshipToVictim = currentRelationshipToVictim;
-    }
-
-    public String getCurrentTransportTypes() {
-        return currentTransportTypes;
-    }
-
-    public void setCurrentTransportTypes(String currentTransportTypes) {
-        this.currentTransportTypes = currentTransportTypes;
-    }
-
-    public String getCurrentTransportUser() {
-        return currentTransportUser;
-    }
-
-    public void setCurrentTransportUser(String currentTransportUser) {
-        this.currentTransportUser = currentTransportUser;
-    }
-
-    public String getCurrentWeekdayConsult() {
-        return currentWeekdayConsult;
-    }
-
-    public void setCurrentWeekdayConsult(String currentWeekdayConsult) {
-        this.currentWeekdayConsult = currentWeekdayConsult;
-    }
-
-    public String getCurrentWeekdayEvent() {
-        return currentWeekdayEvent;
-    }
-
-    public void setCurrentWeekdayEvent(String currentWeekdayEvent) {
-        this.currentWeekdayEvent = currentWeekdayEvent;
-    }
-
-    public String getCurrentYearConsult() {
-        return currentYearConsult;
-
-    }
-
-    public void setCurrentYearConsult(String currentYearConsult) {
-        this.currentYearConsult = currentYearConsult;
-        calculateDate2();
-    }
-
-    public String getCurrentYearEvent() {
-        return currentYearEvent;
-    }
-
-    public void setCurrentYearEvent(String currentYearEvent) {
-        this.currentYearEvent = currentYearEvent;
-        calculateDate1();
-    }
-
-    public SelectItem[] getIntentionalities() {
-        return intentionalities;
-    }
-
-    public void setIntentionalities(SelectItem[] intentionalities) {
-        this.intentionalities = intentionalities;
-    }
-
-    public SelectItem[] getMechanisms() {
-        return mechanisms;
-    }
-
-    public void setMechanisms(SelectItem[] mechanisms) {
-        this.mechanisms = mechanisms;
-    }
-
-    public SelectItem[] getPlaces() {
-        return places;
-    }
-
-    public void setPlaces(SelectItem[] places) {
-        this.places = places;
-    }
-
-    public SelectItem[] getPrecipitatingFactors() {
-        return precipitatingFactors;
-    }
-
-    public void setPrecipitatingFactors(SelectItem[] precipitatingFactors) {
-        this.precipitatingFactors = precipitatingFactors;
-    }
-
-    public SelectItem[] getTransportTypes() {
-        return transportTypes;
-    }
-
-    public void setTransportTypes(SelectItem[] transportTypes) {
-        this.transportTypes = transportTypes;
-    }
-
-    public SelectItem[] getTransportUsers() {
-        return transportUsers;
-    }
-
-    public void setTransportUsers(SelectItem[] transportUsers) {
-        this.transportUsers = transportUsers;
-    }
-
-    public SelectItem[] getRelationshipsToVictim() {
-        return relationshipsToVictim;
-    }
-
-    public void setRelationshipsToVictim(SelectItem[] relationshipsToVictim) {
-        this.relationshipsToVictim = relationshipsToVictim;
-    }
-
-    public String getCurrentTransportCounterpart() {
-        return currentTransportCounterpart;
-    }
-
-    public void setCurrentTransportCounterpart(String currentTransportCounterpart) {
-        this.currentTransportCounterpart = currentTransportCounterpart;
-    }
-
-    public SelectItem[] getTransportCounterparts() {
-        return transportCounterparts;
+    public String getCurrentCode() {
+        return currentCode;
     }
 
-    public void setTransportCounterparts(SelectItem[] transportCounterparts) {
-        this.transportCounterparts = transportCounterparts;
+    public void setCurrentCode(String currentCode) {
+        this.currentCode = currentCode;
     }
 }

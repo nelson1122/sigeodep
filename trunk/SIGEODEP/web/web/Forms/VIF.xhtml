@@ -47,14 +47,7 @@
                                 <p:row>  
                                     <p:column><h:outputLabel value="REGISTRO:   "/></p:column>
                                     <p:column><p:inputText value="2337" disabled="true"/></p:column>
-                                </p:row>
-                                <p:row>  
-                                    <p:column>
-                                        <h:outputLabel value="CLAVE:   "/> </p:column>
-                                    <p:column>
-                                        <p:inputText value="E2337" disabled="true"/>
-                                    </p:column>                                       
-                                </p:row>
+                                </p:row>                                
                             </p:panelGrid>
                             <br/>
                             <!--=====================================INSTITUCION DE SALUD==============================================-->
@@ -64,18 +57,19 @@
                                         <h:outputLabel value="INSTITUCION RECEPTORA:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentHealthInstitution}" > 
-                                            <f:selectItems value="#{lcenfMB.healthInstitutions}"/>
+                                        <p:selectOneMenu value="#{vifMB.currentDomesticViolenceDataSource}" > 
+                                            <f:selectItems value="#{vifMB.violenceDataSources}"/>
                                         </p:selectOneMenu>
                                     </p:column>                                    
                                 </p:row>
                             </p:panelGrid>
                             <br/>
                             <!--=====================================DATOS DE IDENTIFICACION PERSONAL==============================================-->
+                            <br/>
                             <p:panelGrid>                            
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" style="text-align: center;">
-                                        <h:outputLabel value="DATOS DE IDENTIFICACION PERSONAL:   "/>                                          
+                                        <h:outputLabel value="DATOS DE IDENTIFICACION PERSONAL"/>                                          
                                     </p:column>  
                                 </p:row>
                                 <p:row>  
@@ -85,30 +79,18 @@
                                         <p:panelGrid>                            
                                             <p:row>  
                                                 <p:column>
-                                                    <h:outputLabel value="APELLIDO 1:   "/>   
+                                                    <h:outputLabel value="APELLIDOS:"/>   
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText value=""/>                                       
-                                                </p:column>                                                  
-                                                <p:column>
-                                                    <h:outputLabel value="APELLIDO 2:   "/>                                          
+                                                    <p:inputText value="#{vifMB.currentName}" size="60"/>                                       
                                                 </p:column>
-                                                <p:column>
-                                                    <p:inputText value=""/>
-                                                </p:column>  
                                             </p:row>
                                             <p:row>  
                                                 <p:column>
-                                                    <h:outputLabel value="NOMBRE 1:   "/>    
+                                                    <h:outputLabel value="NOMBRES:"/>    
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText value=""/>
-                                                </p:column>                                                  
-                                                <p:column>
-                                                    <h:outputLabel value="NOMBRE 2:   "/>                                          
-                                                </p:column>
-                                                <p:column>
-                                                    <p:inputText value=""/>
+                                                    <p:inputText value="#{vifMB.currentSurname}" size="60"/>
                                                 </p:column>                                                  
                                             </p:row>
                                         </p:panelGrid>
@@ -119,8 +101,8 @@
                                                     <h:outputLabel value="TIPO DE IDENTIFICACION:   "/>                                          
                                                 </p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu value="#{lcenfMB.currentIdentification}" > 
-                                                        <f:selectItems value="#{lcenfMB.identifications}"/>
+                                                    <p:selectOneMenu value="#{vifMB.currentIdentification}" > 
+                                                        <f:selectItems value="#{vifMB.identifications}"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                             </p:row>
@@ -129,7 +111,7 @@
                                                     <h:outputLabel value="NUMERO DE IDENTIFICACION:   "/>                                          
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText value=""/>
+                                                    <p:inputText value="#{vifMB.currentIdentificationNumber}"/>
                                                 </p:column>
                                             </p:row>
                                         </p:panelGrid>
@@ -140,24 +122,30 @@
                                                     <h:outputLabel value="MEDIDA EDAD:   "/>
                                                 </p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu value="#{lcenfMB.currentMeasureOfAge}" > 
-                                                        <f:selectItems value="#{lcenfMB.measuresOfAge}"/>
+                                                    <p:selectOneMenu value="#{vifMB.currentMeasureOfAge}" > 
+                                                        <f:selectItems value="#{vifMB.measuresOfAge}"/>
+                                                        <f:ajax 
+                                                            event="change"                                            
+                                                            listener="#{vifMB.changeMeasuresOfAge}" 
+                                                            render="IdValueAge"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column  >
-                                                    <h:outputLabel value="EDAD CANTIDAD:   "/>                                          
+                                                    <h:outputLabel value="EDAD CANTIDAD:"/>                                          
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText value=""/>
+                                                    <p:inputText 
+                                                        id="IdValueAge"
+                                                        value="#{vifMB.currentAge}" 
+                                                        disabled="#{vifMB.valueAgeDisabled}" 
+                                                        size="3"/>
                                                 </p:column>                                                                                             
                                                 <p:column>
                                                     <h:outputLabel value="SEXO:   "/>    
                                                 </p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu value="#{lcenfMB.currentGender}" > 
-                                                        <f:selectItem itemLabel="MASCULINO" itemValue="1" />  
-                                                        <f:selectItem itemLabel="FEMENINO" itemValue="2" />  
-                                                        <f:selectItem itemLabel="INDETERMINADO" itemValue="3" />
+                                                    <p:selectOneMenu value="#{vifMB.currentGender}" > 
+                                                        <f:selectItems value="#{vifMB.genders}"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                             </p:row>
@@ -166,30 +154,30 @@
                                                     <h:outputLabel value="OCUPACION:   "/>                                          
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText value=""/>
+                                                    <p:selectOneMenu value="#{vifMB.currentJob}" > 
+                                                        <f:selectItems value="#{vifMB.jobs}"/>
+                                                    </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>
                                                     <h:outputLabel value="ASEGURADORA:   "/>                                        
                                                 </p:column>
-                                                <p:column>
-                                                    <p:inputText value=""/>
+                                                <p:column colspan="3">
+                                                    <p:inputText value="#{vifMB.currentInsurance}" size="40"/>
                                                 </p:column>
-                                                <p:column colspan="2">
-                                                    &nbsp;
-                                                </p:column>
+
                                             </p:row>
 
                                         </p:panelGrid>
                                         <br/>
                                     </p:column>  
                                 </p:row>
-                            </p:panelGrid>
+                            </p:panelGrid>                            
+                            <!--=====================================DATOS DEL DOMICILIO / RESIDENCIA==============================================-->
                             <br/>
-                            <!--=====================================DATOS DEL DOMICILIO / RESIDENCIA==============================================-->                            
                             <p:panelGrid>                            
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" style="text-align: center;">
-                                        <h:outputLabel value="DATOS DEL DOMICILIO / RESIDENCIA:   "/>                                          
+                                        <h:outputLabel value="DATOS DEL DOMICILIO / RESIDENCIA"/>                                          
                                     </p:column>  
                                 </p:row>
                                 <p:row>  
@@ -200,11 +188,15 @@
                                             <p:row>  
                                                 <p:column>DEPARTAMENTO DE RESIDENCIA:&nbsp;</p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu value="#{lcenfMB.currentDepartamentHome}" > 
-                                                        <f:selectItems value="#{lcenfMB.departaments}"/>
+                                                    <p:selectOneMenu value="#{vifMB.currentDepartamentHome}" > 
+                                                        <f:selectItems value="#{vifMB.departaments}"/>
                                                         <f:ajax 
                                                             event="change"                                                            
-                                                            render="IdDepartamentHomeCode"/>
+                                                            listener="#{vifMB.findMunicipalities}"
+                                                            render="IdDepartamentHomeCode
+                                                            IdMunicipalitieList
+                                                            IdMunicipalitiesHomeCode
+                                                            IdNeighborhoodHomeName"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>CODIGO DEPARTAMENTO:&nbsp;</p:column>
@@ -212,35 +204,43 @@
                                                     <p:inputText 
                                                         id="IdDepartamentHomeCode"
                                                         disabled="true"
-                                                        value="#{lcenfMB.currentDepartamentHomeCode}"/>
+                                                        value="#{vifMB.currentDepartamentHome}"/>
                                                 </p:column>
                                             </p:row>
                                             <p:row>  
                                                 <p:column>MUNICIPIO DE  RESIDENCIA:&nbsp;</p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu value="#{lcenfMB.currentMunicipalitie}"  > 
-                                                        <f:selectItems value="#{lcenfMB.municipalities}"/>
+                                                    <p:selectOneMenu 
+                                                        id="IdMunicipalitieList"
+                                                        value="#{vifMB.currentMunicipalitie}"  > 
+                                                        <f:selectItems value="#{vifMB.municipalities}"/>
                                                         <f:ajax 
-                                                            event="change"                                                            
-                                                            render="IdMunicipalitiesHomeCode"/>
+                                                            event="change"   							    
+                                                            listener="#{vifMB.findMunicipalitieCode}"
+                                                            render="IdMunicipalitiesHomeCode
+                                                            IdNeighborhoodHomeName
+                                                            IdNeighborhoodsHomeCode"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>CODIGO MUNICIPIO:&nbsp;</p:column>
                                                 <p:column><p:inputText 
                                                         id="IdMunicipalitiesHomeCode"                                                        
                                                         disabled="true"
-                                                        value="#{lcenfMB.currentMunicipalitieCode}"/></p:column>
+                                                        value="#{vifMB.currentMunicipalitie}"/></p:column>
                                             </p:row>
                                             <p:row>  
                                                 <p:column>BARRIO / VEREDA:&nbsp; </p:column>
                                                 <p:column>
                                                     <p:autoComplete 
-                                                        value="#{lcenfMB.currentNeighborhoodHomeName}"                                                                    
-                                                        completeMethod="#{lcenfMB.suggestNeighborhoods}" 
-                                                        size="40" >                                                        
+                                                        id="IdNeighborhoodHomeName"                                                        
+                                                        value="#{vifMB.currentNeighborhoodHome}"                                                                    
+                                                        completeMethod="#{vifMB.suggestNeighborhoods}" 
+                                                        disabled="#{vifMB.neighborhoodHomeNameDisabled}"
+                                                        size="40" 
+                                                        forceSelection="true">                                                        
                                                         <p:ajax 
                                                             event="itemSelect" 
-                                                            listener="#{lcenfMB.changeNeighborhoodHomeName}" 
+                                                            listener="#{vifMB.changeNeighborhoodHomeName}" 
                                                             update="IdNeighborhoodsHomeCode" process="@this"/>
                                                     </p:autoComplete>
                                                 </p:column>
@@ -249,14 +249,14 @@
                                                     <p:inputText
                                                         id="IdNeighborhoodsHomeCode"
                                                         disabled="true"
-                                                        value="#{lcenfMB.currentNeighborhoodHomeCode}"/>
+                                                        value="#{vifMB.currentNeighborhoodHomeCode}"/>
                                                 </p:column>
                                             </p:row>
                                             <p:row>  
                                                 <p:column>DIRECCION DE  RESIDENCIA:&nbsp;</p:column>
-                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column><p:inputText value="#{vifMB.currentDirectionHome}" size="40"/></p:column>
                                                 <p:column>TELEFONO DE  RESIDENCIA:&nbsp;</p:column>
-                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column><p:inputText value="#{vifMB.currentTelephoneHome}"/></p:column>
                                             </p:row>
                                         </p:panelGrid>
                                         <br/>
@@ -264,92 +264,63 @@
                                     </p:column>  
                                 </p:row>
                             </p:panelGrid>
+                            <!--=====================================LUGAR GEOGRAFICO DEL EVENTO==============================================-->
                             <br/>
-                            <!--=====================================DATOS DEL LUGAR GEOGRAFICO DEL EVENTO==============================================-->                            
                             <p:panelGrid>                            
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" style="text-align: center;">
-                                        <h:outputLabel value="LUGAR GEOGRAFICO DEL EVENTO:   "/>                                          
+                                        <h:outputLabel value="LUGAR GEOGRAFICO DEL EVENTO"/>                                          
                                     </p:column>  
                                 </p:row>
                                 <p:row>  
-                                    <p:column style="background-color: #f6fbff;">
+                                    <p:column style="background-color: #f6fbff;">                                        
                                         <!-- ///////////// DATOS ///////////////// -->
                                         <br/>
-                                        <p:panelGrid>                            
+                                        <p:panelGrid>                                                                        
                                             <p:row>  
-                                                <p:column>DEPARTAMENTO DEL EVENTO&nbsp;</p:column>
-                                                <p:column>
-                                                    <p:selectOneMenu value="#{lcenfMB.currentDepartamentHome}" > 
-                                                        <f:selectItems value="#{lcenfMB.departaments}"/>
-                                                        <f:ajax 
-                                                            event="change"                                                            
-                                                            render="IdDepartamentHomeCode2"/>
-                                                    </p:selectOneMenu>
-                                                </p:column>
-                                                <p:column>CODIGO DEPARTAMENTO:&nbsp;</p:column>
-                                                <p:column>
-                                                    <p:inputText 
-                                                        id="IdDepartamentHomeCode2"
-                                                        disabled="true"
-                                                        value="#{lcenfMB.currentDepartamentHomeCode}"/>
-                                                </p:column>
-                                            </p:row>
-                                            <p:row>  
-                                                <p:column>MUNICIPIO DEL EVENTO:&nbsp;</p:column>
-                                                <p:column>
-                                                    <p:selectOneMenu value="#{lcenfMB.currentMunicipalitie}"  > 
-                                                        <f:selectItems value="#{lcenfMB.municipalities}"/>
-                                                        <f:ajax 
-                                                            event="change"                                                            
-                                                            render="IdMunicipalitiesHomeCode2"/>
-                                                    </p:selectOneMenu>
-                                                </p:column>
-                                                <p:column>CODIGO MUNICIPIO:&nbsp;</p:column>
-                                                <p:column><p:inputText 
-                                                        id="IdMunicipalitiesHomeCode2"                                                        
-                                                        disabled="true"
-                                                        value="#{lcenfMB.currentMunicipalitieCode}"/></p:column>
-                                            </p:row>
-                                            <p:row>  
-                                                <p:column>BARRIO / CORREGIMIENTO / VEREDA:&nbsp; </p:column>
+                                                <p:column>BARRIO / VEREDA DEL EVENTO:&nbsp;</p:column>
                                                 <p:column>
                                                     <p:autoComplete 
-                                                        value="#{lcenfMB.currentNeighborhoodHomeName}"                                                                    
-                                                        completeMethod="#{lcenfMB.suggestNeighborhoods}" 
+                                                        value="#{vifMB.currentNeighborhoodEvent}"                                                                    
+                                                        completeMethod="#{vifMB.suggestNeighborhoods}" 
                                                         size="40" >                                                        
                                                         <p:ajax 
                                                             event="itemSelect" 
-                                                            listener="#{lcenfMB.changeNeighborhoodHomeName}" 
-                                                            update="IdNeighborhoodsHomeCode2" process="@this"/>
+                                                            listener="#{vifMB.changeNeighborhoodEvent}" 
+                                                            update="IdNeighborhoodsEventCode" process="@this"/>
                                                     </p:autoComplete>
+
                                                 </p:column>
-                                                <p:column>CODIGO BARRIO:&nbsp;  </p:column>
+                                                <p:column>CODIGO DEL BARRIO:&nbsp;</p:column>
                                                 <p:column>
-                                                    <p:inputText
-                                                        id="IdNeighborhoodsHomeCode2"
+                                                    <p:inputText 
+                                                        id="IdNeighborhoodsEventCode"
                                                         disabled="true"
-                                                        value="#{lcenfMB.currentNeighborhoodHomeCode}"/>
+                                                        value="#{vifMB.currentNeighborhoodEventCode}"/>
                                                 </p:column>
                                             </p:row>
                                             <p:row>  
-                                                <p:column>DIRECCION DEL EVENTO:&nbsp;</p:column>
-                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column >DIRECCION DEL  EVENTO:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:inputText 
+                                                        value="#{vifMB.currentDirectionEvent}" 
+                                                        size="40"/>
+                                                </p:column>
                                                 <p:column colspan="2">&nbsp;</p:column>
-
                                             </p:row>
                                         </p:panelGrid>
                                         <br/>
                                         <!-- ///////////// DATOS ///////////////// -->
                                     </p:column>  
                                 </p:row>
-                            </p:panelGrid>
-                            <br/>
+                            </p:panelGrid> 
+
                             <!--=====================================DATOS GENERALES DEL EVENTO==============================================-->                            
+                            <br/>
                             <p:panelGrid>                            
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" style="text-align: center;">
-                                        <h:outputLabel value="DATOS GENERALES DEL EVENTO:   "/>                                          
+                                        <h:outputLabel value="DATOS GENERALES DEL EVENTO"/>                                          
                                     </p:column>  
                                 </p:row>
                                 <p:row>  
@@ -359,63 +330,122 @@
                                         <p:panelGrid>                            
                                             <p:row>  
                                                 <p:column>FECHA EVENTO:</p:column>
-                                                <p:column colspan="2">
-                                                    DIA:&nbsp;
-                                                    <p:inputText value="#{lcenfMB.currentDayEvent}" size="2" >  
-                                                        <f:ajax 
-                                                            event="keyup"                                                                                                            
-                                                            render="IdDateEvent IdWeekdayEvent"/>
-                                                    </p:inputText>
-                                                    MES:&nbsp;
-                                                    <p:inputText value="#{lcenfMB.currentMonthEvent}" size="2" maxlength="2">
-                                                        <f:ajax 
-                                                            event="keyup"                                                                                                            
-                                                            render="IdDateEvent IdWeekdayEvent"/>
-                                                    </p:inputText>  
-                                                    AÑO:&nbsp;
-                                                    <p:inputText value="#{lcenfMB.currentYearEvent}" size="5" maxlength="4">
-                                                        <f:ajax 
-                                                            event="keyup"                                                                                                            
-                                                            render="IdDateEvent IdWeekdayEvent"/>
-                                                    </p:inputText> 
-                                                </p:column>
-                                            </p:row>                                            
-                                            <p:row>  
-                                                <p:column colspan="2" >
-                                                    FECHA EVENTO(dd/mm/yyyy):  <p:inputText disabled="true" id="IdDateEvent" value="#{lcenfMB.currentDateEvent}"/> 
-                                                </p:column>
                                                 <p:column>
-                                                    DIA SEMANA DEL  EVENTO:&nbsp;<p:inputText disabled="true" id="IdWeekdayEvent" value="#{lcenfMB.currentWeekdayEvent}" size="2"/> 
+                                                    <p:panelGrid> 
+                                                        <p:row>  
+                                                            <p:column>
+                                                                DIA:  
+                                                            </p:column>
+                                                            <p:column>
+                                                                MES:  
+                                                            </p:column>
+                                                            <p:column>
+                                                                AÑO:
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentDayEvent}" size="2" >  
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                </p:inputText>  
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentMonthEvent}" size="2" maxlength="2">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                </p:inputText>   
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentYearEvent}" size="5" maxlength="4">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                </p:inputText>
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>
+                                                </p:column>
+                                                <p:column >
+                                                    <p:panelGrid> 
+                                                        <p:row>  
+                                                            <p:column>
+                                                                FECHA EVENTO<br/>(dd/mm/yyyy):  
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText disabled="true" id="IdDateEvent" value="#{vifMB.currentDateEvent}"/> 
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>
+                                                                DIA EN SEMANA  
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText 
+                                                                    disabled="true" 
+                                                                    id="IdWeekdayEvent" 
+                                                                    value="#{vifMB.currentWeekdayEvent}" 
+                                                                    size="9"/> 
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>
                                                 </p:column>
                                             </p:row>                                            
+
                                             <p:row>                                                
                                                 <p:column>
                                                     HORA EVENTO:
                                                 </p:column>
                                                 <p:column>
-                                                    HORAS:&nbsp;
-                                                    <p:inputText value="#{lcenfMB.currentHourEvent}" size="2">
-                                                        <f:ajax 
-                                                            event="keyup"                                                                                                            
-                                                            render="IdTimeEvent"/>
-                                                    </p:inputText> 
-                                                    MINUTOS:&nbsp;
-                                                    <p:inputText value="#{lcenfMB.currentMinuteEvent}" size="2">
-                                                        <f:ajax 
-                                                            event="keyup"                                                                                                            
-                                                            render="IdTimeEvent"/>
-                                                    </p:inputText> 
-                                                    AMPM:&nbsp;
-                                                    <p:selectOneMenu value="#{lcenfMB.currentAmPmEvent}" > 
-                                                        <f:selectItem itemLabel=" " itemValue="-" />  
-                                                        <f:selectItem itemLabel="AM" itemValue="AM" />  
-                                                        <f:selectItem itemLabel="PM" itemValue="PM" />
-                                                    </p:selectOneMenu>
+                                                    <p:panelGrid> 
+                                                        <p:row>  
+                                                            <p:column>
+                                                                HORAS:  
+                                                            </p:column>
+                                                            <p:column>
+                                                                MINUTOS:  
+                                                            </p:column>
+                                                            <p:column>
+                                                                AMPM:
+                                                            </p:column>
+                                                        </p:row>                                            
+                                                        <p:row>                                                
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentHourEvent}" size="2">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdTimeEvent"/>
+                                                                </p:inputText>
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentMinuteEvent}" size="2">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdTimeEvent"/>
+                                                                </p:inputText> 
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:selectOneMenu value="#{vifMB.currentAmPmEvent}" >                                                                     
+                                                                    <f:selectItem itemLabel="AM" itemValue="AM" />  
+                                                                    <f:selectItem itemLabel="PM" itemValue="PM" />
+                                                                    <f:ajax 
+                                                                        event="change"                                                                                                            
+                                                                        render="IdTimeEvent"/>
+                                                                </p:selectOneMenu>
+                                                            </p:column>
+                                                        </p:row> 
+                                                    </p:panelGrid>
                                                 </p:column>
                                                 <p:column>
                                                     HORA MILITAR EVENTO:&nbsp;                                                    
-                                                    <p:inputText id="IdTimeEvent" value="#{lcenfMB.currentMilitaryHourEvent}" 
-                                                                 maxlength="4" size="4"/>
+                                                    <p:inputText 
+                                                        id="IdTimeEvent" 
+                                                        disabled="true" 
+                                                        value="#{vifMB.currentMilitaryHourEvent}" 
+                                                        maxlength="4" 
+                                                        size="4"/>
                                                 </p:column>
                                             </p:row>
                                         </p:panelGrid>
@@ -423,60 +453,128 @@
                                         <br/>
                                         <p:panelGrid>                            
                                             <p:row>  
-                                                <p:column>FECHA ATENCION:</p:column>
-                                                <p:column colspan="2">
-                                                    DIA:&nbsp;
-                                                    <p:inputText value="#{lcenfMB.currentDayConsult}" size="2" >
-                                                        <f:ajax 
-                                                            event="keyup"                                                                                                            
-                                                            render="IdDateConsult IdWeekdayConsult"/>
-                                                    </p:inputText>
-                                                    MES:&nbsp;
-                                                    <p:inputText value="#{lcenfMB.currentMonthConsult}" size="2" maxlength="2">  
-                                                        <f:ajax 
-                                                            event="keyup"                                                                                                            
-                                                            render="IdDateConsult IdWeekdayConsult"/>
-                                                    </p:inputText>
-                                                    AÑO:&nbsp;
-                                                    <p:inputText value="#{lcenfMB.currentYearConsult}" size="2" maxlength="4">
-                                                        <f:ajax 
-                                                            event="keyup"                                                                                                            
-                                                            render="IdDateConsult IdWeekdayConsult"/>
-                                                    </p:inputText>
-                                                </p:column>
-                                            </p:row>                                            
-                                            <p:row>  
-                                                <p:column colspan="2">
-                                                    FECHA DE LA ATENCION (dd/mm/yyyy):  
-                                                    <p:inputText 
-                                                        disabled="true" 
-                                                        id="IdDateConsult" 
-                                                        value="#{lcenfMB.currentDateConsult}"/> 
+                                                <p:column>FECHA CONSULTA:</p:column>
+                                                <p:column>
+                                                    <p:panelGrid> 
+                                                        <p:row>  
+                                                            <p:column>
+                                                                DIA:  
+                                                            </p:column>
+                                                            <p:column>
+                                                                MES:  
+                                                            </p:column>
+                                                            <p:column>
+                                                                AÑO:
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentDayConsult}" size="2" >  
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdDateConsult IdWeekdayConsult"/>
+                                                                </p:inputText>  
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentMonthConsult}" size="2" maxlength="2">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdDateConsult IdWeekdayConsult"/>
+                                                                </p:inputText>   
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentYearConsult}" size="5" maxlength="4">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdDateConsult IdWeekdayConsult"/>
+                                                                </p:inputText>
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>                                                    
                                                 </p:column>
                                                 <p:column>
-                                                    DIA SEMANA DEL LA ATENCION&nbsp;
-                                                    <p:inputText 
-                                                        disabled="true" 
-                                                        id="IdWeekdayConsult" 
-                                                        value="#{lcenfMB.currentWeekdayConsult}" size="2"/> 
+                                                    <p:panelGrid>
+                                                        <p:row>  
+                                                            <p:column>
+                                                                FECHA CONSULTA<br/> (dd/mm/yyyy):  
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText 
+                                                                    disabled="true" 
+                                                                    id="IdDateConsult" 
+                                                                    value="#{vifMB.currentDateConsult}"/>
+                                                            </p:column>
+
+                                                        </p:row>   
+                                                        <p:row>  
+                                                            <p:column>
+                                                                DIA EN SEMANA
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText 
+                                                                    disabled="true" 
+                                                                    id="IdWeekdayConsult" 
+                                                                    value="#{vifMB.currentWeekdayConsult}" 
+                                                                    size="9"/> 
+
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>
                                                 </p:column>
                                             </p:row>                                            
+
                                             <p:row>                                                
                                                 <p:column>
-                                                    HORA DE ATENCION
+                                                    HORA CONSULTA
                                                 </p:column>
                                                 <p:column>
-                                                    HORAS:&nbsp;<p:inputText value="#{lcenfMB.currentHourConsult}" size="2"/> 
-                                                    MINUTOS:&nbsp;<p:inputText value="#{lcenfMB.currentMinuteConsult}" size="2"/> 
-                                                    AMPM:&nbsp;
-                                                    <p:selectOneMenu value="#{lcenfMB.currentAmPmConsult}" > 
-                                                        <f:selectItem itemLabel=" " itemValue="" />  
-                                                        <f:selectItem itemLabel="AM" itemValue="AM" />  
-                                                        <f:selectItem itemLabel="PM" itemValue="PM" />
-                                                    </p:selectOneMenu>
+                                                    <p:panelGrid>
+                                                        <p:row>  
+                                                            <p:column>
+                                                                HORAS:
+                                                            </p:column>
+                                                            <p:column>
+                                                                MINUTOS:
+                                                            </p:column>
+                                                            <p:column>
+                                                                AMPM:
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentHourConsult}" size="2">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdTimeConsult"/>
+                                                                </p:inputText>
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentMinuteConsult}" size="2">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdTimeConsult"/>
+                                                                </p:inputText> 
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:selectOneMenu value="#{vifMB.currentAmPmConsult}" >                                                                     
+                                                                    <f:selectItem itemLabel="AM" itemValue="AM" />  
+                                                                    <f:selectItem itemLabel="PM" itemValue="PM" />
+                                                                    <f:ajax 
+                                                                        event="change"                                                                                                            
+                                                                        render="IdTimeConsult"/>
+                                                                </p:selectOneMenu>
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>                                                                                                        
                                                 </p:column>
                                                 <p:column>
-                                                    HORA MILITAR DE LA ATENCIONA&nbsp;<p:inputText value="#{lcenfMB.currentMilitaryHourConsult}" maxlength="4"  size="4"/> Hrs
+                                                    HORA MILITAR CONSULTA&nbsp;
+                                                    <p:inputText 
+                                                        id="IdTimeConsult"
+                                                        value="#{vifMB.currentMilitaryHourConsult}" 
+                                                        maxlength="4" 
+                                                        disabled="true"
+                                                        size="4"/>
                                                 </p:column>
                                             </p:row>
                                         </p:panelGrid>
@@ -486,37 +584,64 @@
                                             <p:row>  
                                                 <p:column>REMITIDO:&nbsp;</p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu  > 
-                                                        <f:selectItem itemLabel="SI" itemValue="1" />  
-                                                        <f:selectItem itemLabel="NO" itemValue="2" />  
-                                                        <f:selectItem itemLabel="NO SE SABE" itemValue="3" />
+                                                    <p:selectBooleanCheckbox value="#{vifMB.isSubmitted}">
+                                                        <f:ajax 
+                                                            event="change"
+                                                            listener="#{vifMB.changeSubmitted}"
+                                                            render="IdIPS"/>
+                                                    </p:selectBooleanCheckbox>
+                                                </p:column>
+                                                <p:column>DE QUE IPS?:&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:selectOneMenu 
+                                                        id="IdIPS"
+                                                        disabled="#{vifMB.IPSDisabled}"
+                                                        value="#{vifMB.currentIPS}"  > 
+                                                        <f:selectItems value="#{vifMB.IPSs}"/>                                                        
                                                     </p:selectOneMenu>
                                                 </p:column>
-                                                <p:column>DE DONDE?:&nbsp;</p:column>
-                                                <p:column><p:inputText value=""/></p:column>
                                             </p:row>  
-                                        </p:panelGrid> 
+                                        </p:panelGrid>  
+
                                         <br/>
-                                        <p:panelGrid>                                                            
+                                        <p:panelGrid>                                               
                                             <p:row>  
                                                 <p:column>LUGAR DEL HECHO:&nbsp;</p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu value="#{lcenfMB.currentPlace}" > 
-                                                        <f:selectItems value="#{lcenfMB.places}"/>
+                                                    <p:selectOneMenu value="#{vifMB.currentPlace}" > 
+                                                        <f:selectItems value="#{vifMB.places}"/>
+                                                        <f:ajax 
+                                                            event="change"   							    
+                                                            listener="#{vifMB.changePlace}"
+                                                            render="IdOtherPlace"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column colspan="2">CUAL OTRO LUGAR?:&nbsp;</p:column>
-                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column>
+                                                    <p:inputText 
+                                                        value="#{vifMB.currentOtherPlace}"
+                                                        id="IdOtherPlace"
+                                                        disabled="#{vifMB.otherPlaceDisabled}"/>
+                                                </p:column>
                                             </p:row>  
                                             <p:row>  
-                                                <p:column>ACTIVIDAD DURANTE EL EVENTO:&nbsp;</p:column>
+                                                <p:column>ACTIVIDAD:&nbsp;</p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu value="#{lcenfMB.currentActivities}" > 
-                                                        <f:selectItems value="#{lcenfMB.activities}"/>
+                                                    <p:selectOneMenu value="#{vifMB.currentActivities}" > 
+                                                        <f:selectItems value="#{vifMB.activities}"/>
+                                                        <f:ajax 
+                                                            event="change"   							    
+                                                            listener="#{vifMB.changeActivities}"
+                                                            render="IdOtherActivities"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column colspan="2">CUAL  OTRA  ACTIVIDAD?:&nbsp;</p:column>
-                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column>
+                                                    <p:inputText 
+                                                        value="#{vifMB.currentOtherActivitie}" 
+                                                        id="IdOtherActivities"
+                                                        disabled="#{vifMB.otherActivityDisabled}"/>
+                                                </p:column>
                                             </p:row>  
                                         </p:panelGrid>  
                                         <br/>
@@ -524,29 +649,91 @@
                                             <p:row>  
                                                 <p:column>MECANISMO / OBJETO DE LA LESION:&nbsp;</p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu value="#{lcenfMB.currentMechanisms}" > 
-                                                        <f:selectItems value="#{lcenfMB.mechanisms}"/>
+                                                    <p:selectOneMenu value="#{vifMB.currentMechanisms}" > 
+                                                        <f:selectItems value="#{vifMB.mechanisms}"/>
+                                                        <f:ajax 
+                                                            event="change"   							    
+                                                            listener="#{vifMB.changeMechanisms}"
+                                                            render="IdOtherMechanism
+                                                            IdHeightWhich
+                                                            IdPowderWhich
+                                                            IdDisasterWhich
+                                                            IdForBurned"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                             </p:row>  
                                             <p:row>  
                                                 <p:column>ALTURA?:&nbsp;</p:column>
-                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column>
+                                                    <p:inputText 
+                                                        id="IdHeightWhich"
+                                                        value="#{vifMB.heightWhich}"
+                                                        disabled="#{vifMB.heightWhichDisabled}"/>
+                                                </p:column>
                                             </p:row>  
                                             <p:row>  
                                                 <p:column>CUAL POLVORA:&nbsp;</p:column>
-                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column>
+                                                    <p:inputText 
+                                                        id="IdPowderWhich"
+                                                        value="#{vifMB.powderWhich}"
+                                                        disabled="#{vifMB.powderWhichDisabled}"/>
+                                                </p:column>
                                             </p:row>  
                                             <p:row>  
                                                 <p:column>CUAL DESASTRE  NATURAL:&nbsp;</p:column>
-                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column>
+                                                    <p:inputText 
+                                                        id="IdDisasterWhich"
+                                                        value="#{vifMB.disasterWhich}"
+                                                        disabled="#{vifMB.disasterWhichDisabled}"/>
+                                                </p:column>
                                             </p:row>  
                                             <p:row>  
                                                 <p:column>OTRO MECANISMO/ OBJETO:&nbsp;</p:column>
-                                                <p:column><p:inputText value=""/></p:column>
+                                                <p:column>
+                                                    <p:inputText 
+                                                        id="IdOtherMechanism"
+                                                        value="#{vifMB.otherMechanism}"
+                                                        disabled="#{vifMB.otherMechanismDisabled}"/>
+                                                </p:column>
                                             </p:row>  
-                                        </p:panelGrid>  
+                                        </p:panelGrid> 
+                                        <br/>
+                                        <p:panelGrid id="IdForBurned" style="display: #{vifMB.forBurned};">
+                                            <p:row>
+                                                <p:column>						    
+                                                    <p:panelGrid>                                                                                    
+                                                        <p:row>  
+                                                            <p:column colspan="2">
+                                                                PARA LOS QUEMADOS:&nbsp;
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row> 
+                                                            <p:column>
+                                                                GRADO MAS  GRAVE:&nbsp;
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:selectOneMenu value="#{vifMB.currentLevelBurned}"  > 
+                                                                    <f:selectItem itemLabel="GRADO 1" itemValue="1" />  
+                                                                    <f:selectItem itemLabel="GRADO 2" itemValue="2" />  
+                                                                    <f:selectItem itemLabel="GRADO 3" itemValue="3" />                                                        
+                                                                </p:selectOneMenu>
+                                                            </p:column>
+                                                        </p:row> 
+                                                        <p:row>
+                                                            <p:column>
+                                                                PORCENTAJE: &nbsp;
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText value="#{vifMB.currentPercentBurned}"/>
+                                                            </p:column>
+                                                        </p:row>  					    
+                                                    </p:panelGrid>   
 
+                                                </p:column>						
+                                            </p:row>  					    
+                                        </p:panelGrid>                                         
                                         <br/>
                                         <p:panelGrid>                            
                                             <p:row>  
@@ -554,61 +741,29 @@
                                                     USO DE ALCOHOL:&nbsp;
                                                 </p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu  > 
-                                                        <f:selectItem itemLabel="SI HA CONSUMIDO" itemValue="1" />  
-                                                        <f:selectItem itemLabel="SOSPECHA DE USO" itemValue="2" />  
-                                                        <f:selectItem itemLabel="NO HA CONSUMIDO" itemValue="3" />
-                                                        <f:selectItem itemLabel="NO SE SABE" itemValue="4" />
+                                                    <p:selectOneMenu value="#{vifMB.currentUseAlcohol}" > 
+                                                        <f:selectItems value="#{vifMB.useAlcohol}"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>
                                                     USO DE DROGAS:&nbsp;
                                                 </p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu  > 
-                                                        <f:selectItem itemLabel="SI HA CONSUMIDO" itemValue="1" />  
-                                                        <f:selectItem itemLabel="SOSPECHA DE USO" itemValue="2" />  
-                                                        <f:selectItem itemLabel="NO HA CONSUMIDO" itemValue="3" />
-                                                        <f:selectItem itemLabel="NO SE SABE" itemValue="4" />
+                                                    <p:selectOneMenu value="#{vifMB.currentUseDrugs}" > 
+                                                        <f:selectItems value="#{vifMB.useDrugs}"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                             </p:row>
                                         </p:panelGrid>
                                         <br/>
-                                        <p:panelGrid>                                                                                    
-                                            <p:row>  
-                                                <p:column colspan="2">
-                                                    PARA LOS QUEMADOS:&nbsp;
-                                                </p:column>
-                                            </p:row>
-                                            <p:row> 
-                                                <p:column>
-                                                    GRADO MAS  GRAVE:&nbsp;
-                                                </p:column>
-                                                <p:column>
-                                                    <p:selectOneMenu  > 
-                                                        <f:selectItem itemLabel="GRADO 1" itemValue="1" />  
-                                                        <f:selectItem itemLabel="GRADO 2" itemValue="2" />  
-                                                        <f:selectItem itemLabel="GRADO 3" itemValue="3" />                                                        
-                                                    </p:selectOneMenu>
-                                                </p:column>
-                                            </p:row> 
-                                            <p:row>
-                                                <p:column>
-                                                    PORCENTAJE: &nbsp;
-                                                </p:column>
-                                                <p:column>
-                                                    <p:inputText value=""/>
-                                                </p:column>
-                                            </p:row>  					    
-                                        </p:panelGrid>                                         
-                                        <br/>
+
                                         <!-- ///////////// DATOS ///////////////// -->
                                     </p:column>  
                                 </p:row>
-                            </p:panelGrid>
-                            <br/>
+                            </p:panelGrid> 
+
                             <!--=====================================GRUPOS ESPECIALES==============================================-->                            
+                            <br/>
                             <p:panelGrid>                            
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" style="text-align: center;">
@@ -622,40 +777,49 @@
                                         <p:panelGrid>                            
                                             <p:row>
                                                 <p:column>
-                                                    <h:outputLabel value="GRUPO ETNICO:   "/>                                          
+                                                    <h:outputLabel value="GRUPO ETNICO:"/>                                          
                                                 </p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu  > 
-                                                        <f:selectItem itemLabel="AFROCOLOMBIANO" itemValue="1" />  
-                                                        <f:selectItem itemLabel="INDIGENA" itemValue="2" />  
-                                                        <f:selectItem itemLabel="OTRO" itemValue="3" />
-                                                        <f:selectItem itemLabel="NINGUNO" itemValue="4" />
+                                                    <p:selectOneMenu value="#{vifMB.currentEthnicGroup}" > 
+                                                        <f:selectItems value="#{vifMB.ethnicGroups}"/>
+                                                        <f:ajax 
+                                                            event="change"   							    
+                                                            listener="#{vifMB.changeEthnicGroups}"
+                                                            render="IdOtherEthnicGroup"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>
-                                                    <h:outputLabel value="CUAL:   "/>                                        
+                                                    <h:outputLabel value="CUAL OTRO:   "/>                                        
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText value=""/>
+                                                    <p:inputText 
+                                                        id="IdOtherEthnicGroup"
+                                                        value="#{vifMB.otherEthnicGroup}"
+                                                        disabled="#{vifMB.otherEthnicGroupDisabled}"/>
                                                 </p:column>                                                
                                             </p:row> 
                                             <p:row>
                                                 <p:column>
-                                                    <h:outputLabel value="GRUPO VULNERABLE:   "/>                                          
+                                                    <h:outputLabel value="GRUPO VULNERABLE:   "/>
+
                                                 </p:column>
                                                 <p:column>
-                                                    <p:selectOneMenu  > 
-                                                        <f:selectItem itemLabel=".." itemValue="1" />  
-                                                        <f:selectItem itemLabel=".." itemValue="2" />  
-                                                        <f:selectItem itemLabel=".." itemValue="3" />
-                                                        <f:selectItem itemLabel=".." itemValue="4" />
+                                                    <p:selectOneMenu value="#{vifMB.currentVulnerableGroup}" > 
+                                                        <f:selectItems value="#{vifMB.vulnerableGroups}"/>
+                                                        <f:ajax 
+                                                            event="change"   							    
+                                                            listener="#{vifMB.changeVulnerableGroup}"
+                                                            render="IdOtherVulnerableGroup"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>
-                                                    <h:outputLabel value="CUAL:   "/>                                        
+                                                    <h:outputLabel value="CUAL OTRO:   "/>                                        
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText value=""/>
+                                                    <p:inputText 
+                                                        id="IdOtherVulnerableGroup"
+                                                        value="#{vifMB.otherVulnerableGroup}"
+                                                        disabled="#{vifMB.otherVulnerableGroupDisabled}"/>
                                                 </p:column> 
                                             </p:row>
                                         </p:panelGrid>
@@ -665,7 +829,7 @@
                                 </p:row>
                             </p:panelGrid>
                             <br/>
-			    <!--===================================== DATOS ESPECIFICOS DEL EVENTO==============================================-->                                        
+                            <!--===================================== DATOS ESPECIFICOS DEL EVENTO==============================================-->                                        
                             <p:panelGrid>                            
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" style="text-align: center;">
@@ -674,185 +838,248 @@
                                 </p:row>
                                 <p:row>  
                                     <p:column style="background-color: #f6fbff;"> 
-					<!--===================================== VIOLENCIA INTRAFAMILIAR==============================================-->                                        
-					<br/>
-					<p:panelGrid>                            
-					    <p:row>  
-						<p:column styleClass="ui-widget-header" style="text-align: center;">
-						    <h:outputLabel value="VIOLENCIA INTRAFAMILIAR:   "/>                                          
-						</p:column>  
-					    </p:row>
-					    <p:row>  
-						<p:column>                                        
-						    <!-- ///////////// DATOS ///////////////// -->
-						    <br/> 
-						    <p:panelGrid>                            
-							<p:row>  
-							    <p:column colspan="2" styleClass="ui-widget-header">TIPO DE MALTRATO</p:column>
-							    <p:column  colspan="2" styleClass="ui-widget-header">TIPO AGRESOR</p:column>
-							</p:row>
-							<p:row>  
-							    <p:column>MA1. FISICO</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							    <p:column>AG1. PADRE</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							</p:row>
-							<p:row>  
-							    <p:column>MA2. PSICOLOGICO/VERBAL</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							    <p:column>AG2. MADRE</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							</p:row>
-							<p:row>  
-							    <p:column>MA3. ABUSO SEXUAL</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							    <p:column>AG3. PADRASTRO</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							</p:row>
-							<p:row>  
-							    <p:column>MA4. NEGLIGENCIA</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							    <p:column>AG4. MADRASTRA</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							</p:row>
-							<p:row>  
-							    <p:column>MA5. ABANDONO</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							    <p:column>AG5. CONYUGE/COMP</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							</p:row>
-							<p:row>  
-							    <p:column>MA6. INSTITUCIONAL</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							    <p:column>AG6. HERMANO/A</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							</p:row>
-							<p:row>  
-							    <p:column>MA7. SIN DATO</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							    <p:column>AG7. HIJO</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							</p:row>
-							<p:row>  
-							    <p:column>MA8. OTRO</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							    <p:column>AG8. OTRO</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							</p:row>
-							<p:row>  
-							    <p:column>CUAL OTRO</p:column>
-							    <p:column><p:inputText value="#" /></p:column>
-							    <p:column>CUAL OTRO</p:column>
-							    <p:column><p:inputText value="#" /></p:column>
-							</p:row>
-							<p:row>  
-							    <p:column colspan="2">&nbsp;</p:column>
-							    <p:column>AG9. SIN DATO</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							</p:row>	
-							<p:row>  
-							    <p:column colspan="2">&nbsp;</p:column>
-							    <p:column>AG10. NOVIO</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>
-							</p:row>	
-						    </p:panelGrid>                                        
-						    <br/>   
-						    <!-- ///////////// DATOS ///////////////// -->
-						</p:column>  
-					    </p:row>
-					</p:panelGrid>
-					<br/>
-					<!--=====================================  ACCION A REALIZAR==============================================-->                                        
-					<p:panelGrid>                            
-					    <p:row>  
-						<p:column styleClass="ui-widget-header" style="text-align: center;">
-						    <h:outputLabel value=" ACCION A REALIZAR:   "/>                                          
-						</p:column>  
-					    </p:row>
-					    <p:row>  
-						<p:column>                                        
-						    <!-- ///////////// DATOS ///////////////// -->
-						    <br/> 
-						    <p:panelGrid>                            
+                                        <!--===================================== VIOLENCIA INTRAFAMILIAR==============================================-->                                        
+                                        <br/>
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column styleClass="ui-widget-header" style="text-align: center;">
+                                                    <h:outputLabel value="VIOLENCIA INTRAFAMILIAR:   "/>                                          
+                                                </p:column>  
+                                            </p:row>
+                                            <p:row>  
+                                                <p:column>                                        
+                                                    <!-- ///////////// DATOS ///////////////// -->
+                                                    <br/> 
+                                                    <p:panelGrid>                            
+                                                        <p:row>  
+                                                            <p:column>
+                                                                <p:panelGrid>                            
+                                                                    <p:row>                                                              
+                                                                        <p:column colspan="2" styleClass="ui-widget-header">TIPO AGRESOR</p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>AG1. PADRE</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG1}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>AG2. MADRE</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG2}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>AG3. PADRASTRO</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG3}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>AG4. MADRASTRA</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG4}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>AG5. CONYUGE/COMP</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG5}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>AG6. HERMANO/A</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG6}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>AG7. HIJO</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG7}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>AG8. OTRO</p:column>
+                                                                        <p:column>
+                                                                            <p:selectBooleanCheckbox value="#{vifMB.isAG8}" >                                                                            
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeOtherAG}"
+                                                                                    render="IdOtherAG"/>
+                                                                            </p:selectBooleanCheckbox>
+                                                                        </p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>CUAL OTRO</p:column>
+                                                                        <p:column>
+                                                                            <p:inputText 
+                                                                                id="IdOtherAG"
+                                                                                disabled="#{vifMB.otherAGDisabled}"
+                                                                                value="#{vifMB.otherAG}"/>
+                                                                        </p:column>
+                                                                    </p:row> 
+                                                                    <p:row>  
+                                                                        <p:column>AG9. SIN DATO</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isUnknownAG}" /></p:column>
+                                                                    </p:row>					    
+                                                                    <p:row>  
+                                                                        <p:column>AG10. NOVIO</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG10}" /></p:column>
+                                                                    </p:row>					    
+                                                                </p:panelGrid> 
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:panelGrid>                            
+                                                                    <p:row>  
+                                                                        <p:column colspan="2" styleClass="ui-widget-header">TIPO DE MALTRATO</p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>MA1. FISICO</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA1}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>MA2. PSICOLOGICO/VERBAL</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA2}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>MA3. ABUSO SEXUAL</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA3}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>MA4. NEGLIGENCIA</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA4}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>MA5. ABANDONO</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA5}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>MA6. INSTITUCIONAL</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA6}" /></p:column>
+                                                                    </p:row>
+                                                                    <p:row>  
+                                                                        <p:column>MA7. SIN DATO</p:column>
+                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isUnknownMA}" /></p:column>
+                                                                    </p:row>                                                                    	    
+                                                                    <p:row>  
+                                                                        <p:column>MA8. OTRO</p:column>
+                                                                        <p:column>
+                                                                            <p:selectBooleanCheckbox value="#{vifMB.isMA8}" >                                                                            
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeOtherMA}"
+                                                                                    render="IdOtherMA"/>
+                                                                            </p:selectBooleanCheckbox>
+                                                                        </p:column>
+                                                                    </p:row>                                                                    	    
+                                                                    <p:row>  
+                                                                        <p:column>CUAL OTRO</p:column>
+                                                                        <p:column>
+                                                                            <p:inputText 
+                                                                                id="IdOtherMA"
+                                                                                disabled="#{vifMB.otherMADisabled}"
+                                                                                value="#{vifMB.otherMA}"/>
+                                                                        </p:column>
+                                                                    </p:row>                                                                    	    
+                                                                </p:panelGrid>
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>
+                                                    <br/>  
+                                                </p:column>  
+                                            </p:row>
+                                        </p:panelGrid>
+                                        <br/>
+                                        <!--=====================================  ACCION A REALIZAR==============================================-->                                        
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column styleClass="ui-widget-header" style="text-align: center;">
+                                                    <h:outputLabel value=" ACCION A REALIZAR:   "/>                                          
+                                                </p:column>  
+                                            </p:row>
+                                            <p:row>  
+                                                <p:column>                                        
+                                                    <!-- ///////////// DATOS ///////////////// -->
+                                                    <br/> 
+                                                    <p:panelGrid>                            
 
-							<p:row>  
-							    <p:column>CONCILIACION</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-							<p:row>  
-							    <p:column>CAUCION</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-							<p:row>  
-							    <p:column>DICTAMEN MEDICINALEGAL</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-							<p:row>  
-							    <p:column>REMISION FISCALIA</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-							<p:row>  
-							    <p:column>REMISION MEDICINA LEGAL</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
+                                                        <p:row>  
+                                                            <p:column>CONCILIACION</p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction1}" /></p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>CAUCION</p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction2}" /></p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>DICTAMEN MEDICINALEGAL</p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction3}" /></p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>REMISION FISCALIA</p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction4}" /></p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>REMISION MEDICINA LEGAL</p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction5}" /></p:column>    
+                                                        </p:row>
 
-							<p:row>  
-							    <p:column>REMISIONCOM FAMILIA</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-							<p:row>  
-							    <p:column>REMISIONICBF</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-							<p:row>  
-							    <p:column>{MEDI}DAS {PRO}TECCION </p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
+                                                        <p:row>  
+                                                            <p:column>REMISIONCOM FAMILIA</p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction6}" /></p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>REMISIONICBF</p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction7}" /></p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>MEDIDAS PROTECCION </p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction8}" /></p:column>    
+                                                        </p:row>
 
-							<p:row>  
-							    <p:column>REMISION A SALUD</p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-							<p:row>  
-							    <p:column>ATENCION PSICOSOCIAL </p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-							<p:row>  
-							    <p:column>RESTABLECIMIENTO DERECHOS </p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-							<p:row>  
-							    <p:column>OTRA </p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-							<p:row>  
-							    <p:column>CUAL OTRA </p:column>
-							    <p:column><p:inputText value="" /></p:column>    
-							</p:row>                                                        
-							<p:row>  
-							    <p:column>SIN DATO </p:column>
-							    <p:column><p:selectBooleanCheckbox value="#" /></p:column>    
-							</p:row>
-						    </p:panelGrid>                                        
-						    <br/>   
-						    <!-- ///////////// DATOS ///////////////// -->
-						</p:column>  
-					    </p:row>
-					</p:panelGrid>
-					<!--=====================================RESPONSABLE:==============================================-->
-					<br/>                            
-					<p:panelGrid>                            
-					    <p:row>  
-						<p:column><h:outputLabel value="RESPONSABLE:   "/></p:column>
-						<p:column><p:inputText value="" /></p:column>
-					    </p:row>
-					</p:panelGrid>
-					<br/>
-				    </p:column>
-				</p:row>
-				<br/>
-			    </p:panelGrid>
-			    <br/>
+                                                        <p:row>  
+                                                            <p:column>REMISION A SALUD</p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction9}" /></p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>ATENCION PSICOSOCIAL </p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction10}" /></p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>RESTABLECIMIENTO DERECHOS </p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction11}" /></p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>OTRA </p:column>
+                                                            <p:column>                                                                
+                                                                <p:selectBooleanCheckbox value="#{vifMB.isAction12}" >                                                                            
+                                                                    <f:ajax 
+                                                                        event="change"
+                                                                        listener="#{vifMB.changeOtherAction}"
+                                                                        render="IdOtherAction"/>
+                                                                </p:selectBooleanCheckbox>
+                                                            </p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>CUAL OTRA </p:column>
+                                                            <p:column>
+                                                                <p:inputText 
+                                                                    id="IdOtherAction"
+                                                                    disabled="#{vifMB.otherActionDisabled}"
+                                                                    value="#{vifMB.otherAction}"/>
+                                                            </p:column>    
+                                                        </p:row>                                                        
+                                                        <p:row>  
+                                                            <p:column>SIN DATO </p:column>
+                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isUnknownAction}" /></p:column>    
+                                                        </p:row>
+                                                    </p:panelGrid>                                        
+                                                    <br/>   
+                                                    <!-- ///////////// DATOS ///////////////// -->
+                                                </p:column>  
+                                            </p:row>
+                                        </p:panelGrid>
+                                        <!--=====================================RESPONSABLE:==============================================-->
+                                        <br/>                            
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column><h:outputLabel value="RESPONSABLE:   "/></p:column>
+                                                <p:column><p:inputText value="" /></p:column>
+                                            </p:row>
+                                        </p:panelGrid>
+                                        <br/>
+                                    </p:column>
+                                </p:row>
+                                <br/>
+                            </p:panelGrid>
+                            <br/>
                             <br/>
                             <br/>
                             <br/>

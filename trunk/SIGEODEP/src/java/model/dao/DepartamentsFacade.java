@@ -28,12 +28,29 @@ public class DepartamentsFacade extends AbstractFacade<Departaments> {
     }
     
     public Departaments findByName(String name) {
-        String hql = "Select x from Departaments x where x.departamentName=:name";
-        return (Departaments)em.createQuery(hql).setParameter("name", name).getSingleResult();
+        
+        try
+        {
+            String hql = "Select x from Departaments x where x.departamentName=:name";
+            return (Departaments)em.createQuery(hql).setParameter("name", name).getSingleResult();
+        }
+        catch(Exception e)
+        {
+            System.out.print("Error: "+e.toString()+"------------------------");
+            return null;
+        }
     }
     public Departaments findById(Short id) {
-        String hql = "Select x from Departaments x where x.departamentId=:id";
-        return (Departaments)em.createQuery(hql).setParameter("id", id).getSingleResult();
+        try
+        {
+            String hql = "Select x from Departaments x where x.departamentId=:id";
+            return (Departaments)em.createQuery(hql).setParameter("id", id).getSingleResult();
+        }
+        catch(Exception e)
+        {
+            System.out.print("Error: "+e.toString()+"------------------------");
+            return null;
+        }
     }
     
 }

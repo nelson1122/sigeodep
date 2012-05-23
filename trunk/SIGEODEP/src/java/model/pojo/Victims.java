@@ -34,6 +34,9 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Victims.findByVictimClass", query = "SELECT v FROM Victims v WHERE v.victimClass = :victimClass"),
     @NamedQuery(name = "Victims.findByVictimId", query = "SELECT v FROM Victims v WHERE v.victimId = :victimId")})
 public class Victims implements Serializable {
+    @Column(name = "victim_date_of_birth")
+    @Temporal(TemporalType.DATE)
+    private Date victimDateOfBirth;
     private static final long serialVersionUID = 1L;
     @Size(max = 20)
     @Column(name = "victim_nid", length = 20)
@@ -56,9 +59,6 @@ public class Victims implements Serializable {
     private String victimAddress;
     @Column(name = "victim_neighborhood_id")
     private Integer victimNeighborhoodId;
-    @Column(name = "victim_date_of_birth")
-    @Temporal(TemporalType.DATE)
-    private Date victimDateOfBirth;
     @Column(name = "victim_class")
     private Short victimClass;
     @Id
@@ -287,6 +287,6 @@ public class Victims implements Serializable {
     @Override
     public String toString() {
         return "model.pojo.Victims[ victimId=" + victimId + " ]";
-    }
+    }    
     
 }

@@ -19,15 +19,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @NamedQueries({
     @NamedQuery(name = "FatalInjuryTraffic.findAll", query = "SELECT f FROM FatalInjuryTraffic f"),
     @NamedQuery(name = "FatalInjuryTraffic.findByNumberNonFatalVictims", query = "SELECT f FROM FatalInjuryTraffic f WHERE f.numberNonFatalVictims = :numberNonFatalVictims"),
-    @NamedQuery(name = "FatalInjuryTraffic.findByAlcoholLevelVictim", query = "SELECT f FROM FatalInjuryTraffic f WHERE f.alcoholLevelVictim = :alcoholLevelVictim"),
     @NamedQuery(name = "FatalInjuryTraffic.findByAlcoholLevelCounterpart", query = "SELECT f FROM FatalInjuryTraffic f WHERE f.alcoholLevelCounterpart = :alcoholLevelCounterpart"),
     @NamedQuery(name = "FatalInjuryTraffic.findByFatalInjuryId", query = "SELECT f FROM FatalInjuryTraffic f WHERE f.fatalInjuryId = :fatalInjuryId")})
 public class FatalInjuryTraffic implements Serializable {
     private static final long serialVersionUID = 1L;
     @Column(name = "number_non_fatal_victims")
     private Short numberNonFatalVictims;
-    @Column(name = "alcohol_level_victim")
-    private Short alcoholLevelVictim;
     @Column(name = "alcohol_level_counterpart")
     private Short alcoholLevelCounterpart;
     @Id
@@ -53,9 +50,6 @@ public class FatalInjuryTraffic implements Serializable {
     @JoinColumn(name = "fatal_injury_id", referencedColumnName = "fatal_injury_id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private FatalInjuries fatalInjuries;
-    @JoinColumn(name = "alcohol_level_victim_id", referencedColumnName = "alcohol_level_id")
-    @ManyToOne
-    private AlcoholLevels alcoholLevelVictimId;
     @JoinColumn(name = "alcohol_level_counterpart_id", referencedColumnName = "alcohol_level_id")
     @ManyToOne
     private AlcoholLevels alcoholLevelCounterpartId;
@@ -76,14 +70,6 @@ public class FatalInjuryTraffic implements Serializable {
 
     public void setNumberNonFatalVictims(Short numberNonFatalVictims) {
         this.numberNonFatalVictims = numberNonFatalVictims;
-    }
-
-    public Short getAlcoholLevelVictim() {
-        return alcoholLevelVictim;
-    }
-
-    public void setAlcoholLevelVictim(Short alcoholLevelVictim) {
-        this.alcoholLevelVictim = alcoholLevelVictim;
     }
 
     public Short getAlcoholLevelCounterpart() {
@@ -148,14 +134,6 @@ public class FatalInjuryTraffic implements Serializable {
 
     public void setFatalInjuries(FatalInjuries fatalInjuries) {
         this.fatalInjuries = fatalInjuries;
-    }
-
-    public AlcoholLevels getAlcoholLevelVictimId() {
-        return alcoholLevelVictimId;
-    }
-
-    public void setAlcoholLevelVictimId(AlcoholLevels alcoholLevelVictimId) {
-        this.alcoholLevelVictimId = alcoholLevelVictimId;
     }
 
     public AlcoholLevels getAlcoholLevelCounterpartId() {

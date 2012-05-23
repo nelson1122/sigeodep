@@ -4,8 +4,8 @@
     <Scope Scope="Project">
         <Node id="web/templates/layoutTemplate.xhtml" x="7" y="10" zoom="true"/>
         <Node id="web/Forms/suicide.xhtml" x="693" y="192" zoom="false"/>
-        <Node id="web/Forms/accidental.xhtml" x="684" y="101" zoom="false"/>
         <Node id="web/Forms/homicide.xhtml" x="684" y="456" zoom="false"/>
+        <Node id="web/Forms/accidental.xhtml" x="684" y="101" zoom="false"/>
         <Node id="index.xhtml" x="55" y="55" zoom="true"/>
         <Node id="web/Forms/VIF.xhtml" x="31" y="103" zoom="false"/>
         <Node id="*" x="406" y="255" zoom="false"/>

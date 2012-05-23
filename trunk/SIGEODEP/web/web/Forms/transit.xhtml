@@ -42,6 +42,7 @@
                     <p:row>  
                         <p:column style="background-color: #ebf4fb;">
                             <br/>
+                            <!--=====================================INFORMACION DEL HECHO==============================================-->
                             <p:panelGrid> 
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" style="text-align: center;" colspan="2">
@@ -54,77 +55,130 @@
                                         <p:inputText />
                                     </p:column>
                                 </p:row>
-                                <p:row>  
-                                    <p:column>FECHA DE LOS HECHOS:</p:column>
-                                    <p:column >
-                                        DIA:&nbsp;
-                                        <p:inputText value="#{lcenfMB.currentDayEvent}" size="2" >  
-                                            <f:ajax 
-                                                event="keyup"                                                                                                            
-                                                render="IdDateEvent IdWeekdayEvent"/>
-                                        </p:inputText>
-                                        MES:&nbsp;
-                                        <p:inputText value="#{lcenfMB.currentMonthEvent}" size="2" maxlength="2">
-                                            <f:ajax 
-                                                event="keyup"                                                                                                            
-                                                render="IdDateEvent IdWeekdayEvent"/>
-                                        </p:inputText>  
-                                        AÑO:&nbsp;
-                                        <p:inputText value="#{lcenfMB.currentYearEvent}" size="5" maxlength="4">
-                                            <f:ajax 
-                                                event="keyup"                                                                                                            
-                                                render="IdDateEvent IdWeekdayEvent"/>
-                                        </p:inputText> 
-                                    </p:column>
-                                </p:row>                                            
-                                <p:row>  
-                                    <p:column >
-                                        FECHA DE LOS HECHOS(dd/mm/yyyy):  
-                                    </p:column>
-                                    <p:column >
-                                        <p:inputText disabled="true" id="IdDateEvent" value="#{lcenfMB.currentDateEvent}"/> 
-                                    </p:column>
-                                </p:row>                                            
-                                <p:row>  
-                                    <p:column >
-                                        DIA SEMANA DE LOS HECHOS:&nbsp;
-                                    </p:column>
-                                    <p:column >
-                                        <p:inputText disabled="true" id="IdWeekdayEvent" value="#{lcenfMB.currentWeekdayEvent}" size="1" maxlength="1"/> 
-                                    </p:column>
-                                </p:row>                                            
-                                <p:row>                                                
-                                    <p:column>
-                                        HORA DEL  HECHO:
-                                    </p:column>
-                                    <p:column >
-                                        HORAS:&nbsp;
-                                        <p:inputText value="#{lcenfMB.currentHourEvent}" size="2">
-                                            <f:ajax 
-                                                event="keyup"                                                                                                            
-                                                render="IdTimeEvent"/>
-                                        </p:inputText> 
-                                        MINUTOS:&nbsp;
-                                        <p:inputText value="#{lcenfMB.currentMinuteEvent}" size="2">
-                                            <f:ajax 
-                                                event="keyup"                                                                                                            
-                                                render="IdTimeEvent"/>
-                                        </p:inputText> 
-                                        AMPM:&nbsp;
-                                        <p:selectOneMenu value="#{lcenfMB.currentAmPmEvent}" > 
-                                            <f:selectItem itemLabel=" " itemValue="-" />  
-                                            <f:selectItem itemLabel="AM" itemValue="AM" />  
-                                            <f:selectItem itemLabel="PM" itemValue="PM" />
-                                        </p:selectOneMenu>
-                                    </p:column>
-                                </p:row>                                            
-                                <p:row>  
-                                    <p:column>
-                                        HORA MILITAR DEL HECHO:&nbsp;                                                    
-                                    </p:column>
-                                    <p:column>
-                                        <p:inputText id="IdTimeEvent" value="#{lcenfMB.currentMilitaryHourEvent}" 
-                                                     maxlength="4" size="4"/>
+                                <p:row>
+                                    <p:column colspan="2">
+                                        <p:panelGrid>                            
+                                            <p:row>  
+                                                <p:column>FECHA HECHO:</p:column>
+                                                <p:column>
+                                                    <p:panelGrid> 
+                                                        <p:row>  
+                                                            <p:column>
+                                                                DIA:  
+                                                            </p:column>
+                                                            <p:column>
+                                                                MES:  
+                                                            </p:column>
+                                                            <p:column>
+                                                                AÑO:
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>
+                                                                <p:inputText value="#{transitMB.currentDayEvent}" size="2" >  
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                </p:inputText>  
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText value="#{transitMB.currentMonthEvent}" size="2" maxlength="2">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                </p:inputText>   
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText value="#{transitMB.currentYearEvent}" size="5" maxlength="4">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                </p:inputText>
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>
+                                                </p:column>
+                                                <p:column >
+                                                    <p:panelGrid> 
+                                                        <p:row>  
+                                                            <p:column>
+                                                                FECHA HECHO<br/>(dd/mm/yyyy):  
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText disabled="true" id="IdDateEvent" value="#{transitMB.currentDateEvent}"/> 
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>
+                                                                DIA EN SEMANA  
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText 
+                                                                    disabled="true" 
+                                                                    id="IdWeekdayEvent" 
+                                                                    value="#{transitMB.currentWeekdayEvent}" 
+                                                                    size="9"/> 
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>
+                                                </p:column>
+                                            </p:row>                                            
+
+                                            <p:row>                                                
+                                                <p:column>
+                                                    HORA HECHO:
+                                                </p:column>
+                                                <p:column>
+                                                    <p:panelGrid> 
+                                                        <p:row>  
+                                                            <p:column>
+                                                                HORAS:  
+                                                            </p:column>
+                                                            <p:column>
+                                                                MINUTOS:  
+                                                            </p:column>
+                                                            <p:column>
+                                                                AMPM:
+                                                            </p:column>
+                                                        </p:row>                                            
+                                                        <p:row>                                                
+                                                            <p:column>
+                                                                <p:inputText value="#{transitMB.currentHourEvent}" size="2">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdTimeEvent"/>
+                                                                </p:inputText>
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:inputText value="#{transitMB.currentMinuteEvent}" size="2">
+                                                                    <f:ajax 
+                                                                        event="keyup"                                                                                                            
+                                                                        render="IdTimeEvent"/>
+                                                                </p:inputText> 
+                                                            </p:column>
+                                                            <p:column>
+                                                                <p:selectOneMenu value="#{transitMB.currentAmPmEvent}" >                                                                     
+                                                                    <f:selectItem itemLabel="AM" itemValue="AM" />  
+                                                                    <f:selectItem itemLabel="PM" itemValue="PM" />
+                                                                    <f:ajax 
+                                                                        event="change"                                                                                                            
+                                                                        render="IdTimeEvent"/>
+                                                                </p:selectOneMenu>
+                                                            </p:column>
+                                                        </p:row> 
+                                                    </p:panelGrid>
+                                                </p:column>
+                                                <p:column>
+                                                    HORA MILITAR HECHO:&nbsp;                                                    
+                                                    <p:inputText 
+                                                        id="IdTimeEvent" 
+                                                        disabled="true" 
+                                                        value="#{transitMB.currentMilitaryHourEvent}" 
+                                                        maxlength="4" 
+                                                        size="4"/>
+                                                </p:column>
+                                            </p:row>
+                                        </p:panelGrid>
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>
@@ -141,87 +195,70 @@
                                         <h:outputLabel value="DIRECCION:   "/>   
                                     </p:column>
                                     <p:column>
-                                        <p:inputText value="" size="40"/>                                       
+                                        <p:inputText 
+                                            value="#{transitMB.currentDirectionEvent}" 
+                                            size="40"/>                                      
                                     </p:column>   
                                 </p:row>
                                 <p:row>  
                                     <p:column>BARRIO / VEREDA:&nbsp; </p:column>
                                     <p:column>
                                         <p:autoComplete 
-                                            value="#{lcenfMB.currentNeighborhoodHomeName}"                                                                    
-                                            completeMethod="#{lcenfMB.suggestNeighborhoods}" 
+                                            value="#{transitMB.currentNeighborhoodEvent}"                                                                    
+                                            completeMethod="#{transitMB.suggestNeighborhoods}" 
                                             size="40" >                                                        
                                             <p:ajax 
                                                 event="itemSelect" 
-                                                listener="#{lcenfMB.changeNeighborhoodHomeName}" 
-                                                update="IdNeighborhoodsHomeCode2" process="@this"/>
+                                                listener="#{transitMB.changeNeighborhoodEvent}" 
+                                                update="IdNeighborhoodsEventCode" process="@this"/>
                                         </p:autoComplete>
                                     </p:column>
                                 </p:row>
                                 <p:row>
                                     <p:column>CODIGO BARRIO:&nbsp;  </p:column>
                                     <p:column>
-                                        <p:inputText
-                                            id="IdNeighborhoodsHomeCode2"
+                                        <p:inputText 
+                                            id="IdNeighborhoodsEventCode"
                                             disabled="true"
-                                            value="#{lcenfMB.currentNeighborhoodHomeCode}"/>
+                                            value="#{transitMB.currentNeighborhoodEventCode}"/>
                                     </p:column>
                                 </p:row>
 				<p:row>
                                     <p:column>TIPO DE VIA EN EL QUE OCURREN LOS HECHOS:&nbsp;  </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="" > 
-                                            <f:selectItem itemLabel="VIA NACIONAL" itemValue="VIA NACIONAL" />  
-                                            <f:selectItem itemLabel="VIA DEPARTAMENTAL" itemValue="VIA DEPARTAMENTAL" />  
-                                            <f:selectItem itemLabel="VIA MUNICIPAL" itemValue="VIA MUNICIPAL" />
+                                        <p:selectOneMenu value="#{transitMB.currentRoadType}" > 
+                                            <f:selectItems value="#{transitMB.roadTypes}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
                                 <p:row>
                                     <p:column>AREA DEL HECHO:&nbsp;  </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentArea}" > 
-                                            <f:selectItems value="#{lcenfMB.areas}"/>
+                                        <p:selectOneMenu value="#{transitMB.currentArea}" > 
+                                            <f:selectItems value="#{transitMB.areas}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
+
                                 <p:row>
                                     <p:column>CLASE DE ACCIDENTE:&nbsp;  </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="" > 
-                                            <f:selectItem itemLabel="COLISION CON OBJETO MOVIL" itemValue="VIA NACIONAL" />  
-                                            <f:selectItem itemLabel="COLISION CON OBJETO FIJO" itemValue="VIA DEPARTAMENTAL" />  
-                                            <f:selectItem itemLabel="VOLCAMIENTO" itemValue="VIA MUNICIPAL" />
-					    <f:selectItem itemLabel="CAIDA DE OCUPANTE" itemValue="VIA MUNICIPAL" />
-					    <f:selectItem itemLabel="PEATON ATROPELLADO" itemValue="VIA MUNICIPAL" />
-					    <f:selectItem itemLabel="CICLISTA ATROPELLADO" itemValue="VIA MUNICIPAL" />
+                                        <p:selectOneMenu value="#{transitMB.currentAccidentClasses}" > 
+                                            <f:selectItems value="#{transitMB.accidentClasses}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
-                                <p:row>
-                                    <p:column>DIA DE LA SEMANA:&nbsp;  </p:column>
-                                    <p:column>
-                                        <p:selectOneMenu  > 
-                                            <f:selectItem itemLabel="LUNES" itemValue="1" />  
-                                            <f:selectItem itemLabel="MARTES" itemValue="2" />  
-                                            <f:selectItem itemLabel="MIERCOLES" itemValue="3" />
-                                            <f:selectItem itemLabel="JUEVES" itemValue="4" />
-                                            <f:selectItem itemLabel="VIERNES" itemValue="5" />
-                                            <f:selectItem itemLabel="SABADO" itemValue="6" />
-                                            <f:selectItem itemLabel="DOMINGO" itemValue="7" />
-                                        </p:selectOneMenu>
-                                    </p:column>
-                                </p:row>
+
                                 <p:row>
                                     <p:column>NUMERO DE VICTIMAS FATALES EN EL MISMO HECHO:&nbsp;  </p:column>
                                     <p:column>
-                                        <p:inputText value="" size="20"/>                                          
+                                        <p:inputText value="#{transitMB.currentNumberVictims}" /> 
                                     </p:column>
                                 </p:row>
 				<p:row>
                                     <p:column>NUMERO DE LESIONADOS EN EL MISMO HECHO:&nbsp;  </p:column>
                                     <p:column>
-                                        <p:inputText value="" size="20"/>                                          
+                                        <p:inputText value="#{transitMB.currentNumberInjured}" /> 
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>
@@ -235,10 +272,10 @@
                                 </p:row>
                                 <p:row>  
                                     <p:column>
-                                        <h:outputLabel value="NOMBRES:   "/>   
+                                        <h:outputLabel value="NOMBRES:"/>
                                     </p:column>
                                     <p:column>
-                                        <p:inputText value="" size="40"/>                                       
+                                        <p:inputText value="#{transitMB.currentSurname}" size="60"/>
                                     </p:column>   
                                 </p:row>
                                 <p:row>
@@ -246,7 +283,7 @@
                                         <h:outputLabel value="APELLIDOS:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <p:inputText value="" size="40"/>
+                                        <p:inputText value="#{transitMB.currentName}" size="60"/>    
                                     </p:column>  
                                 </p:row>
                                 <p:row>
@@ -254,10 +291,8 @@
                                         <h:outputLabel value="SEXO:   "/>    
                                     </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentGender}" > 
-                                            <f:selectItem itemLabel="MASCULINO" itemValue="1" />  
-                                            <f:selectItem itemLabel="FEMENINO" itemValue="2" />  
-                                            <f:selectItem itemLabel="INDETERMINADO" itemValue="3" />
+                                        <p:selectOneMenu value="#{transitMB.currentGender}" > 
+                                            <f:selectItems value="#{transitMB.genders}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -266,8 +301,12 @@
                                         <h:outputLabel value="TIPO EDAD:   "/>
                                     </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentMeasureOfAge}" > 
-                                            <f:selectItems value="#{lcenfMB.measuresOfAge}"/>
+                                        <p:selectOneMenu value="#{transitMB.currentMeasureOfAge}" > 
+                                            <f:selectItems value="#{transitMB.measuresOfAge}"/>
+                                            <f:ajax 
+                                                event="change"                                            
+                                                listener="#{transitMB.changeMeasuresOfAge}" 
+                                                render="IdValueAge"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -276,7 +315,11 @@
                                         <h:outputLabel value="EDAD CANTIDAD:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <p:inputText value=""/>
+                                        <p:inputText 
+                                            id="IdValueAge"
+                                            value="#{transitMB.currentAge}" 
+                                            disabled="#{transitMB.valueAgeDisabled}" 
+                                            size="3"/>
                                     </p:column>                                                                                             
                                 </p:row>
                                 <p:row>
@@ -284,38 +327,45 @@
                                         <h:outputLabel value="OCUPACION:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <p:inputText value=""/>
+					<p:selectOneMenu value="#{transitMB.currentJob}" > 
+                                            <f:selectItems value="#{transitMB.jobs}"/>
+                                        </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
                                 <p:row>  
                                     <p:column>MUNICIPIO DE  RESIDENCIA:&nbsp;</p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentMunicipalitie}"  > 
-                                            <f:selectItems value="#{lcenfMB.municipalities}"/>
+                                        <p:selectOneMenu 
+                                            id="IdMunicipalitieList"
+                                            value="#{transitMB.currentMunicipalitie}"  > 
+                                            <f:selectItems value="#{transitMB.municipalities}"/>
                                             <f:ajax 
-                                                event="change"                                                            
+                                                event="change"   							    
+                                                listener="#{transitMB.findMunicipalitieCode}"
                                                 render="IdMunicipalitiesHomeCode"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
                                 <p:row>
                                     <p:column>CODIGO MUNICIPIO:&nbsp;</p:column>
-                                    <p:column><p:inputText 
+                                    <p:column>
+                                        <p:inputText 
                                             id="IdMunicipalitiesHomeCode"                                                        
                                             disabled="true"
-                                            value="#{lcenfMB.currentMunicipalitieCode}"/></p:column>
+                                            value="#{transitMB.currentMunicipalitie}"/>
+                                    </p:column>
                                 </p:row>
 				<p:row>
                                     <p:column>LUGAR RESIDENCIA:&nbsp;</p:column>
-                                    <p:column><p:inputText value=""/></p:column>
+                                    <p:column><p:inputText value="#{transitMB.currentPlaceOfResidence}"/></p:column> 
                                 </p:row>                                
                                 <p:row>  
                                     <p:column>
                                         <h:outputLabel value="TIPO DE IDENTIFICACION:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentIdentification}" > 
-                                            <f:selectItems value="#{lcenfMB.identifications}"/>
+                                        <p:selectOneMenu value="#{transitMB.currentIdentification}" > 
+                                            <f:selectItems value="#{transitMB.identifications}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -324,7 +374,7 @@
                                         <h:outputLabel value="NUMERO DE IDENTIFICACION:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <p:inputText value=""/>
+                                        <p:inputText value="#{transitMB.currentIdentificationNumber}"/>
                                     </p:column>
                                 </p:row>
                                 <p:row>  
@@ -332,7 +382,7 @@
                                         <h:outputLabel value="PROCEDENCIA:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <p:inputText value=""/>
+                                        <p:inputText value="#{transitMB.currentVictimSource}"/>
                                     </p:column>
                                 </p:row> 
 				<p:row>  
@@ -340,7 +390,9 @@
                                         <h:outputLabel value="CARACTERISTICAS DE LA VICTIMA:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <p:inputText value=""/>
+                                        <p:selectOneMenu value="#{transitMB.currentVictimCharacteristics}" > 
+                                            <f:selectItems value="#{transitMB.victimCharacteristics}"/>
+                                        </p:selectOneMenu>
                                     </p:column>
                                 </p:row> 
 				<p:row>  
@@ -348,7 +400,9 @@
                                         <h:outputLabel value="MEDIDAS DE PROTECCION:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <p:inputText value=""/>
+                                        <p:selectOneMenu value="#{transitMB.currentProtectiveMeasures}" > 
+                                            <f:selectItems value="#{transitMB.protectiveMeasures}"/>
+                                        </p:selectOneMenu>
                                     </p:column>
                                 </p:row> 
                             </p:panelGrid>
@@ -368,8 +422,8 @@
 					(VEHIC1)
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentTransportTypes}" > 
-					    <f:selectItems value="#{lcenfMB.transportTypes}"/>
+                                        <p:selectOneMenu value="#{transitMB.currentInvolvedVehicles}" > 
+					    <f:selectItems value="#{transitMB.involvedVehicles}"/>
 					</p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -381,8 +435,8 @@
 					(VEHIC2)
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentTransportTypes}" > 
-					    <f:selectItems value="#{lcenfMB.transportTypes}"/>
+                                        <p:selectOneMenu value="#{transitMB.currentInvolvedVehicles}" > 
+					    <f:selectItems value="#{transitMB.involvedVehicles}"/>
 					</p:selectOneMenu>
 				    </p:column>
 				</p:row>
@@ -391,8 +445,8 @@
 					(VEHIC3)
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentTransportTypes}" > 
-					    <f:selectItems value="#{lcenfMB.transportTypes}"/>
+                                        <p:selectOneMenu value="#{transitMB.currentInvolvedVehicles}" > 
+					    <f:selectItems value="#{transitMB.involvedVehicles}"/>
 					</p:selectOneMenu>
 				    </p:column>
 				</p:row>
@@ -401,8 +455,8 @@
 					(VEHIC4)
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentTransportTypes}" > 
-					    <f:selectItems value="#{lcenfMB.transportTypes}"/>
+					<p:selectOneMenu value="#{transitMB.currentInvolvedVehicles}" > 
+					    <f:selectItems value="#{transitMB.involvedVehicles}"/>
 					</p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -423,8 +477,8 @@
 					<h:outputLabel value="(TIPOSERV1)"/>
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentTransportTypes}" > 
-					    <f:selectItems value="#{lcenfMB.transportTypes}"/>
+                                        <p:selectOneMenu value="#{transitMB.currentServiceTypes}" > 
+					    <f:selectItems value="#{transitMB.serviceTypes}"/>
 					</p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -436,8 +490,8 @@
 					<h:outputLabel value="(TIPOSERV2)"/>
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentTransportTypes}" > 
-					    <f:selectItems value="#{lcenfMB.transportTypes}"/>
+                                        <p:selectOneMenu value="#{transitMB.currentServiceTypes}" > 
+					    <f:selectItems value="#{transitMB.serviceTypes}"/>
 					</p:selectOneMenu>
 				    </p:column>
 				</p:row>
@@ -446,8 +500,8 @@
 					<h:outputLabel value="(TIPOSERV3)"/>
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentTransportTypes}" > 
-					    <f:selectItems value="#{lcenfMB.transportTypes}"/>
+                                        <p:selectOneMenu value="#{transitMB.currentServiceTypes}" > 
+					    <f:selectItems value="#{transitMB.serviceTypes}"/>
 					</p:selectOneMenu>
 				    </p:column>
 				</p:row>
@@ -456,8 +510,8 @@
 					<h:outputLabel value="(TIPOSERV4)"/>
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{lcenfMB.currentTransportTypes}" > 
-					    <f:selectItems value="#{lcenfMB.transportTypes}"/>
+					<p:selectOneMenu value="#{transitMB.currentServiceTypes}" > 
+					    <f:selectItems value="#{transitMB.serviceTypes}"/>
 					</p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -475,45 +529,191 @@
                                         <h:outputLabel value="NARRACION DEL HECHO:   "/>
                                     </p:column>
                                     <p:column>
-                                        <p:inputTextarea value="" style="width: 250px; height: 150px;"/>
+                                        <p:inputTextarea value="#{transitMB.currentNarrative}" style="width: 250px; height: 150px;"/>
                                     </p:column>
                                 </p:row>
 			    </p:panelGrid>
 			    <br/>
-                            <!--=====================================NARRACION DEL HECHO==============================================-->
+                            <!--=====================================ALCOHOL==============================================-->
                             <p:panelGrid>  
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" style="text-align: center;" colspan="2">
                                         <h:outputLabel value="ALCOHOL"/>                                          
                                     </p:column>  
                                 </p:row>
-                                <p:row>  
-                                    <p:column>
-                                        <h:outputLabel value="ALCOHOLEMIA:   "/>
+				<p:row>  
+                                    <p:column >
+                                        <p:panelGrid> 
+                                            <p:row>  
+                                                <p:column colspan="4" styleClass="ui-widget-header">
+                                                    NIVEL DE ALCOHOL DE LA VICTIMA:
+                                                </p:column>
+                                            </p:row> 
+                                            <p:row>  
+                                                <p:column>
+                                                    NIVEL 
+                                                </p:column>
+                                                <p:column colspan="3">
+                                                    <p:inputText 
+                                                        value="#{transitMB.currentAlcoholLevel}"
+                                                        id="IdcurrentAlcoholLevel"
+                                                        disabled="#{transitMB.currentAlcoholLevelDisabled}"/>
+                                                </p:column>                                    
+                                            </p:row> 
+                                            <p:row>  
+                                                <p:column>
+                                                    <h:outputLabel value="sin dato"/>&nbsp;  
+                                                    <p:selectBooleanCheckbox 
+                                                        value="#{transitMB.isNoDataAlcoholLevel}"
+                                                        id="IdNoDataAlcoholLevel"
+                                                        disabled="#{transitMB.isNoDataAlcoholLevelDisabled}">
+                                                        <f:ajax 
+                                                            event="change"
+                                                            listener="#{transitMB.changeAlcoholLevel}"
+                                                            render="IdcurrentAlcoholLevel
+                                                            IdNoDataAlcoholLevel
+                                                            IdNegativeAlcoholLevel
+                                                            IdPendentAlcoholLevel
+                                                            IdUnknownAlcoholLevel"/>
+                                                    </p:selectBooleanCheckbox>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputLabel value="Pendiente"/>&nbsp;                                        
+                                                    <p:selectBooleanCheckbox 
+                                                        value="#{transitMB.isPendentAlcoholLevel}"
+                                                        id="IdPendentAlcoholLevel"
+                                                        disabled="#{transitMB.isPendentAlcoholLevelDisabled}">
+                                                        <f:ajax 
+                                                            event="change"
+                                                            listener="#{transitMB.changeAlcoholLevel}"
+                                                            render="IdcurrentAlcoholLevel
+                                                            IdNoDataAlcoholLevel
+                                                            IdNegativeAlcoholLevel
+                                                            IdPendentAlcoholLevel
+                                                            IdUnknownAlcoholLevel"/>
+                                                    </p:selectBooleanCheckbox>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputLabel value="ns"/>&nbsp;                                        
+                                                    <p:selectBooleanCheckbox 
+                                                        value="#{transitMB.isUnknownAlcoholLevel}"
+                                                        id="IdUnknownAlcoholLevel"
+                                                        disabled="#{transitMB.isUnknownAlcoholLevelDisabled}">
+                                                        <f:ajax 
+                                                            event="change"
+                                                            listener="#{transitMB.changeAlcoholLevel}"
+                                                            render="IdcurrentAlcoholLevel
+                                                            IdNoDataAlcoholLevel
+                                                            IdNegativeAlcoholLevel
+                                                            IdPendentAlcoholLevel
+                                                            IdUnknownAlcoholLevel"/>
+                                                    </p:selectBooleanCheckbox>
+                                                </p:column>                                                
+                                                <p:column>
+                                                    <h:outputLabel value="negativo"/>&nbsp;                                                                            
+                                                    <p:selectBooleanCheckbox 
+                                                        value="#{transitMB.isNegativeAlcoholLevel}"
+                                                        id="IdNegativeAlcoholLevel"
+                                                        disabled="#{transitMB.isNegativeAlcoholLevelDisabled}">
+                                                        <f:ajax 
+                                                            event="change"
+                                                            listener="#{transitMB.changeAlcoholLevel}"
+                                                            render="IdcurrentAlcoholLevel
+                                                            IdNoDataAlcoholLevel
+                                                            IdNegativeAlcoholLevel
+                                                            IdPendentAlcoholLevel
+                                                            IdUnknownAlcoholLevel"/>
+                                                    </p:selectBooleanCheckbox>
+                                                </p:column>
+                                            </p:row>
+                                        </p:panelGrid>					
                                     </p:column>
 				    <p:column>
-                                        <h:outputLabel value="ALCOHOL:   "/>
-                                    </p:column>
-                                </p:row>
-				<p:row>  
-                                    <p:column >
-                                        <h:outputLabel value="NIVEL DE ALCOHOL DE LA VICTIMA"/>
-                                        <p:inputText value=""/>
-                                    </p:column>
-				    <p:column >
-                                        <h:outputLabel value="ALC. VICT:   "/>
-                                        <p:inputText value=""/>
-                                    </p:column>
-                                </p:row>
-				<p:row>  
-                                    <p:column >
-                                        <h:outputLabel value="NIVEL DE ALCOHOL DEL CULPABLE"/>
-                                        <p:inputText value=""/>
-                                    </p:column>
-				    <p:column >
-                                        <h:outputLabel value="ALC. CULP:   "/>
-                                        <p:inputText value=""/>
-                                    </p:column>
+					<p:panelGrid> 
+                                            <p:row>  
+                                                <p:column colspan="4" styleClass="ui-widget-header">
+                                                    NIVEL DE ALCOHOL DEL CULPABLE:
+                                                </p:column>
+                                            </p:row> 
+                                            <p:row>  
+                                                <p:column>
+                                                    NIVEL 
+                                                </p:column>
+                                                <p:column colspan="3">
+                                                    <p:inputText 
+                                                        value="#{transitMB.currentAlcoholLevelC}"
+                                                        id="IdcurrentAlcoholLevel2"
+                                                        disabled="#{transitMB.currentAlcoholLevelDisabledC}"/>
+                                                </p:column>                                    
+                                            </p:row> 
+                                            <p:row>  
+                                                <p:column>
+                                                    <h:outputLabel value="sin dato"/>&nbsp;  
+                                                    <p:selectBooleanCheckbox 
+                                                        value="#{transitMB.isNoDataAlcoholLevelC}"
+                                                        id="IdNoDataAlcoholLevel2"
+                                                        disabled="#{transitMB.isNoDataAlcoholLevelDisabledC}">
+                                                        <f:ajax 
+                                                            event="change"
+                                                            listener="#{transitMB.changeAlcoholLevelC}"
+                                                            render="IdcurrentAlcoholLevel2
+                                                            IdNoDataAlcoholLevel2
+                                                            IdNegativeAlcoholLevel2
+                                                            IdPendentAlcoholLevel2
+                                                            IdUnknownAlcoholLevel2"/>
+                                                    </p:selectBooleanCheckbox>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputLabel value="Pendiente"/>&nbsp;                                        
+                                                    <p:selectBooleanCheckbox 
+                                                        value="#{transitMB.isPendentAlcoholLevelC}"
+                                                        id="IdPendentAlcoholLevel2"
+                                                        disabled="#{transitMB.isPendentAlcoholLevelDisabledC}">
+                                                        <f:ajax 
+                                                            event="change"
+                                                            listener="#{transitMB.changeAlcoholLevelC}"
+                                                            render="IdcurrentAlcoholLevel2
+                                                            IdNoDataAlcoholLevel2
+                                                            IdNegativeAlcoholLevel2
+                                                            IdPendentAlcoholLevel2
+                                                            IdUnknownAlcoholLevel2"/>
+                                                    </p:selectBooleanCheckbox>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputLabel value="ns"/>&nbsp;                                        
+                                                    <p:selectBooleanCheckbox 
+                                                        value="#{transitMB.isUnknownAlcoholLevelC}"
+                                                        id="IdUnknownAlcoholLevel2"
+                                                        disabled="#{transitMB.isUnknownAlcoholLevelDisabledC}">
+                                                        <f:ajax 
+                                                            event="change"
+                                                            listener="#{transitMB.changeAlcoholLevelC}"
+                                                            render="IdcurrentAlcoholLevel2
+                                                            IdNoDataAlcoholLevel2
+                                                            IdNegativeAlcoholLevel2
+                                                            IdPendentAlcoholLevel2
+                                                            IdUnknownAlcoholLevel2"/>
+                                                    </p:selectBooleanCheckbox>
+                                                </p:column>                                                
+                                                <p:column>
+                                                    <h:outputLabel value="negativo"/>&nbsp;                                                                            
+                                                    <p:selectBooleanCheckbox 
+                                                        value="#{transitMB.isNegativeAlcoholLevelC}"
+                                                        id="IdNegativeAlcoholLevel2"
+                                                        disabled="#{transitMB.isNegativeAlcoholLevelDisabledC}">
+                                                        <f:ajax 
+                                                            event="change"
+                                                            listener="#{transitMB.changeAlcoholLevelC}"
+                                                            render="IdcurrentAlcoholLevel2
+                                                            IdNoDataAlcoholLevel2
+                                                            IdNegativeAlcoholLevel2
+                                                            IdPendentAlcoholLevel2
+                                                            IdUnknownAlcoholLevel2"/>
+                                                    </p:selectBooleanCheckbox>
+                                                </p:column>
+                                            </p:row>
+                                        </p:panelGrid>					
+				    </p:column>
                                 </p:row>
                             </p:panelGrid>
                             <!--===================================================================================-->

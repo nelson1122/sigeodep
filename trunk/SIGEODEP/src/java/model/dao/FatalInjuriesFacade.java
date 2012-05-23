@@ -27,4 +27,13 @@ public class FatalInjuriesFacade extends AbstractFacade<FatalInjuries> {
         super(FatalInjuries.class);
     }
     
+    public int findMax() {
+        try {
+            String hql = "Select MAX(x.fatalInjuryId) from FatalInjuries x";
+            return em.createQuery(hql, Integer.class).getSingleResult();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+    
 }
