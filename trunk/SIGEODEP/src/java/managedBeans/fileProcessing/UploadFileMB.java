@@ -18,6 +18,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.filters.CopyMB;
 import managedBeans.preload.FormsAndFieldsDataMB;
 import model.dao.FormsFacade;
 import model.dao.SourcesFacade;
@@ -60,6 +61,7 @@ public class UploadFileMB {
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private StoredRelationsMB storedRelationsMB;
+    private CopyMB copyMB;
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -72,6 +74,7 @@ public class UploadFileMB {
          */
 
         FacesContext context = FacesContext.getCurrentInstance();
+        copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
         //relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
         //formsAndFieldsDataMB=(FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
     }
@@ -357,7 +360,7 @@ public class UploadFileMB {
                 nameFile = "Archivo cargado: " + file.getFileName();
 
                 RelationsGroup newRelationsGroup = new RelationsGroup("TEMP", currentForm, currentSource);
-
+                copyMB.refresh();
                 relationshipOfVariablesMB.setVarsFound(variablesFound);
                 relationshipOfVariablesMB.setCurrentRelationsGroup(newRelationsGroup);
                 formsAndFieldsDataMB.setNameForm(currentForm);//relationshipOfVariablesMB.set(variablesFound);
