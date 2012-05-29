@@ -40,7 +40,6 @@ public class RenameValuesMB implements Serializable {
         field_names = new ArrayList<String>();
         field_names.add(the_field);
         field_names.add("# de Registros");
-        connection.dropFilterTables();
     }
 
     public void renameRecords() {

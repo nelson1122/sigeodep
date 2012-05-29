@@ -361,6 +361,7 @@ public class UploadFileMB {
 
                 RelationsGroup newRelationsGroup = new RelationsGroup("TEMP", currentForm, currentSource);
                 copyMB.refresh();
+                copyMB.cleanBackupTables();
                 relationshipOfVariablesMB.setVarsFound(variablesFound);
                 relationshipOfVariablesMB.setCurrentRelationsGroup(newRelationsGroup);
                 formsAndFieldsDataMB.setNameForm(currentForm);//relationshipOfVariablesMB.set(variablesFound);
