@@ -36,8 +36,8 @@ public class FilterConnection implements Serializable {
     public void connect() {
         msj = "";
         bd = "od";
-        login = "postgres";
-        password = "1234";
+        login = "and";
+        password = "nancy";
         url = "jdbc:postgresql://" + "localhost" + "/" + bd;// Anadir a la url la bd user y contrasena
         try {
 
@@ -640,7 +640,7 @@ public class FilterConnection implements Serializable {
             }
             names = names.substring(0, names.length() - 1);
             create.append("SELECT ").append(names).append(" FROM temp;");
-            System.out.println(create.toString());
+            this.non_query(create.toString());
             StringBuilder undo = new StringBuilder();
             for (String field : fields) {
                 undo.append("ALTER TABLE temp ADD COLUMN ").append(field).append(" text;\n");
@@ -655,7 +655,6 @@ public class FilterConnection implements Serializable {
             for (String field : fields) {
                 String delete = "ALTER TABLE temp DROP COLUMN " + field + ";";
                 statement.addBatch(delete);
-                System.out.println(delete);
             }
             statement.executeBatch();
             conn.commit();
