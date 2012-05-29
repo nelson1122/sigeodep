@@ -11,6 +11,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import managedBeans.fileProcessing.RelationshipOfVariablesMB;
 import org.primefaces.model.DualListModel;
 
 /**
@@ -21,6 +22,7 @@ import org.primefaces.model.DualListModel;
 @SessionScoped
 public class CopyMB implements Serializable {
 
+    RelationshipOfVariablesMB relationshipOfVariablesMB;
     private final FilterConnection connection;
     //copy
     private String copy_field;
@@ -84,6 +86,9 @@ public class CopyMB implements Serializable {
      * Creates a new instance of CopyMB
      */
     public CopyMB() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
+
         connection = new FilterConnection();
         connection.connect();
         // copy
@@ -202,6 +207,7 @@ public class CopyMB implements Serializable {
         this.refresh();
         undoDelete++;
         btnDeleteDisable = false;
+        relationshipOfVariablesMB.refresh();
     }
 
     public void undoDelete() {
@@ -343,7 +349,7 @@ public class CopyMB implements Serializable {
     public void replicate() {
         if (replicate_source.size() % replicate_target.size() != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, "Error", 
+                    FacesMessage.SEVERITY_ERROR, "Error",
                     "El número de variables correspondientes debería ser factor del "
                     + "número de variables a replicar."));
             return;
