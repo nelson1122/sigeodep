@@ -4,125 +4,88 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
-
-    <h:head>        
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <link rel="stylesheet" href="./../../resources/css/style.css" type="text/css" />
-        <ui:insert name="head">           
-
-        </ui:insert>
-        <title>
-            <ui:insert name="titlePage">
-
+    <f:view contentType="text/html">
+        <h:head>        
+            <meta 
+                http-equiv="Content-Type" 
+                content="text/html; charset=UTF-8" />
+            <link 
+                rel="stylesheet" 
+                href="./../../resources/css/style.css" 
+                type="text/css" />
+            <ui:insert name="head">  
             </ui:insert>
-        </title>
-    </h:head>
-
-    <h:body>
-
-        <p:layout fullPage="true" >  
-            <!-- ****************************** MENU SUPERIOR ************************ 
-            <p:layoutUnit position="north" size="60" >  
-                <h:form>
-                    <div id="logo2"></div>
-                    <div id="divMenu">             	
-                        <p:menubar>
-                            <p:submenu label="Archivo" icon="ui-icon-document">
-                                <p:submenu label="Nuevo" icon="ui-icon-contact">
+            <title>
+                <ui:insert name="titlePage">
+                </ui:insert>
+            </title>
+        </h:head>
+        <h:body>
+            <p:layout fullPage="true" >  
+                <!-- ****************************** MENU LATERAL (PARTE IZQUIERDA) ************************ -->
+                <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
+                    <h:form>
+                        <div id="logo2"></div>                    
+                        <p:accordionPanel activeIndex="-1" >
+                            <p:tab title="REGISTRO DE DATOS">
+                                <p:menu style="width: 240px; z-index:23; overflow:visible">                               
                                     <p:menuitem 
-                                        value="Carga de Archivo" 
-                                        action="procesFile" 
+                                        icon="ui-icon-disk"
+                                        value="Carga desde Archivo" 
+                                        action="proccesFile" 
+                                        ajax="false"/>  
+                                    <p:menuitem 
+                                        icon="ui-icon-document"
+                                        value="Registro desde Formularios" 
+                                        action="forms" 
+                                        ajax="false"/>  
+                                    <p:menuitem 
+                                        icon="ui-icon-folder-collapsed" 
+                                        value="Lotes Registrados" 
+                                        actionListener="#"  
                                         ajax="false"/>
-                                    <p:menuitem value="Otro" url="#" />
-                                </p:submenu>
-                                <p:menuitem value="Abrir" url="#" />
-                                <p:separator />
-                                <p:menuitem value="Salir" url="#" />
-                            </p:submenu>
-                            <p:submenu label="Ayuda" icon="ui-icon-help">
-                                <p:menuitem value="Contenido" url="#" />
-                                <p:submenu label="B&uacute;squeda" icon="ui-icon-search">                            
-                                </p:submenu>
-                            </p:submenu>
-                            <p:menuitem value="Salir" icon="ui-icon-close" />
-                        </p:menubar>
+                                </p:menu> 
+                            </p:tab>
+                            <p:tab title="REPORTES">
+                            </p:tab>
+                            <p:tab title="GEOREFERENCIACION">
+                            </p:tab>
+                            <p:tab title="CONFIGURACIONES">
+                            </p:tab>
+                        </p:accordionPanel>
+                    </h:form>  
+                </p:layoutUnit>  
+                <!-- ****************************** CONTENIDO (PARTE CENTRAL) ************************ -->
+                <p:layoutUnit position="center" > 
+                    <p:ajaxStatus 
+                        style=" position:fixed; 
+                                top: 5px; 
+                                right:35px; 
+                                width:17px;
+                                height:17px; 
+                                z-index: 21;" 
+                                id="ajaxStatusPanel">  
+                        <f:facet name="start">  
+                            <h:graphicImage value="../../resources/img/ajaxloading.gif" />                      
+                        </f:facet>          
+                        <f:facet name="complete">  
+                            <h:outputText value="&nbsp;" />  
+                        </f:facet>  
+                    </p:ajaxStatus>
+                    <div id="welcome">
+                        <h1>
+                            <ui:insert name="title" >   
+                            </ui:insert>
+                        </h1>
                     </div>
-                </h:form>
-            </p:layoutUnit>  
-            -->
-
-
-            <!-- ****************************** MENU LATERAL (PARTE IZQUIERDA) ************************ -->
-            <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
-
-                <h:form>
-                    <div id="logo2"></div>                    
-                    <p:accordionPanel activeIndex="-1" >
-                        <p:tab title="REGISTRO DE DATOS">
-                            <p:menu style="width: 240px; z-index:23; overflow:visible">                               
-                                <p:menuitem 
-                                    icon="ui-icon-disk"
-                                    value="Carga desde Archivo" 
-                                    action="proccesFile" 
-                                    ajax="false"/>  
-                                <p:menuitem 
-                                    icon="ui-icon-document"
-                                    value="Registro desde Formularios" 
-                                    action="forms" 
-                                    ajax="false"/>  
-                                <p:menuitem 
-                                    icon="ui-icon-folder-collapsed" 
-                                    value="Lotes Registrados" 
-                                    actionListener="#"  
-                                    ajax="false"/>
-                            </p:menu> 
-                        </p:tab>
-                        <p:tab title="REPORTES">
-                        </p:tab>
-                        <p:tab title="GEOREFERENCIACION">
-                        </p:tab>
-                        <p:tab title="CONFIGURACIONES">
-                        </p:tab>
-                    </p:accordionPanel>
-                </h:form>  
-            </p:layoutUnit>  
-
-            <!-- ****************************** CONTENIDO (PARTE CENTRAL) ************************ -->
-            <p:layoutUnit position="center" > 
-                <p:ajaxStatus style="position:fixed; top: 5px; right:35px; width:17px;height:17px; z-index: 21;" id="ajaxStatusPanel">  
-                    
-                    <f:facet name="start">  
-                        <h:graphicImage value="../../resources/img/ajaxloading.gif" />                      
-                    </f:facet>          
-                    <f:facet name="complete">  
-                        <h:outputText value="&nbsp;" />  
-                    </f:facet>  
-                </p:ajaxStatus>
-                <div id="welcome">
-                    <h1>
-                        <ui:insert name="title" >      
-
+                    <div id="algo">
+                        <ui:insert name="content">   
                         </ui:insert>
-                    </h1>
-                </div>
-                <div id="algo">
-                    <ui:insert name="content">   
-                    </ui:insert>
-                </div>
-
-            </p:layoutUnit>  
-
-            <!-- ****************************** OPCIONES (PARTE DERECHA) ************************ >
-            <p:layoutUnit position="east" size="200" header="Opciones" resizable="true" collapsible="true">  
-                <h:outputText value="Right unit content." />  
-            </p:layoutUnit>  
-            < ****************************** SALIDA (PARTE INFERIOR) ************************ >
-            <p:layoutUnit position="south" size="100" header="Salida" resizable="true" closable="false" collapsible="true">  
-                    <h:outputText value="Sesión Iniciada" />  
-                </p:layoutUnit> 
-            -->
-
-
-        </p:layout> 
-    </h:body>
+                    </div>
+                </p:layoutUnit>
+            </p:layout>
+            <ui:insert name="dialogs">   
+            </ui:insert>
+        </h:body>
+    </f:view>
 </html>

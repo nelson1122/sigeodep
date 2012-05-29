@@ -11,10 +11,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
-import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import model.dao.*;
 import model.pojo.*;
@@ -62,10 +60,10 @@ public class VIFMB {
     private String currentIPS;
     private SelectItem[] IPSs;
     //--------------------
-    @EJB
-    IntentionalitiesFacade intentionalitiesFacade;
-    private Short currentIntentionality;
-    private SelectItem[] intentionalities;
+//    @EJB
+//    IntentionalitiesFacade intentionalitiesFacade;
+//    private Short currentIntentionality;
+//    private SelectItem[] intentionalities;
     //--------------------
     @EJB
     PlacesFacade placesFacade;
@@ -128,7 +126,7 @@ public class VIFMB {
     //----------------------------------------------------------------------
     //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "entro"+String.valueOf(currentEthnicGroup), "entro");
     //FacesContext.getCurrentInstance().addMessage(null, msg);
-    private boolean otherIntentDisabled = true;
+//    private boolean otherIntentDisabled = true;
     private boolean otherPlaceDisabled = true;
     private boolean otherActivityDisabled = true;
     private boolean otherMechanismDisabled = true;//otro mecanismo  
@@ -270,11 +268,11 @@ public class VIFMB {
 
 
             //cargo las intencionalidades
-            List<Intentionalities> intentionalitiesList = intentionalitiesFacade.findAll();
-            intentionalities = new SelectItem[intentionalitiesList.size()];
-            for (int i = 0; i < intentionalitiesList.size(); i++) {
-                intentionalities[i] = new SelectItem(intentionalitiesList.get(i).getIntentionalityId(), intentionalitiesList.get(i).getIntentionalityName());
-            }
+//            List<Intentionalities> intentionalitiesList = intentionalitiesFacade.findAll();
+//            intentionalities = new SelectItem[intentionalitiesList.size()];
+//            for (int i = 0; i < intentionalitiesList.size(); i++) {
+//                intentionalities[i] = new SelectItem(intentionalitiesList.get(i).getIntentionalityId(), intentionalitiesList.get(i).getIntentionalityName());
+//            }
 
             //cargo los lugares donde ocurrieron los hechos
             List<Places> placesList = placesFacade.findAll();
@@ -402,13 +400,13 @@ public class VIFMB {
         }
     }
 
-    public void changeIntentionality() {
-        if (currentIntentionality == 8) {//otro 8
-            otherIntentDisabled = false;
-        } else {
-            otherIntentDisabled = true;
-        }
-    }
+//    public void changeIntentionality() {
+//        if (currentIntentionality == 8) {//otro 8
+//            otherIntentDisabled = false;
+//        } else {
+//            otherIntentDisabled = true;
+//        }
+//    }
 
     public void changeSubmitted() {
         if (isSubmitted) {
@@ -1103,13 +1101,13 @@ public class VIFMB {
         calculateDate1();
     }
 
-    public SelectItem[] getIntentionalities() {
-        return intentionalities;
-    }
-
-    public void setIntentionalities(SelectItem[] intentionalities) {
-        this.intentionalities = intentionalities;
-    }
+//    public SelectItem[] getIntentionalities() {
+//        return intentionalities;
+//    }
+//
+//    public void setIntentionalities(SelectItem[] intentionalities) {
+//        this.intentionalities = intentionalities;
+//    }
 
     public SelectItem[] getMechanisms() {
         return mechanisms;
@@ -1195,13 +1193,13 @@ public class VIFMB {
         this.otherActivityDisabled = otherActivityDisabled;
     }
 
-    public boolean isOtherIntentDisabled() {
-        return otherIntentDisabled;
-    }
-
-    public void setOtherIntentDisabled(boolean otherIntentDisabled) {
-        this.otherIntentDisabled = otherIntentDisabled;
-    }
+//    public boolean isOtherIntentDisabled() {
+//        return otherIntentDisabled;
+//    }
+//
+//    public void setOtherIntentDisabled(boolean otherIntentDisabled) {
+//        this.otherIntentDisabled = otherIntentDisabled;
+//    }
 
     public boolean isOtherPlaceDisabled() {
         return otherPlaceDisabled;
@@ -1347,13 +1345,13 @@ public class VIFMB {
         this.currentIdentification = currentIdentification;
     }
 
-    public Short getCurrentIntentionality() {
-        return currentIntentionality;
-    }
-
-    public void setCurrentIntentionality(Short currentIntentionality) {
-        this.currentIntentionality = currentIntentionality;
-    }
+//    public Short getCurrentIntentionality() {
+//        return currentIntentionality;
+//    }
+//
+//    public void setCurrentIntentionality(Short currentIntentionality) {
+//        this.currentIntentionality = currentIntentionality;
+//    }
 
     public Short getCurrentJob() {
         return currentJob;

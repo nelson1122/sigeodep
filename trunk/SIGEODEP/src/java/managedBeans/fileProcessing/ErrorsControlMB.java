@@ -9,7 +9,6 @@ import beans.errorsControl.ErrorControl;
 import beans.relations.RelationValue;
 import beans.relations.RelationVar;
 import beans.relations.RelationsGroup;
-import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -18,19 +17,11 @@ import java.util.Date;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
-import javax.faces.component.html.HtmlColumn;
-import javax.faces.component.html.HtmlOutputText;
-import javax.faces.component.html.HtmlPanelGroup;
 import javax.faces.model.SelectItem;
 import managedBeans.preload.FormsAndFieldsDataMB;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.el.ValueExpression;
-import javax.faces.component.html.HtmlDataTable;
 import javax.faces.context.FacesContext;
 
 /**
@@ -67,64 +58,20 @@ public class ErrorsControlMB {
     private RelationVar relationVar;
     private RelationsGroup currentRelationsGroup;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
-    private ResultSet rsTemp;
-    private static List<List<String>> dynamicList; // matriz de los datos
-    private static String[] dynamicHeaders; // cabecera
-    private HtmlPanelGroup dynamicDataTableGroup; // posicion donde se imprimira.
+    DinamicTable dinamicTable=new DinamicTable();
 
     public ErrorsControlMB() {
         correctionList = new SelectItem[0];
         errorControlArrayList = new ArrayList<ErrorControl>();
         errorCorrectionArrayList = new ArrayList<ErrorControl>();
     }
-    /////////////////////////////////////////////////44444444444444444444444444444444444444444444444
-
-    // Helpers -----------------------------------------------------------------------------------
-    private ValueExpression createValueExpression(String valueExpression, Class<?> valueType) {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        return facesContext.getApplication().getExpressionFactory().createValueExpression(
-                facesContext.getELContext(), valueExpression, valueType);
-    }
-
-    private void createDynamicDataTable() {
-
-        // Create <h:dataTable value="#{myBean.dynamicList}" var="dynamicItem">.
-        HtmlDataTable dynamicDataTable = new HtmlDataTable();
-        dynamicDataTable.setValueExpression("value",
-                createValueExpression("#{errorsControlMB.dynamicList}", List.class));
-        dynamicDataTable.setVar("dynamicItem");
-
-        // Iterate over columns.
-        for (int i = 0; i < dynamicList.get(0).size(); i++) {
-
-            // Create <h:column>.
-            HtmlColumn column = new HtmlColumn();
-            dynamicDataTable.getChildren().add(column);
-
-            // Create <h:outputText value="dynamicHeaders[i]"> for <f:facet name="header"> of column.
-            HtmlOutputText header = new HtmlOutputText();
-            header.setValue(dynamicHeaders[i]);
-            column.setHeader(header);
-
-            // Create <h:outputText value="#{dynamicItem[" + i + "]}"> for the body of column.
-            HtmlOutputText output = new HtmlOutputText();
-            output.setValueExpression("value",
-                    createValueExpression("#{dynamicItem[" + i + "]}", String.class));
-            column.getChildren().add(output);
-        }
-
-        // Add the datatable to <h:panelGroup binding="#{myBean.dynamicDataTableGroup}">.
-        dynamicDataTableGroup = new HtmlPanelGroup();
-        dynamicDataTableGroup.getChildren().add(dynamicDataTable);
-    }
-
-    public final void createDynamicColumns() {
-
-        ArrayList<String> columnas = new ArrayList<String>();
-        ArrayList<String> datos = new ArrayList<String>();
+    
+    
+    
+    public final void createDynamicTable() {
+        ArrayList<String> titles = new ArrayList<String>();
+        ArrayList<ArrayList<String>> listOfRecords = new ArrayList<ArrayList<String>>();
         try {
-            conx = new ConnectionJDBC();
-            conx.connect();
             //determino el error que esta seleccionado en la lista
             ErrorControl currentE = null;
             for (int i = 0; i < errorControlArrayList.size(); i++) {
@@ -133,39 +80,29 @@ public class ErrorsControlMB {
                     break;
                 }
             }
-
             if (currentE != null) {
+                conx = new ConnectionJDBC();
+                conx.connect();
                 ResultSet rs = conx.consult("SELECT * FROM temp WHERE id='" + currentE.getRowId() + "'");
-
                 // determino las cabeceras
                 for (int j = 1; j < rs.getMetaData().getColumnCount(); j++) {
-                    columnas.add(rs.getMetaData().getColumnName(j));
+                    titles.add(rs.getMetaData().getColumnName(j));
                 }
-                dynamicHeaders = new String[columnas.size()];
-                for (int i = 0; i < columnas.size(); i++) {
-                    dynamicHeaders[i] = columnas.get(i);
-                }
-
                 // determino los datos                
+                ArrayList<String> newRow=new ArrayList<String>();
                 rs.next();
+                
                 for (int k = 1; k < rs.getMetaData().getColumnCount(); k++) {
-                    datos.add(rs.getString(k));
+                    newRow.add(rs.getString(k));
                 }
-                String[] auxArray = new String[datos.size()];
-                for (int i = 0; i < datos.size(); i++) {
-                    auxArray[i] = datos.get(i);
-                }
-                dynamicList = new ArrayList<List<String>>();
-                //dynamicList.add(Arrays.asList(new String[]{"ID1", "Name1", "Value1"}));
-                dynamicList.add(Arrays.asList(auxArray));
-                createDynamicDataTable(); // Creacion del codigo que representa la tabla.
+                listOfRecords.add(newRow);
+                dinamicTable=new DinamicTable(listOfRecords, titles);
             }
             conx.disconnect();
         } catch (SQLException ex) {
             System.out.println("Error en la creacion de columnas dinamicas: " + ex.toString());
         }
     }
-    /////////////////////////////////////////////////44444444444444444444444444444444444444444444444
 
     public void reset() {
     }
@@ -198,6 +135,8 @@ public class ErrorsControlMB {
                     + ") columna (" + errorCorrectionArrayList.get(j).getVarFoundName() + ")");
         }
     }
+    
+    
 
     public int solveError() {
         //verifico que el nuevo dato sea un valor esperado
@@ -268,7 +207,7 @@ public class ErrorsControlMB {
                         errorCorrectionArrayList.add(errorControlArrayList.get(i));
                         errorControlArrayList.remove(i);
                         sizeErrorsList--;
-                        
+
                         btnSolveDisabled = true;
                         updateErrorsArrayList();
                         updateCorrectionArrayList();
@@ -357,18 +296,18 @@ public class ErrorsControlMB {
         for (int i = 0; i < correctionList.length; i++) {
             //String i_str=String.valueOf(i+1)+". ";
             if (correctionList[i].getValue().toString().compareTo(currentCorrection) == 0) {
-            
+
                 try {
                     conx = new ConnectionJDBC();
                     conx.connect();
                     //determino el error que esta seleccionado en la lista
                     //ErrorControl currentE = null;
                     //ResultSet rs = conx.consult("SELECT * FROM temp WHERE id='" + currentE.getRowId() + "'");
-                    int id_int=Integer.parseInt(errorControlArrayList.get(i).getRowId())+1;
-                    
+                    int id_int = Integer.parseInt(errorControlArrayList.get(i).getRowId()) + 1;
+
                     conx.update("temp",
-                            errorControlArrayList.get(i).getVarFoundName()+"='"+errorControlArrayList.get(i).getValue()+"'",
-                            "id="+String.valueOf(id_int));
+                            errorControlArrayList.get(i).getVarFoundName() + "='" + errorControlArrayList.get(i).getValue() + "'",
+                            "id=" + String.valueOf(id_int));
                     //elimino del historial
                     errorControlArrayList.remove(i);
                     updateErrorsArrayList();
@@ -421,7 +360,7 @@ public class ErrorsControlMB {
                 }
                 btnSolveDisabled = false;
                 btnSeeRecordDisabled = false;
-                createDynamicColumns();
+                createDynamicTable();
                 //valor actual
                 valueFound = errorControlArrayList.get(i).getValue();
                 //solucion
@@ -631,15 +570,13 @@ public class ErrorsControlMB {
         this.currentCorrection = currentCorrection;
     }
 
-    public HtmlPanelGroup getDynamicDataTableGroup() {
-        return dynamicDataTableGroup;
+    public DinamicTable getDinamicTable() {
+        return dinamicTable;
     }
 
-    public List<List<String>> getDynamicList() {
-        return dynamicList;
+    public void setDinamicTable(DinamicTable dinamicTable) {
+        this.dinamicTable = dinamicTable;
     }
 
-    public void setDynamicDataTableGroup(HtmlPanelGroup dynamicDataTableGroup) {
-        this.dynamicDataTableGroup = dynamicDataTableGroup;
-    }
+    
 }

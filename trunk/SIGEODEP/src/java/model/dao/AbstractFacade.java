@@ -22,7 +22,10 @@ public abstract class AbstractFacade<T> {
 
     public void create(T entity) {
 	try {
+            //getEntityManager().getTransaction().begin();
 	    getEntityManager().persist(entity);
+            //getEntityManager().getTransaction().commit();
+            //getEntityManager().refresh(entity);
 	} catch (Exception e) {
 	    System.out.println(e.toString());
 	}
