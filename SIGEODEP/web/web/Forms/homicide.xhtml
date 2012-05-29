@@ -27,12 +27,11 @@
         <!--=================================================================-->
         <!--==============================CONTENIDO==========================-->
         <ui:define name="content">
-            <h:form enctype="multipart/form-data" id="IdForm2"> 
+            <h:form enctype="multipart/form-data" id="IdForm1"> 
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
                 <!--===================================================================================-->
                 <br/>
-                <p:panelGrid 
-                    id="IdControls"
+                <p:panelGrid                     
                     style="position: absolute;  width: 750px;  margin-left: -375px; left: 50%;" >                            
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
@@ -54,9 +53,14 @@
                                 <p:row>  
                                     <p:column>CODIGO:</p:column>
                                     <p:column >
-                                        <p:inputText 
+                                        <p:inputText                                            
                                             value="#{homicideMB.currentCode}"
-                                            id="IdCode"/>
+                                            id="IdCode" >  
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>
                                     </p:column>
                                 </p:row>
                                 <p:row>
@@ -82,10 +86,15 @@
                                                                 <p:inputText 
                                                                     id="IdDayEvent"
                                                                     value="#{homicideMB.currentDayEvent}" 
-                                                                    size="2">  
+                                                                    size="2">                                                                      
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{homicideMB.changeDayEvent}"
+                                                                        render="IdDayEvent IdDateEvent IdWeekdayEvent"/>
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{homicideMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>  
                                                             </p:column>
                                                             <p:column>
@@ -95,15 +104,29 @@
                                                                     size="2" 
                                                                     maxlength="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{homicideMB.changeMonthEvent}"
+                                                                        render="IdMonthEvent IdDateEvent IdWeekdayEvent"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{homicideMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>   
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText value="#{homicideMB.currentYearEvent}" size="5" maxlength="4">
+                                                                <p:inputText 
+                                                                    id="IdYearEvent"
+                                                                    value="#{homicideMB.currentYearEvent}" 
+                                                                    size="5" 
+                                                                    maxlength="4">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{homicideMB.changeYearEvent}"
+                                                                        render="IdYearEvent IdDateEvent IdWeekdayEvent"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{homicideMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>
                                                             </p:column>
                                                         </p:row>
@@ -116,7 +139,10 @@
                                                                 FECHA HECHO<br/>(dd/mm/yyyy):  
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText disabled="true" id="IdDateEvent" value="#{homicideMB.currentDateEvent}"/> 
+                                                                <p:inputText 
+                                                                    disabled="true" 
+                                                                    id="IdDateEvent" 
+                                                                    value="#{homicideMB.currentDateEvent}"/> 
                                                             </p:column>
                                                         </p:row>
                                                         <p:row>  
@@ -154,17 +180,33 @@
                                                         </p:row>                                            
                                                         <p:row>                                                
                                                             <p:column>
-                                                                <p:inputText value="#{homicideMB.currentHourEvent}" size="2">
+                                                                <p:inputText 
+                                                                    id="IdHourEvent"
+                                                                    value="#{homicideMB.currentHourEvent}" 
+                                                                    size="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdTimeEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{homicideMB.changeHourEvent}"
+                                                                        render="IdHourEvent IdTimeEvent"/>   
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{homicideMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText value="#{homicideMB.currentMinuteEvent}" size="2">
+                                                                <p:inputText 
+                                                                    id="IdMinuteEvent"
+                                                                    value="#{homicideMB.currentMinuteEvent}" 
+                                                                    size="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdTimeEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{homicideMB.changeMinuteEvent}"
+                                                                        render="IdMinuteEvent IdTimeEvent"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{homicideMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText> 
                                                             </p:column>
                                                             <p:column>
@@ -173,7 +215,8 @@
                                                                     <f:selectItem itemLabel="PM" itemValue="PM" />
                                                                     <f:ajax 
                                                                         event="change"                                                                                                            
-                                                                        render="IdTimeEvent"/>
+                                                                        render="IdTimeEvent IdControls"
+                                                                        listener="#{homicideMB.changeForm}"/>
                                                                 </p:selectOneMenu>
                                                             </p:column>
                                                         </p:row> 
@@ -208,7 +251,12 @@
                                     <p:column>
                                         <p:inputText 
                                             value="#{homicideMB.currentDirectionEvent}" 
-                                            size="40"/>                                      
+                                            size="40">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>                                      
                                     </p:column>   
                                 </p:row>
                                 <p:row>  
@@ -217,11 +265,12 @@
                                         <p:autoComplete 
                                             value="#{homicideMB.currentNeighborhoodEvent}"                                                                    
                                             completeMethod="#{homicideMB.suggestNeighborhoods}" 
+                                            forceSelection="true"
                                             size="40" >                                                        
                                             <p:ajax 
                                                 event="itemSelect" 
                                                 listener="#{homicideMB.changeNeighborhoodEvent}" 
-                                                update="IdNeighborhoodsEventCode" process="@this"/>
+                                                update="IdNeighborhoodsEventCode IdControls" process="@this"/>                                            
                                         </p:autoComplete>
                                     </p:column>
                                 </p:row>
@@ -239,6 +288,10 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{homicideMB.currentArea}" > 
                                             <f:selectItems value="#{homicideMB.areas}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{homicideMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -247,13 +300,25 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{homicideMB.currentPlace}" > 
                                             <f:selectItems value="#{homicideMB.places}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{homicideMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>                                
                                 <p:row>
                                     <p:column>NUMERO DE VICTIMAS FATALES EN EL MISMO HECHO:&nbsp;  </p:column>
                                     <p:column>
-                                        <p:inputText value="#{homicideMB.currentNumberVictims}" />                                          
+                                        <p:inputText 
+                                            id="IdNumberVictims"
+                                            value="#{homicideMB.currentNumberVictims}" >
+                                            <f:ajax 
+                                                event="blur"  
+                                                listener="#{homicideMB.changeNumberVictims}"
+                                                render="IdNumberVictims IdControls"/> 
+                                        </p:inputText>                                         
+
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>
@@ -273,7 +338,12 @@
                                         <p:inputText 
                                             id="IdName"
                                             value="#{homicideMB.currentName}" 
-                                            size="60"/>                             
+                                            size="60">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>
                                     </p:column>   
                                 </p:row>
                                 <p:row>
@@ -284,7 +354,12 @@
                                         <p:inputText 
                                             id="IdSurname"
                                             value="#{homicideMB.currentSurname}" 
-                                            size="60"/>    
+                                            size="60">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>    
                                     </p:column>  
                                 </p:row>
                                 <p:row>
@@ -294,6 +369,10 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{homicideMB.currentGender}" > 
                                             <f:selectItems value="#{homicideMB.genders}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{homicideMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -307,7 +386,7 @@
                                             <f:ajax 
                                                 event="change"                                            
                                                 listener="#{homicideMB.changeMeasuresOfAge}" 
-                                                render="IdValueAge"/>
+                                                render="IdValueAge IdControls"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -320,7 +399,16 @@
                                             id="IdValueAge"
                                             value="#{homicideMB.currentAge}" 
                                             disabled="#{homicideMB.valueAgeDisabled}" 
-                                            size="3"/>
+                                            size="3">
+                                            <f:ajax 
+                                                event="blur"  
+                                                listener="#{homicideMB.changeValueAge}"
+                                                render="IdValueAge"/> 
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>                               
                                     </p:column>                                                                                             
                                 </p:row>
                                 <p:row>
@@ -330,6 +418,10 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{homicideMB.currentJob}" > 
                                             <f:selectItems value="#{homicideMB.jobs}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{homicideMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -345,7 +437,8 @@
                                                 listener="#{homicideMB.findMunicipalitieCode}"
                                                 render="IdMunicipalitiesHomeCode
                                                 IdNeighborhoodHomeName
-                                                IdNeighborhoodsHomeCode"/>
+                                                IdNeighborhoodsHomeCode
+                                                IdControls"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -371,7 +464,7 @@
                                             <p:ajax 
                                                 event="itemSelect" 
                                                 listener="#{homicideMB.changeNeighborhoodHomeName}" 
-                                                update="IdNeighborhoodsHomeCode" process="@this"/>
+                                                update="IdNeighborhoodsHomeCode IdControls" process="@this"/>
                                         </p:autoComplete>
                                     </p:column>
                                 </p:row>
@@ -393,6 +486,10 @@
                                             value="#{homicideMB.currentIdentificationType}" 
                                             id="IdIdentificationType"> 
                                             <f:selectItems value="#{homicideMB.identificationsTypes}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{homicideMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -403,7 +500,12 @@
                                     <p:column>
                                         <p:inputText 
                                             value="#{homicideMB.currentIdentificationNumber}"
-                                            id="IdIdentificationNumber"/>
+                                            id="IdIdentificationNumber">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>
                                     </p:column>
                                 </p:row>
                                 <p:row>  
@@ -413,10 +515,15 @@
                                     <p:column>
                                         <p:inputText 
                                             value="#{homicideMB.currentVictimSource}"
-                                            id="IdVictimSource"/>
+                                            id="IdVictimSource">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>
                                     </p:column>
                                 </p:row> 
-                                
+
                             </p:panelGrid>
                             <br/>
                             <!--=====================================DATOS DEL HECHO==============================================-->
@@ -434,7 +541,11 @@
                                         <p:selectOneMenu 
                                             value="#{homicideMB.currentWeaponType}" 
                                             id="IdWeaponType"> 
-                                            <f:selectItems value="#{homicideMB.weaponTypes}"/>					    
+                                            <f:selectItems value="#{homicideMB.weaponTypes}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{homicideMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -446,7 +557,11 @@
                                         <p:selectOneMenu 
                                             value="#{homicideMB.currentMurderContext}"  
                                             id="IdMurderContext"> 
-                                            <f:selectItems value="#{homicideMB.murderContexts}"/>					    
+                                            <f:selectItems value="#{homicideMB.murderContexts}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{homicideMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -458,12 +573,17 @@
                                         <p:inputTextarea 
                                             value="#{homicideMB.currentNarrative}" 
                                             style="width: 250px; height: 150px;"
-                                            id="IdNarrative"/>
+                                            id="IdNarrative">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputTextarea>
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>
-                            <!--===================================================================================-->
-			    <br/>
+                            <br/>
+                            <!--======================================NIVEL DE ALCOHOL==============================-->                            
                             <p:panelGrid> 
                                 <p:row>  
                                     <p:column colspan="4" styleClass="ui-widget-header">
@@ -478,7 +598,16 @@
                                         <p:inputText 
                                             value="#{homicideMB.currentAlcoholLevel}"
                                             id="IdcurrentAlcoholLevel"
-                                            disabled="#{homicideMB.currentAlcoholLevelDisabled}"/>
+                                            disabled="#{homicideMB.currentAlcoholLevelDisabled}">
+                                            <f:ajax 
+                                                event="blur"  
+                                                listener="#{homicideMB.changeAlcoholLevelNumber}"
+                                                render="IdcurrentAlcoholLevel"/> 
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>
                                     </p:column>                                    
                                 </p:row> 
                                 <p:row>  
@@ -495,7 +624,8 @@
                                                 IdNoDataAlcoholLevel
                                                 IdNegativeAlcoholLevel
                                                 IdPendentAlcoholLevel
-                                                IdUnknownAlcoholLevel"/>
+                                                IdUnknownAlcoholLevel
+                                                IdControls"/>
                                         </p:selectBooleanCheckbox>
                                     </p:column>
                                     <p:column>
@@ -511,7 +641,8 @@
                                                 IdNoDataAlcoholLevel
                                                 IdNegativeAlcoholLevel
                                                 IdPendentAlcoholLevel
-                                                IdUnknownAlcoholLevel"/>
+                                                IdUnknownAlcoholLevel
+                                                IdControls"/>
                                         </p:selectBooleanCheckbox>
                                     </p:column>
                                     <p:column>
@@ -527,7 +658,8 @@
                                                 IdNoDataAlcoholLevel
                                                 IdNegativeAlcoholLevel
                                                 IdPendentAlcoholLevel
-                                                IdUnknownAlcoholLevel"/>
+                                                IdUnknownAlcoholLevel
+                                                IdControls"/>
                                         </p:selectBooleanCheckbox>
                                     </p:column>                                                
                                     <p:column>
@@ -543,12 +675,12 @@
                                                 IdNoDataAlcoholLevel
                                                 IdNegativeAlcoholLevel
                                                 IdPendentAlcoholLevel
-                                                IdUnknownAlcoholLevel"/>
+                                                IdUnknownAlcoholLevel
+                                                IdControls"/>
                                         </p:selectBooleanCheckbox>
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>
-			    <!--===================================================================================-->
                             <br/>
                             <br/>
                             <br/>
@@ -558,19 +690,22 @@
                     </p:row>
                 </p:panelGrid>
                 <div style="position:fixed; bottom: 3px; right: 20px; ">
-                    <p:panelGrid>
+                    <!--===========CONTROLES: PRIMERO SIGUIENTE ANTERIOR ULTIMO REGISTRO ===========================-->
+                    <p:panelGrid id="IdControls">
                         <p:row >
                             <p:column styleClass="ui-widget-header">
                                 <p:commandButton
-				    icon="ui-icon-seek-first" 
-				    title="Primero"
-				    actionListener="#{homicideMB.first}"
-                                    update="IdPosition IdControls"/>
+                                    icon="ui-icon-seek-first" 
+                                    title="Primero"
+                                    actionListener="#{homicideMB.first}"
+                                    oncomplete="#{homicideMB.openDialogFirst}"
+                                    update="IdForm1"/>
                                 <p:commandButton 
-				    icon="ui-icon-seek-prev" 
-				    title="Anterior"
-				    actionListener="#{homicideMB.previous}"
-                                    update="IdPosition IdControls"/>
+                                    icon="ui-icon-seek-prev" 
+                                    title="Anterior"
+                                    actionListener="#{homicideMB.previous}"
+                                    oncomplete="#{homicideMB.openDialogPrevious}"
+                                    update="IdForm1"/>
                             </p:column>
                             <p:column styleClass="ui-widget-header">
                                 <p:inputText 
@@ -580,35 +715,223 @@
                             </p:column>
                             <p:column styleClass="ui-widget-header">
                                 <p:commandButton  
-				    icon="ui-icon-seek-next" 
-				    title="Siguiente"
-				    actionListener="#{homicideMB.next}"
-                                    update="IdPosition IdControls"/>
+                                    icon="ui-icon-seek-next" 
+                                    title="Siguiente"
+                                    actionListener="#{homicideMB.next}"
+                                    oncomplete="#{homicideMB.openDialogNext}"                                    
+                                    update="IdForm1"/>                             
                                 <p:commandButton  
-				    icon="ui-icon-seek-end" 
-				    title="Ulltimo"
-				    actionListener="#{homicideMB.last}"
-                                    update="IdPosition IdControls"/>
+                                    icon="ui-icon-seek-end" 
+                                    title="Ulltimo"
+                                    actionListener="#{homicideMB.last}"
+                                    oncomplete="#{homicideMB.openDialogLast}"
+                                    update="IdForm1"/>
                             </p:column>
-                            <p:column styleClass="ui-widget-header">
+                            <p:column styleClass="ui-widget-header">                                
                                 <p:commandButton 
-                                    icon="ui-icon-disk" 
-                                    title="Guadar"
-                                    actionListener="#{homicideMB.saveForm}"
-                                    update="IdPosition IdControls"/>
+                                    icon="ui-icon-plus" 
+                                    title="Nuevo"
+                                    actionListener="#{homicideMB.newForm}"
+                                    oncomplete="#{homicideMB.openDialogNew}"
+                                    update="IdForm1"/>
                                 <p:commandButton 
-				    icon="ui-icon-plus" 
-				    title="Nuevo"
-                                    update="IdPosition IdControls"/>
-                                <p:commandButton 
-				    icon="ui-icon-close" 
-				    title="Eliminar"
-                                    update="IdPosition IdControls"/>
+                                    icon="ui-icon-close" 
+                                    title="Eliminar"  
+                                    actionListener="#{homicideMB.deleteForm}"
+                                    oncomplete="#{homicideMB.openDialogDelete}"                                    
+                                    update="IdForm1"/>
                             </p:column>
                         </p:row>
                     </p:panelGrid>                   
                 </div>
             </h:form>
         </ui:define>
+        <!--================================= CUADROS DE DIALOGO ==============================================-->
+        <ui:define name="dialogs">
+            <h:form id="IdForm2">
+                <p:dialog                                                         
+                    id="dialogFirst"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogFirst"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogFirst.hide()"
+                                    value="Si" 
+                                    actionListener="#{homicideMB.saveAndGoFirst}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogFirst.hide()"
+                                    actionListener="#{homicideMB.noSaveAndGoFirst}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogFirst.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogPrevious"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogPrevious"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogPrevious.hide()"
+                                    value="Si" 
+                                    actionListener="#{homicideMB.saveAndGoPrevious}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogPrevious.hide()"
+                                    actionListener="#{homicideMB.noSaveAndGoPrevious}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogPrevious.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogNext"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogNext"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogNext.hide()"
+                                    value="Si" 
+                                    actionListener="#{homicideMB.saveAndGoNext}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogNext.hide()"
+                                    actionListener="#{homicideMB.noSaveAndGoNext}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogNext.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogLast"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogLast"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogLast.hide()"
+                                    value="Si" 
+                                    actionListener="#{homicideMB.saveAndGoLast}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogLast.hide()"
+                                    actionListener="#{homicideMB.noSaveAndGoLast}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogLast.hide()"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogNew"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogNew"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogNew.hide()"
+                                    value="Si" 
+                                    actionListener="#{homicideMB.saveAndGoNew}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogNew.hide()"
+                                    actionListener="#{homicideMB.noSaveAndGoNew}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogNew.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogDelete"
+                    modal="true"
+                    resizable="false"
+                    header="Eliminar formulario" 
+                    widgetVar="dialogDelete"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                Confirma la Eliminacion de este registro?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                                           
+                                    oncomplete="dialogDelete.hide()"
+                                    actionListener="#{homicideMB.deleteForm}"
+                                    value="Eliminar" 
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogDelete.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+            </h:form>
+        </ui:define>
     </ui:composition>
 </html>
+
