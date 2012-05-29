@@ -72,6 +72,10 @@ public class RelationshipOfVariablesMB {
          */
     }
 
+    public void refresh(){
+        
+    }
+    
     public void reset() {//@PostConstruct ejecutar despues de el constructor
         this.relatedVars = new ArrayList<String>();
         this.valuesExpected = new ArrayList<String>();
