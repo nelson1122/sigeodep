@@ -243,6 +243,7 @@ public class CopyMB implements Serializable {
     public void redoFilter() {
         connection.undo("Filter");
         filter_queryModel = new QueryDataModel(connection.getFieldCounts(filter_field));
+        this.refreshReplicate();
         redoFilter--;
         if (redoFilter == 0) {
             btnFilterDisable = true;
