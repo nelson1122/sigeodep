@@ -665,7 +665,7 @@ public class FilterConnection implements Serializable {
         }
     }
 
-    public void dropFilterTables() {
+    public void cleanFilterAndBackupTables() {
         try {
             String query = "SELECT * FROM filter_tables;";
             ResultSet tables = this.consult(query);
@@ -675,8 +675,8 @@ public class FilterConnection implements Serializable {
                 query = "DROP TABLE IF EXISTS " + tables.getString(1);
                 statement.addBatch(query);
             }
-            query = "TRUNCATE filter_tables;";
-            statement.addBatch(query);
+            statement.addBatch("TRUNCATE filter_tables;");
+            statement.addBatch("TRUNCATE filter_backups;");
             statement.executeBatch();
             conn.commit();
             conn.setAutoCommit(true);

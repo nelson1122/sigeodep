@@ -88,7 +88,6 @@ public class CopyMB implements Serializable {
     public CopyMB() {
         FacesContext context = FacesContext.getCurrentInstance();
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
-
         connection = new FilterConnection();
         connection.connect();
         // copy
@@ -120,7 +119,9 @@ public class CopyMB implements Serializable {
         undoSplit = 0;
         btnSplitDisable = true;
         // merge
-        merge_pickfields = new DualListModel<String>(fieldsSource, fieldsTarget);
+        List<String> mergeSource = connection.getTempFields();
+        List<String> mergeTarget = new ArrayList<String>();
+        merge_pickfields = new DualListModel<String>(mergeSource, mergeTarget);
         merge_newfields = new ArrayList<List<String>>();
         merge_newheaders = new ArrayList<String>();
         merge_delimiter = " ";
@@ -163,10 +164,13 @@ public class CopyMB implements Serializable {
         List<String> deleteTarget = new ArrayList<String>();
         delete_pickfields = new DualListModel<String>(deleteSource, deleteTarget);
         // split
+        
         // merge
         List<String> mergeSource = connection.getTempFields();
         List<String> mergeTarget = new ArrayList<String>();
         merge_pickfields = new DualListModel<String>(mergeSource, mergeTarget);
+        // rename
+        
         // replicate
         replicate_model = connection.getListFromTempTable();
         replicate_headers = connection.getTempFieldsWithId();
@@ -177,6 +181,10 @@ public class CopyMB implements Serializable {
             replicate_columns.add(new ColumnModel(header, "a" + i));
             i++;
         }
+    }
+    
+    public void cleanBackupTables(){
+        connection.cleanFilterAndBackupTables();
     }
 
     // Copy's methods
@@ -226,6 +234,7 @@ public class CopyMB implements Serializable {
             System.out.println("Deleted " + record.getField());
         }
         connection.removeRecordsByFieldAndValue(filter_field, filter_selected);
+        this.refreshReplicate();
         filter_queryModel = new QueryDataModel(connection.getFieldCounts(filter_field));
         redoFilter++;
         btnFilterDisable = false;
@@ -325,6 +334,7 @@ public class CopyMB implements Serializable {
     public void renameRecords() {
         connection.saveNewValuesForField(the_field, rename_model);
         rename_model = connection.getValuesOrderedByFrecuency(the_field);
+        this.refreshReplicate();
         redoRename++;
         btnRenameDisable = false;
     }
@@ -339,6 +349,7 @@ public class CopyMB implements Serializable {
     public void redoRename() {
         connection.undo("Rename");
         rename_model = connection.getValuesOrderedByFrecuency(the_field);
+        this.refreshReplicate();
         redoRename--;
         if (redoRename == 0) {
             btnRenameDisable = true;
@@ -377,6 +388,7 @@ public class CopyMB implements Serializable {
 
     public void refreshReplicate() {
         replicate_model = connection.getListFromTempTable();
+        replicate_limit = connection.getTempRowCount();
     }
 
     public void setReplicate_page(int page) {
