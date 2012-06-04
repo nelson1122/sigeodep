@@ -4,15 +4,17 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:c="http://java.sun.com/jsp/jstl/core">
+      xmlns:ui="http://java.sun.com/jsf/facelets">
 
 
     <ui:composition template="../templates/layoutTemplate.xhtml">
         <!--=================================================================-->
         <!--========================CABECERA Y SCRIPTS=======================-->                    
         <ui:define name="header">
-            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
+            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />  
+            <style type="text/css">
+                .bla div { width: 125px; white-space:nowrap;}
+            </style>
             <script type="text/javascript">  
                 function start() {  
                     startButton1.disable();  
@@ -282,16 +284,12 @@
                                                     <p:commandButton value="Deshacer" icon="ui-icon-search"
                                                                      actionListener="#{copyMB.redoFilter}"
                                                                      update="filterDataTable 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSheet 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateLimit 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSpinner"
+                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSheet"
                                                                      disabled="#{copyMB.btnFilterDisable}"/>  
                                                     <p:commandButton value="Filtrar" icon="ui-icon-search"
                                                                      actionListener="#{copyMB.deleteRecords}"
                                                                      update="filterDataTable 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSheet 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateLimit 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSpinner"/>  
+                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSheet"/>  
                                                 </f:facet>                              
                                             </p:dataTable>
                                         </p:column>
@@ -527,16 +525,12 @@
                                                     <p:commandButton value="Deshacer" icon="ui-icon-search"
                                                                      actionListener="#{copyMB.redoRename}"
                                                                      update="renameValuesDataTable 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSheet 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateLimit 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSpinner"
+                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSheet"
                                                                      disabled="#{copyMB.btnRenameDisable}"/>  
                                                     <p:commandButton value="Renombrar" icon="ui-icon-search"
                                                                      actionListener="#{copyMB.renameRecords}"
                                                                      update="renameValuesDataTable 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSheet 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateLimit 
-                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSpinner"/>  
+                                                                     :IdForm:IdTabView:IdAccordionPanel2:replicateSheet"/>  
                                                 </f:facet>                              
                                             </p:dataTable>
                                         </p:column>
@@ -558,14 +552,14 @@
                                         <p:column>
                                             <p:selectManyMenu id="replicateFieldsListBox1" 
                                                               value="#{copyMB.replicate_source}"
-                                                              style="height:200px; width: 300px;">
+                                                              style="height:200px; width: 200px;">
                                                 <f:selectItems value="#{copyMB.fields}"/> 
                                             </p:selectManyMenu>
                                         </p:column>
                                         <p:column>
                                             <p:selectManyMenu id="replicateFieldsListBox2" 
                                                               value="#{copyMB.replicate_target}"
-                                                              style="height:200px; width: 300px;">
+                                                              style="height:200px; width: 200px;">
                                                 <f:selectItems value="#{copyMB.fields}"/> 
                                             </p:selectManyMenu>
                                         </p:column>
@@ -577,35 +571,35 @@
                                                 actionListener="#{copyMB.undoReplicate}"
                                                 value="Deshacer..." 
                                                 update="replicateFieldsListBox1 replicateFieldsListBox2 
-                                                replicateSheet replicateUndo replicateLimit"
+                                                replicateSheet replicateUndo"
                                                 disabled="#{copyMB.btnReplicateDisable}"/>
                                             <p:commandButton 
                                                 id="replicateReplicate"                                   
                                                 actionListener="#{copyMB.replicate}"
                                                 value="Replicar" 
                                                 update="replicateFieldsListBox1 replicateFieldsListBox2 
-                                                replicateSheet replicateUndo replicateLimit"/>
+                                                replicateSheet replicateUndo"/>
                                         </p:column>
                                     </p:row>
                                     <p:row>
                                         <p:column colspan="2">
-                                            <p:sheet id="replicateSheet" value="#{copyMB.replicate_model}" var="model" 
-                                                     rows="#{copyMB.replicate_pageSize}" first="#{copyMB.replicate_page}" scrollWidth="600">   
-
-                                                <c:forEach var="column" items="#{copyMB.replicate_columns}">
-                                                    <p:column headerText="#{column.header}" style="width:125px;white-space:nowrap;">
-                                                        <p:inputText value="#{model[column.alias]}" readonly="true" 
-                                                                     />
-                                                    </p:column>
-                                                </c:forEach>
-                                            </p:sheet>
-                                            <p:spinner id="replicateSpinner" value="#{copyMB.replicate_index}" min="2" 
-                                                       max="#{copyMB.replicate_limit}"
-                                                       stepFactor="#{copyMB.replicate_pageSize}">
-                                                <p:ajax process="@form" update="replicateSheet" 
-                                                        event="change" />
-                                            </p:spinner>
-                                            <h:outputLabel id="replicateLimit" value="/#{copyMB.replicate_limit}"/>
+                                            <p:dataTable id="replicateSheet" value="#{copyMB.replicate_model2}" var="table" 
+                                                         paginator="true" rows="10" paginatorPosition="bottom"
+                                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                         rowsPerPageTemplate="5,10,15" 
+                                                         rowKey="#{table.get(0)}" rowIndexVar="rowIndex"
+                                                         scrollable="true" scrollWidth="600"
+                                                         resizableColumns="true" >
+                                                <p:columns styleClass="bla" 
+                                                           value="#{copyMB.replicate_columns2}" var="columns" columnIndexVar="index">
+                                                    <f:facet name="header" >
+                                                        <h:outputText styleClass="bla" 
+                                                                      value="#{columns}" />
+                                                    </f:facet>
+                                                    <h:outputText styleClass="bla"
+                                                                  value="#{table.get(index)}" />
+                                                </p:columns>
+                                            </p:dataTable>
                                         </p:column>
                                     </p:row>
                                 </p:panelGrid>
@@ -1296,193 +1290,193 @@
                                                         <p:selectOneListbox                                         
                                                             value="#{errorsControlMB.currentError}" 
                                                             id="IdListErrors" 
-                                                            style="height:120px; width: 100%; " >
-                                                            <f:selectItems value="#{errorsControlMB.errors}"/>
-                                                            <f:ajax 
-                                                                event="change" 
-                                                                listener="#{errorsControlMB.changeErrorsList}" 
-                                                                render="IdAccordionPanelErrors:IdValueFound 
+                                                                     style="height:120px; width: 100%; " >
+                                                                <f:selectItems value="#{errorsControlMB.errors}"/>
+                                                                <f:ajax 
+                                                                    event="change" 
+                                                                    listener="#{errorsControlMB.changeErrorsList}" 
+                                                                    render="IdAccordionPanelErrors:IdValueFound 
+                                                                    IdAccordionPanelErrors:IdAcceptedValuesList 
+                                                                    IdAccordionPanelErrors:IdSizeErrors 
+                                                                    IdAccordionPanelErrors:IdSelectDateFormatAccepted 
+                                                                    IdAccordionPanelErrors:IdDescription
+                                                                    IdAccordionPanelErrors:IdBtnSeeRecord
+                                                                    :IdForm2:IdDataTable"/>
+                                                            </p:selectOneListbox>
+                                                        </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column styleClass="ui-widget-header" > <h:outputText value="Descripción" /> </p:column>
+                                                        <p:column styleClass="ui-widget-header"> <h:outputText value="Valores Aceptados" /> </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column > 
+                                                            <h:outputText 
+                                                                id="IdDescription"
+                                                                value="#{errorsControlMB.solution}" 
+                                                                style="width: 100px; height:100px;"/> 
+                                                        </p:column>
+                                                        <p:column>                                                    
+                                                            <p:selectOneListbox 
+                                                                value="#{errorsControlMB.currentAceptedValue}" 
+                                                                id="IdAcceptedValuesList" 
+                                                                style="height:70px; width: 350px; " >
+                                                                <f:selectItems value="#{errorsControlMB.aceptedValues}"/>
+                                                                <f:ajax 
+                                                                    event="change" 
+                                                                    listener="#{errorsControlMB.changeAcceptedValuesList}" 
+                                                                    render="IdNewValue IdBtnSolve" />
+                                                            </p:selectOneListbox>                                                        
+                                                        </p:column>
+                                                    </p:row>                                                
+                                                    <p:row>
+                                                        <p:column styleClass="ui-widget-header"> <h:outputText value="Valor encontrado" /> </p:column>
+                                                        <p:column styleClass="ui-widget-header"> <h:outputText value="Nuevo valor" />      </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column> 
+                                                            <h:inputTextarea
+                                                                id="IdValueFound"
+                                                                style="width: 300px; "
+                                                                value="#{errorsControlMB.valueFound}" 
+                                                                disabled="true"/> 
+                                                        </p:column>
+                                                        <p:column> 
+                                                            <h:inputTextarea
+                                                                id="IdNewValue"
+                                                                style="width: 300px; "
+                                                                value="#{errorsControlMB.currentNewValue}"> 
+                                                                <f:ajax 
+                                                                    event="keyup"                                                                                                             
+                                                                    render="IdBtnSolve"/>
+                                                            </h:inputTextarea>
+                                                        </p:column>
+                                                    </p:row>
+                                                    <p:row>
+                                                        <p:column  styleClass="ui-widget-header" style="text-align: left;">
+                                                            <p:commandButton 
+                                                                id="IdBtnSolve" 
+                                                                value="Resolver"
+                                                                disabled="#{errorsControlMB.btnSolveDisabled}"
+                                                                actionListener="#{errorsControlMB.solveError}"
+                                                                update="IdAccordionPanelErrors:IdValueFound 
                                                                 IdAccordionPanelErrors:IdAcceptedValuesList 
-                                                                IdAccordionPanelErrors:IdSizeErrors 
-                                                                IdAccordionPanelErrors:IdSelectDateFormatAccepted 
-                                                                IdAccordionPanelErrors:IdDescription
-                                                                IdAccordionPanelErrors:IdBtnSeeRecord
-                                                                :IdForm2:IdDataTable"/>
-                                                        </p:selectOneListbox>
-                                                    </p:column>
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column styleClass="ui-widget-header" > <h:outputText value="Descripción" /> </p:column>
-                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="Valores Aceptados" /> </p:column>
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column > 
-                                                        <h:outputText 
-                                                            id="IdDescription"
-                                                            value="#{errorsControlMB.solution}" 
-                                                            style="width: 100px; height:100px;"/> 
-                                                    </p:column>
-                                                    <p:column>                                                    
-                                                        <p:selectOneListbox 
-                                                            value="#{errorsControlMB.currentAceptedValue}" 
-                                                            id="IdAcceptedValuesList" 
-                                                            style="height:70px; width: 350px; " >
-                                                            <f:selectItems value="#{errorsControlMB.aceptedValues}"/>
-                                                            <f:ajax 
-                                                                event="change" 
-                                                                listener="#{errorsControlMB.changeAcceptedValuesList}" 
-                                                                render="IdNewValue IdBtnSolve" />
-                                                        </p:selectOneListbox>                                                        
-                                                    </p:column>
-                                                </p:row>                                                
-                                                <p:row>
-                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="Valor encontrado" /> </p:column>
-                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="Nuevo valor" />      </p:column>
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column> 
-                                                        <h:inputTextarea
-                                                            id="IdValueFound"
-                                                            style="width: 300px; "
-                                                            value="#{errorsControlMB.valueFound}" 
-                                                            disabled="true"/> 
-                                                    </p:column>
-                                                    <p:column> 
-                                                        <h:inputTextarea
-                                                            id="IdNewValue"
-                                                            style="width: 300px; "
-                                                            value="#{errorsControlMB.currentNewValue}"> 
-                                                            <f:ajax 
-                                                                event="keyup"                                                                                                             
-                                                                render="IdBtnSolve"/>
-                                                        </h:inputTextarea>
-                                                    </p:column>
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column  styleClass="ui-widget-header" style="text-align: left;">
-                                                        <p:commandButton 
-                                                            id="IdBtnSolve" 
-                                                            value="Resolver"
-                                                            disabled="#{errorsControlMB.btnSolveDisabled}"
-                                                            actionListener="#{errorsControlMB.solveError}"
-                                                            update="IdAccordionPanelErrors:IdValueFound 
-                                                            IdAccordionPanelErrors:IdAcceptedValuesList 
-                                                            IdDescription 
-                                                            IdAccordionPanelErrors:IdListErrors 
-                                                            IdSizeErrors 
-                                                            IdSelectDateFormatAccepted 
-                                                            IdNewValue
-                                                            IdBtnSeeRecord
-                                                            IdHistorialList"/> 
-                                                        &nbsp;
-                                                        <h:outputText value="Formato: " />
-                                                        <p:inputText 
-                                                            id="IdSelectDateFormatAccepted"
-                                                            value="#{errorsControlMB.currentDateFormatAcepted}" 
-                                                            disabled="true"> 
-                                                        </p:inputText>
+                                                                IdDescription 
+                                                                IdAccordionPanelErrors:IdListErrors 
+                                                                IdSizeErrors 
+                                                                IdSelectDateFormatAccepted 
+                                                                IdNewValue
+                                                                IdBtnSeeRecord
+                                                                IdHistorialList"/> 
+                                                            &nbsp;
+                                                            <h:outputText value="Formato: " />
+                                                            <p:inputText 
+                                                                id="IdSelectDateFormatAccepted"
+                                                                value="#{errorsControlMB.currentDateFormatAcepted}" 
+                                                                disabled="true"> 
+                                                            </p:inputText>
 
-                                                    </p:column>                                                    
-                                                    <p:column styleClass="ui-widget-header" style="text-align: right;"> 
+                                                        </p:column>                                                    
+                                                        <p:column styleClass="ui-widget-header" style="text-align: right;"> 
 
-                                                        <p:commandButton 
-                                                            id="IdBtnSeeRecord" 
-                                                            value="Ver Registro"
-                                                            disabled="#{errorsControlMB.btnSeeRecordDisabled}"
-                                                            onclick="seeRecordDialog.hide(); seeRecordDialog.show();"
-                                                            />  
+                                                            <p:commandButton 
+                                                                id="IdBtnSeeRecord" 
+                                                                value="Ver Registro"
+                                                                disabled="#{errorsControlMB.btnSeeRecordDisabled}"
+                                                                onclick="seeRecordDialog.hide(); seeRecordDialog.show();"
+                                                                />  
 
 
-                                                    </p:column>
-                                                </p:row>
-                                            </p:panelGrid>  
-                                        </td>
-                                    </tr>
-                                </table>
-                            </p:tab>  
-                            <!--========================SECCION PARA HISTORIAL ==============================-->
-                            <p:tab id="tab11" title="HISTORIAL DE CORRECIONES">    
-                                <p:panelGrid>
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputText value="Listado de cambios : " />
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column>
-                                            <h:outputText value="seleccione una de las correciones realizadas
-                                                          y presione deshacer para revertir el cambio realizado" />
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column>
-                                            <p:selectOneListbox 
-                                                value="#{errorsControlMB.currentCorrection}" 
-                                                id="IdHistorialList" 
-                                                style="height:200px; width: 99%;" >
-                                                <f:selectItems value="#{errorsControlMB.correctionList}"/>
-                                                <f:ajax 
-                                                    event="change" 
-                                                    listener="#{errorsControlMB.changeCorrectionList}" 
-                                                    render="IdBtnDeshacer"/>
-                                            </p:selectOneListbox>
+                                                        </p:column>
+                                                    </p:row>
+                                                </p:panelGrid>  
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </p:tab>  
+                                <!--========================SECCION PARA HISTORIAL ==============================-->
+                                <p:tab id="tab11" title="HISTORIAL DE CORRECIONES">    
+                                    <p:panelGrid>
+                                        <p:row>
+                                            <p:column styleClass="ui-widget-header">
+                                                <h:outputText value="Listado de cambios : " />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <h:outputText value="seleccione una de las correciones realizadas
+                                                              y presione deshacer para revertir el cambio realizado" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:selectOneListbox 
+                                                    value="#{errorsControlMB.currentCorrection}" 
+                                                    id="IdHistorialList" 
+                                                    style="height:200px; width: 99%;" >
+                                                    <f:selectItems value="#{errorsControlMB.correctionList}"/>
+                                                    <f:ajax 
+                                                        event="change" 
+                                                        listener="#{errorsControlMB.changeCorrectionList}" 
+                                                        render="IdBtnDeshacer"/>
+                                                </p:selectOneListbox>
 
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            <p:commandButton  
-                                                disabled="#{errorsControlMB.btnUndoDisabled}"
-                                                actionListener="#{errorsControlMB.btnUndoErrorClick}"
-                                                id="IdBtnDeshacer"
-                                                value="Deshacer"
-                                                update="IdHistorialList"/>
-                                        </p:column></p:row>
-                                </p:panelGrid>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column styleClass="ui-widget-header">
+                                                <p:commandButton  
+                                                    disabled="#{errorsControlMB.btnUndoDisabled}"
+                                                    actionListener="#{errorsControlMB.btnUndoErrorClick}"
+                                                    id="IdBtnDeshacer"
+                                                    value="Deshacer"
+                                                    update="IdHistorialList"/>
+                                            </p:column></p:row>
+                                    </p:panelGrid>
 
-                            </p:tab>  
-                        </p:accordionPanel>
-                    </p:tab>
-                </p:tabView>  
-            </h:form>
-        </ui:define>
-        <ui:define name="dialogs">
-            <h:form id="IdForm2">
-                <p:dialog 
-                    id="IdSeeRecordDialog" 
-                    header="Datos del registro que presenta Errores" 
-                    widgetVar="seeRecordDialog" 
-                    resizable="false"
-                    modal="true" >
-                    <p:panelGrid>
-                        <p:row>
-                            <p:column>
-                                <div style="width: 600px;  padding-right: 10px; overflow: scroll; ">
-                                    <p:dataTable 
-                                        value="#{errorsControlMB.dinamicTable.listOfRecords}" 
-                                        var="listOfRecords"
-                                        id="IdDataTable">
-                                        <p:columns value="#{errorsControlMB.dinamicTable.titles}" var="titles" columnIndexVar="index">
-                                            <f:facet name="header">
-                                                <h:outputText value="#{titles}"/>
-                                            </f:facet>
-                                            <h:outputText value="#{listOfRecords[index]}"/>
-                                        </p:columns>
-                                    </p:dataTable>
-                                </div>
-                            </p:column>
-                        </p:row>
-                        <p:row>
-                            <p:column>
-                                <p:commandButton                                                                         
-                                    value="Cerrar" 
-                                    onclick="seeRecordDialog.hide()"/>
-                            </p:column>
-                        </p:row>
-                    </p:panelGrid>
+                                </p:tab>  
+                            </p:accordionPanel>
+                        </p:tab>
+                    </p:tabView>  
+                </h:form>
+            </ui:define>
+            <ui:define name="dialogs">
+                <h:form id="IdForm2">
+                    <p:dialog 
+                        id="IdSeeRecordDialog" 
+                        header="Datos del registro que presenta Errores" 
+                        widgetVar="seeRecordDialog" 
+                        resizable="false"
+                        modal="true" >
+                        <p:panelGrid>
+                            <p:row>
+                                <p:column>
+                                    <div style="width: 600px;  padding-right: 10px; overflow: scroll; ">
+                                            <p:dataTable 
+                                                value="#{errorsControlMB.dinamicTable.listOfRecords}" 
+                                                var="listOfRecords"
+                                                id="IdDataTable">
+                                                <p:columns value="#{errorsControlMB.dinamicTable.titles}" var="titles" columnIndexVar="index">
+                                                    <f:facet name="header">
+                                                        <h:outputText value="#{titles}"/>
+                                                    </f:facet>
+                                                    <h:outputText value="#{listOfRecords[index]}"/>
+                                                </p:columns>
+                                            </p:dataTable>
+                                        </div>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:commandButton                                                                         
+                                            value="Cerrar" 
+                                            onclick="seeRecordDialog.hide()"/>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
 
-                </p:dialog>
-            </h:form>
-        </ui:define>
-    </ui:composition>
-</html>
+                        </p:dialog>
+                    </h:form>
+                </ui:define>
+            </ui:composition>
+        </html>

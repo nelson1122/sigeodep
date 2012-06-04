@@ -842,4 +842,28 @@ public class FilterConnection implements Serializable {
             return null;
         }
     }
+
+    /*
+     * Devuelve una lista con el resultado del query.
+     */
+    public List<List> getListFromQuery(int first, int pageSize) {
+        try {
+            List<List> data = new ArrayList<List>();
+            String query = "SELECT * FROM temp ORDER BY id "
+                    + "LIMIT " + pageSize + " OFFSET " + first;
+            ResultSet records = this.consult(query);
+            int ncols = records.getMetaData().getColumnCount();
+            while (records.next()) {
+                List record = new ArrayList();
+                for (int i = 1; i <= ncols; i++) {
+                    record.add(records.getString(i));
+                }
+                data.add(record);
+            }
+            return data;
+        } catch (SQLException ex) {
+            Logger.getLogger(FilterConnection.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
 }

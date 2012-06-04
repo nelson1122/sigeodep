@@ -13,6 +13,7 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.fileProcessing.RelationshipOfVariablesMB;
 import org.primefaces.model.DualListModel;
+import org.primefaces.model.LazyDataModel;
 
 /**
  *
@@ -72,15 +73,10 @@ public class CopyMB implements Serializable {
     //replicate
     private List<String> replicate_source;
     private List<String> replicate_target;
-    private List<SqlTable> replicate_model;
-    private List<String> replicate_headers;
-    private List<ColumnModel> replicate_columns;
+    private List<String> replicate_columns2;
+    private LazyDataModel<List> replicate_model2;
     private boolean btnReplicateDisable;
     private int undoReplicate;
-    private int replicate_page;
-    private int replicate_index;
-    private int replicate_pageSize;
-    private int replicate_limit;
 
     /**
      * Creates a new instance of CopyMB
@@ -140,18 +136,8 @@ public class CopyMB implements Serializable {
         // replicate
         btnReplicateDisable = true;
         undoReplicate = 0;
-        replicate_model = connection.getListFromTempTable();
-        replicate_headers = connection.getTempFieldsWithId();
-        replicate_columns = new ArrayList<ColumnModel>();
-        replicate_page = 0;
-        replicate_index = replicate_page + 2;
-        replicate_pageSize = 10;
-        replicate_limit = connection.getTempRowCount();
-        int i = 1;
-        for (String header : replicate_headers) {
-            replicate_columns.add(new ColumnModel(header, "a" + i));
-            i++;
-        }
+        replicate_columns2 = connection.getTempFieldsWithId();
+        replicate_model2 = new LazyQueryDataModel();
     }
 
     public void refresh() {
@@ -164,26 +150,19 @@ public class CopyMB implements Serializable {
         List<String> deleteTarget = new ArrayList<String>();
         delete_pickfields = new DualListModel<String>(deleteSource, deleteTarget);
         // split
-        
+
         // merge
         List<String> mergeSource = connection.getTempFields();
         List<String> mergeTarget = new ArrayList<String>();
         merge_pickfields = new DualListModel<String>(mergeSource, mergeTarget);
         // rename
-        
+
         // replicate
-        replicate_model = connection.getListFromTempTable();
-        replicate_headers = connection.getTempFieldsWithId();
-        replicate_columns = new ArrayList<ColumnModel>();
-        replicate_limit = connection.getTempRowCount();
-        int i = 1;
-        for (String header : replicate_headers) {
-            replicate_columns.add(new ColumnModel(header, "a" + i));
-            i++;
-        }
+        replicate_columns2 = connection.getTempFieldsWithId();
+        replicate_model2 = new LazyQueryDataModel();
     }
-    
-    public void cleanBackupTables(){
+
+    public void cleanBackupTables() {
         connection.cleanFilterAndBackupTables();
     }
 
@@ -388,28 +367,8 @@ public class CopyMB implements Serializable {
     }
 
     public void refreshReplicate() {
-        replicate_model = connection.getListFromTempTable();
-        replicate_limit = connection.getTempRowCount();
-    }
-
-    public void setReplicate_page(int page) {
-        if (page >= 0) {
-            replicate_page = page;
-            replicate_index = replicate_page + 2;
-        } else {
-            replicate_page = 0;
-            replicate_index = 2;
-        }
-    }
-
-    public void setReplicate_index(int index) {
-        if (index >= 2) {
-            replicate_index = index;
-            replicate_page = replicate_index - 2;
-        } else {
-            replicate_index = 2;
-            replicate_page = 0;
-        }
+        replicate_columns2 = connection.getTempFieldsWithId();
+        replicate_model2 = new LazyQueryDataModel();
     }
 
     // Setters and Getters
@@ -644,55 +603,7 @@ public class CopyMB implements Serializable {
     public void setBtnReplicateDisable(boolean btnReplicateDisable) {
         this.btnReplicateDisable = btnReplicateDisable;
     }
-
-    public List<ColumnModel> getReplicate_columns() {
-        return replicate_columns;
-    }
-
-    public void setReplicate_columns(List<ColumnModel> replicate_columns) {
-        this.replicate_columns = replicate_columns;
-    }
-
-    public List<String> getReplicate_headers() {
-        return replicate_headers;
-    }
-
-    public void setReplicate_headers(List<String> replicate_headers) {
-        this.replicate_headers = replicate_headers;
-    }
-
-    public int getReplicate_index() {
-        return replicate_index;
-    }
-
-    public int getReplicate_limit() {
-        return replicate_limit;
-    }
-
-    public void setReplicate_limit(int replicate_limit) {
-        this.replicate_limit = replicate_limit;
-    }
-
-    public List<SqlTable> getReplicate_model() {
-        return replicate_model;
-    }
-
-    public void setReplicate_model(List<SqlTable> replicate_model) {
-        this.replicate_model = replicate_model;
-    }
-
-    public int getReplicate_page() {
-        return replicate_page;
-    }
-
-    public int getReplicate_pageSize() {
-        return replicate_pageSize;
-    }
-
-    public void setReplicate_pageSize(int replicate_pageSize) {
-        this.replicate_pageSize = replicate_pageSize;
-    }
-
+    
     public List<String> getReplicate_source() {
         return replicate_source;
     }
@@ -803,5 +714,21 @@ public class CopyMB implements Serializable {
 
     public void setUndoMerge(int undoMerge) {
         this.undoMerge = undoMerge;
+    }
+
+    public List<String> getReplicate_columns2() {
+        return replicate_columns2;
+    }
+
+    public void setReplicate_columns2(List<String> replicate_columns2) {
+        this.replicate_columns2 = replicate_columns2;
+    }
+
+    public LazyDataModel<List> getReplicate_model2() {
+        return replicate_model2;
+    }
+
+    public void setReplicate_model2(LazyDataModel<List> replicate_model2) {
+        this.replicate_model2 = replicate_model2;
     }
 }
