@@ -17,6 +17,11 @@
     background-color: #f6fbff;
 }
 
+.bla div { 
+    width: 125px !important;
+    white-space:nowrap !important;
+}
+
 body {
     background: url(../img/background.png) top center repeat-x #CFDEEA;
     margin: 0px;
@@ -76,3 +81,4 @@ a:hover {
     margin-top: 20px;
     margin-left: 160px;
 }
+
