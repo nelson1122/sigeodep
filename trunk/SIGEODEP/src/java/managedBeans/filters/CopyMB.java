@@ -47,6 +47,7 @@ public class CopyMB implements Serializable {
     private String filter_field;
     //split
     private String split_field;
+    private boolean split_include;
     private List<List<String>> split_newfields;
     private List<String> split_newheaders;
     private String split_field_name1;
@@ -55,6 +56,7 @@ public class CopyMB implements Serializable {
     private int split_limit;
     private int undoSplit;
     private boolean btnSplitDisable;
+    private boolean split_rendered;
     //merge
     private DualListModel<String> merge_pickfields;
     private List<List<String>> merge_newfields;
@@ -109,7 +111,9 @@ public class CopyMB implements Serializable {
         filter_field_names.add("# de Registros");
         // split
         split_delimiter = "-";
+        split_include = false;
         split_limit = 2;
+        split_rendered = false;
         split_newfields = new ArrayList<List<String>>();
         split_newheaders = new ArrayList<String>();
         undoSplit = 0;
@@ -237,6 +241,45 @@ public class CopyMB implements Serializable {
     }
 
     // Split's methods
+    public void setRenders(){
+        if("#".equals(split_delimiter.trim())){
+            split_rendered = true;
+        } else {
+            split_rendered = false;
+        }
+    }
+    
+    private boolean isDigit(char chr) {
+        if (chr >= 48 && chr <= 57) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public String[] splitByDigit(String text) {
+        String[] split = new String[2];
+        int i;
+        int length = text.length();
+        for (i = 0; i < length; i++) {
+            char chr = text.charAt(i);
+            if (isDigit(chr)) {
+                break;
+            }
+        }
+        if (split_include && i < length) {
+            while (isDigit(text.charAt(i))) {
+                i++;
+                if (i == length) {
+                    break;
+                }
+            }
+        }
+        split[0] = text.substring(0, i);
+        split[1] = text.substring(i, length);
+        return split;
+    }
+
     public void changeFieldSplit() {
         System.out.println(split_field);
         values = connection.getFieldValues(split_field);
@@ -245,34 +288,42 @@ public class CopyMB implements Serializable {
     }
 
     public void divideAField() {
-        System.out.println(split_field);
-        List<String> records = connection.getFieldRecords(split_field);
-        int newfields_length = 0;
-        for (String record : records) {
-            String[] split = record.split(split_delimiter, split_limit);
-            ArrayList<String> temp = new ArrayList<String>();
-            temp.add(record);
-            temp.addAll(java.util.Arrays.asList(split));
-            split_newfields.add(temp);
-            if (temp.size() > newfields_length) {
-                newfields_length = temp.size();
-            }
-        }
-        for (List<String> split : split_newfields) {
-            int n = split.size();
-            if (n < newfields_length) {
-                for (int i = 0; i < newfields_length - n; i++) {
-                    split.add("");
+        try {
+            List<String> records = connection.getFieldRecords(split_field);
+            int newfields_length = 0;
+            for (String record : records) {
+                String[] split;
+                if ("#".equals(split_delimiter.trim())) {
+                    split = splitByDigit(record);
+                } else {
+                    split = record.split(split_delimiter, split_limit);
+                }
+                ArrayList<String> temp = new ArrayList<String>();
+                temp.add(record);
+                temp.addAll(java.util.Arrays.asList(split));
+                split_newfields.add(temp);
+                if (temp.size() > newfields_length) {
+                    newfields_length = temp.size();
                 }
             }
+            for (List<String> split : split_newfields) {
+                int n = split.size();
+                if (n < newfields_length) {
+                    for (int i = 0; i < newfields_length - n; i++) {
+                        split.add("");
+                    }
+                }
+            }
+            split_newheaders.add(split_field);
+            split_newheaders.add(split_field_name1);
+            split_newheaders.add(split_field_name2);
+            connection.saveNewFields(split_newheaders, split_newfields, split_field);
+            this.refresh();
+            undoSplit++;
+            btnSplitDisable = false;
+        } catch (Exception e) {
+            System.out.println(e.toString());
         }
-        split_newheaders.add(split_field);
-        split_newheaders.add(split_field_name1);
-        split_newheaders.add(split_field_name2);
-        connection.saveNewFields(split_newheaders, split_newfields, split_field);
-        this.refresh();
-        undoSplit++;
-        btnSplitDisable = false;
     }
 
     public void undoSplit() {
@@ -603,7 +654,7 @@ public class CopyMB implements Serializable {
     public void setBtnReplicateDisable(boolean btnReplicateDisable) {
         this.btnReplicateDisable = btnReplicateDisable;
     }
-    
+
     public List<String> getReplicate_source() {
         return replicate_source;
     }
@@ -731,4 +782,22 @@ public class CopyMB implements Serializable {
     public void setReplicate_model2(LazyDataModel<List> replicate_model2) {
         this.replicate_model2 = replicate_model2;
     }
+
+    public boolean isSplit_include() {
+        return split_include;
+    }
+
+    public void setSplit_include(boolean split_include) {
+        this.split_include = split_include;
+    }
+
+    public boolean isSplit_rendered() {
+        return split_rendered;
+    }
+
+    public void setSplit_rendered(boolean split_rendered) {
+        this.split_rendered = split_rendered;
+    }
+    
+    
 }
