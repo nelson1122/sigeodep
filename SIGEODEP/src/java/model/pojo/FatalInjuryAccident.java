@@ -32,9 +32,7 @@ public class FatalInjuryAccident implements Serializable {
     @JoinColumn(name = "fatal_injury_id", referencedColumnName = "fatal_injury_id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private FatalInjuries fatalInjuries;
-    @JoinColumn(name = "area_id", referencedColumnName = "area_id")
-    @ManyToOne
-    private Areas areaId;
+    
     @JoinColumn(name = "death_mechanism_id", referencedColumnName = "accident_mechanism_id")
     @ManyToOne
     private AccidentMechanisms deathMechanismId;
@@ -68,14 +66,6 @@ public class FatalInjuryAccident implements Serializable {
 
     public void setFatalInjuries(FatalInjuries fatalInjuries) {
         this.fatalInjuries = fatalInjuries;
-    }
-
-    public Areas getAreaId() {
-        return areaId;
-    }
-
-    public void setAreaId(Areas areaId) {
-        this.areaId = areaId;
     }
 
     public AccidentMechanisms getDeathMechanismId() {

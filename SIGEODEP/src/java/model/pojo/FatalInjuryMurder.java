@@ -40,9 +40,7 @@ public class FatalInjuryMurder implements Serializable {
     @JoinColumn(name = "fatal_injury_id", referencedColumnName = "fatal_injury_id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private FatalInjuries fatalInjuries;
-    @JoinColumn(name = "area_id", referencedColumnName = "area_id")
-    @ManyToOne
-    private Areas areaId;
+    
 
     public FatalInjuryMurder() {
     }
@@ -91,13 +89,6 @@ public class FatalInjuryMurder implements Serializable {
         this.fatalInjuries = fatalInjuries;
     }
 
-    public Areas getAreaId() {
-        return areaId;
-    }
-
-    public void setAreaId(Areas areaId) {
-        this.areaId = areaId;
-    }
 
     @Override
     public int hashCode() {

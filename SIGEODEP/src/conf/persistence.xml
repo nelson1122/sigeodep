@@ -3,6 +3,7 @@
   <persistence-unit name="SIGEODEPPU" transaction-type="JTA">
     <jta-data-source>jdbc/od</jta-data-source>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
+    <shared-cache-mode>NONE</shared-cache-mode>
     <properties/>
   </persistence-unit>
 </persistence>

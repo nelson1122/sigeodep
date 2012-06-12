@@ -36,10 +36,11 @@ public class AggressorTypes implements Serializable {
     @Size(min = 1, max = 25)
     @Column(name = "aggressor_type_name", nullable = false, length = 25)
     private String aggressorTypeName;
-    @JoinTable(name = "domestic_violence_aggressor_type", joinColumns = {
-        @JoinColumn(name = "aggressor_type_id", referencedColumnName = "aggressor_type_id", nullable = false)}, inverseJoinColumns = {
-        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
-    @ManyToMany
+//    @JoinTable(name = "domestic_violence_aggressor_type", joinColumns = {
+//        @JoinColumn(name = "aggressor_type_id", referencedColumnName = "aggressor_type_id", nullable = false)}, inverseJoinColumns = {
+//        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
+//    @ManyToMany
+    @ManyToMany(mappedBy = "aggressorTypesList")
     private List<NonFatalDomesticViolence> nonFatalDomesticViolenceList;
 
     public AggressorTypes() {

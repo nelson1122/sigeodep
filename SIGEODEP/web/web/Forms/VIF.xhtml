@@ -27,7 +27,7 @@
         <!--=================================================================-->
         <!--==============================CONTENIDO==========================-->
         <ui:define name="content">
-            <h:form enctype="multipart/form-data" id="IdForm2"> 
+            <h:form enctype="multipart/form-data" id="IdForm1"> 
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
                 <!--===================================================================================-->
                 <br/>
@@ -40,15 +40,7 @@
                         </p:column>                                       
                     </p:row>
                     <p:row >  
-                        <p:column style="background-color: #ebf4fb;">
-                            <!--=====================================DATOS DEL REGISTO==============================================-->
-                            <br/>                            
-                            <p:panelGrid  >                            
-                                <p:row>  
-                                    <p:column><h:outputLabel value="REGISTRO:   "/></p:column>
-                                    <p:column><p:inputText value="2337" disabled="true"/></p:column>
-                                </p:row>                                
-                            </p:panelGrid>
+                        <p:column style="background-color: #ebf4fb;">                            
                             <br/>
                             <!--=====================================INSTITUCION DE SALUD==============================================-->
                             <p:panelGrid>                            
@@ -59,6 +51,10 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{vifMB.currentDomesticViolenceDataSource}" > 
                                             <f:selectItems value="#{vifMB.violenceDataSources}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{vifMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>                                    
                                 </p:row>
@@ -82,7 +78,12 @@
                                                     <h:outputLabel value="APELLIDOS:"/>   
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText value="#{vifMB.currentName}" size="60"/>                                       
+                                                    <p:inputText value="#{vifMB.currentSurname}" size="60">
+							<f:ajax 
+							    event="keyup"
+							    listener="#{vifMB.changeForm}"
+							    render="IdControls"/>
+						    </p:inputText>
                                                 </p:column>
                                             </p:row>
                                             <p:row>  
@@ -90,7 +91,12 @@
                                                     <h:outputLabel value="NOMBRES:"/>    
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText value="#{vifMB.currentSurname}" size="60"/>
+                                                    <p:inputText value="#{vifMB.currentName}" size="60">
+							<f:ajax 
+							    event="keyup"
+							    listener="#{vifMB.changeForm}"
+							    render="IdControls"/>
+						    </p:inputText>
                                                 </p:column>                                                  
                                             </p:row>
                                         </p:panelGrid>
@@ -103,6 +109,10 @@
                                                 <p:column>
                                                     <p:selectOneMenu value="#{vifMB.currentIdentification}" > 
                                                         <f:selectItems value="#{vifMB.identifications}"/>
+							<f:ajax 
+							    event="change"                                                                                                            
+							    render="IdControls"
+							    listener="#{vifMB.changeForm}"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                             </p:row>
@@ -111,7 +121,12 @@
                                                     <h:outputLabel value="NUMERO DE IDENTIFICACION:   "/>                                          
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText value="#{vifMB.currentIdentificationNumber}"/>
+                                                    <p:inputText value="#{vifMB.currentIdentificationNumber}">
+							<f:ajax 
+							    event="keyup"
+							    listener="#{vifMB.changeForm}"
+							    render="IdControls"/>
+						    </p:inputText>
                                                 </p:column>
                                             </p:row>
                                         </p:panelGrid>
@@ -127,46 +142,57 @@
                                                         <f:ajax 
                                                             event="change"                                            
                                                             listener="#{vifMB.changeMeasuresOfAge}" 
-                                                            render="IdValueAge"/>
+                                                            render="IdValueAge IdControls"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column  >
                                                     <h:outputLabel value="EDAD CANTIDAD:"/>                                          
                                                 </p:column>
                                                 <p:column>
-                                                    <p:inputText 
+
+						    <p:inputText 
                                                         id="IdValueAge"
                                                         value="#{vifMB.currentAge}" 
                                                         disabled="#{vifMB.valueAgeDisabled}" 
-                                                        size="3"/>
+                                                        size="3">
+                                                        <f:ajax 
+                                                            event="blur"  
+                                                            listener="#{vifMB.changeValueAge}"
+                                                            render="IdValueAge"/> 
+                                                        <f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+						    </p:inputText>
                                                 </p:column>                                                                                             
+                                                
+                                            </p:row>
+                                            <p:row>
                                                 <p:column>
                                                     <h:outputLabel value="SEXO:   "/>    
                                                 </p:column>
                                                 <p:column>
                                                     <p:selectOneMenu value="#{vifMB.currentGender}" > 
                                                         <f:selectItems value="#{vifMB.genders}"/>
+							<f:ajax 
+							    event="change"                                                                                                            
+							    render="IdControls"
+							    listener="#{vifMB.changeForm}"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
-                                            </p:row>
-                                            <p:row>
                                                 <p:column>
                                                     <h:outputLabel value="OCUPACION:   "/>                                          
                                                 </p:column>
                                                 <p:column>
                                                     <p:selectOneMenu value="#{vifMB.currentJob}" > 
                                                         <f:selectItems value="#{vifMB.jobs}"/>
+							<f:ajax 
+							    event="change"                                                                                                            
+							    render="IdControls"
+							    listener="#{vifMB.changeForm}"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
-                                                <p:column>
-                                                    <h:outputLabel value="ASEGURADORA:   "/>                                        
-                                                </p:column>
-                                                <p:column colspan="3">
-                                                    <p:inputText value="#{vifMB.currentInsurance}" size="40"/>
-                                                </p:column>
-
                                             </p:row>
-
                                         </p:panelGrid>
                                         <br/>
                                     </p:column>  
@@ -196,7 +222,8 @@
                                                             render="IdDepartamentHomeCode
                                                             IdMunicipalitieList
                                                             IdMunicipalitiesHomeCode
-                                                            IdNeighborhoodHomeName"/>
+                                                            IdNeighborhoodHomeName
+							    IdControls"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>CODIGO DEPARTAMENTO:&nbsp;</p:column>
@@ -204,7 +231,12 @@
                                                     <p:inputText 
                                                         id="IdDepartamentHomeCode"
                                                         disabled="true"
-                                                        value="#{vifMB.currentDepartamentHome}"/>
+                                                        value="#{vifMB.currentDepartamentHome}">
+							<f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+						    </p:inputText>
                                                 </p:column>
                                             </p:row>
                                             <p:row>  
@@ -219,11 +251,13 @@
                                                             listener="#{vifMB.findMunicipalitieCode}"
                                                             render="IdMunicipalitiesHomeCode
                                                             IdNeighborhoodHomeName
-                                                            IdNeighborhoodsHomeCode"/>
+                                                            IdNeighborhoodsHomeCode
+							    IdControls"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>CODIGO MUNICIPIO:&nbsp;</p:column>
-                                                <p:column><p:inputText 
+                                                <p:column>
+						    <p:inputText 
                                                         id="IdMunicipalitiesHomeCode"                                                        
                                                         disabled="true"
                                                         value="#{vifMB.currentMunicipalitie}"/></p:column>
@@ -241,7 +275,11 @@
                                                         <p:ajax 
                                                             event="itemSelect" 
                                                             listener="#{vifMB.changeNeighborhoodHomeName}" 
-                                                            update="IdNeighborhoodsHomeCode" process="@this"/>
+                                                            update="IdNeighborhoodsHomeCode IdControls" process="@this"/>
+							<f:ajax 
+							    event="keyup"
+							    listener="#{vifMB.changeForm}"
+							    render="IdControls"/>
                                                     </p:autoComplete>
                                                 </p:column>
                                                 <p:column>CODIGO BARRIO:&nbsp;  </p:column>
@@ -254,9 +292,23 @@
                                             </p:row>
                                             <p:row>  
                                                 <p:column>DIRECCION DE  RESIDENCIA:&nbsp;</p:column>
-                                                <p:column><p:inputText value="#{vifMB.currentDirectionHome}" size="40"/></p:column>
+                                                <p:column>
+						    <p:inputText value="#{vifMB.currentDirectionHome}" size="40">
+							<f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+						    </p:inputText>
+						</p:column>
                                                 <p:column>TELEFONO DE  RESIDENCIA:&nbsp;</p:column>
-                                                <p:column><p:inputText value="#{vifMB.currentTelephoneHome}"/></p:column>
+                                                <p:column>
+						    <p:inputText value="#{vifMB.currentTelephoneHome}">
+							<f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+						    </p:inputText>
+						</p:column>
                                             </p:row>
                                         </p:panelGrid>
                                         <br/>
@@ -283,11 +335,16 @@
                                                     <p:autoComplete 
                                                         value="#{vifMB.currentNeighborhoodEvent}"                                                                    
                                                         completeMethod="#{vifMB.suggestNeighborhoods}" 
-                                                        size="40" >                                                        
+                                                        size="40" 
+							forceSelection="true">                                                        
                                                         <p:ajax 
                                                             event="itemSelect" 
                                                             listener="#{vifMB.changeNeighborhoodEvent}" 
-                                                            update="IdNeighborhoodsEventCode" process="@this"/>
+                                                            update="IdNeighborhoodsEventCode IdControls" process="@this"/>
+							<f:ajax 
+							    event="keyup"
+							    listener="#{vifMB.changeForm}"
+							    render="IdControls"/>
                                                     </p:autoComplete>
 
                                                 </p:column>
@@ -304,7 +361,12 @@
                                                 <p:column>
                                                     <p:inputText 
                                                         value="#{vifMB.currentDirectionEvent}" 
-                                                        size="40"/>
+                                                        size="40">
+							<f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+						    </p:inputText>
                                                 </p:column>
                                                 <p:column colspan="2">&nbsp;</p:column>
                                             </p:row>
@@ -344,25 +406,51 @@
                                                             </p:column>
                                                         </p:row>
                                                         <p:row>  
-                                                            <p:column>
-                                                                <p:inputText value="#{vifMB.currentDayEvent}" size="2" >  
+                                                            <p:column>                                                                
+                                                                <p:inputText 
+                                                                    id="IdDayEvent"
+                                                                    value="#{vifMB.currentDayEvent}" 
+                                                                    size="2">                                                                      
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{vifMB.changeDayEvent}"
+                                                                        render="IdDayEvent IdDateEvent IdWeekdayEvent"/>
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>  
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText value="#{vifMB.currentMonthEvent}" size="2" maxlength="2">
+                                                                <p:inputText 
+                                                                    id="IdMonthEvent"
+                                                                    value="#{vifMB.currentMonthEvent}" 
+                                                                    size="2" 
+                                                                    maxlength="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{vifMB.changeMonthEvent}"
+                                                                        render="IdMonthEvent IdDateEvent IdWeekdayEvent"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>   
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText value="#{vifMB.currentYearEvent}" size="5" maxlength="4">
+                                                                <p:inputText 
+                                                                    id="IdYearEvent"
+                                                                    value="#{vifMB.currentYearEvent}" 
+                                                                    size="5" 
+                                                                    maxlength="4">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{vifMB.changeYearEvent}"
+                                                                        render="IdYearEvent IdDateEvent IdWeekdayEvent"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>
                                                             </p:column>
                                                         </p:row>
@@ -413,18 +501,34 @@
                                                         </p:row>                                            
                                                         <p:row>                                                
                                                             <p:column>
-                                                                <p:inputText value="#{vifMB.currentHourEvent}" size="2">
+                                                                <p:inputText 
+                                                                    id="IdHourEvent"
+                                                                    value="#{vifMB.currentHourEvent}" 
+                                                                    size="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdTimeEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{vifMB.changeHourEvent}"
+                                                                        render="IdHourEvent IdTimeEvent"/>   
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText value="#{vifMB.currentMinuteEvent}" size="2">
+                                                                <p:inputText 
+                                                                    id="IdMinuteEvent"
+                                                                    value="#{vifMB.currentMinuteEvent}" 
+                                                                    size="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdTimeEvent"/>
-                                                                </p:inputText> 
+                                                                        event="blur"  
+                                                                        listener="#{vifMB.changeMinuteEvent}"
+                                                                        render="IdMinuteEvent IdTimeEvent"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
+                                                                </p:inputText>  
                                                             </p:column>
                                                             <p:column>
                                                                 <p:selectOneMenu value="#{vifMB.currentAmPmEvent}" >                                                                     
@@ -432,7 +536,8 @@
                                                                     <f:selectItem itemLabel="PM" itemValue="PM" />
                                                                     <f:ajax 
                                                                         event="change"                                                                                                            
-                                                                        render="IdTimeEvent"/>
+                                                                        render="IdTimeEvent IdControls"
+                                                                        listener="#{vifMB.changeForm}"/>
                                                                 </p:selectOneMenu>
                                                             </p:column>
                                                         </p:row> 
@@ -450,7 +555,7 @@
                                             </p:row>
                                         </p:panelGrid>
 
-                                        <br/>
+					<br/>
                                         <p:panelGrid>                            
                                             <p:row>  
                                                 <p:column>FECHA CONSULTA:</p:column>
@@ -469,24 +574,50 @@
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>
-                                                                <p:inputText value="#{vifMB.currentDayConsult}" size="2" >  
+                                                                <p:inputText 
+                                                                    id="IdDayConsult"
+                                                                    value="#{vifMB.currentDayConsult}" 
+                                                                    size="2">                                                                      
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateConsult IdWeekdayConsult"/>
-                                                                </p:inputText>  
+                                                                        event="blur"  
+                                                                        listener="#{vifMB.changeDayConsult}"
+                                                                        render="IdDayConsult IdDateConsult IdWeekdayConsult"/>
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
+                                                                </p:inputText> 
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText value="#{vifMB.currentMonthConsult}" size="2" maxlength="2">
+                                                                <p:inputText 
+                                                                    id="IdMonthConsult"
+                                                                    value="#{vifMB.currentMonthConsult}" 
+                                                                    size="2" 
+                                                                    maxlength="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateConsult IdWeekdayConsult"/>
-                                                                </p:inputText>   
+                                                                        event="blur"  
+                                                                        listener="#{vifMB.changeMonthConsult}"
+                                                                        render="IdMonthConsult IdDateConsult IdWeekdayConsult"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
+                                                                </p:inputText> 
                                                             </p:column>
-                                                            <p:column>
-                                                                <p:inputText value="#{vifMB.currentYearConsult}" size="5" maxlength="4">
+                                                            <p:column>                                                                
+                                                                <p:inputText 
+                                                                    id="IdYearConsult"
+                                                                    value="#{vifMB.currentYearConsult}" 
+                                                                    size="5" 
+                                                                    maxlength="4">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateConsult IdWeekdayConsult"/>
+                                                                        event="blur"  
+                                                                        listener="#{vifMB.changeYearConsult}"
+                                                                        render="IdYearConsult IdDateConsult IdWeekdayConsult"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>
                                                             </p:column>
                                                         </p:row>
@@ -498,11 +629,11 @@
                                                             <p:column>
                                                                 FECHA CONSULTA<br/> (dd/mm/yyyy):  
                                                             </p:column>
-                                                            <p:column>
+                                                            <p:column>                                                                
                                                                 <p:inputText 
                                                                     disabled="true" 
                                                                     id="IdDateConsult" 
-                                                                    value="#{vifMB.currentDateConsult}"/>
+                                                                    value="#{vifMB.currentDateConsult}"/> 
                                                             </p:column>
 
                                                         </p:row>   
@@ -510,13 +641,12 @@
                                                             <p:column>
                                                                 DIA EN SEMANA
                                                             </p:column>
-                                                            <p:column>
+                                                            <p:column>                                                                
                                                                 <p:inputText 
                                                                     disabled="true" 
                                                                     id="IdWeekdayConsult" 
                                                                     value="#{vifMB.currentWeekdayConsult}" 
                                                                     size="9"/> 
-
                                                             </p:column>
                                                         </p:row>
                                                     </p:panelGrid>
@@ -542,43 +672,59 @@
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>
-                                                                <p:inputText value="#{vifMB.currentHourConsult}" size="2">
+                                                                <p:inputText 
+                                                                    id="IdHourConsult"
+                                                                    value="#{vifMB.currentHourConsult}" 
+                                                                    size="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdTimeConsult"/>
+                                                                        event="blur"  
+                                                                        listener="#{vifMB.changeHourConsult}"
+                                                                        render="IdHourConsult IdTimeConsult"/>   
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>
                                                             </p:column>
-                                                            <p:column>
-                                                                <p:inputText value="#{vifMB.currentMinuteConsult}" size="2">
+                                                            <p:column>                                                                
+                                                                <p:inputText 
+                                                                    id="IdMinuteConsult"
+                                                                    value="#{vifMB.currentMinuteConsult}" 
+                                                                    size="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdTimeConsult"/>
+                                                                        event="blur"  
+                                                                        listener="#{vifMB.changeMinuteConsult}"
+                                                                        render="IdMinuteConsult IdTimeConsult"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText> 
                                                             </p:column>
-                                                            <p:column>
+                                                            <p:column>                                                                
                                                                 <p:selectOneMenu value="#{vifMB.currentAmPmConsult}" >                                                                     
                                                                     <f:selectItem itemLabel="AM" itemValue="AM" />  
                                                                     <f:selectItem itemLabel="PM" itemValue="PM" />
                                                                     <f:ajax 
                                                                         event="change"                                                                                                            
-                                                                        render="IdTimeConsult"/>
+                                                                        render="IdTimeConsult IdControls"
+                                                                        listener="#{vifMB.changeForm}"/>
                                                                 </p:selectOneMenu>
                                                             </p:column>
                                                         </p:row>
                                                     </p:panelGrid>                                                                                                        
                                                 </p:column>
                                                 <p:column>
-                                                    HORA MILITAR CONSULTA&nbsp;
+                                                    HORA MILITAR CONSULTA&nbsp;                                                    
                                                     <p:inputText 
-                                                        id="IdTimeConsult"
+                                                        id="IdTimeConsult" 
+                                                        disabled="true" 
                                                         value="#{vifMB.currentMilitaryHourConsult}" 
                                                         maxlength="4" 
-                                                        disabled="true"
                                                         size="4"/>
                                                 </p:column>
                                             </p:row>
                                         </p:panelGrid>
-
                                         <br/>
                                         <p:panelGrid>                            
                                             <p:row>  
@@ -588,16 +734,20 @@
                                                         <f:ajax 
                                                             event="change"
                                                             listener="#{vifMB.changeSubmitted}"
-                                                            render="IdIPS"/>
+                                                            render="IdIPS IdControls"/>
                                                     </p:selectBooleanCheckbox>
                                                 </p:column>
-                                                <p:column>DE QUE IPS?:&nbsp;</p:column>
+                                                <p:column>DE DONDE?:&nbsp;</p:column>
                                                 <p:column>
                                                     <p:selectOneMenu 
                                                         id="IdIPS"
                                                         disabled="#{vifMB.IPSDisabled}"
                                                         value="#{vifMB.currentIPS}"  > 
-                                                        <f:selectItems value="#{vifMB.IPSs}"/>                                                        
+                                                        <f:selectItems value="#{vifMB.IPSs}"/>
+							<f:ajax 
+                                                            event="change"                                                                                                            
+                                                            render="IdControls"
+                                                            listener="#{vifMB.changeForm}"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                             </p:row>  
@@ -613,7 +763,7 @@
                                                         <f:ajax 
                                                             event="change"   							    
                                                             listener="#{vifMB.changePlace}"
-                                                            render="IdOtherPlace"/>
+                                                            render="IdOtherPlace IdControls"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column colspan="2">CUAL OTRO LUGAR?:&nbsp;</p:column>
@@ -621,7 +771,12 @@
                                                     <p:inputText 
                                                         value="#{vifMB.currentOtherPlace}"
                                                         id="IdOtherPlace"
-                                                        disabled="#{vifMB.otherPlaceDisabled}"/>
+                                                        disabled="#{vifMB.otherPlaceDisabled}">
+                                                        <f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+                                                    </p:inputText>
                                                 </p:column>
                                             </p:row>  
                                             <p:row>  
@@ -632,7 +787,7 @@
                                                         <f:ajax 
                                                             event="change"   							    
                                                             listener="#{vifMB.changeActivities}"
-                                                            render="IdOtherActivities"/>
+                                                            render="IdOtherActivities IdControls"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column colspan="2">CUAL  OTRA  ACTIVIDAD?:&nbsp;</p:column>
@@ -640,7 +795,12 @@
                                                     <p:inputText 
                                                         value="#{vifMB.currentOtherActivitie}" 
                                                         id="IdOtherActivities"
-                                                        disabled="#{vifMB.otherActivityDisabled}"/>
+                                                        disabled="#{vifMB.otherActivityDisabled}">
+                                                        <f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+                                                    </p:inputText>
                                                 </p:column>
                                             </p:row>  
                                         </p:panelGrid>  
@@ -658,7 +818,8 @@
                                                             IdHeightWhich
                                                             IdPowderWhich
                                                             IdDisasterWhich
-                                                            IdForBurned"/>
+                                                            IdForBurned
+							    IdControls"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                             </p:row>  
@@ -668,7 +829,12 @@
                                                     <p:inputText 
                                                         id="IdHeightWhich"
                                                         value="#{vifMB.heightWhich}"
-                                                        disabled="#{vifMB.heightWhichDisabled}"/>
+                                                        disabled="#{vifMB.heightWhichDisabled}">
+                                                        <f:ajax 
+                                                            event="blur"
+                                                            listener="#{vifMB.changeHeightWhich}"
+                                                            render="IdControls"/>
+                                                    </p:inputText>
                                                 </p:column>
                                             </p:row>  
                                             <p:row>  
@@ -677,7 +843,12 @@
                                                     <p:inputText 
                                                         id="IdPowderWhich"
                                                         value="#{vifMB.powderWhich}"
-                                                        disabled="#{vifMB.powderWhichDisabled}"/>
+                                                        disabled="#{vifMB.powderWhichDisabled}">
+                                                        <f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+                                                    </p:inputText>
                                                 </p:column>
                                             </p:row>  
                                             <p:row>  
@@ -686,7 +857,12 @@
                                                     <p:inputText 
                                                         id="IdDisasterWhich"
                                                         value="#{vifMB.disasterWhich}"
-                                                        disabled="#{vifMB.disasterWhichDisabled}"/>
+                                                        disabled="#{vifMB.disasterWhichDisabled}">
+                                                        <f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+                                                    </p:inputText>
                                                 </p:column>
                                             </p:row>  
                                             <p:row>  
@@ -695,7 +871,26 @@
                                                     <p:inputText 
                                                         id="IdOtherMechanism"
                                                         value="#{vifMB.otherMechanism}"
-                                                        disabled="#{vifMB.otherMechanismDisabled}"/>
+                                                        disabled="#{vifMB.otherMechanismDisabled}">
+                                                        <f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+                                                    </p:inputText>
+                                                </p:column>
+                                            </p:row>  
+                                            <p:row>  
+                                                <p:column>ANIMAL CUAL?&nbsp;</p:column>
+                                                <p:column>
+                                                    <p:inputText 
+                                                        id="IdAnimalWhich"
+                                                        value="#{vifMB.otherMechanism}"
+                                                        disabled="#{vifMB.otherMechanismDisabled}">
+                                                        <f:ajax 
+                                                            event="keyup"
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
+                                                    </p:inputText>
                                                 </p:column>
                                             </p:row>  
                                         </p:panelGrid> 
@@ -715,9 +910,14 @@
                                                             </p:column>
                                                             <p:column>
                                                                 <p:selectOneMenu value="#{vifMB.currentLevelBurned}"  > 
+                                                                    <f:selectItem itemLabel=" " itemValue="0" />  
                                                                     <f:selectItem itemLabel="GRADO 1" itemValue="1" />  
                                                                     <f:selectItem itemLabel="GRADO 2" itemValue="2" />  
-                                                                    <f:selectItem itemLabel="GRADO 3" itemValue="3" />                                                        
+                                                                    <f:selectItem itemLabel="GRADO 3" itemValue="3" />    
+								    <f:ajax 
+                                                                        event="change"   							    
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:selectOneMenu>
                                                             </p:column>
                                                         </p:row> 
@@ -726,7 +926,12 @@
                                                                 PORCENTAJE: &nbsp;
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText value="#{vifMB.currentPercentBurned}"/>
+                                                                <p:inputText value="#{vifMB.currentPercentBurned}">
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls"/>
+                                                                </p:inputText>
                                                             </p:column>
                                                         </p:row>  					    
                                                     </p:panelGrid>   
@@ -743,6 +948,10 @@
                                                 <p:column>
                                                     <p:selectOneMenu value="#{vifMB.currentUseAlcohol}" > 
                                                         <f:selectItems value="#{vifMB.useAlcohol}"/>
+							<f:ajax 
+                                                            event="change"   							    
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>
@@ -751,6 +960,10 @@
                                                 <p:column>
                                                     <p:selectOneMenu value="#{vifMB.currentUseDrugs}" > 
                                                         <f:selectItems value="#{vifMB.useDrugs}"/>
+							<f:ajax 
+                                                            event="change"   							    
+                                                            listener="#{vifMB.changeForm}"
+                                                            render="IdControls"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                             </p:row>
@@ -785,7 +998,7 @@
                                                         <f:ajax 
                                                             event="change"   							    
                                                             listener="#{vifMB.changeEthnicGroups}"
-                                                            render="IdOtherEthnicGroup"/>
+                                                            render="IdOtherEthnicGroup IdControls"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>
@@ -795,13 +1008,17 @@
                                                     <p:inputText 
                                                         id="IdOtherEthnicGroup"
                                                         value="#{vifMB.otherEthnicGroup}"
-                                                        disabled="#{vifMB.otherEthnicGroupDisabled}"/>
+                                                        disabled="#{vifMB.otherEthnicGroupDisabled}">
+							<f:ajax 
+							    event="keyup"
+							    listener="#{vifMB.changeForm}"
+							    render="IdControls"/>
+						    </p:inputText>
                                                 </p:column>                                                
                                             </p:row> 
                                             <p:row>
                                                 <p:column>
                                                     <h:outputLabel value="GRUPO VULNERABLE:   "/>
-
                                                 </p:column>
                                                 <p:column>
                                                     <p:selectOneMenu value="#{vifMB.currentVulnerableGroup}" > 
@@ -809,7 +1026,7 @@
                                                         <f:ajax 
                                                             event="change"   							    
                                                             listener="#{vifMB.changeVulnerableGroup}"
-                                                            render="IdOtherVulnerableGroup"/>
+                                                            render="IdOtherVulnerableGroup IdControls"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column>
@@ -819,7 +1036,12 @@
                                                     <p:inputText 
                                                         id="IdOtherVulnerableGroup"
                                                         value="#{vifMB.otherVulnerableGroup}"
-                                                        disabled="#{vifMB.otherVulnerableGroupDisabled}"/>
+                                                        disabled="#{vifMB.otherVulnerableGroupDisabled}">
+							<f:ajax 
+							    event="keyup"
+							    listener="#{vifMB.changeForm}"
+							    render="IdControls"/>
+						    </p:inputText>
                                                 </p:column> 
                                             </p:row>
                                         </p:panelGrid>
@@ -858,41 +1080,112 @@
                                                                         <p:column colspan="2" styleClass="ui-widget-header">TIPO AGRESOR</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>AG1. PADRE</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG1}" /></p:column>
+                                                                        <p:column>PADRE</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isAG1}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>AG2. MADRE</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG2}" /></p:column>
+                                                                        <p:column>MADRE</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isAG2}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>AG3. PADRASTRO</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG3}" /></p:column>
+                                                                        <p:column>PADRASTRO</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isAG3}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>AG4. MADRASTRA</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG4}" /></p:column>
+                                                                        <p:column>MADRASTRA</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isAG4}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>AG5. CONYUGE/COMP</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG5}" /></p:column>
+                                                                        <p:column>CONYUGE/COMP</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isAG5}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>AG6. HERMANO/A</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG6}" /></p:column>
+                                                                        <p:column>HERMANO/A</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isAG6}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>AG7. HIJO</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG7}" /></p:column>
+                                                                        <p:column>HIJO</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isAG7}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>AG8. OTRO</p:column>
+                                                                        <p:column>NOVIO</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isAG10}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
+                                                                    </p:row>	
+                                                                    <p:row>  
+                                                                        <p:column>SIN DATO</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isUnknownAG}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
+                                                                    </p:row>					    
+                                                                    <p:row>  
+                                                                        <p:column>OTRO</p:column>
                                                                         <p:column>
                                                                             <p:selectBooleanCheckbox value="#{vifMB.isAG8}" >                                                                            
                                                                                 <f:ajax 
                                                                                     event="change"
                                                                                     listener="#{vifMB.changeOtherAG}"
-                                                                                    render="IdOtherAG"/>
+                                                                                    render="IdOtherAG IdControls"/>
                                                                             </p:selectBooleanCheckbox>
                                                                         </p:column>
                                                                     </p:row>
@@ -902,17 +1195,14 @@
                                                                             <p:inputText 
                                                                                 id="IdOtherAG"
                                                                                 disabled="#{vifMB.otherAGDisabled}"
-                                                                                value="#{vifMB.otherAG}"/>
+                                                                                value="#{vifMB.otherAG}">
+										<f:ajax 
+										    event="keyup"
+										    listener="#{vifMB.changeForm}"
+										    render="IdControls"/>
+									    </p:inputText>
                                                                         </p:column>
-                                                                    </p:row> 
-                                                                    <p:row>  
-                                                                        <p:column>AG9. SIN DATO</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isUnknownAG}" /></p:column>
-                                                                    </p:row>					    
-                                                                    <p:row>  
-                                                                        <p:column>AG10. NOVIO</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isAG10}" /></p:column>
-                                                                    </p:row>					    
+                                                                    </p:row>			    
                                                                 </p:panelGrid> 
                                                             </p:column>
                                                             <p:column>
@@ -921,41 +1211,90 @@
                                                                         <p:column colspan="2" styleClass="ui-widget-header">TIPO DE MALTRATO</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>MA1. FISICO</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA1}" /></p:column>
+                                                                        <p:column>FISICO</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isMA1}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>									
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>MA2. PSICOLOGICO/VERBAL</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA2}" /></p:column>
+                                                                        <p:column>PSICOLOGICO/VERBAL</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isMA2}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>									
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>MA3. ABUSO SEXUAL</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA3}" /></p:column>
+                                                                        <p:column>ABUSO SEXUAL</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isMA3}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>MA4. NEGLIGENCIA</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA4}" /></p:column>
+                                                                        <p:column>NEGLIGENCIA</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isMA4}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>									
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>MA5. ABANDONO</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA5}" /></p:column>
+                                                                        <p:column>ABANDONO</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isMA5}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>MA6. INSTITUCIONAL</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isMA6}" /></p:column>
+                                                                        <p:column>INSTITUCIONAL</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isMA6}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>
                                                                     <p:row>  
-                                                                        <p:column>MA7. SIN DATO</p:column>
-                                                                        <p:column><p:selectBooleanCheckbox value="#{vifMB.isUnknownMA}" /></p:column>
+                                                                        <p:column>SIN DATO</p:column>
+                                                                        <p:column>
+									    <p:selectBooleanCheckbox value="#{vifMB.isUnknownMA}">
+                                                                                <f:ajax 
+                                                                                    event="change"
+                                                                                    listener="#{vifMB.changeForm}"
+                                                                                    render="IdControls"/>
+                                                                            </p:selectBooleanCheckbox>
+									</p:column>
                                                                     </p:row>                                                                    	    
                                                                     <p:row>  
-                                                                        <p:column>MA8. OTRO</p:column>
+                                                                        <p:column>OTRO</p:column>
                                                                         <p:column>
                                                                             <p:selectBooleanCheckbox value="#{vifMB.isMA8}" >                                                                            
                                                                                 <f:ajax 
                                                                                     event="change"
                                                                                     listener="#{vifMB.changeOtherMA}"
-                                                                                    render="IdOtherMA"/>
+                                                                                    render="IdOtherMA IdControls"/>
                                                                             </p:selectBooleanCheckbox>
                                                                         </p:column>
                                                                     </p:row>                                                                    	    
@@ -965,7 +1304,12 @@
                                                                             <p:inputText 
                                                                                 id="IdOtherMA"
                                                                                 disabled="#{vifMB.otherMADisabled}"
-                                                                                value="#{vifMB.otherMA}"/>
+                                                                                value="#{vifMB.otherMA}">
+										<f:ajax 
+										    event="keyup"
+										    listener="#{vifMB.changeForm}"
+										    render="IdControls"/>
+									    </p:inputText>
                                                                         </p:column>
                                                                     </p:row>                                                                    	    
                                                                 </p:panelGrid>
@@ -992,49 +1336,127 @@
 
                                                         <p:row>  
                                                             <p:column>CONCILIACION</p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction1}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction1}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+
+							    </p:column>    
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>CAUCION</p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction2}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction2}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+							    </p:column>    
                                                         </p:row>
                                                         <p:row>  
-                                                            <p:column>DICTAMEN MEDICINALEGAL</p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction3}" /></p:column>    
+                                                            <p:column>DICTAMEN MEDICINA LEGAL</p:column>
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction3}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+							    </p:column>    
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>REMISION FISCALIA</p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction4}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction4}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+							    </p:column>    
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>REMISION MEDICINA LEGAL</p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction5}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction5}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>									
+							    </p:column>    
                                                         </p:row>
 
                                                         <p:row>  
                                                             <p:column>REMISIONCOM FAMILIA</p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction6}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction6}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+							    </p:column>    
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>REMISIONICBF</p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction7}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction7}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+							    </p:column>    
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>MEDIDAS PROTECCION </p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction8}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction8}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+							    </p:column>    
                                                         </p:row>
 
                                                         <p:row>  
                                                             <p:column>REMISION A SALUD</p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction9}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction9}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+							    </p:column>    
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>ATENCION PSICOSOCIAL </p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction10}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction10}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+							    </p:column>    
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>RESTABLECIMIENTO DERECHOS </p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isAction11}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isAction11}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+							    </p:column>    
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>OTRA </p:column>
@@ -1043,7 +1465,7 @@
                                                                     <f:ajax 
                                                                         event="change"
                                                                         listener="#{vifMB.changeOtherAction}"
-                                                                        render="IdOtherAction"/>
+                                                                        render="IdOtherAction IdControls"/>
                                                                 </p:selectBooleanCheckbox>
                                                             </p:column>    
                                                         </p:row>
@@ -1053,12 +1475,24 @@
                                                                 <p:inputText 
                                                                     id="IdOtherAction"
                                                                     disabled="#{vifMB.otherActionDisabled}"
-                                                                    value="#{vifMB.otherAction}"/>
+                                                                    value="#{vifMB.otherAction}">
+								    <f:ajax 
+									event="keyup"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:inputText>
                                                             </p:column>    
                                                         </p:row>                                                        
                                                         <p:row>  
                                                             <p:column>SIN DATO </p:column>
-                                                            <p:column><p:selectBooleanCheckbox value="#{vifMB.isUnknownAction}" /></p:column>    
+                                                            <p:column>
+								<p:selectBooleanCheckbox value="#{vifMB.isUnknownAction}">
+								    <f:ajax 
+									event="change"
+									listener="#{vifMB.changeForm}"
+									render="IdControls"/>
+								</p:selectBooleanCheckbox>
+							    </p:column>    
                                                         </p:row>
                                                     </p:panelGrid>                                        
                                                     <br/>   
@@ -1071,7 +1505,18 @@
                                         <p:panelGrid>                            
                                             <p:row>  
                                                 <p:column><h:outputLabel value="RESPONSABLE:   "/></p:column>
-                                                <p:column><p:inputText value="" /></p:column>
+                                                <p:column>
+						    <p:inputText 
+							id="IdResponsible"
+							disabled="true"
+							value="#{vifMB.currentResponsible}"
+							size="30">
+							<f:ajax 
+							    event="keyup"
+							    listener="#{vifMB.changeForm}"
+							    render="IdControls"/>
+						    </p:inputText>
+						</p:column>responsible
                                             </p:row>
                                         </p:panelGrid>
                                         <br/>
@@ -1087,28 +1532,247 @@
                         </p:column>                                       
                     </p:row>
                 </p:panelGrid>
-                <div style="position:fixed; bottom: 3px; right: 20px; ">
-                    <p:panelGrid>
+                <!--===========CONTROLES: PRIMERO SIGUIENTE ANTERIOR ULTIMO REGISTRO ===========================-->
+                <div style="position:fixed; bottom: 3px; right: 20px; ">                    
+                    <p:panelGrid id="IdControls">
                         <p:row >
                             <p:column styleClass="ui-widget-header">
-                                <p:commandButton icon="ui-icon-seek-first" title="Primero"/>
-                                <p:commandButton icon="ui-icon-seek-prev" title="Anterior"/>
+                                <p:commandButton
+                                    icon="ui-icon-seek-first" 
+                                    title="Primero"
+                                    actionListener="#{vifMB.first}"
+                                    oncomplete="#{vifMB.openDialogFirst}"
+                                    update="IdForm1"/>
+                                <p:commandButton 
+                                    icon="ui-icon-seek-prev" 
+                                    title="Anterior"
+                                    actionListener="#{vifMB.previous}"
+                                    oncomplete="#{vifMB.openDialogPrevious}"
+                                    update="IdForm1"/>
                             </p:column>
                             <p:column styleClass="ui-widget-header">
-                                <p:inputText value="new/91"/>
+                                <p:inputText 
+                                    id="IdPosition"
+                                    value="#{vifMB.currentPosition}"
+                                    readonly="true"/>
                             </p:column>
                             <p:column styleClass="ui-widget-header">
-                                <p:commandButton  icon="ui-icon-seek-next" title="Siguiente"/>
-                                <p:commandButton  icon="ui-icon-seek-end" title="Guadar"/>
+                                <p:commandButton  
+                                    icon="ui-icon-seek-next" 
+                                    title="Siguiente"
+                                    actionListener="#{vifMB.next}"
+                                    oncomplete="#{vifMB.openDialogNext}"                                    
+                                    update="IdForm1"/>                             
+                                <p:commandButton  
+                                    icon="ui-icon-seek-end" 
+                                    title="Ulltimo"
+                                    actionListener="#{vifMB.last}"
+                                    oncomplete="#{vifMB.openDialogLast}"
+                                    update="IdForm1"/>
                             </p:column>
-                            <p:column styleClass="ui-widget-header">
-                                <p:commandButton icon="ui-icon-disk" title="Guadar"/>
-                                <p:commandButton icon="ui-icon-plus" title="Nuevo"/>
-                                <p:commandButton icon="ui-icon-close" title="Eliminar"/>
+                            <p:column styleClass="ui-widget-header">                                
+                                <p:commandButton 
+                                    icon="ui-icon-plus" 
+                                    title="Nuevo"
+                                    actionListener="#{vifMB.newForm}"
+                                    oncomplete="#{vifMB.openDialogNew}"
+                                    update="IdForm1"/>
+                                <p:commandButton 
+                                    icon="ui-icon-close" 
+                                    title="Eliminar"  
+                                    actionListener="#{vifMB.deleteRegistry}"
+                                    oncomplete="#{vifMB.openDialogDelete}"                                    
+                                    update="IdForm1"/>
                             </p:column>
                         </p:row>
                     </p:panelGrid>                   
                 </div>
+            </h:form>
+        </ui:define>
+	<!--================================= CUADROS DE DIALOGO ==============================================-->
+        <ui:define name="dialogs">
+            <h:form id="IdForm2">
+                <p:dialog                                                         
+                    id="dialogFirst"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogFirst"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogFirst.hide()"
+                                    value="Si" 
+                                    actionListener="#{vifMB.saveAndGoFirst}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogFirst.hide()"
+                                    actionListener="#{vifMB.noSaveAndGoFirst}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogFirst.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogPrevious"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogPrevious"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogPrevious.hide()"
+                                    value="Si" 
+                                    actionListener="#{vifMB.saveAndGoPrevious}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogPrevious.hide()"
+                                    actionListener="#{vifMB.noSaveAndGoPrevious}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogPrevious.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogNext"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogNext"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogNext.hide()"
+                                    value="Si" 
+                                    actionListener="#{vifMB.saveAndGoNext}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogNext.hide()"
+                                    actionListener="#{vifMB.noSaveAndGoNext}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogNext.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogLast"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogLast"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogLast.hide()"
+                                    value="Si" 
+                                    actionListener="#{vifMB.saveAndGoLast}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogLast.hide()"
+                                    actionListener="#{vifMB.noSaveAndGoLast}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogLast.hide()"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogNew"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogNew"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogNew.hide()"
+                                    value="Si" 
+                                    actionListener="#{vifMB.saveAndGoNew}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogNew.hide()"
+                                    actionListener="#{vifMB.noSaveAndGoNew}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogNew.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogDelete"
+                    modal="true"
+                    resizable="false"
+                    header="Eliminar formulario" 
+                    widgetVar="dialogDelete"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
+                                Confirma la Eliminacion de este registro?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                                           
+                                    oncomplete="dialogDelete.hide()"
+                                    actionListener="#{vifMB.deleteRegistry}"
+                                    value="Eliminar" 
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogDelete.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
             </h:form>
         </ui:define>
     </ui:composition>

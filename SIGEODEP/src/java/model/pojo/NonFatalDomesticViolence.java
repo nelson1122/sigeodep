@@ -28,17 +28,33 @@ public class NonFatalDomesticViolence implements Serializable {
     @NotNull
     @Column(name = "non_fatal_injury_id", nullable = false)
     private Integer nonFatalInjuryId;
-    @ManyToMany(mappedBy = "nonFatalDomesticViolenceList")
+    
+    //@ManyToMany(mappedBy = "nonFatalDomesticViolenceList")
+    @JoinTable(name = "domestic_violence_aggressor_type", joinColumns = {
+        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)}, inverseJoinColumns = {
+        @JoinColumn(name = "aggressor_type_id", referencedColumnName = "aggressor_type_id", nullable = false)})
+    @ManyToMany
     private List<AggressorTypes> aggressorTypesList;
-    @ManyToMany(mappedBy = "nonFatalDomesticViolenceList")
+    
+    //@ManyToMany(mappedBy = "nonFatalDomesticViolenceList")
+    @JoinTable(name = "domestic_violence_action_to_take", joinColumns = {
+        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)}, inverseJoinColumns = {
+        @JoinColumn(name = "action_id", referencedColumnName = "action_id", nullable = false)})
+    @ManyToMany
     private List<ActionsToTake> actionsToTakeList;
-    @ManyToMany(mappedBy = "nonFatalDomesticViolenceList")
+    
+    //@ManyToMany(mappedBy = "nonFatalDomesticViolenceList")
+    @JoinTable(name = "domestic_violence_abuse_type", joinColumns = {
+        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)}, inverseJoinColumns = {
+        @JoinColumn(name = "abuse_type_id", referencedColumnName = "abuse_type_id", nullable = false)})
+    @ManyToMany
     private List<AbuseTypes> abuseTypesList;
+    
     @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private NonFatalInjuries nonFatalInjuries;
-    @JoinColumn(name = "domestic_violence_data_source_id", referencedColumnName = "domestic_violence_data_sources_id", nullable = false)
-    @ManyToOne(optional = false)
+    @JoinColumn(name = "domestic_violence_data_source_id", referencedColumnName = "domestic_violence_data_sources_id")
+    @ManyToOne
     private DomesticViolenceDataSources domesticViolenceDataSourceId;
 
     public NonFatalDomesticViolence() {

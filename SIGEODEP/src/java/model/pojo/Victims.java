@@ -29,14 +29,11 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Victims.findByAgeTypeId", query = "SELECT v FROM Victims v WHERE v.ageTypeId = :ageTypeId"),
     @NamedQuery(name = "Victims.findByVictimTelephone", query = "SELECT v FROM Victims v WHERE v.victimTelephone = :victimTelephone"),
     @NamedQuery(name = "Victims.findByVictimAddress", query = "SELECT v FROM Victims v WHERE v.victimAddress = :victimAddress"),
-    @NamedQuery(name = "Victims.findByVictimNeighborhoodId", query = "SELECT v FROM Victims v WHERE v.victimNeighborhoodId = :victimNeighborhoodId"),
     @NamedQuery(name = "Victims.findByVictimDateOfBirth", query = "SELECT v FROM Victims v WHERE v.victimDateOfBirth = :victimDateOfBirth"),
     @NamedQuery(name = "Victims.findByVictimClass", query = "SELECT v FROM Victims v WHERE v.victimClass = :victimClass"),
-    @NamedQuery(name = "Victims.findByVictimId", query = "SELECT v FROM Victims v WHERE v.victimId = :victimId")})
+    @NamedQuery(name = "Victims.findByVictimId", query = "SELECT v FROM Victims v WHERE v.victimId = :victimId"),
+    @NamedQuery(name = "Victims.findByResidenceMunicipality", query = "SELECT v FROM Victims v WHERE v.residenceMunicipality = :residenceMunicipality")})
 public class Victims implements Serializable {
-    @Column(name = "victim_date_of_birth")
-    @Temporal(TemporalType.DATE)
-    private Date victimDateOfBirth;
     private static final long serialVersionUID = 1L;
     @Size(max = 20)
     @Column(name = "victim_nid", length = 20)
@@ -57,8 +54,9 @@ public class Victims implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "victim_address", length = 2147483647)
     private String victimAddress;
-    @Column(name = "victim_neighborhood_id")
-    private Integer victimNeighborhoodId;
+    @Column(name = "victim_date_of_birth")
+    @Temporal(TemporalType.DATE)
+    private Date victimDateOfBirth;
     @Column(name = "victim_class")
     private Short victimClass;
     @Id
@@ -66,6 +64,8 @@ public class Victims implements Serializable {
     @NotNull
     @Column(name = "victim_id", nullable = false)
     private Integer victimId;
+    @Column(name = "residence_municipality")
+    private Short residenceMunicipality;
     @JoinTable(name = "victim_vulnerable_group", joinColumns = {
         @JoinColumn(name = "victim_id", referencedColumnName = "victim_id", nullable = false)}, inverseJoinColumns = {
         @JoinColumn(name = "vulnerable_group_id", referencedColumnName = "vulnerable_group_id", nullable = false)})
@@ -74,6 +74,9 @@ public class Victims implements Serializable {
     @JoinColumn(name = "vulnerable_group_id", referencedColumnName = "vulnerable_group_id")
     @ManyToOne
     private VulnerableGroups vulnerableGroupId;
+    @JoinColumn(name = "victim_neighborhood_id", referencedColumnName = "neighborhood_id")
+    @ManyToOne
+    private Neighborhoods victimNeighborhoodId;
     @JoinColumn(name = "job_id", referencedColumnName = "job_id")
     @ManyToOne
     private Jobs jobId;
@@ -91,8 +94,6 @@ public class Victims implements Serializable {
     private Eps epsId;
     @OneToMany(mappedBy = "victimId")
     private List<NonFatalInjuries> nonFatalInjuriesList;
-    @OneToMany(mappedBy = "victimId")
-    private List<FatalInjuries> fatalInjuriesList;
 
     public Victims() {
     }
@@ -157,14 +158,6 @@ public class Victims implements Serializable {
         this.victimAddress = victimAddress;
     }
 
-    public Integer getVictimNeighborhoodId() {
-        return victimNeighborhoodId;
-    }
-
-    public void setVictimNeighborhoodId(Integer victimNeighborhoodId) {
-        this.victimNeighborhoodId = victimNeighborhoodId;
-    }
-
     public Date getVictimDateOfBirth() {
         return victimDateOfBirth;
     }
@@ -189,6 +182,14 @@ public class Victims implements Serializable {
         this.victimId = victimId;
     }
 
+    public Short getResidenceMunicipality() {
+        return residenceMunicipality;
+    }
+
+    public void setResidenceMunicipality(Short residenceMunicipality) {
+        this.residenceMunicipality = residenceMunicipality;
+    }
+
     @XmlTransient
     public List<VulnerableGroups> getVulnerableGroupsList() {
         return vulnerableGroupsList;
@@ -204,6 +205,14 @@ public class Victims implements Serializable {
 
     public void setVulnerableGroupId(VulnerableGroups vulnerableGroupId) {
         this.vulnerableGroupId = vulnerableGroupId;
+    }
+
+    public Neighborhoods getVictimNeighborhoodId() {
+        return victimNeighborhoodId;
+    }
+
+    public void setVictimNeighborhoodId(Neighborhoods victimNeighborhoodId) {
+        this.victimNeighborhoodId = victimNeighborhoodId;
     }
 
     public Jobs getJobId() {
@@ -255,15 +264,6 @@ public class Victims implements Serializable {
         this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
-    @XmlTransient
-    public List<FatalInjuries> getFatalInjuriesList() {
-        return fatalInjuriesList;
-    }
-
-    public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
-        this.fatalInjuriesList = fatalInjuriesList;
-    }
-
     @Override
     public int hashCode() {
         int hash = 0;
@@ -286,7 +286,7 @@ public class Victims implements Serializable {
 
     @Override
     public String toString() {
-        return "model.pojo.Victims[ victimId=" + victimId + " ]";
-    }    
+        return "j.Victims[ victimId=" + victimId + " ]";
+    }
     
 }

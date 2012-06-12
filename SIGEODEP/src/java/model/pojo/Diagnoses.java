@@ -38,10 +38,12 @@ public class Diagnoses implements Serializable {
     @Column(name = "diagnosis_name", nullable = false, length = 400)
     private String diagnosisName;
     
-    @JoinTable(name = "non_fatal_diagnosis", joinColumns = {
-        @JoinColumn(name = "diagnosis_id", referencedColumnName = "diagnosis_id", nullable = false)}, inverseJoinColumns = {
-        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
-    @ManyToMany
+    //@JoinTable(name = "non_fatal_diagnosis", joinColumns = {
+    //    @JoinColumn(name = "diagnosis_id", referencedColumnName = "diagnosis_id", nullable = false)}, inverseJoinColumns = {
+    //    @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
+    //@ManyToMany
+    //private List<NonFatalInjuries> nonFatalInjuriesList;
+    @ManyToMany(mappedBy = "diagnosesList")    
     private List<NonFatalInjuries> nonFatalInjuriesList;
 
     public Diagnoses() {

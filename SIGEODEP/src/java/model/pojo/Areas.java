@@ -37,90 +37,68 @@ public class Areas implements Serializable {
     @Column(name = "area_name", nullable = false, length = 15)
     private String areaName;
     @OneToMany(mappedBy = "areaId")
-    private List<FatalInjuryMurder> fatalInjuryMurderList;
-    @OneToMany(mappedBy = "areaId")
-    private List<FatalInjuryAccident> fatalInjuryAccidentList;
-    @OneToMany(mappedBy = "areaId")
-    private List<FatalInjurySuicide> fatalInjurySuicideList;
+    private List<FatalInjuries> fatalInjuriesList;
 
     public Areas() {
     }
 
     public Areas(Short areaId) {
-        this.areaId = areaId;
+	this.areaId = areaId;
     }
 
     public Areas(Short areaId, String areaName) {
-        this.areaId = areaId;
-        this.areaName = areaName;
+	this.areaId = areaId;
+	this.areaName = areaName;
     }
 
     public Short getAreaId() {
-        return areaId;
+	return areaId;
     }
 
     public void setAreaId(Short areaId) {
-        this.areaId = areaId;
+	this.areaId = areaId;
     }
 
     public String getAreaName() {
-        return areaName;
+	return areaName;
     }
 
     public void setAreaName(String areaName) {
-        this.areaName = areaName;
+	this.areaName = areaName;
     }
 
     @XmlTransient
-    public List<FatalInjuryMurder> getFatalInjuryMurderList() {
-        return fatalInjuryMurderList;
+    public List<FatalInjuries> getFatalInjuriesList() {
+	return fatalInjuriesList;
     }
 
-    public void setFatalInjuryMurderList(List<FatalInjuryMurder> fatalInjuryMurderList) {
-        this.fatalInjuryMurderList = fatalInjuryMurderList;
-    }
-
-    @XmlTransient
-    public List<FatalInjuryAccident> getFatalInjuryAccidentList() {
-        return fatalInjuryAccidentList;
-    }
-
-    public void setFatalInjuryAccidentList(List<FatalInjuryAccident> fatalInjuryAccidentList) {
-        this.fatalInjuryAccidentList = fatalInjuryAccidentList;
-    }
-
-    @XmlTransient
-    public List<FatalInjurySuicide> getFatalInjurySuicideList() {
-        return fatalInjurySuicideList;
-    }
-
-    public void setFatalInjurySuicideList(List<FatalInjurySuicide> fatalInjurySuicideList) {
-        this.fatalInjurySuicideList = fatalInjurySuicideList;
+    public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
+	this.fatalInjuriesList = fatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (areaId != null ? areaId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (areaId != null ? areaId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Areas)) {
-            return false;
-        }
-        Areas other = (Areas) object;
-        if ((this.areaId == null && other.areaId != null) || (this.areaId != null && !this.areaId.equals(other.areaId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Areas)) {
+	    return false;
+	}
+	Areas other = (Areas) object;
+	if ((this.areaId == null && other.areaId != null) || (this.areaId != null && !this.areaId.equals(other.areaId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Areas[ areaId=" + areaId + " ]";
+	return "newpackage.Areas[ areaId=" + areaId + " ]";
     }
     
 }

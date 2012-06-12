@@ -9,7 +9,7 @@
 
     <ui:composition template="../templates/layoutTemplate.xhtml">
         <!--=================================================================-->
-        <!--========================CABECERA Y SCRIPTS=======================-->                    
+        <!--======================= CABECERA Y SCRIPTS ======================-->                    
         <ui:define name="header">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />  
             <style type="text/css">
@@ -40,7 +40,7 @@
             </script> 
         </ui:define>
         <!--=================================================================-->
-        <!--================================TITULOS==========================-->
+        <!--=============================== TITULOS =========================-->
         <ui:define name="titlePage">
             SIGEODEP -  CARGA DE REGISTROS DESDE ARCHIVO
         </ui:define>
@@ -48,7 +48,7 @@
             SIGEODEP -  CARGA DE REGISTROS DESDE ARCHIVO
         </ui:define>
         <!--=================================================================-->
-        <!--==============================CONTENIDO==========================-->
+        <!--============================= CONTENIDO =========================-->
         <ui:define name="content">
             <h:form enctype="multipart/form-data" id="IdForm"> 
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
@@ -59,60 +59,105 @@
                     <p:tab id="tab1" title="ARCHIVO PLANO">  
                         <p:panelGrid 
                             style=" margin-left: 80px;"                                    
-                            columns="2">                            
-                            <f:facet name="header">
-                                CARGA DE REGISTROS DESDE ARCHIVO
-                            </f:facet>
-                            <h:outputLabel  
-                                value="Nombre de la Carga de Datos: "/>
-                            <h:inputText 
-                                id="IdTagName"                                
-                                disabled="#{uploadFileMB.tagNameDisabled}"
-                                value="#{uploadFileMB.tagName}"/>
-                            <h:outputLabel  
-                                value="Ficha: "/>
-                            <p:selectOneMenu 
-                                id="IdSelectForm"
-                                value="#{uploadFileMB.currentForm}" 
-                                disabled="#{uploadFileMB.selectFormDisabled}"> 
-                                <f:selectItems value="#{uploadFileMB.forms}"/>                                
-                                <f:ajax render="IdSelectOneMenuSource IdDelimiter 
-                                        IdAccordionPanel:IdSelectOneListVarExpected"/>
-                            </p:selectOneMenu>  
-                            <h:outputLabel
-                                value="Fuente: "/>  
-                            <p:selectOneMenu 
-                                id="IdSelectOneMenuSource" 
-                                value="#{uploadFileMB.currentSource}" 
-                                disabled="#{uploadFileMB.selectSourceDisabled}">                                  
-                                <f:selectItems value="#{uploadFileMB.sources}"/>
-                            </p:selectOneMenu> 
-                            <h:outputLabel
-                                value="Delimitador: "/>  
-                            <p:selectOneMenu 
-                                id="IdDelimiter" 
-                                value="#{uploadFileMB.currentDelimiter}" 
-                                disabled="#{uploadFileMB.selectDelimiterDisabled}">                                  
-                                <f:selectItems value="#{uploadFileMB.delimiters}"/>
-                            </p:selectOneMenu> 
-                            <h:outputLabel
-                                value="Archivo: " />
-                            <p:fileUpload 
-                                id="IdBtnFileSelect"
-                                value="#{uploadFileMB.file}" 
-                                mode="simple" 
-                                disabled="#{uploadFileMB.selectFileUploadDisabled}"/>
-                            <f:facet name="footer">                                
-                                <p:commandButton 
-                                    id="IdBtnLoadFile" 
-                                    disabled="#{uploadFileMB.btnLoadFileDisabled}" 
-                                    value="Cargar" 
-                                    ajax="false"                                     
-                                    actionListener="#{uploadFileMB.upload}" style="width: 120px;"/>
-                                <h:outputLabel 
-                                    id="IdNameFile"
-                                    value="#{uploadFileMB.nameFile}"/>
-                            </f:facet>
+                            >     
+                            <p:row>
+                                <p:column colspan="2" styleClass="ui-widget-header">
+                                    CARGA DE REGISTROS DESDE ARCHIVO
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column >
+                                    <h:outputLabel  
+                                        value="Nombre de la Carga de Datos: "/> 
+                                </p:column>
+                                <p:column >
+                                    <h:inputText 
+                                        id="IdTagName"                                
+                                        disabled="#{uploadFileMB.tagNameDisabled}"
+                                        value="#{uploadFileMB.tagName}"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column >
+                                    <h:outputLabel  
+                                        value="Ficha: "/>
+                                </p:column>
+                                <p:column >
+                                    <p:panelGrid>     
+                                        <p:row>
+                                            <p:column>
+                                                <p:selectOneMenu 
+                                                    id="IdSelectForm"
+                                                    value="#{uploadFileMB.currentForm}" 
+                                                    disabled="#{uploadFileMB.selectFormDisabled}"> 
+                                                    <f:selectItems value="#{uploadFileMB.forms}"/>                                
+                                                    <f:ajax render="IdSelectOneMenuSource IdDelimiter 
+                                                            IdAccordionPanel:IdSelectOneListVarExpected IdCurrentForm"/>
+                                                </p:selectOneMenu>  
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputLabel
+                                                    id="IdCurrentForm"
+                                                    value="#{uploadFileMB.currentForm}"/>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column >
+                                    <h:outputLabel
+                                        value="Fuente: "/> 
+                                </p:column>
+                                <p:column >
+                                    <p:selectOneMenu 
+                                        id="IdSelectOneMenuSource" 
+                                        value="#{uploadFileMB.currentSource}" 
+                                        disabled="#{uploadFileMB.selectSourceDisabled}">                                  
+                                        <f:selectItems value="#{uploadFileMB.sources}"/>
+                                    </p:selectOneMenu> 
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column >
+                                    <h:outputLabel
+                                        value="Delimitador: "/>  
+                                </p:column>
+                                <p:column >
+                                    <p:selectOneMenu 
+                                        id="IdDelimiter" 
+                                        value="#{uploadFileMB.currentDelimiter}" 
+                                        disabled="#{uploadFileMB.selectDelimiterDisabled}">                                  
+                                        <f:selectItems value="#{uploadFileMB.delimiters}"/>
+                                    </p:selectOneMenu> 
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column >
+                                    <h:outputLabel
+                                        value="Archivo: " />
+                                </p:column>
+                                <p:column >
+                                    <p:fileUpload 
+                                        id="IdBtnFileSelect"
+                                        value="#{uploadFileMB.file}" 
+                                        mode="simple" 
+                                        disabled="#{uploadFileMB.selectFileUploadDisabled}"/> 
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="2" styleClass="ui-widget-header">
+                                    <p:commandButton 
+                                        id="IdBtnLoadFile" 
+                                        disabled="#{uploadFileMB.btnLoadFileDisabled}" 
+                                        value="Cargar" 
+                                        ajax="false"                                     
+                                        actionListener="#{uploadFileMB.upload}" style="width: 120px;"/>
+                                    <h:outputLabel 
+                                        id="IdNameFile"
+                                        value="#{uploadFileMB.nameFile}"/>
+                                </p:column>
+                            </p:row>
                         </p:panelGrid>
                     </p:tab>  
                     <!--===================================================================================-->
@@ -884,16 +929,16 @@
                                                 <p:row>  
                                                     <p:column>
                                                         <!--LISTA DE VALORES RELACIONADOS-->
-                                                        <p:selectOneListbox  
+                                                        <p:selectManyMenu  
                                                             id="IdSelectOneListValuesRelated" 
                                                             style="height:85px; width: 385px;"
-                                                            value="#{relationshipOfValuesMB.currentValuesRelated}">
+                                                            value="#{relationshipOfValuesMB.valuesRelatedSelectedInRelationValues}">
                                                             <f:selectItems value="#{relationshipOfValuesMB.valuesRelated}"/>
                                                             <f:ajax 
                                                                 event="change" 
                                                                 listener="#{relationshipOfValuesMB.changeValuesRelated}" 
                                                                 render="IdBtnRemoveRelationValues" />
-                                                        </p:selectOneListbox> 
+                                                        </p:selectManyMenu> 
                                                     </p:column>                                
                                                 </p:row>
                                                 <p:row>  
@@ -947,9 +992,9 @@
                                                     </p:column>
                                                     <p:column>
                                                         <!--LISTA DE VALORES ENCONTRADOS-->
-                                                        <p:selectOneListbox                                                             
+                                                        <p:selectManyMenu                                                             
                                                             id="IdSelectOneListValuesFound2" 
-                                                            value="#{relationshipOfValuesMB.currentValueFound}"
+                                                            value="#{relationshipOfValuesMB.valuesFoundSelectedInRelationValues}"
                                                             style="height:95px; width: 211px;">
                                                             <f:selectItems value="#{relationshipOfValuesMB.valuesFound}"/>
                                                             <f:ajax 
@@ -959,20 +1004,20 @@
                                                                 IdBtnAutomaticRelationValues
                                                                 IdBtnDiscardValue
                                                                 IdBtnRemoveDiscardedValues"/>
-                                                        </p:selectOneListbox> 
+                                                        </p:selectManyMenu> 
                                                     </p:column>  
                                                     <p:column>
                                                         <!--LISTA DE VALORES DESCARTADOS-->
-                                                        <p:selectOneListbox                                                             
+                                                        <p:selectManyMenu                                                             
                                                             id="IdSelectOneListValuesDiscarded" 
-                                                            value="#{relationshipOfValuesMB.currentValueDiscarded}"
+                                                            value="#{relationshipOfValuesMB.valuesDiscardedSelectedInRelationValues}"
                                                             style="height:95px; width: 211px;">
                                                             <f:selectItems value="#{relationshipOfValuesMB.valuesDiscarded}"/>							    
                                                             <f:ajax 
                                                                 event="change"                                            
                                                                 listener="#{relationshipOfValuesMB.changeValuesDiscarded}" 
                                                                 render="IdBtnRemoveDiscardedValues"/>
-                                                        </p:selectOneListbox> 
+                                                        </p:selectManyMenu> 
                                                     </p:column> 
                                                 </p:row>
                                                 <p:row>  
@@ -1449,6 +1494,8 @@
                 </p:tabView>  
             </h:form>
         </ui:define>
+	<!--=================================================================-->
+        <!--==================== CUADROS DE DIALOGOS ========================-->
         <ui:define name="dialogs">
             <h:form id="IdForm2">
                 <p:dialog 

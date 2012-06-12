@@ -93,7 +93,9 @@ public class FatalInjuries implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "code", length = 2147483647)
     private String code;
-    
+    @JoinColumn(name = "area_id", referencedColumnName = "area_id")
+    @ManyToOne
+    private Areas areaId;
     public FatalInjuries() {
     }
 
@@ -280,5 +282,15 @@ public class FatalInjuries implements Serializable {
     public String toString() {
         return "model.pojo.FatalInjuries[ fatalInjuryId=" + fatalInjuryId + " ]";
     }
+
+    public Areas getAreaId() {
+        return areaId;
+    }
+
+    public void setAreaId(Areas areaId) {
+        this.areaId = areaId;
+    }
+    
+    
     
 }
