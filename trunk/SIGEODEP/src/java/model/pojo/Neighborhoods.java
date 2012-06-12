@@ -5,10 +5,12 @@
 package model.pojo;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -42,6 +44,10 @@ public class Neighborhoods implements Serializable {
     private Character neighborhoodLevel;
     @Column(name = "neighborhood_type")
     private Character neighborhoodType;
+    @OneToMany(mappedBy = "victimNeighborhoodId")
+    private List<Victims> victimsList;
+    @OneToMany(mappedBy = "injuryNeighborhoodId")
+    private List<NonFatalInjuries> nonFatalInjuriesList;
 
     public Neighborhoods() {
     }
@@ -95,6 +101,24 @@ public class Neighborhoods implements Serializable {
         this.neighborhoodType = neighborhoodType;
     }
 
+    @XmlTransient
+    public List<Victims> getVictimsList() {
+        return victimsList;
+    }
+
+    public void setVictimsList(List<Victims> victimsList) {
+        this.victimsList = victimsList;
+    }
+
+    @XmlTransient
+    public List<NonFatalInjuries> getNonFatalInjuriesList() {
+        return nonFatalInjuriesList;
+    }
+
+    public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
+        this.nonFatalInjuriesList = nonFatalInjuriesList;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -117,7 +141,7 @@ public class Neighborhoods implements Serializable {
 
     @Override
     public String toString() {
-        return "model.pojo.Neighborhoods[ neighborhoodId=" + neighborhoodId + " ]";
+        return "j.Neighborhoods[ neighborhoodId=" + neighborhoodId + " ]";
     }
     
 }

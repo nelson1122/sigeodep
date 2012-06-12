@@ -36,10 +36,10 @@ public class KindsOfInjury implements Serializable {
     @Size(min = 1, max = 80)
     @Column(name = "kind_injury_name", nullable = false, length = 80)
     private String kindInjuryName;
-    @JoinTable(name = "non_fatal_kind_of_injury", joinColumns = {
-        @JoinColumn(name = "kind_injury_id", referencedColumnName = "kind_injury_id", nullable = false)}, inverseJoinColumns = {
-        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
-    @ManyToMany
+    //@JoinTable(name = "non_fatal_kind_of_injury", joinColumns = {
+    //    @JoinColumn(name = "kind_injury_id", referencedColumnName = "kind_injury_id", nullable = false)}, inverseJoinColumns = {
+    //    @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
+    @ManyToMany(mappedBy = "kindsOfInjuryList")    
     private List<NonFatalInjuries> nonFatalInjuriesList;
 
     public KindsOfInjury() {

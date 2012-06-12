@@ -50,7 +50,7 @@ public class ConnectionJDBC {
             }
             conn = DriverManager.getConnection(url, login, password);
             if (conn != null) {
-                System.out.println("Conexion a base de datos " + url + " ... OK");
+                //System.out.println("Conexion a base de datos " + url + " ... OK");
             }
         } catch (SQLException e) {
             System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
@@ -74,7 +74,7 @@ public class ConnectionJDBC {
             }
             conn = DriverManager.getConnection(url, login, password);
             if (conn != null) {
-                System.out.println("Conexion a base de datos " + url + " ... OK");
+                //System.out.println("Conexion a base de datos " + url + " ... OK");
             }
         } catch (SQLException e) {
             System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
@@ -88,7 +88,7 @@ public class ConnectionJDBC {
             try {
                 if (!conn.isClosed()) {
                     conn.close();
-                    System.out.println("Se cerro conexion a: " + url + " ... OK");
+                    //System.out.println("Se cerro conexion a: " + url + " ... OK");
                     msj = "Close conection " + url + " ... OK";
                 }
             } catch (SQLException e) {

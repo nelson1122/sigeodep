@@ -12,6 +12,7 @@ import javax.persistence.EntityManager;
  * @author santos
  */
 public abstract class AbstractFacade<T> {
+
     private Class<T> entityClass;
 
     public AbstractFacade(Class<T> entityClass) {
@@ -21,15 +22,14 @@ public abstract class AbstractFacade<T> {
     protected abstract EntityManager getEntityManager();
 
     public void create(T entity) {
-	try {
+        try {
             //getEntityManager().getTransaction().begin();
-	    getEntityManager().persist(entity);
+            getEntityManager().persist(entity);
             //getEntityManager().getTransaction().commit();
             //getEntityManager().refresh(entity);
-	} catch (Exception e) {
-	    System.out.println(e.toString());
-	}
-        
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
     }
 
     public void edit(T entity) {
@@ -45,9 +45,14 @@ public abstract class AbstractFacade<T> {
     }
 
     public List<T> findAll() {
-        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
-        cq.select(cq.from(entityClass));
-        return getEntityManager().createQuery(cq).getResultList();
+        try {
+            javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();
+            cq.select(cq.from(entityClass));
+            return getEntityManager().createQuery(cq).getResultList();
+        } catch (Exception e) {
+            System.out.println("ERROR*************Abs_1"+e.toString());
+            return null;
+        }
     }
 
     public List<T> findRange(int[] range) {
@@ -66,5 +71,4 @@ public abstract class AbstractFacade<T> {
         javax.persistence.Query q = getEntityManager().createQuery(cq);
         return ((Long) q.getSingleResult()).intValue();
     }
-    
 }

@@ -34,10 +34,8 @@ public class AnatomicalLocations implements Serializable {
     @Size(max = 80)
     @Column(name = "anatomical_location_name", length = 80)
     private String anatomicalLocationName;
-    @JoinTable(name = "non_fatal_anatomical_location", joinColumns = {
-        @JoinColumn(name = "anatomical_location_id", referencedColumnName = "anatomical_location_id", nullable = false)}, inverseJoinColumns = {
-        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
-    @ManyToMany
+    //----------------------
+    @ManyToMany(mappedBy = "anatomicalLocationsList")    
     private List<NonFatalInjuries> nonFatalInjuriesList;
 
     public AnatomicalLocations() {

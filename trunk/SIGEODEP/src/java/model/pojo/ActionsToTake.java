@@ -36,11 +36,13 @@ public class ActionsToTake implements Serializable {
     @Size(min = 1, max = 40)
     @Column(name = "action_name", nullable = false, length = 40)
     private String actionName;
-    @JoinTable(name = "domestic_violence_action_to_take", joinColumns = {
-        @JoinColumn(name = "action_id", referencedColumnName = "action_id", nullable = false)}, inverseJoinColumns = {
-        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
-    @ManyToMany
+//    @JoinTable(name = "domestic_violence_action_to_take", joinColumns = {
+//        @JoinColumn(name = "action_id", referencedColumnName = "action_id", nullable = false)}, inverseJoinColumns = {
+//        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
+//    @ManyToMany
+    @ManyToMany(mappedBy = "actionsToTakeList")
     private List<NonFatalDomesticViolence> nonFatalDomesticViolenceList;
+    
 
     public ActionsToTake() {
     }

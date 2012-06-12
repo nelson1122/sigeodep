@@ -129,7 +129,7 @@ public class UploadFileMB {
         List<Forms> formsList = formsFacade.findAll();
         forms = new SelectItem[formsList.size()];
         for (int i = 0; i < formsList.size(); i++) {
-            forms[i] = new SelectItem(formsList.get(i).toString());
+            forms[i] = new SelectItem(formsList.get(i).toString(),formsList.get(i).getFormName());
         }
     }
 
@@ -141,7 +141,7 @@ public class UploadFileMB {
         List<Sources> sourcesList = formsFacade.findSources(currentForm);
         sources = new SelectItem[sourcesList.size()];
         for (int i = 0; i < sourcesList.size(); i++) {
-            sources[i] = new SelectItem(sourcesList.get(i).toString());
+            sources[i] = new SelectItem(sourcesList.get(i).getSourceName(),sourcesList.get(i).toString());
         }
     }
 
@@ -537,4 +537,4 @@ public class UploadFileMB {
     public void setStoredRelationsMB(StoredRelationsMB storedRelationsMB) {
         this.storedRelationsMB = storedRelationsMB;
     }
-}
+    }

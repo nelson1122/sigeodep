@@ -271,6 +271,10 @@
                                                 event="itemSelect" 
                                                 listener="#{homicideMB.changeNeighborhoodEvent}" 
                                                 update="IdNeighborhoodsEventCode IdControls" process="@this"/>                                            
+					    <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
                                         </p:autoComplete>
                                     </p:column>
                                 </p:row>
@@ -434,7 +438,7 @@
                                             <f:selectItems value="#{homicideMB.municipalities}"/>
                                             <f:ajax 
                                                 event="change"   							    
-                                                listener="#{homicideMB.findMunicipalitieCode}"
+                                                listener="#{homicideMB.changeMunicipalitie}"
                                                 render="IdMunicipalitiesHomeCode
                                                 IdNeighborhoodHomeName
                                                 IdNeighborhoodsHomeCode
@@ -464,7 +468,11 @@
                                             <p:ajax 
                                                 event="itemSelect" 
                                                 listener="#{homicideMB.changeNeighborhoodHomeName}" 
-                                                update="IdNeighborhoodsHomeCode IdControls" process="@this"/>
+                                                update="IdNeighborhoodsHomeCode IdControls" process="@this"/>                                            
+					    <f:ajax 
+                                                event="keyup"
+                                                listener="#{homicideMB.changeForm}"
+                                                render="IdControls"/>
                                         </p:autoComplete>
                                     </p:column>
                                 </p:row>
@@ -689,8 +697,8 @@
                         </p:column>                                       
                     </p:row>
                 </p:panelGrid>
-                <div style="position:fixed; bottom: 3px; right: 20px; ">
-                    <!--===========CONTROLES: PRIMERO SIGUIENTE ANTERIOR ULTIMO REGISTRO ===========================-->
+                <!--===========CONTROLES: PRIMERO SIGUIENTE ANTERIOR ULTIMO REGISTRO ===========================-->
+                <div style="position:fixed; bottom: 3px; right: 20px; ">                    
                     <p:panelGrid id="IdControls">
                         <p:row >
                             <p:column styleClass="ui-widget-header">
@@ -737,7 +745,7 @@
                                 <p:commandButton 
                                     icon="ui-icon-close" 
                                     title="Eliminar"  
-                                    actionListener="#{homicideMB.deleteForm}"
+                                    actionListener="#{homicideMB.deleteRegistry}"
                                     oncomplete="#{homicideMB.openDialogDelete}"                                    
                                     update="IdForm1"/>
                             </p:column>
@@ -757,7 +765,7 @@
                     widgetVar="dialogFirst"> 
                     <p:panelGrid>
                         <p:row>  
-                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
                                 El registro ha sido modificado, desea guardar los cambios?
                             </p:column>
                         </p:row>
@@ -788,7 +796,7 @@
                     widgetVar="dialogPrevious"> 
                     <p:panelGrid>
                         <p:row>  
-                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
                                 El registro ha sido modificado, desea guardar los cambios?
                             </p:column>
                         </p:row>
@@ -819,7 +827,7 @@
                     widgetVar="dialogNext"> 
                     <p:panelGrid>
                         <p:row>  
-                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
                                 El registro ha sido modificado, desea guardar los cambios?
                             </p:column>
                         </p:row>
@@ -850,7 +858,7 @@
                     widgetVar="dialogLast"> 
                     <p:panelGrid>
                         <p:row>  
-                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
                                 El registro ha sido modificado, desea guardar los cambios?
                             </p:column>
                         </p:row>
@@ -881,7 +889,7 @@
                     widgetVar="dialogNew"> 
                     <p:panelGrid>
                         <p:row>  
-                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
                                 El registro ha sido modificado, desea guardar los cambios?
                             </p:column>
                         </p:row>
@@ -912,7 +920,7 @@
                     widgetVar="dialogDelete"> 
                     <p:panelGrid>
                         <p:row>  
-                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
                                 Confirma la Eliminacion de este registro?
                             </p:column>
                         </p:row>
@@ -920,7 +928,7 @@
                             <p:column styleClass="ui-widget-header">
                                 <p:commandButton                                                           
                                     oncomplete="dialogDelete.hide()"
-                                    actionListener="#{homicideMB.deleteForm}"
+                                    actionListener="#{homicideMB.deleteRegistry2}"
                                     value="Eliminar" 
                                     update=":IdForm1"/>   
                                 <p:commandButton

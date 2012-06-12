@@ -4,6 +4,7 @@
  */
 package managedBeans.forms;
 
+import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -11,8 +12,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import model.dao.*;
 import model.pojo.*;
@@ -29,197 +32,77 @@ public class AccidentalMB {
     // DECLARACION DE VARIABLES --------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    //-------------------- 
 
-    //@EJB
-    AreasFacade areasFacade;
-    private SelectItem[] areas;
-    private String currentArea;
-    //-------------------- 
-    //@EJB
-    //WeaponTypesFacade weaponTypesFacade;
-    //private String currentWeaponType;
-    //private SelectItem[] weaponTypes;
-    //-------------------- 
     @EJB
     AccidentMechanismsFacade accidentMechanismsFacade;
-    private String currentAccidentMechanisms;
+    //WeaponTypesFacade weaponTypesFacade;
+    //private Short currentWeaponType;
+    private Short currentAccidentMechanisms = 0;
     private SelectItem[] accidentMechanisms;
+    @EJB
+    AreasFacade areasFacade;
+    private SelectItem[] areas;
+    private Short currentArea = 0;
     //-------------------- 
-    //@EJB
-    //DepartamentsFacade departamentsFacade;
-    //private Short currentDepartamentHome = 52;//nariño
-    //private SelectItem[] departaments;
+    @EJB
+    DepartamentsFacade departamentsFacade;
     //--------------------    
     @EJB
     MunicipalitiesFacade municipalitiesFacade;
     private Short currentMunicipalitie = 1;//pasto
     private SelectItem[] municipalities;
-    //--------------------    
-    //@EJB
-    //UseAlcoholDrugsFacade useAlcoholDrugsFacade;
-    //private Short currentUseAlcohol;
-    //private Short currentUseDrugs;
-    //private SelectItem[] useAlcohol;
-    //private SelectItem[] useDrugs;
-    //--------------------    
-    //@EJB
-    //NonFatalDataSourcesFacade nonFatalDataSourcesFacade;
-    //private String currentIPS;
-    //private SelectItem[] IPSs;
-    //--------------------
-    //@EJB
-    //IntentionalitiesFacade intentionalitiesFacade;
-    //private Short currentIntentionality;
-    //private SelectItem[] intentionalities;
     //--------------------
     @EJB
     PlacesFacade placesFacade;
-    private Short currentPlace;
+    private Short currentPlace = 0;
     private SelectItem[] places;
-    //--------------------
-    //@EJB
-    //ActivitiesFacade activitiesFacade;
-    //private Short currentActivities;
-    //private SelectItem[] activities;
-    //--------------------
-    //@EJB
-    //MechanismsFacade mechanismsFacade;
-    //private Short currentMechanisms;
-    //private SelectItem[] mechanisms;
-    //--------------------
-    //@EJB
-    //EthnicGroupsFacade ethnicGroupsFacade;
-    //private Short currentEthnicGroup;
-    //private SelectItem[] ethnicGroups;
-    //private boolean ethnicGroupsDisabled = true;
-    //private String otherEthnicGroup;
-    //--------------------
-    //@EJB
-    //TransportTypesFacade transportTypesFacade;
-    //private Short currentTransportTypes;
-    //private SelectItem[] transportTypes;
-    //--------------------
-    //@EJB
-    //TransportCounterpartsFacade transportCounterpartsFacade;
-    //private Short currentTransportUser;
-    //private SelectItem[] transportCounterparts;
-    //--------------------
-    //@EJB
-    //TransportUsersFacade transportUsersFacade;
-    //private Short currentTransportCounterpart;
-    //private SelectItem[] transportUsers;
     //--------------------
     @EJB
     GendersFacade gendersFacade;
-    private Short currentGender;
+    private Short currentGender = 0;
     private SelectItem[] genders;
-    //--------------------
-    //@EJB
-    //RelationshipsToVictimFacade relationshipsToVictimFacade;
-    //private Short currentRelationshipToVictim;
-    //private SelectItem[] relationshipsToVictim;
-    //--------------------
-    //@EJB
-    //ContextsFacade contextsFacade;
-    //private Short currentContext;
-    //private SelectItem[] contexts;
-    //--------------------
-    //@EJB
-    //AggressorGendersFacade agreAggressorGendersFacade;
-    //private Short currentAggressorGenders;
-    //private SelectItem[] aggressorGenders;
-    //--------------------
-    //@EJB
-    //PrecipitatingFactorsFacade precipitatingFactorsFacade;
-    //private Short currentPrecipitatingFactor;
-    //private SelectItem[] precipitatingFactors;
     //--------------------    
     @EJB
     JobsFacade jobsFacade;
-    private Short currentJob;
+    private Short currentJob = 0;
     private SelectItem[] jobs;
-    //--------------------
-    //@EJB
-    //DestinationsOfPatientFacade destinationsOfPatientFacade;
-    //private Short currentDestinationPatient;
-    //private SelectItem[] destinationsPatient;
     //--------------------
     @EJB
     NeighborhoodsFacade neighborhoodsFacade;
-    private String currentNeighborhoodHome;
-    private int currentNeighborhoodHomeCode;
-    private String currentNeighborhoodEvent;
-    private int currentNeighborhoodEventCode;
+    private String currentNeighborhoodHome = "";
+    private String currentNeighborhoodHomeCode = "";
+    private String currentNeighborhoodEvent = "";
+    private String currentNeighborhoodEventCode = "";
     boolean neighborhoodHomeNameDisabled = true;
     //--------------------
-    //@EJB
-    //HealthProfessionalsFacade healthProfessionalsFacade;
-    //private String currentHealthProfessionals;
-    //--------------------
-    //@EJB
-    //DiagnosesFacade diagnosesFacade;
-    //private String currentDiagnoses;
-    //private SelectItem[] diagnoses;
-    //--------------------
-    //private SelectItem[] healthInstitutions;
-    //private Short currentHealthInstitution;
-    //------------------
     @EJB
     IdTypesFacade idTypesFacade;
     private SelectItem[] identifications;
-    private Short currentIdentification;
+    private Short currentIdentification = 0;
     //------------------
     @EJB
     AgeTypesFacade ageTypesFacade;
     private SelectItem[] measuresOfAge;
-    private Short currentMeasureOfAge;
-    private String currentAge;
-    private boolean valueAgeDisabled;
-    //-------
-    //private boolean isSubmitted = false;
-    //private boolean IPSDisabled = true;
-    //-------
-    //private boolean otherIntentDisabled = true;
-    //private boolean otherPlaceDisabled = true;
-    //private boolean otherActivityDisabled = true;
-    //private boolean otherMechanismDisabled = true;//otro mecanismo    
-    //private String otherMechanism;//otro mecanismo       
-    
-    //private boolean powderWhichDisabled = true;//cual polvora
-    //private String powderWhich;//cual polvora
-    //private boolean disasterWhichDisabled = true;//cual desastre
-    //private String disasterWhich;//cual desastre
-    //private boolean heightWhichDisabled = true;//cual altura
-    //private String heightWhich;//cual altura    
-    //private String forBurned = "none";//para los quemados
-    //private String displaySecurityElements = "block";
-    //private String displayInterpersonalViolence = "none";
-    //private String displayTransport = "block";
-    //private String displayIntentional = "none";
-    //private boolean otherTransportTypeDisabled = true;//otro tipo de transporte
-    //private String otherTransportType;//otro tipo de transporte    
-    //private boolean otherTransportCounterpartsTypeDisabled = true;//otro tipo de transporte contraparte
-    //private String otherTransportCounterpartsType;//otro tipo de transporte contraparte   
-    //private boolean otherTransportUserTypeDisabled = true;//otro tipo de transporte usuario
-    //private String otherTransportUserType;//otro tipo de transporte usuario   
-    //private boolean aggressionPast = false;
-    //private String otherFactor;
-    //private boolean otherFactorDisabled = true;
-    //private boolean relationshipToVictimDisabled = true;
-    //private boolean contextDisabled = true;
-    //private String otherRelation;
-    //private boolean otherRelationDisabled = true;
-    //private boolean aggressorGendersDisabled = true;
-    //private boolean checkOtherInjury;
-    //private boolean checkOtherPlace;
-    //private boolean otherInjuryDisabled = true;
-    //private boolean otherInjuryPlaceDisabled = true;
-    //private boolean otherDestinationPatientDisabled = true;
-    //private String otherDestinationPatient;
-    //private String txtOtherInjury;
-    //private String txtOtherPlace;
-    private String currentNarrative;
-    private String currentAlcoholLevel;
+    private Short currentMeasureOfAge = 0;
+    private String currentAge = "";
+    private boolean valueAgeDisabled = false;
+    //------------------
+    @EJB
+    FatalInjuryAccidentFacade fatalInjuryAccidentFacade;
+    //------------------
+    @EJB
+    VictimsFacade victimsFacade;
+    @EJB
+    FatalInjuriesFacade fatalInjuriesFacade;
+    @EJB
+    InjuriesFacade injuriesFacade;
+    @EJB
+    UsersFacade usersFacade;
+    @EJB
+    AlcoholLevelsFacade alcoholLevelsFacade;
+    private String currentNarrative = "";
+    private String currentAlcoholLevel = "";
     private boolean currentAlcoholLevelDisabled = false;
     private boolean isNoDataAlcoholLevel = false;
     private boolean isPendentAlcoholLevel = false;
@@ -229,115 +112,902 @@ public class AccidentalMB {
     private boolean isPendentAlcoholLevelDisabled = false;
     private boolean isUnknownAlcoholLevelDisabled = false;
     private boolean isNegativeAlcoholLevelDisabled = false;
-    //private String currentSecurityElements;
-    //private String currentMedicalHistory;//@Size(min = 6, max = 8) 
-    private String currentDayEvent;
-    private String currentMonthEvent;
-    private String currentYearEvent;
-    private String currentDateEvent;
-    private String currentWeekdayEvent;
-    private String currentHourEvent;
-    private String currentMinuteEvent;
+    private String currentDayEvent = "";
+    private String currentMonthEvent = "";
+    private String currentYearEvent = "";
+    private String currentDateEvent = "";
+    private String currentWeekdayEvent = "";
+    private String currentHourEvent = "";
+    private String currentMinuteEvent = "";
     private String currentAmPmEvent = "AM";
-    private String currentMilitaryHourEvent;
-    //private String currentDayConsult;
-    //private String currentMonthConsult;
-    //private String currentYearConsult;
-    //private String currentDateConsult;
-    //private String currentWeekdayConsult;
-    //private String currentHourConsult;
-    //private String currentMinuteConsult;
-    //private String currentAmPmConsult = "AM";
-    //private String currentMilitaryHourConsult;
-    private String currentName;
-    private String currentSurame;
-    private String currentIdentificationNumber;
-    //private String currentInsurance;
-    //private String currentDirectionHome;
-//    private String currentTelephoneHome;
-    private String currentDirectionEvent;
-//    private String currentOtherIntentionality;
-//    private String currentOtherPlace;
-//    private String currentOtherActivitie;
-    private String currentSurname;
-//    private Short currentLevelBurned;
-//    private Short currentPercentBurned;
-    private String currentNumberVictims;
-    private String currentVictimSource;
-//    private boolean isDisplaced;
-//    private boolean isHandicapped;
-//    private boolean isBeltUse;
-//    private boolean isHelmetUse;
-//    private boolean isBicycleHelmetUse;
-//    private boolean isVestUse;
-//    private boolean isPreviousAttempt;
-//    private boolean isMentalDisorder;
-//    private boolean isUnknownNatureOfInjurye;
-    
+    private String currentMilitaryHourEvent = "";
+    private String currentName = "";
+    private String currentSurame = "";
+    private String currentIdentificationNumber = "";
+    private String currentDirectionEvent = "";
+    private String currentSurname = "";
+    private String currentNumberVictims = "";
+    private String currentNumberInjured = "";
+    private String currentVictimSource = "";
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
     private Date fechaI;
-
+    private boolean save = true;//variable que me dice si el registro esta guadado o no    
+    private int currentFatalInjuriId = -1;//registro actual 
+    private FatalInjuryAccident currentFatalInjuryAccident;
+    private FatalInjuryAccident auxFatalInjuryAccident;
+    private ArrayList<String> validationsErrors;
+    private String currentCode = "";
+    private String currentPosition = "";
+    private int totalRegisters = 0;//cantidad total de registros en transito
+    private String openDialogFirst = "";
+    private String openDialogNext = "";
+    private String openDialogLast = "";
+    private String openDialogPrevious = "";
+    private String openDialogNew = "";
+    private String openDialogDelete = "";
+    private Calendar c = Calendar.getInstance();
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+
     public AccidentalMB() {
     }
 
     public void reset() {
+
+	currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
+
 	try {
 	    //cargo los tipos de identificacion
 	    List<IdTypes> idTypesList = idTypesFacade.findAll();
-	    identifications = new SelectItem[idTypesList.size()];
+	    identifications = new SelectItem[idTypesList.size() + 1];
+	    identifications[0] = new SelectItem(0, "");
 	    for (int i = 0; i < idTypesList.size(); i++) {
-		identifications[i] = new SelectItem(idTypesList.get(i).getTypeId(), idTypesList.get(i).getTypeName());
+		identifications[i + 1] = new SelectItem(idTypesList.get(i).getTypeId(), idTypesList.get(i).getTypeName());
 	    }
-
 	    //cargo las medidas de edad
 	    List<AgeTypes> ageTypesList = ageTypesFacade.findAll();
-	    measuresOfAge = new SelectItem[ageTypesList.size()];
+	    measuresOfAge = new SelectItem[ageTypesList.size() + 1];
+	    measuresOfAge[0] = new SelectItem(0, "");
 	    for (int i = 0; i < ageTypesList.size(); i++) {
-		measuresOfAge[i] = new SelectItem(ageTypesList.get(i).getAgeTypeId(), ageTypesList.get(i).getAgeTypeName());
+		measuresOfAge[i + 1] = new SelectItem(ageTypesList.get(i).getAgeTypeId(), ageTypesList.get(i).getAgeTypeName());
 	    }
-
+	    //cargo los municipios
+	    findMunicipalities();
 	    //cargo los lugares donde ocurrieron los hechos
 	    List<Places> placesList = placesFacade.findAll();
-	    places = new SelectItem[placesList.size()];
+	    places = new SelectItem[placesList.size() + 1];
+	    places[0] = new SelectItem(0, "");
 	    for (int i = 0; i < placesList.size(); i++) {
-		places[i] = new SelectItem(placesList.get(i).getPlaceId(), placesList.get(i).getPlaceName());
+		places[i + 1] = new SelectItem(placesList.get(i).getPlaceId(), placesList.get(i).getPlaceName());
 	    }
 	    //generos
 	    List<Genders> gendersList = gendersFacade.findAll();
-	    genders = new SelectItem[gendersList.size()];
+	    genders = new SelectItem[gendersList.size() + 1];
+	    genders[0] = new SelectItem(0, "");
 	    for (int i = 0; i < gendersList.size(); i++) {
-		genders[i] = new SelectItem(gendersList.get(i).getGenderId(), gendersList.get(i).getGenderName());
+		genders[i + 1] = new SelectItem(gendersList.get(i).getGenderId(), gendersList.get(i).getGenderName());
 	    }
-
 	    //trabajos
 	    List<Jobs> jobsList = jobsFacade.findAll();
-	    jobs = new SelectItem[jobsList.size()];
+	    jobs = new SelectItem[jobsList.size() + 1];
+	    jobs[0] = new SelectItem(0, "");
 	    for (int i = 0; i < jobsList.size(); i++) {
-		jobs[i] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
+		jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
 	    }
-	    
 	    //cargo las areas del hecho
-            List<Areas> areasList = areasFacade.findAll();
-            areas = new SelectItem[areasList.size()];
-            for (int i = 0; i < areasList.size(); i++) {
-                areas[i] = new SelectItem(areasList.get(i).getAreaName());
-            }
-
-	    //Arma o causante de muerte
+	    List<Areas> areasList = areasFacade.findAll();
+	    areas = new SelectItem[areasList.size() + 1];
+	    areas[0] = new SelectItem(0, "");
+	    for (int i = 0; i < areasList.size(); i++) {
+		areas[i + 1] = new SelectItem(areasList.get(i).getAreaId(), areasList.get(i).getAreaName());
+	    }
+	    //cargo los tipos de armas
 	    List<AccidentMechanisms> accidentMechanismsList = accidentMechanismsFacade.findAll();
-	    accidentMechanisms = new SelectItem[accidentMechanismsList.size()];
+	    accidentMechanisms = new SelectItem[accidentMechanismsList.size() + 1];
+	    accidentMechanisms[0] = new SelectItem(0, "");
 	    for (int i = 0; i < accidentMechanismsList.size(); i++) {
-		accidentMechanisms[i] = new SelectItem(accidentMechanismsList.get(i).getAccidentMechanismId(), accidentMechanismsList.get(i).getAccidentMechanismName());
+		accidentMechanisms[i + 1] = new SelectItem(accidentMechanismsList.get(i).getAccidentMechanismId(), accidentMechanismsList.get(i).getAccidentMechanismName());
+	    }
+	    save = true;
+	    determinePosition();
+	} catch (Exception e) {
+	    System.out.println("*******************************************ERROR_A1: " + e.toString());
+	}
+    }
+
+    public void loadValues() {
+	save = true;
+
+	openDialogFirst = "";
+	openDialogNext = "";
+	openDialogLast = "";
+	openDialogPrevious = "";
+	openDialogNew = "";
+	//------------------------------------------------------------
+	//SE CARGAN VALORES PARA LA NUEVA VICTIMA
+	//------------------------------------------------------------
+	//******type_id
+	try {
+	    currentIdentification = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getTypeId().getTypeId();
+	} catch (Exception e) {
+	    currentIdentification = 0;
+	}
+	//******victim_nid
+	currentIdentificationNumber = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getVictimNid();
+	if (currentIdentificationNumber == null) {
+	    currentIdentificationNumber = "";
+	}
+	//******victim_firstname
+	currentName = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getVictimFirstname();
+	if (currentName == null) {
+	    currentName = "";
+	}
+	//******victim_lastname
+	currentSurname = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getVictimLastname();
+	if (currentSurname == null) {
+	    currentSurname = "";
+	}
+	//******age_type_id
+	try {
+	    currentMeasureOfAge = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getAgeTypeId();
+	} catch (Exception e) {
+	    currentMeasureOfAge = 0;
+	}
+	//******victim_age
+	try {
+	    currentAge = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getVictimAge().toString();
+	} catch (Exception e) {
+	    currentAge = "";
+	}
+	//******gender_id
+	try {
+	    currentGender = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getGenderId().getGenderId();
+	} catch (Exception e) {
+	    currentGender = 0;
+	}
+	//******job_id
+	try {
+	    currentJob = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getJobId().getJobId();
+	} catch (Exception e) {
+	    currentJob = 0;
+	}
+	//******vulnerable_group_id
+	//******ethnic_group_id
+	//******victim_telephone
+	//******victim_address
+	//******victim_neighborhood_id
+	try {
+	    if (currentFatalInjuryAccident.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodId() != null) {
+		currentNeighborhoodHomeCode = String.valueOf(currentFatalInjuryAccident.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodId());
+		currentNeighborhoodHome = neighborhoodsFacade.find(currentFatalInjuryAccident.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodId()).getNeighborhoodName();
+	    }
+	} catch (Exception e) {
+	    currentNeighborhoodHomeCode = "";
+	    currentNeighborhoodHome = "";
+	}
+	//******victim_date_of_birth
+	//******eps_id
+	//******victim_class
+	//******victim_id
+	//******residence_municipality
+	try {
+	    currentMunicipalitie = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getResidenceMunicipality();
+	    if (currentMunicipalitie == 1) {
+		neighborhoodHomeNameDisabled = false;
+	    } else {
+		neighborhoodHomeNameDisabled = true;
+	    }
+	} catch (Exception e) {
+	    currentMunicipalitie = 1;
+	}
+	//------------------------------------------------------------
+	//SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
+	//------------------------------------------------------------
+	//******injury_id
+	//******injury_date
+	try {
+	    currentDateEvent = currentFatalInjuryAccident.getFatalInjuries().getInjuryDate().toString();
+	    Calendar cal = Calendar.getInstance();
+	    cal.setTime(currentFatalInjuryAccident.getFatalInjuries().getInjuryDate());
+	    currentDayEvent = String.valueOf(cal.get(Calendar.DATE));
+	    currentMonthEvent = String.valueOf(cal.get(Calendar.MONTH) + 1);
+	    currentYearEvent = String.valueOf(cal.get(Calendar.YEAR));
+	    calculateDate1();
+	} catch (Exception e) {
+	    currentDateEvent = "";
+	}
+	//******injury_time
+	try {
+	    currentHourEvent = String.valueOf(currentFatalInjuryAccident.getFatalInjuries().getInjuryTime().getHours());
+	    currentMinuteEvent = String.valueOf(currentFatalInjuryAccident.getFatalInjuries().getInjuryTime().getMinutes());
+	    if (Integer.parseInt(currentHourEvent) > 12) {
+		currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) - 12);
+		currentAmPmEvent = "PM";
+	    } else {
+		currentAmPmEvent = "AM";
+	    }
+	    calculateTime1();
+	} catch (Exception e) {
+	    currentHourEvent = "";
+	    currentMinuteEvent = "";
+	}
+	//******injury_address
+	currentDirectionEvent = currentFatalInjuryAccident.getFatalInjuries().getInjuryAddress();
+	if (currentDirectionEvent == null) {
+	    currentDirectionEvent = "";
+	}
+	//******injury_neighborhood_id
+	try {
+	    if (currentFatalInjuryAccident.getFatalInjuries().getInjuryNeighborhoodId() != null) {
+		currentNeighborhoodEventCode = String.valueOf(currentFatalInjuryAccident.getFatalInjuries().getInjuryNeighborhoodId());
+		currentNeighborhoodEvent = neighborhoodsFacade.find(currentFatalInjuryAccident.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName();
+	    }
+	} catch (Exception e) {
+	    currentNeighborhoodEventCode = "";
+	    currentNeighborhoodEvent = "";
+	}
+	//******injury_place_id
+	try {
+	    currentPlace = currentFatalInjuryAccident.getFatalInjuries().getInjuryPlaceId().getPlaceId();
+	} catch (Exception e) {
+	    currentPlace = 0;
+	}
+	//******victim_number
+	if (currentFatalInjuryAccident.getFatalInjuries().getVictimNumber() != null) {
+	    currentNumberVictims = String.valueOf(currentFatalInjuryAccident.getFatalInjuries().getVictimNumber());
+	} else {
+	    currentNumberVictims = "";
+	}
+	//******injury_description
+	currentNarrative = currentFatalInjuryAccident.getFatalInjuries().getInjuryDescription();
+	if (currentNarrative == null) {
+	    currentNarrative = "";
+	}
+	//******user_id	
+	//******input_timestamp	
+	//******injury_day_of_week
+	currentWeekdayEvent = currentFatalInjuryAccident.getFatalInjuries().getInjuryDayOfWeek();
+	if (currentWeekdayEvent == null) {
+	    currentWeekdayEvent = "";
+	}
+	//******victim_id
+	//******fatal_injury_id
+	//******alcohol_level_victim_id, alcohol_level_victim
+	if (currentFatalInjuryAccident.getFatalInjuries().getAlcoholLevelVictim() != null) {
+	    isNoDataAlcoholLevelDisabled = false;
+	    isUnknownAlcoholLevelDisabled = false;
+	    isPendentAlcoholLevelDisabled = false;
+	    isNegativeAlcoholLevelDisabled = false;
+	    currentAlcoholLevelDisabled = false;
+	    currentAlcoholLevel = String.valueOf(currentFatalInjuryAccident.getFatalInjuries().getAlcoholLevelVictim());
+	    isNoDataAlcoholLevel = false;
+	    isUnknownAlcoholLevel = false;
+	    isPendentAlcoholLevel = false;
+	    isNegativeAlcoholLevel = false;
+	} else {
+	    try {
+		Short level = currentFatalInjuryAccident.getFatalInjuries().getAlcoholLevelVictimId().getAlcoholLevelId();
+		if (level == 2) {//isNoDataAlcoholLevel
+		    isNoDataAlcoholLevelDisabled = false;
+		    isUnknownAlcoholLevelDisabled = true;
+		    isPendentAlcoholLevelDisabled = true;
+		    isNegativeAlcoholLevelDisabled = true;
+		    currentAlcoholLevelDisabled = true;
+		    currentAlcoholLevel = "";
+		    isNoDataAlcoholLevel = true;
+		    isUnknownAlcoholLevel = false;
+		    isPendentAlcoholLevel = false;
+		    isNegativeAlcoholLevel = false;
+		}
+		if (level == 3) {//isUnknownAlcoholLevel
+		    isNoDataAlcoholLevelDisabled = true;
+		    isUnknownAlcoholLevelDisabled = false;
+		    isPendentAlcoholLevelDisabled = true;
+		    isNegativeAlcoholLevelDisabled = true;
+		    currentAlcoholLevelDisabled = true;
+		    currentAlcoholLevel = "";
+		    isNoDataAlcoholLevel = false;
+		    isUnknownAlcoholLevel = true;
+		    isPendentAlcoholLevel = false;
+		    isNegativeAlcoholLevel = false;
+		}
+		if (level == 4) {//isPendentAlcoholLevel                
+		    isNoDataAlcoholLevelDisabled = true;
+		    isUnknownAlcoholLevelDisabled = true;
+		    isPendentAlcoholLevelDisabled = false;
+		    isNegativeAlcoholLevelDisabled = true;
+		    currentAlcoholLevelDisabled = true;
+		    currentAlcoholLevel = "";
+		    isNoDataAlcoholLevel = false;
+		    isUnknownAlcoholLevel = false;
+		    isPendentAlcoholLevel = true;
+		    isNegativeAlcoholLevel = false;
+		}
+		if (level == 5) {//isNegativeAlcoholLevel
+
+		    isNoDataAlcoholLevelDisabled = true;
+		    isUnknownAlcoholLevelDisabled = true;
+		    isPendentAlcoholLevelDisabled = true;
+		    isNegativeAlcoholLevelDisabled = false;
+		    currentAlcoholLevelDisabled = true;
+		    currentAlcoholLevel = "";
+		    isNoDataAlcoholLevel = false;
+		    isUnknownAlcoholLevel = false;
+		    isPendentAlcoholLevel = false;
+		    isNegativeAlcoholLevel = true;
+		}
+	    } catch (Exception e) {
+		isNoDataAlcoholLevelDisabled = false;
+		isUnknownAlcoholLevelDisabled = false;
+		isPendentAlcoholLevelDisabled = false;
+		isNegativeAlcoholLevelDisabled = false;
+		currentAlcoholLevelDisabled = false;
+		currentAlcoholLevel = "";
+		isNoDataAlcoholLevel = false;
+		isUnknownAlcoholLevel = false;
+		isPendentAlcoholLevel = false;
+		isNegativeAlcoholLevel = false;
+	    }
+	}
+	//******code
+	currentCode = currentFatalInjuryAccident.getFatalInjuries().getCode();
+	if (currentCode == null) {
+	    currentWeekdayEvent = "";
+	}
+	//******area_id
+	try {
+	    currentArea = currentFatalInjuryAccident.getFatalInjuries().getAreaId().getAreaId();
+	} catch (Exception e) {
+	    currentArea = 0;
+	}
+	//------------------------------------------------------------
+	//SE CARGA DATOS PARA LA NUEVA LESION FATAL POR MUERTE ACCIODENTAL
+	//------------------------------------------------------------
+	//******number_non_fatal_victims
+	if (currentFatalInjuryAccident.getNumberNonFatalVictims() != null) {
+	    currentNumberInjured = String.valueOf(currentFatalInjuryAccident.getNumberNonFatalVictims());
+	}
+	//******death_mechanism_id
+	if (currentFatalInjuryAccident.getDeathMechanismId() != null) {
+	    currentAccidentMechanisms = currentFatalInjuryAccident.getDeathMechanismId().getAccidentMechanismId();
+	}
+	//******fatal_injury_id
+    }
+
+    private boolean saveRegistry() {
+	validationsErrors = new ArrayList<String>();
+	try {
+	    //------------------------------------------------------------
+	    //SE CREA VARIABLE PARA LA NUEVA VICTIMA
+	    //------------------------------------------------------------
+	    Victims newVictim = new Victims();
+	    //******type_id	    
+	    if (currentIdentification != 0) {
+		newVictim.setTypeId(idTypesFacade.find(currentIdentification));
+	    }
+	    //******victim_nid
+	    if (currentIdentificationNumber.trim().length() != 0) {
+		newVictim.setVictimNid(currentIdentificationNumber);
+	    }
+	    //******victim_firstname
+	    if (currentName.trim().length() != 0) {
+		newVictim.setVictimFirstname(currentName);
+	    }
+	    //******victim_lastname
+	    if (currentSurname.trim().length() != 0) {
+		newVictim.setVictimLastname(currentSurname);
+	    }
+	    //******age_type_id
+	    if (currentMeasureOfAge != 0) {
+		newVictim.setAgeTypeId(currentMeasureOfAge);
+	    }
+	    //******victim_age
+	    if (currentAge.trim().length() != 0) {
+		try {
+		    newVictim.setVictimAge(Short.parseShort(currentAge));
+		} catch (Exception e) {
+		    validationsErrors.add("Corregir valor de: Edad Cantidad");
+		}
+	    }
+	    //******gender_id
+	    if (currentGender != 0) {
+		newVictim.setGenderId(gendersFacade.find(currentGender));
+	    }
+	    //******job_id
+	    if (currentJob != 0) {
+		newVictim.setJobId(jobsFacade.find(currentJob));
+	    }
+	    //******vulnerable_group_id
+	    //******ethnic_group_id
+	    //******victim_telephone
+	    //******victim_address
+	    //******victim_neighborhood_id
+	    //******victim_date_of_birth
+	    //******eps_id
+	    //******victim_class
+	    //******victim_id
+	    newVictim.setVictimId(victimsFacade.findMax() + 1);
+	    //******residence_municipality
+	    newVictim.setResidenceMunicipality(currentMunicipalitie);
+
+	    //------------------------------------------------------------
+	    //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA FATAL
+	    //------------------------------------------------------------
+	    FatalInjuries newFatalInjurie = new FatalInjuries();
+	    //******injury_id
+	    newFatalInjurie.setInjuryId(injuriesFacade.find((short) 13));//es 13 por ser muerte accidental
+	    //******injury_date
+	    if (currentDateEvent.trim().length() != 0) {
+		newFatalInjurie.setInjuryDate(formato.parse(currentDateEvent));
+	    }
+	    //******injury_time
+	    if (currentMilitaryHourEvent.trim().length() != 0) {
+		try {
+		    if (currentAmPmEvent.compareTo("PM") == 0) {
+			currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) + 12);
+		    }
+		    int hourInt = Integer.parseInt(currentHourEvent);
+		    int minuteInt = Integer.parseInt(currentMinuteEvent);
+		    if (hourInt > 12 && hourInt < 0) {
+			validationsErrors.add("Corregir la hora del hecho");
+		    } else {
+			if (minuteInt > 59 && minuteInt < 0) {
+			    validationsErrors.add("Corregir la hora del hecho");
+			} else {
+			    newFatalInjurie.setInjuryTime(new Time(hourInt, minuteInt, 0));
+			}
+		    }
+
+		} catch (Exception e) {
+		    validationsErrors.add("Corregir la hora del hecho");
+		}
+	    }
+	    //******injury_address
+	    if (currentDirectionEvent.trim().length() != 0) {
+		newFatalInjurie.setInjuryAddress(currentDirectionEvent);
+	    }
+	    //******injury_neighborhood_id
+	    if (currentNeighborhoodEventCode.trim().length() != 0) {
+		newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(currentNeighborhoodEventCode));
+	    }
+	    //******injury_place_id
+	    if (currentPlace != 0) {
+		newFatalInjurie.setInjuryPlaceId(placesFacade.find(currentPlace));
+	    }
+	    //******victim_number
+	    if (currentNumberVictims.trim().length() != 0) {
+		try {
+		    newFatalInjurie.setVictimNumber(Short.parseShort(currentNumberVictims));
+		} catch (Exception e) {
+		    validationsErrors.add("Corregir el numero de victimas");
+		}
+	    }
+	    //******injury_description
+	    if (currentNarrative.trim().length() != 0) {
+		newFatalInjurie.setInjuryDescription(currentNarrative);
+	    }
+	    try {
+		newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
+	    } catch (Exception e) {
+		System.out.println("*******************************************ERROR_A1: " + e.toString());
+	    }
+	    //******user_id	
+	    newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
+	    //******input_timestamp	
+	    newFatalInjurie.setInputTimestamp(new Date());//momento en que se capturo el registro
+	    //******injury_day_of_week
+	    if (currentWeekdayEvent.trim().length() != 0) {
+		newFatalInjurie.setInjuryDayOfWeek(currentWeekdayEvent);
+	    }
+	    //******victim_id
+	    newFatalInjurie.setVictimId(newVictim);
+	    //******fatal_injury_id
+	    newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+	    //******alcohol_level_victim_id, alcohol_level_victim
+	    if (currentAlcoholLevel.trim().length() != 0) {
+		try {
+		    newFatalInjurie.setAlcoholLevelVictim(Short.parseShort(currentAlcoholLevel));
+		    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find((short) 1));//con dato
+		} catch (Exception e) {
+		    validationsErrors.add("Corregir el nivel de alcohol de la victima");
+		}
+	    } else {
+		if (isNoDataAlcoholLevel) {
+		    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find((short) 2));//sin dato
+		}
+		if (isUnknownAlcoholLevel) {
+		    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find((short) 3));//no suministrado
+		}
+		if (isPendentAlcoholLevel) {
+		    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find((short) 4));//pendiente
+		}
+		if (isNegativeAlcoholLevel) {
+		    newFatalInjurie.setAlcoholLevelVictimId(alcoholLevelsFacade.find((short) 5));//negativo
+		}
+	    }
+	    //******code
+	    if (currentCode.trim().length() != 0) {
+		newFatalInjurie.setCode(currentCode);
+	    }
+	    //******area_id
+	    if (currentArea != 0) {
+		newFatalInjurie.setAreaId(areasFacade.find(currentArea));
+	    }
+	    //------------------------------------------------------------
+	    //SE CREA VARIABLE PARA LA NUEVA LESION FATAL POR ACCIDENTE
+	    //------------------------------------------------------------
+	    FatalInjuryAccident newFatalInjuryAccident = new FatalInjuryAccident();
+	    //******number_non_fatal_victims
+	    if (currentNumberInjured.trim().length() != 0) {
+		newFatalInjuryAccident.setNumberNonFatalVictims(Short.parseShort(currentNumberInjured));
+	    }
+	    //******death_mechanism_id
+	    if (currentAccidentMechanisms != 0) {
+		newFatalInjuryAccident.setDeathMechanismId(accidentMechanismsFacade.find(currentAccidentMechanisms));
+	    }
+	    //******fatal_injury_id
+	    newFatalInjuryAccident.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
+
+	    //-------------------------------------------------------------------------------
+	    if (validationsErrors.isEmpty()) {
+		openDialogFirst = "";
+		openDialogNext = "";
+		openDialogLast = "";
+		openDialogPrevious = "";
+		openDialogNew = "";
+		openDialogDelete = "";
+		if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
+		    System.out.println("guardando nuevo registro");
+		    victimsFacade.create(newVictim);
+		    fatalInjuriesFacade.create(newFatalInjurie);
+		    fatalInjuryAccidentFacade.create(newFatalInjuryAccident);
+		    save = true;
+		    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
+		    FacesContext.getCurrentInstance().addMessage(null, msg);
+		} else {//ES UN REGISTRO EXISTENTE SE DEBE ACTUALIZAR
+		    System.out.println("actualizando registro existente");
+		    updateRegistry(newVictim, newFatalInjurie, newFatalInjuryAccident);
+		    save = true;
+		    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "REGISTRO ACTUALIZADO");
+		    FacesContext.getCurrentInstance().addMessage(null, msg);
+		}
+		return true;
+	    } else {
+		for (int i = 0; i < validationsErrors.size(); i++) {
+		    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de validación", validationsErrors.get(i));
+		    FacesContext.getCurrentInstance().addMessage(null, msg);
+		}
+		return false;
 	    }
 
 	} catch (Exception e) {
 	    System.out.println("*******************************************ERROR: " + e.toString());
+	    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
+	    FacesContext.getCurrentInstance().addMessage(null, msg);
+	    return false;
 	}
+    }
+
+    private void updateRegistry(Victims victim, FatalInjuries fatalInjurie, FatalInjuryAccident fatalInjuryAccident) {
+	try {
+	    //------------------------------------------------------------
+	    //DATOS VICTIMA
+	    //------------------------------------------------------------
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setTypeId(victim.getTypeId());
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setVictimNid(victim.getVictimNid());
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setVictimFirstname(victim.getVictimFirstname());
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setVictimLastname(victim.getVictimLastname());
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setAgeTypeId(victim.getAgeTypeId());
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setVictimAge(victim.getVictimAge());
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setGenderId(victim.getGenderId());
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setJobId(victim.getJobId());
+	    //newVictim.setVulnerableGroupId(v);
+	    //newVictim.setEthnicGroupId(et);
+	    //newVictim.setVictimTelephone();
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setVictimAddress(victim.getVictimAddress());
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setVictimNeighborhoodId(victim.getVictimNeighborhoodId());
+	    currentFatalInjuryAccident.getFatalInjuries().getVictimId().setResidenceMunicipality(victim.getResidenceMunicipality());
+	    //newVictim.setEpsId(null);
+	    //newVictim.setVictimClass();//si victima es nn
+
+	    //------------------------------------------------------------
+	    //DATOS LESION DE CAUSA EXTERNA FATAL
+	    //------------------------------------------------------------
+	    //FatalInjuries newFatalInjurie = new FatalInjuries();
+	    //newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+	    //newFatalInjurie.setInjuryId(injuriesFacade.find((short) 10));//es 10 por ser homicidio
+
+	    currentFatalInjuryAccident.getFatalInjuries().setInjuryDate(fatalInjurie.getInjuryDate());
+	    currentFatalInjuryAccident.getFatalInjuries().setInjuryTime(fatalInjurie.getInjuryTime());
+	    currentFatalInjuryAccident.getFatalInjuries().setInjuryAddress(fatalInjurie.getInjuryAddress());
+	    currentFatalInjuryAccident.getFatalInjuries().setInjuryNeighborhoodId(fatalInjurie.getInjuryNeighborhoodId());
+	    currentFatalInjuryAccident.getFatalInjuries().setInjuryPlaceId(fatalInjurie.getInjuryPlaceId());
+	    currentFatalInjuryAccident.getFatalInjuries().setVictimNumber(fatalInjurie.getVictimNumber());
+	    currentFatalInjuryAccident.getFatalInjuries().setInjuryDescription(fatalInjurie.getInjuryDescription());
+	    //currentFatalInjuryAccident.getFatalInjuries().setUserId(fatalInjurie.getUserId());
+	    //currentFatalInjuryAccident.getFatalInjuries().setInputTimestamp(fatalInjurie.getInputTimestamp());
+	    currentFatalInjuryAccident.getFatalInjuries().setInjuryDayOfWeek(fatalInjurie.getInjuryDayOfWeek());
+	    currentFatalInjuryAccident.getFatalInjuries().setAlcoholLevelVictim(fatalInjurie.getAlcoholLevelVictim());
+	    currentFatalInjuryAccident.getFatalInjuries().setAlcoholLevelVictimId(fatalInjurie.getAlcoholLevelVictimId());
+	    currentFatalInjuryAccident.getFatalInjuries().setCode(fatalInjurie.getCode());
+	    currentFatalInjuryAccident.getFatalInjuries().setAreaId(fatalInjurie.getAreaId());
+
+	    //------------------------------------------------------------
+	    //DATOS LESION FATAL POR ACCIDENTE
+	    //------------------------------------------------------------
+	    currentFatalInjuryAccident.setNumberNonFatalVictims(fatalInjuryAccident.getNumberNonFatalVictims());
+	    currentFatalInjuryAccident.setDeathMechanismId(fatalInjuryAccident.getDeathMechanismId());	    
+	    
+	    victimsFacade.edit(currentFatalInjuryAccident.getFatalInjuries().getVictimId());
+	    fatalInjuriesFacade.edit(currentFatalInjuryAccident.getFatalInjuries());
+	    fatalInjuryAccidentFacade.edit(currentFatalInjuryAccident);
+	    System.out.println("registro actualizado");
+
+	} catch (Exception e) {
+	    System.out.println("*******************************************ERROR: " + e.toString());
+	    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
+	    FacesContext.getCurrentInstance().addMessage(null, msg);
+	}
+    }
+
+    public void determinePosition() {
+
+	totalRegisters = fatalInjuryAccidentFacade.count();
+	if (currentFatalInjuriId == -1) {
+	    currentPosition = "new" + "/" + String.valueOf(totalRegisters);
+	    openDialogDelete = "";//es nuevo no se puede borrar
+	} else {
+	    int position = fatalInjuryAccidentFacade.findPosition(currentFatalInjuryAccident.getFatalInjuryId());
+	    currentPosition = position + "/" + String.valueOf(totalRegisters);
+	    openDialogDelete = "dialogDelete.show();";
+	}
+	if (!save) {
+	    currentPosition = currentPosition + " *";
+	}
+	System.out.println("POSICION DETERMINADA: " + currentPosition);
+	//FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Posicion", String.valueOf(currentFatalInjuriId));
+	//FacesContext.getCurrentInstance().addMessage(null, msg);
+    }
+
+    public void saveAndGoNext() {//guarda cambios si se han realizado y se dirije al siguiente
+	if (saveRegistry()) {
+	    next();
+	} else {
+	    System.out.println("No se guardo");
+	}
+    }
+
+    public void saveAndGoPrevious() {//guarda cambios si se han realizado y se dirije al anterior
+	if (saveRegistry()) {
+	    previous();
+	}
+    }
+
+    public void saveAndGoFirst() {//guarda cambios si se han realizado y se dirije al primero
+	if (saveRegistry()) {
+	    first();
+	}
+    }
+
+    public void saveAndGoLast() {//guarda cambios si se han realizado y se dirije al ultimo
+	if (saveRegistry()) {
+	    last();
+	}
+    }
+
+    public void saveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
+	if (saveRegistry()) {
+	    newForm();
+	}
+    }
+
+    public void noSaveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
+	openDialogFirst = "";
+	openDialogNext = "";
+	openDialogLast = "";
+	openDialogPrevious = "";
+	openDialogNew = "";
+	openDialogDelete = "";
+	save = true;
+	newForm();
+
+    }
+
+    public void noSaveAndGoNext() {//va al siguiente sin guardar cambios si se han realizado
+	openDialogFirst = "";
+	openDialogNext = "";
+	openDialogLast = "";
+	openDialogPrevious = "";
+	openDialogNew = "";
+	openDialogDelete = "";
+	save = true;
+	next();
+    }
+
+    public void noSaveAndGoPrevious() {//va al anterior sin guardar cambios si se han realizado
+	openDialogFirst = "";
+	openDialogNext = "";
+	openDialogLast = "";
+	openDialogPrevious = "";
+	openDialogNew = "";
+	openDialogDelete = "";
+	save = true;
+	previous();
+    }
+
+    public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
+	openDialogFirst = "";
+	openDialogNext = "";
+	openDialogLast = "";
+	openDialogPrevious = "";
+	openDialogNew = "";
+	openDialogDelete = "";
+	save = true;
+	first();
+    }
+
+    public void noSaveAndGoLast() {//va al ultimo sin guardar cambios si se han realizado
+	openDialogFirst = "";
+	openDialogNext = "";
+	openDialogLast = "";
+	openDialogPrevious = "";
+	openDialogNew = "";
+	openDialogDelete = "";
+	save = true;
+	last();
+    }
+
+    public void next() {
+	if (save) {//se busca el siguiente se el registro esta guardado (si esta guardado se abrira un dialogo que pregunta si guardar)             
+	    System.out.println("cargando siguiente registro");
+	    if (currentFatalInjuriId == -1) {//esta en registro nuevo                
+	    } else {
+		auxFatalInjuryAccident = fatalInjuryAccidentFacade.findNext(currentFatalInjuriId);
+		if (auxFatalInjuryAccident != null) {
+		    clearForm();
+		    currentFatalInjuryAccident = auxFatalInjuryAccident;
+		    currentFatalInjuriId = currentFatalInjuryAccident.getFatalInjuryId();
+		    determinePosition();
+		    loadValues();
+		}
+	    }
+	} else {
+	    System.out.println("No esta guardadado (para poder cargar siguiente registro)");
+	}
+    }
+
+    public void previous() {
+	if (save) {
+	    System.out.println("cargando anterior registro");
+	    if (currentFatalInjuriId == -1) {//esta en registro nuevo
+		last();
+		determinePosition();
+	    } else {
+		auxFatalInjuryAccident = fatalInjuryAccidentFacade.findPrevious(currentFatalInjuriId);
+		if (auxFatalInjuryAccident != null) {
+		    clearForm();
+		    currentFatalInjuryAccident = auxFatalInjuryAccident;
+		    currentFatalInjuriId = currentFatalInjuryAccident.getFatalInjuryId();
+		    determinePosition();
+		    loadValues();
+		}
+	    }
+	} else {
+	    System.out.println("No esta guardadado (para poder cargar anterior registro)");
+	}
+    }
+
+    public void first() {
+	if (save) {
+	    System.out.println("cargando primer registro");
+	    auxFatalInjuryAccident = fatalInjuryAccidentFacade.findFirst();
+	    if (auxFatalInjuryAccident != null) {
+		clearForm();
+		currentFatalInjuryAccident = auxFatalInjuryAccident;
+		currentFatalInjuriId = currentFatalInjuryAccident.getFatalInjuryId();
+		determinePosition();
+		loadValues();
+	    }
+	} else {
+	    System.out.println("No esta guardadado (para poder cargar primer registro)");
+	}
+    }
+
+    public void last() {
+	if (save) {
+	    System.out.println("cargando ultimo registro");
+	    auxFatalInjuryAccident = fatalInjuryAccidentFacade.findLast();
+	    if (auxFatalInjuryAccident != null) {
+		clearForm();
+		currentFatalInjuryAccident = auxFatalInjuryAccident;
+		currentFatalInjuriId = currentFatalInjuryAccident.getFatalInjuryId();
+		determinePosition();
+		loadValues();
+	    }
+	} else {
+	    System.out.println("No esta guardadado (para poder cargar ultimo registro)");
+	}
+    }
+
+    public void clearForm() {
+	//totalRegisters = fatalInjuryAccidentFacade.count();
+	//currentPosition = "new" + "/" + String.valueOf(totalRegisters);
+	System.out.println("Limpiando formulario");
+	//------------------------------------------------------------
+	//REINICIAR VALORES PARA LA NUEVA VICTIMA
+	//------------------------------------------------------------	
+	currentIdentification = 0;
+	currentIdentificationNumber = "";
+	currentName = "";
+	currentSurname = "";
+	currentMeasureOfAge = 0;
+	currentAge = "";
+	currentGender = 0;
+	currentJob = 0;
+	currentDirectionEvent = "";
+	currentNeighborhoodEventCode = "";
+	currentNeighborhoodEvent = "";
+	//------------------------------------------------------------
+	//REINICIAR VARIABLES LESION DE CAUSA EXTERNA FATAL
+	//------------------------------------------------------------
+	currentDateEvent = "";
+	currentDayEvent = "";
+	currentMonthEvent = "";
+	currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
+	currentHourEvent = "";
+	currentMinuteEvent = "";
+	currentMilitaryHourEvent = "";
+	currentDirectionEvent = "";
+	currentNeighborhoodHomeCode = "";
+	currentNeighborhoodHome = "";
+	currentMunicipalitie = 1;
+	neighborhoodHomeNameDisabled = false;
+	currentPlace = 0;
+	currentNumberVictims = "";
+	currentNarrative = "";
+	currentWeekdayEvent = "";
+	isNoDataAlcoholLevelDisabled = false;
+	isUnknownAlcoholLevelDisabled = false;
+	isPendentAlcoholLevelDisabled = false;
+	isNegativeAlcoholLevelDisabled = false;
+	currentAlcoholLevelDisabled = false;
+	currentAlcoholLevel = "";
+	isNoDataAlcoholLevel = false;
+	isUnknownAlcoholLevel = false;
+	isPendentAlcoholLevel = false;
+	isNegativeAlcoholLevel = false;
+	currentCode = "";
+	//------------------------------------------------------------
+	//LIMPIAR PARA LA NUEVA LESION FATAL POR HOMICIDIOS
+	//------------------------------------------------------------
+	currentVictimSource = "";
+	currentAccidentMechanisms = 0;
+	currentArea = 0;
+    }
+
+    public void newForm() {
+	//currentFatalInjuryTraffic = null;
+	if (save) {
+	    clearForm();
+	    currentFatalInjuriId = -1;
+	    determinePosition();
+	} else {
+	    System.out.println("No esta guardado (para poder limpiar formulario)");
+	}
+
+    }
+
+    public void deleteRegistry() {
+	if (currentFatalInjuriId != -1) {
+	    fatalInjuryAccidentFacade.remove(currentFatalInjuryAccident);
+	    System.out.println("registro eliminado");
+	} else {
+	    System.out.println("Se esta actualmente en un nuevo registro, no se puede eliminar");
+	}
+	//System.out.println("eliminando registro: '" + openDialogDelete + "'");
     }
 
     //----------------------------------------------------------------------
@@ -363,9 +1033,162 @@ public class AccidentalMB {
     }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    // FUNCIONES CUANDO LISTAS CAMBIAN DE VALOR ----------------------------
+    // FUNCIONES CUANDO LISTAS Y CAMPOS CAMBIAN DE VALOR ----------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+
+    public void findMunicipalities() {
+	Departaments d = departamentsFacade.findById((short) 52);
+	municipalities = new SelectItem[d.getMunicipalitiesList().size()];
+
+	for (int i = 0; i < municipalities.length; i++) {
+	    municipalities[i] = new SelectItem(d.getMunicipalitiesList().get(i).getMunicipalitiesPK().getMunicipalityId(), d.getMunicipalitiesList().get(i).getMunicipalityName());
+	}
+	currentMunicipalitie = d.getMunicipalitiesList().get(0).getMunicipalitiesPK().getMunicipalityId();
+
+
+	if (currentMunicipalitie == 1) {
+	    neighborhoodHomeNameDisabled = false;
+	} else {
+	    neighborhoodHomeNameDisabled = true;
+	    currentNeighborhoodHome = "";
+	    currentNeighborhoodHomeCode = "";
+	}
+    }
+
+    public void changeNumberVictims() {
+	changeForm();
+	try {
+	    int numberInt = Integer.parseInt(currentNumberVictims);
+	    if (numberInt < 0) {
+		currentNumberVictims = "";
+	    }
+
+	} catch (Exception e) {
+	    currentNumberVictims = "";
+	}
+    }
+
+    public void changeNumberInjured() {
+	changeForm();
+	try {
+	    int numberInt = Integer.parseInt(currentNumberInjured);
+	    if (numberInt < 0) {
+		currentNumberInjured = "";
+	    }
+	} catch (Exception e) {
+	    currentNumberInjured = "";
+	}
+    }
+
+    public void changeValueAge() {
+	try {
+	    int ageInt = Integer.parseInt(currentAge);
+	    if (ageInt < 0) {
+		currentAge = "";
+	    }
+
+	} catch (Exception e) {
+	    currentAge = "";
+	}
+    }
+
+    public void changeMunicipalitie() {
+	changeForm();
+	//Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, (short) 52);
+	if (currentMunicipalitie == 1) {
+	    neighborhoodHomeNameDisabled = false;
+	} else {
+	    neighborhoodHomeNameDisabled = true;
+	    currentNeighborhoodHome = "";
+	    currentNeighborhoodHomeCode = "";
+	}
+    }
+
+    public void changeAlcoholLevelNumber() {
+	try {
+	    int alcoholLevel = Integer.parseInt(currentAlcoholLevel);
+	    if (alcoholLevel < 0) {
+		currentAlcoholLevel = "";
+	    }
+	} catch (Exception e) {
+	    currentAlcoholLevel = "";
+	}
+    }
+
+    public void changeForm() {//el formulario fue modificado        
+	openDialogFirst = "dialogFirst.show();";
+	openDialogNext = "dialogNext.show();";
+	openDialogLast = "dialogLast.show();";
+	openDialogPrevious = "dialogPrevious.show();";
+	openDialogNew = "dialogNew.show();";
+	openDialogDelete = "dialogDelete.show();";
+	save = false;
+	determinePosition();
+    }
+
+    public void changeDayEvent() {
+	try {
+	    int dayInt = Integer.parseInt(currentDayEvent);
+	    if (dayInt < 1 || dayInt > 31) {
+		currentDayEvent = "";
+	    }
+	} catch (Exception e) {
+	    currentDayEvent = "";
+	}
+	calculateDate1();
+    }
+
+    public void changeMonthEvent() {
+	try {
+	    int monthInt = Integer.parseInt(currentMonthEvent);
+	    if (monthInt < 1 || monthInt > 12) {
+		currentMonthEvent = "";
+	    }
+	} catch (Exception e) {
+	    currentMonthEvent = "";
+	}
+	calculateDate1();
+    }
+
+    public void changeYearEvent() {
+	try {
+	    int yearInt = Integer.parseInt(currentYearEvent);
+	    if (yearInt < 0) {
+		currentYearEvent = "";
+	    }
+
+	} catch (Exception e) {
+	    currentYearEvent = "";
+	}
+	calculateDate1();
+    }
+
+    public void changeHourEvent() {
+	try {
+	    int hourInt = Integer.parseInt(currentHourEvent);
+	    if (hourInt < 0 || hourInt > 12) {
+		currentHourEvent = "";
+	    }
+
+	} catch (Exception e) {
+	    currentHourEvent = "";
+	}
+	calculateTime1();
+    }
+
+    public void changeMinuteEvent() {
+	try {
+	    int minuteInt = Integer.parseInt(currentMinuteEvent);
+	    if (minuteInt < 0 || minuteInt > 59) {
+		currentMinuteEvent = "";
+	    }
+
+	} catch (Exception e) {
+	    currentMinuteEvent = "";
+	}
+	calculateTime1();
+    }
 
     public void findMunicipalitieCode() {
 	//Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, currentDepartamentHome);
@@ -374,7 +1197,7 @@ public class AccidentalMB {
 	} else {
 	    neighborhoodHomeNameDisabled = true;
 	    currentNeighborhoodHome = "";
-	    currentNeighborhoodHomeCode = 0;
+	    currentNeighborhoodHomeCode = "";
 	}
     }
 
@@ -423,38 +1246,11 @@ public class AccidentalMB {
 	}
     }
 
-//    public void changeOtherInjury() {
-//	if (checkOtherInjury) {
-//	    otherInjuryDisabled = false;
-//
-//	} else {
-//	    otherInjuryDisabled = true;
-//	    txtOtherInjury = "";
-//	}
-//    }
-//
-//    public void changeOtherPlace() {
-//	if (checkOtherPlace) {
-//	    otherPlaceDisabled = false;
-//	} else {
-//	    otherPlaceDisabled = true;
-//	    txtOtherPlace = "";
-//	}
-//    }
-//
-//    public void changeSecurityElements() {
-//	if (currentSecurityElements.compareTo("SI") == 0) {
-//	    displaySecurityElements = "block";
-//	} else {
-//	    displaySecurityElements = "none";
-//	}
-//    }
-
     public void changeNeighborhoodHomeName() {
 	List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
 	for (int i = 0; i < neighborhoodsList.size(); i++) {
 	    if (neighborhoodsList.get(i).getNeighborhoodName().compareTo(currentNeighborhoodHome) == 0) {
-		currentNeighborhoodHomeCode = neighborhoodsList.get(i).getNeighborhoodId();
+		currentNeighborhoodHomeCode = String.valueOf(neighborhoodsList.get(i).getNeighborhoodId());
 		break;
 	    }
 	}
@@ -463,9 +1259,9 @@ public class AccidentalMB {
     public void changeNeighborhoodEvent() {
 	Neighborhoods n = neighborhoodsFacade.findByName(currentNeighborhoodEvent);
 	if (n != null) {
-	    currentNeighborhoodEventCode = n.getNeighborhoodId();
+	    currentNeighborhoodEventCode = String.valueOf(n.getNeighborhoodId());
 	} else {
-	    currentNeighborhoodEventCode = 0;
+	    currentNeighborhoodEventCode = "";
 	}
     }
 
@@ -477,248 +1273,131 @@ public class AccidentalMB {
 	    valueAgeDisabled = false;
 	    currentAge = "";
 	}
-	//System.out.println("----" + currentEthnicGroup + "----" + ethnicGroupsDisabled);
-
     }
-
-//    public void changePlace() {
-//	if (currentPlace == 8) {//8. otro
-//	    otherPlaceDisabled = false;
-//	} else {
-//	    otherPlaceDisabled = true;
-//
-//	}
-//    }
-
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES DE CALCULO DE FECHA Y HORA MILITAR ------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+
+    private String intToDay(int i) {
+	if (i == Calendar.MONDAY) {
+	    return "Lunes";
+	} else if (i == Calendar.TUESDAY) {
+	    return "Martes";
+	} else if (i == Calendar.WEDNESDAY) {
+	    return "Miércoles";
+	} else if (i == Calendar.THURSDAY) {
+	    return "Jueves";
+	} else if (i == Calendar.FRIDAY) {
+	    return "Viernes";
+	} else if (i == Calendar.SATURDAY) {
+	    return "Sábado";
+	} else {//if (i == Calendar.SUNDAY) 
+	    return "Domingo";
+	}
+    }
+
     private void calculateDate1() {
 	try {
 	    fechaI = formato.parse(currentDayEvent + "/" + currentMonthEvent + "/" + currentYearEvent);
 	    Calendar cal = Calendar.getInstance();
 	    cal.setTime(fechaI);
 	    currentDateEvent = formato.format(fechaI);
-
-	    if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
-		currentWeekdayEvent = "Lunes";
-	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.TUESDAY) {
-		currentWeekdayEvent = "Martes";
-	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY) {
-		currentWeekdayEvent = "Miércoles";
-	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY) {
-		currentWeekdayEvent = "Jueves";
-	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
-		currentWeekdayEvent = "Viernes";
-	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
-		currentWeekdayEvent = "Sábado";
-	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-		currentWeekdayEvent = "Domingo";
-	    }
-
-
-
+	    currentWeekdayEvent = intToDay(cal.get(Calendar.DAY_OF_WEEK));
 	} catch (ParseException ex) {
-	    // POR FAVOR CORRIJA LA FECHA DEL PRIMER PAGO
+
 	    currentDateEvent = "";
 	    currentWeekdayEvent = "";
 	}
     }
 
-//    private void calculateDate2() {
-//	try {
-//	    fechaI = formato.parse(currentDayConsult + "/" + currentMonthConsult + "/" + currentYearConsult);
-//	    Calendar cal = Calendar.getInstance();
-//	    cal.setTime(fechaI);
-//	    currentDateConsult = formato.format(fechaI);
-//	    //currentWeekdayConsult = String.valueOf(cal.get(Calendar.DAY_OF_WEEK));
-//	    if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
-//		currentWeekdayConsult = "Lunes";
-//	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.TUESDAY) {
-//		currentWeekdayConsult = "Martes";
-//	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.WEDNESDAY) {
-//		currentWeekdayConsult = "Miércoles";
-//	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.THURSDAY) {
-//		currentWeekdayConsult = "Jueves";
-//	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
-//		currentWeekdayConsult = "Viernes";
-//	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
-//		currentWeekdayConsult = "Sábado";
-//	    } else if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-//		currentWeekdayConsult = "Domingo";
-//	    }
-//
-//	} catch (ParseException ex) {
-//	    // POR FAVOR CORRIJA LA FECHA DEL PRIMER PAGO
-//	    currentDateConsult = "";
-//	    currentWeekdayConsult = "";
-//	}
-//    }
-
-    private void calculateTime1() {
-	int hourInt;
-	int minuteInt;
-	int timeInt;
-	try {
-	    hourInt = Integer.parseInt(currentHourEvent);
-	} catch (Exception ex) {
-	    hourInt = 0;
-	}
-	try {
-	    minuteInt = Integer.parseInt(currentMinuteEvent);
-	} catch (Exception ex) {
-	    minuteInt = 0;
-	}
-	try {
-	    if (currentAmPmEvent.length() != 0) {
-		String hourStr;
-		String minuteStr;
-		String timeStr;
-		boolean continuar = true;
-		if (hourInt > 0 && hourInt < 13 && minuteInt > -1 && minuteInt < 60) {
-		    if (currentAmPmEvent.compareTo("PM") == 0) {//hora PM
-			if (hourInt == 12) {//no existe hora 12
-
-			    currentMilitaryHourEvent = "Error";
-			    continuar = false;
-			}
-			if (continuar) {
-			    hourStr = String.valueOf(hourInt);
-			    minuteStr = String.valueOf(minuteInt);
-			    if (hourStr.length() == 1) {
-				hourStr = "0" + hourStr;
-			    }
-			    if (minuteStr.length() == 1) {
-				minuteStr = "0" + minuteStr;
-			    }
-			    timeStr = hourStr + minuteStr;
-			    timeInt = Integer.parseInt(timeStr);
-			    if (timeInt > 2400) {
-				timeStr = "00" + minuteStr;
-			    }
-			    currentMilitaryHourEvent = timeStr;
-			}
-		    } else {//hora AM
-			if (hourInt == 12) {
-			    hourInt = hourInt + 12;
-			}
-		    }
-		    if (continuar) {
-			hourStr = String.valueOf(hourInt);
-			minuteStr = String.valueOf(minuteInt);
-			if (hourStr.length() == 1) {
-			    hourStr = "0" + hourStr;
-			}
-			if (minuteStr.length() == 1) {
-			    minuteStr = "0" + minuteStr;
-			}
-			timeStr = hourStr + minuteStr;
-			timeInt = Integer.parseInt(timeStr);
-			if (timeInt > 2400) {
-			    timeStr = "00" + minuteStr;
-			}
-			currentMilitaryHourEvent = timeStr;
-		    }
-
-		} else {
-		    currentMilitaryHourEvent = "Error";
-		}
-	    }
-	} catch (Exception ex) {
-
-	    currentMilitaryHourEvent = "Error  " + ex.toString();
-	}
+   private boolean calculateTime1() {
+        int hourInt = 0;
+        int minuteInt = 0;
+        int timeInt = 0;
+        boolean continuar = true;
+        try {
+            hourInt = Integer.parseInt(currentHourEvent);
+        } catch (Exception ex) {
+            continuar = false;
+            currentMilitaryHourEvent = "";
+        }
+        try {
+            minuteInt = Integer.parseInt(currentMinuteEvent);
+        } catch (Exception ex) {
+            continuar = false;
+            currentMilitaryHourEvent = "";
+        }
+        if (continuar) {
+            try {
+                if (currentAmPmEvent.length() != 0) {
+                    String hourStr;
+                    String minuteStr;
+                    String timeStr;
+                    if (hourInt > 0 && hourInt < 13 && minuteInt > -1 && minuteInt < 60) {
+                        if (currentAmPmEvent.compareTo("PM") == 0) {//hora PM
+                            
+                            if (hourInt != 12) {
+                                hourInt = hourInt + 12;
+                            }
+                            if (continuar) {
+                                hourStr = String.valueOf(hourInt);
+                                minuteStr = String.valueOf(minuteInt);
+                                if (hourStr.length() == 1) {
+                                    hourStr = "0" + hourStr;
+                                }
+                                if (minuteStr.length() == 1) {
+                                    minuteStr = "0" + minuteStr;
+                                }
+                                timeStr = hourStr + minuteStr;
+                                timeInt = Integer.parseInt(timeStr);
+                                if (timeInt > 2400) {
+                                    timeStr = "00" + minuteStr;
+                                }
+                                currentMilitaryHourEvent = timeStr;
+                            }
+                        } else {//hora AM
+                            if (hourInt == 12) {
+                                hourInt = hourInt + 12;
+                            }
+                        }
+                        if (continuar) {
+                            hourStr = String.valueOf(hourInt);
+                            minuteStr = String.valueOf(minuteInt);
+                            if (hourStr.length() == 1) {
+                                hourStr = "0" + hourStr;
+                            }
+                            if (minuteStr.length() == 1) {
+                                minuteStr = "0" + minuteStr;
+                            }
+                            timeStr = hourStr + minuteStr;
+                            timeInt = Integer.parseInt(timeStr);
+                            if (timeInt > 2400) {
+                                timeStr = "00" + minuteStr;
+                            }
+                            currentMilitaryHourEvent = timeStr;
+                        }
+                    } else {
+                        currentMilitaryHourEvent = "";
+                        continuar = false;
+                    }
+                }
+            } catch (Exception ex) {
+                currentMilitaryHourEvent = "" + ex.toString();
+                continuar = false;
+            }
+        } else {
+            currentMilitaryHourEvent = "";
+            return false;
+        }
+        return continuar;
     }
-
-//    private void calculateTime2() {
-//	int hourInt;
-//	int minuteInt;
-//	int timeInt;
-//	try {
-//	    hourInt = Integer.parseInt(currentHourConsult);
-//	} catch (Exception ex) {
-//	    hourInt = 0;
-//	}
-//	try {
-//	    minuteInt = Integer.parseInt(currentMinuteConsult);
-//	} catch (Exception ex) {
-//	    minuteInt = 0;
-//	}
-//	try {
-//	    if (currentAmPmConsult.length() != 0) {
-//		String hourStr;
-//		String minuteStr;
-//		String timeStr;
-//		boolean continuar = true;
-//		if (hourInt > 0 && hourInt < 13 && minuteInt > -1 && minuteInt < 60) {
-//		    if (currentAmPmConsult.compareTo("PM") == 0) {//hora PM
-//			if (hourInt == 12) {//no existe hora 12
-//
-//			    currentMilitaryHourConsult = "Error";
-//			    continuar = false;
-//			}
-//			if (continuar) {
-//			    hourStr = String.valueOf(hourInt);
-//			    minuteStr = String.valueOf(minuteInt);
-//			    if (hourStr.length() == 1) {
-//				hourStr = "0" + hourStr;
-//			    }
-//			    if (minuteStr.length() == 1) {
-//				minuteStr = "0" + minuteStr;
-//			    }
-//			    timeStr = hourStr + minuteStr;
-//			    timeInt = Integer.parseInt(timeStr);
-//			    if (timeInt > 2400) {
-//				timeStr = "00" + minuteStr;
-//			    }
-//			    currentMilitaryHourConsult = timeStr;
-//			}
-//		    } else {//hora AM
-//			if (hourInt == 12) {
-//			    hourInt = hourInt + 12;
-//			}
-//		    }
-//		    if (continuar) {
-//			hourStr = String.valueOf(hourInt);
-//			minuteStr = String.valueOf(minuteInt);
-//			if (hourStr.length() == 1) {
-//			    hourStr = "0" + hourStr;
-//			}
-//			if (minuteStr.length() == 1) {
-//			    minuteStr = "0" + minuteStr;
-//			}
-//			timeStr = hourStr + minuteStr;
-//			timeInt = Integer.parseInt(timeStr);
-//			if (timeInt > 2400) {
-//			    timeStr = "00" + minuteStr;
-//			}
-//			currentMilitaryHourConsult = timeStr;
-//		    }
-//
-//		} else {
-//		    currentMilitaryHourConsult = "Error";
-//		}
-//	    }
-//	} catch (Exception ex) {
-//
-//	    currentMilitaryHourConsult = "Error  " + ex.toString();
-//	}
-//    }
-
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // GET Y SET DE VARIABLES ----------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-//    public String getCurrentMedicalHistory() {
-//	return currentMedicalHistory;
-//    }
-
-//    public void setCurrentMedicalHistory(String currentMedicalHistory) {
-//	this.currentMedicalHistory = currentMedicalHistory;
-//    }
 
     public SelectItem[] getIdentifications() {
 	return identifications;
@@ -752,15 +1431,6 @@ public class AccidentalMB {
 	this.municipalities = municipalities;
     }
 
-//    public String getCurrentAmPmConsult() {
-//	return currentAmPmConsult;
-//    }
-//
-//    public void setCurrentAmPmConsult(String currentAmPmConsult) {
-//	this.currentAmPmConsult = currentAmPmConsult;
-//	calculateTime2();
-//    }
-
     public String getCurrentAmPmEvent() {
 	return currentAmPmEvent;
     }
@@ -770,14 +1440,6 @@ public class AccidentalMB {
 	calculateTime1();
     }
 
-//    public String getCurrentDateConsult() {
-//	return currentDateConsult;
-//    }
-//
-//    public void setCurrentDateConsult(String currentDateConsult) {
-//	this.currentDateConsult = currentDateConsult;
-//    }
-
     public String getCurrentDateEvent() {
 	return currentDateEvent;
     }
@@ -785,15 +1447,6 @@ public class AccidentalMB {
     public void setCurrentDateEvent(String currentDateEvent) {
 	this.currentDateEvent = currentDateEvent;
     }
-
-//    public String getCurrentDayConsult() {
-//	return currentDayConsult;
-//    }
-//
-//    public void setCurrentDayConsult(String currentDayConsult) {
-//	this.currentDayConsult = currentDayConsult;
-//	calculateDate2();
-//    }
 
     public String getCurrentDayEvent() {
 	return currentDayEvent;
@@ -804,15 +1457,6 @@ public class AccidentalMB {
 	calculateDate1();
     }
 
-//    public String getCurrentHourConsult() {
-//	return currentHourConsult;
-//    }
-//
-//    public void setCurrentHourConsult(String currentHourConsult) {
-//	this.currentHourConsult = currentHourConsult;
-//	calculateTime2();
-//    }
-
     public String getCurrentHourEvent() {
 	return currentHourEvent;
     }
@@ -822,14 +1466,6 @@ public class AccidentalMB {
 	calculateTime1();
     }
 
-//    public String getCurrentMilitaryHourConsult() {
-//	return currentMilitaryHourConsult;
-//    }
-//
-//    public void setCurrentMilitaryHourConsult(String currentMilitaryHourConsult) {
-//	this.currentMilitaryHourConsult = currentMilitaryHourConsult;
-//    }
-
     public String getCurrentMilitaryHourEvent() {
 	return currentMilitaryHourEvent;
     }
@@ -837,15 +1473,6 @@ public class AccidentalMB {
     public void setCurrentMilitaryHourEvent(String currentMilitaryHourEvent) {
 	this.currentMilitaryHourEvent = currentMilitaryHourEvent;
     }
-
-//    public String getCurrentMinuteConsult() {
-//	return currentMinuteConsult;
-//    }
-//
-//    public void setCurrentMinuteConsult(String currentMinuteConsult) {
-//	this.currentMinuteConsult = currentMinuteConsult;
-//	calculateTime2();
-//    }
 
     public String getCurrentMinuteEvent() {
 	return currentMinuteEvent;
@@ -856,15 +1483,6 @@ public class AccidentalMB {
 	calculateTime1();
     }
 
-//    public String getCurrentMonthConsult() {
-//	return currentMonthConsult;
-//    }
-//
-//    public void setCurrentMonthConsult(String currentMonthConsult) {
-//	this.currentMonthConsult = currentMonthConsult;
-//	calculateDate2();
-//    }
-
     public String getCurrentMonthEvent() {
 	return currentMonthEvent;
     }
@@ -874,14 +1492,6 @@ public class AccidentalMB {
 	calculateDate1();
     }
 
-//    public String getCurrentWeekdayConsult() {
-//	return currentWeekdayConsult;
-//    }
-//
-//    public void setCurrentWeekdayConsult(String currentWeekdayConsult) {
-//	this.currentWeekdayConsult = currentWeekdayConsult;
-//    }
-
     public String getCurrentWeekdayEvent() {
 	return currentWeekdayEvent;
     }
@@ -889,16 +1499,6 @@ public class AccidentalMB {
     public void setCurrentWeekdayEvent(String currentWeekdayEvent) {
 	this.currentWeekdayEvent = currentWeekdayEvent;
     }
-
-//    public String getCurrentYearConsult() {
-//	return currentYearConsult;
-//
-//    }
-//
-//    public void setCurrentYearConsult(String currentYearConsult) {
-//	this.currentYearConsult = currentYearConsult;
-//	calculateDate2();
-//    }
 
     public String getCurrentYearEvent() {
 	return currentYearEvent;
@@ -936,318 +1536,6 @@ public class AccidentalMB {
     public void setNeighborhoodHomeNameDisabled(boolean neighborhoodHomeNameDisabled) {
 	this.neighborhoodHomeNameDisabled = neighborhoodHomeNameDisabled;
     }
-
-//    public boolean isOtherActivityDisabled() {
-//	return otherActivityDisabled;
-//    }
-//
-//    public void setOtherActivityDisabled(boolean otherActivityDisabled) {
-//	this.otherActivityDisabled = otherActivityDisabled;
-//    }
-//
-//    public boolean isOtherIntentDisabled() {
-//	return otherIntentDisabled;
-//    }
-//
-//    public void setOtherIntentDisabled(boolean otherIntentDisabled) {
-//	this.otherIntentDisabled = otherIntentDisabled;
-//    }
-//
-//    public boolean isOtherPlaceDisabled() {
-//	return otherPlaceDisabled;
-//    }
-//
-//    public void setOtherPlaceDisabled(boolean otherPlaceDisabled) {
-//	this.otherPlaceDisabled = otherPlaceDisabled;
-//    }
-//
-//    public String getDisasterWhich() {
-//	return disasterWhich;
-//    }
-//
-//    public void setDisasterWhich(String disasterWhich) {
-//	this.disasterWhich = disasterWhich;
-//    }
-//
-//    public boolean isDisasterWhichDisabled() {
-//	return disasterWhichDisabled;
-//    }
-//
-//    public void setDisasterWhichDisabled(boolean disasterWhichDisabled) {
-//	this.disasterWhichDisabled = disasterWhichDisabled;
-//    }
-//
-//    public String getHeightWhich() {
-//	return heightWhich;
-//    }
-//
-//    public void setHeightWhich(String heightWhich) {
-//	this.heightWhich = heightWhich;
-//    }
-//
-//    public boolean isHeightWhichDisabled() {
-//	return heightWhichDisabled;
-//    }
-//
-//    public void setHeightWhichDisabled(boolean heightWhichDisabled) {
-//	this.heightWhichDisabled = heightWhichDisabled;
-//    }
-//
-//    public String getOtherMechanism() {
-//	return otherMechanism;
-//    }
-//
-//    public void setOtherMechanism(String otherMechanism) {
-//	this.otherMechanism = otherMechanism;
-//    }
-//
-//    public boolean isOtherMechanismDisabled() {
-//	return otherMechanismDisabled;
-//    }
-//
-//    public void setOtherMechanismDisabled(boolean otherMechanismDisabled) {
-//	this.otherMechanismDisabled = otherMechanismDisabled;
-//    }
-//
-//    public String getPowderWhich() {
-//	return powderWhich;
-//    }
-//
-//    public void setPowderWhich(String powderWhich) {
-//	this.powderWhich = powderWhich;
-//    }
-//
-//    public boolean isPowderWhichDisabled() {
-//	return powderWhichDisabled;
-//    }
-//
-//    public void setPowderWhichDisabled(boolean powderWhichDisabled) {
-//	this.powderWhichDisabled = powderWhichDisabled;
-//    }
-//
-//    public String getForBurned() {
-//	return forBurned;
-//    }
-//
-//    public void setForBurned(String forBurned) {
-//	this.forBurned = forBurned;
-//    }
-//
-//    public String getOtherTransportCounterpartsType() {
-//	return otherTransportCounterpartsType;
-//    }
-//
-//    public void setOtherTransportCounterpartsType(String otherTransportCounterpartsType) {
-//	this.otherTransportCounterpartsType = otherTransportCounterpartsType;
-//    }
-//
-//    public String getOtherTransportType() {
-//	return otherTransportType;
-//    }
-//
-//    public void setOtherTransportType(String otherTransportType) {
-//	this.otherTransportType = otherTransportType;
-//    }
-//
-//    public boolean isOtherTransportCounterpartsTypeDisabled() {
-//	return otherTransportCounterpartsTypeDisabled;
-//    }
-//
-//    public void setOtherTransportCounterpartsTypeDisabled(boolean otherTransportCounterpartsTypeDisabled) {
-//	this.otherTransportCounterpartsTypeDisabled = otherTransportCounterpartsTypeDisabled;
-//    }
-//
-//    public boolean isOtherTransportTypeDisabled() {
-//	return otherTransportTypeDisabled;
-//    }
-//
-//    public void setOtherTransportTypeDisabled(boolean otherTransportTypeDisabled) {
-//	this.otherTransportTypeDisabled = otherTransportTypeDisabled;
-//    }
-//
-//    public String getOtherTransportUserType() {
-//	return otherTransportUserType;
-//    }
-//
-//    public void setOtherTransportUserType(String otherTransportUserType) {
-//	this.otherTransportUserType = otherTransportUserType;
-//    }
-//
-//    public boolean isOtherTransportUserTypeDisabled() {
-//	return otherTransportUserTypeDisabled;
-//    }
-//
-//    public void setOtherTransportUserTypeDisabled(boolean otherTransportUserTypeDisabled) {
-//	this.otherTransportUserTypeDisabled = otherTransportUserTypeDisabled;
-//    }
-//
-//    public String getDisplaySecurityElements() {
-//	return displaySecurityElements;
-//    }
-//
-//    public void setDisplaySecurityElements(String displaySecurityElements) {
-//	this.displaySecurityElements = displaySecurityElements;
-//    }
-//
-//    public String getCurrentSecurityElements() {
-//	return currentSecurityElements;
-//    }
-//
-//    public void setCurrentSecurityElements(String currentSecurityElements) {
-//	this.currentSecurityElements = currentSecurityElements;
-//    }
-//
-//    public boolean isAggressionPast() {
-//	return aggressionPast;
-//    }
-//
-//    public void setAggressionPast(boolean aggressionPast) {
-//	this.aggressionPast = aggressionPast;
-//    }
-//
-//    public boolean isAggressorGendersDisabled() {
-//	return aggressorGendersDisabled;
-//    }
-//
-//    public void setAggressorGendersDisabled(boolean aggressorGendersDisabled) {
-//	this.aggressorGendersDisabled = aggressorGendersDisabled;
-//    }
-//
-//    public boolean isContextDisabled() {
-//	return contextDisabled;
-//    }
-//
-//    public void setContextDisabled(boolean contextDisabled) {
-//	this.contextDisabled = contextDisabled;
-//    }
-//
-//    public boolean isOtherRelationDisabled() {
-//	return otherRelationDisabled;
-//    }
-//
-//    public void setOtherRelationDisabled(boolean otherRelationDisabled) {
-//	this.otherRelationDisabled = otherRelationDisabled;
-//    }
-//
-//    public boolean isRelationshipToVictimDisabled() {
-//	return relationshipToVictimDisabled;
-//    }
-//
-//    public void setRelationshipToVictimDisabled(boolean relationshipToVictimDisabled) {
-//	this.relationshipToVictimDisabled = relationshipToVictimDisabled;
-//    }
-//
-//    public String getOtherRelation() {
-//	return otherRelation;
-//    }
-//
-//    public void setOtherRelation(String otherRelation) {
-//	this.otherRelation = otherRelation;
-//    }
-//
-//    public String getOtherFactor() {
-//	return otherFactor;
-//    }
-//
-//    public void setOtherFactor(String otherFactor) {
-//	this.otherFactor = otherFactor;
-//    }
-//
-//    public boolean isOtherFactorDisabled() {
-//	return otherFactorDisabled;
-//    }
-//
-//    public void setOtherFactorDisabled(boolean otherFactorDisabled) {
-//	this.otherFactorDisabled = otherFactorDisabled;
-//    }
-//
-//    public boolean isCheckOtherInjury() {
-//	return checkOtherInjury;
-//    }
-//
-//    public void setCheckOtherInjury(boolean checkOtherInjury) {
-//	this.checkOtherInjury = checkOtherInjury;
-//    }
-//
-//    public boolean isCheckOtherPlace() {
-//	return checkOtherPlace;
-//    }
-//
-//    public void setCheckOtherPlace(boolean checkOtherPlace) {
-//	this.checkOtherPlace = checkOtherPlace;
-//    }
-//
-//    public boolean isOtherInjuryDisabled() {
-//	return otherInjuryDisabled;
-//    }
-//
-//    public void setOtherInjuryDisabled(boolean otherInjuryDisabled) {
-//	this.otherInjuryDisabled = otherInjuryDisabled;
-//    }
-//
-//    public boolean isOtherInjuryPlaceDisabled() {
-//	return otherInjuryPlaceDisabled;
-//    }
-//
-//    public void setOtherInjuryPlaceDisabled(boolean otherInjuryPlaceDisabled) {
-//	this.otherInjuryPlaceDisabled = otherInjuryPlaceDisabled;
-//    }
-//
-//    public String getTxtOtherInjury() {
-//	return txtOtherInjury;
-//    }
-//
-//    public void setTxtOtherInjury(String txtOtherInjury) {
-//	this.txtOtherInjury = txtOtherInjury;
-//    }
-//
-//    public String getTxtOtherPlace() {
-//	return txtOtherPlace;
-//    }
-//
-//    public void setTxtOtherPlace(String txtOtherPlace) {
-//	this.txtOtherPlace = txtOtherPlace;
-//    }
-//
-//    public String getOtherDestinationPatient() {
-//	return otherDestinationPatient;
-//    }
-//
-//    public void setOtherDestinationPatient(String otherDestinationPatient) {
-//	this.otherDestinationPatient = otherDestinationPatient;
-//    }
-//
-//    public boolean isOtherDestinationPatientDisabled() {
-//	return otherDestinationPatientDisabled;
-//    }
-//
-//    public void setOtherDestinationPatientDisabled(boolean otherDestinationPatientDisabled) {
-//	this.otherDestinationPatientDisabled = otherDestinationPatientDisabled;
-//    }
-//
-//    public String getDisplayIntentional() {
-//	return displayIntentional;
-//    }
-//
-//    public void setDisplayIntentional(String displayIntentional) {
-//	this.displayIntentional = displayIntentional;
-//    }
-//
-//    public String getDisplayInterpersonalViolence() {
-//	return displayInterpersonalViolence;
-//    }
-//
-//    public void setDisplayInterpersonalViolence(String displayInterpersonalViolence) {
-//	this.displayInterpersonalViolence = displayInterpersonalViolence;
-//    }
-//
-//    public String getDisplayTransport() {
-//	return displayTransport;
-//    }
-//
-//    public void setDisplayTransport(String displayTransport) {
-//	this.displayTransport = displayTransport;
-//    }
 
     public Short getCurrentGender() {
 	return currentGender;
@@ -1289,11 +1577,11 @@ public class AccidentalMB {
 	this.currentMunicipalitie = currentMunicipalitie;
     }
 
-    public int getCurrentNeighborhoodEventCode() {
+    public String getCurrentNeighborhoodEventCode() {
 	return currentNeighborhoodEventCode;
     }
 
-    public void setCurrentNeighborhoodEventCode(int currentNeighborhoodEventCode) {
+    public void setCurrentNeighborhoodEventCode(String currentNeighborhoodEventCode) {
 	this.currentNeighborhoodEventCode = currentNeighborhoodEventCode;
     }
 
@@ -1305,11 +1593,11 @@ public class AccidentalMB {
 	this.currentNeighborhoodHome = currentNeighborhoodHome;
     }
 
-    public int getCurrentNeighborhoodHomeCode() {
+    public String getCurrentNeighborhoodHomeCode() {
 	return currentNeighborhoodHomeCode;
     }
 
-    public void setCurrentNeighborhoodHomeCode(int currentNeighborhoodHomeCode) {
+    public void setCurrentNeighborhoodHomeCode(String currentNeighborhoodHomeCode) {
 	this.currentNeighborhoodHomeCode = currentNeighborhoodHomeCode;
     }
 
@@ -1345,14 +1633,6 @@ public class AccidentalMB {
 	this.currentDirectionEvent = currentDirectionEvent;
     }
 
-//    public String getCurrentDirectionHome() {
-//	return currentDirectionHome;
-//    }
-//
-//    public void setCurrentDirectionHome(String currentDirectionHome) {
-//	this.currentDirectionHome = currentDirectionHome;
-//    }
-
     public String getCurrentIdentificationNumber() {
 	return currentIdentificationNumber;
     }
@@ -1360,22 +1640,6 @@ public class AccidentalMB {
     public void setCurrentIdentificationNumber(String currentIdentificationNumber) {
 	this.currentIdentificationNumber = currentIdentificationNumber;
     }
-
-//    public String getCurrentInsurance() {
-//	return currentInsurance;
-//    }
-//
-//    public void setCurrentInsurance(String currentInsurance) {
-//	this.currentInsurance = currentInsurance;
-//    }
-//
-//    public Short getCurrentLevelBurned() {
-//	return currentLevelBurned;
-//    }
-//
-//    public void setCurrentLevelBurned(Short currentLevelBurned) {
-//	this.currentLevelBurned = currentLevelBurned;
-//    }
 
     public String getCurrentName() {
 	return currentName;
@@ -1385,38 +1649,6 @@ public class AccidentalMB {
 	this.currentName = currentName;
     }
 
-//    public String getCurrentOtherActivitie() {
-//	return currentOtherActivitie;
-//    }
-//
-//    public void setCurrentOtherActivitie(String currentOtherActivitie) {
-//	this.currentOtherActivitie = currentOtherActivitie;
-//    }
-//
-//    public String getCurrentOtherIntentionality() {
-//	return currentOtherIntentionality;
-//    }
-//
-//    public void setCurrentOtherIntentionality(String currentOtherIntentionality) {
-//	this.currentOtherIntentionality = currentOtherIntentionality;
-//    }
-//
-//    public String getCurrentOtherPlace() {
-//	return currentOtherPlace;
-//    }
-//
-//    public void setCurrentOtherPlace(String currentOtherPlace) {
-//	this.currentOtherPlace = currentOtherPlace;
-//    }
-//
-//    public Short getCurrentPercentBurned() {
-//	return currentPercentBurned;
-//    }
-//
-//    public void setCurrentPercentBurned(Short currentPercentBurned) {
-//	this.currentPercentBurned = currentPercentBurned;
-//    }
-
     public String getCurrentSurame() {
 	return currentSurame;
     }
@@ -1425,78 +1657,6 @@ public class AccidentalMB {
 	this.currentSurame = currentSurame;
     }
 
-//    public String getCurrentTelephoneHome() {
-//	return currentTelephoneHome;
-//    }
-//
-//    public void setCurrentTelephoneHome(String currentTelephoneHome) {
-//	this.currentTelephoneHome = currentTelephoneHome;
-//    }
-//
-//    public boolean isIsBeltUse() {
-//	return isBeltUse;
-//    }
-//
-//    public void setIsBeltUse(boolean isBeltUse) {
-//	this.isBeltUse = isBeltUse;
-//    }
-//
-//    public boolean isIsBicycleHelmetUse() {
-//	return isBicycleHelmetUse;
-//    }
-//
-//    public void setIsBicycleHelmetUse(boolean isBicycleHelmetUse) {
-//	this.isBicycleHelmetUse = isBicycleHelmetUse;
-//    }
-//
-//    public boolean isIsDisplaced() {
-//	return isDisplaced;
-//    }
-//
-//    public void setIsDisplaced(boolean isDisplaced) {
-//	this.isDisplaced = isDisplaced;
-//    }
-//
-//    public boolean isIsHandicapped() {
-//	return isHandicapped;
-//    }
-//
-//    public void setIsHandicapped(boolean isHandicapped) {
-//	this.isHandicapped = isHandicapped;
-//    }
-//
-//    public boolean isIsHelmetUse() {
-//	return isHelmetUse;
-//    }
-//
-//    public void setIsHelmetUse(boolean isHelmetUse) {
-//	this.isHelmetUse = isHelmetUse;
-//    }
-//
-//    public boolean isIsMentalDisorder() {
-//	return isMentalDisorder;
-//    }
-//
-//    public void setIsMentalDisorder(boolean isMentalDisorder) {
-//	this.isMentalDisorder = isMentalDisorder;
-//    }
-//
-//    public boolean isIsPreviousAttempt() {
-//	return isPreviousAttempt;
-//    }
-//
-//    public void setIsPreviousAttempt(boolean isPreviousAttempt) {
-//	this.isPreviousAttempt = isPreviousAttempt;
-//    }
-//
-//    public boolean isIsVestUse() {
-//	return isVestUse;
-//    }
-//
-//    public void setIsVestUse(boolean isVestUse) {
-//	this.isVestUse = isVestUse;
-//    }
-
     public String getCurrentSurname() {
 	return currentSurname;
     }
@@ -1504,14 +1664,6 @@ public class AccidentalMB {
     public void setCurrentSurname(String currentSurname) {
 	this.currentSurname = currentSurname;
     }
-
-//    public boolean isIsUnknownNatureOfInjurye() {
-//	return isUnknownNatureOfInjurye;
-//    }
-//
-//    public void setIsUnknownNatureOfInjurye(boolean isUnknownNatureOfInjurye) {
-//	this.isUnknownNatureOfInjurye = isUnknownNatureOfInjurye;
-//    }
 
     public String getCurrentNumberVictims() {
 	return currentNumberVictims;
@@ -1527,22 +1679,6 @@ public class AccidentalMB {
 
     public void setCurrentVictimSource(String currentVictimSource) {
 	this.currentVictimSource = currentVictimSource;
-    }
-
-    public SelectItem[] getAccidentMechanisms() {
-	return accidentMechanisms;
-    }
-
-    public void setAccidentMechanisms(SelectItem[] accidentMechanisms) {
-	this.accidentMechanisms = accidentMechanisms;
-    }
-
-    public String getCurrentAccidentMechanisms() {
-	return currentAccidentMechanisms;
-    }
-
-    public void setCurrentAccidentMechanisms(String currentAccidentMechanisms) {
-	this.currentAccidentMechanisms = currentAccidentMechanisms;
     }
 
     public String getCurrentNarrative() {
@@ -1641,13 +1777,107 @@ public class AccidentalMB {
 	this.areas = areas;
     }
 
-    public String getCurrentArea() {
+    public Short getCurrentArea() {
 	return currentArea;
     }
 
-    public void setCurrentArea(String currentArea) {
+    public void setCurrentArea(Short currentArea) {
 	this.currentArea = currentArea;
     }
-    
-    
+
+    public String getCurrentPosition() {
+	return currentPosition;
+    }
+
+    public void setCurrentPosition(String currentPosition) {
+	this.currentPosition = currentPosition;
+    }
+
+    public String getOpenDialogDelete() {
+	return openDialogDelete;
+    }
+
+    public void setOpenDialogDelete(String openDialogDelete) {
+	this.openDialogDelete = openDialogDelete;
+    }
+
+    public String getOpenDialogFirst() {
+	return openDialogFirst;
+    }
+
+    public void setOpenDialogFirst(String openDialogFirst) {
+	this.openDialogFirst = openDialogFirst;
+    }
+
+    public String getOpenDialogLast() {
+	return openDialogLast;
+    }
+
+    public void setOpenDialogLast(String openDialogLast) {
+	this.openDialogLast = openDialogLast;
+    }
+
+    public String getOpenDialogNew() {
+	return openDialogNew;
+    }
+
+    public void setOpenDialogNew(String openDialogNew) {
+	this.openDialogNew = openDialogNew;
+    }
+
+    public String getOpenDialogNext() {
+	return openDialogNext;
+    }
+
+    public void setOpenDialogNext(String openDialogNext) {
+	this.openDialogNext = openDialogNext;
+    }
+
+    public String getOpenDialogPrevious() {
+	return openDialogPrevious;
+    }
+
+    public void setOpenDialogPrevious(String openDialogPrevious) {
+	this.openDialogPrevious = openDialogPrevious;
+    }
+
+    public int getTotalRegisters() {
+	return totalRegisters;
+    }
+
+    public void setTotalRegisters(int totalRegisters) {
+	this.totalRegisters = totalRegisters;
+    }
+
+    public String getCurrentCode() {
+	return currentCode;
+    }
+
+    public void setCurrentCode(String currentCode) {
+	this.currentCode = currentCode;
+    }
+
+    public String getCurrentNumberInjured() {
+	return currentNumberInjured;
+    }
+
+    public void setCurrentNumberInjured(String currentNumberInjured) {
+	this.currentNumberInjured = currentNumberInjured;
+    }
+
+    public SelectItem[] getAccidentMechanisms() {
+	return accidentMechanisms;
+    }
+
+    public void setAccidentMechanisms(SelectItem[] accidentMechanisms) {
+	this.accidentMechanisms = accidentMechanisms;
+    }
+
+    public Short getCurrentAccidentMechanisms() {
+	return currentAccidentMechanisms;
+    }
+
+    public void setCurrentAccidentMechanisms(Short currentAccidentMechanisms) {
+	this.currentAccidentMechanisms = currentAccidentMechanisms;
+    }
 }

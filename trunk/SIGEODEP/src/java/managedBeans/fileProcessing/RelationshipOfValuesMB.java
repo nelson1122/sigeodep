@@ -36,13 +36,16 @@ public class RelationshipOfValuesMB {
     private String currentVariableExpected = "";//ariable Esperado
     private String currentVariableFound = "";//valor Encontrado
     private String currentValueExpected = "";//valor esperado
-    private String currentValueDiscarded  = "";//valor descartado
+    //private String currentValueDiscarded  = "";//valor descartado
     private List<String> valuesDiscarded;
     private List<String> valuesExpected;
-    private String currentValueFound = "";//valor encontrado
+    //private String currentValueFound = "";//valor encontrado
+    private List<String> valuesFoundSelectedInRelationValues;
+    private List<String> valuesRelatedSelectedInRelationValues;
+    private List<String> valuesDiscardedSelectedInRelationValues;
     private List<String> valuesFound;
     private List<String> valuesRelated;
-    private String currentValuesRelated = "";//valor encontrado
+    //private String currentValuesRelated = "";//valor encontrado
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private Field typeVarExepted;
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
@@ -54,51 +57,30 @@ public class RelationshipOfValuesMB {
         splitValuesRelated = currentCategoricalRelatedVariables.split("->");
         currentVariableExpected = splitValuesRelated[0];
         currentVariableFound = splitValuesRelated[1];
-        currentValueFound = "";
+        //currentValueFound = "";
+        valuesFoundSelectedInRelationValues = new ArrayList<String>();
+        valuesRelatedSelectedInRelationValues = new ArrayList<String>();
+        valuesDiscardedSelectedInRelationValues = new ArrayList<String>();
+
         currentValueExpected = "";
         valuesFound = new ArrayList<String>();
         valuesExpected = new ArrayList<String>();
         valuesRelated = new ArrayList<String>();
         valuesDiscarded = new ArrayList<String>();
-        
+
         btnAssociateRelationValueDisabled = true;
         btnAutomaticRelationValueDisabled = true;
         btnRemoveRelationValueDisabled = true;
         btnDiscardValueDisabled = true;
-        btnRemoveDiscardedValuesDisabled=true;
-        
+        btnRemoveDiscardedValuesDisabled = true;
+
         loadExpectedAndFoundValues();
         loadRelatedAndDiscardedValues();
-
-//        //selecciono cual es la relacion de variables actual
-//        RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
-//        if (relationVarSelected != null) {
-//            //cargo todos los valores esperados y encontrados(en encontrados se aplica DISCTINCT)
-//            loadExpectedValues();
-//            valuesFound = createListOfDistinctValuesFromFile(currentVariableFound);
-//
-//            //saco la lista de valores realcionados
-//            ArrayList<RelationValue> relationValueList = relationVarSelected.getRelationValueList();
-//            //elimino los capos que ya esten relacionados de las listas de 
-//            //valores encontrados no se elimina de la lista de valore esperados
-//            //por que la relacion entre esperados y encontrados es de uno a muchos
-//            for (int i = 0; i < relationValueList.size(); i++) {
-//                for (int j = 0; j < valuesFound.size(); j++) {
-//                    if (relationValueList.get(i).getNameFound().compareTo(valuesFound.get(j)) == 0) {
-//                        valuesFound.remove(j);
-//                        break;
-//                    }
-//                }
-//            }
-//            if (!valuesFound.isEmpty()) {//si quedan valores encontrados se activa la opcion de relacion automatica
-//                btnAutomaticRelationValueDisabled = false;
-//            }
-//        }
     }
 
     public void loadCategoricalRelatedVariables(RelationsGroup relationsGroup) {
-        
-        
+
+
         if (relationsGroup != null) {
             currentRelationsGroup = relationsGroup;
         }
@@ -116,11 +98,11 @@ public class RelationshipOfValuesMB {
         }
         setCategoricalRelatedVariables(variablesRelated);
 
-        btnAssociateRelationValueDisabled=true;
-        btnAutomaticRelationValueDisabled=true;
-        btnDiscardValueDisabled=true;
-        btnRemoveDiscardedValuesDisabled=true;
-        btnRemoveRelationValueDisabled=true;
+        btnAssociateRelationValueDisabled = true;
+        btnAutomaticRelationValueDisabled = true;
+        btnDiscardValueDisabled = true;
+        btnRemoveDiscardedValuesDisabled = true;
+        btnRemoveRelationValueDisabled = true;
         valuesFound = new ArrayList<String>();
         valuesExpected = new ArrayList<String>();
         valuesRelated = new ArrayList<String>();
@@ -147,8 +129,11 @@ public class RelationshipOfValuesMB {
         this.currentVariableFound = "";
         this.currentVariableExpected = "";
         this.currentValueExpected = "";
-        this.currentValueFound = "";
-        this.currentValuesRelated = "";
+        //this.currentValueFound = "";
+        //this.currentValuesRelated = "";
+        valuesFoundSelectedInRelationValues = new ArrayList<String>();
+        valuesRelatedSelectedInRelationValues = new ArrayList<String>();
+        valuesDiscardedSelectedInRelationValues = new ArrayList<String>();
         this.btnAssociateRelationValueDisabled = true;
         this.btnRemoveRelationValueDisabled = true;
         this.btnAutomaticRelationValueDisabled = true;
@@ -193,7 +178,7 @@ public class RelationshipOfValuesMB {
         }
         //recargo la lista de valores descartados
         //ArrayList<RelationValue> currentRelationValuesList = currentRelationVar.getRelationValueList();
-        valuesDiscarded= new ArrayList<String>();
+        valuesDiscarded = new ArrayList<String>();
         for (int i = 0; i < currentRelationVar.getDiscardedValues().size(); i++) {
             valuesDiscarded.add(currentRelationVar.getDiscardedValues().get(i));
         }
@@ -253,12 +238,12 @@ public class RelationshipOfValuesMB {
     }
 
     public void changeValuesRelated() {
-        String[] splitValuesRelated;
-        splitValuesRelated = currentValuesRelated.split("->");
-        currentValueExpected = splitValuesRelated[0];
-        currentValueFound = splitValuesRelated[1];
-        currentValueFound = "";
-        currentValueExpected = "";
+        //String[] splitValuesRelated;
+        //splitValuesRelated = currentValuesRelated.split("->");
+        //currentValueExpected = splitValuesRelated[0];
+        //currentValueFound = splitValuesRelated[1];
+        //currentValueFound = "";
+        //currentValueExpected = "";
         btnAssociateRelationValueDisabled = true;//deshabilitar asociar valores
         btnAutomaticRelationValueDisabled = true;//deshabilitar asociacion automatica de valores        
         btnRemoveRelationValueDisabled = false;//activar boton de eliminacion
@@ -268,10 +253,9 @@ public class RelationshipOfValuesMB {
         btnAssociateRelationValueDisabled = true;
         btnAutomaticRelationValueDisabled = true;
         btnRemoveRelationValueDisabled = true;
-        if (currentValueFound != null) {
+        if (!valuesFoundSelectedInRelationValues.isEmpty()) {
             if (currentValueExpected != null) {
-                if (currentValueExpected.length() != 0
-                        && currentValueFound.length() != 0) {
+                if (currentValueExpected.length() != 0) {
                     btnAssociateRelationValueDisabled = false;
                 }
             }
@@ -286,8 +270,8 @@ public class RelationshipOfValuesMB {
         btnAutomaticRelationValueDisabled = true;
         btnRemoveRelationValueDisabled = true;
         btnDiscardValueDisabled = false;
-        if (currentValueFound != null && currentValueExpected != null) {
-            if (currentValueExpected.length() != 0 && currentValueFound.length() != 0) {
+        if (!valuesFoundSelectedInRelationValues.isEmpty() && currentValueExpected != null) {
+            if (currentValueExpected.length() != 0) {
                 btnAssociateRelationValueDisabled = false;
             }
         }
@@ -302,18 +286,20 @@ public class RelationshipOfValuesMB {
     //----------------------------------------------------------------------
 
     public void btnRemoveDiscardedValuesClick() {
-        //busco cual es la relacion de variables actual        
+        //busco cual es la relacion de variables actual 
         String[] splitVarRelated = currentCategoricalRelatedVariables.split("->");
         currentVariableExpected = splitVarRelated[0];
         currentVariableFound = splitVarRelated[1];
         RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
         if (relationVarSelected != null) {
-            relationVarSelected.removeDiscartedValue(currentValueDiscarded);
+            for (int i = 0; i < valuesDiscardedSelectedInRelationValues.size(); i++) {
+                relationVarSelected.removeDiscartedValue(valuesDiscardedSelectedInRelationValues.get(i));
+            }
             loadExpectedAndFoundValues();
             loadRelatedAndDiscardedValues();
         }
         btnDiscardValueDisabled = true;
-        btnRemoveDiscardedValuesDisabled=true;
+        btnRemoveDiscardedValuesDisabled = true;
         //btnRemoveRelationValueDisabled = true;
         //btnAutomaticRelationValueDisabled = true;
         if (valuesFound.size() > 0) {
@@ -321,19 +307,21 @@ public class RelationshipOfValuesMB {
         }
     }
 
-    public void btnDiscardValueClick() {        
+    public void btnDiscardValueClick() {
         //busco cual es la relacion de variables actual        
         String[] splitVarRelated = currentCategoricalRelatedVariables.split("->");
         currentVariableExpected = splitVarRelated[0];
         currentVariableFound = splitVarRelated[1];
         RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
         if (relationVarSelected != null) {
-            relationVarSelected.addDiscartedValue(currentValueFound);
+            for (int i = 0; i < valuesFoundSelectedInRelationValues.size(); i++) {
+                relationVarSelected.addDiscartedValue(valuesFoundSelectedInRelationValues.get(i));
+            }
             loadExpectedAndFoundValues();
             loadRelatedAndDiscardedValues();
         }
         btnDiscardValueDisabled = true;
-        btnRemoveDiscardedValuesDisabled=true;
+        btnRemoveDiscardedValuesDisabled = true;
         //btnRemoveRelationValueDisabled = true;
         //btnAutomaticRelationValueDisabled = true;
         if (valuesFound.size() > 0) {
@@ -348,7 +336,9 @@ public class RelationshipOfValuesMB {
         currentVariableFound = splitVarRelated[1];
         RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
         if (relationVarSelected != null) {
-            relationVarSelected.addRelationValue(currentValueExpected, currentValueFound);
+            for (int i = 0; i < valuesFoundSelectedInRelationValues.size(); i++) {
+                relationVarSelected.addRelationValue(currentValueExpected, valuesFoundSelectedInRelationValues.get(i));
+            }
             loadExpectedAndFoundValues();
             loadRelatedAndDiscardedValues();
         }
@@ -362,8 +352,9 @@ public class RelationshipOfValuesMB {
     }
 
     private void loadExpectedAndFoundValues() {
-        /*loadValuesExpectedAndFound
-         * cargar las listas de valores esperados y encontrados
+        /*
+         * loadValuesExpectedAndFound cargar las listas de valores esperados y
+         * encontrados
          */
         btnAssociateRelationValueDisabled = true;
         btnAutomaticRelationValueDisabled = true;
@@ -393,7 +384,7 @@ public class RelationshipOfValuesMB {
                 }
             }
             //saco la lista de valores descartados
-            valuesDiscarded=relationVarSelected.getDiscardedValues();
+            valuesDiscarded = relationVarSelected.getDiscardedValues();
             //elimino los campos que ya esten dentro de la lista de valores descartados
             for (int i = 0; i < valuesDiscarded.size(); i++) {
                 for (int j = 0; j < valuesFound.size(); j++) {
@@ -403,7 +394,7 @@ public class RelationshipOfValuesMB {
                     }
                 }
             }
-            
+
             if (!valuesFound.isEmpty()) {//si quedan valores encontrados se activa la opcion de relacion automatica
                 btnAutomaticRelationValueDisabled = false;
             }
@@ -420,8 +411,21 @@ public class RelationshipOfValuesMB {
         if (relationVarSelected != null) {
             for (int i = 0; i < valuesFound.size(); i++) {
                 for (int j = 0; j < valuesExpected.size(); j++) {
-                    if (valuesFound.get(i).compareTo(valuesExpected.get(j)) == 0
-                            || valuesFound.get(i).compareTo(valuesExpected.get(j).toUpperCase()) == 0) {
+                    String valueFoundNoAccent = valuesFound.get(i).toUpperCase();
+                    String valueExpectedNoAccent = valuesExpected.get(j).toUpperCase();
+                    valueFoundNoAccent = valueFoundNoAccent.replace("Á", "A");
+                    valueFoundNoAccent = valueFoundNoAccent.replace("É", "E");
+                    valueFoundNoAccent = valueFoundNoAccent.replace("Í", "I");
+                    valueFoundNoAccent = valueFoundNoAccent.replace("Ó", "O");
+                    valueFoundNoAccent = valueFoundNoAccent.replace("Ú", "U");
+
+                    valueExpectedNoAccent = valueExpectedNoAccent.replace("Á", "A");
+                    valueExpectedNoAccent = valueExpectedNoAccent.replace("É", "E");
+                    valueExpectedNoAccent = valueExpectedNoAccent.replace("Í", "I");
+                    valueExpectedNoAccent = valueExpectedNoAccent.replace("Ó", "O");
+                    valueExpectedNoAccent = valueExpectedNoAccent.replace("Ú", "U");
+
+                    if (valueFoundNoAccent.compareTo(valueExpectedNoAccent) == 0) {
                         relationVarSelected.addRelationValue(valuesExpected.get(j), valuesFound.get(i));
                     }
                 }
@@ -443,15 +447,20 @@ public class RelationshipOfValuesMB {
         currentVariableExpected = splitVarRelated[0];
         currentVariableFound = splitVarRelated[1];
         RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
-        //teniendo la relacion de variables encuantro la relacionde valores
-        String[] splitValuedRelated = currentValuesRelated.split("->");
-        currentValueExpected = splitValuedRelated[0];
-        currentValueFound = splitValuedRelated[1];
-        //remuevo la relacion de valores 
-        relationVarSelected.removeRelationValue(currentValueExpected, currentValueFound);
+        //teniendo la relacion de variables encuentro la relacion de valores
+        for (int i = 0; i < valuesRelatedSelectedInRelationValues.size(); i++) {
+            String[] splitValuedRelated = valuesRelatedSelectedInRelationValues.get(i).split("->");
+            currentValueExpected = splitValuedRelated[0];
+            String currentValueFound = splitValuedRelated[1];
+            //remuevo la relacion de valores 
+            relationVarSelected.removeRelationValue(currentValueExpected, currentValueFound);
+        }
+
         currentValueExpected = "";
-        currentValueFound = "";
-        currentValuesRelated = "";
+        //currentValueFound = "";
+        valuesFoundSelectedInRelationValues=new ArrayList<String>();
+        valuesRelatedSelectedInRelationValues=new ArrayList<String>();
+        //currentValuesRelated = "";
         loadExpectedAndFoundValues();
         loadRelatedAndDiscardedValues();
         btnAssociateRelationValueDisabled = true;
@@ -543,22 +552,21 @@ public class RelationshipOfValuesMB {
         this.currentValueExpected = currentValueExpected;
     }
 
-    public String getCurrentValueFound() {
-        return currentValueFound;
-    }
-
-    public void setCurrentValueFound(String currentValueFound) {
-        this.currentValueFound = currentValueFound;
-    }
-
-    public String getCurrentValuesRelated() {
-        return currentValuesRelated;
-    }
-
-    public void setCurrentValuesRelated(String currentValuesRelated) {
-        this.currentValuesRelated = currentValuesRelated;
-    }
-
+//    public String getCurrentValueFound() {
+//        return currentValueFound;
+//    }
+//
+//    public void setCurrentValueFound(String currentValueFound) {
+//        this.currentValueFound = currentValueFound;
+//    }
+//
+//    public String getCurrentValuesRelated() {
+//        return currentValuesRelated;
+//    }
+//
+//    public void setCurrentValuesRelated(String currentValuesRelated) {
+//        this.currentValuesRelated = currentValuesRelated;
+//    }
     public Field getTypeVarExepted() {
         return typeVarExepted;
     }
@@ -615,14 +623,13 @@ public class RelationshipOfValuesMB {
         this.btnDiscardValueDisabled = btnDiscardValueDisabled;
     }
 
-    public String getCurrentValueDiscarded() {
-        return currentValueDiscarded;
-    }
-
-    public void setCurrentValueDiscarded(String currentValueDiscarded) {
-        this.currentValueDiscarded = currentValueDiscarded;
-    }
-
+//    public String getCurrentValueDiscarded() {
+//        return currentValueDiscarded;
+//    }
+//
+//    public void setCurrentValueDiscarded(String currentValueDiscarded) {
+//        this.currentValueDiscarded = currentValueDiscarded;
+//    }
     public List<String> getValuesDiscarded() {
         return valuesDiscarded;
     }
@@ -630,6 +637,28 @@ public class RelationshipOfValuesMB {
     public void setValuesDiscarded(List<String> valuesDiscarded) {
         this.valuesDiscarded = valuesDiscarded;
     }
-    
-    
+
+    public List<String> getValuesDiscardedSelectedInRelationValues() {
+        return valuesDiscardedSelectedInRelationValues;
+    }
+
+    public void setValuesDiscardedSelectedInRelationValues(List<String> valuesDiscardedSelectedInRelationValues) {
+        this.valuesDiscardedSelectedInRelationValues = valuesDiscardedSelectedInRelationValues;
+    }
+
+    public List<String> getValuesFoundSelectedInRelationValues() {
+        return valuesFoundSelectedInRelationValues;
+    }
+
+    public void setValuesFoundSelectedInRelationValues(List<String> valuesFoundSelectedInRelationValues) {
+        this.valuesFoundSelectedInRelationValues = valuesFoundSelectedInRelationValues;
+    }
+
+    public List<String> getValuesRelatedSelectedInRelationValues() {
+        return valuesRelatedSelectedInRelationValues;
+    }
+
+    public void setValuesRelatedSelectedInRelationValues(List<String> valuesRelatedSelectedInRelationValues) {
+        this.valuesRelatedSelectedInRelationValues = valuesRelatedSelectedInRelationValues;
+    }
 }

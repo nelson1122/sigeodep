@@ -25,8 +25,8 @@ import managedBeans.preload.FormsAndFieldsDataMB;
 @RequestScoped
 public class LoginMB {
 
-    private String loginname;
-    private String password;
+    private String loginname="admin";
+    private String password="123";
     FacesContext context;
     FormsAndFieldsDataMB formsAndFieldsDataMB;
     UploadFileMB uploadFileMB;

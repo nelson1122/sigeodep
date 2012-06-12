@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "NonFatalInjuries.findByInjuryDate", query = "SELECT n FROM NonFatalInjuries n WHERE n.injuryDate = :injuryDate"),
     @NamedQuery(name = "NonFatalInjuries.findByInjuryTime", query = "SELECT n FROM NonFatalInjuries n WHERE n.injuryTime = :injuryTime"),
     @NamedQuery(name = "NonFatalInjuries.findByInjuryAddress", query = "SELECT n FROM NonFatalInjuries n WHERE n.injuryAddress = :injuryAddress"),
-    @NamedQuery(name = "NonFatalInjuries.findByInjuryNeighborhoodId", query = "SELECT n FROM NonFatalInjuries n WHERE n.injuryNeighborhoodId = :injuryNeighborhoodId"),
     @NamedQuery(name = "NonFatalInjuries.findByBurnInjuryDegree", query = "SELECT n FROM NonFatalInjuries n WHERE n.burnInjuryDegree = :burnInjuryDegree"),
     @NamedQuery(name = "NonFatalInjuries.findByBurnInjuryPercentage", query = "SELECT n FROM NonFatalInjuries n WHERE n.burnInjuryPercentage = :burnInjuryPercentage"),
     @NamedQuery(name = "NonFatalInjuries.findBySubmittedPatient", query = "SELECT n FROM NonFatalInjuries n WHERE n.submittedPatient = :submittedPatient"),
@@ -53,8 +52,6 @@ public class NonFatalInjuries implements Serializable {
     @Size(max = 50)
     @Column(name = "injury_address", length = 50)
     private String injuryAddress;
-    @Column(name = "injury_neighborhood_id")
-    private Integer injuryNeighborhoodId;
     @Column(name = "burn_injury_degree")
     private Short burnInjuryDegree;
     @Column(name = "burn_injury_percentage")
@@ -76,16 +73,6 @@ public class NonFatalInjuries implements Serializable {
     @NotNull
     @Column(name = "non_fatal_injury_id", nullable = false)
     private Integer nonFatalInjuryId;
-    @ManyToMany(mappedBy = "nonFatalInjuriesList")
-    private List<Diagnoses> diagnosesList;
-    @ManyToMany(mappedBy = "nonFatalInjuriesList")
-    private List<AnatomicalLocations> anatomicalLocationsList;
-    @ManyToMany(mappedBy = "nonFatalInjuriesList")
-    private List<KindsOfInjury> kindsOfInjuryList;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "nonFatalInjuries")
-    private NonFatalSelfInflicted nonFatalSelfInflicted;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "nonFatalInjuries")
-    private NonFatalDomesticViolence nonFatalDomesticViolence;
     @JoinColumn(name = "victim_id", referencedColumnName = "victim_id")
     @ManyToOne
     private Victims victimId;
@@ -101,6 +88,9 @@ public class NonFatalInjuries implements Serializable {
     @JoinColumn(name = "injury_place_id", referencedColumnName = "non_fatal_place_id")
     @ManyToOne
     private NonFatalPlaces injuryPlaceId;
+    @JoinColumn(name = "injury_neighborhood_id", referencedColumnName = "neighborhood_id")
+    @ManyToOne
+    private Neighborhoods injuryNeighborhoodId;
     @JoinColumn(name = "mechanism_id", referencedColumnName = "mechanism_id")
     @ManyToOne
     private Mechanisms mechanismId;
@@ -118,12 +108,32 @@ public class NonFatalInjuries implements Serializable {
     private DestinationsOfPatient destinationPatientId;
     @JoinColumn(name = "activity_id", referencedColumnName = "activity_id")
     @ManyToOne
-    private Activities activityId;
+    private Activities activityId; 
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "nonFatalInjuries")
+    private NonFatalSelfInflicted nonFatalSelfInflicted;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "nonFatalInjuries")
     private NonFatalInterpersonal nonFatalInterpersonal;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "nonFatalInjuries")
-    private NonFatalTransport nonFatalTransport;
-
+    private NonFatalDomesticViolence nonFatalDomesticViolence;
+    //agregado----------------
+    @JoinTable(name = "non_fatal_diagnosis", joinColumns = {
+        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)}, inverseJoinColumns = {
+        @JoinColumn(name = "diagnosis_id", referencedColumnName = "diagnosis_id", nullable = false)})
+    @ManyToMany
+    private List<Diagnoses> diagnosesList;
+    //agregado----------------
+    @JoinTable(name = "non_fatal_anatomical_location", joinColumns = {
+        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)}, inverseJoinColumns = {
+        @JoinColumn(name = "anatomical_location_id", referencedColumnName = "anatomical_location_id", nullable = false)})
+    @ManyToMany
+    private List<AnatomicalLocations> anatomicalLocationsList;
+    //agregado----------------
+    @JoinTable(name = "non_fatal_kind_of_injury", joinColumns = {
+        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)}, inverseJoinColumns = {
+        @JoinColumn(name = "kind_injury_id", referencedColumnName = "kind_injury_id", nullable = false)})
+    @ManyToMany
+    private List<KindsOfInjury> kindsOfInjuryList;
+    
     public NonFatalInjuries() {
     }
 
@@ -169,14 +179,6 @@ public class NonFatalInjuries implements Serializable {
 
     public void setInjuryAddress(String injuryAddress) {
         this.injuryAddress = injuryAddress;
-    }
-
-    public Integer getInjuryNeighborhoodId() {
-        return injuryNeighborhoodId;
-    }
-
-    public void setInjuryNeighborhoodId(Integer injuryNeighborhoodId) {
-        this.injuryNeighborhoodId = injuryNeighborhoodId;
     }
 
     public Short getBurnInjuryDegree() {
@@ -243,49 +245,6 @@ public class NonFatalInjuries implements Serializable {
         this.nonFatalInjuryId = nonFatalInjuryId;
     }
 
-    @XmlTransient
-    public List<Diagnoses> getDiagnosesList() {
-        return diagnosesList;
-    }
-
-    public void setDiagnosesList(List<Diagnoses> diagnosesList) {
-        this.diagnosesList = diagnosesList;
-    }
-
-    @XmlTransient
-    public List<AnatomicalLocations> getAnatomicalLocationsList() {
-        return anatomicalLocationsList;
-    }
-
-    public void setAnatomicalLocationsList(List<AnatomicalLocations> anatomicalLocationsList) {
-        this.anatomicalLocationsList = anatomicalLocationsList;
-    }
-
-    @XmlTransient
-    public List<KindsOfInjury> getKindsOfInjuryList() {
-        return kindsOfInjuryList;
-    }
-
-    public void setKindsOfInjuryList(List<KindsOfInjury> kindsOfInjuryList) {
-        this.kindsOfInjuryList = kindsOfInjuryList;
-    }
-
-    public NonFatalSelfInflicted getNonFatalSelfInflicted() {
-        return nonFatalSelfInflicted;
-    }
-
-    public void setNonFatalSelfInflicted(NonFatalSelfInflicted nonFatalSelfInflicted) {
-        this.nonFatalSelfInflicted = nonFatalSelfInflicted;
-    }
-
-    public NonFatalDomesticViolence getNonFatalDomesticViolence() {
-        return nonFatalDomesticViolence;
-    }
-
-    public void setNonFatalDomesticViolence(NonFatalDomesticViolence nonFatalDomesticViolence) {
-        this.nonFatalDomesticViolence = nonFatalDomesticViolence;
-    }
-
     public Victims getVictimId() {
         return victimId;
     }
@@ -324,6 +283,14 @@ public class NonFatalInjuries implements Serializable {
 
     public void setInjuryPlaceId(NonFatalPlaces injuryPlaceId) {
         this.injuryPlaceId = injuryPlaceId;
+    }
+
+    public Neighborhoods getInjuryNeighborhoodId() {
+        return injuryNeighborhoodId;
+    }
+
+    public void setInjuryNeighborhoodId(Neighborhoods injuryNeighborhoodId) {
+        this.injuryNeighborhoodId = injuryNeighborhoodId;
     }
 
     public Mechanisms getMechanismId() {
@@ -374,22 +341,6 @@ public class NonFatalInjuries implements Serializable {
         this.activityId = activityId;
     }
 
-    public NonFatalInterpersonal getNonFatalInterpersonal() {
-        return nonFatalInterpersonal;
-    }
-
-    public void setNonFatalInterpersonal(NonFatalInterpersonal nonFatalInterpersonal) {
-        this.nonFatalInterpersonal = nonFatalInterpersonal;
-    }
-
-    public NonFatalTransport getNonFatalTransport() {
-        return nonFatalTransport;
-    }
-
-    public void setNonFatalTransport(NonFatalTransport nonFatalTransport) {
-        this.nonFatalTransport = nonFatalTransport;
-    }
-
     @Override
     public int hashCode() {
         int hash = 0;
@@ -412,7 +363,57 @@ public class NonFatalInjuries implements Serializable {
 
     @Override
     public String toString() {
-        return "model.pojo.NonFatalInjuries[ nonFatalInjuryId=" + nonFatalInjuryId + " ]";
+        return "j.NonFatalInjuries[ nonFatalInjuryId=" + nonFatalInjuryId + " ]";
     }
     
+    @XmlTransient
+    public List<Diagnoses> getDiagnosesList() {
+        return diagnosesList;
+    }
+
+    public void setDiagnosesList(List<Diagnoses> diagnosesList) {
+        this.diagnosesList = diagnosesList;
+    }
+
+    @XmlTransient
+    public List<AnatomicalLocations> getAnatomicalLocationsList() {
+        return anatomicalLocationsList;
+    }
+
+    public void setAnatomicalLocationsList(List<AnatomicalLocations> anatomicalLocationsList) {
+        this.anatomicalLocationsList = anatomicalLocationsList;
+    }
+
+    @XmlTransient
+    public List<KindsOfInjury> getKindsOfInjuryList() {
+	return kindsOfInjuryList;
+    }
+
+    public void setKindsOfInjuryList(List<KindsOfInjury> kindsOfInjuryList) {
+	this.kindsOfInjuryList = kindsOfInjuryList;
+    }
+    
+    public NonFatalDomesticViolence getNonFatalDomesticViolence() {
+	return nonFatalDomesticViolence;
+    }
+
+    public void setNonFatalDomesticViolence(NonFatalDomesticViolence nonFatalDomesticViolence) {
+	this.nonFatalDomesticViolence = nonFatalDomesticViolence;
+    }
+    
+    public NonFatalSelfInflicted getNonFatalSelfInflicted() {
+	return nonFatalSelfInflicted;
+    }
+
+    public void setNonFatalSelfInflicted(NonFatalSelfInflicted nonFatalSelfInflicted) {
+	this.nonFatalSelfInflicted = nonFatalSelfInflicted;
+    }
+
+    public NonFatalInterpersonal getNonFatalInterpersonal() {
+	return nonFatalInterpersonal;
+    }
+
+    public void setNonFatalInterpersonal(NonFatalInterpersonal nonFatalInterpersonal) {
+	this.nonFatalInterpersonal = nonFatalInterpersonal;
+    }
 }

@@ -4,10 +4,13 @@
  */
 package model.dao;
 
+import beans.connection.ConnectionJDBC;
+import java.sql.ResultSet;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import model.pojo.AnatomicalLocations;
+import model.pojo.NonFatalDomesticViolence;
 import model.pojo.NonFatalInjuries;
 
 /**
@@ -37,7 +40,7 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
         }
     }
 
-    public int findMaxId() {
+    public int findMaxId2() {
         try {
             String hql = "Select MAX(x.idRelationGroup) from RelationGroup x";
             return em.createQuery(hql, Integer.class).getSingleResult();
@@ -45,24 +48,79 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
             return 1;
         }
     }
-
-    @Override
-    public void create(NonFatalInjuries entity) {
+    public int findPosition(int id) {
+        ConnectionJDBC conx;
         try {
-            //for (Diagnoses diagnose : entity.getDiagnosesList()) {
-            //    em.find(Diagnoses.class, diagnose.getDiagnosisId());
-            //}
-
-            for (AnatomicalLocations al : entity.getAnatomicalLocationsList()) {
-                em.find(AnatomicalLocations.class, al.getAnatomicalLocationId());
+            conx = new ConnectionJDBC();
+            conx.connect();
+            ResultSet rs = conx.consult(""
+                    + "SELECT item from"
+                    + "("
+                    + "SELECT ROW_NUMBER() "
+                    + "OVER (ORDER BY non_fatal_injury_id) AS item, mt.* "
+                    + "FROM non_fatal_injuries mt"
+                    + ") "
+                    + "as a WHERE non_fatal_injury_id="+String.valueOf(id)+";");
+            conx.disconnect();
+            if (rs.next()) {
+                return rs.getInt(1);
+            } else {
+                return 0;
             }
-
-            super.create(entity);
-        } catch (Exception e) {
-            System.out.println(e.toString());
+        } catch (Exception ex) {
+            return 0;
         }
-
-
     }
+    
+    public NonFatalInjuries findNext(int id) {
+        try {
+            String hql = "Select x from NonFatalInjuries x where x.nonFatalInjuryId>:id order by x.nonFatalInjuryId asc";
+            return (NonFatalInjuries) em.createQuery(hql).setMaxResults(1).setParameter("id", id).getSingleResult();
+        } catch (Exception e) {
+            return null;//no existe siguiente
+        }
+    }
+
+    public NonFatalInjuries findPrevious(int id) {
+        try {
+            String hql = "Select x from NonFatalInjuries x where x.nonFatalInjuryId<:id order by x.nonFatalInjuryId desc";
+            return (NonFatalInjuries) em.createQuery(hql).setMaxResults(1).setParameter("id", id).getSingleResult();
+        } catch (Exception e) {
+            return null;//no existe anterior
+        }
+    }   
+
+    public NonFatalInjuries findFirst() {
+        try {
+            String hql = "Select x from NonFatalInjuries x order by x.nonFatalInjuryId asc";
+            return (NonFatalInjuries) em.createQuery(hql).setMaxResults(1).getSingleResult();
+        } catch (Exception e) {
+            return null;//no existe primero
+        }
+    }
+
+    public NonFatalInjuries findLast() {
+        try {
+            String hql = "Select x from NonFatalInjuries x order by x.nonFatalInjuryId desc";
+            return (NonFatalInjuries) em.createQuery(hql).setMaxResults(1).getSingleResult();
+        } catch (Exception e) {
+            return null;//no existe ultimo
+        }
+    }
+
+//    @Override
+//    public void create(NonFatalInjuries entity) {
+//        try {
+//            for (Diagnoses diagnose : entity.getDiagnosesList()) {
+//                em.find(Diagnoses.class, diagnose.getDiagnosisId());
+//            }
+//            for (AnatomicalLocations al : entity.getAnatomicalLocationsList()) {
+//                em.find(AnatomicalLocations.class, al.getAnatomicalLocationId());
+//            }
+//            super.create(entity);
+//        } catch (Exception e) {
+//            System.out.println(e.toString());
+//        }
+//    }
     
 }

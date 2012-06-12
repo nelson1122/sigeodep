@@ -47,9 +47,10 @@ public class RecordDataMB {
     private int tuplesProcessed;
     private ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
     private RelationVar relationVar;
-    private Field fieldExepted;
+    //private Field fieldExepted;
     private String type;
-    private String error;
+    //private String error;
+    private String nameForm;
     //manejo de persistencia
     @EJB
     FormsFacade formsFacade;
@@ -157,8 +158,12 @@ public class RecordDataMB {
     KindsOfInjuryFacade kindsOfInjuryFacade;
     @EJB
     NonFatalDataSourcesFacade nonFatalDataSourcesFacade;
-    //**************************************************************************
-    //carga del archivo***********************************    
+    
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    //MANEJO E LA BARRA DE PROGRESO DEL ALMACENAMIENTO ---------------------
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
     private Integer progress;
 
     public Integer getProgress() {
@@ -182,7 +187,7 @@ public class RecordDataMB {
     public void cancel() {
         progress = null;
     }
-//carga del archivo***********************************    
+
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES DE PROPOSITO GENERAL ---------------------------------------
@@ -245,7 +250,7 @@ public class RecordDataMB {
                     //determino la relacion de variables
                     relationVar = currentRelationsGroup.findRelationVar(columnsNames[i]);
                     if (relationVar != null) {
-                        fieldExepted = formsAndFieldsDataMB.searchField(relationVar.getNameExpected());
+                        //fieldExepted = formsAndFieldsDataMB.searchField(relationVar.getNameExpected());
                         type = relationVar.getFieldType();
 
                         if (type.compareTo("text") == 0) {//valor de tipo texto no se valida
@@ -303,8 +308,19 @@ public class RecordDataMB {
          */
     }
 
-    public void btnRegisterDataClick() {
-        //enconramos el maximo de lesiones no fatales
+    public void registerSCC_F_028() {
+    }
+
+    public void registerSCC_F_029() {
+    }
+
+    public void registerSCC_F_030() {
+    }
+
+    public void registerSCC_F_031() {
+    }
+
+    public void registerSCC_F_032() {
         tuplesNumber = 0;
         tuplesProcessed = 0;
         SimpleDateFormat textFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -318,19 +334,17 @@ public class RecordDataMB {
 
         //ArrayList<String> array = new ArrayList<String>();
         try {
-            //determino el nombre de la columna
+            
             conx = new ConnectionJDBC();
             conx.connect();
             //numero de tuplas
             ResultSet resultSetFileData = conx.consult("SELECT COUNT(*) FROM temp; ");
             resultSetFileData.next();
             tuplesNumber = resultSetFileData.getInt(1);
-
             //resultSetFileData contendra todos los registros de el archivo(tabla temp)
             resultSetFileData = conx.consult("SELECT * FROM temp; ");
             resultSetFileData.next();
             progress = 0;
-
             //creo un arreglo con los nombres de las columnas
             int columnsNumber = resultSetFileData.getMetaData().getColumnCount();
             columnsNames = new String[columnsNumber];
@@ -424,37 +438,30 @@ public class RecordDataMB {
                                 IdTypes selectIdType = idTypesFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 newVictim.setTypeId(selectIdType);
                                 break;
-                            case nid://para dos tablas
+                            case nid:
                                 newVictim.setVictimNid(resultSetFileData.getString(columnsNames[i]));
                                 newNonFatalInjuries.setVictimId(newVictim);
                                 break;
                             case medad:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 newVictim.setAgeTypeId(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                //}
                                 break;
                             case edadcantid:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 newVictim.setVictimAge(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                //}
                                 break;
                             case sexo:
                                 Genders selectGender = gendersFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 newVictim.setGenderId(selectGender);
                                 break;
                             case ocupa:
-                                //Jobs selectJob = jobsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 Jobs selectJob = jobsFacade.find(Short.parseShort("1"));
                                 newVictim.setJobId(selectJob);
                                 break;
                             case getnico:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 EthnicGroups selectEthnicGroup = ethnicGroupsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 newVictim.setEthnicGroupId(selectEthnicGroup);
-                                //}
                                 break;
                             case codigobarr:
-                                newVictim.setVictimNeighborhoodId(Integer.parseInt(resultSetFileData.getString(columnsNames[i])));
+                                newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(resultSetFileData.getString(columnsNames[i]))));
                                 break;
                             case dirres:
                                 newVictim.setVictimAddress(resultSetFileData.getString(columnsNames[i]));
@@ -464,32 +471,25 @@ public class RecordDataMB {
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_transport
                             case ttrans:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 TransportTypes selectTransportTypes = transportTypesFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 newNonFatalTransport.setTransportTypeId(selectTransportTypes);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("51"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case tcontp:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 TransportCounterparts selectTransportCounterpart = transportCounterpartsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 newNonFatalTransport.setTransportCounterpartId(selectTransportCounterpart);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("51"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case tusuar:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 TransportUsers selectTransportUser = transportUsersFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 newNonFatalTransport.setTransportUserId(selectTransportUser);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("51"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_interpersonal
                             case anteca://boleano->previous_antecedent
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 if (resultSetFileData.getString(columnsNames[i]).compareTo("TRUE") == 0) {
                                     newNonFatalInterpersonal.setPreviousAntecedent(true);
                                 } else {
@@ -500,108 +500,84 @@ public class RecordDataMB {
                                 //}
                                 break;
                             case relacav://categorico->relationships_to_victim
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 RelationshipsToVictim selectRelationshipsToVictim = relationshipsToVictimFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 newNonFatalInterpersonal.setRelationshipVictimId(selectRelationshipsToVictim);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("50"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case contex:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 Contexts selectContexts = contextsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 newNonFatalInterpersonal.setContextId(selectContexts);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("50"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case sexa:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 AggressorGenders selectAggressorGenders = aggressorGendersFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 newNonFatalInterpersonal.setAggressorGenderId(selectAggressorGenders);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("50"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_selft-inflicted
                             case intpre:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 if (resultSetFileData.getString(columnsNames[i]).compareTo("TRUE") == 0) {
-                                    newNonFatalSelfInflicted.setPreviousAttempt(true);
-                                } else {
-                                    newNonFatalSelfInflicted.setPreviousAttempt(false);
+                                    newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find((short)1));//si
+                                } else {				    				    
+                                    newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find((short)2));//no
                                 }
                                 selectInjuries = injuriesFacade.find(Short.parseShort("52"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case trment:
-                                // if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 if (resultSetFileData.getString(columnsNames[i]).compareTo("TRUE") == 0) {
-                                    newNonFatalSelfInflicted.setMentalAntecedent(true);
+                                    newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find((short)1));//si
                                 } else {
-                                    newNonFatalSelfInflicted.setMentalAntecedent(false);
+                                    newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find((short)2));//no
                                 }
                                 selectInjuries = injuriesFacade.find(Short.parseShort("52"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case fprec:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 PrecipitatingFactors selectPrecipitatingFactors = precipitatingFactorsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 newNonFatalSelfInflicted.setPrecipitatingFactorId(selectPrecipitatingFactors);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("52"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_transport_security_element
                             case tsegu:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 securityElementList.add(selectSecurityElement);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("51"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case cintu:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 securityElementList.add(selectSecurityElement);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("51"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case cascom:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 securityElementList.add(selectSecurityElement);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("51"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case cascob:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 securityElementList.add(selectSecurityElement);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("51"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case chale:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 securityElementList.add(selectSecurityElement);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("51"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             case otroel:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
                                 selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
                                 securityElementList.add(selectSecurityElement);
                                 selectInjuries = injuriesFacade.find(Short.parseShort("51"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
                                 break;
                             // ************************************************DATOS PARA LA TABLA domestic_violence_abuse_type
                             case ma1:
@@ -891,7 +867,7 @@ public class RecordDataMB {
                                 break;
                             case codbar:
                                 Neighborhoods selectNeighborhoods = neighborhoodsFacade.find(Integer.parseInt(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInjuries.setInjuryNeighborhoodId(selectNeighborhoods.getNeighborhoodId());
+                                newNonFatalInjuries.setInjuryNeighborhoodId(neighborhoodsFacade.find(selectNeighborhoods.getNeighborhoodId()));
                                 break;
                             case direv:
                                 newNonFatalInjuries.setInjuryAddress(resultSetFileData.getString(columnsNames[i]));
@@ -1001,7 +977,7 @@ public class RecordDataMB {
                 victimsFacade.create(newVictim);//PERSISTO LA VICTIMA
 
 
-                newNonFatalInjuries.setAnatomicalLocationsList(anatomicalLocationsList);
+                //newNonFatalInjuries.setAnatomicalLocationsList(anatomicalLocationsList);
 
                 // ************************************************ vector non_fatal_transport_security_element
                 //securityElementList
@@ -1012,7 +988,7 @@ public class RecordDataMB {
                 // ************************************************ vector non_fatal_kind_of_injury                
                 //newNonFatalInjuries.setKindsOfInjuryList(kindsOfInjurysList);
                 // ************************************************ vector non_fatal_diagnosis
-                newNonFatalInjuries.setDiagnosesList(diagnosesList);
+                //newNonFatalInjuries.setDiagnosesList(diagnosesList);
                 // ************************************************ vector victim_vulnerable_group
                 //vulnerableGroupList
 
@@ -1045,6 +1021,33 @@ public class RecordDataMB {
             System.out.println("error: " + ex.toString());
             conx.disconnect();
         }
+    }
+
+    public void registerSCC_F_033() {
+    }
+
+    public void btnRegisterDataClick() {
+
+        if (nameForm.compareTo("SCC_F_028") == 0) {
+            registerSCC_F_028();
+        }
+        if (nameForm.compareTo("SCC_F_029") == 0) {
+            registerSCC_F_029();
+        }
+        if (nameForm.compareTo("SCC_F_030") == 0) {
+            registerSCC_F_030();
+        }
+        if (nameForm.compareTo("SCC_F_031") == 0) {
+            registerSCC_F_031();
+        }
+        if (nameForm.compareTo("SCC_F_032") == 0) {
+            registerSCC_F_032();
+        }
+        if (nameForm.compareTo("SCC_F_033") == 0) {
+            registerSCC_F_033();
+        }
+
+
     }
 
     //----------------------------------------------------------------------
@@ -1168,5 +1171,13 @@ public class RecordDataMB {
 
     public void setLoginMB(LoginMB loginMB) {
         this.loginMB = loginMB;
+    }
+
+    public String getNameForm() {
+        return nameForm;
+    }
+
+    public void setNameForm(String nameForm) {
+        this.nameForm = nameForm;
     }
 }

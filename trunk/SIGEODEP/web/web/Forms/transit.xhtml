@@ -27,7 +27,7 @@
         <!--=================================================================-->
         <!--==============================CONTENIDO==========================-->
         <ui:define name="content">
-            <h:form enctype="multipart/form-data" id="IdForm2"> 
+            <h:form enctype="multipart/form-data" id="IdForm1"> 
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
                 <!--===================================================================================-->
                 <br/>
@@ -52,7 +52,14 @@
                                 <p:row>  
                                     <p:column>CODIGO:</p:column>
                                     <p:column >
-                                        <p:inputText />
+                                        <p:inputText                                            
+                                            value="#{transitMB.currentCode}"
+                                            id="IdCode" >  
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{transitMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>
                                     </p:column>
                                 </p:row>
                                 <p:row>
@@ -75,24 +82,50 @@
                                                         </p:row>
                                                         <p:row>  
                                                             <p:column>
-                                                                <p:inputText value="#{transitMB.currentDayEvent}" size="2" >  
+                                                                <p:inputText 
+                                                                    id="IdDayEvent"
+                                                                    value="#{transitMB.currentDayEvent}" 
+                                                                    size="2">                                                                      
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{transitMB.changeDayEvent}"
+                                                                        render="IdDayEvent IdDateEvent IdWeekdayEvent"/>
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{transitMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>  
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText value="#{transitMB.currentMonthEvent}" size="2" maxlength="2">
+                                                                <p:inputText 
+                                                                    id="IdMonthEvent"
+                                                                    value="#{transitMB.currentMonthEvent}" 
+                                                                    size="2" 
+                                                                    maxlength="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{transitMB.changeMonthEvent}"
+                                                                        render="IdMonthEvent IdDateEvent IdWeekdayEvent"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{transitMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>   
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText value="#{transitMB.currentYearEvent}" size="5" maxlength="4">
+                                                                <p:inputText 
+                                                                    id="IdYearEvent"
+                                                                    value="#{transitMB.currentYearEvent}" 
+                                                                    size="5" 
+                                                                    maxlength="4">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdDateEvent IdWeekdayEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{transitMB.changeYearEvent}"
+                                                                        render="IdYearEvent IdDateEvent IdWeekdayEvent"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{transitMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>
                                                             </p:column>
                                                         </p:row>
@@ -105,7 +138,10 @@
                                                                 FECHA HECHO<br/>(dd/mm/yyyy):  
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText disabled="true" id="IdDateEvent" value="#{transitMB.currentDateEvent}"/> 
+                                                                <p:inputText 
+                                                                    disabled="true" 
+                                                                    id="IdDateEvent" 
+                                                                    value="#{transitMB.currentDateEvent}"/> 
                                                             </p:column>
                                                         </p:row>
                                                         <p:row>  
@@ -143,17 +179,33 @@
                                                         </p:row>                                            
                                                         <p:row>                                                
                                                             <p:column>
-                                                                <p:inputText value="#{transitMB.currentHourEvent}" size="2">
+                                                                <p:inputText 
+                                                                    id="IdHourEvent"
+                                                                    value="#{transitMB.currentHourEvent}" 
+                                                                    size="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdTimeEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{transitMB.changeHourEvent}"
+                                                                        render="IdHourEvent IdTimeEvent"/>   
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{transitMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText>
                                                             </p:column>
                                                             <p:column>
-                                                                <p:inputText value="#{transitMB.currentMinuteEvent}" size="2">
+                                                                <p:inputText 
+                                                                    id="IdMinuteEvent"
+                                                                    value="#{transitMB.currentMinuteEvent}" 
+                                                                    size="2">
                                                                     <f:ajax 
-                                                                        event="keyup"                                                                                                            
-                                                                        render="IdTimeEvent"/>
+                                                                        event="blur"  
+                                                                        listener="#{transitMB.changeMinuteEvent}"
+                                                                        render="IdMinuteEvent IdTimeEvent"/> 
+                                                                    <f:ajax 
+                                                                        event="keyup"
+                                                                        listener="#{transitMB.changeForm}"
+                                                                        render="IdControls"/>
                                                                 </p:inputText> 
                                                             </p:column>
                                                             <p:column>
@@ -162,7 +214,8 @@
                                                                     <f:selectItem itemLabel="PM" itemValue="PM" />
                                                                     <f:ajax 
                                                                         event="change"                                                                                                            
-                                                                        render="IdTimeEvent"/>
+                                                                        render="IdTimeEvent IdControls"
+                                                                        listener="#{transitMB.changeForm}"/>
                                                                 </p:selectOneMenu>
                                                             </p:column>
                                                         </p:row> 
@@ -194,23 +247,33 @@
                                     <p:column>
                                         <h:outputLabel value="DIRECCION:   "/>   
                                     </p:column>
-                                    <p:column>
-                                        <p:inputText 
+                                    <p:column>                                        
+					<p:inputText 
                                             value="#{transitMB.currentDirectionEvent}" 
-                                            size="40"/>                                      
+                                            size="40">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{transitMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>
                                     </p:column>   
                                 </p:row>
                                 <p:row>  
                                     <p:column>BARRIO / VEREDA:&nbsp; </p:column>
-                                    <p:column>
-                                        <p:autoComplete 
+                                    <p:column>                                        
+					<p:autoComplete 
                                             value="#{transitMB.currentNeighborhoodEvent}"                                                                    
                                             completeMethod="#{transitMB.suggestNeighborhoods}" 
+                                            forceSelection="true"
                                             size="40" >                                                        
                                             <p:ajax 
                                                 event="itemSelect" 
                                                 listener="#{transitMB.changeNeighborhoodEvent}" 
-                                                update="IdNeighborhoodsEventCode" process="@this"/>
+                                                update="IdNeighborhoodsEventCode IdControls" process="@this"/>                                                 
+					    <f:ajax 
+						event="keyup"
+						listener="#{transitMB.changeForm}"
+						render="IdControls"/>
                                         </p:autoComplete>
                                     </p:column>
                                 </p:row>
@@ -228,6 +291,10 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{transitMB.currentRoadType}" > 
                                             <f:selectItems value="#{transitMB.roadTypes}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -236,6 +303,10 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{transitMB.currentArea}" > 
                                             <f:selectItems value="#{transitMB.areas}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -245,6 +316,10 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{transitMB.currentAccidentClasses}" > 
                                             <f:selectItems value="#{transitMB.accidentClasses}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -252,13 +327,27 @@
                                 <p:row>
                                     <p:column>NUMERO DE VICTIMAS FATALES EN EL MISMO HECHO:&nbsp;  </p:column>
                                     <p:column>
-                                        <p:inputText value="#{transitMB.currentNumberVictims}" /> 
+                                        <p:inputText 
+                                            id="IdNumberVictims"
+                                            value="#{transitMB.currentNumberVictims}" >
+                                            <f:ajax 
+                                                event="blur"  
+                                                listener="#{transitMB.changeNumberVictims}"
+                                                render="IdNumberVictims IdControls"/> 
+                                        </p:inputText>
                                     </p:column>
                                 </p:row>
 				<p:row>
                                     <p:column>NUMERO DE LESIONADOS EN EL MISMO HECHO:&nbsp;  </p:column>
-                                    <p:column>
-                                        <p:inputText value="#{transitMB.currentNumberInjured}" /> 
+                                    <p:column>                                        
+					<p:inputText 
+                                            id="IdNumberInjured"
+                                            value="#{transitMB.currentNumberInjured}" >
+                                            <f:ajax 
+                                                event="blur"  
+                                                listener="#{transitMB.changeNumberInjured}"
+                                                render="IdNumberInjured IdControls"/> 
+                                        </p:inputText>
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>
@@ -275,15 +364,31 @@
                                         <h:outputLabel value="NOMBRES:"/>
                                     </p:column>
                                     <p:column>
-                                        <p:inputText value="#{transitMB.currentSurname}" size="60"/>
+					<p:inputText 
+                                            id="IdName"
+                                            value="#{transitMB.currentName}" 
+                                            size="60">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{transitMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>
                                     </p:column>   
                                 </p:row>
                                 <p:row>
                                     <p:column>
                                         <h:outputLabel value="APELLIDOS:   "/>                                          
                                     </p:column>
-                                    <p:column>
-                                        <p:inputText value="#{transitMB.currentName}" size="60"/>    
+                                    <p:column>                                        
+					<p:inputText 
+                                            id="IdSurname"
+                                            value="#{transitMB.currentSurname}" 
+                                            size="60">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{transitMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>    
                                     </p:column>  
                                 </p:row>
                                 <p:row>
@@ -293,6 +398,10 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{transitMB.currentGender}" > 
                                             <f:selectItems value="#{transitMB.genders}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -300,13 +409,13 @@
                                     <p:column >
                                         <h:outputLabel value="TIPO EDAD:   "/>
                                     </p:column>
-                                    <p:column>
-                                        <p:selectOneMenu value="#{transitMB.currentMeasureOfAge}" > 
+                                    <p:column>                                        
+					<p:selectOneMenu value="#{transitMB.currentMeasureOfAge}" > 
                                             <f:selectItems value="#{transitMB.measuresOfAge}"/>
                                             <f:ajax 
                                                 event="change"                                            
                                                 listener="#{transitMB.changeMeasuresOfAge}" 
-                                                render="IdValueAge"/>
+                                                render="IdValueAge IdControls"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -315,11 +424,20 @@
                                         <h:outputLabel value="EDAD CANTIDAD:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <p:inputText 
+					<p:inputText 
                                             id="IdValueAge"
                                             value="#{transitMB.currentAge}" 
                                             disabled="#{transitMB.valueAgeDisabled}" 
-                                            size="3"/>
+                                            size="3">
+                                            <f:ajax 
+                                                event="blur"  
+                                                listener="#{transitMB.changeValueAge}"
+                                                render="IdValueAge"/> 
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{transitMB.changeForm}"
+                                                render="IdControls"/>
+					</p:inputText>
                                     </p:column>                                                                                             
                                 </p:row>
                                 <p:row>
@@ -329,20 +447,25 @@
                                     <p:column>
 					<p:selectOneMenu value="#{transitMB.currentJob}" > 
                                             <f:selectItems value="#{transitMB.jobs}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
                                 <p:row>  
                                     <p:column>MUNICIPIO DE  RESIDENCIA:&nbsp;</p:column>
                                     <p:column>
-                                        <p:selectOneMenu 
+					<p:selectOneMenu 
                                             id="IdMunicipalitieList"
                                             value="#{transitMB.currentMunicipalitie}"  > 
                                             <f:selectItems value="#{transitMB.municipalities}"/>
                                             <f:ajax 
                                                 event="change"   							    
-                                                listener="#{transitMB.findMunicipalitieCode}"
-                                                render="IdMunicipalitiesHomeCode"/>
+                                                listener="#{transitMB.changeMunicipalitie}"
+                                                render="IdMunicipalitiesHomeCode                                                
+                                                IdControls"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -352,20 +475,33 @@
                                         <p:inputText 
                                             id="IdMunicipalitiesHomeCode"                                                        
                                             disabled="true"
-                                            value="#{transitMB.currentMunicipalitie}"/>
+                                            value="#{transitMB.currentMunicipalitie}"/>					
                                     </p:column>
                                 </p:row>
 				<p:row>
                                     <p:column>LUGAR RESIDENCIA:&nbsp;</p:column>
-                                    <p:column><p:inputText value="#{transitMB.currentPlaceOfResidence}"/></p:column> 
+                                    <p:column>
+					<p:inputText value="#{transitMB.currentPlaceOfResidence}">
+					    <f:ajax 
+                                                event="keyup"
+                                                listener="#{transitMB.changeForm}"
+                                                render="IdControls"/>
+					</p:inputText>
+				    </p:column> 
                                 </p:row>                                
                                 <p:row>  
                                     <p:column>
                                         <h:outputLabel value="TIPO DE IDENTIFICACION:   "/>                                          
                                     </p:column>
-                                    <p:column>
-                                        <p:selectOneMenu value="#{transitMB.currentIdentification}" > 
-                                            <f:selectItems value="#{transitMB.identifications}"/>
+                                    <p:column>                                        
+					<p:selectOneMenu 
+                                            value="#{transitMB.currentIdentification}" 
+                                            id="IdIdentificationType"> 
+                                            <f:selectItems value="#{transitMB.identificationsTypes}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -373,16 +509,30 @@
                                     <p:column>
                                         <h:outputLabel value="NUMERO DE IDENTIFICACION:   "/>                                          
                                     </p:column>
-                                    <p:column>
-                                        <p:inputText value="#{transitMB.currentIdentificationNumber}"/>
+                                    <p:column>                                        
+					<p:inputText 
+                                            value="#{transitMB.currentIdentificationNumber}"
+                                            id="IdIdentificationNumber">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{transitMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>
                                     </p:column>
                                 </p:row>
                                 <p:row>  
                                     <p:column>
                                         <h:outputLabel value="PROCEDENCIA:   "/>                                          
                                     </p:column>
-                                    <p:column>
-                                        <p:inputText value="#{transitMB.currentVictimSource}"/>
+                                    <p:column>                                        
+					<p:inputText 
+                                            value="#{transitMB.currentVictimSource}"
+                                            id="IdVictimSource">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{transitMB.changeForm}"
+                                                render="IdControls"/>
+                                        </p:inputText>
                                     </p:column>
                                 </p:row> 
 				<p:row>  
@@ -392,6 +542,10 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{transitMB.currentVictimCharacteristics}" > 
                                             <f:selectItems value="#{transitMB.victimCharacteristics}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row> 
@@ -402,6 +556,10 @@
                                     <p:column>
                                         <p:selectOneMenu value="#{transitMB.currentProtectiveMeasures}" > 
                                             <f:selectItems value="#{transitMB.protectiveMeasures}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
                                         </p:selectOneMenu>
                                     </p:column>
                                 </p:row> 
@@ -422,8 +580,12 @@
 					(VEHIC1)
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{transitMB.currentInvolvedVehicles}" > 
+                                        <p:selectOneMenu value="#{transitMB.currentVictimVehicle}" > 
 					    <f:selectItems value="#{transitMB.involvedVehicles}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
 					</p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -435,8 +597,12 @@
 					(VEHIC2)
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{transitMB.currentInvolvedVehicles}" > 
+                                        <p:selectOneMenu value="#{transitMB.currentCounterpartVehicle1}" > 
 					    <f:selectItems value="#{transitMB.involvedVehicles}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
 					</p:selectOneMenu>
 				    </p:column>
 				</p:row>
@@ -445,8 +611,12 @@
 					(VEHIC3)
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{transitMB.currentInvolvedVehicles}" > 
+                                        <p:selectOneMenu value="#{transitMB.currentCounterpartVehicle2}" > 
 					    <f:selectItems value="#{transitMB.involvedVehicles}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
 					</p:selectOneMenu>
 				    </p:column>
 				</p:row>
@@ -455,8 +625,12 @@
 					(VEHIC4)
 				    </p:column>
                                     <p:column>
-					<p:selectOneMenu value="#{transitMB.currentInvolvedVehicles}" > 
+					<p:selectOneMenu value="#{transitMB.currentCounterpartVehicle3}" > 
 					    <f:selectItems value="#{transitMB.involvedVehicles}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
 					</p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -477,8 +651,12 @@
 					<h:outputLabel value="(TIPOSERV1)"/>
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{transitMB.currentServiceTypes}" > 
+                                        <p:selectOneMenu value="#{transitMB.currentVictimServiceType}" > 
 					    <f:selectItems value="#{transitMB.serviceTypes}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
 					</p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -490,8 +668,12 @@
 					<h:outputLabel value="(TIPOSERV2)"/>
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{transitMB.currentServiceTypes}" > 
+                                        <p:selectOneMenu value="#{transitMB.currentCounterpartServiceType1}" > 
 					    <f:selectItems value="#{transitMB.serviceTypes}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
 					</p:selectOneMenu>
 				    </p:column>
 				</p:row>
@@ -500,8 +682,12 @@
 					<h:outputLabel value="(TIPOSERV3)"/>
 				    </p:column>
                                     <p:column>
-                                        <p:selectOneMenu value="#{transitMB.currentServiceTypes}" > 
+                                        <p:selectOneMenu value="#{transitMB.currentCounterpartServiceType2}" > 
 					    <f:selectItems value="#{transitMB.serviceTypes}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
 					</p:selectOneMenu>
 				    </p:column>
 				</p:row>
@@ -510,8 +696,12 @@
 					<h:outputLabel value="(TIPOSERV4)"/>
 				    </p:column>
                                     <p:column>
-					<p:selectOneMenu value="#{transitMB.currentServiceTypes}" > 
+					<p:selectOneMenu value="#{transitMB.currentCounterpartServiceType3}" > 
 					    <f:selectItems value="#{transitMB.serviceTypes}"/>
+					    <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls"
+                                                listener="#{transitMB.changeForm}"/>
 					</p:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -528,8 +718,16 @@
                                     <p:column>
                                         <h:outputLabel value="NARRACION DEL HECHO:   "/>
                                     </p:column>
-                                    <p:column>
-                                        <p:inputTextarea value="#{transitMB.currentNarrative}" style="width: 250px; height: 150px;"/>
+                                    <p:column>                                        
+					<p:inputTextarea 
+                                            value="#{transitMB.currentNarrative}" 
+                                            style="width: 250px; height: 150px;"
+                                            id="IdNarrative">
+                                            <f:ajax 
+                                                event="keyup"
+                                                listener="#{transitMB.changeForm}"
+                                                render="IdControls"/>
+					</p:inputTextarea>
                                     </p:column>
                                 </p:row>
 			    </p:panelGrid>
@@ -543,176 +741,202 @@
                                 </p:row>
 				<p:row>  
                                     <p:column >
-                                        <p:panelGrid> 
-                                            <p:row>  
-                                                <p:column colspan="4" styleClass="ui-widget-header">
-                                                    NIVEL DE ALCOHOL DE LA VICTIMA:
-                                                </p:column>
-                                            </p:row> 
-                                            <p:row>  
-                                                <p:column>
-                                                    NIVEL 
-                                                </p:column>
-                                                <p:column colspan="3">
-                                                    <p:inputText 
-                                                        value="#{transitMB.currentAlcoholLevel}"
-                                                        id="IdcurrentAlcoholLevel"
-                                                        disabled="#{transitMB.currentAlcoholLevelDisabled}"/>
-                                                </p:column>                                    
-                                            </p:row> 
-                                            <p:row>  
-                                                <p:column>
-                                                    <h:outputLabel value="sin dato"/>&nbsp;  
-                                                    <p:selectBooleanCheckbox 
-                                                        value="#{transitMB.isNoDataAlcoholLevel}"
-                                                        id="IdNoDataAlcoholLevel"
-                                                        disabled="#{transitMB.isNoDataAlcoholLevelDisabled}">
-                                                        <f:ajax 
-                                                            event="change"
-                                                            listener="#{transitMB.changeAlcoholLevel}"
-                                                            render="IdcurrentAlcoholLevel
-                                                            IdNoDataAlcoholLevel
-                                                            IdNegativeAlcoholLevel
-                                                            IdPendentAlcoholLevel
-                                                            IdUnknownAlcoholLevel"/>
-                                                    </p:selectBooleanCheckbox>
-                                                </p:column>
-                                                <p:column>
-                                                    <h:outputLabel value="Pendiente"/>&nbsp;                                        
-                                                    <p:selectBooleanCheckbox 
-                                                        value="#{transitMB.isPendentAlcoholLevel}"
-                                                        id="IdPendentAlcoholLevel"
-                                                        disabled="#{transitMB.isPendentAlcoholLevelDisabled}">
-                                                        <f:ajax 
-                                                            event="change"
-                                                            listener="#{transitMB.changeAlcoholLevel}"
-                                                            render="IdcurrentAlcoholLevel
-                                                            IdNoDataAlcoholLevel
-                                                            IdNegativeAlcoholLevel
-                                                            IdPendentAlcoholLevel
-                                                            IdUnknownAlcoholLevel"/>
-                                                    </p:selectBooleanCheckbox>
-                                                </p:column>
-                                                <p:column>
-                                                    <h:outputLabel value="ns"/>&nbsp;                                        
-                                                    <p:selectBooleanCheckbox 
-                                                        value="#{transitMB.isUnknownAlcoholLevel}"
-                                                        id="IdUnknownAlcoholLevel"
-                                                        disabled="#{transitMB.isUnknownAlcoholLevelDisabled}">
-                                                        <f:ajax 
-                                                            event="change"
-                                                            listener="#{transitMB.changeAlcoholLevel}"
-                                                            render="IdcurrentAlcoholLevel
-                                                            IdNoDataAlcoholLevel
-                                                            IdNegativeAlcoholLevel
-                                                            IdPendentAlcoholLevel
-                                                            IdUnknownAlcoholLevel"/>
-                                                    </p:selectBooleanCheckbox>
-                                                </p:column>                                                
-                                                <p:column>
-                                                    <h:outputLabel value="negativo"/>&nbsp;                                                                            
-                                                    <p:selectBooleanCheckbox 
-                                                        value="#{transitMB.isNegativeAlcoholLevel}"
-                                                        id="IdNegativeAlcoholLevel"
-                                                        disabled="#{transitMB.isNegativeAlcoholLevelDisabled}">
-                                                        <f:ajax 
-                                                            event="change"
-                                                            listener="#{transitMB.changeAlcoholLevel}"
-                                                            render="IdcurrentAlcoholLevel
-                                                            IdNoDataAlcoholLevel
-                                                            IdNegativeAlcoholLevel
-                                                            IdPendentAlcoholLevel
-                                                            IdUnknownAlcoholLevel"/>
-                                                    </p:selectBooleanCheckbox>
-                                                </p:column>
-                                            </p:row>
-                                        </p:panelGrid>					
+					<p:panelGrid> 
+					    <p:row>  
+						<p:column colspan="4" styleClass="ui-widget-header">
+						    NIVEL DE ALCOHOL DE LA VICTIMA:
+						</p:column>
+					    </p:row> 
+					    <p:row>  
+						<p:column>
+						    NIVEL 
+						</p:column>
+						<p:column colspan="3">
+						    <p:inputText 
+							value="#{transitMB.currentAlcoholLevel}"
+							id="IdcurrentAlcoholLevel"
+							disabled="#{transitMB.currentAlcoholLevelDisabled}">
+							<f:ajax 
+							    event="blur"  
+							    listener="#{transitMB.changeAlcoholLevelNumber}"
+							    render="IdcurrentAlcoholLevel"/> 
+							<f:ajax 
+							    event="keyup"
+							    listener="#{transitMB.changeForm}"
+							    render="IdControls"/>
+						    </p:inputText>
+						</p:column>                                    
+					    </p:row> 
+					    <p:row>  
+						<p:column>
+						    <h:outputLabel value="sin dato"/>&nbsp;  
+						    <p:selectBooleanCheckbox 
+							value="#{transitMB.isNoDataAlcoholLevel}"
+							id="IdNoDataAlcoholLevel"
+							disabled="#{transitMB.isNoDataAlcoholLevelDisabled}">
+							<f:ajax 
+							    event="change"
+							    listener="#{transitMB.changeAlcoholLevel}"
+							    render="IdcurrentAlcoholLevel
+							    IdNoDataAlcoholLevel
+							    IdNegativeAlcoholLevel
+							    IdPendentAlcoholLevel
+							    IdUnknownAlcoholLevel
+							    IdControls"/>
+						    </p:selectBooleanCheckbox>
+						</p:column>
+						<p:column>
+						    <h:outputLabel value="Pendiente"/>&nbsp;                                        
+						    <p:selectBooleanCheckbox 
+							value="#{transitMB.isPendentAlcoholLevel}"
+							id="IdPendentAlcoholLevel"
+							disabled="#{transitMB.isPendentAlcoholLevelDisabled}">
+							<f:ajax 
+							    event="change"
+							    listener="#{transitMB.changeAlcoholLevel}"
+							    render="IdcurrentAlcoholLevel
+							    IdNoDataAlcoholLevel
+							    IdNegativeAlcoholLevel
+							    IdPendentAlcoholLevel
+							    IdUnknownAlcoholLevel
+							    IdControls"/>
+						    </p:selectBooleanCheckbox>
+						</p:column>
+						<p:column>
+						    <h:outputLabel value="ns"/>&nbsp;                                        
+						    <p:selectBooleanCheckbox 
+							value="#{transitMB.isUnknownAlcoholLevel}"
+							id="IdUnknownAlcoholLevel"
+							disabled="#{transitMB.isUnknownAlcoholLevelDisabled}">
+							<f:ajax 
+							    event="change"
+							    listener="#{transitMB.changeAlcoholLevel}"
+							    render="IdcurrentAlcoholLevel
+							    IdNoDataAlcoholLevel
+							    IdNegativeAlcoholLevel
+							    IdPendentAlcoholLevel
+							    IdUnknownAlcoholLevel
+							    IdControls"/>
+						    </p:selectBooleanCheckbox>
+						</p:column>                                                
+						<p:column>
+						    <h:outputLabel value="negativo"/>&nbsp;                                                                            
+						    <p:selectBooleanCheckbox 
+							value="#{transitMB.isNegativeAlcoholLevel}"
+							id="IdNegativeAlcoholLevel"
+							disabled="#{transitMB.isNegativeAlcoholLevelDisabled}">
+							<f:ajax 
+							    event="change"
+							    listener="#{transitMB.changeAlcoholLevel}"
+							    render="IdcurrentAlcoholLevel
+							    IdNoDataAlcoholLevel
+							    IdNegativeAlcoholLevel
+							    IdPendentAlcoholLevel
+							    IdUnknownAlcoholLevel
+							    IdControls"/>
+						    </p:selectBooleanCheckbox>
+						</p:column>
+					    </p:row>
+					</p:panelGrid>				
                                     </p:column>
 				    <p:column>
 					<p:panelGrid> 
-                                            <p:row>  
-                                                <p:column colspan="4" styleClass="ui-widget-header">
-                                                    NIVEL DE ALCOHOL DEL CULPABLE:
-                                                </p:column>
-                                            </p:row> 
-                                            <p:row>  
-                                                <p:column>
-                                                    NIVEL 
-                                                </p:column>
-                                                <p:column colspan="3">
-                                                    <p:inputText 
-                                                        value="#{transitMB.currentAlcoholLevelC}"
-                                                        id="IdcurrentAlcoholLevel2"
-                                                        disabled="#{transitMB.currentAlcoholLevelDisabledC}"/>
-                                                </p:column>                                    
-                                            </p:row> 
-                                            <p:row>  
-                                                <p:column>
-                                                    <h:outputLabel value="sin dato"/>&nbsp;  
-                                                    <p:selectBooleanCheckbox 
-                                                        value="#{transitMB.isNoDataAlcoholLevelC}"
-                                                        id="IdNoDataAlcoholLevel2"
-                                                        disabled="#{transitMB.isNoDataAlcoholLevelDisabledC}">
-                                                        <f:ajax 
-                                                            event="change"
-                                                            listener="#{transitMB.changeAlcoholLevelC}"
-                                                            render="IdcurrentAlcoholLevel2
-                                                            IdNoDataAlcoholLevel2
-                                                            IdNegativeAlcoholLevel2
-                                                            IdPendentAlcoholLevel2
-                                                            IdUnknownAlcoholLevel2"/>
-                                                    </p:selectBooleanCheckbox>
-                                                </p:column>
-                                                <p:column>
-                                                    <h:outputLabel value="Pendiente"/>&nbsp;                                        
-                                                    <p:selectBooleanCheckbox 
-                                                        value="#{transitMB.isPendentAlcoholLevelC}"
-                                                        id="IdPendentAlcoholLevel2"
-                                                        disabled="#{transitMB.isPendentAlcoholLevelDisabledC}">
-                                                        <f:ajax 
-                                                            event="change"
-                                                            listener="#{transitMB.changeAlcoholLevelC}"
-                                                            render="IdcurrentAlcoholLevel2
-                                                            IdNoDataAlcoholLevel2
-                                                            IdNegativeAlcoholLevel2
-                                                            IdPendentAlcoholLevel2
-                                                            IdUnknownAlcoholLevel2"/>
-                                                    </p:selectBooleanCheckbox>
-                                                </p:column>
-                                                <p:column>
-                                                    <h:outputLabel value="ns"/>&nbsp;                                        
-                                                    <p:selectBooleanCheckbox 
-                                                        value="#{transitMB.isUnknownAlcoholLevelC}"
-                                                        id="IdUnknownAlcoholLevel2"
-                                                        disabled="#{transitMB.isUnknownAlcoholLevelDisabledC}">
-                                                        <f:ajax 
-                                                            event="change"
-                                                            listener="#{transitMB.changeAlcoholLevelC}"
-                                                            render="IdcurrentAlcoholLevel2
-                                                            IdNoDataAlcoholLevel2
-                                                            IdNegativeAlcoholLevel2
-                                                            IdPendentAlcoholLevel2
-                                                            IdUnknownAlcoholLevel2"/>
-                                                    </p:selectBooleanCheckbox>
-                                                </p:column>                                                
-                                                <p:column>
-                                                    <h:outputLabel value="negativo"/>&nbsp;                                                                            
-                                                    <p:selectBooleanCheckbox 
-                                                        value="#{transitMB.isNegativeAlcoholLevelC}"
-                                                        id="IdNegativeAlcoholLevel2"
-                                                        disabled="#{transitMB.isNegativeAlcoholLevelDisabledC}">
-                                                        <f:ajax 
-                                                            event="change"
-                                                            listener="#{transitMB.changeAlcoholLevelC}"
-                                                            render="IdcurrentAlcoholLevel2
-                                                            IdNoDataAlcoholLevel2
-                                                            IdNegativeAlcoholLevel2
-                                                            IdPendentAlcoholLevel2
-                                                            IdUnknownAlcoholLevel2"/>
-                                                    </p:selectBooleanCheckbox>
-                                                </p:column>
-                                            </p:row>
-                                        </p:panelGrid>					
+					    <p:row>  
+						<p:column colspan="4" styleClass="ui-widget-header">
+						    NIVEL DE ALCOHOL DEL CULPABLE:
+						</p:column>
+					    </p:row> 
+					    <p:row>  
+						<p:column>
+						    NIVEL 
+						</p:column>
+						<p:column colspan="3">
+						    <p:inputText 
+							value="#{transitMB.currentAlcoholLevelC}"
+							id="IdcurrentAlcoholLevelC"
+							disabled="#{transitMB.currentAlcoholLevelDisabledC}">
+							<f:ajax 
+							    event="blur"  
+							    listener="#{transitMB.changeAlcoholLevelNumberC}"
+							    render="IdcurrentAlcoholLevelC"/> 
+							<f:ajax 
+							    event="keyup"
+							    listener="#{transitMB.changeForm}"
+							    render="IdControls"/>
+						    </p:inputText>
+						</p:column>                                    
+					    </p:row> 
+					    <p:row>  
+						<p:column>
+						    <h:outputLabel value="sin dato"/>&nbsp;  
+						    <p:selectBooleanCheckbox 
+							value="#{transitMB.isNoDataAlcoholLevelC}"
+							id="IdNoDataAlcoholLevelC"
+							disabled="#{transitMB.isNoDataAlcoholLevelDisabledC}">
+							<f:ajax 
+							    event="change"
+							    listener="#{transitMB.changeAlcoholLevelC}"
+							    render="IdcurrentAlcoholLevelC
+							    IdNoDataAlcoholLevelC
+							    IdNegativeAlcoholLevelC
+							    IdPendentAlcoholLevelC
+							    IdUnknownAlcoholLevelC
+							    IdControls"/>
+						    </p:selectBooleanCheckbox>
+						</p:column>
+						<p:column>
+						    <h:outputLabel value="Pendiente"/>&nbsp;                                        
+						    <p:selectBooleanCheckbox 
+							value="#{transitMB.isPendentAlcoholLevelC}"
+							id="IdPendentAlcoholLevelC"
+							disabled="#{transitMB.isPendentAlcoholLevelDisabledC}">
+							<f:ajax 
+							    event="change"
+							    listener="#{transitMB.changeAlcoholLevelC}"
+							    render="IdcurrentAlcoholLevelC
+							    IdNoDataAlcoholLevelC
+							    IdNegativeAlcoholLevelC
+							    IdPendentAlcoholLevelC
+							    IdUnknownAlcoholLevelC
+							    IdControls"/>
+						    </p:selectBooleanCheckbox>
+						</p:column>
+						<p:column>
+						    <h:outputLabel value="ns"/>&nbsp;                                        
+						    <p:selectBooleanCheckbox 
+							value="#{transitMB.isUnknownAlcoholLevelC}"
+							id="IdUnknownAlcoholLevelC"
+							disabled="#{transitMB.isUnknownAlcoholLevelDisabledC}">
+							<f:ajax 
+							    event="change"
+							    listener="#{transitMB.changeAlcoholLevelC}"
+							    render="IdcurrentAlcoholLevelC
+							    IdNoDataAlcoholLevelC
+							    IdNegativeAlcoholLevelC
+							    IdPendentAlcoholLevelC
+							    IdUnknownAlcoholLevelC
+							    IdControls"/>
+						    </p:selectBooleanCheckbox>
+						</p:column>                                                
+						<p:column>
+						    <h:outputLabel value="negativo"/>&nbsp;                                                                            
+						    <p:selectBooleanCheckbox 
+							value="#{transitMB.isNegativeAlcoholLevelC}"
+							id="IdNegativeAlcoholLevelC"
+							disabled="#{transitMB.isNegativeAlcoholLevelDisabledC}">
+							<f:ajax 
+							    event="change"
+							    listener="#{transitMB.changeAlcoholLevelC}"
+							    render="IdcurrentAlcoholLevelC
+							    IdNoDataAlcoholLevelC
+							    IdNegativeAlcoholLevelC
+							    IdPendentAlcoholLevelC
+							    IdUnknownAlcoholLevelC
+							    IdControls"/>
+						    </p:selectBooleanCheckbox>
+						</p:column>
+					    </p:row>
+					</p:panelGrid>				
 				    </p:column>
                                 </p:row>
                             </p:panelGrid>
@@ -725,28 +949,247 @@
                         </p:column>                                       
                     </p:row>
                 </p:panelGrid>
-                <div style="position:fixed; bottom: 3px; right: 20px; ">
-                    <p:panelGrid>
+                <!--===========CONTROLES: PRIMERO SIGUIENTE ANTERIOR ULTIMO REGISTRO ===========================-->
+                <div style="position:fixed; bottom: 3px; right: 20px; ">                    
+                    <p:panelGrid id="IdControls">
                         <p:row >
                             <p:column styleClass="ui-widget-header">
-                                <p:commandButton icon="ui-icon-seek-first" title="Primero"/>
-                                <p:commandButton icon="ui-icon-seek-prev" title="Anterior"/>
+                                <p:commandButton
+                                    icon="ui-icon-seek-first" 
+                                    title="Primero"
+                                    actionListener="#{transitMB.first}"
+                                    oncomplete="#{transitMB.openDialogFirst}"
+                                    update="IdForm1"/>
+                                <p:commandButton 
+                                    icon="ui-icon-seek-prev" 
+                                    title="Anterior"
+                                    actionListener="#{transitMB.previous}"
+                                    oncomplete="#{transitMB.openDialogPrevious}"
+                                    update="IdForm1"/>
                             </p:column>
                             <p:column styleClass="ui-widget-header">
-                                <p:inputText value="new/91"/>
+                                <p:inputText 
+                                    id="IdPosition"
+                                    value="#{transitMB.currentPosition}"
+                                    readonly="true"/>
                             </p:column>
                             <p:column styleClass="ui-widget-header">
-                                <p:commandButton  icon="ui-icon-seek-next" title="Siguiente"/>
-                                <p:commandButton  icon="ui-icon-seek-end" title="Guadar"/>
+                                <p:commandButton  
+                                    icon="ui-icon-seek-next" 
+                                    title="Siguiente"
+                                    actionListener="#{transitMB.next}"
+                                    oncomplete="#{transitMB.openDialogNext}"                                    
+                                    update="IdForm1"/>                             
+                                <p:commandButton  
+                                    icon="ui-icon-seek-end" 
+                                    title="Ulltimo"
+                                    actionListener="#{transitMB.last}"
+                                    oncomplete="#{transitMB.openDialogLast}"
+                                    update="IdForm1"/>
                             </p:column>
-                            <p:column styleClass="ui-widget-header">
-                                <p:commandButton icon="ui-icon-disk" title="Guadar"/>
-                                <p:commandButton icon="ui-icon-plus" title="Nuevo"/>
-                                <p:commandButton icon="ui-icon-close" title="Eliminar"/>
+                            <p:column styleClass="ui-widget-header">                                
+                                <p:commandButton 
+                                    icon="ui-icon-plus" 
+                                    title="Nuevo"
+                                    actionListener="#{transitMB.newForm}"
+                                    oncomplete="#{transitMB.openDialogNew}"
+                                    update="IdForm1"/>
+                                <p:commandButton 
+                                    icon="ui-icon-close" 
+                                    title="Eliminar"  
+                                    actionListener="#{transitMB.deleteRegistry}"
+                                    oncomplete="#{transitMB.openDialogDelete}"                                    
+                                    update="IdForm1"/>
                             </p:column>
                         </p:row>
                     </p:panelGrid>                   
                 </div>
+            </h:form>
+        </ui:define>
+	<!--================================= CUADROS DE DIALOGO ==============================================-->
+        <ui:define name="dialogs">
+            <h:form id="IdForm2">
+                <p:dialog                                                         
+                    id="dialogFirst"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogFirst"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogFirst.hide()"
+                                    value="Si" 
+                                    actionListener="#{transitMB.saveAndGoFirst}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogFirst.hide()"
+                                    actionListener="#{transitMB.noSaveAndGoFirst}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogFirst.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogPrevious"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogPrevious"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogPrevious.hide()"
+                                    value="Si" 
+                                    actionListener="#{transitMB.saveAndGoPrevious}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogPrevious.hide()"
+                                    actionListener="#{transitMB.noSaveAndGoPrevious}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogPrevious.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogNext"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogNext"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogNext.hide()"
+                                    value="Si" 
+                                    actionListener="#{transitMB.saveAndGoNext}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogNext.hide()"
+                                    actionListener="#{transitMB.noSaveAndGoNext}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogNext.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogLast"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogLast"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogLast.hide()"
+                                    value="Si" 
+                                    actionListener="#{transitMB.saveAndGoLast}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogLast.hide()"
+                                    actionListener="#{transitMB.noSaveAndGoLast}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogLast.hide()"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogNew"
+                    modal="true"
+                    resizable="false"
+                    header="Guardar" 
+                    widgetVar="dialogNew"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                El registro ha sido modificado, desea guardar los cambios?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                        
+                                    oncomplete="dialogNew.hide()"
+                                    value="Si" 
+                                    actionListener="#{transitMB.saveAndGoNew}"
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="No" 
+                                    oncomplete="dialogNew.hide()"
+                                    actionListener="#{transitMB.noSaveAndGoNew}"
+                                    update=":IdForm1"/> 
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogNew.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+                <p:dialog                                                         
+                    id="dialogDelete"
+                    modal="true"
+                    resizable="false"
+                    header="Eliminar formulario" 
+                    widgetVar="dialogDelete"> 
+                    <p:panelGrid>
+                        <p:row>  
+                            <p:column style="width: 200px; height: 80px; text-align: center; background:burlywood;">
+                                Confirma la Eliminacion de este registro?
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <p:column styleClass="ui-widget-header">
+                                <p:commandButton                                                           
+                                    oncomplete="dialogDelete.hide()"
+                                    actionListener="#{transitMB.deleteRegistry}"
+                                    value="Eliminar" 
+                                    update=":IdForm1"/>   
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogDelete.hide()"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
             </h:form>
         </ui:define>
     </ui:composition>

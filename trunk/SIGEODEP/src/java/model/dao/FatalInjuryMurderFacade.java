@@ -30,29 +30,7 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
     public FatalInjuryMurderFacade() {
         super(FatalInjuryMurder.class);
     }
-
-    public FatalInjuryMurder findNext(int id) {
-        try {
-            //select * from usuarios where id > 5 order by id asc limit 1;
-            String hql = "Select x from FatalInjuryMurder x where x.fatalInjuryId>:id order by x.fatalInjuryId asc";
-            return (FatalInjuryMurder) em.createQuery(hql).setMaxResults(1).setParameter("id", id).getSingleResult();
-        } catch (Exception e) {
-            //System.out.println(e.toString());
-            return null;//no existe siguiente
-        }
-    }
-
-    public FatalInjuryMurder findPrevious(int id) {
-        try {
-            //select * from usuarios where id > 5 order by id asc limit 1;
-            String hql = "Select x from FatalInjuryMurder x where x.fatalInjuryId<:id order by x.fatalInjuryId desc";
-            return (FatalInjuryMurder) em.createQuery(hql).setMaxResults(1).setParameter("id", id).getSingleResult();
-        } catch (Exception e) {
-            //System.out.println(e.toString());
-            return null;//no existe anterior
-        }
-    }
-
+    
     public int findPosition(int id) {
         ConnectionJDBC conx;
         try {
@@ -76,6 +54,30 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
             return 0;
         }
     }
+
+    public FatalInjuryMurder findNext(int id) {
+        try {
+            //select * from usuarios where id > 5 order by id asc limit 1;
+            String hql = "Select x from FatalInjuryMurder x where x.fatalInjuryId>:id order by x.fatalInjuryId asc";
+            return (FatalInjuryMurder) em.createQuery(hql).setMaxResults(1).setParameter("id", id).getSingleResult();
+        } catch (Exception e) {
+            //System.out.println(e.toString());
+            return null;//no existe siguiente
+        }
+    }
+
+    public FatalInjuryMurder findPrevious(int id) {
+        try {
+            //select * from usuarios where id > 5 order by id asc limit 1;
+            String hql = "Select x from FatalInjuryMurder x where x.fatalInjuryId<:id order by x.fatalInjuryId desc";
+            return (FatalInjuryMurder) em.createQuery(hql).setMaxResults(1).setParameter("id", id).getSingleResult();
+        } catch (Exception e) {
+            //System.out.println(e.toString());
+            return null;//no existe anterior
+        }
+    }
+
+    
 
     public FatalInjuryMurder findFirst() {
         try {

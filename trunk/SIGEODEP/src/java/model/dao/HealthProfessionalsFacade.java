@@ -27,4 +27,17 @@ public class HealthProfessionalsFacade extends AbstractFacade<HealthProfessional
         super(HealthProfessionals.class);
     }
     
+    public HealthProfessionals findByName(String name) {        
+        try
+        {
+            String hql = "Select x from HealthProfessionals x where x.healthProfessionalName=:name";
+            return (HealthProfessionals)em.createQuery(hql).setParameter("name", name).getSingleResult();
+        }
+        catch(Exception e)
+        {
+            System.out.print("Error: "+e.toString()+"------------------------");
+            return null;
+        }
+    }
+    
 }
