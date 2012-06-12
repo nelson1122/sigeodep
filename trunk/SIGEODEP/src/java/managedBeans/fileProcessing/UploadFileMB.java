@@ -61,7 +61,7 @@ public class UploadFileMB {
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private StoredRelationsMB storedRelationsMB;
-    private CopyMB copyMB;
+    //private CopyMB copyMB;
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -73,8 +73,8 @@ public class UploadFileMB {
          * Constructor de la clase
          */
 
-        FacesContext context = FacesContext.getCurrentInstance();
-        copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
+        //FacesContext context = FacesContext.getCurrentInstance();
+        //copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
         //relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
         //formsAndFieldsDataMB=(FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
     }
@@ -360,8 +360,8 @@ public class UploadFileMB {
                 nameFile = "Archivo cargado: " + file.getFileName();
 
                 RelationsGroup newRelationsGroup = new RelationsGroup("TEMP", currentForm, currentSource);
-                copyMB.refresh();
-                copyMB.cleanBackupTables();
+                //copyMB.refresh();
+                //copyMB.cleanBackupTables();
                 relationshipOfVariablesMB.setVarsFound(variablesFound);
                 relationshipOfVariablesMB.setCurrentRelationsGroup(newRelationsGroup);
                 formsAndFieldsDataMB.setNameForm(currentForm);//relationshipOfVariablesMB.set(variablesFound);
