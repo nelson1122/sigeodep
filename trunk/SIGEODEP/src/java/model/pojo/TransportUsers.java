@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "transport_users", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class TransportUsers implements Serializable {
     }
 
     public TransportUsers(Short transportUserId) {
-        this.transportUserId = transportUserId;
+	this.transportUserId = transportUserId;
     }
 
     public TransportUsers(Short transportUserId, String transportUserName) {
-        this.transportUserId = transportUserId;
-        this.transportUserName = transportUserName;
+	this.transportUserId = transportUserId;
+	this.transportUserName = transportUserName;
     }
 
     public Short getTransportUserId() {
-        return transportUserId;
+	return transportUserId;
     }
 
     public void setTransportUserId(Short transportUserId) {
-        this.transportUserId = transportUserId;
+	this.transportUserId = transportUserId;
     }
 
     public String getTransportUserName() {
-        return transportUserName;
+	return transportUserName;
     }
 
     public void setTransportUserName(String transportUserName) {
-        this.transportUserName = transportUserName;
+	this.transportUserName = transportUserName;
     }
 
     @XmlTransient
     public List<NonFatalTransport> getNonFatalTransportList() {
-        return nonFatalTransportList;
+	return nonFatalTransportList;
     }
 
     public void setNonFatalTransportList(List<NonFatalTransport> nonFatalTransportList) {
-        this.nonFatalTransportList = nonFatalTransportList;
+	this.nonFatalTransportList = nonFatalTransportList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (transportUserId != null ? transportUserId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (transportUserId != null ? transportUserId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof TransportUsers)) {
-            return false;
-        }
-        TransportUsers other = (TransportUsers) object;
-        if ((this.transportUserId == null && other.transportUserId != null) || (this.transportUserId != null && !this.transportUserId.equals(other.transportUserId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof TransportUsers)) {
+	    return false;
+	}
+	TransportUsers other = (TransportUsers) object;
+	if ((this.transportUserId == null && other.transportUserId != null) || (this.transportUserId != null && !this.transportUserId.equals(other.transportUserId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.TransportUsers[ transportUserId=" + transportUserId + " ]";
+	return "model.pojo.TransportUsers[ transportUserId=" + transportUserId + " ]";
     }
     
 }

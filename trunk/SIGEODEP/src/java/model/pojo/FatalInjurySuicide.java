@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "fatal_injury_suicide", catalog = "od", schema = "public")
@@ -41,7 +41,7 @@ public class FatalInjurySuicide implements Serializable {
     @JoinColumn(name = "mental_antecedent", referencedColumnName = "boolean_id")
     @ManyToOne
     private BooleanPojo mentalAntecedent;
-    
+
     public FatalInjurySuicide() {
     }
 
@@ -81,20 +81,20 @@ public class FatalInjurySuicide implements Serializable {
 	this.fatalInjuries = fatalInjuries;
     }
 
-    public BooleanPojo getMentalAntecedent() {
-	return mentalAntecedent;
-    }
-
-    public void setMentalAntecedent(BooleanPojo mentalAntecedent) {
-	this.mentalAntecedent = mentalAntecedent;
-    }
-
     public BooleanPojo getPreviousAttempt() {
 	return previousAttempt;
     }
 
     public void setPreviousAttempt(BooleanPojo previousAttempt) {
 	this.previousAttempt = previousAttempt;
+    }
+
+    public BooleanPojo getMentalAntecedent() {
+	return mentalAntecedent;
+    }
+
+    public void setMentalAntecedent(BooleanPojo mentalAntecedent) {
+	this.mentalAntecedent = mentalAntecedent;
     }
 
     @Override
@@ -119,7 +119,7 @@ public class FatalInjurySuicide implements Serializable {
 
     @Override
     public String toString() {
-	return "nuevoPaquete.FatalInjurySuicide[ fatalInjuryId=" + fatalInjuryId + " ]";
+	return "model.pojo.FatalInjurySuicide[ fatalInjuryId=" + fatalInjuryId + " ]";
     }
     
 }

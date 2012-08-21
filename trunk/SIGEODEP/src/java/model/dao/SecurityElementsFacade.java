@@ -11,7 +11,7 @@ import model.pojo.SecurityElements;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class SecurityElementsFacade extends AbstractFacade<SecurityElements> {
@@ -20,11 +20,11 @@ public class SecurityElementsFacade extends AbstractFacade<SecurityElements> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public SecurityElementsFacade() {
-        super(SecurityElements.class);
+	super(SecurityElements.class);
     }
     
 }

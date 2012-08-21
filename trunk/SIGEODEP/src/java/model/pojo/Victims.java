@@ -15,16 +15,16 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
-@Table(name = "victims", catalog = "od", schema = "public")
+@Table(name = "victims", catalog = "od", schema = "public", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"victim_id"})})
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Victims.findAll", query = "SELECT v FROM Victims v"),
     @NamedQuery(name = "Victims.findByVictimNid", query = "SELECT v FROM Victims v WHERE v.victimNid = :victimNid"),
-    @NamedQuery(name = "Victims.findByVictimFirstname", query = "SELECT v FROM Victims v WHERE v.victimFirstname = :victimFirstname"),
-    @NamedQuery(name = "Victims.findByVictimLastname", query = "SELECT v FROM Victims v WHERE v.victimLastname = :victimLastname"),
+    @NamedQuery(name = "Victims.findByVictimName", query = "SELECT v FROM Victims v WHERE v.victimName = :victimName"),    
     @NamedQuery(name = "Victims.findByVictimAge", query = "SELECT v FROM Victims v WHERE v.victimAge = :victimAge"),
     @NamedQuery(name = "Victims.findByAgeTypeId", query = "SELECT v FROM Victims v WHERE v.ageTypeId = :ageTypeId"),
     @NamedQuery(name = "Victims.findByVictimTelephone", query = "SELECT v FROM Victims v WHERE v.victimTelephone = :victimTelephone"),
@@ -39,11 +39,8 @@ public class Victims implements Serializable {
     @Column(name = "victim_nid", length = 20)
     private String victimNid;
     @Size(max = 2147483647)
-    @Column(name = "victim_firstname", length = 2147483647)
-    private String victimFirstname;
-    @Size(max = 2147483647)
-    @Column(name = "victim_lastname", length = 2147483647)
-    private String victimLastname;
+    @Column(name = "victim_name", length = 2147483647)
+    private String victimName;    
     @Column(name = "victim_age")
     private Short victimAge;
     @Column(name = "age_type_id")
@@ -59,6 +56,8 @@ public class Victims implements Serializable {
     private Date victimDateOfBirth;
     @Column(name = "victim_class")
     private Short victimClass;
+    @Column(name = "stranger")
+    private Boolean stranger;
     @Id
     @Basic(optional = false)
     @NotNull
@@ -71,15 +70,17 @@ public class Victims implements Serializable {
         @JoinColumn(name = "vulnerable_group_id", referencedColumnName = "vulnerable_group_id", nullable = false)})
     @ManyToMany
     private List<VulnerableGroups> vulnerableGroupsList;
-    @JoinColumn(name = "vulnerable_group_id", referencedColumnName = "vulnerable_group_id")
-    @ManyToOne
-    private VulnerableGroups vulnerableGroupId;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "victims")
+    private List<Others> othersList;
     @JoinColumn(name = "victim_neighborhood_id", referencedColumnName = "neighborhood_id")
     @ManyToOne
     private Neighborhoods victimNeighborhoodId;
     @JoinColumn(name = "job_id", referencedColumnName = "job_id")
     @ManyToOne
     private Jobs jobId;
+    @JoinColumn(name = "insurance_id", referencedColumnName = "insurance_id")
+    @ManyToOne
+    private Insurance insuranceId;
     @JoinColumn(name = "type_id", referencedColumnName = "type_id")
     @ManyToOne
     private IdTypes typeId;
@@ -89,204 +90,213 @@ public class Victims implements Serializable {
     @JoinColumn(name = "ethnic_group_id", referencedColumnName = "ethnic_group_id")
     @ManyToOne
     private EthnicGroups ethnicGroupId;
-    @JoinColumn(name = "eps_id", referencedColumnName = "eps_id")
-    @ManyToOne
-    private Eps epsId;
     @OneToMany(mappedBy = "victimId")
     private List<NonFatalInjuries> nonFatalInjuriesList;
+    @OneToMany(mappedBy = "victimId")
+    private List<FatalInjuries> fatalInjuriesList;
 
     public Victims() {
     }
 
     public Victims(Integer victimId) {
-        this.victimId = victimId;
+	this.victimId = victimId;
     }
 
     public String getVictimNid() {
-        return victimNid;
+	return victimNid;
     }
 
     public void setVictimNid(String victimNid) {
-        this.victimNid = victimNid;
+	this.victimNid = victimNid;
+    }
+    
+    public Boolean getStranger() {
+        return stranger;
     }
 
-    public String getVictimFirstname() {
-        return victimFirstname;
+    public void setStranger(Boolean stranger) {
+        this.stranger = stranger;
     }
 
-    public void setVictimFirstname(String victimFirstname) {
-        this.victimFirstname = victimFirstname;
+    public String getVictimName() {
+	return victimName;
     }
 
-    public String getVictimLastname() {
-        return victimLastname;
-    }
-
-    public void setVictimLastname(String victimLastname) {
-        this.victimLastname = victimLastname;
+    public void setVictimName(String victimName) {
+	this.victimName = victimName;
     }
 
     public Short getVictimAge() {
-        return victimAge;
+	return victimAge;
     }
 
     public void setVictimAge(Short victimAge) {
-        this.victimAge = victimAge;
+	this.victimAge = victimAge;
     }
 
     public Short getAgeTypeId() {
-        return ageTypeId;
+	return ageTypeId;
     }
 
     public void setAgeTypeId(Short ageTypeId) {
-        this.ageTypeId = ageTypeId;
+	this.ageTypeId = ageTypeId;
     }
 
     public String getVictimTelephone() {
-        return victimTelephone;
+	return victimTelephone;
     }
 
     public void setVictimTelephone(String victimTelephone) {
-        this.victimTelephone = victimTelephone;
+	this.victimTelephone = victimTelephone;
     }
 
     public String getVictimAddress() {
-        return victimAddress;
+	return victimAddress;
     }
 
     public void setVictimAddress(String victimAddress) {
-        this.victimAddress = victimAddress;
+	this.victimAddress = victimAddress;
     }
 
     public Date getVictimDateOfBirth() {
-        return victimDateOfBirth;
+	return victimDateOfBirth;
     }
 
     public void setVictimDateOfBirth(Date victimDateOfBirth) {
-        this.victimDateOfBirth = victimDateOfBirth;
+	this.victimDateOfBirth = victimDateOfBirth;
     }
 
     public Short getVictimClass() {
-        return victimClass;
+	return victimClass;
     }
 
     public void setVictimClass(Short victimClass) {
-        this.victimClass = victimClass;
+	this.victimClass = victimClass;
     }
 
     public Integer getVictimId() {
-        return victimId;
+	return victimId;
     }
 
     public void setVictimId(Integer victimId) {
-        this.victimId = victimId;
+	this.victimId = victimId;
     }
 
     public Short getResidenceMunicipality() {
-        return residenceMunicipality;
+	return residenceMunicipality;
     }
 
     public void setResidenceMunicipality(Short residenceMunicipality) {
-        this.residenceMunicipality = residenceMunicipality;
+	this.residenceMunicipality = residenceMunicipality;
     }
 
     @XmlTransient
     public List<VulnerableGroups> getVulnerableGroupsList() {
-        return vulnerableGroupsList;
+	return vulnerableGroupsList;
     }
 
     public void setVulnerableGroupsList(List<VulnerableGroups> vulnerableGroupsList) {
-        this.vulnerableGroupsList = vulnerableGroupsList;
+	this.vulnerableGroupsList = vulnerableGroupsList;
     }
 
-    public VulnerableGroups getVulnerableGroupId() {
-        return vulnerableGroupId;
+    @XmlTransient
+    public List<Others> getOthersList() {
+	return othersList;
     }
 
-    public void setVulnerableGroupId(VulnerableGroups vulnerableGroupId) {
-        this.vulnerableGroupId = vulnerableGroupId;
+    public void setOthersList(List<Others> othersList) {
+	this.othersList = othersList;
     }
 
     public Neighborhoods getVictimNeighborhoodId() {
-        return victimNeighborhoodId;
+	return victimNeighborhoodId;
     }
 
     public void setVictimNeighborhoodId(Neighborhoods victimNeighborhoodId) {
-        this.victimNeighborhoodId = victimNeighborhoodId;
+	this.victimNeighborhoodId = victimNeighborhoodId;
     }
 
     public Jobs getJobId() {
-        return jobId;
+	return jobId;
     }
 
     public void setJobId(Jobs jobId) {
-        this.jobId = jobId;
+	this.jobId = jobId;
+    }
+    
+    public Insurance getInsuranceId() {
+        return insuranceId;
+    }
+
+    public void setInsuranceId(Insurance insuranceId) {
+        this.insuranceId = insuranceId;
     }
 
     public IdTypes getTypeId() {
-        return typeId;
+	return typeId;
     }
 
     public void setTypeId(IdTypes typeId) {
-        this.typeId = typeId;
+	this.typeId = typeId;
     }
 
     public Genders getGenderId() {
-        return genderId;
+	return genderId;
     }
 
     public void setGenderId(Genders genderId) {
-        this.genderId = genderId;
+	this.genderId = genderId;
     }
 
     public EthnicGroups getEthnicGroupId() {
-        return ethnicGroupId;
+	return ethnicGroupId;
     }
 
     public void setEthnicGroupId(EthnicGroups ethnicGroupId) {
-        this.ethnicGroupId = ethnicGroupId;
-    }
-
-    public Eps getEpsId() {
-        return epsId;
-    }
-
-    public void setEpsId(Eps epsId) {
-        this.epsId = epsId;
+	this.ethnicGroupId = ethnicGroupId;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
+    }
+
+    @XmlTransient
+    public List<FatalInjuries> getFatalInjuriesList() {
+	return fatalInjuriesList;
+    }
+
+    public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
+	this.fatalInjuriesList = fatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (victimId != null ? victimId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (victimId != null ? victimId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Victims)) {
-            return false;
-        }
-        Victims other = (Victims) object;
-        if ((this.victimId == null && other.victimId != null) || (this.victimId != null && !this.victimId.equals(other.victimId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Victims)) {
+	    return false;
+	}
+	Victims other = (Victims) object;
+	if ((this.victimId == null && other.victimId != null) || (this.victimId != null && !this.victimId.equals(other.victimId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "j.Victims[ victimId=" + victimId + " ]";
+	return "model.pojo.Victims[ victimId=" + victimId + " ]";
     }
     
 }

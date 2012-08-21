@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "ampm", catalog = "od", schema = "public")
@@ -36,48 +36,48 @@ public class Ampm implements Serializable {
     }
 
     public Ampm(Short ampmId) {
-        this.ampmId = ampmId;
+	this.ampmId = ampmId;
     }
 
     public Short getAmpmId() {
-        return ampmId;
+	return ampmId;
     }
 
     public void setAmpmId(Short ampmId) {
-        this.ampmId = ampmId;
+	this.ampmId = ampmId;
     }
 
     public String getAmpmName() {
-        return ampmName;
+	return ampmName;
     }
 
     public void setAmpmName(String ampmName) {
-        this.ampmName = ampmName;
+	this.ampmName = ampmName;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (ampmId != null ? ampmId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (ampmId != null ? ampmId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Ampm)) {
-            return false;
-        }
-        Ampm other = (Ampm) object;
-        if ((this.ampmId == null && other.ampmId != null) || (this.ampmId != null && !this.ampmId.equals(other.ampmId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Ampm)) {
+	    return false;
+	}
+	Ampm other = (Ampm) object;
+	if ((this.ampmId == null && other.ampmId != null) || (this.ampmId != null && !this.ampmId.equals(other.ampmId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Ampm[ ampmId=" + ampmId + " ]";
+	return "model.pojo.Ampm[ ampmId=" + ampmId + " ]";
     }
     
 }

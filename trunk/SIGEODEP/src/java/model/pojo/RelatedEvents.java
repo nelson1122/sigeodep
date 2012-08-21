@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "related_events", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class RelatedEvents implements Serializable {
     }
 
     public RelatedEvents(Short relatedEventId) {
-        this.relatedEventId = relatedEventId;
+	this.relatedEventId = relatedEventId;
     }
 
     public RelatedEvents(Short relatedEventId, String relatedEventName) {
-        this.relatedEventId = relatedEventId;
-        this.relatedEventName = relatedEventName;
+	this.relatedEventId = relatedEventId;
+	this.relatedEventName = relatedEventName;
     }
 
     public Short getRelatedEventId() {
-        return relatedEventId;
+	return relatedEventId;
     }
 
     public void setRelatedEventId(Short relatedEventId) {
-        this.relatedEventId = relatedEventId;
+	this.relatedEventId = relatedEventId;
     }
 
     public String getRelatedEventName() {
-        return relatedEventName;
+	return relatedEventName;
     }
 
     public void setRelatedEventName(String relatedEventName) {
-        this.relatedEventName = relatedEventName;
+	this.relatedEventName = relatedEventName;
     }
 
     @XmlTransient
     public List<FatalInjurySuicide> getFatalInjurySuicideList() {
-        return fatalInjurySuicideList;
+	return fatalInjurySuicideList;
     }
 
     public void setFatalInjurySuicideList(List<FatalInjurySuicide> fatalInjurySuicideList) {
-        this.fatalInjurySuicideList = fatalInjurySuicideList;
+	this.fatalInjurySuicideList = fatalInjurySuicideList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (relatedEventId != null ? relatedEventId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (relatedEventId != null ? relatedEventId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof RelatedEvents)) {
-            return false;
-        }
-        RelatedEvents other = (RelatedEvents) object;
-        if ((this.relatedEventId == null && other.relatedEventId != null) || (this.relatedEventId != null && !this.relatedEventId.equals(other.relatedEventId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof RelatedEvents)) {
+	    return false;
+	}
+	RelatedEvents other = (RelatedEvents) object;
+	if ((this.relatedEventId == null && other.relatedEventId != null) || (this.relatedEventId != null && !this.relatedEventId.equals(other.relatedEventId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.RelatedEvents[ relatedEventId=" + relatedEventId + " ]";
+	return "model.pojo.RelatedEvents[ relatedEventId=" + relatedEventId + " ]";
     }
     
 }

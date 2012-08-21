@@ -4,6 +4,7 @@
  */
 package model.dao;
 
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -11,10 +12,11 @@ import model.pojo.Municipalities;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class MunicipalitiesFacade extends AbstractFacade<Municipalities> {
+
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
@@ -26,31 +28,48 @@ public class MunicipalitiesFacade extends AbstractFacade<Municipalities> {
     public MunicipalitiesFacade() {
         super(Municipalities.class);
     }
-    
-    public Municipalities findByName(String name, short depId) {
-	try
-	{
-        String hql = "Select x from Municipalities x where x.municipalityName=:name AND x.municipalitiesPK.departamentId=:depId";
-        return (Municipalities)em.createQuery(hql).setParameter("name", name).setParameter("depId", depId).getSingleResult();
-	}
-	catch(Exception e)
-	{
-	    System.out.println("Error: "+e.toString()+"-------------");
-	    return null;
-	}
+
+    public int findMax() {
+        try {
+            String hql = "Select MAX(x.jobId) from Municipalities x";
+            return em.createQuery(hql, Short.class).getSingleResult();
+        } catch (Exception e) {
+            return 0;
+        }
     }
-    
-    public Municipalities findById(short munId, short depId) {
-	try
-	{
-        String hql = "Select x from Municipalities x where x.municipalitiesPK.municipalityId=:munId AND x.municipalitiesPK.departamentId=:depId";
-        return (Municipalities)em.createQuery(hql).setParameter("munId", munId).setParameter("depId", depId).getSingleResult();
-	}
-	catch(Exception e)
-	{
-	    System.out.println("Error: "+e.toString()+"-------------");
-	    return null;
-	}
+
+    /*
+     * determinar maximo segun departamento
+     */
+    public short findMax(Short dep) {
+        String hql;
+        try {
+            hql = "Select MAX(x.municipalitiesPK.municipalityId) from Municipalities x where "
+                    + "x.municipalitiesPK.departamentId = " + dep + "";
+            return em.createQuery(hql, Short.class).getSingleResult();
+        } catch (Exception e) {
+            return 0;
+        }
     }
-    
+
+    public List<Municipalities> findCriteria(int variable, String value) {
+        String hql;
+        try {
+            switch (variable) {
+                case 1:
+                    hql = "Select x from Municipalities x where x.municipalityName like '" + value + "%'";
+                    return em.createQuery(hql).getResultList();
+                case 2:
+                    List<Municipalities> neighborhoodsList = (List<Municipalities>) em.createNativeQuery("select * from municipalities where municipality_id::text like '" + value + "%';", Municipalities.class).getResultList();
+                    return neighborhoodsList;
+                case 3:
+                    hql = "Select x from Municipalities x where x.departaments.departamentName like '" + value + "%'";
+                    return em.createQuery(hql).getResultList();
+            }
+        } catch (Exception e) {
+            System.out.println(e.toString() + "----------------------------------------------------");
+            return null;
+        }
+        return null;
+    }
 }

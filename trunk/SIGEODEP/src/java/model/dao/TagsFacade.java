@@ -11,7 +11,7 @@ import model.pojo.Tags;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class TagsFacade extends AbstractFacade<Tags> {
@@ -20,11 +20,11 @@ public class TagsFacade extends AbstractFacade<Tags> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public TagsFacade() {
-        super(Tags.class);
+	super(Tags.class);
     }
     
 }

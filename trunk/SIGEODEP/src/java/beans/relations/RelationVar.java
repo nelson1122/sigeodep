@@ -28,6 +28,7 @@ public class RelationVar {
         this.dateFormat=dateFormat;
         this.relationValueList = new ArrayList<RelationValue>();
         this.discardedValues=new ArrayList<String>();
+        
     }
     
     public boolean compareNames(String e, String f) {

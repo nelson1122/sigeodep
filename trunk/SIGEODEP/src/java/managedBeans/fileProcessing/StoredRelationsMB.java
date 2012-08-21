@@ -7,6 +7,7 @@ package managedBeans.fileProcessing;
 import beans.relations.RelationValue;
 import beans.relations.RelationVar;
 import beans.relations.RelationsGroup;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -23,7 +24,7 @@ import model.pojo.*;
  */
 @ManagedBean(name = "storedRelationsMB")
 @SessionScoped
-public class StoredRelationsMB {
+public class StoredRelationsMB implements Serializable{
 
     private String currentRelationGroupName;
     private List<String> relationGroups;
@@ -44,6 +45,9 @@ public class StoredRelationsMB {
     RelationVariablesFacade relationVariablesFacade;
     @EJB
     RelationValuesFacade relationValuesFacade;
+    @EJB
+    RelationsDiscardedValuesFacade relationDiscardedValuesFacade;
+    
     private UploadFileMB uploadFileMB;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private RelationsGroup currentRelationsGroup;//grupo de relaciones actual
@@ -106,7 +110,7 @@ public class StoredRelationsMB {
                 selectRelationGroup.getNameRelationGroup(),
                 selectRelationGroup.getFormId().getFormId(),
                 selectRelationGroup.getSourceId().toString());
-
+        
         for (int i = 0; i < relationVariablesList.size(); i++) {
             RelationVar newRelationVar = new RelationVar(
                     relationVariablesList.get(i).getNameExpected(),
@@ -114,27 +118,29 @@ public class StoredRelationsMB {
                     relationVariablesList.get(i).getFieldType(),
                     relationVariablesList.get(i).getComparisonForCode(),
                     relationVariablesList.get(i).getDateFormat());
+            //cargo los valores descartados
+            ArrayList<String> discardedValues=new ArrayList<String>();
+            if(relationVariablesList.get(i).getRelationsDiscardedValuesList()!=null){
+                for (int j = 0; j < relationVariablesList.get(i).getRelationsDiscardedValuesList().size(); j++) {
+                    discardedValues.add(relationVariablesList.get(i).getRelationsDiscardedValuesList().get(j).getDiscardedValueName());
+                }                
+            }
+            newRelationVar.setDiscardedValues(discardedValues);
+            
             currentRelationsGroup.addRelationVar(newRelationVar);
-
             relationValuesList = relationValuesFacade.findByRelationVariables(relationVariablesList.get(i).getIdRelationVariables());
             for (int j = 0; j < relationValuesList.size(); j++) {
-
                 newRelationVar.addRelationValue(
                         relationValuesList.get(j).getNameExpected(),
                         relationValuesList.get(j).getNameFound());
-            }
+            }           
         }
-
-        //recargo los controles        
+        //recargo los controles de relackoan de variables
         relationshipOfVariablesMB.setCurrentRelationsGroup(currentRelationsGroup);
         relationshipOfVariablesMB.loadRelatedVars();
         relationshipOfVariablesMB.loadVarsExpectedAndFound();
         relationshipOfVariablesMB.setValuesExpected(new ArrayList<String>());
         relationshipOfVariablesMB.setValuesFound(new ArrayList<String>());
-        //valuesFound = new ArrayList<String>();
-        //currentValueExpected = "";
-        //currentValueFound = "";
-        //valuesExpected = new ArrayList<String>();
 
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "El grupo de relaciones (" + currentRelationGroupName + ") se ha cargado satisfactoriamente"));
 
@@ -145,14 +151,24 @@ public class StoredRelationsMB {
 
 
             RelationGroup selectRelationGroup = relationGroupFacade.findByName(currentRelationGroupName);
-            List<RelationVariables> relationVariablesList = selectRelationGroup.getRelationVariablesList();
+            List<RelationVariables> relationVariablesList = selectRelationGroup.getRelationVariablesList();            
             for (int i = 0; i < relationVariablesList.size(); i++) {
+                List<RelationsDiscardedValues> relationDiscardedValuesList = relationVariablesList.get(i).getRelationsDiscardedValuesList();
+                for (int j = 0; j < relationDiscardedValuesList.size(); j++) {
+                    relationDiscardedValuesFacade.remove(relationDiscardedValuesList.get(j));
+                }                              
+                relationVariablesList.get(i).setRelationsDiscardedValuesList(null);
+                
                 List<RelationValues> relationValuesList = relationVariablesList.get(i).getRelationValuesList();
                 for (int j = 0; j < relationValuesList.size(); j++) {
                     relationValuesFacade.remove(relationValuesList.get(j));
-                }
+                }              
+                //relationVariablesFacade.findAll();
+                relationVariablesList.get(i).setRelationValuesList(null);
                 relationVariablesFacade.remove(relationVariablesList.get(i));
             }
+            //relationGroupFacade.findAll();
+            selectRelationGroup.setRelationVariablesList(null);
             relationGroupFacade.remove(selectRelationGroup);
 
             loadRelatedGroups();
@@ -173,20 +189,23 @@ public class StoredRelationsMB {
         int idRelationGroup;
         int idRelationVariables;
         int idRelationValues;
+        int idRelationDiscarded;
 
-        idRelationGroup = relationGroupFacade.findMaxId() + 1;
-        idRelationVariables = relationVariablesFacade.findMaxId() + 1;
-        idRelationValues = relationValuesFacade.findMaxId() + 1;
+        idRelationGroup = relationGroupFacade.findMaxId();
+        idRelationVariables = relationVariablesFacade.findMaxId();
+        idRelationValues = relationValuesFacade.findMaxId();
+        idRelationDiscarded = relationDiscardedValuesFacade.findMaxId();
 
         newRelationGroup.setSourceId(selectedSource.getSourceId());
         newRelationGroup.setNameRelationGroup(newConfigurationName);
-        newRelationGroup.setIdRelationGroup(idRelationGroup);//numero de registros en la tabla de relaciones
+        newRelationGroup.setIdRelationGroup(idRelationGroup+1);
         newRelationGroup.setFormId(selectedForm);
         //persiste correctamente
         relationGroupFacade.create(newRelationGroup);//persistir en la tabla relation_group
 
         List<RelationVar> relationVarList = currentRelationsGroup.getRelationVarList();
         ArrayList<RelationValue> relationValuesList;
+        ArrayList<String> relationDiscartedValuesList;
 
 
         for (int i = 0; i < relationVarList.size(); i++) {//recorrer lista de relaciones            
@@ -213,6 +232,15 @@ public class StoredRelationsMB {
                 newRelationValues.setNameFound(relationValuesList.get(j).getNameFound());
                 //aqui es donde no quiere persistir
                 relationValuesFacade.create(newRelationValues);//persisto el objeto
+            }
+            relationDiscartedValuesList= relationVarList.get(i).getDiscardedValues();
+            for (int j = 0; j < relationDiscartedValuesList.size(); j++) {//recorrer lista de valores
+                idRelationDiscarded++;//por prueba
+                RelationsDiscardedValues newRelationDiscardedValues = new RelationsDiscardedValues();
+                newRelationDiscardedValues.setDiscardedValueName(relationDiscartedValuesList.get(j));
+                newRelationDiscardedValues.setIdRelationVariables(newRelationVariables);
+                newRelationDiscardedValues.setIdDiscardedValue(idRelationDiscarded);                
+                relationDiscardedValuesFacade.create(newRelationDiscardedValues);//persisto el objeto
             }
         }
         newConfigurationName = "";

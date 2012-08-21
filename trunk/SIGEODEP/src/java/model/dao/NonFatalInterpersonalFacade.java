@@ -11,7 +11,7 @@ import model.pojo.NonFatalInterpersonal;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class NonFatalInterpersonalFacade extends AbstractFacade<NonFatalInterpersonal> {
@@ -20,11 +20,11 @@ public class NonFatalInterpersonalFacade extends AbstractFacade<NonFatalInterper
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public NonFatalInterpersonalFacade() {
-        super(NonFatalInterpersonal.class);
+	super(NonFatalInterpersonal.class);
     }
     
 }

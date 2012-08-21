@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "relation_variables", catalog = "od", schema = "public")
@@ -53,102 +53,113 @@ public class RelationVariables implements Serializable {
     private RelationGroup idRelationGroup;
     @OneToMany(mappedBy = "idRelationVariables")
     private List<RelationValues> relationValuesList;
+    @OneToMany(mappedBy = "idRelationVariables")
+    private List<RelationsDiscardedValues> relationsDiscardedValuesList;
 
     public RelationVariables() {
     }
 
     public RelationVariables(Integer idRelationVariables) {
-        this.idRelationVariables = idRelationVariables;
+	this.idRelationVariables = idRelationVariables;
     }
 
     public Integer getIdRelationVariables() {
-        return idRelationVariables;
+	return idRelationVariables;
     }
 
     public void setIdRelationVariables(Integer idRelationVariables) {
-        this.idRelationVariables = idRelationVariables;
+	this.idRelationVariables = idRelationVariables;
     }
 
     public String getNameExpected() {
-        return nameExpected;
+	return nameExpected;
     }
 
     public void setNameExpected(String nameExpected) {
-        this.nameExpected = nameExpected;
+	this.nameExpected = nameExpected;
     }
 
     public String getNameFound() {
-        return nameFound;
+	return nameFound;
     }
 
     public void setNameFound(String nameFound) {
-        this.nameFound = nameFound;
+	this.nameFound = nameFound;
     }
 
     public String getDateFormat() {
-        return dateFormat;
+	return dateFormat;
     }
 
     public void setDateFormat(String dateFormat) {
-        this.dateFormat = dateFormat;
+	this.dateFormat = dateFormat;
     }
 
     public String getFieldType() {
-        return fieldType;
+	return fieldType;
     }
 
     public void setFieldType(String fieldType) {
-        this.fieldType = fieldType;
+	this.fieldType = fieldType;
     }
 
     public Boolean getComparisonForCode() {
-        return comparisonForCode;
+	return comparisonForCode;
     }
 
     public void setComparisonForCode(Boolean comparisonForCode) {
-        this.comparisonForCode = comparisonForCode;
+	this.comparisonForCode = comparisonForCode;
     }
 
     public RelationGroup getIdRelationGroup() {
-        return idRelationGroup;
+	return idRelationGroup;
     }
 
     public void setIdRelationGroup(RelationGroup idRelationGroup) {
-        this.idRelationGroup = idRelationGroup;
+	this.idRelationGroup = idRelationGroup;
     }
 
     @XmlTransient
+    public List<RelationsDiscardedValues> getRelationsDiscardedValuesList() {
+        return relationsDiscardedValuesList;
+    }
+
+    public void setRelationsDiscardedValuesList(List<RelationsDiscardedValues> relationsDiscardedValuesList) {
+        this.relationsDiscardedValuesList = relationsDiscardedValuesList;
+    }
+    
+    @XmlTransient
     public List<RelationValues> getRelationValuesList() {
-        return relationValuesList;
+	return relationValuesList;
     }
 
     public void setRelationValuesList(List<RelationValues> relationValuesList) {
-        this.relationValuesList = relationValuesList;
+	this.relationValuesList = relationValuesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (idRelationVariables != null ? idRelationVariables.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (idRelationVariables != null ? idRelationVariables.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof RelationVariables)) {
-            return false;
-        }
-        RelationVariables other = (RelationVariables) object;
-        if ((this.idRelationVariables == null && other.idRelationVariables != null) || (this.idRelationVariables != null && !this.idRelationVariables.equals(other.idRelationVariables))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof RelationVariables)) {
+	    return false;
+	}
+	RelationVariables other = (RelationVariables) object;
+	if ((this.idRelationVariables == null && other.idRelationVariables != null) || (this.idRelationVariables != null && !this.idRelationVariables.equals(other.idRelationVariables))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.RelationVariables[ idRelationVariables=" + idRelationVariables + " ]";
+	return "model.pojo.RelationVariables[ idRelationVariables=" + idRelationVariables + " ]";
     }
     
 }

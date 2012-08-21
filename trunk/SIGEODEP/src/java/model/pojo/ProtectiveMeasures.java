@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "protective_measures", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class ProtectiveMeasures implements Serializable {
     }
 
     public ProtectiveMeasures(Short protectiveMeasuresId) {
-        this.protectiveMeasuresId = protectiveMeasuresId;
+	this.protectiveMeasuresId = protectiveMeasuresId;
     }
 
     public ProtectiveMeasures(Short protectiveMeasuresId, String protectiveMeasuresName) {
-        this.protectiveMeasuresId = protectiveMeasuresId;
-        this.protectiveMeasuresName = protectiveMeasuresName;
+	this.protectiveMeasuresId = protectiveMeasuresId;
+	this.protectiveMeasuresName = protectiveMeasuresName;
     }
 
     public Short getProtectiveMeasuresId() {
-        return protectiveMeasuresId;
+	return protectiveMeasuresId;
     }
 
     public void setProtectiveMeasuresId(Short protectiveMeasuresId) {
-        this.protectiveMeasuresId = protectiveMeasuresId;
+	this.protectiveMeasuresId = protectiveMeasuresId;
     }
 
     public String getProtectiveMeasuresName() {
-        return protectiveMeasuresName;
+	return protectiveMeasuresName;
     }
 
     public void setProtectiveMeasuresName(String protectiveMeasuresName) {
-        this.protectiveMeasuresName = protectiveMeasuresName;
+	this.protectiveMeasuresName = protectiveMeasuresName;
     }
 
     @XmlTransient
     public List<FatalInjuryTraffic> getFatalInjuryTrafficList() {
-        return fatalInjuryTrafficList;
+	return fatalInjuryTrafficList;
     }
 
     public void setFatalInjuryTrafficList(List<FatalInjuryTraffic> fatalInjuryTrafficList) {
-        this.fatalInjuryTrafficList = fatalInjuryTrafficList;
+	this.fatalInjuryTrafficList = fatalInjuryTrafficList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (protectiveMeasuresId != null ? protectiveMeasuresId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (protectiveMeasuresId != null ? protectiveMeasuresId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof ProtectiveMeasures)) {
-            return false;
-        }
-        ProtectiveMeasures other = (ProtectiveMeasures) object;
-        if ((this.protectiveMeasuresId == null && other.protectiveMeasuresId != null) || (this.protectiveMeasuresId != null && !this.protectiveMeasuresId.equals(other.protectiveMeasuresId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof ProtectiveMeasures)) {
+	    return false;
+	}
+	ProtectiveMeasures other = (ProtectiveMeasures) object;
+	if ((this.protectiveMeasuresId == null && other.protectiveMeasuresId != null) || (this.protectiveMeasuresId != null && !this.protectiveMeasuresId.equals(other.protectiveMeasuresId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.ProtectiveMeasures[ protectiveMeasuresId=" + protectiveMeasuresId + " ]";
+	return "model.pojo.ProtectiveMeasures[ protectiveMeasuresId=" + protectiveMeasuresId + " ]";
     }
     
 }

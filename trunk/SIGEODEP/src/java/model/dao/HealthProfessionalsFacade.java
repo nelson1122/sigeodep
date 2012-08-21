@@ -4,6 +4,7 @@
  */
 package model.dao;
 
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -11,7 +12,7 @@ import model.pojo.HealthProfessionals;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class HealthProfessionalsFacade extends AbstractFacade<HealthProfessionals> {
@@ -20,11 +21,11 @@ public class HealthProfessionalsFacade extends AbstractFacade<HealthProfessional
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public HealthProfessionalsFacade() {
-        super(HealthProfessionals.class);
+	super(HealthProfessionals.class);
     }
     
     public HealthProfessionals findByName(String name) {        
@@ -38,6 +39,33 @@ public class HealthProfessionalsFacade extends AbstractFacade<HealthProfessional
             System.out.print("Error: "+e.toString()+"------------------------");
             return null;
         }
+    }
+
+    public int findMax() {
+        try {
+            String hql = "Select MAX(x.healthProfessionalId) from HealthProfessionals x";
+            return em.createQuery(hql, Integer.class).getSingleResult();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+    
+    public List<HealthProfessionals> findCriteria(int variable, String value) {
+        String hql;
+        try {
+            switch (variable) {
+                case 1:
+                    hql = "Select x from HealthProfessionals x where x.healthProfessionalName like '" + value + "%'";
+                    return em.createQuery(hql).getResultList();
+                case 2:
+                    hql = "Select x from HealthProfessionals x where x.healthProfessionalName like '" + value + "%'";
+                    return em.createQuery(hql).getResultList();
+            }
+        } catch (Exception e) {
+            System.out.println(e.toString() + "----------------------------------------------------");
+            return null;
+        }
+        return null;
     }
     
 }

@@ -11,7 +11,7 @@ import model.pojo.AgeTypes;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class AgeTypesFacade extends AbstractFacade<AgeTypes> {
@@ -20,11 +20,11 @@ public class AgeTypesFacade extends AbstractFacade<AgeTypes> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public AgeTypesFacade() {
-        super(AgeTypes.class);
+	super(AgeTypes.class);
     }
     
 }

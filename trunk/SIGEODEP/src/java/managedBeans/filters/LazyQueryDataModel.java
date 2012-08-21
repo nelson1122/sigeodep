@@ -25,6 +25,19 @@ public class LazyQueryDataModel extends LazyDataModel<List> {
     }
 
     @Override
+    public void setRowIndex(int rowIndex) {
+        /*
+         * La siguiente es en el ancestro (LazyDataModel): This.rowIndex =
+         * rowIndex == -1? rowIndex: (rowIndex pageSize%);
+         */
+        if (rowIndex == -1 || getPageSize() == 0) {
+            super.setRowIndex(-1);
+        } else {
+            super.setRowIndex(rowIndex % getPageSize());
+        }
+    }
+
+    @Override
     public List getRowData(String rowKey) {
         for (List list : datasource) {
             if (list.get(0).equals(rowKey)) {

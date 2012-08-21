@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "contexts", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class Contexts implements Serializable {
     }
 
     public Contexts(Short contextId) {
-        this.contextId = contextId;
+	this.contextId = contextId;
     }
 
     public Contexts(Short contextId, String contextName) {
-        this.contextId = contextId;
-        this.contextName = contextName;
+	this.contextId = contextId;
+	this.contextName = contextName;
     }
 
     public Short getContextId() {
-        return contextId;
+	return contextId;
     }
 
     public void setContextId(Short contextId) {
-        this.contextId = contextId;
+	this.contextId = contextId;
     }
 
     public String getContextName() {
-        return contextName;
+	return contextName;
     }
 
     public void setContextName(String contextName) {
-        this.contextName = contextName;
+	this.contextName = contextName;
     }
 
     @XmlTransient
     public List<NonFatalInterpersonal> getNonFatalInterpersonalList() {
-        return nonFatalInterpersonalList;
+	return nonFatalInterpersonalList;
     }
 
     public void setNonFatalInterpersonalList(List<NonFatalInterpersonal> nonFatalInterpersonalList) {
-        this.nonFatalInterpersonalList = nonFatalInterpersonalList;
+	this.nonFatalInterpersonalList = nonFatalInterpersonalList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (contextId != null ? contextId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (contextId != null ? contextId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Contexts)) {
-            return false;
-        }
-        Contexts other = (Contexts) object;
-        if ((this.contextId == null && other.contextId != null) || (this.contextId != null && !this.contextId.equals(other.contextId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Contexts)) {
+	    return false;
+	}
+	Contexts other = (Contexts) object;
+	if ((this.contextId == null && other.contextId != null) || (this.contextId != null && !this.contextId.equals(other.contextId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Contexts[ contextId=" + contextId + " ]";
+	return "model.pojo.Contexts[ contextId=" + contextId + " ]";
     }
     
 }

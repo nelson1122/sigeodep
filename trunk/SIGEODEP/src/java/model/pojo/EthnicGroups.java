@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "ethnic_groups", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class EthnicGroups implements Serializable {
     }
 
     public EthnicGroups(Short ethnicGroupId) {
-        this.ethnicGroupId = ethnicGroupId;
+	this.ethnicGroupId = ethnicGroupId;
     }
 
     public EthnicGroups(Short ethnicGroupId, String ethnicGroupName) {
-        this.ethnicGroupId = ethnicGroupId;
-        this.ethnicGroupName = ethnicGroupName;
+	this.ethnicGroupId = ethnicGroupId;
+	this.ethnicGroupName = ethnicGroupName;
     }
 
     public Short getEthnicGroupId() {
-        return ethnicGroupId;
+	return ethnicGroupId;
     }
 
     public void setEthnicGroupId(Short ethnicGroupId) {
-        this.ethnicGroupId = ethnicGroupId;
+	this.ethnicGroupId = ethnicGroupId;
     }
 
     public String getEthnicGroupName() {
-        return ethnicGroupName;
+	return ethnicGroupName;
     }
 
     public void setEthnicGroupName(String ethnicGroupName) {
-        this.ethnicGroupName = ethnicGroupName;
+	this.ethnicGroupName = ethnicGroupName;
     }
 
     @XmlTransient
     public List<Victims> getVictimsList() {
-        return victimsList;
+	return victimsList;
     }
 
     public void setVictimsList(List<Victims> victimsList) {
-        this.victimsList = victimsList;
+	this.victimsList = victimsList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (ethnicGroupId != null ? ethnicGroupId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (ethnicGroupId != null ? ethnicGroupId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof EthnicGroups)) {
-            return false;
-        }
-        EthnicGroups other = (EthnicGroups) object;
-        if ((this.ethnicGroupId == null && other.ethnicGroupId != null) || (this.ethnicGroupId != null && !this.ethnicGroupId.equals(other.ethnicGroupId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof EthnicGroups)) {
+	    return false;
+	}
+	EthnicGroups other = (EthnicGroups) object;
+	if ((this.ethnicGroupId == null && other.ethnicGroupId != null) || (this.ethnicGroupId != null && !this.ethnicGroupId.equals(other.ethnicGroupId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.EthnicGroups[ ethnicGroupId=" + ethnicGroupId + " ]";
+	return "model.pojo.EthnicGroups[ ethnicGroupId=" + ethnicGroupId + " ]";
     }
     
 }

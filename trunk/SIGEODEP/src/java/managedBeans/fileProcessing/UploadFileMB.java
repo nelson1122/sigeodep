@@ -9,6 +9,8 @@ import beans.relations.RelationsGroup;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +35,7 @@ import org.primefaces.model.UploadedFile;
  */
 @ManagedBean(name = "uploadFileMB")
 @SessionScoped
-public class UploadFileMB {
+public class UploadFileMB implements Serializable {
 
     ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
     @EJB
@@ -41,6 +43,7 @@ public class UploadFileMB {
     @EJB
     SourcesFacade sourcesFacade;
     private boolean tagNameDisabled = false;
+    private boolean btnResetDisabled = true;
     private String tagName = "";
     private String currentForm = "";//ficha actual
     private SelectItem[] forms;
@@ -52,7 +55,8 @@ public class UploadFileMB {
     private SelectItem[] delimiters;
     private boolean selectDelimiterDisabled = false;
     private UploadedFile file;
-    private boolean selectFileUploadDisabled = false;
+    private boolean selectFileUploadDisabled = true;
+    private boolean nameFileRendered = false;
     private boolean btnLoadFileDisabled = false;//si esta en true el boton esta
     private String nameFile = "";
     private String[] headerFile;//caberecera del archivo
@@ -61,7 +65,7 @@ public class UploadFileMB {
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private StoredRelationsMB storedRelationsMB;
-    //private CopyMB copyMB;
+    private CopyMB copyMB;
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -73,10 +77,10 @@ public class UploadFileMB {
          * Constructor de la clase
          */
 
-        //FacesContext context = FacesContext.getCurrentInstance();
-        //copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
-        //relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
-        //formsAndFieldsDataMB=(FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
+        FacesContext context = FacesContext.getCurrentInstance();
+        copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
+        relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
+        formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
     }
 
     //@PostConstruct //ejecutar despues de el constructor
@@ -89,15 +93,33 @@ public class UploadFileMB {
         loadSources();
         loadVarsExpected();
         loadDelimiters();
-        this.variablesFound = new ArrayList<String>();
-        this.nameFile = "";
-        this.tagName = "";
-        this.selectFormDisabled = false;
-        this.selectFileUploadDisabled = false;
-        this.selectSourceDisabled = false;
-        this.selectDelimiterDisabled = false;
-        this.btnLoadFileDisabled = false;
-        this.tagNameDisabled = false;
+        variablesFound = new ArrayList<String>();
+        nameFile = "";
+        tagName = "";
+        selectFormDisabled = false;
+        selectFileUploadDisabled = true;
+        nameFileRendered = false;
+        selectSourceDisabled = false;
+        selectDelimiterDisabled = false;
+        btnLoadFileDisabled = true;
+        tagNameDisabled = false;
+        btnResetDisabled = true;
+    }
+
+    public void changeTagName() {
+        try {
+            if (tagName.trim().length() == 0) {
+                selectFileUploadDisabled = true;
+                btnLoadFileDisabled = true;
+            } else {
+                selectFileUploadDisabled = false;
+                btnLoadFileDisabled = false;
+            }
+        } catch (Exception e) {
+            selectFileUploadDisabled = true;
+            btnLoadFileDisabled = true;
+        }
+
     }
 
     //----------------------------------------------------------------------
@@ -129,7 +151,7 @@ public class UploadFileMB {
         List<Forms> formsList = formsFacade.findAll();
         forms = new SelectItem[formsList.size()];
         for (int i = 0; i < formsList.size(); i++) {
-            forms[i] = new SelectItem(formsList.get(i).toString(),formsList.get(i).getFormName());
+            forms[i] = new SelectItem(formsList.get(i).toString(), formsList.get(i).getFormName());
         }
     }
 
@@ -141,7 +163,24 @@ public class UploadFileMB {
         List<Sources> sourcesList = formsFacade.findSources(currentForm);
         sources = new SelectItem[sourcesList.size()];
         for (int i = 0; i < sourcesList.size(); i++) {
-            sources[i] = new SelectItem(sourcesList.get(i).getSourceName(),sourcesList.get(i).toString());
+            sources[i] = new SelectItem(sourcesList.get(i).getSourceName(), sourcesList.get(i).toString());
+        }
+    }
+
+    private void reloadVarsFound() {
+        try {
+            conx = new ConnectionJDBC();
+            conx.connect();
+            ResultSet resultSetFileData = conx.consult("SELECT * FROM temp;");
+            int columnsNumber = resultSetFileData.getMetaData().getColumnCount();
+            int pos = 0;
+            headerFile = new String[columnsNumber];//creo un arreglo con los nombres de las columnas
+            for (int i = 1; i <= columnsNumber; i++) {
+                headerFile[pos] = resultSetFileData.getMetaData().getColumnName(i);
+                pos++;
+            }
+            conx.disconnect();
+        } catch (Exception e) {
         }
     }
 
@@ -181,15 +220,24 @@ public class UploadFileMB {
         String[] tupla;
         String[] tupla2;
         try {
-            if (file.getFileName().length() == 0) {
+            if (file == null) {
                 continuar = false;
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe Seleccionar el archivo");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe Seleccionar un archivo");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
-            if (tagName.trim().length() == 0) {
-                continuar = false;
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe Escribir el nombre de la carga de datos ");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
+            if (continuar) {
+                if (file.getFileName().length() == 0) {
+                    continuar = false;
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe Seleccionar el archivo");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                }
+            }
+            if (continuar) {
+                if (tagName.trim().length() == 0) {
+                    continuar = false;
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe Escribir el nombre de la carga de datos ");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                }
             }
             if (continuar) {
                 isr = new InputStreamReader(file.getInputstream());
@@ -246,7 +294,7 @@ public class UploadFileMB {
                             if (count != 1) {//hubo repetidos
                                 headerFile[i] = headerFile[i] + "_1";
                             }
-                            
+
                         }
                         //si la cadena inicia con un numero, le antepongo una raya baja
                         for (int i = 0; i < headerFile.length; i++) {
@@ -360,13 +408,14 @@ public class UploadFileMB {
                 nameFile = "Archivo cargado: " + file.getFileName();
 
                 RelationsGroup newRelationsGroup = new RelationsGroup("TEMP", currentForm, currentSource);
-                //copyMB.refresh();
-                //copyMB.cleanBackupTables();
+                copyMB.refresh();
+                copyMB.cleanBackupTables();
                 relationshipOfVariablesMB.setVarsFound(variablesFound);
                 relationshipOfVariablesMB.setCurrentRelationsGroup(newRelationsGroup);
                 formsAndFieldsDataMB.setNameForm(currentForm);//relationshipOfVariablesMB.set(variablesFound);
                 storedRelationsMB.setCurrentRelationsGroup(newRelationsGroup);
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Archivo cargado correctamente."));
+                btnResetDisabled = false;
             }
             if (conx
                     != null) {
@@ -385,6 +434,7 @@ public class UploadFileMB {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public UploadedFile getFile() {
+
         return file;
     }
 
@@ -429,6 +479,7 @@ public class UploadFileMB {
 
     public List<String> getVariablesFound() {
         variablesFound = new ArrayList<String>();
+        reloadVarsFound();
         variablesFound.addAll(Arrays.asList(headerFile));
         return variablesFound;
     }
@@ -537,4 +588,20 @@ public class UploadFileMB {
     public void setStoredRelationsMB(StoredRelationsMB storedRelationsMB) {
         this.storedRelationsMB = storedRelationsMB;
     }
+
+    public boolean isNameFileRendered() {
+        return nameFileRendered;
     }
+
+    public void setNameFileRendered(boolean nameFileRendered) {
+        this.nameFileRendered = nameFileRendered;
+    }
+
+    public boolean isBtnResetDisabled() {
+        return btnResetDisabled;
+    }
+
+    public void setBtnResetDisabled(boolean btnResetDisabled) {
+        this.btnResetDisabled = btnResetDisabled;
+    }
+}

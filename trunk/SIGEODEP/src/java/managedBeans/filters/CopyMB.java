@@ -4,6 +4,7 @@
  */
 package managedBeans.filters;
 
+//import java.io.Serializable;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ import org.primefaces.model.LazyDataModel;
  */
 @ManagedBean(name = "copyMB")
 @SessionScoped
-public class CopyMB implements Serializable {
+public class CopyMB{
 
     RelationshipOfVariablesMB relationshipOfVariablesMB;
     private final FilterConnection connection;
@@ -84,64 +85,69 @@ public class CopyMB implements Serializable {
      * Creates a new instance of CopyMB
      */
     public CopyMB() {
+
         FacesContext context = FacesContext.getCurrentInstance();
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
         connection = new FilterConnection();
         connection.connect();
         // copy
-        fields = connection.getTempFields();
-        copy_ncopies = 1;
-        btnCopyDisable = true;
-        undoCopy = 0;
-        // delete
-        List<String> fieldsSource = connection.getTempFields();
-        List<String> fieldsTarget = new ArrayList<String>();
-        delete_pickfields = new DualListModel<String>(fieldsSource, fieldsTarget);
-        btnDeleteDisable = true;
-        undoDelete = 0;
-        // filter
-        btnFilterDisable = true;
-        redoFilter = 0;
-        filter_queryModel = new QueryDataModel(connection.getFieldCounts(filter_field));
-        filter_headers = new ArrayList<String>();
-        filter_headers.add("field");
-        filter_headers.add("count");
-        filter_field_names = new ArrayList<String>();
-        filter_field_names.add(filter_field);
-        filter_field_names.add("# de Registros");
-        // split
-        split_delimiter = "-";
-        split_include = false;
-        split_limit = 2;
-        split_rendered = false;
-        split_newfields = new ArrayList<List<String>>();
-        split_newheaders = new ArrayList<String>();
-        undoSplit = 0;
-        btnSplitDisable = true;
-        // merge
-        List<String> mergeSource = connection.getTempFields();
-        List<String> mergeTarget = new ArrayList<String>();
-        merge_pickfields = new DualListModel<String>(mergeSource, mergeTarget);
-        merge_newfields = new ArrayList<List<String>>();
-        merge_newheaders = new ArrayList<String>();
-        merge_delimiter = " ";
-        btnMergeDisable = true;
-        undoMerge = 0;
-        // rename
-        btnRenameDisable = true;
-        redoRename = 0;
-        rename_model = connection.getValuesOrderedByFrecuency(the_field);
-        rename_headers = new ArrayList<String>();
-        rename_headers.add("oldvalue");
-        rename_headers.add("newvalue");
-        rename_field_names = new ArrayList<String>();
-        rename_field_names.add(the_field);
-        rename_field_names.add("# de Registros");
-        // replicate
-        btnReplicateDisable = true;
-        undoReplicate = 0;
-        replicate_columns2 = connection.getTempFieldsWithId();
-        replicate_model2 = new LazyQueryDataModel();
+        try {
+            fields = connection.getTempFields();
+            copy_ncopies = 1;
+            btnCopyDisable = true;
+            undoCopy = 0;
+            // delete
+            List<String> fieldsSource = connection.getTempFields();
+            List<String> fieldsTarget = new ArrayList<String>();
+            delete_pickfields = new DualListModel<String>(fieldsSource, fieldsTarget);
+            btnDeleteDisable = true;
+            undoDelete = 0;
+            // filter
+            btnFilterDisable = true;
+            redoFilter = 0;
+            filter_queryModel = new QueryDataModel(connection.getFieldCounts(filter_field));
+            filter_headers = new ArrayList<String>();
+            filter_headers.add("field");
+            filter_headers.add("count");
+            filter_field_names = new ArrayList<String>();
+            filter_field_names.add(filter_field);
+            filter_field_names.add("# de Registros");
+            // split
+            split_delimiter = "-";
+            split_include = false;
+            split_limit = 2;
+            split_rendered = false;
+            split_newfields = new ArrayList<List<String>>();
+            split_newheaders = new ArrayList<String>();
+            undoSplit = 0;
+            btnSplitDisable = true;
+            // merge
+            List<String> mergeSource = connection.getTempFields();
+            List<String> mergeTarget = new ArrayList<String>();
+            merge_pickfields = new DualListModel<String>(mergeSource, mergeTarget);
+            merge_newfields = new ArrayList<List<String>>();
+            merge_newheaders = new ArrayList<String>();
+            merge_delimiter = " ";
+            btnMergeDisable = true;
+            undoMerge = 0;
+            // rename
+            btnRenameDisable = true;
+            redoRename = 0;
+            rename_model = connection.getValuesOrderedByFrecuency(the_field);
+            rename_headers = new ArrayList<String>();
+            rename_headers.add("oldvalue");
+            rename_headers.add("newvalue");
+            rename_field_names = new ArrayList<String>();
+            rename_field_names.add(the_field);
+            rename_field_names.add("# de Registros");
+            // replicate
+            btnReplicateDisable = true;
+            undoReplicate = 0;
+            replicate_columns2 = connection.getTempFieldsWithId();
+
+            replicate_model2 = new LazyQueryDataModel();
+        } catch (Exception e) {
+        }
     }
 
     public void refresh() {
@@ -163,7 +169,10 @@ public class CopyMB implements Serializable {
 
         // replicate
         replicate_columns2 = connection.getTempFieldsWithId();
-        replicate_model2 = new LazyQueryDataModel();
+        try {
+            replicate_model2 = new LazyQueryDataModel();
+        } catch (Exception e) {
+        }
     }
 
     public void cleanBackupTables() {
@@ -241,14 +250,14 @@ public class CopyMB implements Serializable {
     }
 
     // Split's methods
-    public void setRenders(){
-        if("#".equals(split_delimiter.trim())){
+    public void setRenders() {
+        if ("#".equals(split_delimiter.trim())) {
             split_rendered = true;
         } else {
             split_rendered = false;
         }
     }
-    
+
     private boolean isDigit(char chr) {
         if (chr >= 48 && chr <= 57) {
             return true;
@@ -318,9 +327,11 @@ public class CopyMB implements Serializable {
             split_newheaders.add(split_field_name1);
             split_newheaders.add(split_field_name2);
             connection.saveNewFields(split_newheaders, split_newfields, split_field);
+            relationshipOfVariablesMB.refresh();
             this.refresh();
             undoSplit++;
             btnSplitDisable = false;
+            
         } catch (Exception e) {
             System.out.println(e.toString());
         }
@@ -418,8 +429,11 @@ public class CopyMB implements Serializable {
     }
 
     public void refreshReplicate() {
-        replicate_columns2 = connection.getTempFieldsWithId();
-        replicate_model2 = new LazyQueryDataModel();
+        try {
+            replicate_columns2 = connection.getTempFieldsWithId();
+            replicate_model2 = new LazyQueryDataModel();
+        } catch (Exception e) {
+        }
     }
 
     // Setters and Getters
@@ -798,6 +812,4 @@ public class CopyMB implements Serializable {
     public void setSplit_rendered(boolean split_rendered) {
         this.split_rendered = split_rendered;
     }
-    
-    
 }

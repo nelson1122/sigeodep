@@ -11,7 +11,7 @@ import model.pojo.TransportTypes;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class TransportTypesFacade extends AbstractFacade<TransportTypes> {
@@ -20,11 +20,11 @@ public class TransportTypesFacade extends AbstractFacade<TransportTypes> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public TransportTypesFacade() {
-        super(TransportTypes.class);
+	super(TransportTypes.class);
     }
     
 }

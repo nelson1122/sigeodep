@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "use_alcohol_drugs", catalog = "od", schema = "public", uniqueConstraints = {
@@ -36,80 +36,80 @@ public class UseAlcoholDrugs implements Serializable {
     @Size(min = 1, max = 20)
     @Column(name = "use_alcohol_drugs_name", nullable = false, length = 20)
     private String useAlcoholDrugsName;
-    @OneToMany(mappedBy = "useAlcoholId")
-    private List<NonFatalInjuries> nonFatalInjuriesList;
     @OneToMany(mappedBy = "useDrugsId")
+    private List<NonFatalInjuries> nonFatalInjuriesList;
+    @OneToMany(mappedBy = "useAlcoholId")
     private List<NonFatalInjuries> nonFatalInjuriesList1;
 
     public UseAlcoholDrugs() {
     }
 
     public UseAlcoholDrugs(Short useAlcoholDrugsId) {
-        this.useAlcoholDrugsId = useAlcoholDrugsId;
+	this.useAlcoholDrugsId = useAlcoholDrugsId;
     }
 
     public UseAlcoholDrugs(Short useAlcoholDrugsId, String useAlcoholDrugsName) {
-        this.useAlcoholDrugsId = useAlcoholDrugsId;
-        this.useAlcoholDrugsName = useAlcoholDrugsName;
+	this.useAlcoholDrugsId = useAlcoholDrugsId;
+	this.useAlcoholDrugsName = useAlcoholDrugsName;
     }
 
     public Short getUseAlcoholDrugsId() {
-        return useAlcoholDrugsId;
+	return useAlcoholDrugsId;
     }
 
     public void setUseAlcoholDrugsId(Short useAlcoholDrugsId) {
-        this.useAlcoholDrugsId = useAlcoholDrugsId;
+	this.useAlcoholDrugsId = useAlcoholDrugsId;
     }
 
     public String getUseAlcoholDrugsName() {
-        return useAlcoholDrugsName;
+	return useAlcoholDrugsName;
     }
 
     public void setUseAlcoholDrugsName(String useAlcoholDrugsName) {
-        this.useAlcoholDrugsName = useAlcoholDrugsName;
+	this.useAlcoholDrugsName = useAlcoholDrugsName;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList1() {
-        return nonFatalInjuriesList1;
+	return nonFatalInjuriesList1;
     }
 
     public void setNonFatalInjuriesList1(List<NonFatalInjuries> nonFatalInjuriesList1) {
-        this.nonFatalInjuriesList1 = nonFatalInjuriesList1;
+	this.nonFatalInjuriesList1 = nonFatalInjuriesList1;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (useAlcoholDrugsId != null ? useAlcoholDrugsId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (useAlcoholDrugsId != null ? useAlcoholDrugsId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof UseAlcoholDrugs)) {
-            return false;
-        }
-        UseAlcoholDrugs other = (UseAlcoholDrugs) object;
-        if ((this.useAlcoholDrugsId == null && other.useAlcoholDrugsId != null) || (this.useAlcoholDrugsId != null && !this.useAlcoholDrugsId.equals(other.useAlcoholDrugsId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof UseAlcoholDrugs)) {
+	    return false;
+	}
+	UseAlcoholDrugs other = (UseAlcoholDrugs) object;
+	if ((this.useAlcoholDrugsId == null && other.useAlcoholDrugsId != null) || (this.useAlcoholDrugsId != null && !this.useAlcoholDrugsId.equals(other.useAlcoholDrugsId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.UseAlcoholDrugs[ useAlcoholDrugsId=" + useAlcoholDrugsId + " ]";
+	return "model.pojo.UseAlcoholDrugs[ useAlcoholDrugsId=" + useAlcoholDrugsId + " ]";
     }
     
 }

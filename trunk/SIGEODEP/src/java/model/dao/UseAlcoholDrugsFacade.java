@@ -11,7 +11,7 @@ import model.pojo.UseAlcoholDrugs;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class UseAlcoholDrugsFacade extends AbstractFacade<UseAlcoholDrugs> {
@@ -20,11 +20,11 @@ public class UseAlcoholDrugsFacade extends AbstractFacade<UseAlcoholDrugs> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public UseAlcoholDrugsFacade() {
-        super(UseAlcoholDrugs.class);
+	super(UseAlcoholDrugs.class);
     }
     
 }

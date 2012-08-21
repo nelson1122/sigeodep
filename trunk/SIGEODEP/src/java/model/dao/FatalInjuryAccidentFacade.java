@@ -13,7 +13,7 @@ import model.pojo.FatalInjuryAccident;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAccident> {
@@ -22,11 +22,11 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public FatalInjuryAccidentFacade() {
-        super(FatalInjuryAccident.class);
+	super(FatalInjuryAccident.class);
     }
     
     public FatalInjuryAccident findNext(int id) {
@@ -42,11 +42,9 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
 
     public FatalInjuryAccident findPrevious(int id) {
         try {
-            //select * from usuarios where id > 5 order by id asc limit 1;
             String hql = "Select x from FatalInjuryAccident x where x.fatalInjuryId<:id order by x.fatalInjuryId desc";
             return (FatalInjuryAccident) em.createQuery(hql).setMaxResults(1).setParameter("id", id).getSingleResult();
         } catch (Exception e) {
-            //System.out.println(e.toString());
             return null;//no existe anterior
         }
     }
@@ -72,6 +70,32 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
             }
         } catch (Exception ex) {
             return 0;
+        }
+    }
+    
+    public FatalInjuryAccident findByIdVictim(String id) {
+//        try {
+//            String hql = "SELECT x FROM NonFatalInjuries x where x.nonFatalInjuryId>:id AND x.injuryId.injuryId != 53 order by x.nonFatalInjuryId asc";
+//            return (NonFatalInjuries) em.createQuery(hql).setMaxResults(1).setParameter("id", id).getSingleResult();
+//        } catch (Exception e) {
+//            return null;//no existe siguiente
+//        }
+        ConnectionJDBC conx;
+        try {
+            conx = new ConnectionJDBC();
+            conx.connect();
+            ResultSet rs = conx.consult(""
+                    + "SELECT fatal_injury_id FROM fatal_injuries, victims "
+                    + "WHERE victims.victim_id = " + id + " "
+                    + "AND victims.victim_id = fatal_injuries.victim_id ");
+            conx.disconnect();
+            if (rs.next()) {
+                return this.find(Integer.parseInt(rs.getString(1)));
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;//no existe siguiente
         }
     }
 

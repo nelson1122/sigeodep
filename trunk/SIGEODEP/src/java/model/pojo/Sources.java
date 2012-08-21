@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "sources", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class Sources implements Serializable {
     }
 
     public Sources(Integer sourceId) {
-        this.sourceId = sourceId;
+	this.sourceId = sourceId;
     }
 
     public Sources(Integer sourceId, String sourceName) {
-        this.sourceId = sourceId;
-        this.sourceName = sourceName;
+	this.sourceId = sourceId;
+	this.sourceName = sourceName;
     }
 
     public Integer getSourceId() {
-        return sourceId;
+	return sourceId;
     }
 
     public void setSourceId(Integer sourceId) {
-        this.sourceId = sourceId;
+	this.sourceId = sourceId;
     }
 
     public String getSourceName() {
-        return sourceName;
+	return sourceName;
     }
 
     public void setSourceName(String sourceName) {
-        this.sourceName = sourceName;
+	this.sourceName = sourceName;
     }
 
     @XmlTransient
     public List<Forms> getFormsList() {
-        return formsList;
+	return formsList;
     }
 
     public void setFormsList(List<Forms> formsList) {
-        this.formsList = formsList;
+	this.formsList = formsList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (sourceId != null ? sourceId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (sourceId != null ? sourceId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Sources)) {
-            return false;
-        }
-        Sources other = (Sources) object;
-        if ((this.sourceId == null && other.sourceId != null) || (this.sourceId != null && !this.sourceId.equals(other.sourceId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Sources)) {
+	    return false;
+	}
+	Sources other = (Sources) object;
+	if ((this.sourceId == null && other.sourceId != null) || (this.sourceId != null && !this.sourceId.equals(other.sourceId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return sourceName;
+	return sourceName;
     }
     
 }

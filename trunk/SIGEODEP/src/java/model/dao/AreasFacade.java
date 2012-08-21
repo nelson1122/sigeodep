@@ -11,7 +11,7 @@ import model.pojo.Areas;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class AreasFacade extends AbstractFacade<Areas> {
@@ -20,11 +20,11 @@ public class AreasFacade extends AbstractFacade<Areas> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public AreasFacade() {
-        super(Areas.class);
+	super(Areas.class);
     }
     
 }

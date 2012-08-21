@@ -11,7 +11,7 @@ import model.pojo.PrecipitatingFactors;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class PrecipitatingFactorsFacade extends AbstractFacade<PrecipitatingFactors> {
@@ -20,11 +20,11 @@ public class PrecipitatingFactorsFacade extends AbstractFacade<PrecipitatingFact
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public PrecipitatingFactorsFacade() {
-        super(PrecipitatingFactors.class);
+	super(PrecipitatingFactors.class);
     }
     
 }

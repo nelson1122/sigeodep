@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "non_fatal_interpersonal", catalog = "od", schema = "public")
@@ -22,8 +22,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "NonFatalInterpersonal.findByNonFatalInjuryId", query = "SELECT n FROM NonFatalInterpersonal n WHERE n.nonFatalInjuryId = :nonFatalInjuryId")})
 public class NonFatalInterpersonal implements Serializable {
     private static final long serialVersionUID = 1L;
-    @Column(name = "previous_antecedent")
-    private Boolean previousAntecedent;
+    @JoinColumn(name = "previous_antecedent", referencedColumnName = "boolean_id")
+    @ManyToOne
+    private BooleanPojo previousAntecedent;
     @Id
     @Basic(optional = false)
     @NotNull
@@ -46,80 +47,80 @@ public class NonFatalInterpersonal implements Serializable {
     }
 
     public NonFatalInterpersonal(Integer nonFatalInjuryId) {
-        this.nonFatalInjuryId = nonFatalInjuryId;
+	this.nonFatalInjuryId = nonFatalInjuryId;
     }
 
-    public Boolean getPreviousAntecedent() {
+    public BooleanPojo getPreviousAntecedent() {
         return previousAntecedent;
     }
 
-    public void setPreviousAntecedent(Boolean previousAntecedent) {
+    public void setPreviousAntecedent(BooleanPojo previousAntecedent) {
         this.previousAntecedent = previousAntecedent;
     }
 
     public Integer getNonFatalInjuryId() {
-        return nonFatalInjuryId;
+	return nonFatalInjuryId;
     }
 
     public void setNonFatalInjuryId(Integer nonFatalInjuryId) {
-        this.nonFatalInjuryId = nonFatalInjuryId;
+	this.nonFatalInjuryId = nonFatalInjuryId;
     }
 
     public RelationshipsToVictim getRelationshipVictimId() {
-        return relationshipVictimId;
+	return relationshipVictimId;
     }
 
     public void setRelationshipVictimId(RelationshipsToVictim relationshipVictimId) {
-        this.relationshipVictimId = relationshipVictimId;
+	this.relationshipVictimId = relationshipVictimId;
     }
 
     public NonFatalInjuries getNonFatalInjuries() {
-        return nonFatalInjuries;
+	return nonFatalInjuries;
     }
 
     public void setNonFatalInjuries(NonFatalInjuries nonFatalInjuries) {
-        this.nonFatalInjuries = nonFatalInjuries;
+	this.nonFatalInjuries = nonFatalInjuries;
     }
 
     public Contexts getContextId() {
-        return contextId;
+	return contextId;
     }
 
     public void setContextId(Contexts contextId) {
-        this.contextId = contextId;
+	this.contextId = contextId;
     }
 
     public AggressorGenders getAggressorGenderId() {
-        return aggressorGenderId;
+	return aggressorGenderId;
     }
 
     public void setAggressorGenderId(AggressorGenders aggressorGenderId) {
-        this.aggressorGenderId = aggressorGenderId;
+	this.aggressorGenderId = aggressorGenderId;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (nonFatalInjuryId != null ? nonFatalInjuryId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (nonFatalInjuryId != null ? nonFatalInjuryId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof NonFatalInterpersonal)) {
-            return false;
-        }
-        NonFatalInterpersonal other = (NonFatalInterpersonal) object;
-        if ((this.nonFatalInjuryId == null && other.nonFatalInjuryId != null) || (this.nonFatalInjuryId != null && !this.nonFatalInjuryId.equals(other.nonFatalInjuryId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof NonFatalInterpersonal)) {
+	    return false;
+	}
+	NonFatalInterpersonal other = (NonFatalInterpersonal) object;
+	if ((this.nonFatalInjuryId == null && other.nonFatalInjuryId != null) || (this.nonFatalInjuryId != null && !this.nonFatalInjuryId.equals(other.nonFatalInjuryId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.NonFatalInterpersonal[ nonFatalInjuryId=" + nonFatalInjuryId + " ]";
+	return "model.pojo.NonFatalInterpersonal[ nonFatalInjuryId=" + nonFatalInjuryId + " ]";
     }
     
 }

@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "weapon_types", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class WeaponTypes implements Serializable {
     }
 
     public WeaponTypes(Short weaponTypeId) {
-        this.weaponTypeId = weaponTypeId;
+	this.weaponTypeId = weaponTypeId;
     }
 
     public WeaponTypes(Short weaponTypeId, String weaponTypeName) {
-        this.weaponTypeId = weaponTypeId;
-        this.weaponTypeName = weaponTypeName;
+	this.weaponTypeId = weaponTypeId;
+	this.weaponTypeName = weaponTypeName;
     }
 
     public Short getWeaponTypeId() {
-        return weaponTypeId;
+	return weaponTypeId;
     }
 
     public void setWeaponTypeId(Short weaponTypeId) {
-        this.weaponTypeId = weaponTypeId;
+	this.weaponTypeId = weaponTypeId;
     }
 
     public String getWeaponTypeName() {
-        return weaponTypeName;
+	return weaponTypeName;
     }
 
     public void setWeaponTypeName(String weaponTypeName) {
-        this.weaponTypeName = weaponTypeName;
+	this.weaponTypeName = weaponTypeName;
     }
 
     @XmlTransient
     public List<FatalInjuryMurder> getFatalInjuryMurderList() {
-        return fatalInjuryMurderList;
+	return fatalInjuryMurderList;
     }
 
     public void setFatalInjuryMurderList(List<FatalInjuryMurder> fatalInjuryMurderList) {
-        this.fatalInjuryMurderList = fatalInjuryMurderList;
+	this.fatalInjuryMurderList = fatalInjuryMurderList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (weaponTypeId != null ? weaponTypeId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (weaponTypeId != null ? weaponTypeId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof WeaponTypes)) {
-            return false;
-        }
-        WeaponTypes other = (WeaponTypes) object;
-        if ((this.weaponTypeId == null && other.weaponTypeId != null) || (this.weaponTypeId != null && !this.weaponTypeId.equals(other.weaponTypeId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof WeaponTypes)) {
+	    return false;
+	}
+	WeaponTypes other = (WeaponTypes) object;
+	if ((this.weaponTypeId == null && other.weaponTypeId != null) || (this.weaponTypeId != null && !this.weaponTypeId.equals(other.weaponTypeId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.WeaponTypes[ weaponTypeId=" + weaponTypeId + " ]";
+	return "model.pojo.WeaponTypes[ weaponTypeId=" + weaponTypeId + " ]";
     }
     
 }

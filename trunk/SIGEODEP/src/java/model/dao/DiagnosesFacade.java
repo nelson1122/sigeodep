@@ -4,15 +4,15 @@
  */
 package model.dao;
 
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import model.pojo.Diagnoses;
-import model.pojo.Forms;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class DiagnosesFacade extends AbstractFacade<Diagnoses> {
@@ -36,5 +36,23 @@ public class DiagnosesFacade extends AbstractFacade<Diagnoses> {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public List<Diagnoses> findCriteria(int variable, String value) {
+        String hql;
+        try {
+            switch (variable) {
+                case 1:
+                    hql = "Select x from Diagnoses x where x.diagnosisId like '" + value + "%'";
+                    return em.createQuery(hql).getResultList();
+                case 2:
+                    hql = "Select x from Diagnoses x where x.diagnosisName like '" + value + "%'";
+                    return em.createQuery(hql).getResultList();
+            }
+        } catch (Exception e) {
+            System.out.println(e.toString() + "----------------------------------------------------");
+            return null;
+        }
+        return null;
     }
 }

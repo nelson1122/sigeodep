@@ -11,7 +11,7 @@ import model.pojo.RelationshipsToVictim;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class RelationshipsToVictimFacade extends AbstractFacade<RelationshipsToVictim> {
@@ -20,11 +20,11 @@ public class RelationshipsToVictimFacade extends AbstractFacade<RelationshipsToV
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public RelationshipsToVictimFacade() {
-        super(RelationshipsToVictim.class);
+	super(RelationshipsToVictim.class);
     }
     
 }

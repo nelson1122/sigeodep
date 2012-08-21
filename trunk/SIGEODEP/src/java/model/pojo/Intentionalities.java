@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "intentionalities", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class Intentionalities implements Serializable {
     }
 
     public Intentionalities(Short intentionalityId) {
-        this.intentionalityId = intentionalityId;
+	this.intentionalityId = intentionalityId;
     }
 
     public Intentionalities(Short intentionalityId, String intentionalityName) {
-        this.intentionalityId = intentionalityId;
-        this.intentionalityName = intentionalityName;
+	this.intentionalityId = intentionalityId;
+	this.intentionalityName = intentionalityName;
     }
 
     public Short getIntentionalityId() {
-        return intentionalityId;
+	return intentionalityId;
     }
 
     public void setIntentionalityId(Short intentionalityId) {
-        this.intentionalityId = intentionalityId;
+	this.intentionalityId = intentionalityId;
     }
 
     public String getIntentionalityName() {
-        return intentionalityName;
+	return intentionalityName;
     }
 
     public void setIntentionalityName(String intentionalityName) {
-        this.intentionalityName = intentionalityName;
+	this.intentionalityName = intentionalityName;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (intentionalityId != null ? intentionalityId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (intentionalityId != null ? intentionalityId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Intentionalities)) {
-            return false;
-        }
-        Intentionalities other = (Intentionalities) object;
-        if ((this.intentionalityId == null && other.intentionalityId != null) || (this.intentionalityId != null && !this.intentionalityId.equals(other.intentionalityId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Intentionalities)) {
+	    return false;
+	}
+	Intentionalities other = (Intentionalities) object;
+	if ((this.intentionalityId == null && other.intentionalityId != null) || (this.intentionalityId != null && !this.intentionalityId.equals(other.intentionalityId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Intentionalities[ intentionalityId=" + intentionalityId + " ]";
+	return "model.pojo.Intentionalities[ intentionalityId=" + intentionalityId + " ]";
     }
     
 }

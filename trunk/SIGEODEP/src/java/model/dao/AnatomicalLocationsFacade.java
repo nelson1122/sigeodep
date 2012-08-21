@@ -11,7 +11,7 @@ import model.pojo.AnatomicalLocations;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class AnatomicalLocationsFacade extends AbstractFacade<AnatomicalLocations> {
@@ -20,11 +20,11 @@ public class AnatomicalLocationsFacade extends AbstractFacade<AnatomicalLocation
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public AnatomicalLocationsFacade() {
-        super(AnatomicalLocations.class);
+	super(AnatomicalLocations.class);
     }
     
 }

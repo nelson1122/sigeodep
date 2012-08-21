@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "tags", catalog = "od", schema = "public")
@@ -48,70 +48,70 @@ public class Tags implements Serializable {
     }
 
     public Tags(Integer tagId) {
-        this.tagId = tagId;
+	this.tagId = tagId;
     }
 
     public Tags(Integer tagId, String tagFileInput, String tagFileStored) {
-        this.tagId = tagId;
-        this.tagFileInput = tagFileInput;
-        this.tagFileStored = tagFileStored;
+	this.tagId = tagId;
+	this.tagFileInput = tagFileInput;
+	this.tagFileStored = tagFileStored;
     }
 
     public Integer getTagId() {
-        return tagId;
+	return tagId;
     }
 
     public void setTagId(Integer tagId) {
-        this.tagId = tagId;
+	this.tagId = tagId;
     }
 
     public String getTagName() {
-        return tagName;
+	return tagName;
     }
 
     public void setTagName(String tagName) {
-        this.tagName = tagName;
+	this.tagName = tagName;
     }
 
     public String getTagFileInput() {
-        return tagFileInput;
+	return tagFileInput;
     }
 
     public void setTagFileInput(String tagFileInput) {
-        this.tagFileInput = tagFileInput;
+	this.tagFileInput = tagFileInput;
     }
 
     public String getTagFileStored() {
-        return tagFileStored;
+	return tagFileStored;
     }
 
     public void setTagFileStored(String tagFileStored) {
-        this.tagFileStored = tagFileStored;
+	this.tagFileStored = tagFileStored;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (tagId != null ? tagId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (tagId != null ? tagId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Tags)) {
-            return false;
-        }
-        Tags other = (Tags) object;
-        if ((this.tagId == null && other.tagId != null) || (this.tagId != null && !this.tagId.equals(other.tagId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Tags)) {
+	    return false;
+	}
+	Tags other = (Tags) object;
+	if ((this.tagId == null && other.tagId != null) || (this.tagId != null && !this.tagId.equals(other.tagId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Tags[ tagId=" + tagId + " ]";
+	return "model.pojo.Tags[ tagId=" + tagId + " ]";
     }
     
 }

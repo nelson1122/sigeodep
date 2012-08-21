@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "relation_group", catalog = "od", schema = "public")
@@ -46,73 +46,73 @@ public class RelationGroup implements Serializable {
     }
 
     public RelationGroup(Integer idRelationGroup) {
-        this.idRelationGroup = idRelationGroup;
+	this.idRelationGroup = idRelationGroup;
     }
 
     public Integer getIdRelationGroup() {
-        return idRelationGroup;
+	return idRelationGroup;
     }
 
     public void setIdRelationGroup(Integer idRelationGroup) {
-        this.idRelationGroup = idRelationGroup;
+	this.idRelationGroup = idRelationGroup;
     }
 
     public String getNameRelationGroup() {
-        return nameRelationGroup;
+	return nameRelationGroup;
     }
 
     public void setNameRelationGroup(String nameRelationGroup) {
-        this.nameRelationGroup = nameRelationGroup;
+	this.nameRelationGroup = nameRelationGroup;
     }
 
     public Integer getSourceId() {
-        return sourceId;
+	return sourceId;
     }
 
     public void setSourceId(Integer sourceId) {
-        this.sourceId = sourceId;
+	this.sourceId = sourceId;
     }
 
     public Forms getFormId() {
-        return formId;
+	return formId;
     }
 
     public void setFormId(Forms formId) {
-        this.formId = formId;
+	this.formId = formId;
     }
 
     @XmlTransient
     public List<RelationVariables> getRelationVariablesList() {
-        return relationVariablesList;
+	return relationVariablesList;
     }
 
     public void setRelationVariablesList(List<RelationVariables> relationVariablesList) {
-        this.relationVariablesList = relationVariablesList;
+	this.relationVariablesList = relationVariablesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (idRelationGroup != null ? idRelationGroup.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (idRelationGroup != null ? idRelationGroup.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof RelationGroup)) {
-            return false;
-        }
-        RelationGroup other = (RelationGroup) object;
-        if ((this.idRelationGroup == null && other.idRelationGroup != null) || (this.idRelationGroup != null && !this.idRelationGroup.equals(other.idRelationGroup))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof RelationGroup)) {
+	    return false;
+	}
+	RelationGroup other = (RelationGroup) object;
+	if ((this.idRelationGroup == null && other.idRelationGroup != null) || (this.idRelationGroup != null && !this.idRelationGroup.equals(other.idRelationGroup))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.RelationGroup[ idRelationGroup=" + idRelationGroup + " ]";
+	return "model.pojo.RelationGroup[ idRelationGroup=" + idRelationGroup + " ]";
     }
     
 }

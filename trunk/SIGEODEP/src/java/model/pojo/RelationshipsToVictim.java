@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "relationships_to_victim", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class RelationshipsToVictim implements Serializable {
     }
 
     public RelationshipsToVictim(Short relationshipVictimId) {
-        this.relationshipVictimId = relationshipVictimId;
+	this.relationshipVictimId = relationshipVictimId;
     }
 
     public RelationshipsToVictim(Short relationshipVictimId, String relationshipVictimName) {
-        this.relationshipVictimId = relationshipVictimId;
-        this.relationshipVictimName = relationshipVictimName;
+	this.relationshipVictimId = relationshipVictimId;
+	this.relationshipVictimName = relationshipVictimName;
     }
 
     public Short getRelationshipVictimId() {
-        return relationshipVictimId;
+	return relationshipVictimId;
     }
 
     public void setRelationshipVictimId(Short relationshipVictimId) {
-        this.relationshipVictimId = relationshipVictimId;
+	this.relationshipVictimId = relationshipVictimId;
     }
 
     public String getRelationshipVictimName() {
-        return relationshipVictimName;
+	return relationshipVictimName;
     }
 
     public void setRelationshipVictimName(String relationshipVictimName) {
-        this.relationshipVictimName = relationshipVictimName;
+	this.relationshipVictimName = relationshipVictimName;
     }
 
     @XmlTransient
     public List<NonFatalInterpersonal> getNonFatalInterpersonalList() {
-        return nonFatalInterpersonalList;
+	return nonFatalInterpersonalList;
     }
 
     public void setNonFatalInterpersonalList(List<NonFatalInterpersonal> nonFatalInterpersonalList) {
-        this.nonFatalInterpersonalList = nonFatalInterpersonalList;
+	this.nonFatalInterpersonalList = nonFatalInterpersonalList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (relationshipVictimId != null ? relationshipVictimId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (relationshipVictimId != null ? relationshipVictimId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof RelationshipsToVictim)) {
-            return false;
-        }
-        RelationshipsToVictim other = (RelationshipsToVictim) object;
-        if ((this.relationshipVictimId == null && other.relationshipVictimId != null) || (this.relationshipVictimId != null && !this.relationshipVictimId.equals(other.relationshipVictimId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof RelationshipsToVictim)) {
+	    return false;
+	}
+	RelationshipsToVictim other = (RelationshipsToVictim) object;
+	if ((this.relationshipVictimId == null && other.relationshipVictimId != null) || (this.relationshipVictimId != null && !this.relationshipVictimId.equals(other.relationshipVictimId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.RelationshipsToVictim[ relationshipVictimId=" + relationshipVictimId + " ]";
+	return "model.pojo.RelationshipsToVictim[ relationshipVictimId=" + relationshipVictimId + " ]";
     }
     
 }

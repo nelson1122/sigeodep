@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "fatal_injuries", catalog = "od", schema = "public")
@@ -31,7 +31,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "FatalInjuries.findByInputTimestamp", query = "SELECT f FROM FatalInjuries f WHERE f.inputTimestamp = :inputTimestamp"),
     @NamedQuery(name = "FatalInjuries.findByInjuryDayOfWeek", query = "SELECT f FROM FatalInjuries f WHERE f.injuryDayOfWeek = :injuryDayOfWeek"),
     @NamedQuery(name = "FatalInjuries.findByFatalInjuryId", query = "SELECT f FROM FatalInjuries f WHERE f.fatalInjuryId = :fatalInjuryId"),
-    @NamedQuery(name = "FatalInjuries.findByAlcoholLevelVictim", query = "SELECT f FROM FatalInjuries f WHERE f.alcoholLevelVictim = :alcoholLevelVictim")})
+    @NamedQuery(name = "FatalInjuries.findByAlcoholLevelVictim", query = "SELECT f FROM FatalInjuries f WHERE f.alcoholLevelVictim = :alcoholLevelVictim"),
+    @NamedQuery(name = "FatalInjuries.findByCode", query = "SELECT f FROM FatalInjuries f WHERE f.code = :code")})
 public class FatalInjuries implements Serializable {
     private static final long serialVersionUID = 1L;
     @Column(name = "injury_date")
@@ -63,19 +64,21 @@ public class FatalInjuries implements Serializable {
     private Integer fatalInjuryId;
     @Column(name = "alcohol_level_victim")
     private Short alcoholLevelVictim;
-    @JoinTable(name = "counterpart_involved_vehicle", joinColumns = {
-        @JoinColumn(name = "fatal_injury_id", referencedColumnName = "fatal_injury_id", nullable = false)}, inverseJoinColumns = {
-        @JoinColumn(name = "involved_vehicle_id", referencedColumnName = "involved_vehicle_id", nullable = false)})
-    @ManyToMany
-    private List<InvolvedVehicles> involvedVehiclesList;
-    @JoinTable(name = "counterpart_service_type", joinColumns = {
-        @JoinColumn(name = "fatal_injury_id", referencedColumnName = "fatal_injury_id", nullable = false)}, inverseJoinColumns = {
-        @JoinColumn(name = "service_type_id", referencedColumnName = "service_type_id", nullable = false)})
-    @ManyToMany
-    private List<ServiceTypes> serviceTypesList;
+    @Size(max = 2147483647)
+    @Column(name = "code", length = 2147483647)
+    private String code;
+    
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "fatalInjuryId")
+    private List<CounterpartServiceType> counterpartServiceTypeList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "fatalInjuryId")
+    private List<CounterpartInvolvedVehicle> counterpartInvolvedVehicleList;
+    
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "fatalInjuries")
+    private FatalInjuryMurder fatalInjuryMurder;
     @JoinColumn(name = "victim_id", referencedColumnName = "victim_id")
     @ManyToOne
     private Victims victimId;
+    
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     @ManyToOne
     private Users userId;
@@ -85,212 +88,275 @@ public class FatalInjuries implements Serializable {
     @JoinColumn(name = "injury_id", referencedColumnName = "injury_id", nullable = false)
     @ManyToOne(optional = false)
     private Injuries injuryId;
+    @JoinColumn(name = "area_id", referencedColumnName = "area_id")
+    @ManyToOne
+    private Areas areaId;
     @JoinColumn(name = "alcohol_level_victim_id", referencedColumnName = "alcohol_level_id")
     @ManyToOne
     private AlcoholLevels alcoholLevelVictimId;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "fatalInjuries")
     private FatalInjuryTraffic fatalInjuryTraffic;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "fatalInjuries")
+    private FatalInjuryAccident fatalInjuryAccident;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "fatalInjuries")
+    private FatalInjurySuicide fatalInjurySuicide;
     @Size(max = 2147483647)
-    @Column(name = "code", length = 2147483647)
-    private String code;
-    @JoinColumn(name = "area_id", referencedColumnName = "area_id")
-    @ManyToOne
-    private Areas areaId;
+    @Column(name = "victim_place_of_origin", length = 2147483647)
+    private String victimPlaceOfOrigin;
+    
+    
+//    @JoinColumn(name = "id_state_time", referencedColumnName = "id_state_time")
+//    @ManyToOne
+//    private StateTime idStateTime;
+//    @JoinColumn(name = "id_state_date", referencedColumnName = "id_state_date")
+//    @ManyToOne
+//    private StateDate idStateDate;
+    
+    
     public FatalInjuries() {
     }
 
     public FatalInjuries(Integer fatalInjuryId) {
-        this.fatalInjuryId = fatalInjuryId;
+	this.fatalInjuryId = fatalInjuryId;
     }
 
     public Date getInjuryDate() {
-        return injuryDate;
+	return injuryDate;
     }
 
     public void setInjuryDate(Date injuryDate) {
-        this.injuryDate = injuryDate;
+	this.injuryDate = injuryDate;
     }
 
     public Date getInjuryTime() {
-        return injuryTime;
+	return injuryTime;
     }
 
     public void setInjuryTime(Date injuryTime) {
-        this.injuryTime = injuryTime;
+	this.injuryTime = injuryTime;
     }
 
     public String getInjuryAddress() {
-        return injuryAddress;
+	return injuryAddress;
     }
 
     public void setInjuryAddress(String injuryAddress) {
-        this.injuryAddress = injuryAddress;
+	this.injuryAddress = injuryAddress;
     }
 
     public Integer getInjuryNeighborhoodId() {
-        return injuryNeighborhoodId;
+	return injuryNeighborhoodId;
     }
 
     public void setInjuryNeighborhoodId(Integer injuryNeighborhoodId) {
-        this.injuryNeighborhoodId = injuryNeighborhoodId;
+	this.injuryNeighborhoodId = injuryNeighborhoodId;
     }
 
     public Short getVictimNumber() {
-        return victimNumber;
+	return victimNumber;
     }
 
     public void setVictimNumber(Short victimNumber) {
-        this.victimNumber = victimNumber;
+	this.victimNumber = victimNumber;
     }
 
     public String getInjuryDescription() {
-        return injuryDescription;
+	return injuryDescription;
     }
 
     public void setInjuryDescription(String injuryDescription) {
-        this.injuryDescription = injuryDescription;
+	this.injuryDescription = injuryDescription;
     }
 
     public Date getInputTimestamp() {
-        return inputTimestamp;
+	return inputTimestamp;
     }
 
     public void setInputTimestamp(Date inputTimestamp) {
-        this.inputTimestamp = inputTimestamp;
+	this.inputTimestamp = inputTimestamp;
     }
 
     public String getInjuryDayOfWeek() {
-        return injuryDayOfWeek;
+	return injuryDayOfWeek;
     }
 
     public void setInjuryDayOfWeek(String injuryDayOfWeek) {
-        this.injuryDayOfWeek = injuryDayOfWeek;
+	this.injuryDayOfWeek = injuryDayOfWeek;
     }
 
     public Integer getFatalInjuryId() {
-        return fatalInjuryId;
+	return fatalInjuryId;
     }
 
     public void setFatalInjuryId(Integer fatalInjuryId) {
-        this.fatalInjuryId = fatalInjuryId;
+	this.fatalInjuryId = fatalInjuryId;
     }
 
     public Short getAlcoholLevelVictim() {
-        return alcoholLevelVictim;
+	return alcoholLevelVictim;
     }
 
     public void setAlcoholLevelVictim(Short alcoholLevelVictim) {
-        this.alcoholLevelVictim = alcoholLevelVictim;
-    }
-
-    @XmlTransient
-    public List<InvolvedVehicles> getInvolvedVehiclesList() {
-        return involvedVehiclesList;
-    }
-
-    public void setInvolvedVehiclesList(List<InvolvedVehicles> involvedVehiclesList) {
-        this.involvedVehiclesList = involvedVehiclesList;
-    }
-
-    @XmlTransient
-    public List<ServiceTypes> getServiceTypesList() {
-        return serviceTypesList;
-    }
-
-    public void setServiceTypesList(List<ServiceTypes> serviceTypesList) {
-        this.serviceTypesList = serviceTypesList;
-    }
-
-    public Victims getVictimId() {
-        return victimId;
-    }
-
-    public void setVictimId(Victims victimId) {
-        this.victimId = victimId;
-    }
-
-    public Users getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Users userId) {
-        this.userId = userId;
-    }
-
-    public Places getInjuryPlaceId() {
-        return injuryPlaceId;
-    }
-
-    public void setInjuryPlaceId(Places injuryPlaceId) {
-        this.injuryPlaceId = injuryPlaceId;
-    }
-
-    public Injuries getInjuryId() {
-        return injuryId;
-    }
-
-    public void setInjuryId(Injuries injuryId) {
-        this.injuryId = injuryId;
-    }
-
-    public AlcoholLevels getAlcoholLevelVictimId() {
-        return alcoholLevelVictimId;
-    }
-
-    public void setAlcoholLevelVictimId(AlcoholLevels alcoholLevelVictimId) {
-        this.alcoholLevelVictimId = alcoholLevelVictimId;
-    }
-
-    public FatalInjuryTraffic getFatalInjuryTraffic() {
-        return fatalInjuryTraffic;
-    }
-
-    public void setFatalInjuryTraffic(FatalInjuryTraffic fatalInjuryTraffic) {
-        this.fatalInjuryTraffic = fatalInjuryTraffic;
+	this.alcoholLevelVictim = alcoholLevelVictim;
     }
 
     public String getCode() {
-        return code;
+	return code;
     }
 
     public void setCode(String code) {
-        this.code = code;
+	this.code = code;
+    }
+
+    
+
+    public FatalInjuryMurder getFatalInjuryMurder() {
+	return fatalInjuryMurder;
+    }
+
+    public void setFatalInjuryMurder(FatalInjuryMurder fatalInjuryMurder) {
+	this.fatalInjuryMurder = fatalInjuryMurder;
+    }
+
+    public Victims getVictimId() {
+	return victimId;
+    }
+
+    public void setVictimId(Victims victimId) {
+	this.victimId = victimId;
+    }
+
+    public Users getUserId() {
+	return userId;
+    }
+
+    public void setUserId(Users userId) {
+	this.userId = userId;
+    }
+
+//    public StateTime getIdStateTime() {
+//        return idStateTime;
+//    }
+//
+//    public void setIdStateTime(StateTime idStateTime) {
+//        this.idStateTime = idStateTime;
+//    }
+//
+//    public StateDate getIdStateDate() {
+//        return idStateDate;
+//    }
+//
+//    public void setIdStateDate(StateDate idStateDate) {
+//        this.idStateDate = idStateDate;
+//    }
+    
+    public Places getInjuryPlaceId() {
+	return injuryPlaceId;
+    }
+
+    public void setInjuryPlaceId(Places injuryPlaceId) {
+	this.injuryPlaceId = injuryPlaceId;
+    }
+
+    public Injuries getInjuryId() {
+	return injuryId;
+    }
+
+    public void setInjuryId(Injuries injuryId) {
+	this.injuryId = injuryId;
+    }
+
+    public Areas getAreaId() {
+	return areaId;
+    }
+
+    public void setAreaId(Areas areaId) {
+	this.areaId = areaId;
+    }
+
+    public AlcoholLevels getAlcoholLevelVictimId() {
+	return alcoholLevelVictimId;
+    }
+
+    public void setAlcoholLevelVictimId(AlcoholLevels alcoholLevelVictimId) {
+	this.alcoholLevelVictimId = alcoholLevelVictimId;
+    }
+
+    public FatalInjuryTraffic getFatalInjuryTraffic() {
+	return fatalInjuryTraffic;
+    }
+
+    public void setFatalInjuryTraffic(FatalInjuryTraffic fatalInjuryTraffic) {
+	this.fatalInjuryTraffic = fatalInjuryTraffic;
+    }
+
+    public FatalInjuryAccident getFatalInjuryAccident() {
+	return fatalInjuryAccident;
+    }
+
+    public void setFatalInjuryAccident(FatalInjuryAccident fatalInjuryAccident) {
+	this.fatalInjuryAccident = fatalInjuryAccident;
+    }
+
+    public FatalInjurySuicide getFatalInjurySuicide() {
+	return fatalInjurySuicide;
+    }
+
+    public void setFatalInjurySuicide(FatalInjurySuicide fatalInjurySuicide) {
+	this.fatalInjurySuicide = fatalInjurySuicide;
+    }
+    
+    
+    public String getVictimPlaceOfOrigin() {
+	return victimPlaceOfOrigin;
+    }
+
+    public void setVictimPlaceOfOrigin(String victimPlaceOfOrigin) {
+	this.victimPlaceOfOrigin = victimPlaceOfOrigin;
+    }
+    
+    @XmlTransient
+    public List<CounterpartServiceType> getCounterpartServiceTypeList() {
+        return counterpartServiceTypeList;
+    }
+
+    public void setCounterpartServiceTypeList(List<CounterpartServiceType> counterpartServiceTypeList) {
+        this.counterpartServiceTypeList = counterpartServiceTypeList;
+    }
+    
+    @XmlTransient
+    public List<CounterpartInvolvedVehicle> getCounterpartInvolvedVehicleList() {
+        return counterpartInvolvedVehicleList;
+    }
+
+    public void setCounterpartInvolvedVehicleList(List<CounterpartInvolvedVehicle> counterpartInvolvedVehicleList) {
+        this.counterpartInvolvedVehicleList = counterpartInvolvedVehicleList;
     }
     
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (fatalInjuryId != null ? fatalInjuryId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (fatalInjuryId != null ? fatalInjuryId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof FatalInjuries)) {
-            return false;
-        }
-        FatalInjuries other = (FatalInjuries) object;
-        if ((this.fatalInjuryId == null && other.fatalInjuryId != null) || (this.fatalInjuryId != null && !this.fatalInjuryId.equals(other.fatalInjuryId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof FatalInjuries)) {
+	    return false;
+	}
+	FatalInjuries other = (FatalInjuries) object;
+	if ((this.fatalInjuryId == null && other.fatalInjuryId != null) || (this.fatalInjuryId != null && !this.fatalInjuryId.equals(other.fatalInjuryId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.FatalInjuries[ fatalInjuryId=" + fatalInjuryId + " ]";
+	return "model.pojo.FatalInjuries[ fatalInjuryId=" + fatalInjuryId + " ]";
     }
-
-    public Areas getAreaId() {
-        return areaId;
-    }
-
-    public void setAreaId(Areas areaId) {
-        this.areaId = areaId;
-    }
-    
-    
     
 }

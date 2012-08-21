@@ -11,7 +11,7 @@ import model.pojo.IdTypes;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class IdTypesFacade extends AbstractFacade<IdTypes> {
@@ -20,11 +20,11 @@ public class IdTypesFacade extends AbstractFacade<IdTypes> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public IdTypesFacade() {
-        super(IdTypes.class);
+	super(IdTypes.class);
     }
     
 }

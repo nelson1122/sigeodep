@@ -7,9 +7,11 @@ package managedBeans.fileProcessing;
 //import SessionBeans.AreaFacade;
 //import entities.Area;
 import beans.connection.ConnectionJDBC;
+import beans.enumerators.DataTypeEnum;
 import beans.lists.Field;
 import beans.relations.RelationVar;
 import beans.relations.RelationsGroup;
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -29,11 +31,11 @@ import managedBeans.preload.FormsAndFieldsDataMB;
  */
 @ManagedBean(name = "relationshipOfVariablesMB")
 @SessionScoped
-public class RelationshipOfVariablesMB {
+public class RelationshipOfVariablesMB implements Serializable {
 
     private ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
-    private boolean btnValidateRelationVarDisabled = true;
-    private boolean btnAssociateRelationVarDisabled = true;
+    //private boolean btnValidateRelationVarDisabled = true;
+    //private boolean btnAssociateRelationVarDisabled = true;
     private boolean btnRemoveRelationVarDisabled = true;
     private boolean btnSaveConfigurationDisabled = true;
     private boolean btnLoadConfigurationDisabled = false;
@@ -41,7 +43,7 @@ public class RelationshipOfVariablesMB {
     private boolean btnDivideColumnsDisabled;
     private boolean selectDateFormatDisabled = true;
     private boolean compareForCode = false;
-    private boolean compareForCodeDisabled = true;
+    //private boolean compareForCodeDisabled = true;
     private List<String> variablesExpected;
     private String currentVarFound = "";
     private List<String> varsFound;
@@ -52,7 +54,7 @@ public class RelationshipOfVariablesMB {
     private List<String> relatedVars;
     private List<String> relationGroups;
     private String currentRelationGroupName = "";
-    private String currentDateFormat = "yyyy/mm/dd";//tipo de formato de fecha actual
+    private String currentDateFormat = "dd/MM/yyyy";//tipo de formato de fecha actual
     private String currentVarExpected = "";//variable esperda para relacionar variables
     private Field typeVarExepted;
     private String variableDescription = "";
@@ -72,18 +74,20 @@ public class RelationshipOfVariablesMB {
          */
     }
 
-    public void refresh(){
-        
+    public void refresh() {
+        loadVarsExpectedAndFound();//recargo listas de variables esperadas y encontradas                       
+        changeVarExpected();
+        changeVarFound();
     }
-    
+
     public void reset() {//@PostConstruct ejecutar despues de el constructor
         this.relatedVars = new ArrayList<String>();
         this.valuesExpected = new ArrayList<String>();
         this.varsFound = new ArrayList<String>();
         this.valuesFound = new ArrayList<String>();
         this.currentVarFound = "";
-        this.btnValidateRelationVarDisabled = true;
-        this.btnAssociateRelationVarDisabled = true;
+        //this.btnValidateRelationVarDisabled = true;
+        //this.btnAssociateRelationVarDisabled = true;
         this.btnRemoveRelationVarDisabled = true;
     }
 
@@ -152,10 +156,10 @@ public class RelationshipOfVariablesMB {
             }
         }
         variablesExpected = varsExpected;
-
         //recargo la lista de variables encontradas
         varsFound = new ArrayList<String>();
         List<String> varsFound2 = uploadFileMB.getVariablesFound();
+
         //quito las variables esperadas que ya esten relacionadas
         for (int i = 0; i < relatedVars.size(); i++) {
             splitVarRelated = relatedVars.get(i).split("->");
@@ -171,32 +175,55 @@ public class RelationshipOfVariablesMB {
         relationshipOfValuesMB.loadCategoricalRelatedVariables(currentRelationsGroup);
     }
 
-    private void loadValuesExpected() {
+    public void loadValuesExpected() {
         /*
          * cargar los valores esperados dependiendo la variable esperada
          */
-        if (currentVarExpected.length() != 0) {
+        if (currentVarExpected.trim().length() != 0) {
             typeVarExepted = formsAndFieldsDataMB.searchField(currentVarExpected);
-            //fieldsFacade.findByFormField(currentForm, currentVarExpected).getFieldType();            
             valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
-            if (typeVarExepted.getFieldType().compareTo("integer") == 0) {//se espera un numero
-                valuesExpected.add("Cualquier entero");
-            } else if (typeVarExepted.getFieldType().compareTo("date") == 0) { //se espera una fecha
-                selectDateFormatDisabled = false;
-                valuesExpected.add("Cualquier Fecha ");
-            } else if (typeVarExepted.getFieldType().compareTo("text") == 0) {//se espera texto 
-                valuesExpected.add("Cualquier texto");
-            } else {//se espera un valor categorico compareForCodeDisabled = false;
-                if (compareForCode == true) {
-                    valuesExpected = formsAndFieldsDataMB.categoricalCodeList(currentVarExpected, 20);
-                } else {
-                    valuesExpected = formsAndFieldsDataMB.categoricalNameList(currentVarExpected, 20);
-                }
+            selectDateFormatDisabled=true;
+            switch (DataTypeEnum.convert(typeVarExepted.getFieldType())) {//tipo de relacion
+                case integer:
+                    valuesExpected.add("Cualquier entero");
+                    break;
+                case text:
+                    valuesExpected.add("Cualquier texto");
+                    break;
+                case date:
+                    valuesExpected.add("Cualquier fecha");
+                    selectDateFormatDisabled=false;                    
+                    break;
+                case age:
+                    valuesExpected.add("Edad representada por un entero o definida en meses y años");
+                    break;
+                case military:
+                    valuesExpected.add("Hora militar");
+                    break;
+                case minute:
+                    valuesExpected.add("Minutos representados por un entero de 1 a 59");
+                    break;
+                case hour:
+                    valuesExpected.add("La hora se representa por un entero de 0 a 24");
+                    break;
+                case day:
+                    valuesExpected.add("El dia se representa por un entero de 1 a 31");
+                    break;
+                case month:
+                    valuesExpected.add("El mes se representa por un entero de 1 a 12");
+                    break;
+                case year:
+                    valuesExpected.add("El año es un valor entero de dos o 4 cifras");
+                    break;
+                case NOVALUE://se espera un valor categorico compareForCodeDisabled = false;
+                    if (compareForCode == true) {
+                        valuesExpected = formsAndFieldsDataMB.categoricalCodeList(currentVarExpected, 20);
+                    } else {
+                        valuesExpected = formsAndFieldsDataMB.categoricalNameList(currentVarExpected, 20);
+                    }
+                    break;
             }
         }
-    }
-
-    private void loadValuesRelatedList() {
     }
 
     public ArrayList createListOfValuesFromFile(String column) {
@@ -253,43 +280,23 @@ public class RelationshipOfVariablesMB {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public void changeVarExpected() {
-        btnValidateRelationVarDisabled = true;
-        selectDateFormatDisabled = true;
-        compareForCodeDisabled = true;
-        btnAssociateRelationVarDisabled = true;
-        currentRelatedVars = "";
-
+        valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
         if (currentVarExpected != null) {
             if (currentVarExpected.length() != 0) {
                 variableDescription = formsAndFieldsDataMB.variableDescription(currentVarExpected);
+                loadValuesExpected();
             }
         }
-
-        if (currentVarFound != null && currentVarExpected != null) {
-            if (currentVarExpected.length() != 0 && currentVarFound.length() != 0) {
-                compareForCodeDisabled = false;
-                btnValidateRelationVarDisabled = false;
-                btnAssociateRelationVarDisabled = true;
-            }
-        }
-        loadValuesExpected();
     }
 
     public void changeVarFound() {
-        btnValidateRelationVarDisabled = true;
-        btnAssociateRelationVarDisabled = true;
-        btnAssociateRelationVarDisabled = true;
-        compareForCodeDisabled = true;
-        currentRelatedVars = "";
-        if (currentVarFound != null && currentVarExpected != null) {
-            if (currentVarExpected.length() != 0
-                    && currentVarFound.length() != 0) {
-                compareForCodeDisabled = false;
-                btnValidateRelationVarDisabled = false;
-                btnAssociateRelationVarDisabled = true;
+        valuesFound = new ArrayList<String>();//borro la lista de valores esperados 
+        if (currentVarFound != null) {
+            if (currentVarFound.trim().length() != 0) {
+                currentRelatedVars = "";
+                loadValuesFound(currentVarFound, 20);
             }
         }
-        loadValuesFound(currentVarFound, 20);
     }
 
     public void changeRelatedVars() {
@@ -300,19 +307,10 @@ public class RelationshipOfVariablesMB {
         btnRemoveRelationVarDisabled = false;
     }
 
-    public void compareForCodeChange() {
-        /*
-         * cambia el check box que me dice si coparo por valor o por codigo
-         */
-        loadValuesExpected();
-    }
-
     public void btnDivideColumnsClick() {
-        
     }
 
     public void btnJoinColumnsClick() {
-        
     }
 
     //----------------------------------------------------------------------
@@ -320,46 +318,6 @@ public class RelationshipOfVariablesMB {
     //CLIK SOBRE BOTONOES --------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    public void btnValidateRelationVarClick() {
-        /*
-         * click sobre validar si dos variables puedes ser sociadas
-         */
-        String error = "";
-        typeVarExepted = formsAndFieldsDataMB.searchField(currentVarExpected);// fieldsFacade.findByFormField(currentForm, currentVarExpected).getFieldType();
-        ArrayList<String> array = createListOfValuesFromFile(currentVarFound);
-        for (int i = 0; i < array.size(); i++) {
-            if (array.get(i).length() != 0) {//validacion de que llegue el valor 
-                if (typeVarExepted.getFieldType().compareTo("integer") == 0) {//se espera un numero 
-                    if (!isNumeric(array.get(i)))//si el dato no es numerico adiciono el error 
-                    {
-                        error = "Existen datos dentro de los valores encontrados en el archivo que no son numéricos, y deberán ser corregidos en el proceso de validación si decide asociarlos.";
-                    }
-                } else if (typeVarExepted.getFieldType().compareTo("date") == 0) { //se espera un valor boleano 
-                    if (!isDate(array.get(i), currentDateFormat))//si el dato no es fecha validala adiciono el error 
-                    {
-                        error = "Existen datos dentro de los valores encontrados en el archivo que no corresponden al formato especificado, y deberán ser corregidos en el proceso de validación si decide asociarlos.";
-                    }
-                } else if (typeVarExepted.getFieldType().compareTo("text") == 0) { //se espera un texto
-                    error = "";//no es necesario validar
-                } else {//se espera un valor categorico 
-                    if (!isCategorical(array.get(i), typeVarExepted.getFieldType()))//se espera un valorcategorico
-                    {//si el dato no pertenece a la categoria adiciono el error 
-                        error = "Existen datos dentro de los valores encontrados en el archivo que no corresponden a la categoría especificada, y deberán ser corregidos en el proceso de validación si decide asociarlos.";
-                    }
-                }
-            }
-        }
-        if (error.length() == 0) {//no existieron errores            
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Las dos variables pueden ser asociadas sin problemas."));
-        } else {//hay  errores al relacionar la variables 
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
-        }
-        selectDateFormatDisabled = true;
-        btnValidateRelationVarDisabled = true;
-        btnAssociateRelationVarDisabled = false;
-        compareForCodeDisabled = true;
-    }
-
     private RelationVar findRelationVar(String column) {
         /*
          * retorna una relacion de variables
@@ -367,25 +325,92 @@ public class RelationshipOfVariablesMB {
         return null;
     }
 
+    /*
+     * click sobre asociar dos variables
+     */
     public void btnAssociateVarClick() {
-        /*
-         * click sobre asociar dos variables
-         */
-        RelationVar relVar = new RelationVar(currentVarExpected, currentVarFound, typeVarExepted.getFieldType(), compareForCode, currentDateFormat);
-        currentRelationsGroup.addRelationVar(relVar);//agrego la relacion a el grupo de relaciones actual 
-        relatedVars.add(currentVarExpected + "->" + currentVarFound);//agrego la relacion a la lista de relaciones de variables 
-        loadVarsExpectedAndFound();//recargo listas de variables esperadas y encontradas           
-        currentVarExpected = "";
-        currentVarFound = "";
-        variableDescription = "";
-        valuesExpected = new ArrayList<String>();
-        valuesFound = new ArrayList<String>();
-        btnValidateRelationVarDisabled = true;
-        btnAssociateRelationVarDisabled = true;
-        selectDateFormatDisabled = true;
-        compareForCodeDisabled = false;
-        btnSaveConfigurationDisabled = false;
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Las variables fueron asociadas correctamente."));
+        String error = "";
+        boolean nextStep = true;
+        //--------------------------------------------------------------------------------------------
+        //--- se detrmina si hat seleccionada una variable encontrada y una variable esperada
+        //--------------------------------------------------------------------------------------------
+        if (nextStep) {
+            if (currentVarExpected == null) {
+                error = "Debe seleccionarse una variable esperada";
+                nextStep = false;
+            } else {
+                if (currentVarExpected.trim().length() == 0) {
+                    error = "Debe seleccionarse una variable esperada";
+                }
+            }
+        }
+        if (nextStep) {
+            if (currentVarFound == null) {
+                error = "Debe seleccionarse una variable encontrada de la lista";
+                nextStep = false;
+            } else {
+                if (currentVarFound.trim().length() == 0) {
+                    error = "Debe seleccionarse una variable encontradad de la lista";
+                    nextStep = false;
+                }
+            }
+        }
+
+        if (nextStep) {
+            selectDateFormatDisabled = true;
+            //---------------------------------------------------------------------------
+            //como se quita de la lista un item se determina que item quedara seleccionado
+            //---------------------------------------------------------------------------
+            String nextVarExpectedSelected = "";
+            String nextVarFoundSelected = "";
+            for (int i = 0; i < varsFound.size(); i++) {
+                if (varsFound.get(i).compareTo(currentVarFound) == 0) {//esta es la variable encontrada que saldra de la lista
+                    if (i + 1 < varsFound.size() - 1) {//determino si tiene siguiente
+                        nextVarFoundSelected = varsFound.get(i + 1);//asigno el siguiente
+                        break;
+                    }
+                    if (i - 1 >= 0) {//determino si tiene anterior
+                        nextVarFoundSelected = varsFound.get(i - 1);//asigno el anterior
+                        break;
+                    }
+                }
+            }
+            for (int i = 0; i < variablesExpected.size(); i++) {
+                if (variablesExpected.get(i).compareTo(currentVarExpected) == 0) {//esta es la variable esperada que saldra de la lista
+                    if (i + 1 < variablesExpected.size() - 1) {//determino si tiene siguiente
+                        nextVarExpectedSelected = variablesExpected.get(i + 1);//asigno el siguiente
+                        break;
+                    }
+                    if (i - 1 >= 0) {//determino si tiene anterior
+                        nextVarExpectedSelected = variablesExpected.get(i - 1);//asigno el anterior
+                        break;
+                    }
+                }
+            }
+            //---------------------------------------------------------------------------
+            //relaizo la relacion de variables
+            //---------------------------------------------------------------------------
+            RelationVar relVar = new RelationVar(currentVarExpected, currentVarFound, typeVarExepted.getFieldType(), compareForCode, currentDateFormat);
+            currentRelationsGroup.addRelationVar(relVar);//agrego la relacion a el grupo de relaciones actual 
+            relatedVars.add(currentVarExpected + "->" + currentVarFound);//agrego la relacion a la lista de relaciones de variables 
+            loadVarsExpectedAndFound();//recargo listas de variables esperadas y encontradas           
+            //---------------------------------------------------------------------------
+            //selecciono los items de la lista que quedan seleccionados
+            //---------------------------------------------------------------------------
+            currentVarExpected = nextVarExpectedSelected;
+            currentVarFound = nextVarFoundSelected;
+            changeVarExpected();
+            changeVarFound();
+        }
+        if (nextStep) {//no se produjeron errores solo alertas
+            if (error.length() == 0) {//no existieron errores            
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto!!", "Asociación de variables realizada."));
+            } else {//hay  errores al relacionar la variables 
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
+            }
+        } else {//se produjo un error
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", error));
+        }
     }
 
     /*
@@ -403,6 +428,23 @@ public class RelationshipOfVariablesMB {
         /*
          * click sobre boton remover relacion de variables
          */
+
+
+        //como se elimina un item de la lista busco cual es el siguinte item seleccionado
+        String nextRelatedVarsSelected = "";
+        for (int i = 0; i < relatedVars.size(); i++) {
+            if (relatedVars.get(i).compareTo(currentRelatedVars) == 0) {//esta es la variable encontrada que saldra de la lista
+                if (i + 1 <= relatedVars.size() - 1) {//determino si tiene siguiente
+                    nextRelatedVarsSelected = relatedVars.get(i + 1);//asigno el siguiente
+                    break;
+                }
+                if (i - 1 >= 0) {//determino si tiene anterior
+                    nextRelatedVarsSelected = relatedVars.get(i - 1);//asigno el anterior
+                    break;
+                }
+            }
+        }
+        //elimino el item de la lista de variables relacionadas
         String[] splitVarRelated = currentRelatedVars.split("->");
         currentRelationsGroup.removeRelationVar(splitVarRelated[0], splitVarRelated[1]);//elimino la relacion de el grupo de relaciones actual
         for (int i = 0; i < relatedVars.size(); i++) {//remuevo de la lista de relaciones de variables        
@@ -414,15 +456,15 @@ public class RelationshipOfVariablesMB {
         loadVarsExpectedAndFound();//recargo lista de variables esperadas y encontradas
         valuesExpected = new ArrayList<String>();
         valuesFound = new ArrayList<String>();
-        compareForCodeDisabled = false;
-        currentVarFound = "";
-        currentVarExpected = "";
-        variableDescription = "";
-        btnValidateRelationVarDisabled = true;
-        btnAssociateRelationVarDisabled = true;
-        btnRemoveRelationVarDisabled = true;
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "La relación ha sido eliminada."));
+        //valuesDiscarded=new ArrayList<String>();
+        //valuesRela
 
+
+        currentRelatedVars = nextRelatedVarsSelected;//asigno el item que queda seleccionado
+        if (currentRelatedVars.trim().length() == 0) {
+            btnRemoveRelationVarDisabled = true;
+        }
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "La relación ha sido eliminada."));
     }
 
     //----------------------------------------------------------------------
@@ -470,14 +512,13 @@ public class RelationshipOfVariablesMB {
         this.varsFound = varsFound;
     }
 
-    public boolean isBtnAssociateRelationVarDisabled() {
-        return btnAssociateRelationVarDisabled;
-    }
-
-    public void setBtnAssociateRelationVarDisabled(boolean btnAssociateRelationVarDisabled) {
-        this.btnAssociateRelationVarDisabled = btnAssociateRelationVarDisabled;
-    }
-
+//    public boolean isBtnAssociateRelationVarDisabled() {
+//        return btnAssociateRelationVarDisabled;
+//    }
+//
+//    public void setBtnAssociateRelationVarDisabled(boolean btnAssociateRelationVarDisabled) {
+//        this.btnAssociateRelationVarDisabled = btnAssociateRelationVarDisabled;
+//    }
     public boolean isBtnRemoveRelationVarDisabled() {
         return btnRemoveRelationVarDisabled;
     }
@@ -486,14 +527,13 @@ public class RelationshipOfVariablesMB {
         this.btnRemoveRelationVarDisabled = btnRemoveRelationVarDisabled;
     }
 
-    public boolean isBtnValidateRelationVarDisabled() {
-        return btnValidateRelationVarDisabled;
-    }
-
-    public void setBtnValidateRelationVarDisabled(boolean btnValidateRelationVarDisabled) {
-        this.btnValidateRelationVarDisabled = btnValidateRelationVarDisabled;
-    }
-
+//    public boolean isBtnValidateRelationVarDisabled() {
+//        return btnValidateRelationVarDisabled;
+//    }
+//
+//    public void setBtnValidateRelationVarDisabled(boolean btnValidateRelationVarDisabled) {
+//        this.btnValidateRelationVarDisabled = btnValidateRelationVarDisabled;
+//    }
     public List<String> getVariablesExpected() {
         return variablesExpected;
     }
@@ -526,14 +566,13 @@ public class RelationshipOfVariablesMB {
         this.compareForCode = compareForCode;
     }
 
-    public boolean isCompareForCodeDisabled() {
-        return compareForCodeDisabled;
-    }
-
-    public void setCompareForCodeDisabled(boolean compareForCodeDisabled) {
-        this.compareForCodeDisabled = compareForCodeDisabled;
-    }
-
+//    public boolean isCompareForCodeDisabled() {
+//        return compareForCodeDisabled;
+//    }
+//
+//    public void setCompareForCodeDisabled(boolean compareForCodeDisabled) {
+//        this.compareForCodeDisabled = compareForCodeDisabled;
+//    }
     public String getCurrentRelationGroupName() {
         return currentRelationGroupName;
     }
@@ -637,6 +676,4 @@ public class RelationshipOfVariablesMB {
     public void setValuesDiscarded(List<String> valuesDiscarded) {
         this.valuesDiscarded = valuesDiscarded;
     }
-    
-    
 }

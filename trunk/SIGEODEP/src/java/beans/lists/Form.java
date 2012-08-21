@@ -4,13 +4,14 @@
  */
 package beans.lists;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  *
  * @author santos
  */
-public class Form {
+public class Form implements Serializable{
 
     private String name;
     private String code;

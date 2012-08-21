@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "injuries", catalog = "od", schema = "public", uniqueConstraints = {
@@ -45,71 +45,71 @@ public class Injuries implements Serializable {
     }
 
     public Injuries(Short injuryId) {
-        this.injuryId = injuryId;
+	this.injuryId = injuryId;
     }
 
     public Injuries(Short injuryId, String injuryName) {
-        this.injuryId = injuryId;
-        this.injuryName = injuryName;
+	this.injuryId = injuryId;
+	this.injuryName = injuryName;
     }
 
     public Short getInjuryId() {
-        return injuryId;
+	return injuryId;
     }
 
     public void setInjuryId(Short injuryId) {
-        this.injuryId = injuryId;
+	this.injuryId = injuryId;
     }
 
     public String getInjuryName() {
-        return injuryName;
+	return injuryName;
     }
 
     public void setInjuryName(String injuryName) {
-        this.injuryName = injuryName;
+	this.injuryName = injuryName;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @XmlTransient
     public List<FatalInjuries> getFatalInjuriesList() {
-        return fatalInjuriesList;
+	return fatalInjuriesList;
     }
 
     public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
-        this.fatalInjuriesList = fatalInjuriesList;
+	this.fatalInjuriesList = fatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (injuryId != null ? injuryId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (injuryId != null ? injuryId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Injuries)) {
-            return false;
-        }
-        Injuries other = (Injuries) object;
-        if ((this.injuryId == null && other.injuryId != null) || (this.injuryId != null && !this.injuryId.equals(other.injuryId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Injuries)) {
+	    return false;
+	}
+	Injuries other = (Injuries) object;
+	if ((this.injuryId == null && other.injuryId != null) || (this.injuryId != null && !this.injuryId.equals(other.injuryId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Injuries[ injuryId=" + injuryId + " ]";
+	return "model.pojo.Injuries[ injuryId=" + injuryId + " ]";
     }
     
 }

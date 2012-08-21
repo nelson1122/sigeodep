@@ -4,17 +4,16 @@
  */
 package managedBeans.login;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.io.Serializable;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
 import javax.faces.context.FacesContext;
+import managedBeans.categoricalVariables.NeighborhoodsVariableMB;
 import managedBeans.fileProcessing.*;
-import managedBeans.forms.AccidentalMB;
-import managedBeans.forms.HomicideMB;
-import managedBeans.forms.LcenfMB;
-import managedBeans.forms.SuicideMB;
-import managedBeans.forms.TransitMB;
-import managedBeans.forms.VIFMB;
+import managedBeans.forms.*;
 import managedBeans.preload.FormsAndFieldsDataMB;
 
 /**
@@ -23,7 +22,7 @@ import managedBeans.preload.FormsAndFieldsDataMB;
  */
 @ManagedBean(name = "loginMB")
 @RequestScoped
-public class LoginMB {
+public class LoginMB implements Serializable{
 
     private String loginname="admin";
     private String password="123";
@@ -41,6 +40,7 @@ public class LoginMB {
     SuicideMB suicideMB;
     TransitMB transitMB;
     VIFMB vifMB;
+    NeighborhoodsVariableMB neighborhoodsVariableMB;
     //progreso de carga de la aplicacion ***********************************    
     private Integer progress;
 
@@ -66,6 +66,14 @@ public class LoginMB {
         /**
          * Creates a new instance of LoginMB
          */
+//        try {
+//            PrintStream out = new PrintStream(new FileOutputStream("output.txt"));
+//            System.setOut(out);
+//            PrintStream out2 = new PrintStream(new FileOutputStream("output2.txt"));
+//            System.setErr(out2);
+//        } catch (Exception e) {
+//            System.out.println("error:    " + e);
+//        }
     }
 
     public void reset() {
@@ -93,6 +101,10 @@ public class LoginMB {
         }
         progress = 100;
     }
+    
+    public void closeSession(){
+        
+    }
 
     public String CheckValidUser() {
         if (loginname.equals("admin") && password.equals("123")) {
@@ -114,11 +126,12 @@ public class LoginMB {
             suicideMB = (SuicideMB) context.getApplication().evaluateExpressionGet(context, "#{suicideMB}", SuicideMB.class);
             transitMB = (TransitMB) context.getApplication().evaluateExpressionGet(context, "#{transitMB}", TransitMB.class);
             vifMB = (VIFMB) context.getApplication().evaluateExpressionGet(context, "#{vifMB}", VIFMB.class);
-            
+            neighborhoodsVariableMB= (NeighborhoodsVariableMB) context.getApplication().evaluateExpressionGet(context, "#{neighborhoodsVariableMB}", NeighborhoodsVariableMB.class);
             
             
             System.out.println("INICIA... carga de informacion formularios");
             lcenfMB.reset();
+            neighborhoodsVariableMB.reset();
             accidentalMB.reset();
             homicideMB.reset();
             suicideMB.reset();

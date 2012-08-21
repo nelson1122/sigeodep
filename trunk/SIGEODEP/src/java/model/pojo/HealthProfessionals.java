@@ -5,14 +5,16 @@
 package model.pojo;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "health_professionals", catalog = "od", schema = "public")
@@ -35,83 +37,92 @@ public class HealthProfessionals implements Serializable {
     @Size(min = 1, max = 100)
     @Column(name = "health_professional_name", nullable = false, length = 100)
     private String healthProfessionalName;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 12)
-    @Column(name = "health_professional_identification", nullable = false, length = 12)
+    @Size(max = 12)
+    @Column(name = "health_professional_identification", length = 12)
     private String healthProfessionalIdentification;
     @Size(max = 50)
     @Column(name = "health_professional_specialty", length = 50)
     private String healthProfessionalSpecialty;
+    @OneToMany(mappedBy = "healthProfessionalId")
+    private List<NonFatalInjuries> nonFatalInjuriesList;
 
     public HealthProfessionals() {
     }
 
     public HealthProfessionals(Integer healthProfessionalId) {
-        this.healthProfessionalId = healthProfessionalId;
+	this.healthProfessionalId = healthProfessionalId;
     }
 
     public HealthProfessionals(Integer healthProfessionalId, String healthProfessionalName, String healthProfessionalIdentification) {
-        this.healthProfessionalId = healthProfessionalId;
-        this.healthProfessionalName = healthProfessionalName;
-        this.healthProfessionalIdentification = healthProfessionalIdentification;
+	this.healthProfessionalId = healthProfessionalId;
+	this.healthProfessionalName = healthProfessionalName;
+	this.healthProfessionalIdentification = healthProfessionalIdentification;
     }
 
     public Integer getHealthProfessionalId() {
-        return healthProfessionalId;
+	return healthProfessionalId;
     }
 
     public void setHealthProfessionalId(Integer healthProfessionalId) {
-        this.healthProfessionalId = healthProfessionalId;
+	this.healthProfessionalId = healthProfessionalId;
     }
 
     public String getHealthProfessionalName() {
-        return healthProfessionalName;
+	return healthProfessionalName;
     }
 
     public void setHealthProfessionalName(String healthProfessionalName) {
-        this.healthProfessionalName = healthProfessionalName;
+	this.healthProfessionalName = healthProfessionalName;
     }
 
     public String getHealthProfessionalIdentification() {
-        return healthProfessionalIdentification;
+	return healthProfessionalIdentification;
     }
 
     public void setHealthProfessionalIdentification(String healthProfessionalIdentification) {
-        this.healthProfessionalIdentification = healthProfessionalIdentification;
+	this.healthProfessionalIdentification = healthProfessionalIdentification;
     }
 
     public String getHealthProfessionalSpecialty() {
-        return healthProfessionalSpecialty;
+	return healthProfessionalSpecialty;
     }
 
     public void setHealthProfessionalSpecialty(String healthProfessionalSpecialty) {
-        this.healthProfessionalSpecialty = healthProfessionalSpecialty;
+	this.healthProfessionalSpecialty = healthProfessionalSpecialty;
+    }
+
+    @XmlTransient
+    public List<NonFatalInjuries> getNonFatalInjuriesList() {
+	return nonFatalInjuriesList;
+    }
+
+    public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (healthProfessionalId != null ? healthProfessionalId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (healthProfessionalId != null ? healthProfessionalId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof HealthProfessionals)) {
-            return false;
-        }
-        HealthProfessionals other = (HealthProfessionals) object;
-        if ((this.healthProfessionalId == null && other.healthProfessionalId != null) || (this.healthProfessionalId != null && !this.healthProfessionalId.equals(other.healthProfessionalId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof HealthProfessionals)) {
+	    return false;
+	}
+	HealthProfessionals other = (HealthProfessionals) object;
+	if ((this.healthProfessionalId == null && other.healthProfessionalId != null) || (this.healthProfessionalId != null && !this.healthProfessionalId.equals(other.healthProfessionalId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.HealthProfessionals[ healthProfessionalId=" + healthProfessionalId + " ]";
+	return "model.pojo.HealthProfessionals[ healthProfessionalId=" + healthProfessionalId + " ]";
     }
     
 }

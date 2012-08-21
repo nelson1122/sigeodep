@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "security_elements", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class SecurityElements implements Serializable {
     }
 
     public SecurityElements(Short securityElementId) {
-        this.securityElementId = securityElementId;
+	this.securityElementId = securityElementId;
     }
 
     public SecurityElements(Short securityElementId, String securityElementName) {
-        this.securityElementId = securityElementId;
-        this.securityElementName = securityElementName;
+	this.securityElementId = securityElementId;
+	this.securityElementName = securityElementName;
     }
 
     public Short getSecurityElementId() {
-        return securityElementId;
+	return securityElementId;
     }
 
     public void setSecurityElementId(Short securityElementId) {
-        this.securityElementId = securityElementId;
+	this.securityElementId = securityElementId;
     }
 
     public String getSecurityElementName() {
-        return securityElementName;
+	return securityElementName;
     }
 
     public void setSecurityElementName(String securityElementName) {
-        this.securityElementName = securityElementName;
+	this.securityElementName = securityElementName;
     }
 
     @XmlTransient
     public List<NonFatalTransport> getNonFatalTransportList() {
-        return nonFatalTransportList;
+	return nonFatalTransportList;
     }
 
     public void setNonFatalTransportList(List<NonFatalTransport> nonFatalTransportList) {
-        this.nonFatalTransportList = nonFatalTransportList;
+	this.nonFatalTransportList = nonFatalTransportList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (securityElementId != null ? securityElementId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (securityElementId != null ? securityElementId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof SecurityElements)) {
-            return false;
-        }
-        SecurityElements other = (SecurityElements) object;
-        if ((this.securityElementId == null && other.securityElementId != null) || (this.securityElementId != null && !this.securityElementId.equals(other.securityElementId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof SecurityElements)) {
+	    return false;
+	}
+	SecurityElements other = (SecurityElements) object;
+	if ((this.securityElementId == null && other.securityElementId != null) || (this.securityElementId != null && !this.securityElementId.equals(other.securityElementId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.SecurityElements[ securityElementId=" + securityElementId + " ]";
+	return "model.pojo.SecurityElements[ securityElementId=" + securityElementId + " ]";
     }
     
 }

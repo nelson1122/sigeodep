@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "days", catalog = "od", schema = "public")
@@ -36,48 +36,48 @@ public class Days implements Serializable {
     }
 
     public Days(Short daysId) {
-        this.daysId = daysId;
+	this.daysId = daysId;
     }
 
     public Short getDaysId() {
-        return daysId;
+	return daysId;
     }
 
     public void setDaysId(Short daysId) {
-        this.daysId = daysId;
+	this.daysId = daysId;
     }
 
     public String getDaysName() {
-        return daysName;
+	return daysName;
     }
 
     public void setDaysName(String daysName) {
-        this.daysName = daysName;
+	this.daysName = daysName;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (daysId != null ? daysId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (daysId != null ? daysId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Days)) {
-            return false;
-        }
-        Days other = (Days) object;
-        if ((this.daysId == null && other.daysId != null) || (this.daysId != null && !this.daysId.equals(other.daysId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Days)) {
+	    return false;
+	}
+	Days other = (Days) object;
+	if ((this.daysId == null && other.daysId != null) || (this.daysId != null && !this.daysId.equals(other.daysId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Days[ daysId=" + daysId + " ]";
+	return "model.pojo.Days[ daysId=" + daysId + " ]";
     }
     
 }

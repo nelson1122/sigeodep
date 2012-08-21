@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "id_types", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class IdTypes implements Serializable {
     }
 
     public IdTypes(Short typeId) {
-        this.typeId = typeId;
+	this.typeId = typeId;
     }
 
     public IdTypes(Short typeId, String typeName) {
-        this.typeId = typeId;
-        this.typeName = typeName;
+	this.typeId = typeId;
+	this.typeName = typeName;
     }
 
     public Short getTypeId() {
-        return typeId;
+	return typeId;
     }
 
     public void setTypeId(Short typeId) {
-        this.typeId = typeId;
+	this.typeId = typeId;
     }
 
     public String getTypeName() {
-        return typeName;
+	return typeName;
     }
 
     public void setTypeName(String typeName) {
-        this.typeName = typeName;
+	this.typeName = typeName;
     }
 
     @XmlTransient
     public List<Victims> getVictimsList() {
-        return victimsList;
+	return victimsList;
     }
 
     public void setVictimsList(List<Victims> victimsList) {
-        this.victimsList = victimsList;
+	this.victimsList = victimsList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (typeId != null ? typeId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (typeId != null ? typeId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof IdTypes)) {
-            return false;
-        }
-        IdTypes other = (IdTypes) object;
-        if ((this.typeId == null && other.typeId != null) || (this.typeId != null && !this.typeId.equals(other.typeId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof IdTypes)) {
+	    return false;
+	}
+	IdTypes other = (IdTypes) object;
+	if ((this.typeId == null && other.typeId != null) || (this.typeId != null && !this.typeId.equals(other.typeId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.IdTypes[ typeId=" + typeId + " ]";
+	return "model.pojo.IdTypes[ typeId=" + typeId + " ]";
     }
     
 }

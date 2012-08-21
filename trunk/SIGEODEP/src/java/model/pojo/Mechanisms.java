@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "mechanisms", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class Mechanisms implements Serializable {
     }
 
     public Mechanisms(Short mechanismId) {
-        this.mechanismId = mechanismId;
+	this.mechanismId = mechanismId;
     }
 
     public Mechanisms(Short mechanismId, String mechanismName) {
-        this.mechanismId = mechanismId;
-        this.mechanismName = mechanismName;
+	this.mechanismId = mechanismId;
+	this.mechanismName = mechanismName;
     }
 
     public Short getMechanismId() {
-        return mechanismId;
+	return mechanismId;
     }
 
     public void setMechanismId(Short mechanismId) {
-        this.mechanismId = mechanismId;
+	this.mechanismId = mechanismId;
     }
 
     public String getMechanismName() {
-        return mechanismName;
+	return mechanismName;
     }
 
     public void setMechanismName(String mechanismName) {
-        this.mechanismName = mechanismName;
+	this.mechanismName = mechanismName;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (mechanismId != null ? mechanismId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (mechanismId != null ? mechanismId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Mechanisms)) {
-            return false;
-        }
-        Mechanisms other = (Mechanisms) object;
-        if ((this.mechanismId == null && other.mechanismId != null) || (this.mechanismId != null && !this.mechanismId.equals(other.mechanismId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Mechanisms)) {
+	    return false;
+	}
+	Mechanisms other = (Mechanisms) object;
+	if ((this.mechanismId == null && other.mechanismId != null) || (this.mechanismId != null && !this.mechanismId.equals(other.mechanismId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Mechanisms[ mechanismId=" + mechanismId + " ]";
+	return "model.pojo.Mechanisms[ mechanismId=" + mechanismId + " ]";
     }
     
 }

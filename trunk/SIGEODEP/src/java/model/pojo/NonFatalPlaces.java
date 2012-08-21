@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "non_fatal_places", catalog = "od", schema = "public", uniqueConstraints = {
@@ -41,57 +41,57 @@ public class NonFatalPlaces implements Serializable {
     }
 
     public NonFatalPlaces(Short nonFatalPlaceId) {
-        this.nonFatalPlaceId = nonFatalPlaceId;
+	this.nonFatalPlaceId = nonFatalPlaceId;
     }
 
     public Short getNonFatalPlaceId() {
-        return nonFatalPlaceId;
+	return nonFatalPlaceId;
     }
 
     public void setNonFatalPlaceId(Short nonFatalPlaceId) {
-        this.nonFatalPlaceId = nonFatalPlaceId;
+	this.nonFatalPlaceId = nonFatalPlaceId;
     }
 
     public String getNonFatalPlaceName() {
-        return nonFatalPlaceName;
+	return nonFatalPlaceName;
     }
 
     public void setNonFatalPlaceName(String nonFatalPlaceName) {
-        this.nonFatalPlaceName = nonFatalPlaceName;
+	this.nonFatalPlaceName = nonFatalPlaceName;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (nonFatalPlaceId != null ? nonFatalPlaceId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (nonFatalPlaceId != null ? nonFatalPlaceId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof NonFatalPlaces)) {
-            return false;
-        }
-        NonFatalPlaces other = (NonFatalPlaces) object;
-        if ((this.nonFatalPlaceId == null && other.nonFatalPlaceId != null) || (this.nonFatalPlaceId != null && !this.nonFatalPlaceId.equals(other.nonFatalPlaceId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof NonFatalPlaces)) {
+	    return false;
+	}
+	NonFatalPlaces other = (NonFatalPlaces) object;
+	if ((this.nonFatalPlaceId == null && other.nonFatalPlaceId != null) || (this.nonFatalPlaceId != null && !this.nonFatalPlaceId.equals(other.nonFatalPlaceId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.NonFatalPlaces[ nonFatalPlaceId=" + nonFatalPlaceId + " ]";
+	return "model.pojo.NonFatalPlaces[ nonFatalPlaceId=" + nonFatalPlaceId + " ]";
     }
     
 }

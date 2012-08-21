@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "loads", catalog = "od", schema = "public")
@@ -31,52 +31,52 @@ public class Loads implements Serializable {
     }
 
     public Loads(LoadsPK loadsPK) {
-        this.loadsPK = loadsPK;
+	this.loadsPK = loadsPK;
     }
 
     public Loads(int tagId, int recordId) {
-        this.loadsPK = new LoadsPK(tagId, recordId);
+	this.loadsPK = new LoadsPK(tagId, recordId);
     }
 
     public LoadsPK getLoadsPK() {
-        return loadsPK;
+	return loadsPK;
     }
 
     public void setLoadsPK(LoadsPK loadsPK) {
-        this.loadsPK = loadsPK;
+	this.loadsPK = loadsPK;
     }
 
     public Boolean getIsFatal() {
-        return isFatal;
+	return isFatal;
     }
 
     public void setIsFatal(Boolean isFatal) {
-        this.isFatal = isFatal;
+	this.isFatal = isFatal;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (loadsPK != null ? loadsPK.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (loadsPK != null ? loadsPK.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Loads)) {
-            return false;
-        }
-        Loads other = (Loads) object;
-        if ((this.loadsPK == null && other.loadsPK != null) || (this.loadsPK != null && !this.loadsPK.equals(other.loadsPK))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Loads)) {
+	    return false;
+	}
+	Loads other = (Loads) object;
+	if ((this.loadsPK == null && other.loadsPK != null) || (this.loadsPK != null && !this.loadsPK.equals(other.loadsPK))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Loads[ loadsPK=" + loadsPK + " ]";
+	return "model.pojo.Loads[ loadsPK=" + loadsPK + " ]";
     }
     
 }

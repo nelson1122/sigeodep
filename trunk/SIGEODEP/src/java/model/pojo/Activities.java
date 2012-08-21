@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "activities", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class Activities implements Serializable {
     }
 
     public Activities(Short activityId) {
-        this.activityId = activityId;
+	this.activityId = activityId;
     }
 
     public Activities(Short activityId, String activityName) {
-        this.activityId = activityId;
-        this.activityName = activityName;
+	this.activityId = activityId;
+	this.activityName = activityName;
     }
 
     public Short getActivityId() {
-        return activityId;
+	return activityId;
     }
 
     public void setActivityId(Short activityId) {
-        this.activityId = activityId;
+	this.activityId = activityId;
     }
 
     public String getActivityName() {
-        return activityName;
+	return activityName;
     }
 
     public void setActivityName(String activityName) {
-        this.activityName = activityName;
+	this.activityName = activityName;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (activityId != null ? activityId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (activityId != null ? activityId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Activities)) {
-            return false;
-        }
-        Activities other = (Activities) object;
-        if ((this.activityId == null && other.activityId != null) || (this.activityId != null && !this.activityId.equals(other.activityId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Activities)) {
+	    return false;
+	}
+	Activities other = (Activities) object;
+	if ((this.activityId == null && other.activityId != null) || (this.activityId != null && !this.activityId.equals(other.activityId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Activities[ activityId=" + activityId + " ]";
+	return "model.pojo.Activities[ activityId=" + activityId + " ]";
     }
     
 }

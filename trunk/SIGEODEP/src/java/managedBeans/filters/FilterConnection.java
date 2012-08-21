@@ -36,8 +36,8 @@ public class FilterConnection implements Serializable {
     public void connect() {
         msj = "";
         bd = "od";
-        login = "and";
-        password = "nancy";
+        login = "postgres";
+        password = "1234";
         url = "jdbc:postgresql://" + "localhost" + "/" + bd;// Anadir a la url la bd user y contrasena
         try {
 

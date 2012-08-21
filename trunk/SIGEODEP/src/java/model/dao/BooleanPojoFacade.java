@@ -11,7 +11,7 @@ import model.pojo.BooleanPojo;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class BooleanPojoFacade extends AbstractFacade<BooleanPojo> {
@@ -20,11 +20,11 @@ public class BooleanPojoFacade extends AbstractFacade<BooleanPojo> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public BooleanPojoFacade() {
-        super(BooleanPojo.class);
+	super(BooleanPojo.class);
     }
     
 }

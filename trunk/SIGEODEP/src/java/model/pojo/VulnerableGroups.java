@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "vulnerable_groups", catalog = "od", schema = "public", uniqueConstraints = {
@@ -36,73 +36,62 @@ public class VulnerableGroups implements Serializable {
     private String vulnerableGroupName;
     @ManyToMany(mappedBy = "vulnerableGroupsList")
     private List<Victims> victimsList;
-    @OneToMany(mappedBy = "vulnerableGroupId")
-    private List<Victims> victimsList1;
 
     public VulnerableGroups() {
     }
 
     public VulnerableGroups(Short vulnerableGroupId) {
-        this.vulnerableGroupId = vulnerableGroupId;
+	this.vulnerableGroupId = vulnerableGroupId;
     }
 
     public Short getVulnerableGroupId() {
-        return vulnerableGroupId;
+	return vulnerableGroupId;
     }
 
     public void setVulnerableGroupId(Short vulnerableGroupId) {
-        this.vulnerableGroupId = vulnerableGroupId;
+	this.vulnerableGroupId = vulnerableGroupId;
     }
 
     public String getVulnerableGroupName() {
-        return vulnerableGroupName;
+	return vulnerableGroupName;
     }
 
     public void setVulnerableGroupName(String vulnerableGroupName) {
-        this.vulnerableGroupName = vulnerableGroupName;
+	this.vulnerableGroupName = vulnerableGroupName;
     }
 
     @XmlTransient
     public List<Victims> getVictimsList() {
-        return victimsList;
+	return victimsList;
     }
 
     public void setVictimsList(List<Victims> victimsList) {
-        this.victimsList = victimsList;
-    }
-
-    @XmlTransient
-    public List<Victims> getVictimsList1() {
-        return victimsList1;
-    }
-
-    public void setVictimsList1(List<Victims> victimsList1) {
-        this.victimsList1 = victimsList1;
+	this.victimsList = victimsList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (vulnerableGroupId != null ? vulnerableGroupId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (vulnerableGroupId != null ? vulnerableGroupId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof VulnerableGroups)) {
-            return false;
-        }
-        VulnerableGroups other = (VulnerableGroups) object;
-        if ((this.vulnerableGroupId == null && other.vulnerableGroupId != null) || (this.vulnerableGroupId != null && !this.vulnerableGroupId.equals(other.vulnerableGroupId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof VulnerableGroups)) {
+	    return false;
+	}
+	VulnerableGroups other = (VulnerableGroups) object;
+	if ((this.vulnerableGroupId == null && other.vulnerableGroupId != null) || (this.vulnerableGroupId != null && !this.vulnerableGroupId.equals(other.vulnerableGroupId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.VulnerableGroups[ vulnerableGroupId=" + vulnerableGroupId + " ]";
+	return "model.pojo.VulnerableGroups[ vulnerableGroupId=" + vulnerableGroupId + " ]";
     }
     
 }

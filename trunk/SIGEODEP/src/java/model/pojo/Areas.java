@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "areas", catalog = "od", schema = "public", uniqueConstraints = {
@@ -98,7 +98,7 @@ public class Areas implements Serializable {
 
     @Override
     public String toString() {
-	return "newpackage.Areas[ areaId=" + areaId + " ]";
+	return "model.pojo.Areas[ areaId=" + areaId + " ]";
     }
     
 }

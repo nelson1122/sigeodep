@@ -11,7 +11,7 @@ import model.pojo.TransportUsers;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class TransportUsersFacade extends AbstractFacade<TransportUsers> {
@@ -20,11 +20,11 @@ public class TransportUsersFacade extends AbstractFacade<TransportUsers> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public TransportUsersFacade() {
-        super(TransportUsers.class);
+	super(TransportUsers.class);
     }
     
 }

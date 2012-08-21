@@ -5,12 +5,13 @@
 package managedBeans.fileProcessing;
 
 import beans.connection.ConnectionJDBC;
+import beans.enumerators.DataTypeEnum;
+import beans.enumerators.SCC_F_032Enum;
 import beans.errorsControl.ErrorControl;
-import beans.lists.Field;
-import beans.registerData.SCC_F_032Enum;
 import beans.relations.RelationValue;
 import beans.relations.RelationVar;
 import beans.relations.RelationsGroup;
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -34,7 +35,7 @@ import model.pojo.*;
  */
 @ManagedBean(name = "recordDataMB")
 @SessionScoped
-public class RecordDataMB {
+public class RecordDataMB implements Serializable {
 
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private RelationsGroup currentRelationsGroup;
@@ -42,13 +43,14 @@ public class RecordDataMB {
     private StoredRelationsMB storedRelationsMB;
     private LoginMB loginMB;
     private ErrorsControlMB errorsControlMB;
+    private String errorStr;
     private String[] columnsNames;
     private int tuplesNumber;
     private int tuplesProcessed;
     private ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
     private RelationVar relationVar;
     //private Field fieldExepted;
-    private String type;
+    //private String type;
     //private String error;
     private String nameForm;
     //manejo de persistencia
@@ -145,8 +147,6 @@ public class RecordDataMB {
     @EJB
     InjuriesFacade injuriesFacade;
     @EJB
-    EpsFacade epsFacade;
-    @EJB
     SecurityElementsFacade securityElementsFacade;
     @EJB
     AbuseTypesFacade abuseTypesFacade;
@@ -158,7 +158,6 @@ public class RecordDataMB {
     KindsOfInjuryFacade kindsOfInjuryFacade;
     @EJB
     NonFatalDataSourcesFacade nonFatalDataSourcesFacade;
-    
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //MANEJO E LA BARRA DE PROGRESO DEL ALMACENAMIENTO ---------------------
@@ -193,7 +192,6 @@ public class RecordDataMB {
     //FUNCIONES DE PROPOSITO GENERAL ---------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-
     public RecordDataMB() {
         /*
          * Constructor de la clase
@@ -218,71 +216,108 @@ public class RecordDataMB {
          * que salgan de analizar el archivo
          */
         try {
-            //determino el nombre de la columna
             conx = new ConnectionJDBC();
             conx.connect();
-            //numero de tuplas
             ResultSet resultSetFileData = conx.consult("SELECT COUNT(*) FROM temp; ");
             resultSetFileData.next();
             tuplesNumber = resultSetFileData.getInt(1);//numero de tuplas a procesar
-            tuplesProcessed = 0;//numero de tuplas procesdas
-            //resultSetFileData contendra todos los registros de el archivo(tabla temp)
-            resultSetFileData = conx.consult("SELECT * FROM temp; ");
+            tuplesProcessed = 0;//numero de tuplas procesdas            
+            resultSetFileData = conx.consult("SELECT * FROM temp ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)
             resultSetFileData.next();
             progress = 0;
-            //tomo el grupo de relaciones de valores y de variables
-            currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();
-            //creo un arreglo con los nombres de las columnas
+            currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();//tomo el grupo de relaciones de valores y de variables
+
             int columnsNumber = resultSetFileData.getMetaData().getColumnCount();
             int errorsNumber = 0;
             int pos = 0;
-            columnsNames = new String[columnsNumber];
+            columnsNames = new String[columnsNumber];//creo un arreglo con los nombres de las columnas
             for (int i = 1; i <= columnsNumber; i++) {
                 columnsNames[pos] = resultSetFileData.getMetaData().getColumnName(i);
                 pos++;
             }
-            errorsControlMB.setErrorControlArrayList(new ArrayList<ErrorControl>());
-            //recorro cada uno de los registros de la tabla temp
+            errorsControlMB.setErrorControlArrayList(new ArrayList<ErrorControl>());//arreglo de errores            
             int count = 1;
-            do {
-                //recorro cada una de las columnas de cada registro                
-                for (int i = 0; i < columnsNames.length; i++) {
-                    //determino la relacion de variables
-                    relationVar = currentRelationsGroup.findRelationVar(columnsNames[i]);
+            do {//recorro cada uno de los registros de la tabla temp                                                
+                for (int i = 0; i < columnsNames.length; i++) {//recorro cada una de las columnas de cada registro                    
+                    relationVar = currentRelationsGroup.findRelationVar(columnsNames[i]);//determino la relacion de variables
                     if (relationVar != null) {
-                        //fieldExepted = formsAndFieldsDataMB.searchField(relationVar.getNameExpected());
-                        type = relationVar.getFieldType();
-
-                        if (type.compareTo("text") == 0) {//valor de tipo texto no se valida
-                        } else if (type.compareTo("integer") == 0) {//si el dato no es numerico adiciono el error 
-                            if (!isNumeric(resultSetFileData.getString(columnsNames[i]))) {
-                                errorsNumber++;//error = "No es entero";
-                                errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "Entero"));
-                            }
-                        } else if (type.compareTo("date") == 0) {//si el dato no es fecha válida adiciono el error 
-                            if (!isDate(resultSetFileData.getString(columnsNames[i]), relationVar.getDateFormat())) {
-                                errorsNumber++;//error = "fecha no corresponde al formato";
-                                errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "Fecha"));
-                            }
-                        } else {//se espera un valorcategorico
-                            if (!isCategorical(
-                                    resultSetFileData.getString(relationVar.getNameFound()), relationVar.getNameExpected(),
-                                    relationVar.getTypeComparisonForCode(), relationVar.getRelationValueList())) {
-                                //verifico si el valor se encuentra dentro de los valores descartados
-                                if (!isDiscarded(resultSetFileData.getString(columnsNames[i]), relationVar.getDiscardedValues())) {
-                                    errorsNumber++;//error = "no esta en la categoria ni es un valor descartado";
-                                    errorsControlMB.addError(
-                                            new ErrorControl(
-                                            relationVar,
-                                            resultSetFileData.getString(relationVar.getNameFound()),
-                                            String.valueOf(count),
-                                            formsAndFieldsDataMB.variableDescription(relationVar.getNameExpected())));
+                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
+                            case text:
+                                break;
+                            case integer:
+                                if (!isNumeric(resultSetFileData.getString(columnsNames[i]))) {
+                                    errorsNumber++;//error = "No es entero";
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "integer"));
                                 }
+                                break;
+                            case age:
+                                if (!isAge(resultSetFileData.getString(columnsNames[i]))) {
+                                    errorsNumber++;//error = "fecha no corresponde al formato";
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "age"));
+                                }
+                                break;
+                            case date:
+                                if (!isDate(resultSetFileData.getString(columnsNames[i]), relationVar.getDateFormat())) {
+                                    errorsNumber++;//error = "fecha no corresponde al formato";
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "date"));
+                                }
+                                break;
+                            case military:
+                                errorStr = isMilitary(resultSetFileData.getString(columnsNames[i]));
+                                if (errorStr != null) {
+                                    errorsNumber++;//la hora militar no puede ser determinada
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "military"));
+                                }
+                                break;
+                            case hour:
+                                if (!isHour(resultSetFileData.getString(columnsNames[i]))) {
+                                    errorsNumber++;//la hora militar no puede ser determinada
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "hour"));
+                                }
+                                break;
+                            case minute:
+                                if (!isMinute(resultSetFileData.getString(columnsNames[i]))) {
+                                    errorsNumber++;//la hora militar no puede ser determinada
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "minute"));
+                                }
+                                break;
+                            case day:
+                                if (!isDay(resultSetFileData.getString(columnsNames[i]))) {
+                                    errorsNumber++;//la hora militar no puede ser determinada
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "day"));
+                                }
+                                break;
+                            case month:
+                                if (!isMonth(resultSetFileData.getString(columnsNames[i]))) {
+                                    errorsNumber++;//la hora militar no puede ser determinada
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "month"));
+                                }
+                                break;
+                            case year:
+                                if (!isYear(resultSetFileData.getString(columnsNames[i]))) {
+                                    errorsNumber++;//la hora militar no puede ser determinada
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "year"));
+                                }
+                                break;
+                            case NOVALUE:
+                                if (!isCategorical(
+                                        resultSetFileData.getString(relationVar.getNameFound()), relationVar.getNameExpected(),
+                                        relationVar.getTypeComparisonForCode(), relationVar.getRelationValueList())) {
+                                    //verifico si el valor se encuentra dentro de los valores descartados
+                                    if (!isDiscarded(resultSetFileData.getString(columnsNames[i]), relationVar.getDiscardedValues())) {
+                                        errorsNumber++;//error = "no esta en la categoria ni es un valor descartado";
+                                        errorsControlMB.addError(
+                                                new ErrorControl(
+                                                relationVar,
+                                                resultSetFileData.getString(relationVar.getNameFound()),
+                                                String.valueOf(count),
+                                                formsAndFieldsDataMB.variableDescription(relationVar.getNameExpected())));
+                                    }
 
-                            }
+                                }
+                                break;
                         }
                     }
-
                 }
                 count++;
             } while (resultSetFileData.next());
@@ -291,7 +326,7 @@ public class RecordDataMB {
             progress = 100;
             conx.disconnect();
             if (errorsNumber != 0) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Errores", "Existen: " + String.valueOf(errorsNumber) + " que no superaron el proceso de validación, dirijase a la sección de errores para  especificar si los corrige o ignora."));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Errores", "Existen: " + String.valueOf(errorsNumber) + " valores que no superaron el proceso de validación, dirijase a la sección de errores para  especificar si los corrige o ignora."));
             } else {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha superado el proceso de validacion, presione el boton registrar datos para que sean almacenados."));
             }
@@ -334,7 +369,6 @@ public class RecordDataMB {
 
         //ArrayList<String> array = new ArrayList<String>();
         try {
-            
             conx = new ConnectionJDBC();
             conx.connect();
             //numero de tuplas
@@ -357,11 +391,13 @@ public class RecordDataMB {
 
                 //***********************************************************creo una nueva victima
                 VulnerableGroups vulnerableGroups = vulnerableGroupsFacade.find(Short.parseShort("1"));
-                Eps eps = epsFacade.find(Short.parseShort("1"));
+
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
-                newVictim.setVulnerableGroupId(vulnerableGroups);
-                newVictim.setEpsId(eps);
+
+                List<VulnerableGroups> vulnerableGroupsList = new ArrayList<VulnerableGroups>();
+                vulnerableGroupsList.add(vulnerableGroups);
+                newVictim.setVulnerableGroupsList(vulnerableGroupsList);
                 newVictim.setVictimClass(Short.parseShort("1"));
                 try {
                     currentDate = textFormat.parse("2012-01-01");
@@ -408,31 +444,57 @@ public class RecordDataMB {
 
                 // ************************************************ vector victim_vulnerable_group
                 List<VulnerableGroups> vulnerableGroupList = new ArrayList<VulnerableGroups>();
-
                 for (int i = 0; i < columnsNames.length; i++) {
                     //AQUI SE DETERMINA QUE COLUMNA LLEGA Y QUE HACER CON ELLA
                     if (resultSetFileData.getString(columnsNames[i]).length() != 0) //validacion de que no sea vacio
                     {
                         switch (SCC_F_032Enum.convert(columnsNames[i])) {
-
                             // ************************************************DATOS PARA LA TABLA victims
                             case clave:
                                 break;
                             case nombre1:
-                                newVictim.setVictimFirstname(resultSetFileData.getString(columnsNames[i]));
+                                if (newVictim.getVictimName() != null) {
+                                    if (newVictim.getVictimName().trim().length() != 0) {
+                                        newVictim.setVictimName(newVictim.getVictimName() + " " + resultSetFileData.getString(columnsNames[i]));
+                                    } else {
+                                        newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
+                                    }
+                                } else {
+                                    newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
+                                }
                                 break;
                             case nombre2:
-                                String firstName = newVictim.getVictimFirstname();
-                                firstName = firstName + " " + resultSetFileData.getString(columnsNames[i]);
-                                newVictim.setVictimFirstname(firstName);
+                                if (newVictim.getVictimName() != null) {
+                                    if (newVictim.getVictimName().trim().length() != 0) {
+                                        newVictim.setVictimName(newVictim.getVictimName() + " " + resultSetFileData.getString(columnsNames[i]));
+                                    } else {
+                                        newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
+                                    }
+                                } else {
+                                    newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
+                                }
                                 break;
                             case apellid1:
-                                newVictim.setVictimLastname(resultSetFileData.getString(columnsNames[i]));
+                                if (newVictim.getVictimName() != null) {
+                                    if (newVictim.getVictimName().trim().length() != 0) {
+                                        newVictim.setVictimName(newVictim.getVictimName() + " " + resultSetFileData.getString(columnsNames[i]));
+                                    } else {
+                                        newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
+                                    }
+                                } else {
+                                    newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
+                                }
                                 break;
                             case apellid2:
-                                String lastName = newVictim.getVictimLastname();
-                                lastName = lastName + " " + resultSetFileData.getString(columnsNames[i]);
-                                newVictim.setVictimLastname(lastName);
+                                if (newVictim.getVictimName() != null) {
+                                    if (newVictim.getVictimName().trim().length() != 0) {
+                                        newVictim.setVictimName(newVictim.getVictimName() + " " + resultSetFileData.getString(columnsNames[i]));
+                                    } else {
+                                        newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
+                                    }
+                                } else {
+                                    newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
+                                }
                                 break;
                             case tid:
                                 IdTypes selectIdType = idTypesFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
@@ -491,9 +553,15 @@ public class RecordDataMB {
                             // ************************************************DATOS PARA LA TABLA non_fatal_interpersonal
                             case anteca://boleano->previous_antecedent
                                 if (resultSetFileData.getString(columnsNames[i]).compareTo("TRUE") == 0) {
-                                    newNonFatalInterpersonal.setPreviousAntecedent(true);
+                                    newNonFatalInterpersonal.setPreviousAntecedent(booleanPojoFacade.find((short) 1));
                                 } else {
-                                    newNonFatalInterpersonal.setPreviousAntecedent(false);
+                                    if (resultSetFileData.getString(columnsNames[i]).compareTo("FALSE") == 0) {
+                                        newNonFatalInterpersonal.setPreviousAntecedent(booleanPojoFacade.find((short) 2));
+                                    } else {
+                                        //sin dato
+                                        //newNonFatalInterpersonal.setPreviousAntecedent(null);
+                                    }
+
                                 }
                                 selectInjuries = injuriesFacade.find(Short.parseShort("50"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
@@ -520,18 +588,18 @@ public class RecordDataMB {
                             // ************************************************DATOS PARA LA TABLA non_fatal_selft-inflicted
                             case intpre:
                                 if (resultSetFileData.getString(columnsNames[i]).compareTo("TRUE") == 0) {
-                                    newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find((short)1));//si
-                                } else {				    				    
-                                    newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find((short)2));//no
+                                    newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find((short) 1));//si
+                                } else {
+                                    newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find((short) 2));//no
                                 }
                                 selectInjuries = injuriesFacade.find(Short.parseShort("52"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
                                 break;
                             case trment:
                                 if (resultSetFileData.getString(columnsNames[i]).compareTo("TRUE") == 0) {
-                                    newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find((short)1));//si
+                                    newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find((short) 1));//si
                                 } else {
-                                    newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find((short)2));//no
+                                    newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find((short) 2));//no
                                 }
                                 selectInjuries = injuriesFacade.find(Short.parseShort("52"));
                                 newNonFatalInjuries.setInjuryId(selectInjuries);
@@ -863,7 +931,7 @@ public class RecordDataMB {
                             case instisal:
                                 //NonFatalDataSources selectNonFatalDataSource = nonFatalDataSourcesFacade.findByName(Integer.parseInt(resultSetFileData.getString(columnsNames[i])));
                                 NonFatalDataSources selectNonFatalDataSource = nonFatalDataSourcesFacade.findByName(resultSetFileData.getString(columnsNames[i]));
-                                newNonFatalInjuries.setNonFatalDataSourceId(selectNonFatalDataSource.getNonFatalDataSourceId());
+                                newNonFatalInjuries.setNonFatalDataSourceId(selectNonFatalDataSource);
                                 break;
                             case codbar:
                                 Neighborhoods selectNeighborhoods = neighborhoodsFacade.find(Integer.parseInt(resultSetFileData.getString(columnsNames[i])));
@@ -913,14 +981,14 @@ public class RecordDataMB {
                                 }
                                 break;
                             case deqips:
-                                if (resultSetFileData.getString(columnsNames[i]).length() == 0) {
-                                    Eps selectEps = epsFacade.find(Short.parseShort("1"));
-                                    newNonFatalInjuries.setEpsId(selectEps.getEpsId());
-                                } else {
-                                    //ESTO NO IRIA HASTA QUE ESTE EL LISTADO COMPLETO DE DE EPS's
-                                    Eps selectEps = epsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                    newNonFatalInjuries.setEpsId(selectEps.getEpsId());
-                                }
+//                                if (resultSetFileData.getString(columnsNames[i]).length() == 0) {
+//                                    Eps selectEps = epsFacade.find(Short.parseShort("1"));
+//                                    newNonFatalInjuries.setEpsId(selectEps.getEpsId());
+//                                } else {
+//                                    //ESTO NO IRIA HASTA QUE ESTE EL LISTADO COMPLETO DE DE EPS's
+//                                    Eps selectEps = epsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
+//                                    newNonFatalInjuries.setEpsId(selectEps.getEpsId());
+//                                }
 
                                 break;
                             case intenci:
@@ -1027,7 +1095,6 @@ public class RecordDataMB {
     }
 
     public void btnRegisterDataClick() {
-
         if (nameForm.compareTo("SCC_F_028") == 0) {
             registerSCC_F_028();
         }
@@ -1046,8 +1113,6 @@ public class RecordDataMB {
         if (nameForm.compareTo("SCC_F_033") == 0) {
             registerSCC_F_033();
         }
-
-
     }
 
     //----------------------------------------------------------------------
@@ -1067,6 +1132,96 @@ public class RecordDataMB {
         return false;
     }
 
+    private boolean isDay(String str) {
+        /*
+         * validacion de si un numero de 1 y 31
+         */
+        if (str.trim().length() == 0) {
+            return true;
+        }
+        try {
+            int i = Integer.parseInt(str);
+            if (i > 0 && i < 32) {
+                return true;
+            }
+            return false;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+
+    private boolean isMonth(String str) {
+        /*
+         * validacion de si un numero de 1 y 12
+         */
+        if (str.trim().length() == 0) {
+            return true;
+        }
+        try {
+            int i = Integer.parseInt(str);
+            if (i > 0 && i < 13) {
+                return true;
+            }
+            return false;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+
+    private boolean isYear(String str) {
+        /*
+         * validacion de si un numero de 1 y 12
+         */
+        if (str.trim().length() == 0) {
+            return true;
+        }
+        if (str.trim().length() != 2 && str.trim().length() != 4) {
+            return false;
+        }
+        try {
+            int i = Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+
+    private boolean isMinute(String str) {
+        /*
+         * validacion de si un numero de 1 y 12
+         */
+        if (str.trim().length() == 0) {
+            return true;
+        }
+        try {
+            int i = Integer.parseInt(str);
+            if (i > -1 && i < 60) {
+                return true;
+            }
+            return false;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+
+    private boolean isHour(String str) {
+        /*
+         * validacion de si un numero de 1 y 12
+         */
+        if (str.trim().length() == 0) {
+            return true;
+        }
+        try {
+            int i = Integer.parseInt(str);
+            if (i > 0 && i < 25) {
+                return true;
+            }
+            return false;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+
     private boolean isNumeric(String str) {
         /*
          * validacion de si un string es entero
@@ -1075,6 +1230,8 @@ public class RecordDataMB {
             return true;
         }
         try {
+            str.replaceAll(",", "");
+            str.replaceAll(".", "");
             Integer.parseInt(str);
             return true;
         } catch (NumberFormatException nfe) {
@@ -1099,6 +1256,162 @@ public class RecordDataMB {
         }
     }
 
+    private String isMilitary(String strIn) {
+        /*
+         * validacion de si un string es un hora miitar
+         */
+        String str = strIn;
+
+        //----------------------------------------------
+        //determinar si hay caracteres
+        if (str.trim().length() == 0) {
+            return "no se acepta cadenas vacias";
+        }
+
+        //----------------------------------------------
+        //quitar " AM A.M.
+        str = str.toUpperCase();
+        if (str.indexOf("AM") != -1) {
+            int a = 0;
+            a++;
+
+        }
+        str = str.replace(" ", "");
+        str = str.replace("AM", "");
+        str = str.replace("A.M.", "");
+        str = str.replace("\"", "");
+
+        //determinar si es un timestamp
+        if (str.trim().length() == 12 || str.trim().length() == 8) {
+            String[] splitMilitary = str.split(":");
+            if (splitMilitary.length == 3) {
+                try {
+                    int h = Integer.parseInt(splitMilitary[0]);
+                    int m = Integer.parseInt(splitMilitary[1]);
+                    if (h > 24 || h < 0) {
+                        return "La hora debe estar entre 0 y 23";
+                    }
+                    if (m > 59 || m < 0) {
+                        return "los minutos deben estar entre 0 y 59";
+                    }
+                    if (h == 24 && m != 0) {
+                        return "Si la hora es 24 los minutos deben ser cero";
+                    }
+                    return null;
+                } catch (Exception ex) {
+                }
+            }
+        }
+
+
+        //----------------------------------------------
+        //determinar si tiene como separador   ; + . , :
+        String[] splitMilitary = null;
+        if (str.split(":").length == 2) {
+            splitMilitary = str.split(":");
+        } else if (str.split(",").length == 2) {
+            splitMilitary = str.split(",");
+        } else if (str.split(";").length == 2) {
+            splitMilitary = str.split(";");
+        } else if (str.split("\\+").length == 2) {
+            splitMilitary = str.split("\\+");
+        } else if (str.split("\\.").length == 2) {
+            splitMilitary = str.split("\\.");
+        }
+        if (splitMilitary != null) {
+            try {
+                int h = Integer.parseInt(splitMilitary[0]);
+                int m = Integer.parseInt(splitMilitary[1]);
+                if (h == 24) {
+                    if (m == 0) {
+                        return null;
+                    } else {
+                        return "Si la hora es 24 los minutos solo pueden ser 0";
+                    }
+                }
+                if (h > 24 || h < 0) {
+                    return "La hora debe estar entre 0 y 24";
+                }
+                if (m > 59 || m < 0) {
+                    return "los minutos deben estar entre 0 y 59";
+                }
+                return null;
+            } catch (Exception ex) {
+            }
+        }
+
+        //----------------------------------------------
+        //determinar si tiene caracteres diferentes a    0123456789
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) != '0' && str.charAt(i) != '1' && str.charAt(i) != '2'
+                    && str.charAt(i) != '3' && str.charAt(i) != '4' && str.charAt(i) != '5'
+                    && str.charAt(i) != '6' && str.charAt(i) != '7' && str.charAt(i) != '8'
+                    && str.charAt(i) != '9') {
+                return "Valor no aceptado como hora militar";
+            }
+        }
+
+        //----------------------------------------------
+        //verificar si tiene menos de 4 cifras 
+        if (str.trim().length() < 5) {
+            //lo completo con ceros
+            if (str.trim().length() == 3) {
+                str = "0" + str;
+            } else if (str.trim().length() == 2) {
+                str = "00" + str;
+            } else if (str.trim().length() == 1) {
+                str = "000" + str;
+            }
+            try {
+                int h = Integer.parseInt(str.substring(0, 1));
+                int m = Integer.parseInt(str.substring(2, 3));
+                if (h > 24 || h < 0) {
+                    return "La hora debe estar entre 0 y 23";
+                }
+                if (m > 59 || m < 0) {
+                    return "los minutos deben estar entre 0 y 59";
+                }
+                if (h == 24 && m != 0) {
+                    return "Si la hora es 24 los minutos deben ser cero";
+                }
+                return null;
+            } catch (Exception ex) {
+            }
+        } else {
+            return "Una hora militar debe tener menos de 4 digitos";
+        }
+
+        //----------------------------------------------
+        //si llego a esta linea es que no supero ningun tipo de validacion
+        return "Valor no aceptado como hora militar";
+    }
+
+    private boolean isAge(String str) {
+        /*
+         * validacion de si un string es numero entero o edad definida en meses
+         * y años
+         */
+        if (str.trim().length() == 0) {
+            return true;
+        }
+        try {//intento convertirlo en entero
+            int a = Integer.parseInt(str);
+            return true;
+        } catch (Exception ex) {
+        }
+        try {//determinar si esta definida en años meses
+            String[] splitAge = str.split(" ");
+            if (splitAge.length == 4) {
+                int m = Integer.parseInt(splitAge[0]);
+                int y = Integer.parseInt(splitAge[2]);
+                return true;
+            }
+            return false;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
     private boolean isCategorical(String str, String category, boolean compareForCode, ArrayList<RelationValue> relationValueList) {
         /*
          * validacion de si un string esta dentro de una categoria
@@ -1117,7 +1430,6 @@ public class RecordDataMB {
             }
         }
         //se valida con respecto a los valores esperados
-
         if (compareForCode == true) {
             categoryList = formsAndFieldsDataMB.categoricalCodeList(category, 0);
         } else {

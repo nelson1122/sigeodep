@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "genders", catalog = "od", schema = "public")
@@ -42,62 +42,62 @@ public class Genders implements Serializable {
     }
 
     public Genders(Short genderId) {
-        this.genderId = genderId;
+	this.genderId = genderId;
     }
 
     public Genders(Short genderId, String genderName) {
-        this.genderId = genderId;
-        this.genderName = genderName;
+	this.genderId = genderId;
+	this.genderName = genderName;
     }
 
     public Short getGenderId() {
-        return genderId;
+	return genderId;
     }
 
     public void setGenderId(Short genderId) {
-        this.genderId = genderId;
+	this.genderId = genderId;
     }
 
     public String getGenderName() {
-        return genderName;
+	return genderName;
     }
 
     public void setGenderName(String genderName) {
-        this.genderName = genderName;
+	this.genderName = genderName;
     }
 
     @XmlTransient
     public List<Victims> getVictimsList() {
-        return victimsList;
+	return victimsList;
     }
 
     public void setVictimsList(List<Victims> victimsList) {
-        this.victimsList = victimsList;
+	this.victimsList = victimsList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (genderId != null ? genderId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (genderId != null ? genderId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Genders)) {
-            return false;
-        }
-        Genders other = (Genders) object;
-        if ((this.genderId == null && other.genderId != null) || (this.genderId != null && !this.genderId.equals(other.genderId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Genders)) {
+	    return false;
+	}
+	Genders other = (Genders) object;
+	if ((this.genderId == null && other.genderId != null) || (this.genderId != null && !this.genderId.equals(other.genderId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Genders[ genderId=" + genderId + " ]";
+	return "model.pojo.Genders[ genderId=" + genderId + " ]";
     }
     
 }

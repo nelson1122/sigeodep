@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "kinds_of_injury", catalog = "od", schema = "public", uniqueConstraints = {
@@ -36,9 +36,6 @@ public class KindsOfInjury implements Serializable {
     @Size(min = 1, max = 80)
     @Column(name = "kind_injury_name", nullable = false, length = 80)
     private String kindInjuryName;
-    //@JoinTable(name = "non_fatal_kind_of_injury", joinColumns = {
-    //    @JoinColumn(name = "kind_injury_id", referencedColumnName = "kind_injury_id", nullable = false)}, inverseJoinColumns = {
-    //    @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
     @ManyToMany(mappedBy = "kindsOfInjuryList")    
     private List<NonFatalInjuries> nonFatalInjuriesList;
 
@@ -46,62 +43,62 @@ public class KindsOfInjury implements Serializable {
     }
 
     public KindsOfInjury(Short kindInjuryId) {
-        this.kindInjuryId = kindInjuryId;
+	this.kindInjuryId = kindInjuryId;
     }
 
     public KindsOfInjury(Short kindInjuryId, String kindInjuryName) {
-        this.kindInjuryId = kindInjuryId;
-        this.kindInjuryName = kindInjuryName;
+	this.kindInjuryId = kindInjuryId;
+	this.kindInjuryName = kindInjuryName;
     }
 
     public Short getKindInjuryId() {
-        return kindInjuryId;
+	return kindInjuryId;
     }
 
     public void setKindInjuryId(Short kindInjuryId) {
-        this.kindInjuryId = kindInjuryId;
+	this.kindInjuryId = kindInjuryId;
     }
 
     public String getKindInjuryName() {
-        return kindInjuryName;
+	return kindInjuryName;
     }
 
     public void setKindInjuryName(String kindInjuryName) {
-        this.kindInjuryName = kindInjuryName;
+	this.kindInjuryName = kindInjuryName;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (kindInjuryId != null ? kindInjuryId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (kindInjuryId != null ? kindInjuryId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof KindsOfInjury)) {
-            return false;
-        }
-        KindsOfInjury other = (KindsOfInjury) object;
-        if ((this.kindInjuryId == null && other.kindInjuryId != null) || (this.kindInjuryId != null && !this.kindInjuryId.equals(other.kindInjuryId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof KindsOfInjury)) {
+	    return false;
+	}
+	KindsOfInjury other = (KindsOfInjury) object;
+	if ((this.kindInjuryId == null && other.kindInjuryId != null) || (this.kindInjuryId != null && !this.kindInjuryId.equals(other.kindInjuryId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.KindsOfInjury[ kindInjuryId=" + kindInjuryId + " ]";
+	return "model.pojo.KindsOfInjury[ kindInjuryId=" + kindInjuryId + " ]";
     }
     
 }
