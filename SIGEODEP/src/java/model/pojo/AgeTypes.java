@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "age_types", catalog = "od", schema = "public")
@@ -36,48 +36,48 @@ public class AgeTypes implements Serializable {
     }
 
     public AgeTypes(Short ageTypeId) {
-        this.ageTypeId = ageTypeId;
+	this.ageTypeId = ageTypeId;
     }
 
     public Short getAgeTypeId() {
-        return ageTypeId;
+	return ageTypeId;
     }
 
     public void setAgeTypeId(Short ageTypeId) {
-        this.ageTypeId = ageTypeId;
+	this.ageTypeId = ageTypeId;
     }
 
     public String getAgeTypeName() {
-        return ageTypeName;
+	return ageTypeName;
     }
 
     public void setAgeTypeName(String ageTypeName) {
-        this.ageTypeName = ageTypeName;
+	this.ageTypeName = ageTypeName;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (ageTypeId != null ? ageTypeId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (ageTypeId != null ? ageTypeId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof AgeTypes)) {
-            return false;
-        }
-        AgeTypes other = (AgeTypes) object;
-        if ((this.ageTypeId == null && other.ageTypeId != null) || (this.ageTypeId != null && !this.ageTypeId.equals(other.ageTypeId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof AgeTypes)) {
+	    return false;
+	}
+	AgeTypes other = (AgeTypes) object;
+	if ((this.ageTypeId == null && other.ageTypeId != null) || (this.ageTypeId != null && !this.ageTypeId.equals(other.ageTypeId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.AgeTypes[ ageTypeId=" + ageTypeId + " ]";
+	return "model.pojo.AgeTypes[ ageTypeId=" + ageTypeId + " ]";
     }
     
 }

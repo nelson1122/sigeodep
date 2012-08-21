@@ -11,7 +11,7 @@ import model.pojo.NonFatalSelfInflicted;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class NonFatalSelfInflictedFacade extends AbstractFacade<NonFatalSelfInflicted> {
@@ -20,11 +20,11 @@ public class NonFatalSelfInflictedFacade extends AbstractFacade<NonFatalSelfInfl
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public NonFatalSelfInflictedFacade() {
-        super(NonFatalSelfInflicted.class);
+	super(NonFatalSelfInflicted.class);
     }
     
 }

@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "murder_contexts", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class MurderContexts implements Serializable {
     }
 
     public MurderContexts(Short murderContextId) {
-        this.murderContextId = murderContextId;
+	this.murderContextId = murderContextId;
     }
 
     public MurderContexts(Short murderContextId, String murderContextName) {
-        this.murderContextId = murderContextId;
-        this.murderContextName = murderContextName;
+	this.murderContextId = murderContextId;
+	this.murderContextName = murderContextName;
     }
 
     public Short getMurderContextId() {
-        return murderContextId;
+	return murderContextId;
     }
 
     public void setMurderContextId(Short murderContextId) {
-        this.murderContextId = murderContextId;
+	this.murderContextId = murderContextId;
     }
 
     public String getMurderContextName() {
-        return murderContextName;
+	return murderContextName;
     }
 
     public void setMurderContextName(String murderContextName) {
-        this.murderContextName = murderContextName;
+	this.murderContextName = murderContextName;
     }
 
     @XmlTransient
     public List<FatalInjuryMurder> getFatalInjuryMurderList() {
-        return fatalInjuryMurderList;
+	return fatalInjuryMurderList;
     }
 
     public void setFatalInjuryMurderList(List<FatalInjuryMurder> fatalInjuryMurderList) {
-        this.fatalInjuryMurderList = fatalInjuryMurderList;
+	this.fatalInjuryMurderList = fatalInjuryMurderList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (murderContextId != null ? murderContextId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (murderContextId != null ? murderContextId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof MurderContexts)) {
-            return false;
-        }
-        MurderContexts other = (MurderContexts) object;
-        if ((this.murderContextId == null && other.murderContextId != null) || (this.murderContextId != null && !this.murderContextId.equals(other.murderContextId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof MurderContexts)) {
+	    return false;
+	}
+	MurderContexts other = (MurderContexts) object;
+	if ((this.murderContextId == null && other.murderContextId != null) || (this.murderContextId != null && !this.murderContextId.equals(other.murderContextId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.MurderContexts[ murderContextId=" + murderContextId + " ]";
+	return "model.pojo.MurderContexts[ murderContextId=" + murderContextId + " ]";
     }
     
 }

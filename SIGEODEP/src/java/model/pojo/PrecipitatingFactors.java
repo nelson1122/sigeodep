@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "precipitating_factors", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class PrecipitatingFactors implements Serializable {
     }
 
     public PrecipitatingFactors(Short precipitatingFactorId) {
-        this.precipitatingFactorId = precipitatingFactorId;
+	this.precipitatingFactorId = precipitatingFactorId;
     }
 
     public PrecipitatingFactors(Short precipitatingFactorId, String precipitatingFactorName) {
-        this.precipitatingFactorId = precipitatingFactorId;
-        this.precipitatingFactorName = precipitatingFactorName;
+	this.precipitatingFactorId = precipitatingFactorId;
+	this.precipitatingFactorName = precipitatingFactorName;
     }
 
     public Short getPrecipitatingFactorId() {
-        return precipitatingFactorId;
+	return precipitatingFactorId;
     }
 
     public void setPrecipitatingFactorId(Short precipitatingFactorId) {
-        this.precipitatingFactorId = precipitatingFactorId;
+	this.precipitatingFactorId = precipitatingFactorId;
     }
 
     public String getPrecipitatingFactorName() {
-        return precipitatingFactorName;
+	return precipitatingFactorName;
     }
 
     public void setPrecipitatingFactorName(String precipitatingFactorName) {
-        this.precipitatingFactorName = precipitatingFactorName;
+	this.precipitatingFactorName = precipitatingFactorName;
     }
 
     @XmlTransient
     public List<NonFatalSelfInflicted> getNonFatalSelfInflictedList() {
-        return nonFatalSelfInflictedList;
+	return nonFatalSelfInflictedList;
     }
 
     public void setNonFatalSelfInflictedList(List<NonFatalSelfInflicted> nonFatalSelfInflictedList) {
-        this.nonFatalSelfInflictedList = nonFatalSelfInflictedList;
+	this.nonFatalSelfInflictedList = nonFatalSelfInflictedList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (precipitatingFactorId != null ? precipitatingFactorId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (precipitatingFactorId != null ? precipitatingFactorId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof PrecipitatingFactors)) {
-            return false;
-        }
-        PrecipitatingFactors other = (PrecipitatingFactors) object;
-        if ((this.precipitatingFactorId == null && other.precipitatingFactorId != null) || (this.precipitatingFactorId != null && !this.precipitatingFactorId.equals(other.precipitatingFactorId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof PrecipitatingFactors)) {
+	    return false;
+	}
+	PrecipitatingFactors other = (PrecipitatingFactors) object;
+	if ((this.precipitatingFactorId == null && other.precipitatingFactorId != null) || (this.precipitatingFactorId != null && !this.precipitatingFactorId.equals(other.precipitatingFactorId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.PrecipitatingFactors[ precipitatingFactorId=" + precipitatingFactorId + " ]";
+	return "model.pojo.PrecipitatingFactors[ precipitatingFactorId=" + precipitatingFactorId + " ]";
     }
     
 }

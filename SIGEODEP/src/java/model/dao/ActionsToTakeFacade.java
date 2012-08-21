@@ -11,7 +11,7 @@ import model.pojo.ActionsToTake;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class ActionsToTakeFacade extends AbstractFacade<ActionsToTake> {
@@ -20,11 +20,11 @@ public class ActionsToTakeFacade extends AbstractFacade<ActionsToTake> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public ActionsToTakeFacade() {
-        super(ActionsToTake.class);
+	super(ActionsToTake.class);
     }
     
 }

@@ -11,7 +11,7 @@ import model.pojo.KindsOfInjury;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class KindsOfInjuryFacade extends AbstractFacade<KindsOfInjury> {
@@ -20,11 +20,11 @@ public class KindsOfInjuryFacade extends AbstractFacade<KindsOfInjury> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public KindsOfInjuryFacade() {
-        super(KindsOfInjury.class);
+	super(KindsOfInjury.class);
     }
     
 }

@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "relation_values", catalog = "od", schema = "public")
@@ -43,64 +43,64 @@ public class RelationValues implements Serializable {
     }
 
     public RelationValues(Integer idRelationValues) {
-        this.idRelationValues = idRelationValues;
+	this.idRelationValues = idRelationValues;
     }
 
     public Integer getIdRelationValues() {
-        return idRelationValues;
+	return idRelationValues;
     }
 
     public void setIdRelationValues(Integer idRelationValues) {
-        this.idRelationValues = idRelationValues;
+	this.idRelationValues = idRelationValues;
     }
 
     public String getNameExpected() {
-        return nameExpected;
+	return nameExpected;
     }
 
     public void setNameExpected(String nameExpected) {
-        this.nameExpected = nameExpected;
+	this.nameExpected = nameExpected;
     }
 
     public String getNameFound() {
-        return nameFound;
+	return nameFound;
     }
 
     public void setNameFound(String nameFound) {
-        this.nameFound = nameFound;
+	this.nameFound = nameFound;
     }
 
     public RelationVariables getIdRelationVariables() {
-        return idRelationVariables;
+	return idRelationVariables;
     }
 
     public void setIdRelationVariables(RelationVariables idRelationVariables) {
-        this.idRelationVariables = idRelationVariables;
+	this.idRelationVariables = idRelationVariables;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (idRelationValues != null ? idRelationValues.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (idRelationValues != null ? idRelationValues.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof RelationValues)) {
-            return false;
-        }
-        RelationValues other = (RelationValues) object;
-        if ((this.idRelationValues == null && other.idRelationValues != null) || (this.idRelationValues != null && !this.idRelationValues.equals(other.idRelationValues))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof RelationValues)) {
+	    return false;
+	}
+	RelationValues other = (RelationValues) object;
+	if ((this.idRelationValues == null && other.idRelationValues != null) || (this.idRelationValues != null && !this.idRelationValues.equals(other.idRelationValues))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.RelationValues[ idRelationValues=" + idRelationValues + " ]";
+	return "model.pojo.RelationValues[ idRelationValues=" + idRelationValues + " ]";
     }
     
 }

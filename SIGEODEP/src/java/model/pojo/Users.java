@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "users", catalog = "od", schema = "public", uniqueConstraints = {
@@ -32,8 +32,6 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Users.findByUserPassword", query = "SELECT u FROM Users u WHERE u.userPassword = :userPassword"),
     @NamedQuery(name = "Users.findByUserAddress", query = "SELECT u FROM Users u WHERE u.userAddress = :userAddress")})
 public class Users implements Serializable {
-    @OneToMany(mappedBy = "userId")
-    private List<FatalInjuries> fatalInjuriesList;
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -78,129 +76,142 @@ public class Users implements Serializable {
     @Size(min = 1, max = 2147483647)
     @Column(name = "user_address", nullable = false, length = 2147483647)
     private String userAddress;
+    @OneToMany(mappedBy = "userId")
+    private List<NonFatalInjuries> nonFatalInjuriesList;
+    @OneToMany(mappedBy = "userId")
+    private List<FatalInjuries> fatalInjuriesList;
 
     public Users() {
     }
 
     public Users(Integer userId) {
-        this.userId = userId;
+	this.userId = userId;
     }
 
     public Users(Integer userId, String userFirstname, String userLastname, String userJob, String userInstitution, String userEmail, String userPassword, String userAddress) {
-        this.userId = userId;
-        this.userFirstname = userFirstname;
-        this.userLastname = userLastname;
-        this.userJob = userJob;
-        this.userInstitution = userInstitution;
-        this.userEmail = userEmail;
-        this.userPassword = userPassword;
-        this.userAddress = userAddress;
+	this.userId = userId;
+	this.userFirstname = userFirstname;
+	this.userLastname = userLastname;
+	this.userJob = userJob;
+	this.userInstitution = userInstitution;
+	this.userEmail = userEmail;
+	this.userPassword = userPassword;
+	this.userAddress = userAddress;
     }
 
     public Integer getUserId() {
-        return userId;
+	return userId;
     }
 
     public void setUserId(Integer userId) {
-        this.userId = userId;
+	this.userId = userId;
     }
 
     public String getUserFirstname() {
-        return userFirstname;
+	return userFirstname;
     }
 
     public void setUserFirstname(String userFirstname) {
-        this.userFirstname = userFirstname;
+	this.userFirstname = userFirstname;
     }
 
     public String getUserLastname() {
-        return userLastname;
+	return userLastname;
     }
 
     public void setUserLastname(String userLastname) {
-        this.userLastname = userLastname;
+	this.userLastname = userLastname;
     }
 
     public String getUserJob() {
-        return userJob;
+	return userJob;
     }
 
     public void setUserJob(String userJob) {
-        this.userJob = userJob;
+	this.userJob = userJob;
     }
 
     public String getUserInstitution() {
-        return userInstitution;
+	return userInstitution;
     }
 
     public void setUserInstitution(String userInstitution) {
-        this.userInstitution = userInstitution;
+	this.userInstitution = userInstitution;
     }
 
     public String getUserTelephone() {
-        return userTelephone;
+	return userTelephone;
     }
 
     public void setUserTelephone(String userTelephone) {
-        this.userTelephone = userTelephone;
+	this.userTelephone = userTelephone;
     }
 
     public String getUserEmail() {
-        return userEmail;
+	return userEmail;
     }
 
     public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+	this.userEmail = userEmail;
     }
 
     public String getUserPassword() {
-        return userPassword;
+	return userPassword;
     }
 
     public void setUserPassword(String userPassword) {
-        this.userPassword = userPassword;
+	this.userPassword = userPassword;
     }
 
     public String getUserAddress() {
-        return userAddress;
+	return userAddress;
     }
 
     public void setUserAddress(String userAddress) {
-        this.userAddress = userAddress;
+	this.userAddress = userAddress;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (userId != null ? userId.hashCode() : 0);
-        return hash;
+    @XmlTransient
+    public List<NonFatalInjuries> getNonFatalInjuriesList() {
+	return nonFatalInjuriesList;
     }
 
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Users)) {
-            return false;
-        }
-        Users other = (Users) object;
-        if ((this.userId == null && other.userId != null) || (this.userId != null && !this.userId.equals(other.userId))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "model.pojo.Users[ userId=" + userId + " ]";
+    public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @XmlTransient
     public List<FatalInjuries> getFatalInjuriesList() {
-        return fatalInjuriesList;
+	return fatalInjuriesList;
     }
 
     public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
-        this.fatalInjuriesList = fatalInjuriesList;
+	this.fatalInjuriesList = fatalInjuriesList;
+    }
+
+    @Override
+    public int hashCode() {
+	int hash = 0;
+	hash += (userId != null ? userId.hashCode() : 0);
+	return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Users)) {
+	    return false;
+	}
+	Users other = (Users) object;
+	if ((this.userId == null && other.userId != null) || (this.userId != null && !this.userId.equals(other.userId))) {
+	    return false;
+	}
+	return true;
+    }
+
+    @Override
+    public String toString() {
+	return "model.pojo.Users[ userId=" + userId + " ]";
     }
     
 }

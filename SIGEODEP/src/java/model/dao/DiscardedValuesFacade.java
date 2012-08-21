@@ -7,24 +7,24 @@ package model.dao;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import model.pojo.Eps;
+import model.pojo.DiscardedValues;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
-public class EpsFacade extends AbstractFacade<Eps> {
+public class DiscardedValuesFacade extends AbstractFacade<DiscardedValues> {
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
-    public EpsFacade() {
-        super(Eps.class);
+    public DiscardedValuesFacade() {
+	super(DiscardedValues.class);
     }
     
 }

@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "road_types", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class RoadTypes implements Serializable {
     }
 
     public RoadTypes(Short roadTypeId) {
-        this.roadTypeId = roadTypeId;
+	this.roadTypeId = roadTypeId;
     }
 
     public RoadTypes(Short roadTypeId, String roadTypeName) {
-        this.roadTypeId = roadTypeId;
-        this.roadTypeName = roadTypeName;
+	this.roadTypeId = roadTypeId;
+	this.roadTypeName = roadTypeName;
     }
 
     public Short getRoadTypeId() {
-        return roadTypeId;
+	return roadTypeId;
     }
 
     public void setRoadTypeId(Short roadTypeId) {
-        this.roadTypeId = roadTypeId;
+	this.roadTypeId = roadTypeId;
     }
 
     public String getRoadTypeName() {
-        return roadTypeName;
+	return roadTypeName;
     }
 
     public void setRoadTypeName(String roadTypeName) {
-        this.roadTypeName = roadTypeName;
+	this.roadTypeName = roadTypeName;
     }
 
     @XmlTransient
     public List<FatalInjuryTraffic> getFatalInjuryTrafficList() {
-        return fatalInjuryTrafficList;
+	return fatalInjuryTrafficList;
     }
 
     public void setFatalInjuryTrafficList(List<FatalInjuryTraffic> fatalInjuryTrafficList) {
-        this.fatalInjuryTrafficList = fatalInjuryTrafficList;
+	this.fatalInjuryTrafficList = fatalInjuryTrafficList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (roadTypeId != null ? roadTypeId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (roadTypeId != null ? roadTypeId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof RoadTypes)) {
-            return false;
-        }
-        RoadTypes other = (RoadTypes) object;
-        if ((this.roadTypeId == null && other.roadTypeId != null) || (this.roadTypeId != null && !this.roadTypeId.equals(other.roadTypeId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof RoadTypes)) {
+	    return false;
+	}
+	RoadTypes other = (RoadTypes) object;
+	if ((this.roadTypeId == null && other.roadTypeId != null) || (this.roadTypeId != null && !this.roadTypeId.equals(other.roadTypeId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.RoadTypes[ roadTypeId=" + roadTypeId + " ]";
+	return "model.pojo.RoadTypes[ roadTypeId=" + roadTypeId + " ]";
     }
     
 }

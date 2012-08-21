@@ -11,7 +11,7 @@ import model.pojo.GenNn;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class GenNnFacade extends AbstractFacade<GenNn> {
@@ -20,11 +20,11 @@ public class GenNnFacade extends AbstractFacade<GenNn> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public GenNnFacade() {
-        super(GenNn.class);
+	super(GenNn.class);
     }
     
 }

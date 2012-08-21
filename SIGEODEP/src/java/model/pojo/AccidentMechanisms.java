@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "accident_mechanisms", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class AccidentMechanisms implements Serializable {
     }
 
     public AccidentMechanisms(Short accidentMechanismId) {
-        this.accidentMechanismId = accidentMechanismId;
+	this.accidentMechanismId = accidentMechanismId;
     }
 
     public AccidentMechanisms(Short accidentMechanismId, String accidentMechanismName) {
-        this.accidentMechanismId = accidentMechanismId;
-        this.accidentMechanismName = accidentMechanismName;
+	this.accidentMechanismId = accidentMechanismId;
+	this.accidentMechanismName = accidentMechanismName;
     }
 
     public Short getAccidentMechanismId() {
-        return accidentMechanismId;
+	return accidentMechanismId;
     }
 
     public void setAccidentMechanismId(Short accidentMechanismId) {
-        this.accidentMechanismId = accidentMechanismId;
+	this.accidentMechanismId = accidentMechanismId;
     }
 
     public String getAccidentMechanismName() {
-        return accidentMechanismName;
+	return accidentMechanismName;
     }
 
     public void setAccidentMechanismName(String accidentMechanismName) {
-        this.accidentMechanismName = accidentMechanismName;
+	this.accidentMechanismName = accidentMechanismName;
     }
 
     @XmlTransient
     public List<FatalInjuryAccident> getFatalInjuryAccidentList() {
-        return fatalInjuryAccidentList;
+	return fatalInjuryAccidentList;
     }
 
     public void setFatalInjuryAccidentList(List<FatalInjuryAccident> fatalInjuryAccidentList) {
-        this.fatalInjuryAccidentList = fatalInjuryAccidentList;
+	this.fatalInjuryAccidentList = fatalInjuryAccidentList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (accidentMechanismId != null ? accidentMechanismId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (accidentMechanismId != null ? accidentMechanismId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof AccidentMechanisms)) {
-            return false;
-        }
-        AccidentMechanisms other = (AccidentMechanisms) object;
-        if ((this.accidentMechanismId == null && other.accidentMechanismId != null) || (this.accidentMechanismId != null && !this.accidentMechanismId.equals(other.accidentMechanismId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof AccidentMechanisms)) {
+	    return false;
+	}
+	AccidentMechanisms other = (AccidentMechanisms) object;
+	if ((this.accidentMechanismId == null && other.accidentMechanismId != null) || (this.accidentMechanismId != null && !this.accidentMechanismId.equals(other.accidentMechanismId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.AccidentMechanisms[ accidentMechanismId=" + accidentMechanismId + " ]";
+	return "model.pojo.AccidentMechanisms[ accidentMechanismId=" + accidentMechanismId + " ]";
     }
     
 }

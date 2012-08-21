@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Embeddable
 public class LoadsPK implements Serializable {
@@ -29,53 +29,53 @@ public class LoadsPK implements Serializable {
     }
 
     public LoadsPK(int tagId, int recordId) {
-        this.tagId = tagId;
-        this.recordId = recordId;
+	this.tagId = tagId;
+	this.recordId = recordId;
     }
 
     public int getTagId() {
-        return tagId;
+	return tagId;
     }
 
     public void setTagId(int tagId) {
-        this.tagId = tagId;
+	this.tagId = tagId;
     }
 
     public int getRecordId() {
-        return recordId;
+	return recordId;
     }
 
     public void setRecordId(int recordId) {
-        this.recordId = recordId;
+	this.recordId = recordId;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (int) tagId;
-        hash += (int) recordId;
-        return hash;
+	int hash = 0;
+	hash += (int) tagId;
+	hash += (int) recordId;
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof LoadsPK)) {
-            return false;
-        }
-        LoadsPK other = (LoadsPK) object;
-        if (this.tagId != other.tagId) {
-            return false;
-        }
-        if (this.recordId != other.recordId) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof LoadsPK)) {
+	    return false;
+	}
+	LoadsPK other = (LoadsPK) object;
+	if (this.tagId != other.tagId) {
+	    return false;
+	}
+	if (this.recordId != other.recordId) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.LoadsPK[ tagId=" + tagId + ", recordId=" + recordId + " ]";
+	return "model.pojo.LoadsPK[ tagId=" + tagId + ", recordId=" + recordId + " ]";
     }
     
 }

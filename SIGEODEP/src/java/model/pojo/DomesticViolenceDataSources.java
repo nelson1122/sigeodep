@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "domestic_violence_data_sources", catalog = "od", schema = "public", uniqueConstraints = {
@@ -36,69 +36,69 @@ public class DomesticViolenceDataSources implements Serializable {
     @Size(min = 1, max = 50)
     @Column(name = "domestic_violence_data_sources_name", nullable = false, length = 50)
     private String domesticViolenceDataSourcesName;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "domesticViolenceDataSourceId")
+    @OneToMany(mappedBy = "domesticViolenceDataSourceId")
     private List<NonFatalDomesticViolence> nonFatalDomesticViolenceList;
 
     public DomesticViolenceDataSources() {
     }
 
     public DomesticViolenceDataSources(Short domesticViolenceDataSourcesId) {
-        this.domesticViolenceDataSourcesId = domesticViolenceDataSourcesId;
+	this.domesticViolenceDataSourcesId = domesticViolenceDataSourcesId;
     }
 
     public DomesticViolenceDataSources(Short domesticViolenceDataSourcesId, String domesticViolenceDataSourcesName) {
-        this.domesticViolenceDataSourcesId = domesticViolenceDataSourcesId;
-        this.domesticViolenceDataSourcesName = domesticViolenceDataSourcesName;
+	this.domesticViolenceDataSourcesId = domesticViolenceDataSourcesId;
+	this.domesticViolenceDataSourcesName = domesticViolenceDataSourcesName;
     }
 
     public Short getDomesticViolenceDataSourcesId() {
-        return domesticViolenceDataSourcesId;
+	return domesticViolenceDataSourcesId;
     }
 
     public void setDomesticViolenceDataSourcesId(Short domesticViolenceDataSourcesId) {
-        this.domesticViolenceDataSourcesId = domesticViolenceDataSourcesId;
+	this.domesticViolenceDataSourcesId = domesticViolenceDataSourcesId;
     }
 
     public String getDomesticViolenceDataSourcesName() {
-        return domesticViolenceDataSourcesName;
+	return domesticViolenceDataSourcesName;
     }
 
     public void setDomesticViolenceDataSourcesName(String domesticViolenceDataSourcesName) {
-        this.domesticViolenceDataSourcesName = domesticViolenceDataSourcesName;
+	this.domesticViolenceDataSourcesName = domesticViolenceDataSourcesName;
     }
 
     @XmlTransient
     public List<NonFatalDomesticViolence> getNonFatalDomesticViolenceList() {
-        return nonFatalDomesticViolenceList;
+	return nonFatalDomesticViolenceList;
     }
 
     public void setNonFatalDomesticViolenceList(List<NonFatalDomesticViolence> nonFatalDomesticViolenceList) {
-        this.nonFatalDomesticViolenceList = nonFatalDomesticViolenceList;
+	this.nonFatalDomesticViolenceList = nonFatalDomesticViolenceList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (domesticViolenceDataSourcesId != null ? domesticViolenceDataSourcesId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (domesticViolenceDataSourcesId != null ? domesticViolenceDataSourcesId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof DomesticViolenceDataSources)) {
-            return false;
-        }
-        DomesticViolenceDataSources other = (DomesticViolenceDataSources) object;
-        if ((this.domesticViolenceDataSourcesId == null && other.domesticViolenceDataSourcesId != null) || (this.domesticViolenceDataSourcesId != null && !this.domesticViolenceDataSourcesId.equals(other.domesticViolenceDataSourcesId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof DomesticViolenceDataSources)) {
+	    return false;
+	}
+	DomesticViolenceDataSources other = (DomesticViolenceDataSources) object;
+	if ((this.domesticViolenceDataSourcesId == null && other.domesticViolenceDataSourcesId != null) || (this.domesticViolenceDataSourcesId != null && !this.domesticViolenceDataSourcesId.equals(other.domesticViolenceDataSourcesId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.DomesticViolenceDataSources[ domesticViolenceDataSourcesId=" + domesticViolenceDataSourcesId + " ]";
+	return "model.pojo.DomesticViolenceDataSources[ domesticViolenceDataSourcesId=" + domesticViolenceDataSourcesId + " ]";
     }
     
 }

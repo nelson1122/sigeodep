@@ -12,34 +12,34 @@ import model.pojo.RelationVariables;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class RelationVariablesFacade extends AbstractFacade<RelationVariables> {
+
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public RelationVariablesFacade() {
-        super(RelationVariables.class);
+	super(RelationVariables.class);
     }
-    
+
     public int findMaxId() {
-        try{
-            String hql = "Select MAX(x.idRelationVariables) from RelationVariables x";
-            return em.createQuery(hql, Integer.class).getSingleResult();
-            } catch (Exception e) {
-            return 1;
-        }
+	try {
+	    String hql = "Select MAX(x.idRelationVariables) from RelationVariables x";
+	    return em.createQuery(hql, Integer.class).getSingleResult();
+	} catch (Exception e) {
+	    return 1;
+	}
     }
 
     public List<RelationVariables> findByRelationGroup(Integer idRelationGroup) {
-        String hql = "Select x from RelationVariables x where x.idRelationGroup.idRelationGroup=:id";
-        return em.createQuery(hql).setParameter("id", idRelationGroup).getResultList();
+	String hql = "Select x from RelationVariables x where x.idRelationGroup.idRelationGroup=:id";
+	return em.createQuery(hql).setParameter("id", idRelationGroup).getResultList();
     }
-    
 }

@@ -11,23 +11,22 @@ import model.pojo.Victims;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class VictimsFacade extends AbstractFacade<Victims> {
-
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public VictimsFacade() {
-        super(Victims.class);
+	super(Victims.class);
     }
-
+    
     public int findMax() {
         try {
             String hql = "Select MAX(x.victimId) from Victims x";
@@ -36,4 +35,5 @@ public class VictimsFacade extends AbstractFacade<Victims> {
             return 0;
         }
     }
+    
 }

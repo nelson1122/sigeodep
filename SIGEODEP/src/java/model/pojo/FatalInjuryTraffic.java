@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "fatal_injury_traffic", catalog = "od", schema = "public")
@@ -61,120 +61,120 @@ public class FatalInjuryTraffic implements Serializable {
     }
 
     public FatalInjuryTraffic(Integer fatalInjuryId) {
-        this.fatalInjuryId = fatalInjuryId;
+	this.fatalInjuryId = fatalInjuryId;
     }
 
     public Short getNumberNonFatalVictims() {
-        return numberNonFatalVictims;
+	return numberNonFatalVictims;
     }
 
     public void setNumberNonFatalVictims(Short numberNonFatalVictims) {
-        this.numberNonFatalVictims = numberNonFatalVictims;
+	this.numberNonFatalVictims = numberNonFatalVictims;
     }
 
     public Short getAlcoholLevelCounterpart() {
-        return alcoholLevelCounterpart;
+	return alcoholLevelCounterpart;
     }
 
     public void setAlcoholLevelCounterpart(Short alcoholLevelCounterpart) {
-        this.alcoholLevelCounterpart = alcoholLevelCounterpart;
+	this.alcoholLevelCounterpart = alcoholLevelCounterpart;
     }
 
     public Integer getFatalInjuryId() {
-        return fatalInjuryId;
+	return fatalInjuryId;
     }
 
     public void setFatalInjuryId(Integer fatalInjuryId) {
-        this.fatalInjuryId = fatalInjuryId;
+	this.fatalInjuryId = fatalInjuryId;
     }
 
     public VictimCharacteristics getVictimCharacteristicId() {
-        return victimCharacteristicId;
+	return victimCharacteristicId;
     }
 
     public void setVictimCharacteristicId(VictimCharacteristics victimCharacteristicId) {
-        this.victimCharacteristicId = victimCharacteristicId;
+	this.victimCharacteristicId = victimCharacteristicId;
     }
 
     public ServiceTypes getServiceTypeId() {
-        return serviceTypeId;
+	return serviceTypeId;
     }
 
     public void setServiceTypeId(ServiceTypes serviceTypeId) {
-        this.serviceTypeId = serviceTypeId;
+	this.serviceTypeId = serviceTypeId;
     }
 
     public RoadTypes getRoadTypeId() {
-        return roadTypeId;
+	return roadTypeId;
     }
 
     public void setRoadTypeId(RoadTypes roadTypeId) {
-        this.roadTypeId = roadTypeId;
+	this.roadTypeId = roadTypeId;
     }
 
     public ProtectiveMeasures getProtectionMeasureId() {
-        return protectionMeasureId;
+	return protectionMeasureId;
     }
 
     public void setProtectionMeasureId(ProtectiveMeasures protectionMeasureId) {
-        this.protectionMeasureId = protectionMeasureId;
+	this.protectionMeasureId = protectionMeasureId;
     }
 
     public InvolvedVehicles getInvolvedVehicleId() {
-        return involvedVehicleId;
+	return involvedVehicleId;
     }
 
     public void setInvolvedVehicleId(InvolvedVehicles involvedVehicleId) {
-        this.involvedVehicleId = involvedVehicleId;
+	this.involvedVehicleId = involvedVehicleId;
     }
 
     public FatalInjuries getFatalInjuries() {
-        return fatalInjuries;
+	return fatalInjuries;
     }
 
     public void setFatalInjuries(FatalInjuries fatalInjuries) {
-        this.fatalInjuries = fatalInjuries;
+	this.fatalInjuries = fatalInjuries;
     }
 
     public AlcoholLevels getAlcoholLevelCounterpartId() {
-        return alcoholLevelCounterpartId;
+	return alcoholLevelCounterpartId;
     }
 
     public void setAlcoholLevelCounterpartId(AlcoholLevels alcoholLevelCounterpartId) {
-        this.alcoholLevelCounterpartId = alcoholLevelCounterpartId;
+	this.alcoholLevelCounterpartId = alcoholLevelCounterpartId;
     }
 
     public AccidentClasses getAccidentClassId() {
-        return accidentClassId;
+	return accidentClassId;
     }
 
     public void setAccidentClassId(AccidentClasses accidentClassId) {
-        this.accidentClassId = accidentClassId;
+	this.accidentClassId = accidentClassId;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (fatalInjuryId != null ? fatalInjuryId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (fatalInjuryId != null ? fatalInjuryId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof FatalInjuryTraffic)) {
-            return false;
-        }
-        FatalInjuryTraffic other = (FatalInjuryTraffic) object;
-        if ((this.fatalInjuryId == null && other.fatalInjuryId != null) || (this.fatalInjuryId != null && !this.fatalInjuryId.equals(other.fatalInjuryId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof FatalInjuryTraffic)) {
+	    return false;
+	}
+	FatalInjuryTraffic other = (FatalInjuryTraffic) object;
+	if ((this.fatalInjuryId == null && other.fatalInjuryId != null) || (this.fatalInjuryId != null && !this.fatalInjuryId.equals(other.fatalInjuryId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.FatalInjuryTraffic[ fatalInjuryId=" + fatalInjuryId + " ]";
+	return "model.pojo.FatalInjuryTraffic[ fatalInjuryId=" + fatalInjuryId + " ]";
     }
     
 }

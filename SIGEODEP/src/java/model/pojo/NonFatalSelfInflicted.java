@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "non_fatal_self_inflicted", catalog = "od", schema = "public")
@@ -32,12 +32,12 @@ public class NonFatalSelfInflicted implements Serializable {
     @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private NonFatalInjuries nonFatalInjuries;
-    @JoinColumn(name = "mental_antecedent", referencedColumnName = "boolean_id")
-    @ManyToOne
-    private BooleanPojo mentalAntecedent;
     @JoinColumn(name = "previous_attempt", referencedColumnName = "boolean_id")
     @ManyToOne
     private BooleanPojo previousAttempt;
+    @JoinColumn(name = "mental_antecedent", referencedColumnName = "boolean_id")
+    @ManyToOne
+    private BooleanPojo mentalAntecedent;
 
     public NonFatalSelfInflicted() {
     }
@@ -70,20 +70,20 @@ public class NonFatalSelfInflicted implements Serializable {
 	this.nonFatalInjuries = nonFatalInjuries;
     }
 
-    public BooleanPojo getMentalAntecedent() {
-	return mentalAntecedent;
-    }
-
-    public void setMentalAntecedent(BooleanPojo mentalAntecedent) {
-	this.mentalAntecedent = mentalAntecedent;
-    }
-
     public BooleanPojo getPreviousAttempt() {
 	return previousAttempt;
     }
 
     public void setPreviousAttempt(BooleanPojo previousAttempt) {
 	this.previousAttempt = previousAttempt;
+    }
+
+    public BooleanPojo getMentalAntecedent() {
+	return mentalAntecedent;
+    }
+
+    public void setMentalAntecedent(BooleanPojo mentalAntecedent) {
+	this.mentalAntecedent = mentalAntecedent;
     }
 
     @Override
@@ -108,7 +108,7 @@ public class NonFatalSelfInflicted implements Serializable {
 
     @Override
     public String toString() {
-	return "pojo.NonFatalSelfInflicted[ nonFatalInjuryId=" + nonFatalInjuryId + " ]";
+	return "model.pojo.NonFatalSelfInflicted[ nonFatalInjuryId=" + nonFatalInjuryId + " ]";
     }
     
 }

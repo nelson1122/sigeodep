@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "suicide_mechanisms", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class SuicideMechanisms implements Serializable {
     }
 
     public SuicideMechanisms(Short suicideMechanismId) {
-        this.suicideMechanismId = suicideMechanismId;
+	this.suicideMechanismId = suicideMechanismId;
     }
 
     public SuicideMechanisms(Short suicideMechanismId, String suicideMechanismName) {
-        this.suicideMechanismId = suicideMechanismId;
-        this.suicideMechanismName = suicideMechanismName;
+	this.suicideMechanismId = suicideMechanismId;
+	this.suicideMechanismName = suicideMechanismName;
     }
 
     public Short getSuicideMechanismId() {
-        return suicideMechanismId;
+	return suicideMechanismId;
     }
 
     public void setSuicideMechanismId(Short suicideMechanismId) {
-        this.suicideMechanismId = suicideMechanismId;
+	this.suicideMechanismId = suicideMechanismId;
     }
 
     public String getSuicideMechanismName() {
-        return suicideMechanismName;
+	return suicideMechanismName;
     }
 
     public void setSuicideMechanismName(String suicideMechanismName) {
-        this.suicideMechanismName = suicideMechanismName;
+	this.suicideMechanismName = suicideMechanismName;
     }
 
     @XmlTransient
     public List<FatalInjurySuicide> getFatalInjurySuicideList() {
-        return fatalInjurySuicideList;
+	return fatalInjurySuicideList;
     }
 
     public void setFatalInjurySuicideList(List<FatalInjurySuicide> fatalInjurySuicideList) {
-        this.fatalInjurySuicideList = fatalInjurySuicideList;
+	this.fatalInjurySuicideList = fatalInjurySuicideList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (suicideMechanismId != null ? suicideMechanismId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (suicideMechanismId != null ? suicideMechanismId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof SuicideMechanisms)) {
-            return false;
-        }
-        SuicideMechanisms other = (SuicideMechanisms) object;
-        if ((this.suicideMechanismId == null && other.suicideMechanismId != null) || (this.suicideMechanismId != null && !this.suicideMechanismId.equals(other.suicideMechanismId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof SuicideMechanisms)) {
+	    return false;
+	}
+	SuicideMechanisms other = (SuicideMechanisms) object;
+	if ((this.suicideMechanismId == null && other.suicideMechanismId != null) || (this.suicideMechanismId != null && !this.suicideMechanismId.equals(other.suicideMechanismId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.SuicideMechanisms[ suicideMechanismId=" + suicideMechanismId + " ]";
+	return "model.pojo.SuicideMechanisms[ suicideMechanismId=" + suicideMechanismId + " ]";
     }
     
 }

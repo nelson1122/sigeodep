@@ -14,35 +14,38 @@ import model.pojo.Sources;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class FormsFacade extends AbstractFacade<Forms> {
+
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public FormsFacade() {
-        super(Forms.class);
+	super(Forms.class);
     }
+
     public Forms findByFormId(String idForm) {
-        String hql = "Select x from Forms x where x.formId=:id";
-        return (Forms)em.createQuery(hql).setParameter("id", idForm).getSingleResult();
+	String hql = "Select x from Forms x where x.formId=:id";
+	return (Forms) em.createQuery(hql).setParameter("id", idForm).getSingleResult();
     }
-    
+
     public List<Sources> findSources(String nameForm) {
-        String hql = "Select x.sourcesList from Forms x where x.formId=:id";
-        return em.createQuery(hql).setParameter("id", nameForm).getResultList();
+	String hql = "Select x.sourcesList from Forms x where x.formId=:id";
+	return em.createQuery(hql).setParameter("id", nameForm).getResultList();
     }
 
     public List<Fields> findVarsExecpted(String nameForm) {    //COMO SE ORDENA POR UN DETERMINADO CAPO
-        //String hql="SELECT x.fieldsList FROM Forms x WHERE x.formId=:id";
-        String hql = "SELECT f FROM Forms x JOIN x.fieldsList f WHERE x.formId=:id ORDER BY f.fieldOrder";
-        return em.createQuery(hql).setParameter("id", nameForm).getResultList();
+	//String hql="SELECT x.fieldsList FROM Forms x WHERE x.formId=:id";
+	//String hql = "SELECT f FROM Forms x JOIN x.fieldsList f WHERE x.formId=:id ORDER BY f.fieldOrder";
+        String hql = "SELECT x FROM Fields x WHERE x.fieldsPK.formId=:id ORDER BY x.fieldOrder";
+	return em.createQuery(hql).setParameter("id", nameForm).getResultList();
     }
 //    public List<Fields> findByForm(String nameForm)                
 //    {

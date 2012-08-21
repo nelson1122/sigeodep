@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "neighborhoods", catalog = "od", schema = "public")
@@ -53,95 +53,95 @@ public class Neighborhoods implements Serializable {
     }
 
     public Neighborhoods(Integer neighborhoodId) {
-        this.neighborhoodId = neighborhoodId;
+	this.neighborhoodId = neighborhoodId;
     }
 
     public Neighborhoods(Integer neighborhoodId, int suburbId) {
-        this.neighborhoodId = neighborhoodId;
-        this.suburbId = suburbId;
+	this.neighborhoodId = neighborhoodId;
+	this.suburbId = suburbId;
     }
 
     public String getNeighborhoodName() {
-        return neighborhoodName;
+	return neighborhoodName;
     }
 
     public void setNeighborhoodName(String neighborhoodName) {
-        this.neighborhoodName = neighborhoodName;
+	this.neighborhoodName = neighborhoodName;
     }
 
     public Integer getNeighborhoodId() {
-        return neighborhoodId;
+	return neighborhoodId;
     }
 
     public void setNeighborhoodId(Integer neighborhoodId) {
-        this.neighborhoodId = neighborhoodId;
+	this.neighborhoodId = neighborhoodId;
     }
 
     public int getSuburbId() {
-        return suburbId;
+	return suburbId;
     }
 
     public void setSuburbId(int suburbId) {
-        this.suburbId = suburbId;
+	this.suburbId = suburbId;
     }
 
     public Character getNeighborhoodLevel() {
-        return neighborhoodLevel;
+	return neighborhoodLevel;
     }
 
     public void setNeighborhoodLevel(Character neighborhoodLevel) {
-        this.neighborhoodLevel = neighborhoodLevel;
+	this.neighborhoodLevel = neighborhoodLevel;
     }
 
     public Character getNeighborhoodType() {
-        return neighborhoodType;
+	return neighborhoodType;
     }
 
     public void setNeighborhoodType(Character neighborhoodType) {
-        this.neighborhoodType = neighborhoodType;
+	this.neighborhoodType = neighborhoodType;
     }
 
     @XmlTransient
     public List<Victims> getVictimsList() {
-        return victimsList;
+	return victimsList;
     }
 
     public void setVictimsList(List<Victims> victimsList) {
-        this.victimsList = victimsList;
+	this.victimsList = victimsList;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (neighborhoodId != null ? neighborhoodId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (neighborhoodId != null ? neighborhoodId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Neighborhoods)) {
-            return false;
-        }
-        Neighborhoods other = (Neighborhoods) object;
-        if ((this.neighborhoodId == null && other.neighborhoodId != null) || (this.neighborhoodId != null && !this.neighborhoodId.equals(other.neighborhoodId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Neighborhoods)) {
+	    return false;
+	}
+	Neighborhoods other = (Neighborhoods) object;
+	if ((this.neighborhoodId == null && other.neighborhoodId != null) || (this.neighborhoodId != null && !this.neighborhoodId.equals(other.neighborhoodId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "j.Neighborhoods[ neighborhoodId=" + neighborhoodId + " ]";
+	return "model.pojo.Neighborhoods[ neighborhoodId=" + neighborhoodId + " ]";
     }
     
 }

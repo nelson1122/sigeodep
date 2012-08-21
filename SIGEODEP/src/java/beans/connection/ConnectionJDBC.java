@@ -2,7 +2,8 @@
  * @(#)Connection.java
  *
  *
- * @author Proyecto *** CPDS ** @version 1.00 2007/1/22
+ * @author Proyecto *** CPDS
+ ** @version 1.00 2007/1/22
  *
  * Esta clase sirve para connect a una BD desde Java generalmente sin recurrir a
  * persistencia
@@ -10,9 +11,16 @@
  */
 package beans.connection;
 
+import java.io.Serializable;
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
-public class ConnectionJDBC {
+public class ConnectionJDBC implements Serializable {
 
     String bd;
     String login;
@@ -23,6 +31,10 @@ public class ConnectionJDBC {
     Statement st;
     ResultSet rs;
     String msj;
+
+//    public void connect2(){
+
+//    }
 
     public void conexion() {
         bd = "";
@@ -40,6 +52,37 @@ public class ConnectionJDBC {
         login = "postgres";
         password = "1234";
         url = "jdbc:postgresql://" + "localhost" + "/" + bd;// Anadir a la url la bd user y contrasena
+        
+//        Connection con = null;
+//        try {
+//            InitialContext ic = new InitialContext();
+//            //en esta parte es donde ponemos el Nombre
+//            //de JNDI para que traiga el datasource
+//            DataSource ds = (DataSource) ic.lookup("java:comp/env/jdbc_od2");
+//            con = ds.getConnection();
+//            conn = ds.getConnection();
+//            Statement st = con.createStatement();
+//            System.out.println("Se ha realizado con exito la conexión a MySQL");
+//            //el resultSet es el encargado de traer los datos de la consulta
+//            ResultSet rs = st.executeQuery("select * from temp");
+//            while (rs.next()) {
+//                System.out.println(" " + rs.getString(1) + " " + rs.getString(2));
+//            }
+//        } catch (SQLException ex) {            
+//            System.out.println("============"+ex.toString());
+//        } catch (NamingException ex) {            
+//            System.out.println("============"+ex.toString());
+//        } finally {
+//            try {
+//                con.close();
+//                System.out.println("Conexion Cerrada con Exito...");
+//            } catch (SQLException ex) {
+//                System.out.println("============"+ex.toString());
+//            }
+//        }
+        
+        
+        
         try {
 
             try {
@@ -74,7 +117,7 @@ public class ConnectionJDBC {
             }
             conn = DriverManager.getConnection(url, login, password);
             if (conn != null) {
-                //System.out.println("Conexion a base de datos " + url + " ... OK");
+                System.out.println("Conexion a base de datos " + url + " ... OK");
             }
         } catch (SQLException e) {
             System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
@@ -88,7 +131,7 @@ public class ConnectionJDBC {
             try {
                 if (!conn.isClosed()) {
                     conn.close();
-                    //System.out.println("Se cerro conexion a: " + url + " ... OK");
+                    System.out.println("Se cerro conexion a: " + url + " ... OK");
                     msj = "Close conection " + url + " ... OK";
                 }
             } catch (SQLException e) {
@@ -228,5 +271,10 @@ public class ConnectionJDBC {
 
     public void setMsj(String mens) {
         msj = mens;
+    }
+
+    private DataSource getConexionJDBC1() throws NamingException {
+        Context c = new InitialContext();
+        return (DataSource) c.lookup("java:comp/env/conexionJDBC1");
     }
 }

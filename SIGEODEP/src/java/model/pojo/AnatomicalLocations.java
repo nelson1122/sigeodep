@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "anatomical_locations", catalog = "od", schema = "public", uniqueConstraints = {
@@ -34,7 +34,7 @@ public class AnatomicalLocations implements Serializable {
     @Size(max = 80)
     @Column(name = "anatomical_location_name", length = 80)
     private String anatomicalLocationName;
-    //----------------------
+    
     @ManyToMany(mappedBy = "anatomicalLocationsList")    
     private List<NonFatalInjuries> nonFatalInjuriesList;
 
@@ -42,57 +42,57 @@ public class AnatomicalLocations implements Serializable {
     }
 
     public AnatomicalLocations(Short anatomicalLocationId) {
-        this.anatomicalLocationId = anatomicalLocationId;
+	this.anatomicalLocationId = anatomicalLocationId;
     }
 
     public Short getAnatomicalLocationId() {
-        return anatomicalLocationId;
+	return anatomicalLocationId;
     }
 
     public void setAnatomicalLocationId(Short anatomicalLocationId) {
-        this.anatomicalLocationId = anatomicalLocationId;
+	this.anatomicalLocationId = anatomicalLocationId;
     }
 
     public String getAnatomicalLocationName() {
-        return anatomicalLocationName;
+	return anatomicalLocationName;
     }
 
     public void setAnatomicalLocationName(String anatomicalLocationName) {
-        this.anatomicalLocationName = anatomicalLocationName;
+	this.anatomicalLocationName = anatomicalLocationName;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (anatomicalLocationId != null ? anatomicalLocationId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (anatomicalLocationId != null ? anatomicalLocationId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof AnatomicalLocations)) {
-            return false;
-        }
-        AnatomicalLocations other = (AnatomicalLocations) object;
-        if ((this.anatomicalLocationId == null && other.anatomicalLocationId != null) || (this.anatomicalLocationId != null && !this.anatomicalLocationId.equals(other.anatomicalLocationId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof AnatomicalLocations)) {
+	    return false;
+	}
+	AnatomicalLocations other = (AnatomicalLocations) object;
+	if ((this.anatomicalLocationId == null && other.anatomicalLocationId != null) || (this.anatomicalLocationId != null && !this.anatomicalLocationId.equals(other.anatomicalLocationId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.AnatomicalLocations[ anatomicalLocationId=" + anatomicalLocationId + " ]";
+	return "model.pojo.AnatomicalLocations[ anatomicalLocationId=" + anatomicalLocationId + " ]";
     }
     
 }

@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "fields", catalog = "od", schema = "public")
@@ -49,89 +49,89 @@ public class Fields implements Serializable {
     }
 
     public Fields(FieldsPK fieldsPK) {
-        this.fieldsPK = fieldsPK;
+	this.fieldsPK = fieldsPK;
     }
 
     public Fields(FieldsPK fieldsPK, boolean fieldOptional) {
-        this.fieldsPK = fieldsPK;
-        this.fieldOptional = fieldOptional;
+	this.fieldsPK = fieldsPK;
+	this.fieldOptional = fieldOptional;
     }
 
     public Fields(String formId, String fieldName) {
-        this.fieldsPK = new FieldsPK(formId, fieldName);
+	this.fieldsPK = new FieldsPK(formId, fieldName);
     }
 
     public FieldsPK getFieldsPK() {
-        return fieldsPK;
+	return fieldsPK;
     }
 
     public void setFieldsPK(FieldsPK fieldsPK) {
-        this.fieldsPK = fieldsPK;
+	this.fieldsPK = fieldsPK;
     }
 
     public Integer getFieldOrder() {
-        return fieldOrder;
+	return fieldOrder;
     }
 
     public void setFieldOrder(Integer fieldOrder) {
-        this.fieldOrder = fieldOrder;
+	this.fieldOrder = fieldOrder;
     }
 
     public String getFieldDescription() {
-        return fieldDescription;
+	return fieldDescription;
     }
 
     public void setFieldDescription(String fieldDescription) {
-        this.fieldDescription = fieldDescription;
+	this.fieldDescription = fieldDescription;
     }
 
     public String getFieldType() {
-        return fieldType;
+	return fieldType;
     }
 
     public void setFieldType(String fieldType) {
-        this.fieldType = fieldType;
+	this.fieldType = fieldType;
     }
 
     public boolean getFieldOptional() {
-        return fieldOptional;
+	return fieldOptional;
     }
 
     public void setFieldOptional(boolean fieldOptional) {
-        this.fieldOptional = fieldOptional;
+	this.fieldOptional = fieldOptional;
     }
 
     public Forms getForms() {
-        return forms;
+	return forms;
     }
 
     public void setForms(Forms forms) {
-        this.forms = forms;
+	this.forms = forms;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (fieldsPK != null ? fieldsPK.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (fieldsPK != null ? fieldsPK.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Fields)) {
-            return false;
-        }
-        Fields other = (Fields) object;
-        if ((this.fieldsPK == null && other.fieldsPK != null) || (this.fieldsPK != null && !this.fieldsPK.equals(other.fieldsPK))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Fields)) {
+	    return false;
+	}
+	Fields other = (Fields) object;
+	if ((this.fieldsPK == null && other.fieldsPK != null) || (this.fieldsPK != null && !this.fieldsPK.equals(other.fieldsPK))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return fieldsPK.getFieldName();
+	return fieldsPK.getFieldName();
     }
     
 }

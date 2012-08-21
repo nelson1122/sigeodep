@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "boolean", catalog = "od", schema = "public")
@@ -33,14 +33,17 @@ public class BooleanPojo implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "boolean_name", length = 2147483647)
     private String booleanName;
-    @OneToMany(mappedBy = "mentalAntecedent")
-    private List<FatalInjurySuicide> fatalInjurySuicideList;
     @OneToMany(mappedBy = "previousAttempt")
-    private List<FatalInjurySuicide> fatalInjurySuicideList1;
-    @OneToMany(mappedBy = "mentalAntecedent")
     private List<NonFatalSelfInflicted> nonFatalSelfInflictedList;
-    @OneToMany(mappedBy = "previousAttempt")
+    @OneToMany(mappedBy = "mentalAntecedent")
     private List<NonFatalSelfInflicted> nonFatalSelfInflictedList1;
+    @OneToMany(mappedBy = "previousAttempt")
+    private List<FatalInjurySuicide> fatalInjurySuicideList;
+    @OneToMany(mappedBy = "mentalAntecedent")
+    private List<FatalInjurySuicide> fatalInjurySuicideList1;
+    @OneToMany(mappedBy = "previousAntecedent")
+    private List<NonFatalInterpersonal> nonFatalInterpersonalList;
+    
 
     public BooleanPojo() {
     }
@@ -66,6 +69,24 @@ public class BooleanPojo implements Serializable {
     }
 
     @XmlTransient
+    public List<NonFatalSelfInflicted> getNonFatalSelfInflictedList() {
+	return nonFatalSelfInflictedList;
+    }
+
+    public void setNonFatalSelfInflictedList(List<NonFatalSelfInflicted> nonFatalSelfInflictedList) {
+	this.nonFatalSelfInflictedList = nonFatalSelfInflictedList;
+    }
+
+    @XmlTransient
+    public List<NonFatalSelfInflicted> getNonFatalSelfInflictedList1() {
+	return nonFatalSelfInflictedList1;
+    }
+
+    public void setNonFatalSelfInflictedList1(List<NonFatalSelfInflicted> nonFatalSelfInflictedList1) {
+	this.nonFatalSelfInflictedList1 = nonFatalSelfInflictedList1;
+    }
+
+    @XmlTransient
     public List<FatalInjurySuicide> getFatalInjurySuicideList() {
 	return fatalInjurySuicideList;
     }
@@ -84,23 +105,14 @@ public class BooleanPojo implements Serializable {
     }
     
     @XmlTransient
-    public List<NonFatalSelfInflicted> getNonFatalSelfInflictedList() {
-	return nonFatalSelfInflictedList;
+    public List<NonFatalInterpersonal> getNonFatalInterpersonalList() {
+        return nonFatalInterpersonalList;
     }
 
-    public void setNonFatalSelfInflictedList(List<NonFatalSelfInflicted> nonFatalSelfInflictedList) {
-	this.nonFatalSelfInflictedList = nonFatalSelfInflictedList;
+    public void setNonFatalInterpersonalList(List<NonFatalInterpersonal> nonFatalInterpersonalList) {
+        this.nonFatalInterpersonalList = nonFatalInterpersonalList;
     }
-
-    @XmlTransient
-    public List<NonFatalSelfInflicted> getNonFatalSelfInflictedList1() {
-	return nonFatalSelfInflictedList1;
-    }
-
-    public void setNonFatalSelfInflictedList1(List<NonFatalSelfInflicted> nonFatalSelfInflictedList1) {
-	this.nonFatalSelfInflictedList1 = nonFatalSelfInflictedList1;
-    }
-
+    
     @Override
     public int hashCode() {
 	int hash = 0;
@@ -123,7 +135,7 @@ public class BooleanPojo implements Serializable {
 
     @Override
     public String toString() {
-	return "n.BooleanPojo[ booleanId=" + booleanId + " ]";
+	return "model.pojo.BooleanPojo[ booleanId=" + booleanId + " ]";
     }
     
 }

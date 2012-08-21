@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "involved_vehicles", catalog = "od", schema = "public", uniqueConstraints = {
@@ -36,8 +36,6 @@ public class InvolvedVehicles implements Serializable {
     @Size(min = 1, max = 2147483647)
     @Column(name = "involved_vehicle_name", nullable = false, length = 2147483647)
     private String involvedVehicleName;
-    @ManyToMany(mappedBy = "involvedVehiclesList")
-    private List<FatalInjuries> fatalInjuriesList;
     @OneToMany(mappedBy = "involvedVehicleId")
     private List<FatalInjuryTraffic> fatalInjuryTrafficList;
 
@@ -45,71 +43,63 @@ public class InvolvedVehicles implements Serializable {
     }
 
     public InvolvedVehicles(Short involvedVehicleId) {
-        this.involvedVehicleId = involvedVehicleId;
+	this.involvedVehicleId = involvedVehicleId;
     }
 
     public InvolvedVehicles(Short involvedVehicleId, String involvedVehicleName) {
-        this.involvedVehicleId = involvedVehicleId;
-        this.involvedVehicleName = involvedVehicleName;
+	this.involvedVehicleId = involvedVehicleId;
+	this.involvedVehicleName = involvedVehicleName;
     }
 
     public Short getInvolvedVehicleId() {
-        return involvedVehicleId;
+	return involvedVehicleId;
     }
 
     public void setInvolvedVehicleId(Short involvedVehicleId) {
-        this.involvedVehicleId = involvedVehicleId;
+	this.involvedVehicleId = involvedVehicleId;
     }
 
     public String getInvolvedVehicleName() {
-        return involvedVehicleName;
+	return involvedVehicleName;
     }
 
     public void setInvolvedVehicleName(String involvedVehicleName) {
-        this.involvedVehicleName = involvedVehicleName;
+	this.involvedVehicleName = involvedVehicleName;
     }
 
-    @XmlTransient
-    public List<FatalInjuries> getFatalInjuriesList() {
-        return fatalInjuriesList;
-    }
-
-    public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
-        this.fatalInjuriesList = fatalInjuriesList;
-    }
-
+    
     @XmlTransient
     public List<FatalInjuryTraffic> getFatalInjuryTrafficList() {
-        return fatalInjuryTrafficList;
+	return fatalInjuryTrafficList;
     }
 
     public void setFatalInjuryTrafficList(List<FatalInjuryTraffic> fatalInjuryTrafficList) {
-        this.fatalInjuryTrafficList = fatalInjuryTrafficList;
+	this.fatalInjuryTrafficList = fatalInjuryTrafficList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (involvedVehicleId != null ? involvedVehicleId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (involvedVehicleId != null ? involvedVehicleId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof InvolvedVehicles)) {
-            return false;
-        }
-        InvolvedVehicles other = (InvolvedVehicles) object;
-        if ((this.involvedVehicleId == null && other.involvedVehicleId != null) || (this.involvedVehicleId != null && !this.involvedVehicleId.equals(other.involvedVehicleId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof InvolvedVehicles)) {
+	    return false;
+	}
+	InvolvedVehicles other = (InvolvedVehicles) object;
+	if ((this.involvedVehicleId == null && other.involvedVehicleId != null) || (this.involvedVehicleId != null && !this.involvedVehicleId.equals(other.involvedVehicleId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.InvolvedVehicles[ involvedVehicleId=" + involvedVehicleId + " ]";
+	return "model.pojo.InvolvedVehicles[ involvedVehicleId=" + involvedVehicleId + " ]";
     }
     
 }

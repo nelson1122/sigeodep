@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "transport_counterparts", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class TransportCounterparts implements Serializable {
     }
 
     public TransportCounterparts(Short transportCounterpartId) {
-        this.transportCounterpartId = transportCounterpartId;
+	this.transportCounterpartId = transportCounterpartId;
     }
 
     public TransportCounterparts(Short transportCounterpartId, String transportCounterpartName) {
-        this.transportCounterpartId = transportCounterpartId;
-        this.transportCounterpartName = transportCounterpartName;
+	this.transportCounterpartId = transportCounterpartId;
+	this.transportCounterpartName = transportCounterpartName;
     }
 
     public Short getTransportCounterpartId() {
-        return transportCounterpartId;
+	return transportCounterpartId;
     }
 
     public void setTransportCounterpartId(Short transportCounterpartId) {
-        this.transportCounterpartId = transportCounterpartId;
+	this.transportCounterpartId = transportCounterpartId;
     }
 
     public String getTransportCounterpartName() {
-        return transportCounterpartName;
+	return transportCounterpartName;
     }
 
     public void setTransportCounterpartName(String transportCounterpartName) {
-        this.transportCounterpartName = transportCounterpartName;
+	this.transportCounterpartName = transportCounterpartName;
     }
 
     @XmlTransient
     public List<NonFatalTransport> getNonFatalTransportList() {
-        return nonFatalTransportList;
+	return nonFatalTransportList;
     }
 
     public void setNonFatalTransportList(List<NonFatalTransport> nonFatalTransportList) {
-        this.nonFatalTransportList = nonFatalTransportList;
+	this.nonFatalTransportList = nonFatalTransportList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (transportCounterpartId != null ? transportCounterpartId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (transportCounterpartId != null ? transportCounterpartId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof TransportCounterparts)) {
-            return false;
-        }
-        TransportCounterparts other = (TransportCounterparts) object;
-        if ((this.transportCounterpartId == null && other.transportCounterpartId != null) || (this.transportCounterpartId != null && !this.transportCounterpartId.equals(other.transportCounterpartId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof TransportCounterparts)) {
+	    return false;
+	}
+	TransportCounterparts other = (TransportCounterparts) object;
+	if ((this.transportCounterpartId == null && other.transportCounterpartId != null) || (this.transportCounterpartId != null && !this.transportCounterpartId.equals(other.transportCounterpartId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.TransportCounterparts[ transportCounterpartId=" + transportCounterpartId + " ]";
+	return "model.pojo.TransportCounterparts[ transportCounterpartId=" + transportCounterpartId + " ]";
     }
     
 }

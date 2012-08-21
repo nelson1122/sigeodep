@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "aggressor_types", catalog = "od", schema = "public", uniqueConstraints = {
@@ -36,10 +36,6 @@ public class AggressorTypes implements Serializable {
     @Size(min = 1, max = 25)
     @Column(name = "aggressor_type_name", nullable = false, length = 25)
     private String aggressorTypeName;
-//    @JoinTable(name = "domestic_violence_aggressor_type", joinColumns = {
-//        @JoinColumn(name = "aggressor_type_id", referencedColumnName = "aggressor_type_id", nullable = false)}, inverseJoinColumns = {
-//        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
-//    @ManyToMany
     @ManyToMany(mappedBy = "aggressorTypesList")
     private List<NonFatalDomesticViolence> nonFatalDomesticViolenceList;
 
@@ -47,62 +43,62 @@ public class AggressorTypes implements Serializable {
     }
 
     public AggressorTypes(Short aggressorTypeId) {
-        this.aggressorTypeId = aggressorTypeId;
+	this.aggressorTypeId = aggressorTypeId;
     }
 
     public AggressorTypes(Short aggressorTypeId, String aggressorTypeName) {
-        this.aggressorTypeId = aggressorTypeId;
-        this.aggressorTypeName = aggressorTypeName;
+	this.aggressorTypeId = aggressorTypeId;
+	this.aggressorTypeName = aggressorTypeName;
     }
 
     public Short getAggressorTypeId() {
-        return aggressorTypeId;
+	return aggressorTypeId;
     }
 
     public void setAggressorTypeId(Short aggressorTypeId) {
-        this.aggressorTypeId = aggressorTypeId;
+	this.aggressorTypeId = aggressorTypeId;
     }
 
     public String getAggressorTypeName() {
-        return aggressorTypeName;
+	return aggressorTypeName;
     }
 
     public void setAggressorTypeName(String aggressorTypeName) {
-        this.aggressorTypeName = aggressorTypeName;
+	this.aggressorTypeName = aggressorTypeName;
     }
 
     @XmlTransient
     public List<NonFatalDomesticViolence> getNonFatalDomesticViolenceList() {
-        return nonFatalDomesticViolenceList;
+	return nonFatalDomesticViolenceList;
     }
 
     public void setNonFatalDomesticViolenceList(List<NonFatalDomesticViolence> nonFatalDomesticViolenceList) {
-        this.nonFatalDomesticViolenceList = nonFatalDomesticViolenceList;
+	this.nonFatalDomesticViolenceList = nonFatalDomesticViolenceList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (aggressorTypeId != null ? aggressorTypeId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (aggressorTypeId != null ? aggressorTypeId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof AggressorTypes)) {
-            return false;
-        }
-        AggressorTypes other = (AggressorTypes) object;
-        if ((this.aggressorTypeId == null && other.aggressorTypeId != null) || (this.aggressorTypeId != null && !this.aggressorTypeId.equals(other.aggressorTypeId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof AggressorTypes)) {
+	    return false;
+	}
+	AggressorTypes other = (AggressorTypes) object;
+	if ((this.aggressorTypeId == null && other.aggressorTypeId != null) || (this.aggressorTypeId != null && !this.aggressorTypeId.equals(other.aggressorTypeId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.AggressorTypes[ aggressorTypeId=" + aggressorTypeId + " ]";
+	return "model.pojo.AggressorTypes[ aggressorTypeId=" + aggressorTypeId + " ]";
     }
     
 }

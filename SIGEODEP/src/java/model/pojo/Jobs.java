@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "jobs", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class Jobs implements Serializable {
     }
 
     public Jobs(Short jobId) {
-        this.jobId = jobId;
+	this.jobId = jobId;
     }
 
     public Jobs(Short jobId, String jobName) {
-        this.jobId = jobId;
-        this.jobName = jobName;
+	this.jobId = jobId;
+	this.jobName = jobName;
     }
 
     public Short getJobId() {
-        return jobId;
+	return jobId;
     }
 
     public void setJobId(Short jobId) {
-        this.jobId = jobId;
+	this.jobId = jobId;
     }
 
     public String getJobName() {
-        return jobName;
+	return jobName;
     }
 
     public void setJobName(String jobName) {
-        this.jobName = jobName;
+	this.jobName = jobName;
     }
 
     @XmlTransient
     public List<Victims> getVictimsList() {
-        return victimsList;
+	return victimsList;
     }
 
     public void setVictimsList(List<Victims> victimsList) {
-        this.victimsList = victimsList;
+	this.victimsList = victimsList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (jobId != null ? jobId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (jobId != null ? jobId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Jobs)) {
-            return false;
-        }
-        Jobs other = (Jobs) object;
-        if ((this.jobId == null && other.jobId != null) || (this.jobId != null && !this.jobId.equals(other.jobId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Jobs)) {
+	    return false;
+	}
+	Jobs other = (Jobs) object;
+	if ((this.jobId == null && other.jobId != null) || (this.jobId != null && !this.jobId.equals(other.jobId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.Jobs[ jobId=" + jobId + " ]";
+	return "model.pojo.Jobs[ jobId=" + jobId + " ]";
     }
     
 }

@@ -11,7 +11,7 @@ import model.pojo.AggressorTypes;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class AggressorTypesFacade extends AbstractFacade<AggressorTypes> {
@@ -20,11 +20,11 @@ public class AggressorTypesFacade extends AbstractFacade<AggressorTypes> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public AggressorTypesFacade() {
-        super(AggressorTypes.class);
+	super(AggressorTypes.class);
     }
     
 }

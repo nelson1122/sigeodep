@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "abuse_types", catalog = "od", schema = "public", uniqueConstraints = {
@@ -36,10 +36,6 @@ public class AbuseTypes implements Serializable {
     @Size(min = 1, max = 25)
     @Column(name = "abuse_type_name", nullable = false, length = 25)
     private String abuseTypeName;
-//    @JoinTable(name = "domestic_violence_abuse_type", joinColumns = {
-//        @JoinColumn(name = "abuse_type_id", referencedColumnName = "abuse_type_id", nullable = false)}, inverseJoinColumns = {
-//        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
-//    @ManyToMany
     @ManyToMany(mappedBy = "abuseTypesList")
     private List<NonFatalDomesticViolence> nonFatalDomesticViolenceList;
 
@@ -47,62 +43,62 @@ public class AbuseTypes implements Serializable {
     }
 
     public AbuseTypes(Short abuseTypeId) {
-        this.abuseTypeId = abuseTypeId;
+	this.abuseTypeId = abuseTypeId;
     }
 
     public AbuseTypes(Short abuseTypeId, String abuseTypeName) {
-        this.abuseTypeId = abuseTypeId;
-        this.abuseTypeName = abuseTypeName;
+	this.abuseTypeId = abuseTypeId;
+	this.abuseTypeName = abuseTypeName;
     }
 
     public Short getAbuseTypeId() {
-        return abuseTypeId;
+	return abuseTypeId;
     }
 
     public void setAbuseTypeId(Short abuseTypeId) {
-        this.abuseTypeId = abuseTypeId;
+	this.abuseTypeId = abuseTypeId;
     }
 
     public String getAbuseTypeName() {
-        return abuseTypeName;
+	return abuseTypeName;
     }
 
     public void setAbuseTypeName(String abuseTypeName) {
-        this.abuseTypeName = abuseTypeName;
+	this.abuseTypeName = abuseTypeName;
     }
 
     @XmlTransient
     public List<NonFatalDomesticViolence> getNonFatalDomesticViolenceList() {
-        return nonFatalDomesticViolenceList;
+	return nonFatalDomesticViolenceList;
     }
 
     public void setNonFatalDomesticViolenceList(List<NonFatalDomesticViolence> nonFatalDomesticViolenceList) {
-        this.nonFatalDomesticViolenceList = nonFatalDomesticViolenceList;
+	this.nonFatalDomesticViolenceList = nonFatalDomesticViolenceList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (abuseTypeId != null ? abuseTypeId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (abuseTypeId != null ? abuseTypeId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof AbuseTypes)) {
-            return false;
-        }
-        AbuseTypes other = (AbuseTypes) object;
-        if ((this.abuseTypeId == null && other.abuseTypeId != null) || (this.abuseTypeId != null && !this.abuseTypeId.equals(other.abuseTypeId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof AbuseTypes)) {
+	    return false;
+	}
+	AbuseTypes other = (AbuseTypes) object;
+	if ((this.abuseTypeId == null && other.abuseTypeId != null) || (this.abuseTypeId != null && !this.abuseTypeId.equals(other.abuseTypeId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.AbuseTypes[ abuseTypeId=" + abuseTypeId + " ]";
+	return "model.pojo.AbuseTypes[ abuseTypeId=" + abuseTypeId + " ]";
     }
     
 }

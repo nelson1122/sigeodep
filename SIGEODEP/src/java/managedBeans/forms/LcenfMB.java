@@ -4,13 +4,18 @@
  */
 package managedBeans.forms;
 
-import java.sql.Time;
+import beans.connection.ConnectionJDBC;
+import beans.util.RowDataTable;
+import java.io.Serializable;
+import java.sql.ResultSet;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -27,20 +32,32 @@ import model.pojo.*;
  */
 @ManagedBean(name = "lcenfMB")
 @SessionScoped
-public class LcenfMB {
+public class LcenfMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // DECLARACION DE VARIABLES --------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
 
+    ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
+    //------------------------
+    @EJB
+    InsuranceFacade insuranceFacade;
+    private Short currentInsurance = 0;
+    private SelectItem[] insurances;
+    //-----------------
+    @EJB
+    OthersFacade othersFacade;
+    //-----------------
     @EJB
     DepartamentsFacade departamentsFacade;
     private Short currentDepartamentHome = 52;//nariño
     private SelectItem[] departaments;
+    private boolean currentDepartamentHomeDisabled = false;
     //--------------------    
     @EJB
     MunicipalitiesFacade municipalitiesFacade;
+    private boolean currentMunicipalitieDisabled = false;
     private Short currentMunicipalitie = 1;//pasto
     private SelectItem[] municipalities;
     //--------------------    
@@ -53,8 +70,8 @@ public class LcenfMB {
     //--------------------    
     @EJB
     NonFatalDataSourcesFacade nonFatalDataSourcesFacade;
-    private Short currentIPS = 0;
-    private SelectItem[] IPSs;
+    private Short currentFromWhere = 0;
+    private SelectItem[] fromWhereList;
     //------------------
     @EJB
     BooleanPojoFacade booleanPojoFacade;
@@ -81,6 +98,7 @@ public class LcenfMB {
     MechanismsFacade mechanismsFacade;
     private Short currentMechanisms = 0;
     private SelectItem[] mechanisms;
+    List<Mechanisms> mechanismsList;
     //--------------------
     @EJB
     EthnicGroupsFacade ethnicGroupsFacade;
@@ -118,6 +136,7 @@ public class LcenfMB {
     ContextsFacade contextsFacade;
     private Short currentContext = 0;
     private SelectItem[] contexts;
+    private boolean currentContextDisabled = false;
     //--------------------
     @EJB
     AggressorGendersFacade agreAggressorGendersFacade;
@@ -143,9 +162,9 @@ public class LcenfMB {
     NeighborhoodsFacade neighborhoodsFacade;
     private String currentNeighborhoodHome = "";
     private String currentNeighborhoodHomeCode = "";
-    private String currentNeighborhoodEvent = "";
+    private String currentNeighborhoodEvent = "";   
     private String currentNeighborhoodEventCode = "";
-    boolean neighborhoodHomeNameDisabled = true;
+    boolean neighborhoodHomeNameDisabled = false;
     //--------------------
     @EJB
     HealthProfessionalsFacade healthProfessionalsFacade;
@@ -170,11 +189,14 @@ public class LcenfMB {
     private SelectItem[] measuresOfAge;
     private Short currentMeasureOfAge = 0;
     private String currentAge = "";
-    private boolean valueAgeDisabled = false;
+    private boolean valueAgeDisabled = true;
     //------------------
     @EJB
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
-    //-------
+    //------------------
+    @EJB
+    VulnerableGroupsFacade vulnerableGroupsFacade;
+    //------------------
     @EJB
     VictimsFacade victimsFacade;
     @EJB
@@ -195,16 +217,52 @@ public class LcenfMB {
     NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
     @EJB
     NonFatalSelfInflictedFacade nonFatalSelfInflictedFacade;
+    @EJB
+    NonFatalTransportFacade nonFatalTransportFacade;
+    @EJB
+    SecurityElementsFacade securityElementsFacade;
+    //------------------
+    //@EJB
+    //StateTimeFacade stateTimeFacade;
+    //@EJB
+    //StateDateFacade stateDateFacade;
+    //private SelectItem[] stateDateList;
+    //private SelectItem[] stateTimeList;
+    //private Short currentStateDateEvent = 1;
+    //private Short currentStateTimeEvent = 1;
+    private boolean strangerDisabled = true;
+    private boolean currentDayEventDisabled = false;
+    private boolean currentMonthEventDisabled = false;
+    private boolean currentYearEventDisabled = false;
+    private boolean currentHourEventDisabled = false;
+    private boolean currentMinuteEventDisabled = false;
+    private boolean currentAmPmEventDisabled = false;
+//    private Short currentStateDateConsult = 1;
+//    private Short currentStateTimeConsult = 1;
+    private boolean currentDayConsultDisabled = false;
+    private boolean currentMonthConsultDisabled = false;
+    private boolean currentYearConsultDisabled = false;
+    private boolean currentHourConsultDisabled = false;
+    private boolean currentMinuteConsultDisabled = false;
+    private boolean currentAmPmConsultDisabled = false;
+    private boolean stranger = false;
+    //-----------
+    private int currentSearchCriteria = 0;
+    private SelectItem[] searchCriteriaList;
+    private String currentSearchValue = "";
     //-------
     private boolean isSubmitted = false;
-    private boolean IPSDisabled = true;
+    private boolean fromWhereDisabled = true;
     //-------
-    private boolean otherIntentDisabled = true;
+    private boolean otherAnatomicalPlaceDisabled = true;
     private boolean otherPlaceDisabled = true;
     private boolean otherActivityDisabled = true;
     private boolean otherMechanismDisabled = true;//otro mecanismo    
     private boolean otherAGDisabled = true;
     private boolean otherMADisabled = true;
+    private boolean loading = false;
+    private String otherAnimal = "";//otro mecanismo       
+    private boolean otherAnimalDisabled = true;//cual polvora
     private String otherMA = "";
     private String otherMechanism = "";//otro mecanismo       
     private boolean powderWhichDisabled = true;//cual polvora
@@ -218,26 +276,32 @@ public class LcenfMB {
     private String displayInterpersonalViolence = "none";
     private String displayTransport = "none";
     private String displayIntentional = "none";
+    private String displayAggressionOrSuspicion = "none";
     private String displayDomesticViolence = "none";
+    private String idElements1 = "";
+    private String idElements2 = "";
     private boolean otherTransportTypeDisabled = true;//otro tipo de transporte
     private String otherTransportType = "";//otro tipo de transporte    
     private boolean otherTransportCounterpartsTypeDisabled = true;//otro tipo de transporte contraparte
     private String otherTransportCounterpartsType = "";//otro tipo de transporte contraparte   
     private boolean otherTransportUserTypeDisabled = true;//otro tipo de transporte usuario
     private String otherTransportUserType = "";//otro tipo de transporte usuario   
-    private boolean aggressionPast = false;
+    private boolean transportUserDisabled = false;
+    private boolean securityElementsDisabled = false;
+    private short aggressionPast = 0;
     private String otherFactor = "";
     private boolean otherFactorDisabled = true;
-    private boolean relationshipToVictimDisabled = true;
-    private boolean contextDisabled = true;
+    //private boolean relationshipToVictimDisabled = true;
+    //private boolean contextDisabled = true;
     private String otherRelation = "";
     private boolean otherRelationDisabled = true;
-    private boolean aggressorGendersDisabled = true;
+    //private boolean aggressorGendersDisabled = true;
     private boolean checkOtherInjury = false;
     private boolean checkOtherPlace = false;
     private boolean otherInjuryDisabled = true;
     private boolean otherInjuryPlaceDisabled = true;
     private boolean otherDestinationPatientDisabled = true;
+    private boolean identificationNumberDisabled = true;
     private String otherDestinationPatient = "";
     private String txtOtherInjury = "";
     private String txtOtherPlace = "";
@@ -249,6 +313,7 @@ public class LcenfMB {
     private String idCIE10_2 = "";
     private String idCIE10_3 = "";
     private String idCIE10_4 = "";
+    private int currentAggressionOrSuspicion = 1;
     private String currentSecurityElements = "";
     private String currentDayEvent = "";
     private String currentMonthEvent = "";
@@ -277,9 +342,11 @@ public class LcenfMB {
     private String currentOtherIntentionality = "";
     private String currentOtherPlace = "";
     private String currentOtherActivitie = "";
-    private String currentSurname = "";
+    //private String currentSurname = "";
     private Short currentLevelBurned = 0;
     private String currentPercentBurned = "";
+    private String currentResponsible = "";
+    private boolean directionHomeDisabled = false;
     private boolean isDisplaced = false;
     private boolean isHandicapped = false;
     private boolean isBeltUse = false;
@@ -343,7 +410,12 @@ public class LcenfMB {
     private String openDialogPrevious = "";
     private String openDialogNew = "";
     private String openDialogDelete = "";
+    //private String stylePosition="color: red; font-weight: 900;";
+    private String stylePosition = "color: #1471B1;";
     private Calendar c = Calendar.getInstance();
+    private Date date1;
+    private Date date2;
+    private String currentIdForm = "";
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -351,21 +423,87 @@ public class LcenfMB {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public LcenfMB() {
+
+        idElements1 = "IdHealthInstitution IdName IdIdentificationType IdIdentificationNumber IdMeasureOfAge "
+                + "IdValueAge IdGender IdJob IdDisplaced IdHandicapped IdEthnicGroup IdOtherEthnicGroup "
+                + "IdTelephoneHome IdNeighborhoodEvent IdNeighborhoodsEventCode IdDirectionEvent "
+                + "IdDayEvent IdMonthEvent IdYearEvent IdDateEvent IdWeekdayEvent IdHourEvent IdMinuteEvent IdAmPmEvent IdTimeEvent "
+                + "IdDayConsult IdMonthConsult IdYearConsult IdDateConsult IdWeekdayConsult IdHourConsult IdMinuteConsult IdAmPmConsult IdTimeConsult "
+                + "IdDepartamentHome IdDepartamentHomeCode IdMunicipalitieList IdMunicipalitiesHomeCode IdNeighborhoodHomeName IdNeighborhoodsHomeCode "
+                + "IdDirectionHome IdSubmitted IdIPS IdIntentional IdIntentionality IdPlace IdOtherPlace IdActivities IdOtherActivities "
+                + "IdAnimalWhich IdMechanisms IdHeightWhich IdPowderWhich IdDisasterWhich IdOtherMechanism IdForBurned IdLevelBurned IdPercentBurned IdUseAlcohol "
+                + "IdUseDrugs IdTransport IdTransportTypes IdOtherTransportType IdTransportCounterpart IdOtherTransportCounterpartsType IdTransportUser "
+                + "IdOtherTransportUserType IdSecurityElementsOption IdSecurityElements IdBeltUse IdHelmetUse IdBicycleHelmetUse IdVestUse IdOtherElementUse "
+                + "IdAggressionPast IdRelationshipToVictim IdOtherRelation IdCurrentContext IdAggressorGenders IdPreviousAttempt IdMentalPastDisorder "
+                + "IdAggressionOrSuspicion IdAggressionOrSuspicionOption IdInterpersonalViolence IdDomesticViolence "
+                + "IdPrecipitatingFactor IdOtherFactor "
+                + "IdAG1 IdAG2 IdAG3 IdAG4 IdAG5 IdAG6 IdAG7 IdAG8 IdAG9 IdAG10 IdOtherAG "
+                + "IdMA1 IdMA2 IdMA3 IdMA4 IdMA5 IdMA6 IdMA7 IdMA8 IdOtherMA "
+                + "IdAnatomicalSite1 IdAnatomicalSite2 IdAnatomicalSite3 IdAnatomicalSite4 IdAnatomicalSite5 IdAnatomicalSite6 IdAnatomicalSite7 IdAnatomicalSite8 IdAnatomicalSite9 IdAnatomicalSite10 IdAnatomicalSite11 IdAnatomicalSite12 IdOtherPlace2 "
+                + "IdNatureOfInjurye1 IdNatureOfInjurye2 IdNatureOfInjurye3 IdNatureOfInjurye4 IdNatureOfInjurye5 IdNatureOfInjurye6 IdNatureOfInjurye7 IdNatureOfInjurye8 IdNatureOfInjurye9 IdCheckOtherInjury IdOtherInjury IdUnknownNatureOfInjurye IdDestinationPatient IdOtherDestinationPatient "
+                + "IdIdCIE10_1 IdTxtCIE10_1 IdIdCIE10_2 IdTxtCIE10_2 IdIdCIE10_3 IdTxtCIE10_3 IdIdCIE10_4 IdTxtCIE10_4 "
+                + "IdHealthProfessionals IdResponsible IdControls message :IdForm2:IdSearchCriteria :IdForm2:IdSearcValue :IdForm2:IdSearchTable "
+                + "IdInsurance IdFormId";
+        idElements2 = ":IdForm1:IdHealthInstitution :IdForm1:IdName :IdForm1:IdIdentificationType :IdForm1:IdIdentificationNumber :IdForm1:IdMeasureOfAge "
+                + ":IdForm1:IdValueAge :IdForm1:IdGender :IdForm1:IdJob :IdForm1:IdDisplaced :IdForm1:IdHandicapped :IdForm1:IdEthnicGroup :IdForm1:IdOtherEthnicGroup :IdForm1:IdTelephoneHome "
+                + ":IdForm1:IdNeighborhoodEvent :IdForm1:IdNeighborhoodsEventCode :IdForm1:IdDirectionEvent :IdForm1:IdDayEvent :IdForm1:IdMonthEvent :IdForm1:IdYearEvent :IdForm1:IdDateEvent "
+                + ":IdForm1:IdWeekdayEvent :IdForm1:IdHourEvent :IdForm1:IdMinuteEvent :IdForm1:IdAmPmEvent :IdForm1:IdTimeEvent :IdForm1:IdDayConsult :IdForm1:IdMonthConsult :IdForm1:IdYearConsult "
+                + ":IdForm1:IdDateConsult :IdForm1:IdWeekdayConsult :IdForm1:IdHourConsult :IdForm1:IdMinuteConsult :IdForm1:IdAmPmConsult :IdForm1:IdTimeConsult :IdForm1:IdDepartamentHome :IdForm1:IdDepartamentHomeCode "
+                + ":IdForm1:IdMunicipalitieList :IdForm1:IdMunicipalitiesHomeCode :IdForm1:IdNeighborhoodHomeName :IdForm1:IdNeighborhoodsHomeCode :IdForm1:IdDirectionHome :IdForm1:IdSubmitted "
+                + ":IdForm1:IdIPS :IdForm1:IdIntentional :IdForm1:IdIntentionality :IdForm1:IdPlace :IdForm1:IdOtherPlace :IdForm1:IdActivities :IdForm1:IdOtherActivities :IdForm1:IdMechanisms "
+                + ":IdForm1:IdAnimalWhich :IdForm1:IdHeightWhich :IdForm1:IdPowderWhich :IdForm1:IdDisasterWhich :IdForm1:IdOtherMechanism :IdForm1:IdForBurned :IdForm1:IdLevelBurned :IdForm1:IdPercentBurned :IdForm1:IdUseAlcohol :IdForm1:IdUseDrugs "
+                + ":IdForm1:IdTransportTypes :IdForm1:IdTransport :IdForm1:IdOtherTransportType :IdForm1:IdTransportCounterpart :IdForm1:IdOtherTransportCounterpartsType :IdForm1:IdTransportUser :IdForm1:IdOtherTransportUserType "
+                + ":IdForm1:IdSecurityElementsOption :IdForm1:IdSecurityElements :IdForm1:IdBeltUse :IdForm1:IdHelmetUse :IdForm1:IdBicycleHelmetUse :IdForm1:IdVestUse :IdForm1:IdOtherElementUse :IdForm1:IdAggressionPast "
+                + ":IdForm1:IdRelationshipToVictim :IdForm1:IdOtherRelation :IdForm1:IdCurrentContext :IdForm1:IdAggressorGenders :IdForm1:IdPreviousAttempt :IdForm1:IdMentalPastDisorder :IdForm1:IdPrecipitatingFactor "
+                + ":IdForm1:IdAggressionOrSuspicion :IdForm1:IdAggressionOrSuspicionOption :IdForm1:IdInterpersonalViolence :IdForm1:IdDomesticViolence "
+                + ":IdForm1:IdOtherFactor :IdForm1:IdAG1 :IdForm1:IdAG2 :IdForm1:IdAG3 :IdForm1:IdAG4 :IdForm1:IdAG5 :IdForm1:IdAG6 "
+                + ":IdForm1:IdAG7 :IdForm1:IdAG8 :IdForm1:IdAG9 :IdForm1:IdAG10 :IdForm1:IdOtherAG :IdForm1:IdMA1 "
+                + ":IdForm1:IdMA2 :IdForm1:IdMA3 :IdForm1:IdMA4 :IdForm1:IdMA5 :IdForm1:IdMA6 :IdForm1:IdMA7 :IdForm1:IdMA8 :IdForm1:IdOtherMA "
+                + ":IdForm1:IdAnatomicalSite1 :IdForm1:IdAnatomicalSite2 :IdForm1:IdAnatomicalSite3 :IdForm1:IdAnatomicalSite4 "
+                + ":IdForm1:IdAnatomicalSite5 :IdForm1:IdAnatomicalSite6 :IdForm1:IdAnatomicalSite7 :IdForm1:IdAnatomicalSite8 "
+                + ":IdForm1:IdAnatomicalSite9 :IdForm1:IdAnatomicalSite10 :IdForm1:IdAnatomicalSite11 :IdForm1:IdAnatomicalSite12 :IdForm1:IdOtherPlace2 "
+                + ":IdForm1:IdNatureOfInjurye1 :IdForm1:IdNatureOfInjurye2 :IdForm1:IdNatureOfInjurye3 :IdForm1:IdNatureOfInjurye4 "
+                + ":IdForm1:IdNatureOfInjurye5 :IdForm1:IdNatureOfInjurye6 :IdForm1:IdNatureOfInjurye7 :IdForm1:IdNatureOfInjurye8 "
+                + ":IdForm1:IdNatureOfInjurye9 :IdForm1:IdCheckOtherInjury :IdForm1:IdOtherInjury :IdForm1:IdUnknownNatureOfInjurye "
+                + ":IdForm1:IdDestinationPatient :IdForm1:IdOtherDestinationPatient :IdForm1:IdIdCIE10_1 :IdForm1:IdTxtCIE10_1 "
+                + ":IdForm1:IdIdCIE10_2 :IdForm1:IdTxtCIE10_2 :IdForm1:IdIdCIE10_3 :IdForm1:IdTxtCIE10_3 :IdForm1:IdIdCIE10_4 :IdForm1:IdTxtCIE10_4 "
+                + ":IdForm1:IdHealthProfessionals :IdForm1:IdResponsible :IdForm1:IdControls :IdForm1:message :IdForm2:IdSearchCriteria :IdForm2:IdSearcValue :IdForm2:IdSearchTable "
+                + ":IdForm1:IdInsurance :IdForm1:IdFormId";
     }
 
     public void reset() {
-
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         try {
-            //cargo las instituciones de salud e IPS
+//            //estados de fecha
+//            List<StateDate> stateDateL = stateDateFacade.findAll();
+//            stateDateList = new SelectItem[stateDateL.size()];
+//            for (int i = 0; i < stateDateL.size(); i++) {
+//                stateDateList[i] = new SelectItem(stateDateL.get(i).getIdStateDate(), stateDateL.get(i).getName());
+//            }
+//
+//            //estados de hora
+//            List<StateTime> stateTimeL = stateTimeFacade.findAll();
+//            stateTimeList = new SelectItem[stateTimeL.size()];
+//            for (int i = 0; i < stateDateL.size(); i++) {
+//                stateTimeList[i] = new SelectItem(stateTimeL.get(i).getIdStateTime(), stateTimeL.get(i).getName());
+//            }
+            //cargo las aseguradoras
+            List<Insurance> insuranceList = insuranceFacade.findAll();
+            insurances = new SelectItem[insuranceList.size() + 1];
+            insurances[0] = new SelectItem(0, "");
+            for (int i = 0; i < insuranceList.size(); i++) {
+                insurances[i + 1] = new SelectItem(insuranceList.get(i).getInsuranceId(), insuranceList.get(i).getInsuranceName());
+            }
+
+            //cargo las instituciones de salud de donde es remitido
             List<NonFatalDataSources> sourcesList = nonFatalDataSourcesFacade.findAll();
-            IPSs = new SelectItem[sourcesList.size() + 1];
-            IPSs[0] = new SelectItem(0, "");
+            fromWhereList = new SelectItem[sourcesList.size() + 1];
+            fromWhereList[0] = new SelectItem(0, "");
             healthInstitutions = new SelectItem[sourcesList.size() + 1];
             healthInstitutions[0] = new SelectItem(0, "");
             for (int i = 0; i < sourcesList.size(); i++) {
-                IPSs[i + 1] = new SelectItem(sourcesList.get(i).getNonFatalDataSourceId(), sourcesList.get(i).getNonFatalDataSourceName());
+                fromWhereList[i + 1] = new SelectItem(sourcesList.get(i).getNonFatalDataSourceId(), sourcesList.get(i).getNonFatalDataSourceName());
                 healthInstitutions[i + 1] = new SelectItem(sourcesList.get(i).getNonFatalDataSourceId(), sourcesList.get(i).getNonFatalDataSourceName());
             }
             //cargo los tipos de identificacion
@@ -375,7 +513,6 @@ public class LcenfMB {
             for (int i = 0; i < idTypesList.size(); i++) {
                 identifications[i + 1] = new SelectItem(idTypesList.get(i).getTypeId(), idTypesList.get(i).getTypeName());
             }
-
 
             //cargo las medidas de edad
             List<AgeTypes> ageTypesList = ageTypesFacade.findAll();
@@ -395,13 +532,16 @@ public class LcenfMB {
 
             //cargo los departamentos
             List<Departaments> departamentsList = departamentsFacade.findAll();
-            departaments = new SelectItem[departamentsList.size()];
+            departaments = new SelectItem[departamentsList.size() + 1];
+            departaments[0] = new SelectItem(0, "");
             for (int i = 0; i < departamentsList.size(); i++) {
-                departaments[i] = new SelectItem(departamentsList.get(i).getDepartamentId(), departamentsList.get(i).getDepartamentName());
+                departaments[i + 1] = new SelectItem(departamentsList.get(i).getDepartamentId(), departamentsList.get(i).getDepartamentName());
             }
-
-            //cargo los municipios
-            findMunicipalities();
+            currentDepartamentHome = 0;
+            // municipios inicia vacio
+            municipalities = new SelectItem[1];
+            municipalities[0] = new SelectItem(0, "");
+            currentMunicipalitie = 0;
 
 
             //cargo las intencionalidades
@@ -429,7 +569,7 @@ public class LcenfMB {
             }
 
             //cargo los mecanismos de lesión
-            List<Mechanisms> mechanismsList = mechanismsFacade.findAll();
+            mechanismsList = mechanismsFacade.findAll();
             mechanisms = new SelectItem[mechanismsList.size() + 1];
             mechanisms[0] = new SelectItem(0, "");
             for (int i = 0; i < mechanismsList.size(); i++) {
@@ -509,7 +649,7 @@ public class LcenfMB {
             }
 
             //trabajos
-            List<Jobs> jobsList = jobsFacade.findAll();
+            List<Jobs> jobsList = jobsFacade.findAllOrder();
             jobs = new SelectItem[jobsList.size() + 1];
             jobs[0] = new SelectItem(0, "");
             for (int i = 0; i < jobsList.size(); i++) {
@@ -533,6 +673,7 @@ public class LcenfMB {
             for (int i = 0; i < diagnosesList.size(); i++) {
                 diagnoses[i] = new SelectItem(diagnosesList.get(i).getDiagnosisId() + " - " + diagnosesList.get(i).getDiagnosisName());
             }
+            currentDiagnoses = "S000";
 
             //categoria boolean
             List<BooleanPojo> booleanList = booleanPojoFacade.findAll();
@@ -541,10 +682,32 @@ public class LcenfMB {
             for (int i = 0; i < booleanList.size(); i++) {
                 booleans[i + 1] = new SelectItem(booleanList.get(i).getBooleanId(), booleanList.get(i).getBooleanName());
             }
+            //
 
-            currentDiagnoses = "S000";
-            save = true;
+            currentDepartamentHome = 52;
+            changeDepartamentHome();
+            currentMunicipalitie = 1;
+
+            //lista de criterios de busqueda            
+            searchCriteriaList = new SelectItem[3];
+            searchCriteriaList[0] = new SelectItem(1, "IDENTIFICACION");
+            searchCriteriaList[1] = new SelectItem(2, "NOMBRE");
+            searchCriteriaList[2] = new SelectItem(3, "CODIGO INTERNO");
+
+            rowDataTableList = new ArrayList<RowDataTable>();
+            //createDynamicTable();
+
             determinePosition();
+            openDialogFirst = "";
+            openDialogNext = "";
+            openDialogLast = "";
+            openDialogPrevious = "";
+            openDialogNew = "";
+            save = true;
+            System.out.println("Save=true");
+            stylePosition = "color: #1471B1;";
+            neighborhoodHomeNameDisabled=false;
+            directionHomeDisabled = false;
         } catch (Exception e) {
             System.out.println("*******************************************ERROR_L1: " + e.toString());
         }
@@ -553,11 +716,13 @@ public class LcenfMB {
     @PostConstruct
     private void postConstruct() {
         save = true;
+        stylePosition = "color: #1471B1;";
     }
 
     public void loadValues() {
         save = true;
-
+        stylePosition = "color: #1471B1;";
+        loading = true;
         openDialogFirst = "";
         openDialogNext = "";
         openDialogLast = "";
@@ -566,32 +731,60 @@ public class LcenfMB {
         //------------------------------------------------------------
         //SE CARGAN VALORES PARA LA NUEVA VICTIMA
         //------------------------------------------------------------
+
+        //******stranger
+        try {
+            stranger = currentNonFatalInjury.getVictimId().getStranger();
+        } catch (Exception e) {
+            stranger = false;
+        }
+        changeStranger();
         //******type_id
         try {
             currentIdentification = currentNonFatalInjury.getVictimId().getTypeId().getTypeId();
         } catch (Exception e) {
             currentIdentification = 0;
         }
+        changeIdentificationType();
         //******victim_nid
-        currentIdentificationNumber = currentNonFatalInjury.getVictimId().getVictimNid();
-        if (currentIdentificationNumber == null) {
+        try {
+            currentIdentificationNumber = currentNonFatalInjury.getVictimId().getVictimNid();
+            if (currentIdentification == 6 || currentIdentification == 7 || currentIdentification == 0) {
+                identificationNumberDisabled = true;
+                currentIdentificationNumber = "";
+            } else {
+                identificationNumberDisabled = false;
+            }
+        } catch (Exception e) {
+            identificationNumberDisabled = true;
             currentIdentificationNumber = "";
         }
         //******victim_firstname
-        currentName = currentNonFatalInjury.getVictimId().getVictimFirstname();
+        currentName = currentNonFatalInjury.getVictimId().getVictimName();
         if (currentName == null) {
             currentName = "";
         }
-        //******victim_lastname
-        currentSurname = currentNonFatalInjury.getVictimId().getVictimLastname();
-        if (currentSurname == null) {
-            currentSurname = "";
-        }
+//        //******victim_firstname
+//        currentName = currentNonFatalInjury.getVictimId().getVictimFirstname();
+//        if (currentName == null) {
+//            currentName = "";
+//        }
+//        //******victim_lastname
+//        currentSurname = currentNonFatalInjury.getVictimId().getVictimLastname();
+//        if (currentSurname == null) {
+//            currentSurname = "";
+//        }
         //******age_type_id
         try {
             currentMeasureOfAge = currentNonFatalInjury.getVictimId().getAgeTypeId();
+            if (currentMeasureOfAge == 4) {
+                valueAgeDisabled = true;
+            } else {
+                valueAgeDisabled = false;
+            }
         } catch (Exception e) {
             currentMeasureOfAge = 0;
+            valueAgeDisabled = true;
         }
         //******victim_age
         try {
@@ -611,9 +804,57 @@ public class LcenfMB {
         } catch (Exception e) {
             currentJob = 0;
         }
-        //******vulnerable_group_id	
+
         //******ethnic_group_id
+        try {
+            currentEthnicGroup = currentNonFatalInjury.getVictimId().getEthnicGroupId().getEthnicGroupId();
+            if (currentEthnicGroup == 3) {
+                ethnicGroupsDisabled = false;
+            } else {
+                ethnicGroupsDisabled = true;
+            }
+        } catch (Exception e) {
+            currentEthnicGroup = 0;
+            ethnicGroupsDisabled = true;
+        }
         //******victim_telephone
+        try {
+            currentTelephoneHome = currentNonFatalInjury.getVictimId().getVictimTelephone();
+        } catch (Exception e) {
+            currentTelephoneHome = "";
+        }
+
+
+
+        //******victim_date_of_birth
+        //******eps_id
+        //******victim_class
+        //******victim_id
+        //******residence_municipality
+
+        //******residence_municipality
+        try {
+            if (currentNonFatalInjury.getResidenceDepartament() != null) {
+                currentDepartamentHome = currentNonFatalInjury.getResidenceDepartament();
+                changeDepartamentHome();
+                if (currentNonFatalInjury.getVictimId().getResidenceMunicipality() != null) {
+                    currentMunicipalitie = currentNonFatalInjury.getVictimId().getResidenceMunicipality();
+                    if (currentDepartamentHome == 52 && currentMunicipalitie == 1) {
+                        neighborhoodHomeNameDisabled = false;
+                        directionHomeDisabled = false;
+                    }
+
+                } else {
+                    currentMunicipalitie = 0;
+                }
+            } else {
+                currentDepartamentHome = 0;
+                currentMunicipalitie = 0;
+            }
+        } catch (Exception e) {
+            currentDepartamentHome = 0;
+            currentMunicipalitie = 0;
+        }
         //******victim_address
         if (currentNonFatalInjury.getVictimId().getVictimAddress() != null) {
             currentDirectionHome = currentNonFatalInjury.getVictimId().getVictimAddress();
@@ -628,26 +869,153 @@ public class LcenfMB {
             currentNeighborhoodHomeCode = "";
             currentNeighborhoodHome = "";
         }
-        //******victim_date_of_birth
-        //******eps_id
-        //******victim_class
-        //******victim_id
-        //******residence_municipality
+
+        //informacion de grupos vunerables
+
+        if (currentNonFatalInjury.getVictimId().getVulnerableGroupsList() != null) {
+            if (!currentNonFatalInjury.getVictimId().getVulnerableGroupsList().isEmpty()) {
+                isDisplaced = false;
+                isHandicapped = false;
+                for (int i = 0; i < currentNonFatalInjury.getVictimId().getVulnerableGroupsList().size(); i++) {
+                    if (1 == currentNonFatalInjury.getVictimId().getVulnerableGroupsList().get(i).getVulnerableGroupId()) {
+                        isDisplaced = true;
+                    }
+                    if (2 == currentNonFatalInjury.getVictimId().getVulnerableGroupsList().get(i).getVulnerableGroupId()) {
+                        isHandicapped = true;
+                    }
+                }
+            }
+        }
+        
+        //******insurance_id
         try {
-            currentMunicipalitie = currentNonFatalInjury.getVictimId().getResidenceMunicipality();
-            if (currentMunicipalitie == 1) {
-                neighborhoodHomeNameDisabled = false;
-            } else {
-                neighborhoodHomeNameDisabled = true;
+            currentInsurance = currentNonFatalInjury.getVictimId().getInsuranceId().getInsuranceId();
+            if (currentInsurance == null) {
+                currentInsurance = 0;
             }
         } catch (Exception e) {
-            currentMunicipalitie = 1;
+            currentInsurance = 0;
         }
+        
+        //-----CARGAR CAMPOS OTROS----------------
+        List<Others> othersList = currentNonFatalInjury.getVictimId().getOthersList();
+        for (int i = 0; i < othersList.size(); i++) {
+            switch (othersList.get(i).getOthersPK().getFieldId()) {
+                case 1://1.	Cual otro grupo etnico
+                    otherEthnicGroup = othersList.get(i).getValueText();
+                    ethnicGroupsDisabled = false;
+                    break;
+                case 2://2.	Cual otro de lugar del hecho
+                    currentOtherPlace = othersList.get(i).getValueText();
+                    otherPlaceDisabled = false;
+                    break;
+                case 3://3.	Cual otra actividad
+                    currentOtherActivitie = othersList.get(i).getValueText();
+                    otherActivityDisabled = false;
+                    break;
+                case 4://4.	Cual altura
+                    heightWhich = othersList.get(i).getValueText();
+                    heightWhichDisabled = false;
+                    break;
+                case 5://5.	Cual polvora
+                    powderWhich = othersList.get(i).getValueText();
+                    powderWhichDisabled = false;
+                    break;
+                case 6://6.	Cual desastre natural
+                    disasterWhich = othersList.get(i).getValueText();
+                    disasterWhichDisabled = false;
+                    break;
+                case 7://7.	Cual otro mecanismo de objeto
+                    otherMechanism = othersList.get(i).getValueText();
+                    otherMechanismDisabled = false;
+                    break;
+                case 8://8.	Cual otro animal
+                    otherAnimal = othersList.get(i).getValueText();
+                    otherAnimalDisabled = false;
+                    break;
+                case 9://9.	Cual otro factor precipitante(Autoinflingida intencional)
+                    otherFactor = othersList.get(i).getValueText();
+                    otherFactorDisabled = false;
+                    break;
+                case 10://10.	Cual otro tipo de agresor(intrafamiliar)
+                    otherAG = othersList.get(i).getValueText();
+                    otherAGDisabled = false;
+                    break;
+                case 11://11.	Cual otro tipo de maltrato(intrafamiliar)
+                    otherMA = othersList.get(i).getValueText();
+                    otherMADisabled = false;
+                    break;
+                case 12://12.	Cual otra relación (violencia interpersonal)
+                    otherRelation = othersList.get(i).getValueText();
+                    otherRelationDisabled = false;
+                    break;
+                case 13://13.	Cual otro tipo de transporte(transporte)
+                    otherTransportType = othersList.get(i).getValueText();
+                    otherTransportTypeDisabled = false;
+                    break;
+                case 14://14.	Cual otro tipo de transporte de contraparte(transporte)
+                    otherTransportCounterpartsType = othersList.get(i).getValueText();
+                    otherTransportCounterpartsTypeDisabled = false;
+                    break;
+                case 15://15.	Cual otro tipo de transporte de usuario(transporte)
+                    otherTransportUserType = othersList.get(i).getValueText();
+                    otherTransportUserTypeDisabled = false;
+                    break;
+                case 16://16.	Cual otro sitio anatomico
+                    txtOtherPlace = othersList.get(i).getValueText();
+                    otherAnatomicalPlaceDisabled = false;
+                    break;
+                case 17://17.	Cual otra naturaleza de la lesión
+                    txtOtherInjury = othersList.get(i).getValueText();
+                    otherInjuryDisabled = false;
+                    break;
+                case 18://18.	Cual otro destino del paciente
+                    otherDestinationPatient = othersList.get(i).getValueText();
+                    otherDestinationPatientDisabled = false;
+                    break;
+            }
+        }
+
         //------------------------------------------------------------
-        //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
+        //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
         //------------------------------------------------------------
         //******injury_id
+        //******checkup_date
+
+        try {
+            currentDateConsult = currentNonFatalInjury.getCheckupDate().toString();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(currentNonFatalInjury.getCheckupDate());
+            currentDayConsult = String.valueOf(cal.get(Calendar.DATE));
+            currentMonthConsult = String.valueOf(cal.get(Calendar.MONTH) + 1);
+            currentYearConsult = String.valueOf(cal.get(Calendar.YEAR));
+            calculateDate2();
+        } catch (Exception e) {
+            currentDateConsult = "";
+        }
+        //******checkup_time
+
+
+        try {
+            currentHourConsult = String.valueOf(currentNonFatalInjury.getCheckupTime().getHours());
+            currentMinuteConsult = String.valueOf(currentNonFatalInjury.getCheckupTime().getMinutes());
+            if (Integer.parseInt(currentHourConsult) > 12) {
+                currentHourConsult = String.valueOf(Integer.parseInt(currentHourConsult) - 12);
+                currentAmPmConsult = "PM";
+            } else {
+                currentAmPmConsult = "AM";
+            }
+            calculateTime2();
+        } catch (Exception e) {
+            currentHourConsult = "";
+            currentMinuteConsult = "";
+            currentAmPmConsult = "SIN DATO";
+            changeAmPmConsult();
+
+        }
         //******injury_date
+
+
         try {
             currentDateEvent = currentNonFatalInjury.getInjuryDate().toString();
             Calendar cal = Calendar.getInstance();
@@ -660,6 +1028,8 @@ public class LcenfMB {
             currentDateEvent = "";
         }
         //******injury_time
+
+
         try {
             currentHourEvent = String.valueOf(currentNonFatalInjury.getInjuryTime().getHours());
             currentMinuteEvent = String.valueOf(currentNonFatalInjury.getInjuryTime().getMinutes());
@@ -673,52 +1043,297 @@ public class LcenfMB {
         } catch (Exception e) {
             currentHourEvent = "";
             currentMinuteEvent = "";
+            currentAmPmEvent = "SIN DATO";
+            changeAmPmEvent();
         }
         //******injury_address
         currentDirectionEvent = currentNonFatalInjury.getInjuryAddress();
-        if (currentDirectionEvent == null) {
+        if (currentDirectionEvent
+                == null) {
             currentDirectionEvent = "";
         }
         //******injury_neighborhood_id
+
+
         try {
             if (currentNonFatalInjury.getInjuryNeighborhoodId() != null) {
-                currentNeighborhoodEventCode = String.valueOf(currentNonFatalInjury.getInjuryNeighborhoodId());
-                currentNeighborhoodEvent = neighborhoodsFacade.find(currentNonFatalInjury.getInjuryNeighborhoodId()).getNeighborhoodName();
+                currentNeighborhoodEventCode = String.valueOf(currentNonFatalInjury.getInjuryNeighborhoodId().getNeighborhoodId());
+                currentNeighborhoodEvent = neighborhoodsFacade.find(currentNonFatalInjury.getInjuryNeighborhoodId().getNeighborhoodId()).getNeighborhoodName();
             }
         } catch (Exception e) {
             currentNeighborhoodEventCode = "";
             currentNeighborhoodEvent = "";
         }
         //******injury_place_id
+
+
         try {
             currentPlace = currentNonFatalInjury.getInjuryPlaceId().getNonFatalPlaceId();
+            if (currentPlace == 8) {
+                otherPlaceDisabled = false;
+            } else {
+                otherPlaceDisabled = true;
+            }
         } catch (Exception e) {
             currentPlace = 0;
+            otherPlaceDisabled = true;
         }
-        //******victim_number	
-        //******injury_description
-        //******user_id	
-        //******input_timestamp	
+        //******activity_id
+        try {
+            currentActivities = currentNonFatalInjury.getActivityId().getActivityId();
+            if (currentActivities == 98) {
+                otherActivityDisabled = false;
+            } else {
+                otherActivityDisabled = true;
+            }
+        } catch (Exception e) {
+            currentActivities = 0;
+            otherActivityDisabled = true;
+        }
+
+        try {
+            currentActivities = currentNonFatalInjury.getActivityId().getActivityId();
+        } catch (Exception e) {
+            currentActivities = 0;
+        }
+        //******intentionality_id
+        try {
+            currentIntentionality = currentNonFatalInjury.getIntentionalityId().getIntentionalityId();
+            displayAggressionOrSuspicion = "none";
+            displayInterpersonalViolence = "none";
+            displayDomesticViolence = "none";
+            displayIntentional = "none";
+            switch (currentIntentionality) {
+                case 2: //02. Autoinflingida intencional (suicidio)                    
+                    displayIntentional = "block";
+                    break;
+                case 3: //03. Violencia / agresión o sospecha
+                    displayAggressionOrSuspicion = "block";
+                    //aqui ver cual de los dos se escogio(interpersonal o intrafamiliar)
+                    if (currentNonFatalInjury.getNonFatalInterpersonal() != null) {
+                        currentAggressionOrSuspicion = 2;
+                        displayInterpersonalViolence = "block";//nonFatalInterpersonal
+                    } else {
+                        currentAggressionOrSuspicion = 1;
+                        displayDomesticViolence = "block";//nonFatalDomesticViolence
+                    }
+                case 1: //01. No intencional (accidentes)                                    
+                case 0: //0. vacio                                    
+                    break;
+            }
+        } catch (Exception e) {
+            currentIntentionality = 0;
+        }
+        //******use_alcohol_id
+
+
+        try {
+            currentUseAlcohol = currentNonFatalInjury.getUseAlcoholId().getUseAlcoholDrugsId();
+        } catch (Exception e) {
+            currentUseAlcohol = 0;
+        }
+        //******use_drugs_id
+
+
+        try {
+            currentUseDrugs = currentNonFatalInjury.getUseDrugsId().getUseAlcoholDrugsId();
+        } catch (Exception e) {
+            currentUseDrugs = 0;
+        }
+        //******burn_injury_degree
+
+
+        try {
+            currentLevelBurned = currentNonFatalInjury.getBurnInjuryDegree();
+
+        } catch (Exception e) {
+            currentLevelBurned = 0;
+        }
+        //******burn_injury_percentage
+
+
+        try {
+            currentPercentBurned = currentNonFatalInjury.getBurnInjuryPercentage().toString();
+        } catch (Exception e) {
+            currentPercentBurned = "";
+        }
+        //******submitted_patient eps_id
+
+        try {
+            if (currentNonFatalInjury.getSubmittedPatient()) {
+                isSubmitted = true;
+                if (currentNonFatalInjury.getSubmittedDataSourceId() != null) {
+                    currentFromWhere = currentNonFatalInjury.getSubmittedDataSourceId().getNonFatalDataSourceId();
+                } else {
+                    currentFromWhere = 0;
+                }
+                fromWhereDisabled = false;
+            } else {
+                isSubmitted = false;
+                fromWhereDisabled = true;
+            }
+        } catch (Exception e) {
+            isSubmitted = false;
+            fromWhereDisabled = true;
+        }
+        //******destination_patient_id
+
+
+        try {
+            if (currentNonFatalInjury.getDestinationPatientId() != null) {
+                currentDestinationPatient = currentNonFatalInjury.getDestinationPatientId().getDestinationPatientId();
+                otherDestinationPatientDisabled = false;
+            } else {
+                currentDestinationPatient = 0;
+                otherDestinationPatientDisabled = true;
+            }
+        } catch (Exception e) {
+            currentDestinationPatient = 0;
+            otherDestinationPatientDisabled = true;
+        }
+        //******input_timestamp
+        //******health_professional_id
+
+
+        try {
+            currentHealthProfessionals = currentNonFatalInjury.getHealthProfessionalId().getHealthProfessionalName();
+        } catch (Exception e) {
+            currentHealthProfessionals = "";
+        }
+        //******non_fatal_data_source_id
+        //******mechanism_id
+
+
+        try {
+            currentMechanisms = currentNonFatalInjury.getMechanismId().getMechanismId();
+            switch (currentMechanisms) {
+                case 1:// 01. Lesión de transporte
+                    displayTransport = "block";
+                    break;
+                case 5:// 05. Otra caida, altura __ mts
+                    heightWhichDisabled = false;
+                    break;
+                case 10:// 10. Fuego / llama / humo
+                case 11:// 11. Líquido / objeto caliente
+                case 12:// 12. Pólvora, cual?
+                    powderWhichDisabled = false;
+                    forBurned = "block";
+                    break;
+                case 21:// 21. Minas / munición sin explotar
+                case 22:// 22. Otro artefacto explosivo
+                case 25:// 25. Electricidad
+                    forBurned = "block";
+                    break;
+                case 26:// 26. Desastre natural, cual?                
+                    disasterWhichDisabled = false;
+                    break;
+                case 27:// 27. Otro, cual?
+                    otherMechanismDisabled = false;
+                    break;
+                case 2:// 02. Agresión sexual
+                case 3:// 03. Caida propia altura
+                case 4:// 04. Caida por escaleras
+                case 6:// 06. Golpe / fuerza contundente
+                case 7:// 07. Corte / puñalada
+                case 8:// 08. Objeto corto-contundente
+                case 9:// 09. Arma de fuego
+                case 13:// 13. Estrangulado / ahorcado
+                case 14:// 14. Inmersión
+                case 15:// 15. Asfixia por cuerpo extraño
+                case 16:// 16. Lesion por cuerpo extraño
+                case 17:// 17. Fármacos
+                case 18:// 18. Plaguicidas
+                case 19:// 19. Hidrocarburos
+                case 20:// 20. Otros tóxicos
+                case 23:// 23. Mordedura de persona
+                case 24:// 24. Animal, cual?                
+                case 28:// 28. No se sabe
+                    break;
+            }
+
+        } catch (Exception e) {
+            currentMechanisms = 0;
+        }
+        changeMechanisms();
+        //******user_id
+        currentResponsible = "ADMIN";
         //******injury_day_of_week
-        currentWeekdayEvent = currentNonFatalInjury.getInjuryDayOfWeek();
-        if (currentWeekdayEvent == null) {
+
+
+        try {
+            currentWeekdayEvent = currentNonFatalInjury.getInjuryDayOfWeek();
+        } catch (Exception e) {
             currentWeekdayEvent = "";
         }
-        //******victim_id
-        //******fatal_injury_id
-        currentHealthInstitution=currentNonFatalInjury.getNonFatalDataSourceId();
-        if (currentHealthInstitution == null) {
-            currentHealthInstitution=0;
+
+
+        try {
+            currentHealthInstitution = currentNonFatalInjury.getNonFatalDataSourceId().getNonFatalDataSourceId();
+        } catch (Exception e) {
+            currentHealthInstitution = 0;
         }
-        //******alcohol_level_victim_id, alcohol_level_victim
-        //******code
-        //******area_id
+
+        //determino el tipo de lesion
+
+//        short injury_type = currentNonFatalInjury.getInjuryId().getInjuryId();
+//
+//        switch (injury_type) {
+//
+//            case 50://interpersonal
+        //                break;
+//            case 51://accidente de transito
+//                break;
+//            case 52://intencional autoinflingida
+//                break;
+//            case 54://no intencional
+//                break;
+//            case 55://intrafamiliar
+//                break;
+//        }
+
+        //------------------------------------------------------------
+        //SE CARGA VARIABLE PARA VIOLENCIA INTERPERSONAL
+        //-----------------------------------------------------------
+
+        try {
+            aggressionPast = currentNonFatalInjury.getNonFatalInterpersonal().getPreviousAntecedent().getBooleanId();
+        } catch (Exception e) {
+            aggressionPast = 0;
+        }
+
+
+        try {
+            currentRelationshipToVictim = currentNonFatalInjury.getNonFatalInterpersonal().getRelationshipVictimId().getRelationshipVictimId();
+            if (currentRelationshipToVictim == 3) {//3. otro
+                otherRelationDisabled = false;
+            } else {
+                otherRelationDisabled = true;
+            }
+        } catch (Exception e) {
+            currentRelationshipToVictim = 0;
+            otherRelationDisabled = true;
+        }
+
+
+        try {
+            currentContext = currentNonFatalInjury.getNonFatalInterpersonal().getContextId().getContextId();
+        } catch (Exception e) {
+            currentContext = 0;
+        }
+
+
+        try {
+            currentAggressorGenders = currentNonFatalInjury.getNonFatalInterpersonal().getAggressorGenderId().getGenderId();
+        } catch (Exception e) {
+            currentAggressorGenders = 0;
+        }
+
+
+
         //------------------------------------------------------------
         //SE CARGA DATOS PARA VIOLENCIA INTRAFAMILIAR
         //------------------------------------------------------------
-
         //cargo la lista de agresores-----------------------------------
-        List<AggressorTypes> aggressorTypesList = currentNonFatalInjury.getNonFatalDomesticViolence().getAggressorTypesList();
         isAG1 = false;
         isAG2 = false;
         isAG3 = false;
@@ -729,46 +1344,47 @@ public class LcenfMB {
         isAG8 = false;
         isAG10 = false;
         isUnknownAG = false;
-        for (int i = 0; i < aggressorTypesList.size(); i++) {
-            int caso = (int) aggressorTypesList.get(i).getAggressorTypeId();
-            switch (caso) {
-                case 1:
-                    isAG1 = true;
-                    break;
-                case 2:
-                    isAG2 = true;
-                    break;
-                case 3:
-                    isAG3 = true;
-                    break;
-                case 4:
-                    isAG4 = true;
-                    break;
-                case 5:
-                    isAG5 = true;
-                    break;
-                case 6:
-                    isAG6 = true;
-                    break;
-                case 7:
-                    isAG7 = true;
-                    break;
-                case 8:
-                    isAG8 = true;
-                    break;
-                case 9:
-                    isUnknownAG = true;
-                    break;
-                case 10:
-                    isAG10 = true;
-                    break;
+        try {
+            List<AggressorTypes> aggressorTypesList = currentNonFatalInjury.getNonFatalDomesticViolence().getAggressorTypesList();
+            for (int i = 0; i < aggressorTypesList.size(); i++) {
+                int caso = (int) aggressorTypesList.get(i).getAggressorTypeId();
+                switch (caso) {
+                    case 1:
+                        isAG1 = true;
+                        break;
+                    case 2:
+                        isAG2 = true;
+                        break;
+                    case 3:
+                        isAG3 = true;
+                        break;
+                    case 4:
+                        isAG4 = true;
+                        break;
+                    case 5:
+                        isAG5 = true;
+                        break;
+                    case 6:
+                        isAG6 = true;
+                        break;
+                    case 7:
+                        isAG7 = true;
+                        break;
+                    case 8:
+                        isAG8 = true;
+                        break;
+                    case 9:
+                        isUnknownAG = true;
+                        break;
+                    case 10:
+                        isAG10 = true;
+                        break;
+                }
             }
+        } catch (Exception e) {
+            //System.out.println("no se cargo violencia intrafamiliar"+e.toString());
         }
-
         //cargo la lista de abusos(tipos de maltrato)-----------------------------------
-
-        List<AbuseTypes> abuseTypesList = currentNonFatalInjury.getNonFatalDomesticViolence().getAbuseTypesList();
-
         isMA1 = false;
         isMA2 = false;
         isMA3 = false;
@@ -777,40 +1393,45 @@ public class LcenfMB {
         isMA6 = false;
         isMA8 = false;
         isUnknownMA = false;
-        for (int i = 0; i < abuseTypesList.size(); i++) {
-            int caso = (int) abuseTypesList.get(i).getAbuseTypeId();
-            switch (caso) {
-                case 1:
-                    isMA1 = true;
-                    break;
-                case 2:
-                    isMA2 = true;
-                    break;
-                case 3:
-                    isMA3 = true;
-                    break;
-                case 4:
-                    isMA4 = true;
-                    break;
-                case 5:
-                    isMA5 = true;
-                    break;
-                case 6:
-                    isMA6 = true;
-                    break;
-                case 7:
-                    isUnknownMA = true;
-                    break;
-                case 8:
-                    isMA8 = true;
-                    break;
+        try {
+            List<AbuseTypes> abuseTypesList = currentNonFatalInjury.getNonFatalDomesticViolence().getAbuseTypesList();
+            for (int i = 0;
+                    i < abuseTypesList.size();
+                    i++) {
+                int caso = (int) abuseTypesList.get(i).getAbuseTypeId();
+                switch (caso) {
+                    case 1:
+                        isMA1 = true;
+                        break;
+                    case 2:
+                        isMA2 = true;
+                        break;
+                    case 3:
+                        isMA3 = true;
+                        break;
+                    case 4:
+                        isMA4 = true;
+                        break;
+                    case 5:
+                        isMA5 = true;
+                        break;
+                    case 6:
+                        isMA6 = true;
+                        break;
+                    case 7:
+                        isUnknownMA = true;
+                        break;
+                    case 8:
+                        isMA8 = true;
+                        break;
+                }
             }
+        } catch (Exception e) {
+            //System.out.println("no se cargo tipos de maltrato"+e.toString());
         }
 
-        //cargo sitio anatomico
         //cargo la lista de abusos(tipos de maltrato)-----------------------------------
 
-        List<AnatomicalLocations> anatomicalLocationsList = currentNonFatalInjury.getAnatomicalLocationsList();
         isAnatomicalSite1 = false;
         isAnatomicalSite2 = false;
         isAnatomicalSite3 = false;
@@ -823,50 +1444,56 @@ public class LcenfMB {
         isAnatomicalSite10 = false;
         isAnatomicalSite11 = false;
         checkOtherPlace = false;
-        for (int i = 0; i < anatomicalLocationsList.size(); i++) {
-            int caso = (int) anatomicalLocationsList.get(i).getAnatomicalLocationId();
-            switch (caso) {
-                case 1:
-                    isAnatomicalSite1 = true;
-                    break;
-                case 2:
-                    isAnatomicalSite2 = true;
-                    break;
-                case 3:
-                    isAnatomicalSite3 = true;
-                    break;
-                case 4:
-                    isAnatomicalSite4 = true;
-                    break;
-                case 5:
-                    isAnatomicalSite5 = true;
-                    break;
-                case 6:
-                    isAnatomicalSite6 = true;
-                    break;
-                case 7:
-                    isAnatomicalSite7 = true;
-                    break;
-                case 8:
-                    isAnatomicalSite8 = true;
-                    break;
-                case 9:
-                    isAnatomicalSite9 = true;
-                    break;
-                case 10:
-                    isAnatomicalSite10 = true;
-                    break;
-                case 11:
-                    isAnatomicalSite11 = true;
-                    break;
-                case 12:
-                    checkOtherPlace = true;
-                    break;
+        try {
+            List<AnatomicalLocations> anatomicalLocationsList = currentNonFatalInjury.getAnatomicalLocationsList();
+            for (int i = 0; i < anatomicalLocationsList.size(); i++) {
+                int caso = (int) anatomicalLocationsList.get(i).getAnatomicalLocationId();
+                switch (caso) {
+                    case 1:
+                        isAnatomicalSite1 = true;
+                        break;
+                    case 2:
+                        isAnatomicalSite2 = true;
+                        break;
+                    case 3:
+                        isAnatomicalSite3 = true;
+                        break;
+                    case 4:
+                        isAnatomicalSite4 = true;
+                        break;
+                    case 5:
+                        isAnatomicalSite5 = true;
+                        break;
+                    case 6:
+                        isAnatomicalSite6 = true;
+                        break;
+                    case 7:
+                        isAnatomicalSite7 = true;
+                        break;
+                    case 8:
+                        isAnatomicalSite8 = true;
+                        break;
+                    case 9:
+                        isAnatomicalSite9 = true;
+                        break;
+                    case 10:
+                        isAnatomicalSite10 = true;
+                        break;
+                    case 11:
+                        isAnatomicalSite11 = true;
+                        break;
+                    case 98:
+                        checkOtherPlace = true;
+                        otherAnatomicalPlaceDisabled = false;
+                        break;
+                }
             }
+        } catch (Exception e) {
+            //System.out.println("no se cargo sitios anatomicos"+e.toString());
         }
 
         //cargo la naturaleza de la lesion
-        List<KindsOfInjury> kindsOfInjuryList = currentNonFatalInjury.getKindsOfInjuryList();
+
         isNatureOfInjurye1 = false;
         isNatureOfInjurye2 = false;
         isNatureOfInjurye3 = false;
@@ -878,476 +1505,908 @@ public class LcenfMB {
         isNatureOfInjurye9 = false;
         checkOtherInjury = false;
         isUnknownNatureOfInjurye = false;
-        for (int i = 0; i < kindsOfInjuryList.size(); i++) {
-            int caso = (int) kindsOfInjuryList.get(i).getKindInjuryId();
-            switch (caso) {
-                case 1:
-                    isNatureOfInjurye1 = true;
-                    break;
-                case 2:
-                    isNatureOfInjurye2 = true;
-                    break;
-                case 3:
-                    isNatureOfInjurye3 = true;
-                    break;
-                case 4:
-                    isNatureOfInjurye4 = true;
-                    break;
-                case 5:
-                    isNatureOfInjurye5 = true;
-                    break;
-                case 6:
-                    isNatureOfInjurye6 = true;
-                    break;
-                case 7:
-                    isNatureOfInjurye7 = true;
-                    break;
-                case 8:
-                    isNatureOfInjurye8 = true;
-                    break;
-                case 9:
-                    isNatureOfInjurye9 = true;
-                    break;
-                case 10:
-                    checkOtherInjury = true;
-                    break;
-                case 11:
-                    isUnknownNatureOfInjurye = true;
-                    break;
+        try {
+            List<KindsOfInjury> kindsOfInjuryList = currentNonFatalInjury.getKindsOfInjuryList();
+            for (int i = 0; i < kindsOfInjuryList.size(); i++) {
+                int caso = (int) kindsOfInjuryList.get(i).getKindInjuryId();
+                switch (caso) {
+                    case 1:
+                        isNatureOfInjurye1 = true;
+                        break;
+                    case 2:
+                        isNatureOfInjurye2 = true;
+                        break;
+                    case 3:
+                        isNatureOfInjurye3 = true;
+                        break;
+                    case 4:
+                        isNatureOfInjurye4 = true;
+                        break;
+                    case 5:
+                        isNatureOfInjurye5 = true;
+                        break;
+                    case 6:
+                        isNatureOfInjurye6 = true;
+                        break;
+                    case 7:
+                        isNatureOfInjurye7 = true;
+                        break;
+                    case 8:
+                        isNatureOfInjurye8 = true;
+                        break;
+                    case 9:
+                        isNatureOfInjurye9 = true;
+                        break;
+                    case 98:
+                        checkOtherInjury = true;
+                        break;
+                    case 99:
+                        isUnknownNatureOfInjurye = true;
+                        break;
+                }
             }
+        } catch (Exception e) {
+            //System.out.println("no se cargo naturaleza de la lesion"+e.toString());
         }
         //cargo los diagnosticos
-        List<Diagnoses> diagnosesList = currentNonFatalInjury.getDiagnosesList();
-        for (int i = 0; i < diagnosesList.size(); i++) {
-            switch (i) {
-                case 0:
-                    idCIE10_1 = diagnosesList.get(i).getDiagnosisId();
-                    txtCIE10_1 = diagnosesList.get(i).getDiagnosisName();
-                    break;
-                case 1:
-                    idCIE10_2 = diagnosesList.get(i).getDiagnosisId();
-                    txtCIE10_2 = diagnosesList.get(i).getDiagnosisName();
-                    break;
-                case 2:
-                    idCIE10_3 = diagnosesList.get(i).getDiagnosisId();
-                    txtCIE10_4 = diagnosesList.get(i).getDiagnosisName();
-                    break;
+        try {
+            List<Diagnoses> diagnosesList = currentNonFatalInjury.getDiagnosesList();
+            for (int i = 0; i < diagnosesList.size(); i++) {
+                switch (i) {
+                    case 0:
+                        idCIE10_1 = diagnosesList.get(i).getDiagnosisId();
+                        txtCIE10_1 = diagnosesList.get(i).getDiagnosisName();
+                        break;
+                    case 1:
+                        idCIE10_2 = diagnosesList.get(i).getDiagnosisId();
+                        txtCIE10_2 = diagnosesList.get(i).getDiagnosisName();
+                        break;
+                    case 2:
+                        idCIE10_3 = diagnosesList.get(i).getDiagnosisId();
+                        txtCIE10_3 = diagnosesList.get(i).getDiagnosisName();
+                        break;
+                    case 3:
+                        idCIE10_4 = diagnosesList.get(i).getDiagnosisId();
+                        txtCIE10_4 = diagnosesList.get(i).getDiagnosisName();
+                        break;
+                }
             }
-        }
-        //------------------------------------------------------------
-        //SE CREA VARIABLE PARA VIOLENCIA INTERPERSONAL
-        //------------------------------------------------------------
-        if (currentNonFatalInjury.getNonFatalInterpersonal().getPreviousAntecedent() != null) {
-            aggressionPast = currentNonFatalInjury.getNonFatalInterpersonal().getPreviousAntecedent();
-        }
-        if (currentNonFatalInjury.getNonFatalInterpersonal().getRelationshipVictimId() != null) {
-            currentRelationshipToVictim = currentNonFatalInjury.getNonFatalInterpersonal().getRelationshipVictimId().getRelationshipVictimId();
-        }
-        if (currentNonFatalInjury.getNonFatalInterpersonal().getContextId() != null) {
-            currentContext = currentNonFatalInjury.getNonFatalInterpersonal().getContextId().getContextId();
-        }
-        if (currentNonFatalInjury.getNonFatalInterpersonal().getAggressorGenderId() != null) {
-            currentAggressorGenders = currentNonFatalInjury.getNonFatalInterpersonal().getAggressorGenderId().getGenderId();
+        } catch (Exception e) {
+            //System.out.println("no se cargo codigo CIE"+e.toString());
         }
 
         //------------------------------------------------------------
         //AUTOINFLINGIDA INTENCIONAL
         //------------------------------------------------------------
-        if (currentNonFatalInjury.getNonFatalSelfInflicted().getPreviousAttempt() != null) {
+
+        try {
             previousAttempt = currentNonFatalInjury.getNonFatalSelfInflicted().getPreviousAttempt().getBooleanId();
+        } catch (Exception e) {
+            previousAttempt = 0;
         }
-        if (currentNonFatalInjury.getNonFatalSelfInflicted().getMentalAntecedent() != null) {
+
+
+        try {
             mentalPastDisorder = currentNonFatalInjury.getNonFatalSelfInflicted().getMentalAntecedent().getBooleanId();
+        } catch (Exception e) {
+            mentalPastDisorder = 0;
         }
-        if (currentNonFatalInjury.getNonFatalSelfInflicted().getPrecipitatingFactorId() != null) {
+
+
+        try {
             currentPrecipitatingFactor = currentNonFatalInjury.getNonFatalSelfInflicted().getPrecipitatingFactorId().getPrecipitatingFactorId();
+        } catch (Exception e) {
+            currentPrecipitatingFactor = 0;
+        }
+
+        //------------------------------------------------------------
+        //SE CARGA DATOS PARA TRANSITO
+        //------------------------------------------------------------
+
+        try {
+            currentTransportTypes = currentNonFatalInjury.getNonFatalTransport().getTransportTypeId().getTransportTypeId();
+            if (currentTransportTypes == 10) {//otro
+                otherTransportTypeDisabled = false;
+            } else {
+                otherTransportTypeDisabled = true;
+            }
+        } catch (Exception e) {
+            currentTransportTypes = 0;
+            otherTransportTypeDisabled = true;
+        }
+
+        try {
+            currentTransportCounterpart = currentNonFatalInjury.getNonFatalTransport().getTransportCounterpartId().getTransportCounterpartId();
+            if (currentTransportCounterpart == 12) {//otro
+                otherTransportCounterpartsTypeDisabled = false;
+            } else {
+                otherTransportCounterpartsTypeDisabled = true;
+            }
+        } catch (Exception e) {
+            currentTransportCounterpart = 0;
+            otherTransportCounterpartsTypeDisabled = true;
+        }
+
+        try {
+            currentTransportUser = currentNonFatalInjury.getNonFatalTransport().getTransportUserId().getTransportUserId();
+            changeTransportType();
+        } catch (Exception e) {
+            otherTransportUserTypeDisabled = true;
+            currentTransportUser = 0;
+        }
+
+        try {
+            List<SecurityElements> securityElementsList = currentNonFatalInjury.getNonFatalTransport().getSecurityElementsList();
+            for (int i = 0; i < securityElementsList.size(); i++) {
+                switch (securityElementsList.get(i).getSecurityElementId()) {
+                    case 1:
+                        currentSecurityElements = "SI";
+                        displaySecurityElements = "block";
+                        isBeltUse = true;
+                        break;
+                    case 2:
+                        displaySecurityElements = "block";
+                        currentSecurityElements = "SI";
+                        isHelmetUse = true;
+                        break;
+                    case 3:
+                        displaySecurityElements = "block";
+                        currentSecurityElements = "SI";
+                        isBicycleHelmetUse = true;
+                        break;
+                    case 4:
+                        displaySecurityElements = "block";
+                        currentSecurityElements = "SI";
+                        isVestUse = true;
+                        break;
+                    case 5:
+                        displaySecurityElements = "block";
+                        currentSecurityElements = "SI";
+                        isOtherElementUse = true;
+                        break;
+                    case 6:
+                        currentSecurityElements = "NO";
+                        displaySecurityElements = "none";
+                        break;
+                    case 7:
+                        currentSecurityElements = "NO SE SABE";
+                        displaySecurityElements = "none";
+                        break;
+
+                }
+            }
+
+        } catch (Exception e) {
+            //System.out.println("no se cargo elementos de seguridad"+e.toString());
+        }
+        save = true;
+        stylePosition = "color: #1471B1;";
+        loading = false;
+    }
+
+    private boolean validateFields() {
+        validationsErrors = new ArrayList<String>();
+
+
+
+
+        //---------VALIDAR QUE LA FECHA DEL SISTEMA SEA MAYOR A LA FECHA DEL HECHO 
+        if (currentDateEvent.trim().length() != 0) {
+            try {
+                Calendar currentDate = Calendar.getInstance();
+                Calendar eventDate = Calendar.getInstance();
+                Date dateEvent = formato.parse(currentDateEvent);
+                eventDate.setTime(dateEvent);
+                if (currentDate.compareTo(eventDate) < 0) {
+                    validationsErrors.add("La fecha del evento: (" + currentDateEvent + ") es mayor que la fecha del sistema");
+                }
+            } catch (ParseException ex) {
+                Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        //---------VALIDAR QUE LA FECHA DEL SISTEMA SEA MAYOR A LA FECHA DE CONSULTA
+        if (currentDateConsult.trim().length() != 0) {
+            try {
+                Calendar currentDate = Calendar.getInstance();
+                Calendar consultDate = Calendar.getInstance();
+                Date dateConsult = formato.parse(currentDateConsult);
+                consultDate.setTime(dateConsult);
+                if (currentDate.compareTo(consultDate) < 0) {
+                    validationsErrors.add("La fecha de consulta: (" + currentDateConsult + ") es mayor que la fecha del sistema");
+                }
+            } catch (ParseException ex) {
+                Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        //---------VALIDAR QUE EXISTA FECHA DE HECHO
+        if (currentDateEvent.trim().length() == 0) {
+            validationsErrors.add("Es obligatorio ingresar la fecha del evento");
+        }
+        //---------VALIDAR QUE LA FECHA DEL CONSULTA SEA MAYOR A LA FECHA DEL HECHO 
+        if (currentDateConsult.trim().length() != 0 && currentDateEvent.trim().length() != 0) {
+
+            try {
+                Calendar eventDate = Calendar.getInstance();
+                Calendar consultDate = Calendar.getInstance();
+                Date dateConsult = formato.parse(currentDateConsult);
+                Date dateEvent = formato.parse(currentDateEvent);
+
+                consultDate.setTime(dateConsult);
+                eventDate.setTime(dateEvent);
+                if (consultDate.compareTo(eventDate) < 0) {
+                    validationsErrors.add("La fecha del evento: (" + currentDateEvent + ") no puede ser mayor que la fecha de la consulta (" + currentDateConsult + ")");
+                }
+            } catch (ParseException ex) {
+                Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        //---------(PARA SECCION TRANSITO) VALIDAR QUE SI ELEMENTOS DE SEGURIDAD ESTA EN SI SELECCIONE ALMENOS UNA OPCION
+        if (currentSecurityElements.compareTo("SI") == 0) {
+            if (!isBeltUse && !isHelmetUse && !isBicycleHelmetUse && !isVestUse && !isOtherElementUse) {
+                validationsErrors.add("Como la opción: elementos de seguridad está en \"SI\", se debe seleccionar al menos un elemento de seguridad de la lista");
+            }
+
+        }
+        //---------VALIDAR QUE LA FECHA DEL SISTEMA SEA MAYOR A LA FECHA DE CONSULTA
+        if (currentIntentionality == 0) {
+            validationsErrors.add("Es obligatorio seleccionar una intencionalidad");
+        }
+        //---------MOSTRAR LOS ERRORES SI EXISTEN
+
+        if (validationsErrors.isEmpty()) {
+            return true;
+        } else {
+            for (int i = 0; i < validationsErrors.size(); i++) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de validación", validationsErrors.get(i));
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
+            return false;
         }
     }
 
     private boolean saveRegistry() {
-        validationsErrors = new ArrayList<String>();
-        try {
-            //------------------------------------------------------------
-            //SE CREA VARIABLE PARA LA NUEVA VICTIMA
-            //------------------------------------------------------------
-            Victims newVictim = new Victims();
-            newVictim.setVictimId(victimsFacade.findMax() + 1);
-            if (currentIdentification != 0) {
-                newVictim.setTypeId(idTypesFacade.find(currentIdentification));
-            }
-            if (currentIdentificationNumber.trim().length() != 0) {
-                newVictim.setVictimNid(currentIdentificationNumber);
-            }
-            if (currentName.trim().length() != 0) {
-                newVictim.setVictimFirstname(currentName);
-            }
-            if (currentSurname.trim().length() != 0) {
-                newVictim.setVictimLastname(currentSurname);
-            }
-            if (currentMeasureOfAge != 0) {
-                newVictim.setAgeTypeId(currentMeasureOfAge);
-            }
-            if (currentAge.trim().length() != 0) {
-                try {
-                    newVictim.setVictimAge(Short.parseShort(currentAge));
-                } catch (Exception e) {
-                    validationsErrors.add("Corregir valor de: Edad Cantidad");
+        //realizo validaciones
+        if (validateFields()) {
+            try {
+                //------------------------------------------------------------
+                //SE CREA VARIABLE PARA LA NUEVA VICTIMA
+                //------------------------------------------------------------
+                Victims newVictim = new Victims();
+                if (currentNonFatalInjuriId == -1) {//SI ES NUEVO
+                    newVictim.setVictimId(victimsFacade.findMax() + 1);
+                } else {//SI SE ESTA MODIFICANDO
+                    newVictim.setVictimId(currentNonFatalInjury.getVictimId().getVictimId());
                 }
-            }
-            if (currentGender != 0) {
-                newVictim.setGenderId(gendersFacade.find(currentGender));
-            }
-            if (currentJob != 0) {
-                newVictim.setJobId(jobsFacade.find(currentJob));
-            }
-            //if (currentVulnerableGroup != 0) {
-            //	newVictim.setVulnerableGroupId(vulnerableGroupsFacade.find(currentVulnerableGroup));
-            //}
+                //******stranger                
+                newVictim.setStranger(stranger);
 
-            //falta la definicion si es otro grupo vulnerable
-            if (otherEthnicGroup.trim().length() != 0) {
-            }
-            if (currentEthnicGroup != 0) {
-                newVictim.setEthnicGroupId(ethnicGroupsFacade.find(currentEthnicGroup));
-            }
-            //falta la definicion si es otro grupo etnico
-            //if (otherVulnerableGroup.trim().length() != 0) {
-            //}
+                if (currentIdentification != 0) {
+                    newVictim.setTypeId(idTypesFacade.find(currentIdentification));
+                }
+                if (currentIdentificationNumber.trim().length() != 0) {
+                    newVictim.setVictimNid(currentIdentificationNumber);
+                }
+                if (currentName.trim().length() != 0) {
+                    newVictim.setVictimName(currentName);
+                }
 
-            if (currentTelephoneHome.trim().length() != 0) {
-                newVictim.setVictimTelephone(currentTelephoneHome);
-            }
-            if (currentDirectionHome.trim().length() != 0) {
-                newVictim.setVictimAddress(currentDirectionHome);
-            }
-            if (currentNeighborhoodHomeCode.trim().length() != 0) {
-                newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(currentNeighborhoodHomeCode)));
-            }
-            newVictim.setVictimDateOfBirth(new Date());
-            //newVictim.setEpsId(null);
-            if (currentNeighborhoodHomeCode.trim().length() != 0) {
-            }
-            //newVictim.setVictimClass(null);            
-            newVictim.setResidenceMunicipality(currentMunicipalitie);
-
-            //------------------------------------------------------------
-            //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA NO FATAL
-            //------------------------------------------------------------
-            NonFatalInjuries newNonFatalInjuries = new NonFatalInjuries();
+//                if (currentName.trim().length() != 0) {
+//                    newVictim.setVictimFirstname(currentName);
+//                }
+//                if (currentSurname.trim().length() != 0) {
+//                    newVictim.setVictimLastname(currentSurname);
+//                }
+                if (currentMeasureOfAge != 0) {
+                    newVictim.setAgeTypeId(currentMeasureOfAge);
+                }
+                if (currentAge.trim().length() != 0) {
+                    newVictim.setVictimAge(Short.parseShort(currentAge));
+                }
+                if (currentGender != 0) {
+                    newVictim.setGenderId(gendersFacade.find(currentGender));
+                }
+                if (currentJob != 0) {
+                    newVictim.setJobId(jobsFacade.find(currentJob));
+                }
+                //if (currentVulnerableGroup != 0) {
+                //	newVictim.setVulnerableGroupId(vulnerableGroupsFacade.find(currentVulnerableGroup));
+                //}
 
 
-            newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 54));//es 54 por ser no fatal
+                if (currentEthnicGroup != 0) {
+                    newVictim.setEthnicGroupId(ethnicGroupsFacade.find(currentEthnicGroup));
+                }
 
-            newNonFatalInjuries.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                if (currentTelephoneHome.trim().length() != 0) {
+                    newVictim.setVictimTelephone(currentTelephoneHome);
+                }
+                if (currentDirectionHome.trim().length() != 0) {
+                    newVictim.setVictimAddress(currentDirectionHome);
+                }
+                if (currentNeighborhoodHomeCode.trim().length() != 0) {
+                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(currentNeighborhoodHomeCode)));
+                }
+                newVictim.setVictimDateOfBirth(new Date());
+                //newVictim.setEpsId(null);
+                if (currentNeighborhoodHomeCode.trim().length() != 0) {
+                }
+                //newVictim.setVictimClass(null);            
+                if (currentMunicipalitie != 0) {
+                    newVictim.setResidenceMunicipality(currentMunicipalitie);
+                }
 
-            if (currentDateConsult.trim().length() != 0) {
-                newNonFatalInjuries.setCheckupDate(formato.parse(currentDateEvent));
-            }
-            if (currentMilitaryHourConsult.trim().length() != 0) {
-                try {
+                //informacion de grupos vunerables
+                List<VulnerableGroups> vulnerableGroupsList = new ArrayList<VulnerableGroups>();
+                if (isHandicapped) {
+                    VulnerableGroups vg = vulnerableGroupsFacade.find(Short.parseShort("2"));//discapacitado
+                    vulnerableGroupsList.add(vg);
+                }
+                if (isDisplaced) {
+                    VulnerableGroups vg = vulnerableGroupsFacade.find(Short.parseShort("1"));//desplazado            
+                    vulnerableGroupsList.add(vg);
+                }
+                if (!vulnerableGroupsList.isEmpty()) {
+                    newVictim.setVulnerableGroupsList(vulnerableGroupsList);
+                } else {
+                    newVictim.setVulnerableGroupsList(null);
+                }
+                if (currentInsurance != 0) {
+                    newVictim.setInsuranceId(insuranceFacade.find(currentInsurance));
+                }
+
+
+                //------------------------------------------------------------
+                //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA NO FATAL
+                //------------------------------------------------------------
+                NonFatalInjuries newNonFatalInjuries = new NonFatalInjuries();
+
+
+                //newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 54));//es 54 por ser no fatal
+
+                if (currentDepartamentHome != 0) {
+                    newNonFatalInjuries.setResidenceDepartament(currentDepartamentHome);
+                }
+
+
+                if (currentNonFatalInjuriId == -1) {//SI ES NUEVO
+                    newNonFatalInjuries.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                } else {//SI SE ESTA MODIFICANDO
+                    newNonFatalInjuries.setNonFatalInjuryId(currentNonFatalInjury.getNonFatalInjuryId());
+                }
+
+                if (currentDateConsult.trim().length() != 0) {
+                    newNonFatalInjuries.setCheckupDate(formato.parse(currentDateConsult));
+                }
+                if (currentMilitaryHourConsult.trim().length() != 0) {
                     if (currentAmPmConsult.compareTo("PM") == 0) {
-                        currentHourConsult = String.valueOf(Integer.parseInt(currentHourConsult) + 12);
+                        if (currentHourConsult.compareTo("12") != 0) {
+                            currentHourConsult = String.valueOf(Integer.parseInt(currentHourConsult) + 12);
+                        }
                     }
                     int hourInt = Integer.parseInt(currentHourConsult);
                     int minuteInt = Integer.parseInt(currentMinuteConsult);
-                    if (hourInt > 12 && hourInt < 0) {
-                        validationsErrors.add("Corregir la hora de consulta");
-                    } else {
-                        if (minuteInt > 59 && minuteInt < 0) {
-                            validationsErrors.add("Corregir la hora de consulta");
-                        } else {
-                            newNonFatalInjuries.setCheckupTime(new Time(hourInt, minuteInt, 0));
-                        }
-                    }
-                } catch (Exception e) {
-                    validationsErrors.add("Corregir la hora del consulta");
+                    Date n = new Date();
+                    n.setHours(hourInt);
+                    n.setMinutes(minuteInt);
+                    n.setSeconds(0);
+                    newNonFatalInjuries.setCheckupTime(n);
                 }
-            }
-            if (currentDateEvent.trim().length() != 0) {
-                newNonFatalInjuries.setInjuryDate(formato.parse(currentDateEvent));
-            }
-            if (currentMilitaryHourEvent.trim().length() != 0) {
-                try {
+                if (currentDateEvent.trim().length() != 0) {
+                    newNonFatalInjuries.setInjuryDate(formato.parse(currentDateEvent));
+                }
+                if (currentMilitaryHourEvent.trim().length() != 0) {
                     if (currentAmPmEvent.compareTo("PM") == 0) {
-                        currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) + 12);
+                        if (currentHourEvent.compareTo("12") != 0) {
+                            currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) + 12);
+                        }
                     }
                     int hourInt = Integer.parseInt(currentHourEvent);
                     int minuteInt = Integer.parseInt(currentMinuteEvent);
-                    if (hourInt > 12 && hourInt < 0) {
-                        validationsErrors.add("Corregir la hora de consulta");
+                    Date n = new Date();
+                    n.setHours(hourInt);
+                    n.setMinutes(minuteInt);
+                    n.setSeconds(0);
+                    newNonFatalInjuries.setInjuryTime(n);
+                }
+                if (currentDirectionEvent.trim().length() != 0) {
+                    newNonFatalInjuries.setInjuryAddress(currentDirectionEvent);
+                }
+                if (currentNeighborhoodEventCode.trim().length() != 0) {
+                    newNonFatalInjuries.setInjuryNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(currentNeighborhoodEventCode)));
+                }
+                if (currentPlace != 0) {
+                    newNonFatalInjuries.setInjuryPlaceId(nonFatalPlacesFacade.find(currentPlace));
+                }
+                if (currentActivities != 0) {
+                    newNonFatalInjuries.setActivityId(activitiesFacade.find(currentActivities));
+                }
+                if (currentIntentionality != 0) {
+                    newNonFatalInjuries.setIntentionalityId(intentionalitiesFacade.find((short) currentIntentionality));
+                }
+
+                if (currentUseAlcohol != 0) {
+                    newNonFatalInjuries.setUseAlcoholId(useAlcoholDrugsFacade.find(currentUseAlcohol));
+                }
+                if (currentUseDrugs != 0) {
+                    newNonFatalInjuries.setUseDrugsId(useAlcoholDrugsFacade.find(currentUseDrugs));
+                }
+                if (currentLevelBurned != 0) {
+                    newNonFatalInjuries.setBurnInjuryDegree(currentLevelBurned);
+                }
+                if (currentPercentBurned.trim().length() != 0) {
+                    newNonFatalInjuries.setBurnInjuryDegree(Short.parseShort(currentPercentBurned));
+                }
+                if (isSubmitted) {
+                    newNonFatalInjuries.setSubmittedPatient(isSubmitted);
+                    //newNonFatalInjuries.setSubmittedDataSourceId(nonFatalDataSourcesFacade.find(currentFromWhere));
+                }
+                if (currentFromWhere != 0) {
+                    newNonFatalInjuries.setSubmittedDataSourceId(nonFatalDataSourcesFacade.find(currentFromWhere));
+                }
+
+                if (currentDestinationPatient != 0) {
+                    newNonFatalInjuries.setDestinationPatientId(destinationsOfPatientFacade.find(currentDestinationPatient));
+                }
+
+
+                newNonFatalInjuries.setInputTimestamp(new Date());
+                if (currentPercentBurned.trim().length() != 0) {
+                    newNonFatalInjuries.setBurnInjuryDegree(Short.parseShort(currentPercentBurned));
+                }
+
+                //newNonFatalInjuries.setHealthProfessionalId(null);
+
+                if (currentHealthInstitution != 0) {
+                    newNonFatalInjuries.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find(currentHealthInstitution));
+                }
+                if (currentMechanisms != 0) {
+                    newNonFatalInjuries.setMechanismId(mechanismsFacade.find(currentMechanisms));
+
+                }
+
+                newNonFatalInjuries.setUserId(usersFacade.find(1));
+
+                if (currentWeekdayEvent.trim().length() != 0) {
+                    newNonFatalInjuries.setInjuryDayOfWeek(currentWeekdayEvent);
+                }
+
+                newNonFatalInjuries.setVictimId(newVictim);
+
+                //---LISTA DE SITIOS ANATOMICOS---------------------------------------
+                List<AnatomicalLocations> anatomicalLocationList = new ArrayList<AnatomicalLocations>();
+
+                if (isAnatomicalSite1) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 1));
+                }
+                if (isAnatomicalSite2) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 2));
+                }
+                if (isAnatomicalSite3) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 3));
+                }
+                if (isAnatomicalSite4) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 4));
+                }
+                if (isAnatomicalSite5) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 5));
+                }
+                if (isAnatomicalSite6) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 6));
+                }
+                if (isAnatomicalSite7) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 7));
+                }
+                if (isAnatomicalSite8) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 8));
+                }
+                if (isAnatomicalSite9) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 9));
+                }
+                if (isAnatomicalSite10) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 10));
+                }
+                if (isAnatomicalSite11) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 11));
+                }
+                if (checkOtherPlace) {
+                    anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 98));
+                }
+                newNonFatalInjuries.setAnatomicalLocationsList(anatomicalLocationList);
+
+                //---NATURALEZA DE LA LESION--------------------------------------------
+                List<KindsOfInjury> kindsOfInjuryList = new ArrayList<KindsOfInjury>();
+
+                if (isNatureOfInjurye1) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 1));
+                }
+                if (isNatureOfInjurye2) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 2));
+                }
+                if (isNatureOfInjurye3) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 3));
+                }
+                if (isNatureOfInjurye4) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 4));
+                }
+                if (isNatureOfInjurye5) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 5));
+                }
+                if (isNatureOfInjurye6) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 6));
+                }
+                if (isNatureOfInjurye7) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 7));
+                }
+                if (isNatureOfInjurye8) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 8));
+                }
+                if (isNatureOfInjurye9) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 9));
+                }
+                if (checkOtherInjury) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 98));
+                }
+                if (isUnknownNatureOfInjurye) {
+                    kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 99));
+                }
+
+                newNonFatalInjuries.setKindsOfInjuryList(kindsOfInjuryList);
+
+                //---CODIGO CIE10---------------------------------
+                List<Diagnoses> diagnosesesList = new ArrayList<Diagnoses>();
+
+                if (idCIE10_1.trim().length() != 0) {
+                    diagnosesesList.add(diagnosesFacade.find(idCIE10_1));
+                }
+                if (idCIE10_2.trim().length() != 0) {
+                    diagnosesesList.add(diagnosesFacade.find(idCIE10_2));
+                }
+                if (idCIE10_3.trim().length() != 0) {
+                    diagnosesesList.add(diagnosesFacade.find(idCIE10_3));
+                }
+                if (idCIE10_4.trim().length() != 0) {
+                    diagnosesesList.add(diagnosesFacade.find(idCIE10_4));
+                }
+                newNonFatalInjuries.setDiagnosesList(diagnosesesList);
+
+                if (currentHealthProfessionals != null) {
+                    if (currentHealthProfessionals.trim().length() != 0) {
+                        newNonFatalInjuries.setHealthProfessionalId(healthProfessionalsFacade.findByName(currentHealthProfessionals));
+                    }
+                }
+
+                NonFatalDomesticViolence newNonFatalDomesticViolence = null;
+                NonFatalInterpersonal newNonFatalInterpersonal = null;
+                NonFatalSelfInflicted newNonFatalSelfInflicted = null;
+                switch (currentIntentionality) {
+                    case 2: //02. Autoinflingida intencional (suicidio)                    
+                        //------------------------------------------------------------
+                        //AUTOINFLINGIDA INTENCIONAL
+                        //------------------------------------------------------------
+                        newNonFatalSelfInflicted = new NonFatalSelfInflicted();
+                        if (previousAttempt != 0) {
+                            newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find(previousAttempt));
+                        }
+                        if (mentalPastDisorder != 0) {
+                            newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find(mentalPastDisorder));
+                        }
+                        if (currentPrecipitatingFactor != 0) {
+                            newNonFatalSelfInflicted.setPrecipitatingFactorId(precipitatingFactorsFacade.find(currentPrecipitatingFactor));
+                        }
+                        newNonFatalSelfInflicted.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
+                        break;
+                    case 3: //03. Violencia / agresión o sospecha
+                        if (currentAggressionOrSuspicion == 2) {//2.VIOLENCIA INTERPERSONAL
+                            //------------------------------------------------------------
+                            //SE CREA VARIABLE PARA VIOLENCIA INTERPERSONAL
+                            //------------------------------------------------------------
+                            newNonFatalInterpersonal = new NonFatalInterpersonal();
+                            newNonFatalInterpersonal.setPreviousAntecedent(booleanPojoFacade.find(aggressionPast));
+                            if (currentRelationshipToVictim != 0) {
+                                newNonFatalInterpersonal.setRelationshipVictimId(relationshipsToVictimFacade.find(currentRelationshipToVictim));
+                            }
+                            if (currentContext != 0) {
+                                newNonFatalInterpersonal.setContextId(contextsFacade.find(currentContext));
+                            }
+                            if (currentAggressorGenders != 0) {
+                                newNonFatalInterpersonal.setAggressorGenderId(agreAggressorGendersFacade.find(currentAggressorGenders));
+                            }
+                            newNonFatalInterpersonal.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
+                        } else {//1. VIOLENCIA INTRAFAMILIAR
+                            //------------------------------------------------------------
+                            //SE CREA VARIABLE PARA VIOLENCIA INTRAFAMILIAR
+                            //------------------------------------------------------------
+                            newNonFatalDomesticViolence = new NonFatalDomesticViolence();
+                            newNonFatalDomesticViolence.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
+                            //newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(domesticViolenceDataSourcesFacade.find(currentDomesticViolenceDataSource));
+                            newNonFatalDomesticViolence.setNonFatalInjuries(newNonFatalInjuries);
+                            //---LISTA DE AGRESORES-----------------------------------
+                            List<AggressorTypes> aggressorTypesList = new ArrayList<AggressorTypes>();
+
+                            if (isAG1) {
+                                aggressorTypesList.add(aggressorTypesFacade.find((short) 1));
+                            }
+                            if (isAG2) {
+                                aggressorTypesList.add(aggressorTypesFacade.find((short) 2));
+                            }
+                            if (isAG3) {
+                                aggressorTypesList.add(aggressorTypesFacade.find((short) 3));
+                            }
+                            if (isAG4) {
+                                aggressorTypesList.add(aggressorTypesFacade.find((short) 4));
+                            }
+                            if (isAG5) {
+                                aggressorTypesList.add(aggressorTypesFacade.find((short) 5));
+                            }
+                            if (isAG6) {
+                                aggressorTypesList.add(aggressorTypesFacade.find((short) 6));
+                            }
+                            if (isAG7) {
+                                aggressorTypesList.add(aggressorTypesFacade.find((short) 7));
+                            }
+                            if (isAG8) {
+                                aggressorTypesList.add(aggressorTypesFacade.find((short) 8));
+                            }
+                            if (isUnknownAG) {
+                                aggressorTypesList.add(aggressorTypesFacade.find((short) 9));
+                            }
+                            if (isAG10) {
+                                aggressorTypesList.add(aggressorTypesFacade.find((short) 10));
+                            }
+                            newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+
+                            //----LISTA DE TIPOS DE MALTRATO-----------------------------------
+                            List<AbuseTypes> abuseTypesList = new ArrayList<AbuseTypes>();
+
+                            if (isMA1) {
+                                abuseTypesList.add(abuseTypesFacade.find((short) 1));
+                            }
+                            if (isMA2) {
+                                abuseTypesList.add(abuseTypesFacade.find((short) 2));
+                            }
+                            if (isMA3) {
+                                abuseTypesList.add(abuseTypesFacade.find((short) 3));
+                            }
+                            if (isMA4) {
+                                abuseTypesList.add(abuseTypesFacade.find((short) 4));
+                            }
+                            if (isMA5) {
+                                abuseTypesList.add(abuseTypesFacade.find((short) 5));
+                            }
+                            if (isMA6) {
+                                abuseTypesList.add(abuseTypesFacade.find((short) 6));
+                            }
+                            if (isUnknownMA) {
+                                abuseTypesList.add(abuseTypesFacade.find((short) 7));
+                            }
+                            if (isMA8) {
+                                abuseTypesList.add(abuseTypesFacade.find((short) 8));
+                            }
+                            newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                        }
+                        break;
+                    case 1: //01. No intencional (accidentes)                                    
+                    case 0: //0. vacio                                    
+                        break;
+                }
+
+                //------------------------------------------------------------
+                //SE CREA VARIABLE PARA TRANSITO
+                //------------------------------------------------------------
+                NonFatalTransport newNonFatalTransport = null;
+                if (currentMechanisms == 1) {//el mecanismo objeto de la lesion es transito
+                    newNonFatalTransport = new NonFatalTransport();
+                    if (currentTransportTypes != 0) {
+                        newNonFatalTransport.setTransportTypeId(transportTypesFacade.find(currentTransportTypes));
+                    }
+                    if (currentTransportCounterpart != 0) {
+                        newNonFatalTransport.setTransportCounterpartId(transportCounterpartsFacade.find(currentTransportCounterpart));
+                    }
+                    if (currentTransportUser != 0) {
+                        newNonFatalTransport.setTransportUserId(transportUsersFacade.find(currentTransportUser));
+                    }
+                    List<SecurityElements> securityElementsList = new ArrayList<SecurityElements>();
+                    if (currentSecurityElements.compareTo("SI") == 0) {
+                        if (isBeltUse) {
+                            securityElementsList.add(securityElementsFacade.find((short) 1));
+                        }
+                        if (isHelmetUse) {
+                            securityElementsList.add(securityElementsFacade.find((short) 2));
+                        }
+                        if (isBicycleHelmetUse) {
+                            securityElementsList.add(securityElementsFacade.find((short) 3));
+                        }
+                        if (isVestUse) {
+                            securityElementsList.add(securityElementsFacade.find((short) 4));
+                        }
+                        if (isOtherElementUse) {
+                            securityElementsList.add(securityElementsFacade.find((short) 5));
+                        }
                     } else {
-                        if (minuteInt > 59 && minuteInt < 0) {
-                            validationsErrors.add("Corregir la hora del hecho");
-                        } else {
-                            newNonFatalInjuries.setInjuryTime(new Time(hourInt, minuteInt, 0));
+                        if (currentSecurityElements.compareTo("NO") == 0) {
+                            securityElementsList.add(securityElementsFacade.find((short) 6));
+                        }
+                        if (currentSecurityElements.compareTo("NO SE SABE") == 0) {
+                            securityElementsList.add(securityElementsFacade.find((short) 7));
                         }
                     }
-                } catch (Exception e) {
-                    validationsErrors.add("Corregir la hora del hecho");
+                    newNonFatalTransport.setSecurityElementsList(securityElementsList);
+                    newNonFatalTransport.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
                 }
-            }
-            if (currentDirectionEvent.trim().length() != 0) {
-                newNonFatalInjuries.setInjuryAddress(currentDirectionEvent);
-            }
-            if (currentNeighborhoodEventCode.trim().length() != 0) {
-                newNonFatalInjuries.setInjuryNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(currentNeighborhoodEventCode)));
-            }
-            if (currentPlace != 0) {
-                newNonFatalInjuries.setInjuryPlaceId(nonFatalPlacesFacade.find(currentPlace));
-            }
-            if (currentActivities != 0) {
-                newNonFatalInjuries.setActivityId(activitiesFacade.find(currentActivities));
-            }
-            if (currentIntentionality != 0) {
-                newNonFatalInjuries.setIntentionalityId(intentionalitiesFacade.find((short) currentIntentionality));
-            }
 
-            if (currentUseAlcohol != 0) {
-                newNonFatalInjuries.setUseAlcoholId(useAlcoholDrugsFacade.find(currentUseAlcohol));
-            }
-            if (currentUseDrugs != 0) {
-                newNonFatalInjuries.setUseDrugsId(useAlcoholDrugsFacade.find(currentUseDrugs));
-            }
-            if (currentLevelBurned != 0) {
-                newNonFatalInjuries.setBurnInjuryDegree(currentLevelBurned);
-            }
-            if (currentPercentBurned.trim().length() != 0) {
-                newNonFatalInjuries.setBurnInjuryDegree(Short.parseShort(currentPercentBurned));
-            }
-            if (isSubmitted) {
-                newNonFatalInjuries.setSubmittedPatient(isSubmitted);
-                newNonFatalInjuries.setEpsId(currentIPS);
-            }
-            //newNonFatalInjuries.setDestinationPatientId(null); 
-
-            newNonFatalInjuries.setInputTimestamp(new Date());
-            if (currentPercentBurned.trim().length() != 0) {
-                newNonFatalInjuries.setBurnInjuryDegree(Short.parseShort(currentPercentBurned));
-            }
-
-            //newNonFatalInjuries.setHealthProfessionalId(null);
-
-            if (currentHealthInstitution != 0) {
-                newNonFatalInjuries.setNonFatalDataSourceId(currentHealthInstitution);
-            }
-            if (currentMechanisms != 0) {
-                newNonFatalInjuries.setMechanismId(mechanismsFacade.find(currentMechanisms));
-            }
-
-            newNonFatalInjuries.setUserId(usersFacade.find(1));
-
-            if (currentWeekdayEvent.trim().length() != 0) {
-                newNonFatalInjuries.setInjuryDayOfWeek(currentWeekdayEvent);
-            }
-
-            newNonFatalInjuries.setVictimId(newVictim);
-
-            //---LISTA DE SITIOS ANATOMICOS---------------------------------------
-            List<AnatomicalLocations> anatomicalLocationList = new ArrayList<AnatomicalLocations>();
-
-            if (isAnatomicalSite1) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 1));
-            }
-            if (isAnatomicalSite2) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 2));
-            }
-            if (isAnatomicalSite3) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 3));
-            }
-            if (isAnatomicalSite4) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 4));
-            }
-            if (isAnatomicalSite5) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 5));
-            }
-            if (isAnatomicalSite6) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 6));
-            }
-            if (isAnatomicalSite7) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 7));
-            }
-            if (isAnatomicalSite8) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 8));
-            }
-            if (isAnatomicalSite9) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 9));
-            }
-            if (isAnatomicalSite10) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 10));
-            }
-            if (isAnatomicalSite11) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 11));
-            }
-            if (checkOtherPlace) {
-                anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 99));
-            }
-            newNonFatalInjuries.setAnatomicalLocationsList(anatomicalLocationList);
-
-            //---NATURALEZA DE LA LESION--------------------------------------------
-            List<KindsOfInjury> kindsOfInjuryList = new ArrayList<KindsOfInjury>();
-
-            if (isNatureOfInjurye1) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 1));
-            }
-            if (isNatureOfInjurye2) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 2));
-            }
-            if (isNatureOfInjurye3) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 3));
-            }
-            if (isNatureOfInjurye4) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 4));
-            }
-            if (isNatureOfInjurye5) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 5));
-            }
-            if (isNatureOfInjurye6) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 6));
-            }
-            if (isNatureOfInjurye7) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 7));
-            }
-            if (isNatureOfInjurye8) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 8));
-            }
-            if (isNatureOfInjurye9) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 9));
-            }
-            if (checkOtherInjury) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 98));
-            }
-            if (isUnknownNatureOfInjurye) {
-                kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 99));
-            }
-
-            newNonFatalInjuries.setKindsOfInjuryList(kindsOfInjuryList);
-
-            //---CODIGO CIE10---------------------------------
-            List<Diagnoses> diagnosesesList = new ArrayList<Diagnoses>();
-
-            if (idCIE10_1.trim().length() != 0) {
-                diagnosesesList.add(diagnosesFacade.find(idCIE10_1));
-            }
-            if (idCIE10_2.trim().length() != 0) {
-                diagnosesesList.add(diagnosesFacade.find(idCIE10_2));
-            }
-            if (idCIE10_3.trim().length() != 0) {
-                diagnosesesList.add(diagnosesFacade.find(idCIE10_3));
-            }
-            newNonFatalInjuries.setDiagnosesList(diagnosesesList);
-
-            if (currentHealthProfessionals != null) {
-                if (currentHealthProfessionals.trim().length() != 0) {
-                    newNonFatalInjuries.setHealthProfessionalId(healthProfessionalsFacade.findByName(currentHealthProfessionals));
+                //-----GUARDAR CAMPOS OTROS----------------
+                List<Others> othersList = new ArrayList<Others>();
+                Others newOther;
+                OthersPK newOtherPK;
+                if (otherEthnicGroup.trim().length() != 0) {//1.	Cual otro grupo etnico
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 1);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherEthnicGroup);
+                    othersList.add(newOther);
                 }
-            }
+                if (currentOtherPlace.trim().length() != 0) {//2.	Cual otro de lugar del hecho
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 2);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(currentOtherPlace);
+                    othersList.add(newOther);
+                }
+                if (currentOtherActivitie.trim().length() != 0) {//3.	Cual otra actividad
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 3);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(currentOtherActivitie);
+                    othersList.add(newOther);
+                }
+                if (heightWhich.trim().length() != 0) {//4.	Cual altura
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 4);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(heightWhich);
+                    othersList.add(newOther);
+                }
+                if (powderWhich.trim().length() != 0) {//5.	Cual polvora
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 5);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(powderWhich);
+                    othersList.add(newOther);
+                }
+                if (disasterWhich.trim().length() != 0) {//6.	Cual desastre natural
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 6);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(disasterWhich);
+                    othersList.add(newOther);
+                }
+                if (otherMechanism.trim().length() != 0) {//7.	Cual otro mecanismo de objeto
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 7);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherMechanism);
+                    othersList.add(newOther);
+                }
+                if (otherAnimal.trim().length() != 0) {//8.	Cual otro animal
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 8);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherAnimal);
+                    othersList.add(newOther);
+                }
+                if (otherFactor.trim().length() != 0) {//9.	Cual otro factor precipitante(Autoinflingida intencional)
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 0);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherFactor);
+                    othersList.add(newOther);
+                }
+                if (otherAG.trim().length() != 0) {//10.	Cual otro tipo de agresor(intrafamiliar)
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 10);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherAG);
+                    othersList.add(newOther);
+                }
+                if (otherMA.trim().length() != 0) {//11.	Cual otro tipo de maltrato(intrafamiliar)
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 11);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherMA);
+                    othersList.add(newOther);
+                }
+                if (otherRelation.trim().length() != 0) {//12.	Cual otra relación (violencia interpersonal)
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 12);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherRelation);
+                    othersList.add(newOther);
+                }
+                if (otherTransportType.trim().length() != 0) {//13.	Cual otro tipo de transporte(transporte)
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 13);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherTransportType);
+                    othersList.add(newOther);
+                }
+                if (otherTransportCounterpartsType.trim().length() != 0) {//14.	Cual otro tipo de transporte de contraparte(transporte)
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 14);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherTransportCounterpartsType);
+                    othersList.add(newOther);
+                }
+                if (otherTransportUserType.trim().length() != 0) {//15.	Cual otro tipo de transporte de usuario(transporte)
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 15);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherTransportUserType);
+                    othersList.add(newOther);
+                }
+                if (txtOtherPlace.trim().length() != 0) {//16.	Cual otro sitio anatomico
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 16);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(txtOtherPlace);
+                    othersList.add(newOther);
+                }
+                if (txtOtherInjury.trim().length() != 0) {//17.	Cual otra naturaleza de la lesión
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 17);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(txtOtherInjury);
+                    othersList.add(newOther);
+                }
+                if (otherDestinationPatient.trim().length() != 0) {//18.	Cual otro destino del paciente
+                    newOther = new Others();
+                    newOtherPK = new OthersPK();
+                    newOtherPK.setVictimId(newVictim.getVictimId());
+                    newOtherPK.setFieldId((short) 18);
+                    newOther.setOthersPK(newOtherPK);
+                    newOther.setValueText(otherDestinationPatient);
+                    othersList.add(newOther);
+                }
 
+                newVictim.setOthersList(othersList);
 
-            //------------------------------------------------------------
-            //SE CREA VARIABLE PARA VIOLENCIA INTRAFAMILIAR
-            //------------------------------------------------------------
-
-            NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
-            newNonFatalDomesticViolence.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
-            //newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(domesticViolenceDataSourcesFacade.find(currentDomesticViolenceDataSource));
-            newNonFatalDomesticViolence.setNonFatalInjuries(newNonFatalInjuries);
-            //---LISTA DE AGRESORES-----------------------------------
-            List<AggressorTypes> aggressorTypesList = new ArrayList<AggressorTypes>();
-
-            if (isAG1) {
-                aggressorTypesList.add(aggressorTypesFacade.find((short) 1));
-            }
-            if (isAG2) {
-                aggressorTypesList.add(aggressorTypesFacade.find((short) 2));
-            }
-            if (isAG3) {
-                aggressorTypesList.add(aggressorTypesFacade.find((short) 3));
-            }
-            if (isAG4) {
-                aggressorTypesList.add(aggressorTypesFacade.find((short) 4));
-            }
-            if (isAG5) {
-                aggressorTypesList.add(aggressorTypesFacade.find((short) 5));
-            }
-            if (isAG6) {
-                aggressorTypesList.add(aggressorTypesFacade.find((short) 6));
-            }
-            if (isAG7) {
-                aggressorTypesList.add(aggressorTypesFacade.find((short) 7));
-            }
-            if (isAG8) {
-                aggressorTypesList.add(aggressorTypesFacade.find((short) 8));
-            }
-            if (isUnknownAG) {
-                aggressorTypesList.add(aggressorTypesFacade.find((short) 9));
-            }
-            if (isAG10) {
-                aggressorTypesList.add(aggressorTypesFacade.find((short) 10));
-            }
-            newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
-
-            //----LISTA DE TIPOS DE MALTRATO-----------------------------------
-            List<AbuseTypes> abuseTypesList = new ArrayList<AbuseTypes>();
-
-            if (isMA1) {
-                abuseTypesList.add(abuseTypesFacade.find((short) 1));
-            }
-            if (isMA2) {
-                abuseTypesList.add(abuseTypesFacade.find((short) 2));
-            }
-            if (isMA3) {
-                abuseTypesList.add(abuseTypesFacade.find((short) 3));
-            }
-            if (isMA4) {
-                abuseTypesList.add(abuseTypesFacade.find((short) 4));
-            }
-            if (isMA5) {
-                abuseTypesList.add(abuseTypesFacade.find((short) 5));
-            }
-            if (isMA6) {
-                abuseTypesList.add(abuseTypesFacade.find((short) 6));
-            }
-            if (isUnknownMA) {
-                abuseTypesList.add(abuseTypesFacade.find((short) 7));
-            }
-            if (isMA8) {
-                abuseTypesList.add(abuseTypesFacade.find((short) 8));
-            }
-            newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
-
-            //------------------------------------------------------------
-            //SE CREA VARIABLE PARA VIOLENCIA INTERPERSONAL
-            //------------------------------------------------------------
-            NonFatalInterpersonal newNonFatalInterpersonal = new NonFatalInterpersonal();
-            newNonFatalInterpersonal.setPreviousAntecedent(aggressionPast);
-            if (currentRelationshipToVictim != 0) {
-                newNonFatalInterpersonal.setRelationshipVictimId(relationshipsToVictimFacade.find(currentRelationshipToVictim));
-            }
-            if (currentContext != 0) {
-                newNonFatalInterpersonal.setContextId(contextsFacade.find(currentContext));
-            }
-            if (currentAggressorGenders != 0) {
-                newNonFatalInterpersonal.setAggressorGenderId(agreAggressorGendersFacade.find(currentAggressorGenders));
-            }
-            newNonFatalInterpersonal.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
-            //------------------------------------------------------------
-            //AUTOINFLINGIDA INTENCIONAL
-            //------------------------------------------------------------
-            NonFatalSelfInflicted newNonFatalSelfInflicted = new NonFatalSelfInflicted();
-            if (previousAttempt != 0) {
-                newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find(previousAttempt));
-            }
-            if (mentalPastDisorder != 0) {
-                newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find(mentalPastDisorder));
-            }
-            if (currentPrecipitatingFactor != 0) {
-                newNonFatalSelfInflicted.setPrecipitatingFactorId(precipitatingFactorsFacade.find(currentPrecipitatingFactor));
-            }
-            newNonFatalSelfInflicted.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
-
-
-            //-------------------------------------------------------------------------------
-            if (validationsErrors.isEmpty()) {
+                //-------------------------------------------------------------------------------
+                //-------------------GUARDAR----------------------------
+                //if (validationsErrors.isEmpty()) {
                 openDialogFirst = "";
                 openDialogNext = "";
                 openDialogLast = "";
@@ -1356,39 +2415,103 @@ public class LcenfMB {
                 openDialogDelete = "";
                 if (currentNonFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     //System.out.println("guardando nuevo registro");
+                    if (currentIntentionality == 1) {
+                        newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 54));//54. No intencional
+                    }
+                    if (newNonFatalDomesticViolence != null) {
+                        newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 55));//55. Violencia intrafamiliar LCENF;
+                    }
+                    if (newNonFatalInterpersonal != null) {
+                        newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 50));//50. Violencia interpersonal
+                    }
+                    if (newNonFatalSelfInflicted != null) {
+                        newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 52));//52. Intencional autoinflingida
+                    }
+                    if (newNonFatalTransport != null) {
+                        newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 51));//51. Lesión en accidente de tránsito
+                    }
+
                     victimsFacade.create(newVictim);
                     nonFatalInjuriesFacade.create(newNonFatalInjuries);
-                    nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
-                    nonFatalInterpersonalFacade.create(newNonFatalInterpersonal);
-                    nonFatalSelfInflictedFacade.create(newNonFatalSelfInflicted);
-
+                    if (newNonFatalDomesticViolence != null) {
+                        nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
+                    }
+                    if (newNonFatalInterpersonal != null) {
+                        nonFatalInterpersonalFacade.create(newNonFatalInterpersonal);
+                    }
+                    if (newNonFatalSelfInflicted != null) {
+                        nonFatalSelfInflictedFacade.create(newNonFatalSelfInflicted);
+                    }
+                    if (newNonFatalTransport != null) {
+                        nonFatalTransportFacade.create(newNonFatalTransport);
+                    }
                     save = true;
+                    stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
-                } else {//ES UN REGISTRO EXISTENTE SE DEBE ACTUALIZAR
-                    //System.out.println("actualizando registro existente");
-                    //updateRegistry(newVictim, newNonFatalInjuries, newNonFatalDomesticViolence);
+                    System.out.println("nuevo registro almacenado");
+                } else {//ES UN REGISTRO EXISTENTE SE DEBE ACTUALIZAR                    
+                    System.out.println("actualizando registro existente");
+                    if (currentNonFatalInjury.getNonFatalDomesticViolence() != null) {
+                        nonFatalDomesticViolenceFacade.remove(currentNonFatalInjury.getNonFatalDomesticViolence());
+                    }
+                    if (currentNonFatalInjury.getNonFatalInterpersonal() != null) {
+                        nonFatalInterpersonalFacade.remove(currentNonFatalInjury.getNonFatalInterpersonal());
+                    }
+                    if (currentNonFatalInjury.getNonFatalSelfInflicted() != null) {
+                        nonFatalSelfInflictedFacade.remove(currentNonFatalInjury.getNonFatalSelfInflicted());
+                    }
+                    if (currentNonFatalInjury.getNonFatalTransport() != null) {
+                        nonFatalTransportFacade.remove(currentNonFatalInjury.getNonFatalTransport());
+                    }
+                    nonFatalInjuriesFacade.remove(currentNonFatalInjury);
+                    victimsFacade.remove(currentNonFatalInjury.getVictimId());
+
+                    /////////////////
+                    if (currentIntentionality == 1) {
+                        newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 54));//54. No intencional
+                    }
+                    if (newNonFatalDomesticViolence != null) {
+                        newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 55));//55. Violencia intrafamiliar LCENF;
+                    }
+                    if (newNonFatalInterpersonal != null) {
+                        newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 50));//50. Violencia interpersonal
+                    }
+                    if (newNonFatalSelfInflicted != null) {
+                        newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 52));//52. Intencional autoinflingida
+                    }
+                    if (newNonFatalTransport != null) {
+                        newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 51));//51. Lesión en accidente de tránsito
+                    }
+                    victimsFacade.create(newVictim);
+                    nonFatalInjuriesFacade.create(newNonFatalInjuries);
+                    if (newNonFatalDomesticViolence != null) {
+                        nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
+                    }
+                    if (newNonFatalInterpersonal != null) {
+                        nonFatalInterpersonalFacade.create(newNonFatalInterpersonal);
+                    }
+                    if (newNonFatalSelfInflicted != null) {
+                        nonFatalSelfInflictedFacade.create(newNonFatalSelfInflicted);
+                    }
+                    if (newNonFatalTransport != null) {
+                        nonFatalTransportFacade.create(newNonFatalTransport);
+                    }
                     save = true;
+                    stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "REGISTRO ACTUALIZADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
                 return true;
-            } else {
-                for (int i = 0; i < validationsErrors.size(); i++) {
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de validación", validationsErrors.get(i));
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                }
+            } catch (Exception e) {
+                System.out.println("*******************************************ERROR_L2: " + e.toString());
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
+                FacesContext.getCurrentInstance().addMessage(null, msg);
                 return false;
             }
-        } catch (Exception e) {
-            System.out.println("*******************************************ERROR_L2: " + e.toString());
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
-            FacesContext.getCurrentInstance().addMessage(null, msg);
+        } else {
             return false;
         }
-    }
-
-    private void updateRegistry(Victims victim, FatalInjuries fatalInjurie, FatalInjuryMurder fatalInjuryMurder) {
     }
 
     public void saveAndGoNext() {//guarda cambios si se han realizado y se dirije al siguiente
@@ -1424,58 +2547,63 @@ public class LcenfMB {
     }
 
     public void noSaveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
-        openDialogFirst = "";
-        openDialogNext = "";
-        openDialogLast = "";
-        openDialogPrevious = "";
-        openDialogNew = "";
-        openDialogDelete = "";
+        openDialogFirst = "-";
+        openDialogNext = "-";
+        openDialogLast = "-";
+        openDialogPrevious = "-";
+        openDialogNew = "-";
+        openDialogDelete = "-";
         save = true;
+        stylePosition = "color: #1471B1;";
         newForm();
 
     }
 
     public void noSaveAndGoNext() {//va al siguiente sin guardar cambios si se han realizado
-        openDialogFirst = "";
-        openDialogNext = "";
-        openDialogLast = "";
-        openDialogPrevious = "";
-        openDialogNew = "";
-        openDialogDelete = "";
+        openDialogFirst = "-";
+        openDialogNext = "-";
+        openDialogLast = "-";
+        openDialogPrevious = "-";
+        openDialogNew = "-";
+        openDialogDelete = "-";
         save = true;
+        stylePosition = "color: #1471B1;";
         next();
     }
 
     public void noSaveAndGoPrevious() {//va al anterior sin guardar cambios si se han realizado
-        openDialogFirst = "";
-        openDialogNext = "";
-        openDialogLast = "";
-        openDialogPrevious = "";
-        openDialogNew = "";
-        openDialogDelete = "";
+        openDialogFirst = "-";
+        openDialogNext = "-";
+        openDialogLast = "-";
+        openDialogPrevious = "-";
+        openDialogNew = "-";
+        openDialogDelete = "-";
         save = true;
+        stylePosition = "color: #1471B1;";
         previous();
     }
 
     public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
-        openDialogFirst = "";
-        openDialogNext = "";
-        openDialogLast = "";
-        openDialogPrevious = "";
-        openDialogNew = "";
-        openDialogDelete = "";
+        openDialogFirst = "-";
+        openDialogNext = "-";
+        openDialogLast = "-";
+        openDialogPrevious = "-";
+        openDialogNew = "-";
+        openDialogDelete = "-";
         save = true;
+        stylePosition = "color: #1471B1;";
         first();
     }
 
     public void noSaveAndGoLast() {//va al ultimo sin guardar cambios si se han realizado
-        openDialogFirst = "";
-        openDialogNext = "";
-        openDialogLast = "";
-        openDialogPrevious = "";
-        openDialogNew = "";
-        openDialogDelete = "";
+        openDialogFirst = "-";
+        openDialogNext = "-";
+        openDialogLast = "-";
+        openDialogPrevious = "-";
+        openDialogNew = "-";
+        openDialogDelete = "-";
         save = true;
+        stylePosition = "color: #1471B1;";
         last();
     }
 
@@ -1518,8 +2646,15 @@ public class LcenfMB {
     }
 
     public void first() {
+        //System.out.println("Entra en first(): " + openDialogFirst + " save:" + String.valueOf(save));
         if (save) {
-            System.out.println("cargando primer registro");
+            openDialogFirst = "-";
+            openDialogNext = "-";
+            openDialogLast = "-";
+            openDialogPrevious = "-";
+            openDialogNew = "-";
+            //System.out.println("cargando primer registro");
+            //System.out.println("esta guardado se dirige a primer registro, opendialogFirst: " + openDialogFirst + " save:" + String.valueOf(save));
             auxNonFatalInjury = nonFatalInjuriesFacade.findFirst();
             if (auxNonFatalInjury != null) {
                 clearForm();
@@ -1529,8 +2664,9 @@ public class LcenfMB {
                 loadValues();
             }
         } else {
-            System.out.println("No esta guardadado (para poder cargar primer registro)");
+            //System.out.println("No esta guardadado (para poder cargar primer registro)");
         }
+        System.out.println("dialog firts sale en : " + openDialogFirst);
     }
 
     public void last() {
@@ -1551,30 +2687,70 @@ public class LcenfMB {
 
     public void clearForm() {
 
-        System.out.println("Limpiando formulario");
+
+        currentAmPmEvent = "AM";
+        currentAmPmConsult = "AM";
+        currentMinuteEventDisabled = false;
+        currentHourEventDisabled = false;
+        currentAmPmEventDisabled = false;
+
+        currentMinuteConsultDisabled = false;
+        currentHourConsultDisabled = false;
+        currentAmPmConsultDisabled = false;
+
+
+
+        loading = true;
+        strangerDisabled = true;
+        stranger = false;
+        currentInsurance = 0;
+
+        otherTransportTypeDisabled = true;
+        otherTransportUserTypeDisabled = true;
+        otherTransportType = "";
+        transportUserDisabled = false;
+        securityElementsDisabled = false;
+        currentTransportUser = 0;
+        currentSecurityElements = "NO";
+        displaySecurityElements = "none";
+
+        displayAggressionOrSuspicion = "none";
+        displayInterpersonalViolence = "none";
+        displayDomesticViolence = "none";
+        displayIntentional = "none";
+
         currentHealthInstitution = 0;
         isDisplaced = false;
         isHandicapped = false;
         currentEthnicGroup = 0;
         otherEthnicGroup = "";
+        ethnicGroupsDisabled = true;
+
 
         currentDepartamentHome = 52;
+        changeDepartamentHome();
         currentMunicipalitie = 1;
+
+//        currentDepartamentHome = 0;
+//        municipalities = new SelectItem[1];
+//        municipalities[0] = new SelectItem(0, "");
+//        currentMunicipalitie = 0;
+
+
         currentDirectionHome = "";
+        
         currentTelephoneHome = "";
 
         isSubmitted = false;
-        IPSDisabled = true;
-        currentIPS = 0;
+        fromWhereDisabled = true;
+        currentFromWhere = 0;
 
         currentIntentionality = 0;
         currentOtherIntentionality = "";
-        otherIntentDisabled = true;
 
         currentPlace = 0;
         currentOtherPlace = "";
         otherPlaceDisabled = true;
-
         currentActivities = 0;
         currentOtherActivitie = "";
         otherActivityDisabled = true;
@@ -1589,24 +2765,26 @@ public class LcenfMB {
         disasterWhichDisabled = true;
         otherMechanism = "";
         otherMechanismDisabled = true;
+        otherAnimal = "";
+        otherAnimalDisabled = true;
 
+        currentLevelBurned = 0;
+        forBurned = "none";
         currentPercentBurned = "";
-
         currentUseAlcohol = 0;
         currentUseDrugs = 0;
 
+        //LESION POR TRANSPOTE
+        displayTransport = "none";
         currentTransportTypes = 0;
         otherTransportType = "";
         otherTransportTypeDisabled = true;
-
         currentTransportCounterpart = 0;
         otherTransportCounterpartsType = "";
         otherTransportCounterpartsTypeDisabled = true;
-
         currentTransportUser = 0;
         otherTransportUserType = "";
         otherTransportUserTypeDisabled = true;
-
         currentSecurityElements = "NO";
         displaySecurityElements = "none";
         isBeltUse = false;
@@ -1615,14 +2793,13 @@ public class LcenfMB {
         isVestUse = false;
         isOtherElementUse = false;
 
-        relationshipToVictimDisabled = true;
-        aggressionPast = false;
+        //VIOLENCIA INTERPERSONAL
+        displayInterpersonalViolence = "none";
+        aggressionPast = 0;
         currentRelationshipToVictim = 0;
         otherRelation = "";
         otherRelationDisabled = true;
-        contextDisabled = true;
         currentContext = 0;
-        aggressorGendersDisabled = true;
         currentAggressorGenders = 0;
 
         currentDestinationPatient = 0;
@@ -1644,9 +2821,10 @@ public class LcenfMB {
         currentIdentification = 0;
         currentIdentificationNumber = "";
         currentName = "";
-        currentSurname = "";
+        //currentSurname = "";
         currentMeasureOfAge = 0;
         currentAge = "";
+        valueAgeDisabled = true;
         currentGender = 0;
         currentJob = 0;
         currentDirectionEvent = "";
@@ -1673,6 +2851,7 @@ public class LcenfMB {
         currentNeighborhoodHomeCode = "";
         currentNeighborhoodHome = "";
         currentMunicipalitie = 1;
+        currentMunicipalitieDisabled = false;
         neighborhoodHomeNameDisabled = false;
         currentPlace = 0;
 
@@ -1688,6 +2867,9 @@ public class LcenfMB {
         isAG7 = false;
         isAG8 = false;
         isUnknownAG = false;
+        isAG10 = false;
+        otherAG = "";
+        otherAGDisabled = true;
 
         isMA1 = false;
         isMA2 = false;
@@ -1696,6 +2878,10 @@ public class LcenfMB {
         isMA5 = false;
         isMA6 = false;
         isUnknownMA = false;
+        isMA8 = false;
+        otherMA = "";
+        otherMADisabled = true;
+
 
         isAnatomicalSite1 = false;
         isAnatomicalSite2 = false;
@@ -1710,7 +2896,7 @@ public class LcenfMB {
         isAnatomicalSite11 = false;
         checkOtherPlace = false;
         txtOtherPlace = "";
-        otherPlaceDisabled = false;
+        otherAnatomicalPlaceDisabled = true;
 
         isNatureOfInjurye1 = false;
         isNatureOfInjurye2 = false;
@@ -1723,13 +2909,16 @@ public class LcenfMB {
         isNatureOfInjurye9 = false;
         checkOtherInjury = false;
         txtOtherInjury = "";
-        otherInjuryDisabled = false;
+        otherInjuryDisabled = true;
         isUnknownNatureOfInjurye = false;
-        findMunicipalities();
+        neighborhoodHomeNameDisabled=false;
+        directionHomeDisabled = false;
+        save = true;
+        loading = false;
     }
 
     public void newForm() {
-        //currentFatalInjuryMurder = null;
+        //currentNonFatalDomesticViolence = null;
         if (save) {
             clearForm();
             currentNonFatalInjuriId = -1;
@@ -1741,17 +2930,31 @@ public class LcenfMB {
     }
 
     public void deleteRegistry() {
-//        if (currentFatalInjuriId != -1) {
-//            fatalInjuryMurderFacade.remove(currentFatalInjuryMurder);
-//            System.out.println("registro eliminado");
-//        } else {
-//            System.out.println("Se esta actualmente en un nuevo registro, no se puede eliminar");
-//        }
-//        //System.out.println("eliminando registro: '" + openDialogDelete + "'");
+        if (currentNonFatalInjuriId != -1) {
+            if (currentNonFatalInjury.getNonFatalDomesticViolence() != null) {
+                nonFatalDomesticViolenceFacade.remove(currentNonFatalInjury.getNonFatalDomesticViolence());
+            }
+            if (currentNonFatalInjury.getNonFatalInterpersonal() != null) {
+                nonFatalInterpersonalFacade.remove(currentNonFatalInjury.getNonFatalInterpersonal());
+            }
+            if (currentNonFatalInjury.getNonFatalSelfInflicted() != null) {
+                nonFatalSelfInflictedFacade.remove(currentNonFatalInjury.getNonFatalSelfInflicted());
+            }
+            if (currentNonFatalInjury.getNonFatalTransport() != null) {
+                nonFatalTransportFacade.remove(currentNonFatalInjury.getNonFatalTransport());
+            }
+            nonFatalInjuriesFacade.remove(currentNonFatalInjury);
+            victimsFacade.remove(currentNonFatalInjury.getVictimId());
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+            System.out.println("registro eliminado");
+            noSaveAndGoNew();
+        }
     }
 
     public void putDiagnose() {
         //llenas las casillas CIE_CASMPO_1 y TXT_CIE_10_1 seleccionadas del dialog que lista los diagnosticos
+
         String[] splitDiagnose;
         splitDiagnose = currentDiagnoses.split(" - ");
         switch (CIE_selected) {
@@ -1773,7 +2976,9 @@ public class LcenfMB {
                 break;
         }
         //clearDiagnoses();
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
 
     }
 
@@ -1802,19 +3007,127 @@ public class LcenfMB {
     }
 
     public void determinePosition() {
-        totalRegisters = nonFatalInjuriesFacade.count();
+        totalRegisters = nonFatalInjuriesFacade.countLCENF();
         if (currentNonFatalInjuriId == -1) {
             currentPosition = "new" + "/" + String.valueOf(totalRegisters);
+            currentIdForm=String.valueOf(nonFatalInjuriesFacade.findMax() + 1);
             openDialogDelete = "";//es nuevo no se puede borrar
         } else {
             int position = nonFatalInjuriesFacade.findPosition(currentNonFatalInjury.getNonFatalInjuryId());
+            currentIdForm=String.valueOf(currentNonFatalInjury.getNonFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
         }
-        if (!save) {
-            currentPosition = currentPosition + " *";
+        System.out.println("POSICION DETERMINADA: " + currentPosition);
+    }
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    // FUNCIONES PARA BUSCAR UN REGISTRO -----------------------------------
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    private List<RowDataTable> rowDataTableList;
+    private RowDataTable selectedRowDataTable;
+
+    public List<RowDataTable> getRowDataTableList() {
+        return rowDataTableList;
+    }
+
+    public void setRowDataTableList(List<RowDataTable> rowDataTableList) {
+        this.rowDataTableList = rowDataTableList;
+    }
+
+    public RowDataTable getSelectedRowDataTable() {
+        return selectedRowDataTable;
+    }
+
+    public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
+        this.selectedRowDataTable = selectedRowDataTable;
+    }
+
+    public void openForm() {
+        if (selectedRowDataTable != null) {
+            //auxNonFatalInjury = nonFatalInjuriesFacade.findByIdVictim(selectedRowDataTable.getColumn1());
+            auxNonFatalInjury = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
+            if (auxNonFatalInjury != null) {
+                clearForm();
+                currentNonFatalInjury = auxNonFatalInjury;
+                currentNonFatalInjuriId = currentNonFatalInjury.getNonFatalInjuryId();
+                determinePosition();
+                loadValues();
+            }
         }
-        //System.out.println("POSICION DETERMINADA: " + currentPosition);
+        clearSearch();
+    }
+
+    public void clearSearch() {
+        currentSearchValue = "";
+        currentSearchCriteria = 1;
+        rowDataTableList = new ArrayList<RowDataTable>();
+
+    }
+
+    public void createDynamicTable() {
+        boolean s = true;
+        if (currentSearchValue.trim().length() == 0) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un valor a buscar");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+            s = false;
+        }
+        if (s) {
+            try {
+                rowDataTableList = new ArrayList<RowDataTable>();
+                conx = new ConnectionJDBC();
+                conx.connect();
+                String sql = "";
+                sql = sql + "SELECT ";
+                sql = sql + "non_fatal_injuries.non_fatal_injury_id, ";
+                sql = sql + "victims.victim_nid, ";
+                sql = sql + "victims.victim_name ";
+                sql = sql + "FROM ";
+                sql = sql + "victims, ";
+                sql = sql + "non_fatal_injuries, ";
+                sql = sql + "injuries ";
+                sql = sql + "WHERE ";
+                sql = sql + "non_fatal_injuries.victim_id = victims.victim_id AND ";
+                sql = sql + "injuries.injury_id = non_fatal_injuries.injury_id AND ";
+
+                switch (currentSearchCriteria) {
+                    case 1://Identificación
+                        sql = sql + "victims.victim_nid LIKE '" + currentSearchValue + "%' AND ";
+                        break;
+                    case 2://Nombres
+                        sql = sql + "UPPER(victims.victim_name) LIKE UPPER('%" + currentSearchValue + "%') AND ";
+                        break;
+                    case 3://codigo interno
+                        sql = sql + "non_fatal_injuries.non_fatal_injury_id = " + currentSearchValue + " AND ";
+                        break;
+                }
+                if (date1 != null) {
+                    sql = sql + "non_fatal_injuries.input_timestamp < " + date1.toString() + " AND ";
+                }
+                if (date2 != null) {
+                    sql = sql + "non_fatal_injuries.input_timestamp > " + date2.toString() + " AND ";
+                }
+                //sql = sql + "(injuries.injury_id = 53 OR ";
+                sql = sql + "(injuries.injury_id = 50 OR ";
+                sql = sql + "injuries.injury_id = 51 OR ";
+                sql = sql + "injuries.injury_id = 52 OR ";
+                sql = sql + "injuries.injury_id = 54 OR ";
+                sql = sql + "injuries.injury_id = 55);";
+                System.out.println(sql);
+                ResultSet rs = conx.consult(sql);
+                conx.disconnect();
+                while (rs.next()) {
+                    rowDataTableList.add(new RowDataTable(rs.getString(1), rs.getString(2), rs.getString(3)));
+                    s = false;//aqui se usa para saber si hay registros
+                }
+                if (s) {//si es true no hay registros
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "No hay coincidencias", "No se encontraron registros para esta búsqueda");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                }
+            } catch (Exception ex) {
+            }
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1878,42 +3191,172 @@ public class LcenfMB {
     // FUNCIONES CUANDO LISTAS Y CAMPOS CAMBIAN DE VALOR -------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    public void changeOtherAG() {
-        changeForm();
-        if (isAG8) {
-            otherAGDisabled = false;
+    public void changeStranger() {
 
+        if (loading == false) {
+            changeForm();
+        }
+
+        if (stranger) {
+            currentMunicipalitieDisabled = true;
+            neighborhoodHomeNameDisabled = true;
+            currentDepartamentHomeDisabled = true;
+            directionHomeDisabled = true;
+            currentDirectionHome = "";
+            currentDepartamentHome = 0;
+            municipalities = new SelectItem[1];
+            municipalities[0] = new SelectItem(0, "");
+            currentMunicipalitie = 0;
+            currentNeighborhoodHome = "";
         } else {
-            otherAGDisabled = true;
+            currentDepartamentHomeDisabled = false;
+            currentMunicipalitieDisabled = false;
+        }
+    }
+
+//    public void changeStateDateEvent() {
+//       if (loading == false) {             changeForm();         }
+//        currentDayEventDisabled = true;
+//        currentMonthEventDisabled = true;
+//        currentYearEventDisabled = true;
+//        currentDayEvent = "";
+//        currentMonthEvent = "";
+//        currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
+//        switch (currentStateDateEvent) {
+//            case 1://fecha determinada
+//                currentDayEventDisabled = false;
+//                currentMonthEventDisabled = false;
+//                currentYearEventDisabled = false;
+//                break;
+//            case 2://sin determinar
+//                break;
+//            case 3://sin dia                
+//                currentMonthEventDisabled = false;
+//                currentYearEventDisabled = false;
+//                break;
+//            case 4://sin mes
+//                currentYearEventDisabled = false;
+//                break;
+//        }
+//    }
+//
+//    public void changeStateDateConsult() {
+//       if (loading == false) {             changeForm();         }
+//        currentDayConsultDisabled = true;
+//        currentMonthConsultDisabled = true;
+//        currentYearConsultDisabled = true;
+//        currentDayConsult = "";
+//        currentMonthConsult = "";
+//        currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
+//        switch (currentStateDateConsult) {
+//            case 1://fecha determinada
+//                currentDayConsultDisabled = false;
+//                currentMonthConsultDisabled = false;
+//                currentYearConsultDisabled = false;
+//                break;
+//            case 2://sin determinar
+//                break;
+//            case 3://sin dia                
+//                currentMonthConsultDisabled = false;
+//                currentYearConsultDisabled = false;
+//                break;
+//            case 4://sin mes
+//                currentYearConsultDisabled = false;
+//                break;
+//        }
+//    }
+//
+//    public void changeStateTimeEvent() {
+//       if (loading == false) {             changeForm();         }
+//        currentHourEventDisabled = true;
+//        currentMinuteEventDisabled = true;
+//        currentAmPmEventDisabled = true;
+//        currentHourEvent = "";
+//        currentMinuteEvent = "";
+//        currentAmPmEvent = "AM";
+//        switch (currentStateTimeEvent) {
+//            case 1://hora determinada
+//                currentHourEventDisabled = false;
+//                currentMinuteEventDisabled = false;
+//                currentAmPmEventDisabled = false;
+//                break;
+//            case 2://hora sin determinar
+//                break;
+//            case 3://sin minutos                
+//                currentHourEventDisabled = false;
+//                currentAmPmEventDisabled = false;
+//                break;
+//            case 4://sin horas
+//                currentAmPmEventDisabled = false;
+//                break;
+//        }
+//    }
+//
+//    public void changeStateTimeConsult() {
+//       if (loading == false) {             changeForm();         }
+//        currentHourConsultDisabled = true;
+//        currentMinuteConsultDisabled = true;
+//        currentAmPmConsultDisabled = true;
+//        currentHourConsult = "";
+//        currentMinuteConsult = "";
+//        currentAmPmConsult = "AM";
+//        switch (currentStateTimeConsult) {
+//            case 1://hora determinada
+//                currentHourConsultDisabled = false;
+//                currentMinuteConsultDisabled = false;
+//                currentAmPmConsultDisabled = false;
+//                break;
+//            case 2://hora sin determinar
+//                break;
+//            case 3://sin minutos                
+//                currentHourConsultDisabled = false;
+//                currentAmPmConsultDisabled = false;
+//                break;
+//            case 4://sin horas
+//                currentAmPmConsultDisabled = false;
+//                break;
+//        }
+//    }
+    public void changeUnknownAG() {
+        if (loading == false) {
+            changeForm();
+        }
+        if (isUnknownAG) {
+            isAG1 = false;
+            isAG2 = false;
+            isAG3 = false;
+            isAG4 = false;
+            isAG5 = false;
+            isAG6 = false;
+            isAG7 = false;
+            isAG8 = false;
             otherAG = "";
+            otherAGDisabled = true;
+            isAG10 = false;
         }
     }
 
-    public void changeOtherMA() {
-        changeForm();
-        if (isMA8) {
-            otherMADisabled = false;
-
-        } else {
-            otherMADisabled = true;
+    public void changeUnknownMA() {
+        if (loading == false) {
+            changeForm();
+        }
+        if (isUnknownMA) {
+            isMA1 = false;
+            isMA2 = false;
+            isMA3 = false;
+            isMA4 = false;
+            isMA5 = false;
+            isMA6 = false;
+            isMA8 = false;
             otherMA = "";
+            otherMADisabled = true;
         }
-    }
-
-    public void changeForm() {//el formulario fue modificado        
-        openDialogFirst = "dialogFirst.show();";
-        openDialogNext = "dialogNext.show();";
-        openDialogLast = "dialogLast.show();";
-        openDialogPrevious = "dialogPrevious.show();";
-        openDialogNew = "dialogNew.show();";
-        openDialogDelete = "dialogDelete.show();";
-        save = false;
-        determinePosition();
-        //System.out.println("Aqui cambio: " + currentPosition);
     }
 
     public void changeUnknownNatureOfInjurye() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (isUnknownNatureOfInjurye) {
             isNatureOfInjurye1 = false;
             isNatureOfInjurye2 = false;
@@ -1926,97 +3369,146 @@ public class LcenfMB {
             isNatureOfInjurye9 = false;
             checkOtherInjury = false;
             txtOtherInjury = "";
-            otherInjuryDisabled = false;
-        }
-
-    }
-
-    public void changeUnknownAG() {
-        changeForm();
-        if (isUnknownAG) {
-            isAG1 = false;
-            isAG2 = false;
-            isAG3 = false;
-            isAG4 = false;
-            isAG5 = false;
-            isAG6 = false;
-            isAG7 = false;
-            isAG8 = false;
+            otherInjuryDisabled = true;
         }
     }
 
-    public void changeUnknownMA() {
-        changeForm();
-        if (isUnknownMA) {
-            isMA1 = false;
-            isMA2 = false;
-            isMA3 = false;
-            isMA4 = false;
-            isMA5 = false;
-            isMA6 = false;
+    public void changeOtherAG() {
+        if (loading == false) {
+            changeForm();
+        }
+        if (isAG8) {
+            otherAGDisabled = false;
+
+        } else {
+            otherAGDisabled = true;
+            otherAG = "";
+        }
+    }
+
+    public void changeOtherMA() {
+        if (loading == false) {
+            changeForm();
+        }
+        if (isMA8) {
+            otherMADisabled = false;
+
+        } else {
+            otherMADisabled = true;
+            otherMA = "";
+        }
+    }
+
+    public void changeIdentificationType() {
+
+        if (loading == false) {
+            changeForm();
+        }
+
+        if (currentIdentification == 3 || currentIdentification == 2) {//pasaporte//
+            strangerDisabled = false;
+        } else {
+            strangerDisabled = true;
+        }
+
+        if (currentIdentification == 6 || currentIdentification == 7 || currentIdentification == 0) {
+            identificationNumberDisabled = true;
+            currentIdentificationNumber = "";
+        } else {
+            identificationNumberDisabled = false;
+            currentIdentificationNumber = "";
+        }
+    }
+
+    public void changeForm() {//el formulario fue modificado        
+        openDialogFirst = "dialogFirst.show();";
+        openDialogNext = "dialogNext.show();";
+        openDialogLast = "dialogLast.show();";
+        openDialogPrevious = "dialogPrevious.show();";
+        openDialogNew = "dialogNew.show();";
+        openDialogDelete = "dialogDelete.show();";
+        save = false;
+        stylePosition = "color: red; font-weight: 900;";
+    }
+
+    public void changeDepartamentHome() {
+
+        if (loading == false) {
+            changeForm();
+        }
+
+        if (currentDepartamentHome != 0) {
+            Departaments d = departamentsFacade.findById(currentDepartamentHome);
+            municipalities = new SelectItem[d.getMunicipalitiesList().size() + 1];
+            municipalities[0] = new SelectItem(0, "");
+            for (int i = 0; i < d.getMunicipalitiesList().size(); i++) {
+                municipalities[i + 1] = new SelectItem(d.getMunicipalitiesList().get(i).getMunicipalitiesPK().getMunicipalityId(), d.getMunicipalitiesList().get(i).getMunicipalityName());
+            }
+            currentMunicipalitie = 0;
+        } else {
+            municipalities = new SelectItem[1];
+            municipalities[0] = new SelectItem(0, "");
+            currentMunicipalitie = 0;
+        }
+
+        neighborhoodHomeNameDisabled = true;
+        directionHomeDisabled = true;
+        currentNeighborhoodHome = "";
+        currentNeighborhoodHomeCode = "";
+        currentDirectionHome = "";
+    }
+
+    public void changeMunicipalitieHome() {
+        if (loading == false) {
+            changeForm();
+        }
+        //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, (short) 52);
+        if (currentMunicipalitie == 1) {
+            neighborhoodHomeNameDisabled = false;
+            directionHomeDisabled = false;
+        } else {
+            neighborhoodHomeNameDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
+            directionHomeDisabled = true;
+            currentDirectionHome = "";
         }
     }
 
     public void changePercentBurned() {
-        changeForm();
+
         try {
             int percentInt = Integer.parseInt(currentPercentBurned);
-            if (percentInt < 0 || percentInt > 100) {
+            if (percentInt < 1 || percentInt > 100) {
                 currentPercentBurned = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El porcentaje de quemadura es un número del 1 al 100");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
-            currentPercentBurned = "";
+            if (currentPercentBurned.length() != 0) {
+                currentPercentBurned = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El porcentaje de quemadura es un número del 1 al 100");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
     }
 
     public void changeValueAge() {
-        changeForm();
         try {
             int ageInt = Integer.parseInt(currentAge);
-            if (ageInt < 0) {
+            if (ageInt < 1) {
                 currentAge = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La edad debe ser un número,y mayor que cero");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
-            currentAge = "";
-        }
-    }
-
-    public void findMunicipalities() {
-        if (!save) {
-            changeForm();
-        }
-        Departaments d = departamentsFacade.findById(currentDepartamentHome);
-        //currentDepartamentHomeCode = d.getDepartamentId().toString();
-        //currentMunicipalitie = d.getMunicipalitiesList().get(0).getMunicipalityName();
-        //currentMunicipalitieCode = d.getMunicipalitiesList().get(0).getMunicipalitiesPK().getMunicipalityId();
-        municipalities = new SelectItem[d.getMunicipalitiesList().size()];
-
-        for (int i = 0; i < municipalities.length; i++) {
-            municipalities[i] = new SelectItem(d.getMunicipalitiesList().get(i).getMunicipalitiesPK().getMunicipalityId(), d.getMunicipalitiesList().get(i).getMunicipalityName());
-        }
-        currentMunicipalitie = d.getMunicipalitiesList().get(0).getMunicipalitiesPK().getMunicipalityId();
-
-
-        if (currentMunicipalitie == 1 && currentDepartamentHome == 52) {
-            neighborhoodHomeNameDisabled = false;
-        } else {
-            neighborhoodHomeNameDisabled = true;
-            currentNeighborhoodHome = "";
-            currentNeighborhoodHomeCode = "";
-        }
-    }
-
-    public void changeMunicipalitie() {
-        changeForm();
-        //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, (short) 52);
-        if (currentMunicipalitie == 1) {
-            neighborhoodHomeNameDisabled = false;
-        } else {
-            neighborhoodHomeNameDisabled = true;
-            currentNeighborhoodHome = "";
-            currentNeighborhoodHomeCode = "";
+            if (currentAge.length() != 0) {
+                currentAge = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La edad debe ser un número y mayor que cero");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
     }
 
@@ -2025,11 +3517,18 @@ public class LcenfMB {
             int dayInt = Integer.parseInt(currentDayEvent);
             if (dayInt < 1 || dayInt > 31) {
                 currentDayEvent = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El dia del evento debe ser un número del 1 al 31");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         } catch (Exception e) {
-            currentDayEvent = "";
+            if (currentDayEvent.length() != 0) {
+                currentDayEvent = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El dia del evento debe ser un número del 1 al 31");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
         calculateDate1();
+
     }
 
     public void changeMonthEvent() {
@@ -2037,9 +3536,15 @@ public class LcenfMB {
             int monthInt = Integer.parseInt(currentMonthEvent);
             if (monthInt < 1 || monthInt > 12) {
                 currentMonthEvent = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El mes del evento debe ser un número del 1 al 12");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         } catch (Exception e) {
-            currentMonthEvent = "";
+            if (currentMonthEvent.length() != 0) {
+                currentMonthEvent = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El mes del evento debe ser un número del 1 al 12");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
         calculateDate1();
     }
@@ -2049,10 +3554,16 @@ public class LcenfMB {
             int yearInt = Integer.parseInt(currentYearEvent);
             if (yearInt < 0) {
                 currentYearEvent = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número, y mayor que cero");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
-            currentYearEvent = "";
+            if (currentYearEvent.length() != 0) {
+                currentYearEvent = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
         calculateDate1();
     }
@@ -2060,14 +3571,66 @@ public class LcenfMB {
     public void changeHourEvent() {
         try {
             int hourInt = Integer.parseInt(currentHourEvent);
-            if (hourInt < 0 || hourInt > 12) {
+            if (hourInt < 1 || hourInt > 12) {
                 currentHourEvent = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La hora del evento debe ser un número de 1 a 12");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
-            currentHourEvent = "";
+            if (currentHourEvent.length() != 0) {
+                currentHourEvent = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La hora del evento debe ser un número de 1 a 12");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
         calculateTime1();
+    }
+
+    public void changeAmPmEvent() {
+
+        if (loading == false) {
+            changeForm();
+        }
+
+        try {
+            if (currentAmPmEvent.compareTo("AM") == 0 || currentAmPmEvent.compareTo("PM") == 0) {
+                currentMinuteEventDisabled = false;
+                currentHourEventDisabled = false;
+            } else {
+                currentMinuteEventDisabled = true;
+                currentHourEventDisabled = true;
+                currentMinuteEvent = "";
+                currentHourEvent = "";
+                currentMilitaryHourEvent = "";
+            }
+        } catch (Exception e) {
+            currentMinuteEventDisabled = false;
+            currentHourEventDisabled = false;
+        }
+    }
+
+    public void changeAmPmConsult() {
+
+        if (loading == false) {
+            changeForm();
+        }
+
+        try {
+            if (currentAmPmConsult.compareTo("AM") == 0 || currentAmPmConsult.compareTo("PM") == 0) {
+                currentMinuteConsultDisabled = false;
+                currentHourConsultDisabled = false;
+            } else {
+                currentMinuteConsultDisabled = true;
+                currentHourConsultDisabled = true;
+                currentMinuteConsult = "";
+                currentHourConsult = "";
+                currentMilitaryHourConsult = "";
+            }
+        } catch (Exception e) {
+            currentMinuteConsultDisabled = false;
+            currentHourConsultDisabled = false;
+        }
     }
 
     public void changeMinuteEvent() {
@@ -2075,10 +3638,16 @@ public class LcenfMB {
             int minuteInt = Integer.parseInt(currentMinuteEvent);
             if (minuteInt < 0 || minuteInt > 59) {
                 currentMinuteEvent = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El minuto del evento debe ser un número de 0 a 59");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
-            currentMinuteEvent = "";
+            if (currentMinuteEvent.length() != 0) {
+                currentMinuteEvent = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El minuto del evento debe ser un número de 0 a 59");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
         calculateTime1();
     }
@@ -2088,9 +3657,15 @@ public class LcenfMB {
             int dayInt = Integer.parseInt(currentDayConsult);
             if (dayInt < 1 || dayInt > 31) {
                 currentDayConsult = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El dia de la consulta debe ser un número del 1 al 31");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         } catch (Exception e) {
-            currentDayConsult = "";
+            if (currentDayConsult.length() != 0) {
+                currentDayConsult = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El dia de la consulta debe ser un número del 1 al 31");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
         calculateDate2();
     }
@@ -2100,9 +3675,15 @@ public class LcenfMB {
             int monthInt = Integer.parseInt(currentMonthConsult);
             if (monthInt < 1 || monthInt > 12) {
                 currentMonthConsult = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El mes de la consulta debe ser un número del 1 al 12");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         } catch (Exception e) {
-            currentMonthConsult = "";
+            if (currentMonthConsult.length() != 0) {
+                currentMonthConsult = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El mes de la consulta debe ser un número del 1 al 12");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
         calculateDate2();
     }
@@ -2112,10 +3693,16 @@ public class LcenfMB {
             int yearInt = Integer.parseInt(currentYearConsult);
             if (yearInt < 0) {
                 currentYearConsult = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año de la consulta debe ser un número, y mayor que cero");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
-            currentYearConsult = "";
+            if (currentYearConsult.length() != 0) {
+                currentYearConsult = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número, y mayor que cero");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
         calculateDate2();
     }
@@ -2123,12 +3710,18 @@ public class LcenfMB {
     public void changeHourConsult() {
         try {
             int hourInt = Integer.parseInt(currentHourConsult);
-            if (hourInt < 0 || hourInt > 12) {
+            if (hourInt < 1 || hourInt > 12) {
                 currentHourConsult = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La hora de la consulta debe ser un número de 1 a 12");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
-            currentHourConsult = "";
+            if (currentHourConsult.length() != 0) {
+                currentHourConsult = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La hora de la consulta debe ser un número de 1 a 12");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
         calculateTime2();
     }
@@ -2138,16 +3731,24 @@ public class LcenfMB {
             int minuteInt = Integer.parseInt(currentMinuteConsult);
             if (minuteInt < 0 || minuteInt > 59) {
                 currentMinuteConsult = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El minuto de la consulta debe ser un número de 0 a 59");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
-            currentMinuteConsult = "";
+            if (currentMinuteConsult.length() != 0) {
+                currentMinuteConsult = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El minuto de la consulta debe ser un número de 0 a 59");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
         calculateTime2();
     }
 
     public void changeOtherFactor() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (currentPrecipitatingFactor == 98) {//98. otro
             otherFactorDisabled = false;
         } else {
@@ -2157,7 +3758,9 @@ public class LcenfMB {
     }
 
     public void changeRelationshipToVictim() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (currentRelationshipToVictim == 3) {//3. otro
             otherRelationDisabled = false;
         } else {
@@ -2166,36 +3769,10 @@ public class LcenfMB {
         }
     }
 
-    public void changeAggressionPast() {
-        changeForm();
-        if (aggressionPast) {
-            relationshipToVictimDisabled = false;
-            contextDisabled = false;
-            aggressorGendersDisabled = false;
-
-        } else {
-            relationshipToVictimDisabled = true;
-            currentRelationshipToVictim = 0;
-            otherRelation = "";
-            otherRelationDisabled = true;
-            contextDisabled = true;
-            currentContext = 0;
-            aggressorGendersDisabled = true;
-            currentAggressorGenders = 0;
-        }
-        try {
-            if (currentRelationshipToVictim == 3) {//3. otro
-                otherRelationDisabled = false;
-            } else {
-                otherRelationDisabled = true;
-                otherRelation = "";
-            }
-        } catch (Exception e) {
-        }
-    }
-
     public void changeOtherInjury() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (checkOtherInjury) {
             otherInjuryDisabled = false;
 
@@ -2206,7 +3783,9 @@ public class LcenfMB {
     }
 
     public void changeDestinationPatient() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (currentDestinationPatient == 10) {//10. otro
             otherDestinationPatientDisabled = false;
             otherDestinationPatient = "";
@@ -2217,37 +3796,75 @@ public class LcenfMB {
     }
 
     public void changeOtherPlace() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (checkOtherPlace) {
-            otherPlaceDisabled = false;
+            otherAnatomicalPlaceDisabled = false;
         } else {
-            otherPlaceDisabled = true;
+            otherAnatomicalPlaceDisabled = true;
             txtOtherPlace = "";
         }
     }
 
+    public void changeAggressionOrSuspicion() {
+        if (loading == false) {
+            changeForm();
+        }
+        clearDomesticViolence();
+        clearInterpersonalViolence();
+        switch (currentAggressionOrSuspicion) {
+            case 1://VIOLENCIA INTRAFAMILIAR
+                displayInterpersonalViolence = "none";
+                displayDomesticViolence = "block";
+                break;
+            case 2://VIOLENCIA INTERPERSONAL
+                if (currentMechanisms == 2) {//VIOLENCIA SEXUAL
+                    currentContext = 3;
+                    currentContextDisabled = true;
+                } else {
+                    currentContext = 0;
+                    currentContextDisabled = false;
+                }
+                displayInterpersonalViolence = "block";
+                displayDomesticViolence = "none";
+                break;
+        }
+    }
+
     public void changeSecurityElements() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
+        isBeltUse = false;
+        isHelmetUse = false;
+        isBicycleHelmetUse = false;
+        isVestUse = false;
+        isOtherElementUse = false;
         if (currentSecurityElements.compareTo("SI") == 0) {
             displaySecurityElements = "block";
         } else {
             displaySecurityElements = "none";
-            isBeltUse = false;
-            isHelmetUse = false;
-            isBicycleHelmetUse = false;
-            isVestUse = false;
-            isOtherElementUse = false;
         }
     }
 
     public void changeHeightWhich() {
+        if (loading == false) {
+            changeForm();
+        }
         try {
             int heightWhichInt = Integer.parseInt(heightWhich);
-            if (heightWhichInt < 0) {
+            if (heightWhichInt < 1) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El valor para la altura debe ser un número, y mayor que cero");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
                 heightWhich = "";
             }
         } catch (Exception e) {
-            heightWhich = "";
+            if (heightWhich.length() != 0) {
+                heightWhich = "";
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El valor para la altura debe ser un número, y mayor que cero");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
     }
 
@@ -2262,7 +3879,9 @@ public class LcenfMB {
     }
 
     public void changeNeighborhoodEvent() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         Neighborhoods n = neighborhoodsFacade.findByName(currentNeighborhoodEvent);
         if (n != null) {
             currentNeighborhoodEventCode = String.valueOf(n.getNeighborhoodId());
@@ -2272,56 +3891,79 @@ public class LcenfMB {
     }
 
     public void changeSubmitted() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (isSubmitted) {
-            IPSDisabled = false;
+            fromWhereDisabled = false;
 
         } else {
-            IPSDisabled = true;
-            currentIPS = 0;
+            fromWhereDisabled = true;
+            currentFromWhere = 0;
         }
     }
 
     public void changeMechanisms() {
-        changeForm();
+
+        if (loading == false) {
+            changeForm();
+        }
+
         heightWhichDisabled = true;
         powderWhichDisabled = true;
         otherMechanismDisabled = true;
         disasterWhichDisabled = true;
+        otherAnimalDisabled = true;
         forBurned = "none";
         heightWhich = "";
         powderWhich = "";
         otherMechanism = "";
+        otherAnimal = "";
         disasterWhich = "";
+        displayTransport = "none";
+        currentContext = 0;
+        currentContextDisabled = false;
 
-        if (currentMechanisms == 5) {//"Otra caida, altura")
-            heightWhichDisabled = false;
-        } else if (currentMechanisms == 12) {//Pólvora, cual"
-            powderWhichDisabled = false;
-        } else if (currentMechanisms == 26) {//Desastre
-            disasterWhichDisabled = false;
-        } else if (currentMechanisms == 27) {//Otro, cual"
-            otherMechanismDisabled = false;
-        }
-        if (currentMechanisms == 1) {//lesion de transporte"        
-            displayTransport = "block";
-        } else {
-            displayTransport = "none";
-        }
-
-        if (currentMechanisms == 10//Fuego / llama
-                || currentMechanisms == 11//objeto caliente
-                || currentMechanisms == 12//Pólvora
-                || currentMechanisms == 21//explotar
-                || currentMechanisms == 22//explosivo
-                || currentMechanisms == 25) {//electricidad
-            forBurned = "block";
-
+        switch (currentMechanisms) {
+            case 5://"Otra caida, altura"
+                heightWhichDisabled = false;
+                break;
+            case 12://Pólvora, cual"
+                powderWhichDisabled = false;
+                forBurned = "block";
+                break;
+            case 26://Desastre
+                disasterWhichDisabled = false;
+                break;
+            case 27://Otro, cual
+                otherMechanismDisabled = false;
+                break;
+            case 1://lesion de transporte
+                displayTransport = "block";
+                break;
+            case 2://violencia sexual
+                if (currentAggressionOrSuspicion == 2) {//VIOLENCIA INTERPERSONAL
+                    currentContext = 3;
+                    currentContextDisabled = true;
+                }
+                break;
+            case 24://animal cual
+                otherAnimalDisabled = false;
+                break;
+            case 10://Fuego / llama
+            case 11://objeto caliente
+            case 21://explotar
+            case 22://explosivo
+            case 25://electricidad
+                forBurned = "block";
+                break;
         }
     }
 
     public void changeTransportCounterpart() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (currentTransportCounterpart == 12) {//12. otro
             otherTransportCounterpartsTypeDisabled = false;
         } else {
@@ -2331,17 +3973,61 @@ public class LcenfMB {
     }
 
     public void changeTransportType() {
-        changeForm();
-        if (currentTransportTypes == 10) {//10. otro
-            otherTransportTypeDisabled = false;
-        } else {
-            otherTransportTypeDisabled = true;
-            otherTransportType = "";
+
+        if (loading == false) {
+            changeForm();
+        }
+
+        otherTransportTypeDisabled = true;
+        otherTransportUserTypeDisabled = true;
+        otherTransportType = "";
+        transportUserDisabled = false;
+        securityElementsDisabled = false;
+        currentTransportUser = 0;
+        currentSecurityElements = "NO";
+        displaySecurityElements = "none";
+        List<TransportUsers> transportUsersList;
+        switch (currentTransportTypes) {
+            case 1://peaton
+                //otherTransportTypeDisabled = false;
+                currentTransportUser = 1;
+                transportUserDisabled = true;
+                currentSecurityElements = "NO";
+                securityElementsDisabled = true;
+                //se carga la lista de tipos de transporte con peaton incluido //cargo los usuarios en una lesion de tránsito y trasporte
+                transportUsersList = transportUsersFacade.findAll();
+                transportUsers = new SelectItem[transportUsersList.size() + 1];
+                transportUsers[0] = new SelectItem(0, "");
+                for (int i = 0; i < transportUsersList.size(); i++) {
+                    transportUsers[i + 1] = new SelectItem(transportUsersList.get(i).getTransportUserId(), transportUsersList.get(i).getTransportUserName());
+                }
+                break;
+            case 10://otro
+                otherTransportTypeDisabled = false;
+                otherTransportUserTypeDisabled = false;
+                currentTransportUser = 8;
+                transportUserDisabled = false;
+            default://para otro(10) y cualquira de los demas
+                //se carga la lista de tipos de transporte sin peaton
+                //cargo los usuarios en una lesion de tránsito y trasporte
+                transportUsersList = transportUsersFacade.findAll();
+                transportUsers = new SelectItem[transportUsersList.size()];
+                transportUsers[0] = new SelectItem(0, "");
+                int pos = 0;
+                for (int i = 0; i < transportUsersList.size(); i++) {
+                    if (transportUsersList.get(i).getTransportUserId() != 1) {
+                        transportUsers[pos + 1] = new SelectItem(transportUsersList.get(i).getTransportUserId(), transportUsersList.get(i).getTransportUserName());
+                        pos++;
+                    }
+                }
+                break;
         }
     }
 
     public void changeTransportUser() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (currentTransportUser == 8) {//8. otro
             otherTransportUserTypeDisabled = false;
         } else {
@@ -2351,7 +4037,9 @@ public class LcenfMB {
     }
 
     public void changeEthnicGroups() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (currentEthnicGroup == 3) {//3. otro
             ethnicGroupsDisabled = false;
 
@@ -2362,7 +4050,10 @@ public class LcenfMB {
     }
 
     public void changeMeasuresOfAge() {
-        if (currentMeasureOfAge == 4) {//4. otro
+        if (loading == false) {
+            changeForm();
+        }
+        if (currentMeasureOfAge == 0 || currentMeasureOfAge == 4) {
             valueAgeDisabled = true;
 
         } else {
@@ -2374,7 +4065,9 @@ public class LcenfMB {
     }
 
     public void changeActivities() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (currentActivities == 98) {//98. otra cual?
             otherActivityDisabled = false;
         } else {
@@ -2384,7 +4077,9 @@ public class LcenfMB {
     }
 
     public void changePlace() {
-        changeForm();
+        if (loading == false) {
+            changeForm();
+        }
         if (currentPlace == 8) {//8. otro
             otherPlaceDisabled = false;
         } else {
@@ -2393,37 +4088,184 @@ public class LcenfMB {
         }
     }
 
+    private void clearTransit() {
+        currentTransportTypes = 0;
+        otherTransportType = "";
+        otherTransportTypeDisabled = true;
+        currentTransportCounterpart = 0;
+        otherTransportCounterpartsType = "";
+        otherTransportCounterpartsTypeDisabled = true;
+        currentTransportUser = 0;
+        otherTransportUserType = "";
+        otherTransportUserTypeDisabled = true;
+        currentSecurityElements = "NO";
+        displaySecurityElements = "none";
+        isBeltUse = false;
+        isHelmetUse = false;
+        isBicycleHelmetUse = false;
+        isVestUse = false;
+        isOtherElementUse = false;
+    }
+
+    private void clearSelfInflected() {
+        previousAttempt = 0;
+        mentalPastDisorder = 0;
+        currentPrecipitatingFactor = 0;
+        otherFactor = "";
+        otherFactorDisabled = true;
+    }
+
+    private void clearDomesticViolence() {
+        isAG1 = false;
+        isAG2 = false;
+        isAG3 = false;
+        isAG4 = false;
+        isAG5 = false;
+        isAG6 = false;
+        isAG7 = false;
+        isAG8 = false;
+        isUnknownAG = false;
+        isAG10 = false;
+        otherAGDisabled = true;
+        otherAG = "";
+
+        isMA1 = false;
+        isMA2 = false;
+        isMA3 = false;
+        isMA4 = false;
+        isMA5 = false;
+        isMA6 = false;
+        isUnknownMA = false;
+        isMA8 = false;
+        otherMADisabled = true;
+        otherMA = "";
+    }
+
+    private void clearInterpersonalViolence() {
+        aggressionPast = 0;
+        currentRelationshipToVictim = 0;
+        otherRelation = "";
+        otherRelationDisabled = true;
+        currentContext = 0;
+        currentAggressorGenders = 0;
+    }
+
     public void changeIntentionality() {
-        changeForm();
-        if (currentIntentionality == 8) {//otro 8
-            otherIntentDisabled = false;
-            displayInterpersonalViolence = "none";
-            displayDomesticViolence = "none";
-            displayIntentional = "none";
-        } else {
-            otherIntentDisabled = true;
-            currentOtherIntentionality = "";
+        if (loading == false) {
+            changeForm();
         }
-        if (currentIntentionality == 1 || currentIntentionality == 9 || currentIntentionality == 0) {
-            //no intencional 1 //no se sabe 9 // vacio
-            displayInterpersonalViolence = "none";
-            displayDomesticViolence = "none";
-            displayIntentional = "none";
+
+        currentOtherIntentionality = "";
+        currentMechanisms = 0;
+        displayInterpersonalViolence = "none";
+        displayDomesticViolence = "none";
+        displayIntentional = "none";
+        displayTransport = "none";
+        displayAggressionOrSuspicion = "none";
+        displayDomesticViolence = "none";
+        displayInterpersonalViolence = "none";
+
+        heightWhichDisabled = true;
+        powderWhichDisabled = true;
+        otherMechanismDisabled = true;
+        disasterWhichDisabled = true;
+        forBurned = "none";
+        heightWhich = "";
+        powderWhich = "";
+        otherMechanism = "";
+        disasterWhich = "";
+        displayTransport = "none";
+
+
+        clearTransit();
+        clearSelfInflected();
+        clearDomesticViolence();
+        clearInterpersonalViolence();
+        //System.out.println("entra.....");
+        List<Mechanisms> auxMechanismsList;
+        //se recargan todos los mecanismos
+        mechanisms = new SelectItem[mechanismsList.size() + 1];
+        mechanisms[0] = new SelectItem(0, "");
+        for (int i = 0; i < mechanismsList.size(); i++) {
+            mechanisms[i + 1] = new SelectItem(mechanismsList.get(i).getMechanismId(), mechanismsList.get(i).getMechanismName());
         }
-        if (currentIntentionality == 2) {//Autoinflingida 2
-            displayInterpersonalViolence = "none";
-            displayDomesticViolence = "none";
-            displayIntentional = "block";
-        }
-        if (currentIntentionality == 3) {//Violencia / agresión o sospecha 3
-            displayInterpersonalViolence = "block";
-            displayDomesticViolence = "block";
-            displayIntentional = "none";
+        //-------------------------------
+        switch (currentIntentionality) {
+            case 2: //02. Autoinflingida intencional (suicidio)		
+                //System.out.println("2");
+                displayIntentional = "block";
+                //recargo los mecanismos
+                auxMechanismsList = new ArrayList<Mechanisms>();
+                for (int i = 0; i < mechanismsList.size(); i++) {
+                    if (mechanismsList.get(i).getMechanismId() != 2 //no listar Agresion sexual
+                            && mechanismsList.get(i).getMechanismId() != 1 //no listar lesion de transito
+                            && mechanismsList.get(i).getMechanismId() != 3 //no listar caída propia altura
+                            && mechanismsList.get(i).getMechanismId() != 16 //no listar lesión por cuerpo extraño    
+                            && mechanismsList.get(i).getMechanismId() != 21 //no listar minas/munición sin explotar
+                            && mechanismsList.get(i).getMechanismId() != 22 //no listar otro artefacto explosivo
+                            && mechanismsList.get(i).getMechanismId() != 23 //no listar mordedura de persona
+                            && mechanismsList.get(i).getMechanismId() != 24 //no listar mordedura de animal
+                            && mechanismsList.get(i).getMechanismId() != 26 //no listar desastre natural
+                            ) {
+                        auxMechanismsList.add(mechanismsList.get(i));
+                    }
+                }
+                mechanisms = new SelectItem[auxMechanismsList.size() + 1];
+                mechanisms[0] = new SelectItem(0, "");
+                for (int i = 0; i < auxMechanismsList.size(); i++) {
+                    mechanisms[i + 1] = new SelectItem(auxMechanismsList.get(i).getMechanismId(), auxMechanismsList.get(i).getMechanismName());
+                }
+
+                break;
+            case 3: //03. Violencia / agresión o sospecha		
+                //System.out.println("3");
+                displayAggressionOrSuspicion = "block";
+                switch (currentAggressionOrSuspicion) {
+                    case 1:
+                        displayDomesticViolence = "block";
+                        break;
+                    case 2:
+                        displayInterpersonalViolence = "block";
+                        break;
+                }
+                //recargo los mecanismos
+                auxMechanismsList = new ArrayList<Mechanisms>();
+                for (int i = 0; i < mechanismsList.size(); i++) {
+                    if (mechanismsList.get(i).getMechanismId() != 1 //no listar lesion de transito
+                            && mechanismsList.get(i).getMechanismId() != 24 //no listar mordedura de animal
+                            && mechanismsList.get(i).getMechanismId() != 26 //no listar desastre natural
+                            ) {
+                        auxMechanismsList.add(mechanismsList.get(i));
+                    }
+                }
+                mechanisms = new SelectItem[auxMechanismsList.size() + 1];
+                mechanisms[0] = new SelectItem(0, "");
+                for (int i = 0; i < auxMechanismsList.size(); i++) {
+                    mechanisms[i + 1] = new SelectItem(auxMechanismsList.get(i).getMechanismId(), auxMechanismsList.get(i).getMechanismName());
+                }
+
+                break;
+            case 1: //01. No intencional (accidentes)                                
+                auxMechanismsList = new ArrayList<Mechanisms>();
+                for (int i = 0; i < mechanismsList.size(); i++) {
+                    if (mechanismsList.get(i).getMechanismId() != 2 //no listar Agresion sexual
+                            && mechanismsList.get(i).getMechanismId() != 23) //no listar mordedura de persona
+                    {
+                        auxMechanismsList.add(mechanismsList.get(i));
+                    }
+                }
+                mechanisms = new SelectItem[auxMechanismsList.size() + 1];
+                mechanisms[0] = new SelectItem(0, "");
+                for (int i = 0; i < auxMechanismsList.size(); i++) {
+                    mechanisms[i + 1] = new SelectItem(auxMechanismsList.get(i).getMechanismId(), auxMechanismsList.get(i).getMechanismName());
+                }
+            case 0: //0. vacio                                                
+                break;
         }
     }
 
     public void changeIdCIE10_1() {
-        changeForm();
+        //if (loading == false) {             changeForm();         }
         Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_1.toUpperCase());
         if (selectDiagnoses != null) {
             txtCIE10_1 = selectDiagnoses.getDiagnosisName();
@@ -2435,7 +4277,7 @@ public class LcenfMB {
     }
 
     public void changeIdCIE10_2() {
-        changeForm();
+        //if(!loading)if (loading == false) {             changeForm();         }
         Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_2.toUpperCase());
         if (selectDiagnoses != null) {
             txtCIE10_2 = selectDiagnoses.getDiagnosisName();
@@ -2447,7 +4289,7 @@ public class LcenfMB {
     }
 
     public void changeIdCIE10_3() {
-        changeForm();
+        //if (loading == false) {             changeForm();         }
         Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_3.toUpperCase());
         if (selectDiagnoses != null) {
             txtCIE10_3 = selectDiagnoses.getDiagnosisName();
@@ -2459,7 +4301,7 @@ public class LcenfMB {
     }
 
     public void changeIdCIE10_4() {
-        changeForm();
+        //if (loading == false) {             changeForm();         }
         Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_4.toUpperCase());
         if (selectDiagnoses != null) {
             txtCIE10_4 = selectDiagnoses.getDiagnosisName();
@@ -2510,7 +4352,7 @@ public class LcenfMB {
     private boolean calculateTime1() {
         int hourInt = 0;
         int minuteInt = 0;
-        int timeInt = 0;
+        int timeInt;
         boolean continuar = true;
         try {
             hourInt = Integer.parseInt(currentHourEvent);
@@ -3103,12 +4945,12 @@ public class LcenfMB {
         this.neighborhoodHomeNameDisabled = neighborhoodHomeNameDisabled;
     }
 
-    public SelectItem[] getIPSs() {
-        return IPSs;
+    public SelectItem[] getFromWhereList() {
+        return fromWhereList;
     }
 
-    public void setIPSs(SelectItem[] IPSs) {
-        this.IPSs = IPSs;
+    public void setFromWhereList(SelectItem[] fromWhereList) {
+        this.fromWhereList = fromWhereList;
     }
 
     public boolean isIsSubmitted() {
@@ -3119,28 +4961,12 @@ public class LcenfMB {
         this.isSubmitted = isSubmitted;
     }
 
-    public boolean isIPSDisabled() {
-        return IPSDisabled;
-    }
-
-    public void setIPSDisabled(boolean IPSDisabled) {
-        this.IPSDisabled = IPSDisabled;
-    }
-
     public boolean isOtherActivityDisabled() {
         return otherActivityDisabled;
     }
 
     public void setOtherActivityDisabled(boolean otherActivityDisabled) {
         this.otherActivityDisabled = otherActivityDisabled;
-    }
-
-    public boolean isOtherIntentDisabled() {
-        return otherIntentDisabled;
-    }
-
-    public void setOtherIntentDisabled(boolean otherIntentDisabled) {
-        this.otherIntentDisabled = otherIntentDisabled;
     }
 
     public boolean isOtherPlaceDisabled() {
@@ -3303,30 +5129,27 @@ public class LcenfMB {
         this.currentSecurityElements = currentSecurityElements;
     }
 
-    public boolean isAggressionPast() {
+    public short getAggressionPast() {
         return aggressionPast;
     }
 
-    public void setAggressionPast(boolean aggressionPast) {
+    public void setAggressionPast(short aggressionPast) {
         this.aggressionPast = aggressionPast;
     }
 
-    public boolean isAggressorGendersDisabled() {
-        return aggressorGendersDisabled;
-    }
-
-    public void setAggressorGendersDisabled(boolean aggressorGendersDisabled) {
-        this.aggressorGendersDisabled = aggressorGendersDisabled;
-    }
-
-    public boolean isContextDisabled() {
-        return contextDisabled;
-    }
-
-    public void setContextDisabled(boolean contextDisabled) {
-        this.contextDisabled = contextDisabled;
-    }
-
+//    public boolean isAggressorGendersDisabled() {
+//        return aggressorGendersDisabled;
+//    }
+//    public void setAggressorGendersDisabled(boolean aggressorGendersDisabled) {
+//        this.aggressorGendersDisabled = aggressorGendersDisabled;
+//    }
+//    public boolean isContextDisabled() {
+//        return contextDisabled;
+//    }
+//
+//    public void setContextDisabled(boolean contextDisabled) {
+//        this.contextDisabled = contextDisabled;
+//    }
     public boolean isOtherRelationDisabled() {
         return otherRelationDisabled;
     }
@@ -3335,14 +5158,13 @@ public class LcenfMB {
         this.otherRelationDisabled = otherRelationDisabled;
     }
 
-    public boolean isRelationshipToVictimDisabled() {
-        return relationshipToVictimDisabled;
-    }
-
-    public void setRelationshipToVictimDisabled(boolean relationshipToVictimDisabled) {
-        this.relationshipToVictimDisabled = relationshipToVictimDisabled;
-    }
-
+//    public boolean isRelationshipToVictimDisabled() {
+//        return relationshipToVictimDisabled;
+//    }
+//
+//    public void setRelationshipToVictimDisabled(boolean relationshipToVictimDisabled) {
+//        this.relationshipToVictimDisabled = relationshipToVictimDisabled;
+//    }
     public String getOtherRelation() {
         return otherRelation;
     }
@@ -3487,6 +5309,14 @@ public class LcenfMB {
         this.currentAggressorGenders = currentAggressorGenders;
     }
 
+    public boolean isCurrentContextDisabled() {
+        return currentContextDisabled;
+    }
+
+    public void setCurrentContextDisabled(boolean currentContextDisabled) {
+        this.currentContextDisabled = currentContextDisabled;
+    }
+
     public Short getCurrentContext() {
         return currentContext;
     }
@@ -3541,14 +5371,6 @@ public class LcenfMB {
 
     public void setCurrentHealthProfessionals(String currentHealthProfessionals) {
         this.currentHealthProfessionals = currentHealthProfessionals;
-    }
-
-    public Short getCurrentIPS() {
-        return currentIPS;
-    }
-
-    public void setCurrentIPS(Short currentIPS) {
-        this.currentIPS = currentIPS;
     }
 
     public Short getCurrentIdentification() {
@@ -3871,14 +5693,13 @@ public class LcenfMB {
         this.isOtherElementUse = isOtherElementUse;
     }
 
-    public String getCurrentSurname() {
-        return currentSurname;
-    }
-
-    public void setCurrentSurname(String currentSurname) {
-        this.currentSurname = currentSurname;
-    }
-
+//    public String getCurrentSurname() {
+//        return currentSurname;
+//    }
+//
+//    public void setCurrentSurname(String currentSurname) {
+//        this.currentSurname = currentSurname;
+//    }
     public boolean isIsAG1() {
         return isAG1;
     }
@@ -4293,5 +6114,368 @@ public class LcenfMB {
 
     public void setOtherMADisabled(boolean otherMADisabled) {
         this.otherMADisabled = otherMADisabled;
+    }
+
+    public String getCurrentResponsible() {
+        return currentResponsible;
+    }
+
+    public void setCurrentResponsible(String currentResponsible) {
+        this.currentResponsible = currentResponsible;
+    }
+
+    public String getIdElements1() {
+        return idElements1;
+    }
+
+    public void setIdElements1(String idElements1) {
+        this.idElements1 = idElements1;
+    }
+
+    public String getIdElements2() {
+        return idElements2;
+    }
+
+    public void setIdElements2(String idElements2) {
+        this.idElements2 = idElements2;
+    }
+
+    public String getDisplayAggressionOrSuspicion() {
+        return displayAggressionOrSuspicion;
+    }
+
+    public void setDisplayAggressionOrSuspicion(String displayAggressionOrSuspicion) {
+        this.displayAggressionOrSuspicion = displayAggressionOrSuspicion;
+    }
+
+    public int getCurrentAggressionOrSuspicion() {
+        return currentAggressionOrSuspicion;
+    }
+
+    public void setCurrentAggressionOrSuspicion(int currentAggressionOrSuspicion) {
+        this.currentAggressionOrSuspicion = currentAggressionOrSuspicion;
+    }
+
+    public Short getCurrentFromWhere() {
+        return currentFromWhere;
+    }
+
+    public void setCurrentFromWhere(Short currentFromWhere) {
+        this.currentFromWhere = currentFromWhere;
+    }
+
+    public boolean isFromWhereDisabled() {
+        return fromWhereDisabled;
+    }
+
+    public void setFromWhereDisabled(boolean fromWhereDisabled) {
+        this.fromWhereDisabled = fromWhereDisabled;
+    }
+
+    public String getOtherAnimal() {
+        return otherAnimal;
+    }
+
+    public void setOtherAnimal(String otherAnimal) {
+        this.otherAnimal = otherAnimal;
+    }
+
+    public boolean isOtherAnimalDisabled() {
+        return otherAnimalDisabled;
+    }
+
+    public void setOtherAnimalDisabled(boolean otherAnimalDisabled) {
+        this.otherAnimalDisabled = otherAnimalDisabled;
+    }
+
+    public boolean isIdentificationNumberDisabled() {
+        return identificationNumberDisabled;
+    }
+
+    public void setIdentificationNumberDisabled(boolean identificationNumberDisabled) {
+        this.identificationNumberDisabled = identificationNumberDisabled;
+    }
+
+    public boolean isDirectionHomeDisabled() {
+        return directionHomeDisabled;
+    }
+
+    public boolean isOtherAnatomicalPlaceDisabled() {
+        return otherAnatomicalPlaceDisabled;
+    }
+
+    public void setOtherAnatomicalPlaceDisabled(boolean otherAnatomicalPlaceDisabled) {
+        this.otherAnatomicalPlaceDisabled = otherAnatomicalPlaceDisabled;
+    }
+
+    public boolean isSecurityElementsDisabled() {
+        return securityElementsDisabled;
+    }
+
+    public void setSecurityElementsDisabled(boolean securityElementsDisabled) {
+        this.securityElementsDisabled = securityElementsDisabled;
+    }
+
+    public boolean isTransportUserDisabled() {
+        return transportUserDisabled;
+    }
+
+    public void setTransportUserDisabled(boolean transportUserDisabled) {
+        this.transportUserDisabled = transportUserDisabled;
+    }
+
+    public int getCurrentSearchCriteria() {
+        return currentSearchCriteria;
+    }
+
+    public void setCurrentSearchCriteria(int currentSearchCriteria) {
+        this.currentSearchCriteria = currentSearchCriteria;
+    }
+
+    public String getCurrentSearchValue() {
+        return currentSearchValue;
+    }
+
+    public void setCurrentSearchValue(String currentSearchValue) {
+        this.currentSearchValue = currentSearchValue;
+    }
+
+    public SelectItem[] getSearchCriteriaList() {
+        return searchCriteriaList;
+    }
+
+    public void setSearchCriteriaList(SelectItem[] searchCriteriaList) {
+        this.searchCriteriaList = searchCriteriaList;
+    }
+
+    public Date getDate1() {
+        return date1;
+    }
+
+    public void setDate1(Date date1) {
+        this.date1 = date1;
+    }
+
+    public Date getDate2() {
+        return date2;
+    }
+
+    public void setDate2(Date date2) {
+        this.date2 = date2;
+    }
+
+    public boolean isSave() {
+        return save;
+    }
+
+    public void setSave(boolean save) {
+        this.save = save;
+    }
+
+    public String getStylePosition() {
+        return stylePosition;
+    }
+
+    public void setStylePosition(String stylePosition) {
+        this.stylePosition = stylePosition;
+    }
+
+    //----------------------
+    public boolean isCurrentAmPmConsultDisabled() {
+        return currentAmPmConsultDisabled;
+    }
+
+    public void setCurrentAmPmConsultDisabled(boolean currentAmPmEConsultDisabled) {
+        this.currentAmPmConsultDisabled = currentAmPmEConsultDisabled;
+    }
+
+    public boolean isCurrentAmPmEventDisabled() {
+        return currentAmPmEventDisabled;
+    }
+
+    public void setCurrentAmPmEventDisabled(boolean currentAmPmEventDisabled) {
+        this.currentAmPmEventDisabled = currentAmPmEventDisabled;
+    }
+
+    public boolean isCurrentDayConsultDisabled() {
+        return currentDayConsultDisabled;
+    }
+
+    public void setCurrentDayConsultDisabled(boolean currentDayConsultDisabled) {
+        this.currentDayConsultDisabled = currentDayConsultDisabled;
+    }
+
+    public boolean isCurrentDayEventDisabled() {
+        return currentDayEventDisabled;
+    }
+
+    public void setCurrentDayEventDisabled(boolean currentDayEventDisabled) {
+        this.currentDayEventDisabled = currentDayEventDisabled;
+    }
+
+    public boolean isCurrentHourConsultDisabled() {
+        return currentHourConsultDisabled;
+    }
+
+    public void setCurrentHourConsultDisabled(boolean currentHourConsultDisabled) {
+        this.currentHourConsultDisabled = currentHourConsultDisabled;
+    }
+
+    public boolean isCurrentHourEventDisabled() {
+        return currentHourEventDisabled;
+    }
+
+    public void setCurrentHourEventDisabled(boolean currentHourEventDisabled) {
+        this.currentHourEventDisabled = currentHourEventDisabled;
+    }
+
+    public boolean isCurrentMinuteConsultDisabled() {
+        return currentMinuteConsultDisabled;
+    }
+
+    public void setCurrentMinuteConsultDisabled(boolean currentMinuteConsultDisabled) {
+        this.currentMinuteConsultDisabled = currentMinuteConsultDisabled;
+    }
+
+    public boolean isCurrentMinuteEventDisabled() {
+        return currentMinuteEventDisabled;
+    }
+
+    public void setCurrentMinuteEventDisabled(boolean currentMinuteEventDisabled) {
+        this.currentMinuteEventDisabled = currentMinuteEventDisabled;
+    }
+
+    public boolean isCurrentMonthConsultDisabled() {
+        return currentMonthConsultDisabled;
+    }
+
+    public void setCurrentMonthConsultDisabled(boolean currentMonthConsultDisabled) {
+        this.currentMonthConsultDisabled = currentMonthConsultDisabled;
+    }
+
+    public boolean isCurrentMonthEventDisabled() {
+        return currentMonthEventDisabled;
+    }
+
+    public void setCurrentMonthEventDisabled(boolean currentMonthEventDisabled) {
+        this.currentMonthEventDisabled = currentMonthEventDisabled;
+    }
+
+//    public Short getCurrentStateDateConsult() {
+//        return currentStateDateConsult;
+//    }
+//
+//    public void setCurrentStateDateConsult(Short currentStateDateConsult) {
+//        this.currentStateDateConsult = currentStateDateConsult;
+//    }
+//
+//    public Short getCurrentStateDateEvent() {
+//        return currentStateDateEvent;
+//    }
+//
+//    public void setCurrentStateDateEvent(Short currentStateDateEvent) {
+//        this.currentStateDateEvent = currentStateDateEvent;
+//    }
+//
+//    public Short getCurrentStateTimeConsult() {
+//        return currentStateTimeConsult;
+//    }
+//
+//    public void setCurrentStateTimeConsult(Short currentStateTimeConsult) {
+//        this.currentStateTimeConsult = currentStateTimeConsult;
+//    }
+//
+//    public Short getCurrentStateTimeEvent() {
+//        return currentStateTimeEvent;
+//    }
+//
+//    public void setCurrentStateTimeEvent(Short currentStateTimeEvent) {
+//        this.currentStateTimeEvent = currentStateTimeEvent;
+//    }
+    public boolean isCurrentYearConsultDisabled() {
+        return currentYearConsultDisabled;
+    }
+
+    public void setCurrentYearConsultDisabled(boolean currentYearConsultDisabled) {
+        this.currentYearConsultDisabled = currentYearConsultDisabled;
+    }
+
+    public boolean isCurrentYearEventDisabled() {
+        return currentYearEventDisabled;
+    }
+
+    public void setCurrentYearEventDisabled(boolean currentYearEventDisabled) {
+        this.currentYearEventDisabled = currentYearEventDisabled;
+    }
+
+//    public SelectItem[] getStateDateList() {
+//        return stateDateList;
+//    }
+//
+//    public void setStateDateList(SelectItem[] stateDateList) {
+//        this.stateDateList = stateDateList;
+//    }
+//
+//    public SelectItem[] getStateTimeList() {
+//        return stateTimeList;
+//    }
+//
+//    public void setStateTimeList(SelectItem[] stateTimeList) {
+//        this.stateTimeList = stateTimeList;
+//    }
+    public boolean isStranger() {
+        return stranger;
+    }
+
+    public void setStranger(boolean stranger) {
+        this.stranger = stranger;
+    }
+
+    public boolean isCurrentMunicipalitieDisabled() {
+        return currentMunicipalitieDisabled;
+    }
+
+    public void setCurrentMunicipalitieDisabled(boolean currentMunicipalitieDisabled) {
+        this.currentMunicipalitieDisabled = currentMunicipalitieDisabled;
+    }
+
+    public boolean isCurrentDepartamentHomeDisabled() {
+        return currentDepartamentHomeDisabled;
+    }
+
+    public void setCurrentDepartamentHomeDisabled(boolean currentDepartamentHomeDisabled) {
+        this.currentDepartamentHomeDisabled = currentDepartamentHomeDisabled;
+    }
+
+    public boolean isStrangerDisabled() {
+        return strangerDisabled;
+    }
+
+    public void setStrangerDisabled(boolean strangerDisabled) {
+        this.strangerDisabled = strangerDisabled;
+    }
+
+    public SelectItem[] getInsurances() {
+        return insurances;
+    }
+
+    public void setInsurances(SelectItem[] insurances) {
+        this.insurances = insurances;
+    }
+
+    public Short getCurrentInsurance() {
+        return currentInsurance;
+    }
+
+    public void setCurrentInsurance(Short currentInsurance) {
+        this.currentInsurance = currentInsurance;
+    }
+    
+    public String getCurrentIdForm() {
+        return currentIdForm;
+    }
+
+    public void setCurrentIdForm(String currentIdForm) {
+        this.currentIdForm = currentIdForm;
     }
 }

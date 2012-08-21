@@ -11,7 +11,7 @@ import model.pojo.Days;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class DaysFacade extends AbstractFacade<Days> {
@@ -20,11 +20,11 @@ public class DaysFacade extends AbstractFacade<Days> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public DaysFacade() {
-        super(Days.class);
+	super(Days.class);
     }
     
 }

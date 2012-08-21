@@ -12,20 +12,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "fatal_injury_murder", catalog = "od", schema = "public")
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "FatalInjuryMurder.findAll", query = "SELECT f FROM FatalInjuryMurder f"),
-    @NamedQuery(name = "FatalInjuryMurder.findByVictimPlaceOfOrigin", query = "SELECT f FROM FatalInjuryMurder f WHERE f.victimPlaceOfOrigin = :victimPlaceOfOrigin"),
     @NamedQuery(name = "FatalInjuryMurder.findByFatalInjuryId", query = "SELECT f FROM FatalInjuryMurder f WHERE f.fatalInjuryId = :fatalInjuryId")})
 public class FatalInjuryMurder implements Serializable {
     private static final long serialVersionUID = 1L;
-    @Size(max = 2147483647)
-    @Column(name = "victim_place_of_origin", length = 2147483647)
-    private String victimPlaceOfOrigin;
+    
     @Id
     @Basic(optional = false)
     @NotNull
@@ -40,79 +37,69 @@ public class FatalInjuryMurder implements Serializable {
     @JoinColumn(name = "fatal_injury_id", referencedColumnName = "fatal_injury_id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private FatalInjuries fatalInjuries;
-    
 
     public FatalInjuryMurder() {
     }
 
     public FatalInjuryMurder(Integer fatalInjuryId) {
-        this.fatalInjuryId = fatalInjuryId;
-    }
-
-    public String getVictimPlaceOfOrigin() {
-        return victimPlaceOfOrigin;
-    }
-
-    public void setVictimPlaceOfOrigin(String victimPlaceOfOrigin) {
-        this.victimPlaceOfOrigin = victimPlaceOfOrigin;
+	this.fatalInjuryId = fatalInjuryId;
     }
 
     public Integer getFatalInjuryId() {
-        return fatalInjuryId;
+	return fatalInjuryId;
     }
 
     public void setFatalInjuryId(Integer fatalInjuryId) {
-        this.fatalInjuryId = fatalInjuryId;
+	this.fatalInjuryId = fatalInjuryId;
     }
 
     public WeaponTypes getWeaponTypeId() {
-        return weaponTypeId;
+	return weaponTypeId;
     }
 
     public void setWeaponTypeId(WeaponTypes weaponTypeId) {
-        this.weaponTypeId = weaponTypeId;
+	this.weaponTypeId = weaponTypeId;
     }
 
     public MurderContexts getMurderContextId() {
-        return murderContextId;
+	return murderContextId;
     }
 
     public void setMurderContextId(MurderContexts murderContextId) {
-        this.murderContextId = murderContextId;
+	this.murderContextId = murderContextId;
     }
 
     public FatalInjuries getFatalInjuries() {
-        return fatalInjuries;
+	return fatalInjuries;
     }
 
     public void setFatalInjuries(FatalInjuries fatalInjuries) {
-        this.fatalInjuries = fatalInjuries;
+	this.fatalInjuries = fatalInjuries;
     }
-
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (fatalInjuryId != null ? fatalInjuryId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (fatalInjuryId != null ? fatalInjuryId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof FatalInjuryMurder)) {
-            return false;
-        }
-        FatalInjuryMurder other = (FatalInjuryMurder) object;
-        if ((this.fatalInjuryId == null && other.fatalInjuryId != null) || (this.fatalInjuryId != null && !this.fatalInjuryId.equals(other.fatalInjuryId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof FatalInjuryMurder)) {
+	    return false;
+	}
+	FatalInjuryMurder other = (FatalInjuryMurder) object;
+	if ((this.fatalInjuryId == null && other.fatalInjuryId != null) || (this.fatalInjuryId != null && !this.fatalInjuryId.equals(other.fatalInjuryId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.FatalInjuryMurder[ fatalInjuryId=" + fatalInjuryId + " ]";
+	return "model.pojo.FatalInjuryMurder[ fatalInjuryId=" + fatalInjuryId + " ]";
     }
     
 }

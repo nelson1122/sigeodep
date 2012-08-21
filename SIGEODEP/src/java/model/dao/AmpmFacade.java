@@ -11,7 +11,7 @@ import model.pojo.Ampm;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class AmpmFacade extends AbstractFacade<Ampm> {
@@ -20,11 +20,11 @@ public class AmpmFacade extends AbstractFacade<Ampm> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public AmpmFacade() {
-        super(Ampm.class);
+	super(Ampm.class);
     }
     
 }

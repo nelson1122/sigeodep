@@ -11,7 +11,7 @@ import model.pojo.FatalInjuries;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class FatalInjuriesFacade extends AbstractFacade<FatalInjuries> {
@@ -20,11 +20,13 @@ public class FatalInjuriesFacade extends AbstractFacade<FatalInjuries> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
+    
+    
 
     public FatalInjuriesFacade() {
-        super(FatalInjuries.class);
+	super(FatalInjuries.class);
     }
     
     public int findMax() {

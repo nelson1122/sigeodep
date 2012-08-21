@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "forms", catalog = "od", schema = "public", uniqueConstraints = {
@@ -51,80 +51,80 @@ public class Forms implements Serializable {
     }
 
     public Forms(String formId) {
-        this.formId = formId;
+	this.formId = formId;
     }
 
     public Forms(String formId, String formName) {
-        this.formId = formId;
-        this.formName = formName;
+	this.formId = formId;
+	this.formName = formName;
     }
 
     public String getFormId() {
-        return formId;
+	return formId;
     }
 
     public void setFormId(String formId) {
-        this.formId = formId;
+	this.formId = formId;
     }
 
     public String getFormName() {
-        return formName;
+	return formName;
     }
 
     public void setFormName(String formName) {
-        this.formName = formName;
+	this.formName = formName;
     }
 
     @XmlTransient
     public List<Sources> getSourcesList() {
-        return sourcesList;
+	return sourcesList;
     }
 
     public void setSourcesList(List<Sources> sourcesList) {
-        this.sourcesList = sourcesList;
+	this.sourcesList = sourcesList;
     }
 
     @XmlTransient
     public List<RelationGroup> getRelationGroupList() {
-        return relationGroupList;
+	return relationGroupList;
     }
 
     public void setRelationGroupList(List<RelationGroup> relationGroupList) {
-        this.relationGroupList = relationGroupList;
+	this.relationGroupList = relationGroupList;
     }
 
     @XmlTransient
     public List<Fields> getFieldsList() {
-        return fieldsList;
+	return fieldsList;
     }
 
     public void setFieldsList(List<Fields> fieldsList) {
-        this.fieldsList = fieldsList;
+	this.fieldsList = fieldsList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (formId != null ? formId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (formId != null ? formId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Forms)) {
-            return false;
-        }
-        Forms other = (Forms) object;
-        if ((this.formId == null && other.formId != null) || (this.formId != null && !this.formId.equals(other.formId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof Forms)) {
+	    return false;
+	}
+	Forms other = (Forms) object;
+	if ((this.formId == null && other.formId != null) || (this.formId != null && !this.formId.equals(other.formId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return formId;
+	return formId;
     }
     
 }

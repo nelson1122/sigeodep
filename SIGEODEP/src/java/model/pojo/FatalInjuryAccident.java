@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "fatal_injury_accident", catalog = "od", schema = "public")
@@ -32,7 +32,6 @@ public class FatalInjuryAccident implements Serializable {
     @JoinColumn(name = "fatal_injury_id", referencedColumnName = "fatal_injury_id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private FatalInjuries fatalInjuries;
-    
     @JoinColumn(name = "death_mechanism_id", referencedColumnName = "accident_mechanism_id")
     @ManyToOne
     private AccidentMechanisms deathMechanismId;
@@ -41,64 +40,64 @@ public class FatalInjuryAccident implements Serializable {
     }
 
     public FatalInjuryAccident(Integer fatalInjuryId) {
-        this.fatalInjuryId = fatalInjuryId;
+	this.fatalInjuryId = fatalInjuryId;
     }
 
     public Short getNumberNonFatalVictims() {
-        return numberNonFatalVictims;
+	return numberNonFatalVictims;
     }
 
     public void setNumberNonFatalVictims(Short numberNonFatalVictims) {
-        this.numberNonFatalVictims = numberNonFatalVictims;
+	this.numberNonFatalVictims = numberNonFatalVictims;
     }
 
     public Integer getFatalInjuryId() {
-        return fatalInjuryId;
+	return fatalInjuryId;
     }
 
     public void setFatalInjuryId(Integer fatalInjuryId) {
-        this.fatalInjuryId = fatalInjuryId;
+	this.fatalInjuryId = fatalInjuryId;
     }
 
     public FatalInjuries getFatalInjuries() {
-        return fatalInjuries;
+	return fatalInjuries;
     }
 
     public void setFatalInjuries(FatalInjuries fatalInjuries) {
-        this.fatalInjuries = fatalInjuries;
+	this.fatalInjuries = fatalInjuries;
     }
 
     public AccidentMechanisms getDeathMechanismId() {
-        return deathMechanismId;
+	return deathMechanismId;
     }
 
     public void setDeathMechanismId(AccidentMechanisms deathMechanismId) {
-        this.deathMechanismId = deathMechanismId;
+	this.deathMechanismId = deathMechanismId;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (fatalInjuryId != null ? fatalInjuryId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (fatalInjuryId != null ? fatalInjuryId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof FatalInjuryAccident)) {
-            return false;
-        }
-        FatalInjuryAccident other = (FatalInjuryAccident) object;
-        if ((this.fatalInjuryId == null && other.fatalInjuryId != null) || (this.fatalInjuryId != null && !this.fatalInjuryId.equals(other.fatalInjuryId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof FatalInjuryAccident)) {
+	    return false;
+	}
+	FatalInjuryAccident other = (FatalInjuryAccident) object;
+	if ((this.fatalInjuryId == null && other.fatalInjuryId != null) || (this.fatalInjuryId != null && !this.fatalInjuryId.equals(other.fatalInjuryId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.FatalInjuryAccident[ fatalInjuryId=" + fatalInjuryId + " ]";
+	return "model.pojo.FatalInjuryAccident[ fatalInjuryId=" + fatalInjuryId + " ]";
     }
     
 }

@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "victim_characteristics", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class VictimCharacteristics implements Serializable {
     }
 
     public VictimCharacteristics(Short characteristicId) {
-        this.characteristicId = characteristicId;
+	this.characteristicId = characteristicId;
     }
 
     public VictimCharacteristics(Short characteristicId, String characteristicName) {
-        this.characteristicId = characteristicId;
-        this.characteristicName = characteristicName;
+	this.characteristicId = characteristicId;
+	this.characteristicName = characteristicName;
     }
 
     public Short getCharacteristicId() {
-        return characteristicId;
+	return characteristicId;
     }
 
     public void setCharacteristicId(Short characteristicId) {
-        this.characteristicId = characteristicId;
+	this.characteristicId = characteristicId;
     }
 
     public String getCharacteristicName() {
-        return characteristicName;
+	return characteristicName;
     }
 
     public void setCharacteristicName(String characteristicName) {
-        this.characteristicName = characteristicName;
+	this.characteristicName = characteristicName;
     }
 
     @XmlTransient
     public List<FatalInjuryTraffic> getFatalInjuryTrafficList() {
-        return fatalInjuryTrafficList;
+	return fatalInjuryTrafficList;
     }
 
     public void setFatalInjuryTrafficList(List<FatalInjuryTraffic> fatalInjuryTrafficList) {
-        this.fatalInjuryTrafficList = fatalInjuryTrafficList;
+	this.fatalInjuryTrafficList = fatalInjuryTrafficList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (characteristicId != null ? characteristicId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (characteristicId != null ? characteristicId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof VictimCharacteristics)) {
-            return false;
-        }
-        VictimCharacteristics other = (VictimCharacteristics) object;
-        if ((this.characteristicId == null && other.characteristicId != null) || (this.characteristicId != null && !this.characteristicId.equals(other.characteristicId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof VictimCharacteristics)) {
+	    return false;
+	}
+	VictimCharacteristics other = (VictimCharacteristics) object;
+	if ((this.characteristicId == null && other.characteristicId != null) || (this.characteristicId != null && !this.characteristicId.equals(other.characteristicId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.VictimCharacteristics[ characteristicId=" + characteristicId + " ]";
+	return "model.pojo.VictimCharacteristics[ characteristicId=" + characteristicId + " ]";
     }
     
 }

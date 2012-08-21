@@ -11,7 +11,7 @@ import model.pojo.Intentionalities;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class IntentionalitiesFacade extends AbstractFacade<Intentionalities> {
@@ -20,11 +20,11 @@ public class IntentionalitiesFacade extends AbstractFacade<Intentionalities> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public IntentionalitiesFacade() {
-        super(Intentionalities.class);
+	super(Intentionalities.class);
     }
     
 }

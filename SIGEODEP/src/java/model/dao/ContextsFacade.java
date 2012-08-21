@@ -11,7 +11,7 @@ import model.pojo.Contexts;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class ContextsFacade extends AbstractFacade<Contexts> {
@@ -20,11 +20,11 @@ public class ContextsFacade extends AbstractFacade<Contexts> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public ContextsFacade() {
-        super(Contexts.class);
+	super(Contexts.class);
     }
     
 }

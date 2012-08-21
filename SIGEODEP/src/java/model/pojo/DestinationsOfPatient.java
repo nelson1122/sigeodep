@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "destinations_of_patient", catalog = "od", schema = "public", uniqueConstraints = {
@@ -43,62 +43,62 @@ public class DestinationsOfPatient implements Serializable {
     }
 
     public DestinationsOfPatient(Short destinationPatientId) {
-        this.destinationPatientId = destinationPatientId;
+	this.destinationPatientId = destinationPatientId;
     }
 
     public DestinationsOfPatient(Short destinationPatientId, String destinationPatientName) {
-        this.destinationPatientId = destinationPatientId;
-        this.destinationPatientName = destinationPatientName;
+	this.destinationPatientId = destinationPatientId;
+	this.destinationPatientName = destinationPatientName;
     }
 
     public Short getDestinationPatientId() {
-        return destinationPatientId;
+	return destinationPatientId;
     }
 
     public void setDestinationPatientId(Short destinationPatientId) {
-        this.destinationPatientId = destinationPatientId;
+	this.destinationPatientId = destinationPatientId;
     }
 
     public String getDestinationPatientName() {
-        return destinationPatientName;
+	return destinationPatientName;
     }
 
     public void setDestinationPatientName(String destinationPatientName) {
-        this.destinationPatientName = destinationPatientName;
+	this.destinationPatientName = destinationPatientName;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+	return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+	this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (destinationPatientId != null ? destinationPatientId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (destinationPatientId != null ? destinationPatientId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof DestinationsOfPatient)) {
-            return false;
-        }
-        DestinationsOfPatient other = (DestinationsOfPatient) object;
-        if ((this.destinationPatientId == null && other.destinationPatientId != null) || (this.destinationPatientId != null && !this.destinationPatientId.equals(other.destinationPatientId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof DestinationsOfPatient)) {
+	    return false;
+	}
+	DestinationsOfPatient other = (DestinationsOfPatient) object;
+	if ((this.destinationPatientId == null && other.destinationPatientId != null) || (this.destinationPatientId != null && !this.destinationPatientId.equals(other.destinationPatientId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.DestinationsOfPatient[ destinationPatientId=" + destinationPatientId + " ]";
+	return "model.pojo.DestinationsOfPatient[ destinationPatientId=" + destinationPatientId + " ]";
     }
     
 }

@@ -11,7 +11,7 @@ import model.pojo.NonFatalTransport;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class NonFatalTransportFacade extends AbstractFacade<NonFatalTransport> {
@@ -20,11 +20,11 @@ public class NonFatalTransportFacade extends AbstractFacade<NonFatalTransport> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public NonFatalTransportFacade() {
-        super(NonFatalTransport.class);
+	super(NonFatalTransport.class);
     }
     
 }

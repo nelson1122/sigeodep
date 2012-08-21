@@ -11,7 +11,7 @@ import model.pojo.Users;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class UsersFacade extends AbstractFacade<Users> {
@@ -20,11 +20,11 @@ public class UsersFacade extends AbstractFacade<Users> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public UsersFacade() {
-        super(Users.class);
+	super(Users.class);
     }
     
 }

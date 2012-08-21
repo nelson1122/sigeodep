@@ -11,7 +11,7 @@ import model.pojo.AbuseTypes;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class AbuseTypesFacade extends AbstractFacade<AbuseTypes> {
@@ -20,11 +20,11 @@ public class AbuseTypesFacade extends AbstractFacade<AbuseTypes> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public AbuseTypesFacade() {
-        super(AbuseTypes.class);
+	super(AbuseTypes.class);
     }
     
 }

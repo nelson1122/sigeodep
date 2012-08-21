@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "non_fatal_transport", catalog = "od", schema = "public")
@@ -45,86 +45,86 @@ public class NonFatalTransport implements Serializable {
     @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private NonFatalInjuries nonFatalInjuries;
-
+    
     public NonFatalTransport() {
     }
-
+    
     public NonFatalTransport(Integer nonFatalInjuryId) {
-        this.nonFatalInjuryId = nonFatalInjuryId;
+	this.nonFatalInjuryId = nonFatalInjuryId;
     }
 
     public Integer getNonFatalInjuryId() {
-        return nonFatalInjuryId;
+	return nonFatalInjuryId;
     }
 
     public void setNonFatalInjuryId(Integer nonFatalInjuryId) {
-        this.nonFatalInjuryId = nonFatalInjuryId;
+	this.nonFatalInjuryId = nonFatalInjuryId;
     }
 
     @XmlTransient
     public List<SecurityElements> getSecurityElementsList() {
-        return securityElementsList;
+	return securityElementsList;
     }
 
     public void setSecurityElementsList(List<SecurityElements> securityElementsList) {
-        this.securityElementsList = securityElementsList;
+	this.securityElementsList = securityElementsList;
     }
 
     public TransportUsers getTransportUserId() {
-        return transportUserId;
+	return transportUserId;
     }
 
     public void setTransportUserId(TransportUsers transportUserId) {
-        this.transportUserId = transportUserId;
+	this.transportUserId = transportUserId;
     }
 
     public TransportTypes getTransportTypeId() {
-        return transportTypeId;
+	return transportTypeId;
     }
 
     public void setTransportTypeId(TransportTypes transportTypeId) {
-        this.transportTypeId = transportTypeId;
+	this.transportTypeId = transportTypeId;
     }
 
     public TransportCounterparts getTransportCounterpartId() {
-        return transportCounterpartId;
+	return transportCounterpartId;
     }
 
     public void setTransportCounterpartId(TransportCounterparts transportCounterpartId) {
-        this.transportCounterpartId = transportCounterpartId;
+	this.transportCounterpartId = transportCounterpartId;
     }
 
     public NonFatalInjuries getNonFatalInjuries() {
-        return nonFatalInjuries;
+	return nonFatalInjuries;
     }
 
     public void setNonFatalInjuries(NonFatalInjuries nonFatalInjuries) {
-        this.nonFatalInjuries = nonFatalInjuries;
+	this.nonFatalInjuries = nonFatalInjuries;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (nonFatalInjuryId != null ? nonFatalInjuryId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (nonFatalInjuryId != null ? nonFatalInjuryId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof NonFatalTransport)) {
-            return false;
-        }
-        NonFatalTransport other = (NonFatalTransport) object;
-        if ((this.nonFatalInjuryId == null && other.nonFatalInjuryId != null) || (this.nonFatalInjuryId != null && !this.nonFatalInjuryId.equals(other.nonFatalInjuryId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof NonFatalTransport)) {
+	    return false;
+	}
+	NonFatalTransport other = (NonFatalTransport) object;
+	if ((this.nonFatalInjuryId == null && other.nonFatalInjuryId != null) || (this.nonFatalInjuryId != null && !this.nonFatalInjuryId.equals(other.nonFatalInjuryId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.NonFatalTransport[ nonFatalInjuryId=" + nonFatalInjuryId + " ]";
+	return "model.pojo.NonFatalTransport[ nonFatalInjuryId=" + nonFatalInjuryId + " ]";
     }
     
 }

@@ -11,7 +11,7 @@ import model.pojo.SuicideMechanisms;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class SuicideMechanismsFacade extends AbstractFacade<SuicideMechanisms> {
@@ -20,11 +20,11 @@ public class SuicideMechanismsFacade extends AbstractFacade<SuicideMechanisms> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public SuicideMechanismsFacade() {
-        super(SuicideMechanisms.class);
+	super(SuicideMechanisms.class);
     }
     
 }

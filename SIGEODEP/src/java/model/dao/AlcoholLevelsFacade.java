@@ -11,7 +11,7 @@ import model.pojo.AlcoholLevels;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class AlcoholLevelsFacade extends AbstractFacade<AlcoholLevels> {
@@ -20,11 +20,11 @@ public class AlcoholLevelsFacade extends AbstractFacade<AlcoholLevels> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public AlcoholLevelsFacade() {
-        super(AlcoholLevels.class);
+	super(AlcoholLevels.class);
     }
     
 }

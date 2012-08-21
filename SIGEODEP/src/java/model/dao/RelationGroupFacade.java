@@ -11,7 +11,7 @@ import model.pojo.RelationGroup;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Stateless
 public class RelationGroupFacade extends AbstractFacade<RelationGroup> {
@@ -20,11 +20,11 @@ public class RelationGroupFacade extends AbstractFacade<RelationGroup> {
 
     @Override
     protected EntityManager getEntityManager() {
-        return em;
+	return em;
     }
 
     public RelationGroupFacade() {
-        super(RelationGroup.class);
+	super(RelationGroup.class);
     }
     
     public int findMaxId() {

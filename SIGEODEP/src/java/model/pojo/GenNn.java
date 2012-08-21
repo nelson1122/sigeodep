@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "gen_nn", catalog = "od", schema = "public")
@@ -31,40 +31,40 @@ public class GenNn implements Serializable {
     }
 
     public GenNn(Integer codNn) {
-        this.codNn = codNn;
+	this.codNn = codNn;
     }
 
     public Integer getCodNn() {
-        return codNn;
+	return codNn;
     }
 
     public void setCodNn(Integer codNn) {
-        this.codNn = codNn;
+	this.codNn = codNn;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (codNn != null ? codNn.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (codNn != null ? codNn.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof GenNn)) {
-            return false;
-        }
-        GenNn other = (GenNn) object;
-        if ((this.codNn == null && other.codNn != null) || (this.codNn != null && !this.codNn.equals(other.codNn))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof GenNn)) {
+	    return false;
+	}
+	GenNn other = (GenNn) object;
+	if ((this.codNn == null && other.codNn != null) || (this.codNn != null && !this.codNn.equals(other.codNn))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.GenNn[ codNn=" + codNn + " ]";
+	return "model.pojo.GenNn[ codNn=" + codNn + " ]";
     }
     
 }

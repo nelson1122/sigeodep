@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
- * @author santos
+ * @author SANTOS
  */
 @Entity
 @Table(name = "service_types", catalog = "od", schema = "public", uniqueConstraints = {
@@ -36,8 +36,7 @@ public class ServiceTypes implements Serializable {
     @Size(min = 1, max = 2147483647)
     @Column(name = "service_type_name", nullable = false, length = 2147483647)
     private String serviceTypeName;
-    @ManyToMany(mappedBy = "serviceTypesList")
-    private List<FatalInjuries> fatalInjuriesList;
+    
     @OneToMany(mappedBy = "serviceTypeId")
     private List<FatalInjuryTraffic> fatalInjuryTrafficList;
 
@@ -45,71 +44,63 @@ public class ServiceTypes implements Serializable {
     }
 
     public ServiceTypes(Short serviceTypeId) {
-        this.serviceTypeId = serviceTypeId;
+	this.serviceTypeId = serviceTypeId;
     }
 
     public ServiceTypes(Short serviceTypeId, String serviceTypeName) {
-        this.serviceTypeId = serviceTypeId;
-        this.serviceTypeName = serviceTypeName;
+	this.serviceTypeId = serviceTypeId;
+	this.serviceTypeName = serviceTypeName;
     }
 
     public Short getServiceTypeId() {
-        return serviceTypeId;
+	return serviceTypeId;
     }
 
     public void setServiceTypeId(Short serviceTypeId) {
-        this.serviceTypeId = serviceTypeId;
+	this.serviceTypeId = serviceTypeId;
     }
 
     public String getServiceTypeName() {
-        return serviceTypeName;
+	return serviceTypeName;
     }
 
     public void setServiceTypeName(String serviceTypeName) {
-        this.serviceTypeName = serviceTypeName;
+	this.serviceTypeName = serviceTypeName;
     }
 
-    @XmlTransient
-    public List<FatalInjuries> getFatalInjuriesList() {
-        return fatalInjuriesList;
-    }
-
-    public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
-        this.fatalInjuriesList = fatalInjuriesList;
-    }
-
+    
     @XmlTransient
     public List<FatalInjuryTraffic> getFatalInjuryTrafficList() {
-        return fatalInjuryTrafficList;
+	return fatalInjuryTrafficList;
     }
 
     public void setFatalInjuryTrafficList(List<FatalInjuryTraffic> fatalInjuryTrafficList) {
-        this.fatalInjuryTrafficList = fatalInjuryTrafficList;
+	this.fatalInjuryTrafficList = fatalInjuryTrafficList;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (serviceTypeId != null ? serviceTypeId.hashCode() : 0);
-        return hash;
+	int hash = 0;
+	hash += (serviceTypeId != null ? serviceTypeId.hashCode() : 0);
+	return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof ServiceTypes)) {
-            return false;
-        }
-        ServiceTypes other = (ServiceTypes) object;
-        if ((this.serviceTypeId == null && other.serviceTypeId != null) || (this.serviceTypeId != null && !this.serviceTypeId.equals(other.serviceTypeId))) {
-            return false;
-        }
-        return true;
+	// TODO: Warning - this method won't work in the case the id fields are not set
+	if (!(object instanceof ServiceTypes)) {
+	    return false;
+	}
+	ServiceTypes other = (ServiceTypes) object;
+	if ((this.serviceTypeId == null && other.serviceTypeId != null) || (this.serviceTypeId != null && !this.serviceTypeId.equals(other.serviceTypeId))) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     public String toString() {
-        return "model.pojo.ServiceTypes[ serviceTypeId=" + serviceTypeId + " ]";
+	return "model.pojo.ServiceTypes[ serviceTypeId=" + serviceTypeId + " ]";
     }
     
 }
