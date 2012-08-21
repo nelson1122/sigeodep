@@ -82,6 +82,7 @@
                 </p:layoutUnit>  
                 <!-- ****************************** CONTENIDO (PARTE CENTRAL) ************************ -->
                 <p:layoutUnit position="center" > 
+
                     <p:ajaxStatus 
                         style=" position:fixed; 
                         top: 5px; 
@@ -107,31 +108,29 @@
                         <ui:insert name="content">   
                         </ui:insert>
                     </div>
+
                 </p:layoutUnit>
             </p:layout>
-            <p:dialog 
-                header="SESION FINALIZADA"
-                widgetVar="dialogEnd"
-                modal="true"
-                closable="false"
-                resizable="false">
-                <br/>
-                <p:inputTextarea 
-                    value="Después de 10 minutos de inactividad (EN ESTE MOMENTO 3) el servidor finaliza la sesión, presione aceptar para volver a acceder a la aplicación"
-                    readonly="true" 
-                    style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 60px; width: 300px;"/>
-                <br/>
-                <br/>
-                <p:commandButton 
-                    value="ACEPTAR"
-                    actionListener="#{loginMB.closeSession}"
-                    action="index"/>
-                <!--p:commandButton 
-                    value="CONTINUAR" 
-                    type="button"
-                    onclick="dialogEnd.hide()"
-                    action="index"/-->
-            </p:dialog>
+            <h:form> 
+                <p:dialog 
+                    header="SESION FINALIZADA"
+                    widgetVar="dialogEnd"
+                    modal="true"
+                    closable="false"
+                    resizable="false">
+                    <br/>
+                    <p:inputTextarea 
+                        value="Después de 10 minutos de inactividad (EN ESTE MOMENTO 3) el servidor finaliza la sesión, presione aceptar para volver a acceder a la aplicación"
+                        readonly="true" 
+                        style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 60px; width: 300px;"/>
+                    <br/>
+                    <br/>
+                    <p:commandButton 
+                        value="ACEPTAR"
+                        actionListener="#{loginMB.closeSession}"
+                        action="index"/>
+                </p:dialog>
+            </h:form>
             <ui:insert name="dialogs">   
             </ui:insert>
         </h:body>
