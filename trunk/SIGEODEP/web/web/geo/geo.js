@@ -135,7 +135,7 @@ $(document).ready(function(){
             }
         }
         var request = OpenLayers.Request.GET({
-            url: "http://localhost:8080/SIGEODEP/faces/web/geo/data.jsp",
+            url: "data.jsp",
             params: {
                 variable: the_variable, 
                 value: the_value, 
