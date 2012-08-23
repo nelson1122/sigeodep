@@ -206,7 +206,7 @@
         </navigation-case>
         <navigation-case>
             <from-outcome>geo</from-outcome>
-            <to-view-id>/web/geo/geo1.xhtml</to-view-id>
+            <to-view-id>/web/geo/geo2.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
     </navigation-rule>
