@@ -37,10 +37,10 @@ public class FatalInjurySuicide implements Serializable {
     private FatalInjuries fatalInjuries;
     @JoinColumn(name = "previous_attempt", referencedColumnName = "boolean_id")
     @ManyToOne
-    private BooleanPojo previousAttempt;
+    private Boolean3 previousAttempt;
     @JoinColumn(name = "mental_antecedent", referencedColumnName = "boolean_id")
     @ManyToOne
-    private BooleanPojo mentalAntecedent;
+    private Boolean3 mentalAntecedent;
 
     public FatalInjurySuicide() {
     }
@@ -81,19 +81,19 @@ public class FatalInjurySuicide implements Serializable {
 	this.fatalInjuries = fatalInjuries;
     }
 
-    public BooleanPojo getPreviousAttempt() {
+    public Boolean3 getPreviousAttempt() {
 	return previousAttempt;
     }
 
-    public void setPreviousAttempt(BooleanPojo previousAttempt) {
+    public void setPreviousAttempt(Boolean3 previousAttempt) {
 	this.previousAttempt = previousAttempt;
     }
 
-    public BooleanPojo getMentalAntecedent() {
+    public Boolean3 getMentalAntecedent() {
 	return mentalAntecedent;
     }
 
-    public void setMentalAntecedent(BooleanPojo mentalAntecedent) {
+    public void setMentalAntecedent(Boolean3 mentalAntecedent) {
 	this.mentalAntecedent = mentalAntecedent;
     }
 

@@ -24,8 +24,8 @@ import javax.xml.bind.annotation.XmlTransient;
 public class NonFatalDomesticViolence implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    @Column(name = "residence_departament")
-    private Short residenceDepartament;
+    //@Column(name = "residence_departament")
+    //private Short residenceDepartament;
     @Id
     @Basic(optional = false)
     @NotNull
@@ -73,13 +73,13 @@ public class NonFatalDomesticViolence implements Serializable {
 	this.nonFatalInjuryId = nonFatalInjuryId;
     }
     
-    public Short getResidenceDepartament() {
-        return residenceDepartament;
-    }
-
-    public void setResidenceDepartament(Short residenceDepartament) {
-        this.residenceDepartament = residenceDepartament;
-    }
+//    public Short getResidenceDepartament() {
+//        return residenceDepartament;
+//    }
+//
+//    public void setResidenceDepartament(Short residenceDepartament) {
+//        this.residenceDepartament = residenceDepartament;
+//    }
 
     @XmlTransient
     public List<AggressorTypes> getAggressorTypesList() {

@@ -47,12 +47,13 @@ public class RecordDataMB implements Serializable {
     private String[] columnsNames;
     private int tuplesNumber;
     private int tuplesProcessed;
+    private boolean btnRegisterDataDisabled = false;
     private ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
     private RelationVar relationVar;
     //private Field fieldExepted;
     //private String type;
     //private String error;
-    private String nameForm;
+    private String nameForm = "";
     //manejo de persistencia
     @EJB
     FormsFacade formsFacade;
@@ -113,7 +114,9 @@ public class RecordDataMB implements Serializable {
     @EJB
     AccidentClassesFacade accidentClassesFacade;
     @EJB
-    BooleanPojoFacade booleanPojoFacade;
+    Boolean3Facade boolean3Facade;
+    @EJB
+    Boolean2Facade boolean2Facade;
     @EJB
     RelationshipsToVictimFacade relationshipsToVictimFacade;
     @EJB
@@ -158,6 +161,8 @@ public class RecordDataMB implements Serializable {
     KindsOfInjuryFacade kindsOfInjuryFacade;
     @EJB
     NonFatalDataSourcesFacade nonFatalDataSourcesFacade;
+    @EJB
+    InsuranceFacade insuranceFacade;
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //MANEJO E LA BARRA DE PROGRESO DEL ALMACENAMIENTO ---------------------
@@ -166,11 +171,6 @@ public class RecordDataMB implements Serializable {
     private Integer progress;
 
     public Integer getProgress() {
-        /*
-         * if (progress == null) { progress = 0; } else { progress = progress +
-         * 30 + (int) (Math.random() * 30); if (progress > 100) { progress =
-         * 100; } }
-         */
         return progress;
     }
 
@@ -179,8 +179,8 @@ public class RecordDataMB implements Serializable {
     }
 
     public void onComplete() {
-        //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la adición de " + String.valueOf(tuplesProcessed)
-        //	+ "registros, para filalizar guarde si lo desea la configuración de relaciones actual o reinicie para realizar la carga de registros de otro acrchivo"));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la adición de " + String.valueOf(tuplesProcessed)
+                + "registros, para filalizar guarde si lo desea la configuración de relaciones actual o reinicie para realizar la carga de registros de otro acrchivo"));
     }
 
     public void cancel() {
@@ -205,7 +205,7 @@ public class RecordDataMB implements Serializable {
         /*
          * click sobre el boton reset
          */
-        progress = null;
+        progress = 0;
         loginMB.reset();
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Se han reinicidado los controles"));
     }
@@ -222,11 +222,9 @@ public class RecordDataMB implements Serializable {
             resultSetFileData.next();
             tuplesNumber = resultSetFileData.getInt(1);//numero de tuplas a procesar
             tuplesProcessed = 0;//numero de tuplas procesdas            
-            resultSetFileData = conx.consult("SELECT * FROM temp ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)
-            resultSetFileData.next();
             progress = 0;
             currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();//tomo el grupo de relaciones de valores y de variables
-
+            resultSetFileData = conx.consult("SELECT * FROM temp ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
             int columnsNumber = resultSetFileData.getMetaData().getColumnCount();
             int errorsNumber = 0;
             int pos = 0;
@@ -236,98 +234,125 @@ public class RecordDataMB implements Serializable {
                 pos++;
             }
             errorsControlMB.setErrorControlArrayList(new ArrayList<ErrorControl>());//arreglo de errores            
-            int count = 1;
-            do {//recorro cada uno de los registros de la tabla temp                                                
+            int countErrors = 1;
+            while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                                                
                 for (int i = 0; i < columnsNames.length; i++) {//recorro cada una de las columnas de cada registro                    
                     relationVar = currentRelationsGroup.findRelationVar(columnsNames[i]);//determino la relacion de variables
                     if (relationVar != null) {
+                        String value;
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
                             case text:
                                 break;
                             case integer:
-                                if (!isNumeric(resultSetFileData.getString(columnsNames[i]))) {
+                                value = isNumeric(resultSetFileData.getString(columnsNames[i]));
+                                System.out.println("Validando Entero: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                if (value == null) {
                                     errorsNumber++;//error = "No es entero";
-                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "integer"));
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(countErrors), "integer"));
                                 }
                                 break;
                             case age:
-                                if (!isAge(resultSetFileData.getString(columnsNames[i]))) {
+                                String[] ageResult = isAge(resultSetFileData.getString(columnsNames[i]));
+                                value = null;
+                                if (ageResult != null) {
+                                    for (int j = 0; j < ageResult.length; j++) {
+                                        value = value + "[" + ageResult[j] + "]";
+                                    }
+                                }
+                                System.out.println("Validando Age: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                if (value == null) {
                                     errorsNumber++;//error = "fecha no corresponde al formato";
-                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "age"));
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(countErrors), "age"));
                                 }
                                 break;
                             case date:
-                                if (!isDate(resultSetFileData.getString(columnsNames[i]), relationVar.getDateFormat())) {
+
+                                //if (isDate(resultSetFileData.getString(columnsNames[i]), relationVar.getDateFormat()) == null) {
+                                value = isDate(resultSetFileData.getString(columnsNames[i]), relationVar.getDateFormat());
+                                System.out.println("Validando Fecha: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                if (value == null) {
                                     errorsNumber++;//error = "fecha no corresponde al formato";
-                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "date"));
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(countErrors), "date"));
                                 }
                                 break;
                             case military:
-                                errorStr = isMilitary(resultSetFileData.getString(columnsNames[i]));
-                                if (errorStr != null) {
+
+                                //if (isMilitary(resultSetFileData.getString(columnsNames[i])) == null) {
+                                value = isMilitary(resultSetFileData.getString(columnsNames[i]));
+                                System.out.println("Validando Militar: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                if (value == null) {
                                     errorsNumber++;//la hora militar no puede ser determinada
-                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "military"));
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(countErrors), "military"));
                                 }
                                 break;
                             case hour:
-                                if (!isHour(resultSetFileData.getString(columnsNames[i]))) {
+                                //if (isHour(resultSetFileData.getString(columnsNames[i])) == null) {
+                                value = isHour(resultSetFileData.getString(columnsNames[i]));
+                                System.out.println("Validando Hora: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                if (value == null) {
                                     errorsNumber++;//la hora militar no puede ser determinada
-                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "hour"));
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(countErrors), "hour"));
                                 }
                                 break;
                             case minute:
-                                if (!isMinute(resultSetFileData.getString(columnsNames[i]))) {
+                                //if (isMinute(resultSetFileData.getString(columnsNames[i])) == null) {
+                                value = isMinute(resultSetFileData.getString(columnsNames[i]));
+                                System.out.println("Validando Minuto: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                if (value == null) {
                                     errorsNumber++;//la hora militar no puede ser determinada
-                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "minute"));
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(countErrors), "minute"));
                                 }
                                 break;
                             case day:
-                                if (!isDay(resultSetFileData.getString(columnsNames[i]))) {
+                                //if (isDay(resultSetFileData.getString(columnsNames[i])) == null) {
+                                value = isDay(resultSetFileData.getString(columnsNames[i]));
+                                System.out.println("Validando Dia: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                if (value == null) {
                                     errorsNumber++;//la hora militar no puede ser determinada
-                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "day"));
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(countErrors), "day"));
                                 }
                                 break;
                             case month:
-                                if (!isMonth(resultSetFileData.getString(columnsNames[i]))) {
+                                //if (isMonth(resultSetFileData.getString(columnsNames[i])) == null) {
+                                value = isMonth(resultSetFileData.getString(columnsNames[i]));
+                                System.out.println("Validando Mes: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                if (value == null) {
                                     errorsNumber++;//la hora militar no puede ser determinada
-                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "month"));
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(countErrors), "month"));
                                 }
                                 break;
                             case year:
-                                if (!isYear(resultSetFileData.getString(columnsNames[i]))) {
+                                //if (isYear(resultSetFileData.getString(columnsNames[i])) == null) {
+                                value = isYear(resultSetFileData.getString(columnsNames[i]));
+                                System.out.println("Validando Año: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                if (value == null) {
                                     errorsNumber++;//la hora militar no puede ser determinada
-                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(count), "year"));
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(countErrors), "year"));
                                 }
                                 break;
                             case NOVALUE:
-                                if (!isCategorical(
-                                        resultSetFileData.getString(relationVar.getNameFound()), relationVar.getNameExpected(),
-                                        relationVar.getTypeComparisonForCode(), relationVar.getRelationValueList())) {
-                                    //verifico si el valor se encuentra dentro de los valores descartados
-                                    if (!isDiscarded(resultSetFileData.getString(columnsNames[i]), relationVar.getDiscardedValues())) {
-                                        errorsNumber++;//error = "no esta en la categoria ni es un valor descartado";
-                                        errorsControlMB.addError(
-                                                new ErrorControl(
-                                                relationVar,
-                                                resultSetFileData.getString(relationVar.getNameFound()),
-                                                String.valueOf(count),
-                                                formsAndFieldsDataMB.variableDescription(relationVar.getNameExpected())));
-                                    }
-
+                                //if (isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar) == null) {
+                                value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
+                                System.out.println("Validando Categoria: " + resultSetFileData.getString(relationVar.getNameFound()) + "   Resultado: " + value);
+                                if (value == null) {
+                                    errorsNumber++;//error = "no esta en la categoria ni es un valor descartado";
+                                    errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(countErrors), formsAndFieldsDataMB.variableDescription(relationVar.getNameExpected())));
                                 }
                                 break;
                         }
                     }
                 }
-                count++;
-            } while (resultSetFileData.next());
+                countErrors++;
+            }
             errorsControlMB.setSizeErrorsList(errorsNumber);
             errorsControlMB.updateErrorsArrayList();
-            progress = 100;
+            progress = 0;
             conx.disconnect();
             if (errorsNumber != 0) {
+                btnRegisterDataDisabled = true;
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Errores", "Existen: " + String.valueOf(errorsNumber) + " valores que no superaron el proceso de validación, dirijase a la sección de errores para  especificar si los corrige o ignora."));
             } else {
+                btnRegisterDataDisabled = false;
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha superado el proceso de validacion, presione el boton registrar datos para que sean almacenados."));
             }
         } catch (SQLException ex) {
@@ -358,9 +383,8 @@ public class RecordDataMB implements Serializable {
     public void registerSCC_F_032() {
         tuplesNumber = 0;
         tuplesProcessed = 0;
-        SimpleDateFormat textFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date currentDate;
-        SimpleDateFormat formatoDelTexto;
         String strDate;
         UseAlcoholDrugs selectUseAlcoholDrugs;
         SecurityElements selectSecurityElement;
@@ -377,7 +401,7 @@ public class RecordDataMB implements Serializable {
             tuplesNumber = resultSetFileData.getInt(1);
             //resultSetFileData contendra todos los registros de el archivo(tabla temp)
             resultSetFileData = conx.consult("SELECT * FROM temp; ");
-            resultSetFileData.next();
+            //resultSetFileData.next();
             progress = 0;
             //creo un arreglo con los nombres de las columnas
             int columnsNumber = resultSetFileData.getMetaData().getColumnCount();
@@ -387,658 +411,678 @@ public class RecordDataMB implements Serializable {
                 columnsNames[pos] = resultSetFileData.getMetaData().getColumnName(i);
                 pos++;
             }
-            do {//recorro cada uno de los registros de la tabla temp
-
+            while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp
                 //***********************************************************creo una nueva victima
                 VulnerableGroups vulnerableGroups = vulnerableGroupsFacade.find(Short.parseShort("1"));
-
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
 
                 List<VulnerableGroups> vulnerableGroupsList = new ArrayList<VulnerableGroups>();
                 vulnerableGroupsList.add(vulnerableGroups);
+
                 newVictim.setVulnerableGroupsList(vulnerableGroupsList);
                 newVictim.setVictimClass(Short.parseShort("1"));
                 try {
-                    currentDate = textFormat.parse("2012-01-01");
+                    currentDate = dateFormat.parse("2012-01-01");
                     newVictim.setVictimDateOfBirth(currentDate);
                 } catch (ParseException ex) {
                 }
-                //*****************************************************creo un nuevo lesiones_no_fatales
-                int MaxIdNFI = nonFatalInjuriesFacade.findMax();
+
+                int MaxIdNFI = nonFatalInjuriesFacade.findMax();//nuevo lesiones_no_fatales
+                //VARIABLES NECESARIAS 
                 NonFatalInjuries newNonFatalInjuries = new NonFatalInjuries();
                 newNonFatalInjuries.setNonFatalInjuryId(MaxIdNFI + 1);
-                Injuries selectInjuries = injuriesFacade.find(Short.parseShort("54"));
-                newNonFatalInjuries.setInjuryId(selectInjuries);
+                Injuries selectInjury = injuriesFacade.find(Short.parseShort("54"));
+                newNonFatalInjuries.setInjuryId(selectInjury);
                 newNonFatalInjuries.setInputTimestamp(new Date());
-
-                //*****************************************************creo un nuevo non_fatal_transport
-                NonFatalTransport newNonFatalTransport = new NonFatalTransport();
+                NonFatalTransport newNonFatalTransport = new NonFatalTransport();//nuevo non_fatal_transport
                 newNonFatalTransport.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
-
-                //*****************************************************creo un nuevo non_fatal_Interpersonal
-                NonFatalInterpersonal newNonFatalInterpersonal = new NonFatalInterpersonal();
+                NonFatalInterpersonal newNonFatalInterpersonal = new NonFatalInterpersonal();//nuevo non_fatal_Interpersonal
                 newNonFatalInterpersonal.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
-
-                //*****************************************************creo un nuevo non_fatal_Self-Inflicted
-                NonFatalSelfInflicted newNonFatalSelfInflicted = new NonFatalSelfInflicted();
+                NonFatalSelfInflicted newNonFatalSelfInflicted = new NonFatalSelfInflicted();//nuevo non_fatal_Self-Inflicted
                 newNonFatalSelfInflicted.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
+                List<SecurityElements> securityElementList = new ArrayList<SecurityElements>();//lista non_fatal_transport_security_element                
+                List<AbuseTypes> abuseTypesesList = new ArrayList<AbuseTypes>();//lista domestic_violence_abuse_type
+                List<AggressorTypes> aggressorTypesList = new ArrayList<AggressorTypes>();//lista domestic_violence_aggressor_type                
+                List<AnatomicalLocations> anatomicalLocationsList = new ArrayList<AnatomicalLocations>();//lista non_fatal_anatomical_location
+                List<KindsOfInjury> kindsOfInjurysList = new ArrayList<KindsOfInjury>();//lista non_fatal_kind_of_injury
+                List<Diagnoses> diagnosesList = new ArrayList<Diagnoses>();//lista non_fatal_diagnosis
+                List<VulnerableGroups> vulnerableGroupList = new ArrayList<VulnerableGroups>();// lista vector victim_vulnerable_group
+                String value;
+                String name = "";
+                String surname = "";
+                String[] value2;
+                Date n;
+                int hourInt;
+                int minuteInt;
+                for (int posCol = 0; posCol < columnsNames.length; posCol++) {
 
-                // ************************************************ vector non_fatal_transport_security_element
-                List<SecurityElements> securityElementList = new ArrayList<SecurityElements>();
-
-                // ************************************************ vector domestic_violence_abuse_type
-                List<AbuseTypes> abuseTypesesList = new ArrayList<AbuseTypes>();
-
-                // ************************************************ vector domestic_violence_aggressor_type
-                List<AggressorTypes> aggressorTypesList = new ArrayList<AggressorTypes>();
-
-                // ************************************************ vector non_fatal_anatomical_location
-                List<AnatomicalLocations> anatomicalLocationsList = new ArrayList<AnatomicalLocations>();
-
-                // ************************************************ vector non_fatal_kind_of_injury
-                List<KindsOfInjury> kindsOfInjurysList = new ArrayList<KindsOfInjury>();
-
-                // ************************************************ vector non_fatal_diagnosis
-                List<Diagnoses> diagnosesList = new ArrayList<Diagnoses>();
-
-                // ************************************************ vector victim_vulnerable_group
-                List<VulnerableGroups> vulnerableGroupList = new ArrayList<VulnerableGroups>();
-                for (int i = 0; i < columnsNames.length; i++) {
-                    //AQUI SE DETERMINA QUE COLUMNA LLEGA Y QUE HACER CON ELLA
-                    if (resultSetFileData.getString(columnsNames[i]).length() != 0) //validacion de que no sea vacio
-                    {
-                        switch (SCC_F_032Enum.convert(columnsNames[i])) {
-                            // ************************************************DATOS PARA LA TABLA victims
-                            case clave:
+                    //DETERMINO QUE VALOR VOY A INGRESAR
+                    value = "";
+                    value2 = null;
+                    //||||||||||||||||||||||||||||||||||||||||||||||||||||||
+                    relationVar = currentRelationsGroup.findRelationVar(columnsNames[posCol]);//determino la relacion de variables
+                    if (relationVar != null) {
+                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
+                            case text:
+                                value = resultSetFileData.getString(columnsNames[posCol]);
                                 break;
-                            case nombre1:
-                                if (newVictim.getVictimName() != null) {
-                                    if (newVictim.getVictimName().trim().length() != 0) {
-                                        newVictim.setVictimName(newVictim.getVictimName() + " " + resultSetFileData.getString(columnsNames[i]));
-                                    } else {
-                                        newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
-                                    }
-                                } else {
-                                    newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
-                                }
+                            case integer:
+                                value = isNumeric(resultSetFileData.getString(columnsNames[posCol]));
                                 break;
-                            case nombre2:
-                                if (newVictim.getVictimName() != null) {
-                                    if (newVictim.getVictimName().trim().length() != 0) {
-                                        newVictim.setVictimName(newVictim.getVictimName() + " " + resultSetFileData.getString(columnsNames[i]));
-                                    } else {
-                                        newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
-                                    }
-                                } else {
-                                    newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
-                                }
+                            case age:
+                                value2 = isAge(resultSetFileData.getString(columnsNames[posCol]));
                                 break;
-                            case apellid1:
-                                if (newVictim.getVictimName() != null) {
-                                    if (newVictim.getVictimName().trim().length() != 0) {
-                                        newVictim.setVictimName(newVictim.getVictimName() + " " + resultSetFileData.getString(columnsNames[i]));
-                                    } else {
-                                        newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
-                                    }
-                                } else {
-                                    newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
-                                }
+                            case date:
+                                value = isDate(resultSetFileData.getString(columnsNames[posCol]), relationVar.getDateFormat());
                                 break;
-                            case apellid2:
-                                if (newVictim.getVictimName() != null) {
-                                    if (newVictim.getVictimName().trim().length() != 0) {
-                                        newVictim.setVictimName(newVictim.getVictimName() + " " + resultSetFileData.getString(columnsNames[i]));
-                                    } else {
-                                        newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
-                                    }
-                                } else {
-                                    newVictim.setVictimName(resultSetFileData.getString(columnsNames[i]));
-                                }
+                            case military:
+                                value = isMilitary(resultSetFileData.getString(columnsNames[posCol]));
                                 break;
-                            case tid:
-                                IdTypes selectIdType = idTypesFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newVictim.setTypeId(selectIdType);
+                            case hour:
+                                value = isHour(resultSetFileData.getString(columnsNames[posCol]));
                                 break;
-                            case nid:
-                                newVictim.setVictimNid(resultSetFileData.getString(columnsNames[i]));
-                                newNonFatalInjuries.setVictimId(newVictim);
+                            case minute:
+                                value = isMinute(resultSetFileData.getString(columnsNames[posCol]));
                                 break;
-                            case medad:
-                                newVictim.setAgeTypeId(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
+                            case day:
+                                value = isDay(resultSetFileData.getString(columnsNames[posCol]));
                                 break;
-                            case edadcantid:
-                                newVictim.setVictimAge(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
+                            case month:
+                                value = isMonth(resultSetFileData.getString(columnsNames[posCol]));
                                 break;
-                            case sexo:
-                                Genders selectGender = gendersFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newVictim.setGenderId(selectGender);
+                            case year:
+                                value = isYear(resultSetFileData.getString(columnsNames[posCol]));
                                 break;
-                            case ocupa:
-                                Jobs selectJob = jobsFacade.find(Short.parseShort("1"));
-                                newVictim.setJobId(selectJob);
+                            case NOVALUE:
+                                value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
                                 break;
-                            case getnico:
-                                EthnicGroups selectEthnicGroup = ethnicGroupsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newVictim.setEthnicGroupId(selectEthnicGroup);
-                                break;
-                            case codigobarr:
-                                newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(resultSetFileData.getString(columnsNames[i]))));
-                                break;
-                            case dirres:
-                                newVictim.setVictimAddress(resultSetFileData.getString(columnsNames[i]));
-                                break;
-                            case telres:
-                                newVictim.setVictimTelephone(resultSetFileData.getString(columnsNames[i]));
-                                break;
-                            // ************************************************DATOS PARA LA TABLA non_fatal_transport
-                            case ttrans:
-                                TransportTypes selectTransportTypes = transportTypesFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalTransport.setTransportTypeId(selectTransportTypes);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("51"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case tcontp:
-                                TransportCounterparts selectTransportCounterpart = transportCounterpartsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalTransport.setTransportCounterpartId(selectTransportCounterpart);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("51"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case tusuar:
-                                TransportUsers selectTransportUser = transportUsersFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalTransport.setTransportUserId(selectTransportUser);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("51"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            // ************************************************DATOS PARA LA TABLA non_fatal_interpersonal
-                            case anteca://boleano->previous_antecedent
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("TRUE") == 0) {
-                                    newNonFatalInterpersonal.setPreviousAntecedent(booleanPojoFacade.find((short) 1));
-                                } else {
-                                    if (resultSetFileData.getString(columnsNames[i]).compareTo("FALSE") == 0) {
-                                        newNonFatalInterpersonal.setPreviousAntecedent(booleanPojoFacade.find((short) 2));
-                                    } else {
-                                        //sin dato
-                                        //newNonFatalInterpersonal.setPreviousAntecedent(null);
-                                    }
-
-                                }
-                                selectInjuries = injuriesFacade.find(Short.parseShort("50"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                //}
-                                break;
-                            case relacav://categorico->relationships_to_victim
-                                RelationshipsToVictim selectRelationshipsToVictim = relationshipsToVictimFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInterpersonal.setRelationshipVictimId(selectRelationshipsToVictim);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("50"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case contex:
-                                Contexts selectContexts = contextsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInterpersonal.setContextId(selectContexts);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("50"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case sexa:
-                                AggressorGenders selectAggressorGenders = aggressorGendersFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInterpersonal.setAggressorGenderId(selectAggressorGenders);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("50"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            // ************************************************DATOS PARA LA TABLA non_fatal_selft-inflicted
-                            case intpre:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("TRUE") == 0) {
-                                    newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find((short) 1));//si
-                                } else {
-                                    newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find((short) 2));//no
-                                }
-                                selectInjuries = injuriesFacade.find(Short.parseShort("52"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case trment:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("TRUE") == 0) {
-                                    newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find((short) 1));//si
-                                } else {
-                                    newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find((short) 2));//no
-                                }
-                                selectInjuries = injuriesFacade.find(Short.parseShort("52"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case fprec:
-                                PrecipitatingFactors selectPrecipitatingFactors = precipitatingFactorsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalSelfInflicted.setPrecipitatingFactorId(selectPrecipitatingFactors);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("52"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            // ************************************************DATOS PARA LA TABLA non_fatal_transport_security_element
-                            case tsegu:
-                                selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                securityElementList.add(selectSecurityElement);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("51"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case cintu:
-                                selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                securityElementList.add(selectSecurityElement);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("51"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case cascom:
-                                selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                securityElementList.add(selectSecurityElement);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("51"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case cascob:
-                                selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                securityElementList.add(selectSecurityElement);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("51"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case chale:
-                                selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                securityElementList.add(selectSecurityElement);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("51"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            case otroel:
-                                selectSecurityElement = securityElementsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                securityElementList.add(selectSecurityElement);
-                                selectInjuries = injuriesFacade.find(Short.parseShort("51"));
-                                newNonFatalInjuries.setInjuryId(selectInjuries);
-                                break;
-                            // ************************************************DATOS PARA LA TABLA domestic_violence_abuse_type
-                            case ma1:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("1"));
-                                    abuseTypesesList.add(newAbuseType);
-                                }
-                                break;
-                            case ma2:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("2"));
-                                    abuseTypesesList.add(newAbuseType);
-                                }
-                                break;
-                            case ma3:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("3"));
-                                    abuseTypesesList.add(newAbuseType);
-                                }
-                                break;
-                            case ma4:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("4"));
-                                    abuseTypesesList.add(newAbuseType);
-                                }
-                                break;
-                            case ma5:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("5"));
-                                    abuseTypesesList.add(newAbuseType);
-                                }
-                                break;
-                            case ma6:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("6"));
-                                    abuseTypesesList.add(newAbuseType);
-                                }
-                                break;
-                            case ma7:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("7"));
-                                    abuseTypesesList.add(newAbuseType);
-                                }
-                                break;
-                            // ************************************************DATOS PARA LA TABLA domestic_violence_aggressor_type
-                            case ag1:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("1"));
-                                    aggressorTypesList.add(newAggressorTypes);
-                                }
-                                break;
-                            case ag2:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("2"));
-                                    aggressorTypesList.add(newAggressorTypes);
-                                }
-                                break;
-                            case ag3:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("3"));
-                                    aggressorTypesList.add(newAggressorTypes);
-                                }
-                                break;
-                            case ag4:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("4"));
-                                    aggressorTypesList.add(newAggressorTypes);
-                                }
-                                break;
-                            case ag5:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("5"));
-                                    aggressorTypesList.add(newAggressorTypes);
-                                }
-                                break;
-                            case ag6:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("6"));
-                                    aggressorTypesList.add(newAggressorTypes);
-                                }
-                                break;
-                            case ag7:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("7"));
-                                    aggressorTypesList.add(newAggressorTypes);
-                                }
-                                break;
-                            case ag8:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("8"));
-                                    aggressorTypesList.add(newAggressorTypes);
-                                }
-                                break;
-                            case ag9:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("9"));
-                                    aggressorTypesList.add(newAggressorTypes);
-                                }
-                                break;
-                            // ************************************************DATOS PARA LA TABLA non_fatal_anatomical_location
-                            case sistem:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("1"));
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case craneo:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("2"));
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case ojos:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("3"));
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case maxilof:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("4"));
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case cuello:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("5"));
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case torax:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("6"));
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case abdomen:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("7"));
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case columna:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("8"));
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case pelvis:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("9"));
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case msup:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("10"));
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case minf:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("11"));//Short.parseShort("1")
-
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            case ositio:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("98"));//Short.parseShort("1")                                
-                                    anatomicalLocationsList.add(newAnatomicalLocation);
-                                }
-                                break;
-                            // ************************************************DATOS PARA LA TABLA non_fatal_kind_of_injury
-                            case lacera:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("1"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            case cortada:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("2"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            case lesprof:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("3"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            case esglux:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("4"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            case fractura:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("5"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            case quemadur:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("6"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            case contusi:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("7"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            case orgsist:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("8"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            case tce:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("9"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            case olesi:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("10"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            case nosabe:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("VERDADERO") == 0) {
-                                    KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("11"));
-                                    kindsOfInjurysList.add(newKindsOfInjury);
-                                }
-                                break;
-                            // ************************************************DATOS PARA LA TABLA non_fatal_diagnosis
-                            case cie10:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
-
-                                selectDiagnoses = diagnosesFacade.find(resultSetFileData.getString(columnsNames[i]));
-                                diagnosesList.add(selectDiagnoses);
-                                //}
-                                break;
-                            case cie102:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
-                                selectDiagnoses = diagnosesFacade.find(resultSetFileData.getString(columnsNames[i]));
-                                diagnosesList.add(selectDiagnoses);
-                                //}
-                                break;
-                            case cie103:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
-                                selectDiagnoses = diagnosesFacade.find(resultSetFileData.getString(columnsNames[i]));
-                                diagnosesList.add(selectDiagnoses);
-                                //}
-                                break;
-                            case cie104:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
-                                selectDiagnoses = diagnosesFacade.find(resultSetFileData.getString(columnsNames[i]));
-                                diagnosesList.add(selectDiagnoses);
-                                //}
-                                break;
-                            // ************************************************DATOS PARA LA TABLA victim_vulnerable_group
-                            case despl:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
-                                selectVulnerableGroups = vulnerableGroupsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                vulnerableGroupList.add(selectVulnerableGroups);
-                                //}
-                                break;
-                            case disca:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
-                                selectVulnerableGroups = vulnerableGroupsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                vulnerableGroupList.add(selectVulnerableGroups);
-                                //}
-                                break;
-
-                            // ************************************************DATOS PARA LA TABLA non_fatal_injuries
-
-                            case instisal:
-                                //NonFatalDataSources selectNonFatalDataSource = nonFatalDataSourcesFacade.findByName(Integer.parseInt(resultSetFileData.getString(columnsNames[i])));
-                                NonFatalDataSources selectNonFatalDataSource = nonFatalDataSourcesFacade.findByName(resultSetFileData.getString(columnsNames[i]));
-                                newNonFatalInjuries.setNonFatalDataSourceId(selectNonFatalDataSource);
-                                break;
-                            case codbar:
-                                Neighborhoods selectNeighborhoods = neighborhoodsFacade.find(Integer.parseInt(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInjuries.setInjuryNeighborhoodId(neighborhoodsFacade.find(selectNeighborhoods.getNeighborhoodId()));
-                                break;
-                            case direv:
-                                newNonFatalInjuries.setInjuryAddress(resultSetFileData.getString(columnsNames[i]));
-                                break;
-                            case fechaev:
-                                formatoDelTexto = new SimpleDateFormat("dd/MM/yyyy");
-                                strDate = resultSetFileData.getString(columnsNames[i]);
-                                currentDate = null;
-                                try {
-                                    currentDate = formatoDelTexto.parse(strDate);
-                                    newNonFatalInjuries.setInjuryDate(currentDate);
-                                } catch (ParseException ex) {
-                                    newNonFatalInjuries.setInjuryDate(currentDate);
-                                }
-                                break;
-                            case diaev:
-                                newNonFatalInjuries.setInjuryDayOfWeek(resultSetFileData.getString(columnsNames[i]));
-                                break;
-                            case horaev:
-                                //vene en formato militar
-
-                                //currentDate =new Date
-                                //newNonFatalInjuries.setInjuryTime(currentDate);
-                                break;
-                            case fechacon:
-                                formatoDelTexto = new SimpleDateFormat("dd/MM/yyyy");
-                                strDate = resultSetFileData.getString(columnsNames[i]);
-                                currentDate = null;
-                                try {
-                                    currentDate = formatoDelTexto.parse(strDate);
-                                    newNonFatalInjuries.setCheckupDate(currentDate);
-                                } catch (ParseException ex) {
-                                    newNonFatalInjuries.setCheckupDate(currentDate);
-                                }
-                                break;
-                            case horacon:
-                                break;
-                            case remitido:
-                                if (resultSetFileData.getString(columnsNames[i]).compareTo("TRUE") == 0) {
-                                    newNonFatalInjuries.setSubmittedPatient(true);
-                                } else {
-                                    newNonFatalInjuries.setSubmittedPatient(false);
-                                }
-                                break;
-                            case deqips:
-//                                if (resultSetFileData.getString(columnsNames[i]).length() == 0) {
-//                                    Eps selectEps = epsFacade.find(Short.parseShort("1"));
-//                                    newNonFatalInjuries.setEpsId(selectEps.getEpsId());
-//                                } else {
-//                                    //ESTO NO IRIA HASTA QUE ESTE EL LISTADO COMPLETO DE DE EPS's
-//                                    Eps selectEps = epsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-//                                    newNonFatalInjuries.setEpsId(selectEps.getEpsId());
-//                                }
-
-                                break;
-                            case intenci:
-                                Intentionalities selectIntentionalities = intentionalitiesFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInjuries.setIntentionalityId(selectIntentionalities);
-                                break;
-                            case lugar:
-                                NonFatalPlaces selectNonFatalPlaces = nonFatalPlacesFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInjuries.setInjuryPlaceId(selectNonFatalPlaces);
-                                break;
-                            case activi:
-                                Activities selectActivities = activitiesFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInjuries.setActivityId(selectActivities);
-                                break;
-                            case mecobj:
-                                Mechanisms selectMechanisms = mechanismsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInjuries.setMechanismId(selectMechanisms);
-                                break;
-                            case alcohol:
-                                selectUseAlcoholDrugs = useAlcoholDrugsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInjuries.setUseAlcoholId(selectUseAlcoholDrugs);
-                                break;
-                            case drogas:
-                                selectUseAlcoholDrugs = useAlcoholDrugsFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInjuries.setUseDrugsId(selectUseAlcoholDrugs);
-                                break;
-                            case gradogra:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
-                                newNonFatalInjuries.setBurnInjuryDegree(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                //} else {
-                                //ESTO NO VA HASTA COMPLETAR(O COLOCAR EN NULL)
-                                //    newNonFatalInjuries.setBurnInjuryDegree(Short.parseShort("0"));
-                                // }
-                                break;
-                            case porcent:
-                                //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
-                                newNonFatalInjuries.setBurnInjuryPercentage(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                //} else {
-                                //ESTO NO VA HASTA COMPLETAR(O COLOCAR EN NULL)
-                                //    newNonFatalInjuries.setBurnInjuryPercentage(Short.parseShort("0"));
-                                //}
-                                break;
-                            case destino:
-                                DestinationsOfPatient selectDestinationsOfPatient = destinationsOfPatientFacade.find(Short.parseShort(resultSetFileData.getString(columnsNames[i])));
-                                newNonFatalInjuries.setDestinationPatientId(selectDestinationsOfPatient);
-                                break;
-
-                            default:
                         }
                     }
+                    //||||||||||||||||||||||||||||||||||||||||||||||||||||||
+                    if (value != null) {
+                        if (value.trim().length() != 0) {
+                            switch (SCC_F_032Enum.convert(relationVar.getNameExpected())) {
+                                // ************************************************DATOS PARA LA TABLA victims
+                                case clave:
+                                    break;
+                                case nombre1:
+                                    if (name.trim().length() != 0) {
+                                        name = name + " " + value;
+                                    } else {
+                                        name = value;
+                                    }
+                                    break;
+                                case nombre2:
+                                    if (name.trim().length() != 0) {
+                                        name = name + " " + value;
+                                    } else {
+                                        name = value;
+                                    }
+                                    break;
+                                case apellid1:
+                                    if (surname.trim().length() != 0) {
+                                        surname = surname + " " + value;
+                                    } else {
+                                        surname = value;
+                                    }
+                                    break;
+                                case apellid2:
+                                    if (surname.trim().length() != 0) {
+                                        surname = surname + " " + value;
+                                    } else {
+                                        surname = value;
+                                    }
+                                    break;
+                                case tid:
+                                    IdTypes selectIdType = idTypesFacade.find(Short.parseShort(value));
+                                    newVictim.setTypeId(selectIdType);
+                                    break;
+                                case nid:
+                                    if (value.trim().length() != 0) {
+                                        newVictim.setVictimNid(value);
+                                        //newNonFatalInjuries.setVictimId(newVictim);
+                                    }
+                                    break;
+                                case medad:
+
+                                    break;
+                                case asegu:
+                                    Insurance selectInsurance = insuranceFacade.find(Short.parseShort(value));
+                                    newVictim.setInsuranceId(selectInsurance);
+                                    break;
+                                case fnacimiento:
+                                    try {
+                                        currentDate = dateFormat.parse(value);
+                                        newVictim.setVictimDateOfBirth(currentDate);
+                                    } catch (ParseException ex) {
+                                    }
+
+                                    break;
+                                case edadcantid:
+                                    if (value.trim().length() != 0) {
+                                        newVictim.setVictimAge(Short.parseShort(value));
+                                    }
+                                    break;
+                                case sexo:
+                                    Genders selectGender = gendersFacade.find(Short.parseShort(value));
+                                    newVictim.setGenderId(selectGender);
+                                    break;
+                                case ocupa:
+                                    Jobs selectJob = jobsFacade.find(value);
+                                    newVictim.setJobId(selectJob);
+                                    break;
+                                case getnico:
+                                    EthnicGroups selectEthnicGroup = ethnicGroupsFacade.find(Short.parseShort(value));
+                                    newVictim.setEthnicGroupId(selectEthnicGroup);
+                                    break;
+                                case codigobarr:
+                                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(value)));
+                                    break;
+                                case dirres:
+                                    newVictim.setVictimAddress(value);
+                                    break;
+                                case telres:
+                                    newVictim.setVictimTelephone(value);
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA non_fatal_transport
+                                case ttrans:
+                                    TransportTypes selectTransportTypes = transportTypesFacade.find(Short.parseShort(value));
+                                    newNonFatalTransport.setTransportTypeId(selectTransportTypes);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("51"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case tcontp:
+                                    TransportCounterparts selectTransportCounterpart = transportCounterpartsFacade.find(Short.parseShort(value));
+                                    newNonFatalTransport.setTransportCounterpartId(selectTransportCounterpart);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("51"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case tusuar:
+                                    TransportUsers selectTransportUser = transportUsersFacade.find(Short.parseShort(value));
+                                    newNonFatalTransport.setTransportUserId(selectTransportUser);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("51"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA non_fatal_interpersonal
+                                case anteca://boleano->previous_antecedent                                    
+                                    newNonFatalInterpersonal.setPreviousAntecedent(boolean3Facade.find(Short.parseShort(value)));
+                                    selectInjury = injuriesFacade.find(Short.parseShort("50"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case relacav://categorico->relationships_to_victim
+                                    RelationshipsToVictim selectRelationshipsToVictim = relationshipsToVictimFacade.find(Short.parseShort(value));
+                                    newNonFatalInterpersonal.setRelationshipVictimId(selectRelationshipsToVictim);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("50"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case contex:
+                                    Contexts selectContexts = contextsFacade.find(Short.parseShort(value));
+                                    newNonFatalInterpersonal.setContextId(selectContexts);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("50"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case sexa:
+                                    AggressorGenders selectAggressorGenders = aggressorGendersFacade.find(Short.parseShort(value));
+                                    newNonFatalInterpersonal.setAggressorGenderId(selectAggressorGenders);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("50"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA non_fatal_selft-inflicted
+                                case intpre:
+                                    if (value.compareTo("TRUE") == 0) {
+                                        newNonFatalSelfInflicted.setPreviousAttempt(boolean3Facade.find((short) 1));//si
+                                    } else {
+                                        newNonFatalSelfInflicted.setPreviousAttempt(boolean3Facade.find((short) 2));//no
+                                    }
+                                    selectInjury = injuriesFacade.find(Short.parseShort("52"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case trment:
+                                    if (value.compareTo("TRUE") == 0) {
+                                        newNonFatalSelfInflicted.setMentalAntecedent(boolean3Facade.find((short) 1));//si
+                                    } else {
+                                        newNonFatalSelfInflicted.setMentalAntecedent(boolean3Facade.find((short) 2));//no
+                                    }
+                                    selectInjury = injuriesFacade.find(Short.parseShort("52"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case fprec:
+                                    PrecipitatingFactors selectPrecipitatingFactors = precipitatingFactorsFacade.find(Short.parseShort(value));
+                                    newNonFatalSelfInflicted.setPrecipitatingFactorId(selectPrecipitatingFactors);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("52"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA non_fatal_transport_security_element
+                                case tsegu:
+                                    selectSecurityElement = securityElementsFacade.find(Short.parseShort(value));
+                                    securityElementList.add(selectSecurityElement);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("51"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case cintu:
+                                    selectSecurityElement = securityElementsFacade.find(Short.parseShort(value));
+                                    securityElementList.add(selectSecurityElement);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("51"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case cascom:
+                                    selectSecurityElement = securityElementsFacade.find(Short.parseShort(value));
+                                    securityElementList.add(selectSecurityElement);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("51"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case cascob:
+                                    selectSecurityElement = securityElementsFacade.find(Short.parseShort(value));
+                                    securityElementList.add(selectSecurityElement);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("51"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case chale:
+                                    selectSecurityElement = securityElementsFacade.find(Short.parseShort(value));
+                                    securityElementList.add(selectSecurityElement);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("51"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                case otroel:
+                                    selectSecurityElement = securityElementsFacade.find(Short.parseShort(value));
+                                    securityElementList.add(selectSecurityElement);
+                                    selectInjury = injuriesFacade.find(Short.parseShort("51"));
+                                    newNonFatalInjuries.setInjuryId(selectInjury);
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA domestic_violence_abuse_type
+                                case ma1:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("1"));
+                                        abuseTypesesList.add(newAbuseType);
+                                    }
+                                    break;
+                                case ma2:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("2"));
+                                        abuseTypesesList.add(newAbuseType);
+                                    }
+                                    break;
+                                case ma3:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("3"));
+                                        abuseTypesesList.add(newAbuseType);
+                                    }
+                                    break;
+                                case ma4:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("4"));
+                                        abuseTypesesList.add(newAbuseType);
+                                    }
+                                    break;
+                                case ma5:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("5"));
+                                        abuseTypesesList.add(newAbuseType);
+                                    }
+                                    break;
+                                case ma6:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("6"));
+                                        abuseTypesesList.add(newAbuseType);
+                                    }
+                                    break;
+                                case ma7:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AbuseTypes newAbuseType = new AbuseTypes(Short.parseShort("7"));
+                                        abuseTypesesList.add(newAbuseType);
+                                    }
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA domestic_violence_aggressor_type
+                                case ag1:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("1"));
+                                        aggressorTypesList.add(newAggressorTypes);
+                                    }
+                                    break;
+                                case ag2:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("2"));
+                                        aggressorTypesList.add(newAggressorTypes);
+                                    }
+                                    break;
+                                case ag3:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("3"));
+                                        aggressorTypesList.add(newAggressorTypes);
+                                    }
+                                    break;
+                                case ag4:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("4"));
+                                        aggressorTypesList.add(newAggressorTypes);
+                                    }
+                                    break;
+                                case ag5:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("5"));
+                                        aggressorTypesList.add(newAggressorTypes);
+                                    }
+                                    break;
+                                case ag6:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("6"));
+                                        aggressorTypesList.add(newAggressorTypes);
+                                    }
+                                    break;
+                                case ag7:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("7"));
+                                        aggressorTypesList.add(newAggressorTypes);
+                                    }
+                                    break;
+                                case ag8:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("8"));
+                                        aggressorTypesList.add(newAggressorTypes);
+                                    }
+                                    break;
+                                case ag9:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AggressorTypes newAggressorTypes = new AggressorTypes(Short.parseShort("9"));
+                                        aggressorTypesList.add(newAggressorTypes);
+                                    }
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA non_fatal_anatomical_location
+                                case sistem:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("1"));
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case craneo:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("2"));
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case ojos:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("3"));
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case maxilof:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("4"));
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case cuello:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("5"));
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case torax:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("6"));
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case abdomen:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("7"));
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case columna:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("8"));
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case pelvis:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("9"));
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case msup:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("10"));
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case minf:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("11"));//Short.parseShort("1")
+
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                case ositio:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        AnatomicalLocations newAnatomicalLocation = new AnatomicalLocations(Short.parseShort("98"));//Short.parseShort("1")                                
+                                        anatomicalLocationsList.add(newAnatomicalLocation);
+                                    }
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA non_fatal_kind_of_injury
+                                case lacera:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("1"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                case cortada:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("2"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                case lesprof:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("3"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                case esglux:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("4"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                case fractura:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("5"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                case quemadur:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("6"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                case contusi:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("7"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                case orgsist:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("8"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                case tce:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("9"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                case olesi:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("10"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                case nosabe:
+                                    if (value.compareTo("VERDADERO") == 0) {
+                                        KindsOfInjury newKindsOfInjury = new KindsOfInjury(Short.parseShort("11"));
+                                        kindsOfInjurysList.add(newKindsOfInjury);
+                                    }
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA non_fatal_diagnosis
+                                case cie10:
+                                    //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
+
+                                    selectDiagnoses = diagnosesFacade.find(value);
+                                    diagnosesList.add(selectDiagnoses);
+                                    //}
+                                    break;
+                                case cie102:
+                                    //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
+                                    selectDiagnoses = diagnosesFacade.find(value);
+                                    diagnosesList.add(selectDiagnoses);
+                                    //}
+                                    break;
+                                case cie103:
+                                    //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
+                                    selectDiagnoses = diagnosesFacade.find(value);
+                                    diagnosesList.add(selectDiagnoses);
+                                    //}
+                                    break;
+                                case cie104:
+                                    //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
+                                    selectDiagnoses = diagnosesFacade.find(value);
+                                    diagnosesList.add(selectDiagnoses);
+                                    //}
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA victim_vulnerable_group
+                                case despl:
+                                    //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
+                                    selectVulnerableGroups = vulnerableGroupsFacade.find(Short.parseShort(value));
+                                    vulnerableGroupList.add(selectVulnerableGroups);
+                                    //}
+                                    break;
+                                case disca:
+                                    //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
+                                    selectVulnerableGroups = vulnerableGroupsFacade.find(Short.parseShort(value));
+                                    vulnerableGroupList.add(selectVulnerableGroups);
+                                    //}
+                                    break;
+                                // ************************************************DATOS PARA LA TABLA non_fatal_injuries
+                                case instisal:
+                                    //NonFatalDataSources selectNonFatalDataSource = nonFatalDataSourcesFacade.findByName(Integer.parseInt(resultSetFileData.getString(columnsNames[i])));
+                                    NonFatalDataSources selectNonFatalDataSource = nonFatalDataSourcesFacade.findByName(value);
+                                    newNonFatalInjuries.setNonFatalDataSourceId(selectNonFatalDataSource);
+                                    break;
+                                case codbar:
+                                    Neighborhoods selectNeighborhoods = neighborhoodsFacade.find(Integer.parseInt(value));
+                                    newNonFatalInjuries.setInjuryNeighborhoodId(neighborhoodsFacade.find(selectNeighborhoods.getNeighborhoodId()));
+                                    break;
+                                case direv:
+                                    newNonFatalInjuries.setInjuryAddress(value);
+                                    break;
+                                case fechaev:
+                                    try {
+                                        currentDate = dateFormat.parse(value);
+                                        newNonFatalInjuries.setInjuryDate(currentDate);
+                                    } catch (ParseException ex) {
+                                    }
+                                    break;
+                                case diaev:
+                                    newNonFatalInjuries.setInjuryDayOfWeek(value);
+                                    break;
+                                case horaev:
+                                    n = new Date();
+                                    hourInt = Integer.parseInt(value.substring(0, 1));
+                                    minuteInt = Integer.parseInt(value.substring(2, 3));
+                                    n.setHours(hourInt);
+                                    n.setMinutes(minuteInt);
+                                    n.setSeconds(0);
+                                    newNonFatalInjuries.setInjuryTime(n);
+                                    break;
+                                case fechacon:
+                                    strDate = value;
+                                    currentDate = null;
+                                    try {
+                                        currentDate = dateFormat.parse(strDate);
+                                        newNonFatalInjuries.setCheckupDate(currentDate);
+                                    } catch (ParseException ex) {
+                                        newNonFatalInjuries.setCheckupDate(currentDate);
+                                    }
+                                    break;
+                                case horacon:
+                                    n = new Date();
+                                    hourInt = Integer.parseInt(value.substring(0, 1));
+                                    minuteInt = Integer.parseInt(value.substring(2, 3));
+                                    n.setHours(hourInt);
+                                    n.setMinutes(minuteInt);
+                                    n.setSeconds(0);
+                                    newNonFatalInjuries.setInjuryTime(n);
+                                    break;
+                                case remitido:
+                                    if (value.compareTo("TRUE") == 0) {
+                                        newNonFatalInjuries.setSubmittedPatient(true);
+                                    } else {
+                                        newNonFatalInjuries.setSubmittedPatient(false);
+                                    }
+                                    break;
+                                case deqips:
+
+                                    break;
+                                case intenci:
+                                    Intentionalities selectIntentionalities = intentionalitiesFacade.find(Short.parseShort(value));
+                                    newNonFatalInjuries.setIntentionalityId(selectIntentionalities);
+                                    break;
+                                case lugar:
+                                    NonFatalPlaces selectNonFatalPlaces = nonFatalPlacesFacade.find(Short.parseShort(value));
+                                    newNonFatalInjuries.setInjuryPlaceId(selectNonFatalPlaces);
+                                    break;
+                                case activi:
+                                    //Activities selectActivities = activitiesFacade.find(Short.parseShort(value));
+                                    //newNonFatalInjuries.setActivityId(selectActivities);
+                                    break;
+                                case mecobj:
+                                    Mechanisms selectMechanisms = mechanismsFacade.find(Short.parseShort(value));
+                                    newNonFatalInjuries.setMechanismId(selectMechanisms);
+                                    break;
+                                case alcohol:
+                                    selectUseAlcoholDrugs = useAlcoholDrugsFacade.find(Short.parseShort(value));
+                                    newNonFatalInjuries.setUseAlcoholId(selectUseAlcoholDrugs);
+                                    break;
+                                case drogas:
+                                    selectUseAlcoholDrugs = useAlcoholDrugsFacade.find(Short.parseShort(value));
+                                    newNonFatalInjuries.setUseDrugsId(selectUseAlcoholDrugs);
+                                    break;
+                                case gradogra:
+                                    //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
+                                    newNonFatalInjuries.setBurnInjuryDegree(Short.parseShort(value));
+                                    //} else {
+                                    //ESTO NO VA HASTA COMPLETAR(O COLOCAR EN NULL)
+                                    //    newNonFatalInjuries.setBurnInjuryDegree(Short.parseShort("0"));
+                                    // }
+                                    break;
+                                case porcent:
+                                    //if (resultSetFileData.getString(columnsNames[i]).length() != 0) {
+                                    newNonFatalInjuries.setBurnInjuryPercentage(Short.parseShort(value));
+                                    //} else {
+                                    //ESTO NO VA HASTA COMPLETAR(O COLOCAR EN NULL)
+                                    //    newNonFatalInjuries.setBurnInjuryPercentage(Short.parseShort("0"));
+                                    //}
+                                    break;
+                                case destino:
+                                    DestinationsOfPatient selectDestinationsOfPatient = destinationsOfPatientFacade.find(Short.parseShort(value));
+                                    newNonFatalInjuries.setDestinationPatientId(selectDestinationsOfPatient);
+                                    break;
+
+                                default:
+                            }
+                        }
+                    }
+                }
+
+                name = name + " " + surname;
+                if (name.trim().length() > 1) {
+                    newVictim.setVictimName(name);
                 }
 
 
@@ -1060,10 +1104,11 @@ public class RecordDataMB implements Serializable {
                 // ************************************************ vector victim_vulnerable_group
                 //vulnerableGroupList
 
-                nonFatalInjuriesFacade.create(newNonFatalInjuries);
+                //nonFatalInjuriesFacade.create(newNonFatalInjuries);
 
                 tuplesProcessed++;
                 progress = (int) (tuplesProcessed * 100) / tuplesNumber;
+                System.out.println("PROGRESO: =" + String.valueOf(progress));
 
 //                if (newNonFatalInjuries.getInjuryId().getInjuryId().compareTo(Short.parseShort("50")) == 0) {
 //                    //********************************************EL TIPO DE LESION VIOLENCIA INTERPERSONAL
@@ -1081,9 +1126,9 @@ public class RecordDataMB implements Serializable {
 //                    //********************************************EL TIPO DE LESION ES NO INTENCIONAL 
 //                    nonFatalInjuriesFacade.create(newNonFatalInjuries);
 //                }
-
-            } while (resultSetFileData.next());
+            }
             progress = 100;
+            System.out.println("PROGRESO: =" + String.valueOf(progress));
             conx.disconnect();
         } catch (SQLException ex) {
             System.out.println("error: " + ex.toString());
@@ -1095,22 +1140,22 @@ public class RecordDataMB implements Serializable {
     }
 
     public void btnRegisterDataClick() {
-        if (nameForm.compareTo("SCC_F_028") == 0) {
+        if (nameForm.compareTo("SCC-F-028") == 0) {
             registerSCC_F_028();
         }
-        if (nameForm.compareTo("SCC_F_029") == 0) {
+        if (nameForm.compareTo("SCC-F-029") == 0) {
             registerSCC_F_029();
         }
-        if (nameForm.compareTo("SCC_F_030") == 0) {
+        if (nameForm.compareTo("SCC-F-030") == 0) {
             registerSCC_F_030();
         }
-        if (nameForm.compareTo("SCC_F_031") == 0) {
+        if (nameForm.compareTo("SCC-F-031") == 0) {
             registerSCC_F_031();
         }
-        if (nameForm.compareTo("SCC_F_032") == 0) {
+        if (nameForm.compareTo("SCC-F-032") == 0) {
             registerSCC_F_032();
         }
-        if (nameForm.compareTo("SCC_F_033") == 0) {
+        if (nameForm.compareTo("SCC-F-033") == 0) {
             registerSCC_F_033();
         }
     }
@@ -1120,152 +1165,153 @@ public class RecordDataMB implements Serializable {
     //VALIDACIONES ---------------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    private boolean isDiscarded(String name, ArrayList<String> discardedValues) {
+    private String isDay(String str) {
         /*
-         * validacion de si un string se encuentra dentro de una lista.
-         */
-        for (int i = 0; i < discardedValues.size(); i++) {
-            if (name.compareTo(discardedValues.get(i)) == 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isDay(String str) {
-        /*
-         * validacion de si un numero de 1 y 31
+         * validacion de si un numero de 1 y 31 null=invalido ""=aceptado pero
+         * vacio "valor"=aceptado y me dice el valor
          */
         if (str.trim().length() == 0) {
-            return true;
+            return "";
         }
         try {
             int i = Integer.parseInt(str);
             if (i > 0 && i < 32) {
-                return true;
+                return String.valueOf(i);
             }
-            return false;
+            return null;
         } catch (NumberFormatException nfe) {
-            return false;
+            return null;
         }
     }
 
-    private boolean isMonth(String str) {
+    private String isMonth(String str) {
         /*
-         * validacion de si un numero de 1 y 12
+         * validacion de si un numero de 1 y 12 null=invalido ""=aceptado pero
+         * vacio "valor"=aceptado y me dice el valor
          */
         if (str.trim().length() == 0) {
-            return true;
+            return "";
         }
         try {
             int i = Integer.parseInt(str);
             if (i > 0 && i < 13) {
-                return true;
+                return String.valueOf(i);
             }
-            return false;
+            return null;
         } catch (NumberFormatException nfe) {
-            return false;
+            return null;
         }
     }
 
-    private boolean isYear(String str) {
+    private String isYear(String str) {
         /*
-         * validacion de si un numero de 1 y 12
+         * validacion de si un numero de 1 y 12 null=invalido ""=aceptado pero
+         * vacio "valor"=aceptado y me dice el valor
          */
         if (str.trim().length() == 0) {
-            return true;
+            return "";
         }
         if (str.trim().length() != 2 && str.trim().length() != 4) {
-            return false;
+            return null;
         }
         try {
             int i = Integer.parseInt(str);
-            return true;
+            return String.valueOf(i);
         } catch (NumberFormatException nfe) {
-            return false;
+            return null;
         }
     }
 
-    private boolean isMinute(String str) {
+    private String isMinute(String str) {
         /*
-         * validacion de si un numero de 1 y 12
+         * validacion de si un numero de 1 y 12 null=invalido ""=aceptado pero
+         * vacio "valor"=aceptado y me dice el valor
          */
         if (str.trim().length() == 0) {
-            return true;
+            return "";
         }
         try {
             int i = Integer.parseInt(str);
             if (i > -1 && i < 60) {
-                return true;
+                return String.valueOf(i);
             }
-            return false;
+            return null;
         } catch (NumberFormatException nfe) {
-            return false;
+            return null;
         }
     }
 
-    private boolean isHour(String str) {
+    private String isHour(String str) {
         /*
-         * validacion de si un numero de 1 y 12
+         * validacion de si un numero de 1 y 12 null=invalido ""=aceptado pero
+         * vacio "valor"=aceptado y me dice el valor
          */
         if (str.trim().length() == 0) {
-            return true;
+            return "";
         }
         try {
             int i = Integer.parseInt(str);
             if (i > 0 && i < 25) {
-                return true;
+                return String.valueOf(i);
             }
-            return false;
+            return null;
         } catch (NumberFormatException nfe) {
-            return false;
+            return null;
         }
     }
 
-    private boolean isNumeric(String str) {
+    private String isNumeric(String str) {
         /*
-         * validacion de si un string es entero
+         * validacion de si un string es entero null=invalido ""=aceptado pero
+         * vacio "valor"=aceptado y me dice el valor
          */
         if (str.trim().length() == 0) {
-            return true;
+            return "";
         }
         try {
             str.replaceAll(",", "");
             str.replaceAll(".", "");
             Integer.parseInt(str);
-            return true;
+            return str;
         } catch (NumberFormatException nfe) {
-            return false;
+            return null;
         }
     }
 
-    private boolean isDate(String fecha, String format) {
+    private String isDate(String fecha, String format) {
         /*
          * validacion de si un string es una fecha de un determinado formto
+         * null=invalido ""=aceptado pero vacio "valor"=aceptado y me dice el
+         * valor
          */
         if (fecha.trim().length() == 0) {
-            return true;
+            return "";
         }
         SimpleDateFormat formato = new SimpleDateFormat(format);
-        Date fechaDate = null;
+        Date fechaDate;
+        String fechaStr;
         try {
             fechaDate = formato.parse(fecha);
-            return true;
+            formato = new SimpleDateFormat("yyyy-MM-dd");
+            fechaStr = formato.format(fechaDate);
+            return fechaStr;
         } catch (ParseException ex) {
-            return false;
+            return null;
         }
     }
 
     private String isMilitary(String strIn) {
         /*
-         * validacion de si un string es un hora miitar
+         * validacion de si un string es un hora miitar null=invalido
+         * ""=aceptado pero vacio "valor"=aceptado y me dice el valor
          */
         String str = strIn;
 
         //----------------------------------------------
         //determinar si hay caracteres
         if (str.trim().length() == 0) {
-            return "no se acepta cadenas vacias";
+            return "";
+            //return "no se acepta cadenas vacias";
         }
 
         //----------------------------------------------
@@ -1288,16 +1334,25 @@ public class RecordDataMB implements Serializable {
                 try {
                     int h = Integer.parseInt(splitMilitary[0]);
                     int m = Integer.parseInt(splitMilitary[1]);
+                    if (splitMilitary[0].length() == 1) {
+                        splitMilitary[0] = "0" + splitMilitary[0];
+                    }
+                    if (splitMilitary[1].length() == 1) {
+                        splitMilitary[1] = "0" + splitMilitary[1];
+                    }
                     if (h > 24 || h < 0) {
-                        return "La hora debe estar entre 0 y 23";
+                        return null;
+                        //return "La hora debe estar entre 0 y 23";
                     }
                     if (m > 59 || m < 0) {
-                        return "los minutos deben estar entre 0 y 59";
+                        return null;
+                        //return "los minutos deben estar entre 0 y 59";
                     }
                     if (h == 24 && m != 0) {
-                        return "Si la hora es 24 los minutos deben ser cero";
+                        return null;
+                        //return "Si la hora es 24 los minutos deben ser cero";
                     }
-                    return null;
+                    return splitMilitary[0] + splitMilitary[1];
                 } catch (Exception ex) {
                 }
             }
@@ -1322,20 +1377,29 @@ public class RecordDataMB implements Serializable {
             try {
                 int h = Integer.parseInt(splitMilitary[0]);
                 int m = Integer.parseInt(splitMilitary[1]);
+                if (splitMilitary[0].length() == 1) {
+                    splitMilitary[0] = "0" + splitMilitary[0];
+                }
+                if (splitMilitary[1].length() == 1) {
+                    splitMilitary[1] = "0" + splitMilitary[1];
+                }
                 if (h == 24) {
                     if (m == 0) {
-                        return null;
+                        return splitMilitary[0] + splitMilitary[1];
                     } else {
-                        return "Si la hora es 24 los minutos solo pueden ser 0";
+                        return null;
+                        //return "Si la hora es 24 los minutos solo pueden ser 0";
                     }
                 }
                 if (h > 24 || h < 0) {
-                    return "La hora debe estar entre 0 y 24";
+                    return null;
+                    //return "La hora debe estar entre 0 y 24";
                 }
                 if (m > 59 || m < 0) {
-                    return "los minutos deben estar entre 0 y 59";
+                    return null;
+                    //return "los minutos deben estar entre 0 y 59";
                 }
-                return null;
+                return splitMilitary[0] + splitMilitary[1];
             } catch (Exception ex) {
             }
         }
@@ -1347,7 +1411,8 @@ public class RecordDataMB implements Serializable {
                     && str.charAt(i) != '3' && str.charAt(i) != '4' && str.charAt(i) != '5'
                     && str.charAt(i) != '6' && str.charAt(i) != '7' && str.charAt(i) != '8'
                     && str.charAt(i) != '9') {
-                return "Valor no aceptado como hora militar";
+                return null;
+                //return "Valor no aceptado como hora militar";
             }
         }
 
@@ -1366,88 +1431,107 @@ public class RecordDataMB implements Serializable {
                 int h = Integer.parseInt(str.substring(0, 1));
                 int m = Integer.parseInt(str.substring(2, 3));
                 if (h > 24 || h < 0) {
-                    return "La hora debe estar entre 0 y 23";
+                    return null;
+                    //return "La hora debe estar entre 0 y 23";
                 }
                 if (m > 59 || m < 0) {
-                    return "los minutos deben estar entre 0 y 59";
+                    return null;
+                    //return "los minutos deben estar entre 0 y 59";
                 }
                 if (h == 24 && m != 0) {
-                    return "Si la hora es 24 los minutos deben ser cero";
+                    return null;
+                    //return "Si la hora es 24 los minutos deben ser cero";
                 }
-                return null;
+                return str;
             } catch (Exception ex) {
             }
         } else {
-            return "Una hora militar debe tener menos de 4 digitos";
+            return null;
+            //return "Una hora militar debe tener menos de 4 digitos";
         }
 
-        //----------------------------------------------
-        //si llego a esta linea es que no supero ningun tipo de validacion
-        return "Valor no aceptado como hora militar";
+        return null;
+        //return "Valor no aceptado como hora militar";
     }
 
-    private boolean isAge(String str) {
+    private String[] isAge(String str) {
         /*
          * validacion de si un string es numero entero o edad definida en meses
-         * y años
+         * y años null = invalido "" = aceptado pero vacio "valor" = aceptado y
+         * me dice el valor
          */
+        String[] splitAge;
         if (str.trim().length() == 0) {
-            return true;
+            splitAge = new String[1];
+            splitAge[0] = "";
+            return splitAge;
         }
         try {//intento convertirlo en entero
             int a = Integer.parseInt(str);
-            return true;
+            splitAge = new String[1];
+            splitAge[0] = str;
+            return splitAge;
         } catch (Exception ex) {
         }
         try {//determinar si esta definida en años meses
-            String[] splitAge = str.split(" ");
+            splitAge = str.split(" ");
             if (splitAge.length == 4) {
                 int m = Integer.parseInt(splitAge[0]);
                 int y = Integer.parseInt(splitAge[2]);
-                return true;
+                splitAge = new String[2];
+                splitAge[0] = String.valueOf(y);
+                splitAge[1] = String.valueOf(m);
+                return splitAge;
             }
-            return false;
+            return null;
         } catch (Exception ex) {
-            return false;
+            return null;
         }
     }
 
-    private boolean isCategorical(String str, String category, boolean compareForCode, ArrayList<RelationValue> relationValueList) {
+    private String isCategorical(String valueFound, RelationVar relationVar) {
         /*
-         * validacion de si un string esta dentro de una categoria
+         * validacion de si un valor esta dentro de una categoria, o es
+         * descartado, retorna el id respectivo a la tabla categorica
          */
-        if (str.trim().length() == 0) {
-            return true;
+        if (valueFound.trim().length() == 0) {
+            return "";
         }
-        ArrayList<String> categoryList = new ArrayList<String>();
+
         //se valida con respecto a las relaciones de valores
-        for (int i = 0; i < relationValueList.size(); i++) {//le paso a categoriList los valores encontrados en la relacion de valores
-            categoryList.add(relationValueList.get(i).getNameFound());
+        if (relationVar.getTypeComparisonForCode() == true) {
+            for (int i = 0; i < relationVar.getRelationValueList().size(); i++) {
+                if (relationVar.getRelationValueList().get(i).getNameFound().compareTo(valueFound) == 0) {
+                    return formsAndFieldsDataMB.findIdByCategoricalCode(relationVar.getNameExpected(), relationVar.getRelationValueList().get(i).getNameExpected());
+                }
+            }
+        } else {
+            for (int i = 0; i < relationVar.getRelationValueList().size(); i++) {
+                if (relationVar.getRelationValueList().get(i).getNameFound().compareTo(valueFound) == 0) {
+                    return formsAndFieldsDataMB.findIdByCategoricalName(relationVar.getNameExpected(), relationVar.getRelationValueList().get(i).getNameExpected());
+                }
+            }
         }
-        for (int i = 0; i < categoryList.size(); i++) {
-            if (categoryList.get(i).compareTo(str) == 0) {
-                return true;
+
+        //verificar si es descartado
+        for (int i = 0; i < relationVar.getDiscardedValues().size(); i++) {
+            if (valueFound.compareTo(relationVar.getDiscardedValues().get(i)) == 0) {
+                return "";
             }
         }
         //se valida con respecto a los valores esperados
-        if (compareForCode == true) {
-            categoryList = formsAndFieldsDataMB.categoricalCodeList(category, 0);
+        if (relationVar.getTypeComparisonForCode() == true) {
+            return formsAndFieldsDataMB.findIdByCategoricalCode(relationVar.getNameExpected(), valueFound);
         } else {
-            categoryList = formsAndFieldsDataMB.categoricalNameList(category, 0);
+            return formsAndFieldsDataMB.findIdByCategoricalName(relationVar.getNameExpected(), valueFound);
         }
-        for (int i = 0; i < categoryList.size(); i++) {
-            if (categoryList.get(i).compareTo(str) == 0) {
-                return true;
-            }
-        }
-        return false;
     }
+
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //CLIK SOBRE BOTONOES --------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES GET Y SET DE LAS VARIABLES ---------------------------------
@@ -1491,5 +1575,13 @@ public class RecordDataMB implements Serializable {
 
     public void setNameForm(String nameForm) {
         this.nameForm = nameForm;
+    }
+
+    public boolean isBtnRegisterDataDisabled() {
+        return btnRegisterDataDisabled;
+    }
+
+    public void setBtnRegisterDataDisabled(boolean btnRegisterDataDisabled) {
+        this.btnRegisterDataDisabled = btnRegisterDataDisabled;
     }
 }

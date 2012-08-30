@@ -29,7 +29,7 @@
                 function goFirstFocus()
                 {
                     document.getElementById('IdForm1:IdCode').focus();
-                }
+                }                
             </script> 
         </ui:define>
         <!--=================================================================-->
@@ -508,8 +508,24 @@
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{homicideMB.changeStranger}"
-                                                render="IdControls IdMunicipalitieList IdNeighborhoodHomeName IdMunicipalitiesHomeCode"/>
+                                                render="IdControls IdDepartamentHome IdMunicipalitieList IdNeighborhoodHomeName IdMunicipalitiesHomeCode"/>
                                         </h:selectBooleanCheckbox>
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>DEPARTAMENTO DE RESIDENCIA:&nbsp;</p:column>
+                                    <p:column>
+                                        <h:selectOneMenu 
+                                            id="IdDepartamentHome" 
+                                            disabled="#{homicideMB.currentDepartamentHomeDisabled}"
+                                            value="#{homicideMB.currentDepartamentHome}" > 
+                                            <f:selectItems value="#{homicideMB.sourceDepartaments}"/>
+                                            <f:ajax 
+                                                event="change"                                                            
+                                                listener="#{homicideMB.changeDepartamentHome}"
+                                                render="IdMunicipalitieList IdNeighborhoodHomeName IdNeighborhoodsHomeCode IdControls message"/>
+
+                                        </h:selectOneMenu>
                                     </p:column>
                                 </p:row>
                                 <p:row>  
@@ -522,7 +538,7 @@
                                             <f:selectItems value="#{homicideMB.municipalities}"/>
                                             <f:ajax 
                                                 event="change"   							    
-                                                listener="#{homicideMB.changeMunicipalitie}"
+                                                listener="#{homicideMB.changeMunicipalitieHome}"
                                                 render="IdMunicipalitiesHomeCode IdNeighborhoodHomeName IdNeighborhoodsHomeCode IdControls message"/>
                                         </h:selectOneMenu>
                                     </p:column>
@@ -765,7 +781,7 @@
                     <p:panelGrid id="IdControls">
                         <p:row >
                             <p:column styleClass="ui-widget-header">
-                                
+
                                 <p:commandButton 
                                     icon="ui-icon-plus" 
                                     title="Nuevo"

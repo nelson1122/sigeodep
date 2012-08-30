@@ -61,6 +61,8 @@ public class AccidentalMB implements Serializable {
     DepartamentsFacade departamentsFacade;
     private Short currentSourceDepartament = 0;
     private SelectItem[] sourceDepartaments;
+    private Short currentDepartamentHome = 52;//nariño    
+    private boolean currentDepartamentHomeDisabled = false;
     //--------------------    
     @EJB
     MunicipalitiesFacade municipalitiesFacade;
@@ -295,7 +297,7 @@ public class AccidentalMB implements Serializable {
             save = true;
             System.out.println("Save=true");
             stylePosition = "color: #1471B1;";
-            neighborhoodHomeNameDisabled=false;
+            neighborhoodHomeNameDisabled = false;
 
         } catch (Exception e) {
             System.out.println("*******************************************ERROR_A1: " + e.toString());
@@ -962,8 +964,14 @@ public class AccidentalMB implements Serializable {
     }
 
     public void saveAndGoPrevious() {//guarda cambios si se han realizado y se dirije al anterior
-        if (saveRegistry()) {
-            previous();
+        if (currentFatalInjuriId != -1) {
+            if (saveRegistry()) {
+                previous();
+            }
+        } else {
+            if (saveRegistry()) {
+                last();
+            }
         }
     }
 
@@ -1019,7 +1027,11 @@ public class AccidentalMB implements Serializable {
         openDialogDelete = "";
         save = true;
         stylePosition = "color: #1471B1;";
-        previous();
+        if (currentFatalInjuriId != -1) {
+            previous();
+        } else {
+            last();
+        }
     }
 
     public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
@@ -1070,7 +1082,6 @@ public class AccidentalMB implements Serializable {
             System.out.println("cargando anterior registro");
             if (currentFatalInjuriId == -1) {//esta en registro nuevo
                 last();
-                determinePosition();
             } else {
                 auxFatalInjuryAccident = fatalInjuryAccidentFacade.findPrevious(currentFatalInjuriId);
                 if (auxFatalInjuryAccident != null) {
@@ -1150,13 +1161,19 @@ public class AccidentalMB implements Serializable {
         //------------------------------------------------------------
         //REINICIAR VARIABLES LESION DE CAUSA EXTERNA FATAL
         //------------------------------------------------------------
-        sourceMunicipalities = new SelectItem[1];
-        sourceMunicipalities[0] = new SelectItem(0, "");
-        sourceDepartaments = new SelectItem[1];
-        sourceDepartaments[0] = new SelectItem(0, "");
+//        sourceMunicipalities = new SelectItem[1];
+//        sourceMunicipalities[0] = new SelectItem(0, "");
+//        sourceDepartaments = new SelectItem[1];
+//        sourceDepartaments[0] = new SelectItem(0, "");
+//        currentSourceDepartament = 0;
+//        currentSourceMunicipalitie = 0;
+//        currentSourceCountry = 0;
         currentSourceDepartament = 0;
         currentSourceMunicipalitie = 0;
-        currentSourceCountry = 0;
+        currentSourceCountry = 52;
+
+        findSourceDepartaments();
+        
         currentDateEvent = "";
         currentDayEvent = "";
         currentMonthEvent = "";
@@ -1167,7 +1184,12 @@ public class AccidentalMB implements Serializable {
         currentDirectionEvent = "";
         currentNeighborhoodHomeCode = "";
         currentNeighborhoodHome = "";
+        //currentMunicipalitie = 1;
+        currentDepartamentHome = 52;
+        changeDepartamentHome();
         currentMunicipalitie = 1;
+        
+        
         currentMunicipalitieDisabled = false;
         neighborhoodHomeNameDisabled = false;
         currentPlace = 0;
@@ -1367,23 +1389,22 @@ public class AccidentalMB implements Serializable {
     // FUNCIONES CUANDO LISTAS Y CAMPOS CAMBIAN DE VALOR ----------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-
     public void changeStranger() {
-
         if (loading == false) {
             changeForm();
         }
-
         if (stranger) {
             currentMunicipalitieDisabled = true;
             neighborhoodHomeNameDisabled = true;
-            currentMunicipalitie = 1;
+            currentDepartamentHomeDisabled = true;
+            currentDepartamentHome = 0;
+            municipalities = new SelectItem[1];
+            municipalities[0] = new SelectItem(0, "");
+            currentMunicipalitie = 0;
             currentNeighborhoodHome = "";
         } else {
+            currentDepartamentHomeDisabled = false;
             currentMunicipalitieDisabled = false;
-            neighborhoodHomeNameDisabled = false;
-            currentMunicipalitieDisabled = false;
-            neighborhoodHomeNameDisabled = false;
         }
     }
 
@@ -1512,15 +1533,45 @@ public class AccidentalMB implements Serializable {
             currentNeighborhoodHomeCode = "";
         }
     }
-
-    public void changeMunicipalitie() {
+    
+    public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
         }
-        //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, (short) 52);
-        if (currentMunicipalitie == 1) {
+        if (currentDepartamentHome != 0) {
+            Departaments d = departamentsFacade.findById(currentDepartamentHome);            
+            municipalities = new SelectItem[d.getMunicipalitiesList().size() + 1];
+            municipalities[0] = new SelectItem(0, "");
+            for (int i = 0; i < d.getMunicipalitiesList().size(); i++) {
+                municipalities[i + 1] = new SelectItem(d.getMunicipalitiesList().get(i).getMunicipalitiesPK().getMunicipalityId(), d.getMunicipalitiesList().get(i).getMunicipalityName());
+            }
+            if (currentDepartamentHome == 52) {
+                currentMunicipalitie = 1;
+            } else {
+                currentMunicipalitie = 0;
+            }
+        } else {
+            municipalities = new SelectItem[1];
+            municipalities[0] = new SelectItem(0, "");
+            currentMunicipalitie = 0;
+        }
+        neighborhoodHomeNameDisabled = true;
+        currentNeighborhoodHome = "";
+        currentNeighborhoodHomeCode = "";
+        changeMunicipalitieHome();
+    }
+
+    public void changeMunicipalitieHome() {
+        //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, currentDepartamentHome);
+        if (loading == false) {
+            changeForm();
+        }
+        if (currentMunicipalitie == 1 && currentDepartamentHome == 52) {
             neighborhoodHomeNameDisabled = false;
         } else {
+            neighborhoodHomeNameDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
             neighborhoodHomeNameDisabled = true;
             currentNeighborhoodHome = "";
             currentNeighborhoodHomeCode = "";
@@ -2672,5 +2723,21 @@ public class AccidentalMB implements Serializable {
 
     public void setCurrentIdForm(String currentIdForm) {
         this.currentIdForm = currentIdForm;
+    }
+    
+    public Short getCurrentDepartamentHome() {
+        return currentDepartamentHome;
+    }
+
+    public void setCurrentDepartamentHome(Short currentDepartamentHome) {
+        this.currentDepartamentHome = currentDepartamentHome;
+    }
+
+    public boolean isCurrentDepartamentHomeDisabled() {
+        return currentDepartamentHomeDisabled;
+    }
+
+    public void setCurrentDepartamentHomeDisabled(boolean currentDepartamentHomeDisabled) {
+        this.currentDepartamentHomeDisabled = currentDepartamentHomeDisabled;
     }
 }

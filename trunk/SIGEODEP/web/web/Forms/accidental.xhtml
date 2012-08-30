@@ -527,8 +527,24 @@
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{accidentalMB.changeStranger}"
-                                                render="IdControls IdMunicipalitieList IdNeighborhoodHomeName IdMunicipalitiesHomeCode"/>
+                                                render="IdControls IdDepartamentHome IdMunicipalitieList IdNeighborhoodHomeName IdMunicipalitiesHomeCode"/>
                                         </h:selectBooleanCheckbox>
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>DEPARTAMENTO DE RESIDENCIA:&nbsp;</p:column>
+                                    <p:column>
+                                        <h:selectOneMenu 
+                                            id="IdDepartamentHome" 
+                                            disabled="#{accidentalMB.currentDepartamentHomeDisabled}"
+                                            value="#{accidentalMB.currentDepartamentHome}" > 
+                                            <f:selectItems value="#{accidentalMB.sourceDepartaments}"/>
+                                            <f:ajax 
+                                                event="change"                                                            
+                                                listener="#{accidentalMB.changeDepartamentHome}"
+                                                render="IdMunicipalitieList IdNeighborhoodHomeName IdNeighborhoodsHomeCode IdControls message"/>
+
+                                        </h:selectOneMenu>
                                     </p:column>
                                 </p:row>
                                 <p:row>  
@@ -541,7 +557,7 @@
                                             <f:selectItems value="#{accidentalMB.municipalities}"/>
                                             <f:ajax 
                                                 event="change"   							    
-                                                listener="#{accidentalMB.changeMunicipalitie}"
+                                                listener="#{accidentalMB.changeMunicipalitieHome}"
                                                 render="IdMunicipalitiesHomeCode IdNeighborhoodHomeName IdNeighborhoodsHomeCode IdControls message"/>
                                         </h:selectOneMenu>
                                     </p:column>

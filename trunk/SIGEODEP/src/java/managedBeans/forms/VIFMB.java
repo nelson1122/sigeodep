@@ -34,13 +34,11 @@ import model.pojo.*;
 @SessionScoped
 public class VIFMB implements Serializable {
 
-    
     //------------------------
     @EJB
-    InsuranceFacade insuranceFacade;    
+    InsuranceFacade insuranceFacade;
     private Short currentInsurance = 0;
     private SelectItem[] insurances;
-                
     //------------------------
     @EJB
     DomesticViolenceDataSourcesFacade domesticViolenceDataSourcesFacade;
@@ -299,10 +297,10 @@ public class VIFMB implements Serializable {
         try {
             //cargo las aseguradoras
             List<Insurance> insuranceList = insuranceFacade.findAll();
-            insurances = new SelectItem[insuranceList.size()+1];
+            insurances = new SelectItem[insuranceList.size() + 1];
             insurances[0] = new SelectItem(0, "");
             for (int i = 0; i < insuranceList.size(); i++) {
-                insurances[i+1] = new SelectItem(insuranceList.get(i).getInsuranceId(), insuranceList.get(i).getInsuranceName());
+                insurances[i + 1] = new SelectItem(insuranceList.get(i).getInsuranceId(), insuranceList.get(i).getInsuranceName());
             }
 
             //cargo las instituciones receptoras
@@ -425,7 +423,7 @@ public class VIFMB implements Serializable {
             searchCriteriaList[2] = new SelectItem(3, "CODIGO INTERNO");
 
             rowDataTableList = new ArrayList<RowDataTable>();
-            
+
             determinePosition();
             openDialogFirst = "";
             openDialogNext = "";
@@ -435,9 +433,9 @@ public class VIFMB implements Serializable {
             save = true;
             System.out.println("Save=true");
             stylePosition = "color: #1471B1;";
-            neighborhoodHomeNameDisabled=false;
+            neighborhoodHomeNameDisabled = false;
             directionHomeDisabled = false;
-            
+
         } catch (Exception e) {
             System.out.println("*******************************************ERROR_V3: " + e.toString());
         }
@@ -607,8 +605,8 @@ public class VIFMB implements Serializable {
         //******victim_id
         //******residence_municipality
         try {
-            if (currentNonFatalDomesticViolence.getResidenceDepartament() != null) {
-                currentDepartamentHome = currentNonFatalDomesticViolence.getResidenceDepartament();
+            if (currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getResidenceDepartment() != null) {
+                currentDepartamentHome = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getResidenceDepartment();
                 changeDepartamentHome();
                 if (currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getResidenceMunicipality() != null) {
                     currentMunicipalitie = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getResidenceMunicipality();
@@ -650,7 +648,7 @@ public class VIFMB implements Serializable {
         } catch (Exception e) {
             currentDirectionHome = "";
         }
-        
+
         //******insurance_id
         try {
             currentInsurance = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getInsuranceId().getInsuranceId();
@@ -1127,6 +1125,30 @@ public class VIFMB implements Serializable {
                 Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        //---------VALIDAR SI FECHA DE EVENTO IGUAL A FECHA DE CONSULTA LA HORA DE CONSULTA SEA MAYOR A LA DE EVENTO EN UN MISMO DIA
+        if (currentDateConsult.trim().length() != 0 && currentDateEvent.trim().length() != 0) {
+            try {
+                Calendar eventDate = Calendar.getInstance();
+                Calendar consultDate = Calendar.getInstance();
+                Date dateConsult = formato.parse(currentDateConsult);
+                Date dateEvent = formato.parse(currentDateEvent);
+
+                consultDate.setTime(dateConsult);
+                eventDate.setTime(dateEvent);
+                if (consultDate.compareTo(eventDate) == 0) {
+                    String hEvent, hConsult;
+                    hEvent = currentMilitaryHourEvent.trim();
+                    hConsult = currentMilitaryHourConsult.trim();
+                    if (hEvent.length() != 0 && hConsult.length() != 0) {
+                        if (Integer.parseInt(hEvent) > Integer.parseInt(hConsult)) {
+                            validationsErrors.add("La hora del evento: (" + hEvent + ") no puede ser mayor que la hora de la consulta (" + hConsult + ") en un mismo dia.");
+                        }
+                    }
+                }
+            } catch (ParseException ex) {
+                Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         //---------MOSTRAR LOS ERRORES SI EXISTEN
         if (validationsErrors.isEmpty()) {
             return true;
@@ -1210,7 +1232,7 @@ public class VIFMB implements Serializable {
                 if (currentMunicipalitie != 0) {
                     newVictim.setResidenceMunicipality(currentMunicipalitie);
                 }
-                
+
                 if (currentInsurance != 0) {
                     newVictim.setInsuranceId(insuranceFacade.find(currentInsurance));
                 }
@@ -1318,7 +1340,7 @@ public class VIFMB implements Serializable {
                 newNonFatalDomesticViolence.setNonFatalInjuries(newNonFatalInjuries);
 
                 if (currentDepartamentHome != 0) {
-                    newNonFatalDomesticViolence.setResidenceDepartament(currentDepartamentHome);
+                    newNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setResidenceDepartment(currentDepartamentHome);
                 }
 
                 if (isSubmitted) {
@@ -1607,6 +1629,7 @@ public class VIFMB implements Serializable {
             //newVictim.setEpsId(null);
             //newVictim.setVictimClass(null);            
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setResidenceMunicipality(victim.getResidenceMunicipality());
+            currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setResidenceDepartment(victim.getResidenceDepartment());
 
             //-----GUARDAR CAMPOS OTROS----------------
 
@@ -1660,7 +1683,7 @@ public class VIFMB implements Serializable {
             //SE CREA VARIABLE PARA VIOLENCIA INTRAFAMILIAR
             //------------------------------------------------------------
             //nonFatalDomesticViolence.setNonFatalInjuryId(nonFatalDomesticViolence.getNonFatalInjuryId());
-            currentNonFatalDomesticViolence.setResidenceDepartament(nonFatalDomesticViolence.getResidenceDepartament());
+            //currentNonFatalDomesticViolence.setResidenceDepartament(nonFatalDomesticViolence.getResidenceDepartament());
             currentNonFatalDomesticViolence.setSubmittedFormWhereId(nonFatalDomesticViolence.getSubmittedFormWhereId());
             currentNonFatalDomesticViolence.setDomesticViolenceDataSourceId(nonFatalDomesticViolence.getDomesticViolenceDataSourceId());
             currentNonFatalDomesticViolence.setAggressorTypesList(nonFatalDomesticViolence.getAggressorTypesList());
@@ -1690,8 +1713,14 @@ public class VIFMB implements Serializable {
     }
 
     public void saveAndGoPrevious() {//guarda cambios si se han realizado y se dirije al anterior
-        if (saveRegistry()) {
-            previous();
+        if (currentNonFatalInjuriId != -1) {
+            if (saveRegistry()) {
+                previous();
+            }
+        } else {
+            if (saveRegistry()) {
+                last();
+            }
         }
     }
 
@@ -1747,7 +1776,11 @@ public class VIFMB implements Serializable {
         openDialogDelete = "";
         save = true;
         stylePosition = "color: #1471B1;";
-        previous();
+        if (currentNonFatalInjuriId != -1) {
+            previous();
+        } else {
+            last();
+        }
     }
 
     public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
@@ -1797,6 +1830,7 @@ public class VIFMB implements Serializable {
         if (save) {//se busca el siguiente se el registro esta guardado (si esta guardado se abrira un dialogo que pregunta si guardar)             
             //System.out.println("cargando siguiente registro");
             if (currentNonFatalInjuriId == -1) {//esta en registro nuevo                
+                last();
             } else {
                 auxFatalDomesticViolence = nonFatalDomesticViolenceFacade.findPrevious(currentNonFatalInjuriId);
                 if (auxFatalDomesticViolence != null) {
@@ -1860,7 +1894,7 @@ public class VIFMB implements Serializable {
         strangerDisabled = true;
         stranger = false;
 
-        currentInsurance=0;
+        currentInsurance = 0;
         currentDomesticViolenceDataSource = 1;//IMPORTANTE!!!
 
         currentEthnicGroup = 0;
@@ -1987,7 +2021,7 @@ public class VIFMB implements Serializable {
         otherActionDisabled = true;
         otherAction = "";
         isUnknownAction = false;
-        neighborhoodHomeNameDisabled=false;
+        neighborhoodHomeNameDisabled = false;
         directionHomeDisabled = false;
         loading = false;
     }
@@ -2027,11 +2061,11 @@ public class VIFMB implements Serializable {
         totalRegisters = nonFatalDomesticViolenceFacade.countVIF();
         if (currentNonFatalInjuriId == -1) {
             currentPosition = "new" + "/" + String.valueOf(totalRegisters);
-            currentIdForm=String.valueOf(nonFatalInjuriesFacade.findMax() + 1);
+            currentIdForm = String.valueOf(nonFatalInjuriesFacade.findMax() + 1);
             openDialogDelete = "";//es nuevo no se puede borrar
         } else {
             int position = nonFatalDomesticViolenceFacade.findPosition(currentNonFatalDomesticViolence.getNonFatalInjuryId());
-            currentIdForm=String.valueOf(currentNonFatalDomesticViolence.getNonFatalInjuryId());
+            currentIdForm = String.valueOf(currentNonFatalDomesticViolence.getNonFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
         }
@@ -2104,7 +2138,7 @@ public class VIFMB implements Serializable {
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "non_fatal_injuries.non_fatal_injury_id, ";
-                sql = sql + "victims.victim_nid, ";                
+                sql = sql + "victims.victim_nid, ";
                 sql = sql + "victims.victim_name ";
                 sql = sql + "FROM ";
                 sql = sql + "victims, ";
@@ -2370,7 +2404,7 @@ public class VIFMB implements Serializable {
             changeForm();
         }
 
-        if (currentIdentification == 3||currentIdentification == 2) {//pasaporte
+        if (currentIdentification == 3 || currentIdentification == 2) {//pasaporte
             strangerDisabled = false;
         } else {
             strangerDisabled = true;
@@ -2665,19 +2699,21 @@ public class VIFMB implements Serializable {
     }
 
     public void changeDepartamentHome() {
-
         if (loading == false) {
             changeForm();
         }
-
         if (currentDepartamentHome != 0) {
-            Departaments d = departamentsFacade.findById(currentDepartamentHome);
+            Departaments d = departamentsFacade.findById(currentDepartamentHome);            
             municipalities = new SelectItem[d.getMunicipalitiesList().size() + 1];
             municipalities[0] = new SelectItem(0, "");
             for (int i = 0; i < d.getMunicipalitiesList().size(); i++) {
                 municipalities[i + 1] = new SelectItem(d.getMunicipalitiesList().get(i).getMunicipalitiesPK().getMunicipalityId(), d.getMunicipalitiesList().get(i).getMunicipalityName());
             }
-            currentMunicipalitie = 0;
+            if (currentDepartamentHome == 52) {
+                currentMunicipalitie = 1;
+            } else {
+                currentMunicipalitie = 0;
+            }
         } else {
             municipalities = new SelectItem[1];
             municipalities[0] = new SelectItem(0, "");
@@ -2688,6 +2724,7 @@ public class VIFMB implements Serializable {
         currentNeighborhoodHome = "";
         currentNeighborhoodHomeCode = "";
         currentDirectionHome = "";
+        changeMunicipalitieHome();
     }
 
     public void changeMunicipalitieHome() {
@@ -4393,7 +4430,7 @@ public class VIFMB implements Serializable {
     public void setInsurances(SelectItem[] insurances) {
         this.insurances = insurances;
     }
-    
+
     public String getCurrentIdForm() {
         return currentIdForm;
     }

@@ -62,8 +62,8 @@ public class NonFatalInjuries implements Serializable {
     @Size(max = 10)
     @Column(name = "injury_day_of_week", length = 10)
     private String injuryDayOfWeek;
-    @Column(name = "residence_departament")
-    private Short residenceDepartament;
+    //@Column(name = "residence_departament")
+    //private Short residenceDepartament;
     @Id
     @Basic(optional = false)
     @NotNull
@@ -246,13 +246,13 @@ public class NonFatalInjuries implements Serializable {
 	this.nonFatalInjuryId = nonFatalInjuryId;
     }
     
-    public Short getResidenceDepartament() {
-        return residenceDepartament;
-    }
-
-    public void setResidenceDepartament(Short residenceDepartament) {
-        this.residenceDepartament = residenceDepartament;
-    }
+//    public Short getResidenceDepartament() {
+//        return residenceDepartament;
+//    }
+//
+//    public void setResidenceDepartament(Short residenceDepartament) {
+//        this.residenceDepartament = residenceDepartament;
+//    }
 
     @XmlTransient
     public List<Diagnoses> getDiagnosesList() {

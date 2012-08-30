@@ -540,8 +540,24 @@
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{transitMB.changeStranger}"
-                                                render="IdControls IdMunicipalitieList IdNeighborhoodHomeName IdMunicipalitiesHomeCode"/>
+                                                render="IdControls IdDepartamentHome IdMunicipalitieList IdNeighborhoodHomeName IdMunicipalitiesHomeCode"/>
                                         </h:selectBooleanCheckbox>
+                                    </p:column>
+                                </p:row>
+                                <p:row>  
+                                    <p:column>DEPARTAMENTO DE RESIDENCIA:&nbsp;</p:column>
+                                    <p:column>
+                                        <h:selectOneMenu 
+                                            id="IdDepartamentHome" 
+                                            disabled="#{transitMB.currentDepartamentHomeDisabled}"
+                                            value="#{transitMB.currentDepartamentHome}" > 
+                                            <f:selectItems value="#{transitMB.sourceDepartaments}"/>
+                                            <f:ajax 
+                                                event="change"                                                            
+                                                listener="#{transitMB.changeDepartamentHome}"
+                                                render="IdMunicipalitieList IdNeighborhoodHomeName IdNeighborhoodsHomeCode IdControls message"/>
+
+                                        </h:selectOneMenu>
                                     </p:column>
                                 </p:row>
                                 <p:row>  
@@ -554,7 +570,7 @@
                                             <f:selectItems value="#{transitMB.municipalities}"/>
                                             <f:ajax 
                                                 event="change"   							    
-                                                listener="#{transitMB.changeMunicipalitie}"
+                                                listener="#{transitMB.changeMunicipalitieHome}"
                                                 render="IdMunicipalitiesHomeCode IdNeighborhoodHomeName IdNeighborhoodsHomeCode IdControls message"/>
                                         </h:selectOneMenu>
                                     </p:column>

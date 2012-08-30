@@ -5,12 +5,16 @@
 package managedBeans.login;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
 import managedBeans.categoricalVariables.NeighborhoodsVariableMB;
 import managedBeans.fileProcessing.*;
 import managedBeans.forms.*;
@@ -22,10 +26,10 @@ import managedBeans.preload.FormsAndFieldsDataMB;
  */
 @ManagedBean(name = "loginMB")
 @RequestScoped
-public class LoginMB implements Serializable{
+public class LoginMB implements Serializable {
 
-    private String loginname="admin";
-    private String password="123";
+    private String loginname = "admin";
+    private String password = "123";
     FacesContext context;
     FormsAndFieldsDataMB formsAndFieldsDataMB;
     UploadFileMB uploadFileMB;
@@ -61,6 +65,28 @@ public class LoginMB implements Serializable{
         progress = null;
     }
     //progreso de carga de la aplicacion***********************************    
+
+    public void logout() {
+        ExternalContext ctx =  FacesContext.getCurrentInstance().getExternalContext();
+        String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
+        try {
+            // Usar el contexto de JSF para invalidar la sesión,
+            // NO EL DE SERVLETS (nada de HttpServletRequest)
+            ((HttpSession) ctx.getSession(false)).invalidate();
+
+            // Redirección de nuevo con el contexto de JSF,
+            // si se usa una HttpServletResponse fallará.
+            // Sin embargo, como ya está fuera del ciclo de vida 
+            // de JSF se debe usar la ruta completa -_-U
+            
+            //ctx.redirect(ctxPath + "/faces/index.xhtml");
+            System.out.println("FINALIZA LA SESION");
+            
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
     public LoginMB() {
         /**
@@ -101,9 +127,8 @@ public class LoginMB implements Serializable{
         }
         progress = 100;
     }
-    
-    public void closeSession(){
-        
+
+    public void closeSession() {
     }
 
     public String CheckValidUser() {
@@ -126,9 +151,9 @@ public class LoginMB implements Serializable{
             suicideMB = (SuicideMB) context.getApplication().evaluateExpressionGet(context, "#{suicideMB}", SuicideMB.class);
             transitMB = (TransitMB) context.getApplication().evaluateExpressionGet(context, "#{transitMB}", TransitMB.class);
             vifMB = (VIFMB) context.getApplication().evaluateExpressionGet(context, "#{vifMB}", VIFMB.class);
-            neighborhoodsVariableMB= (NeighborhoodsVariableMB) context.getApplication().evaluateExpressionGet(context, "#{neighborhoodsVariableMB}", NeighborhoodsVariableMB.class);
-            
-            
+            neighborhoodsVariableMB = (NeighborhoodsVariableMB) context.getApplication().evaluateExpressionGet(context, "#{neighborhoodsVariableMB}", NeighborhoodsVariableMB.class);
+
+
             System.out.println("INICIA... carga de informacion formularios");
             lcenfMB.reset();
             neighborhoodsVariableMB.reset();
@@ -139,7 +164,7 @@ public class LoginMB implements Serializable{
             vifMB.reset();
             uploadFileMB.reset();
             relationshipOfVariablesMB.reset();
-            
+
             System.out.println("INICIA... carga de valores iniciales");
             recordDataMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
             recordDataMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
@@ -147,7 +172,7 @@ public class LoginMB implements Serializable{
             recordDataMB.setLoginMB(this);
 
             formsAndFieldsDataMB.loadFormsData();
-            formsAndFieldsDataMB.setNameForm("SCC-F-032");            
+            formsAndFieldsDataMB.setNameForm("SCC-F-032");
 
             relationshipOfValuesMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
             relationshipOfValuesMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);

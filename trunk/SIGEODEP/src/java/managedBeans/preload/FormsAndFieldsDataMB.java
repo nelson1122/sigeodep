@@ -159,6 +159,52 @@ public class FormsAndFieldsDataMB implements Serializable {
         return null;
     }
 
+    public String findIdByCategoricalName(String category, String value) {
+        /*
+         * busca un codigo dentro de una categoria y me retorna su id, cuando
+         * retorna null es por que no fue encontrado
+         */
+        ArrayList<Field> fieldsList;        
+        for (int i = 0; i < forms.size(); i++) {
+            if (forms.get(i).getCode().compareTo(nameForm) == 0) {
+                fieldsList = forms.get(i).fieldsList;
+                for (int j = 0; j < fieldsList.size(); j++) {
+                    if (fieldsList.get(j).getFieldName().compareTo(category) == 0) {
+                        for (int k = 0; k < fieldsList.get(j).categoricalNamesList.size(); k++) {
+                            if(fieldsList.get(j).categoricalNamesList.get(k).compareTo(value)==0){
+                                return fieldsList.get(j).categoricalCodeList.get(k);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public String findIdByCategoricalCode(String category, String value) {
+        /*
+         * busca un codigo dentro de una categoria y me retorna su id, cuando
+         * retorna null es por que no fue encontrado
+         */
+        ArrayList<Field> fieldsList;
+        for (int i = 0; i < forms.size(); i++) {
+            if (forms.get(i).getCode().compareTo(nameForm) == 0) {
+                fieldsList = forms.get(i).fieldsList;
+                for (int j = 0; j < fieldsList.size(); j++) {
+                    if (fieldsList.get(j).getFieldName().compareTo(category) == 0) {
+                        for (int k = 0; k < fieldsList.get(j).categoricalCodeList.size(); k++) {
+                            if(fieldsList.get(j).categoricalCodeList.get(k).compareTo(value)==0){
+                                return fieldsList.get(j).categoricalCodeList.get(k);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public ArrayList<String> categoricalCodeList(String typeVarExepted, int amount) {
         /*
          * retorna una lista con los codigos pertenecientes a una categoria
