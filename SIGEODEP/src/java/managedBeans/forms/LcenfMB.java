@@ -74,7 +74,7 @@ public class LcenfMB implements Serializable {
     private SelectItem[] fromWhereList;
     //------------------
     @EJB
-    BooleanPojoFacade booleanPojoFacade;
+    Boolean3Facade boolean3Facade;
     private SelectItem[] booleans;
     private Short previousAttempt = 0;
     private Short mentalPastDisorder = 0;
@@ -162,7 +162,7 @@ public class LcenfMB implements Serializable {
     NeighborhoodsFacade neighborhoodsFacade;
     private String currentNeighborhoodHome = "";
     private String currentNeighborhoodHomeCode = "";
-    private String currentNeighborhoodEvent = "";   
+    private String currentNeighborhoodEvent = "";
     private String currentNeighborhoodEventCode = "";
     boolean neighborhoodHomeNameDisabled = false;
     //--------------------
@@ -676,7 +676,7 @@ public class LcenfMB implements Serializable {
             currentDiagnoses = "S000";
 
             //categoria boolean
-            List<BooleanPojo> booleanList = booleanPojoFacade.findAll();
+            List<Boolean3> booleanList = boolean3Facade.findAll();
             booleans = new SelectItem[booleanList.size() + 1];
             booleans[0] = new SelectItem(0, "");
             for (int i = 0; i < booleanList.size(); i++) {
@@ -706,7 +706,7 @@ public class LcenfMB implements Serializable {
             save = true;
             System.out.println("Save=true");
             stylePosition = "color: #1471B1;";
-            neighborhoodHomeNameDisabled=false;
+            neighborhoodHomeNameDisabled = false;
             directionHomeDisabled = false;
         } catch (Exception e) {
             System.out.println("*******************************************ERROR_L1: " + e.toString());
@@ -834,8 +834,8 @@ public class LcenfMB implements Serializable {
 
         //******residence_municipality
         try {
-            if (currentNonFatalInjury.getResidenceDepartament() != null) {
-                currentDepartamentHome = currentNonFatalInjury.getResidenceDepartament();
+            if (currentNonFatalInjury.getVictimId().getResidenceDepartment() != null) {
+                currentDepartamentHome = currentNonFatalInjury.getVictimId().getResidenceDepartment();
                 changeDepartamentHome();
                 if (currentNonFatalInjury.getVictimId().getResidenceMunicipality() != null) {
                     currentMunicipalitie = currentNonFatalInjury.getVictimId().getResidenceMunicipality();
@@ -886,7 +886,7 @@ public class LcenfMB implements Serializable {
                 }
             }
         }
-        
+
         //******insurance_id
         try {
             currentInsurance = currentNonFatalInjury.getVictimId().getInsuranceId().getInsuranceId();
@@ -896,7 +896,7 @@ public class LcenfMB implements Serializable {
         } catch (Exception e) {
             currentInsurance = 0;
         }
-        
+
         //-----CARGAR CAMPOS OTROS----------------
         List<Others> othersList = currentNonFatalInjury.getVictimId().getOthersList();
         for (int i = 0; i < othersList.size(); i++) {
@@ -1741,6 +1741,31 @@ public class LcenfMB implements Serializable {
             }
         }
 
+        //---------VALIDAR SI FECHA DE EVENTO IGUAL A FECHA DE CONSULTA LA HORA DE CONSULTA SEA MAYOR A LA DE EVENTO EN UN MISMO DIA
+        if (currentDateConsult.trim().length() != 0 && currentDateEvent.trim().length() != 0) {
+            try {
+                Calendar eventDate = Calendar.getInstance();
+                Calendar consultDate = Calendar.getInstance();
+                Date dateConsult = formato.parse(currentDateConsult);
+                Date dateEvent = formato.parse(currentDateEvent);
+
+                consultDate.setTime(dateConsult);
+                eventDate.setTime(dateEvent);
+                if (consultDate.compareTo(eventDate) == 0) {
+                    String hEvent, hConsult;
+                    hEvent = currentMilitaryHourEvent.trim();
+                    hConsult = currentMilitaryHourConsult.trim();
+                    if (hEvent.length() != 0 && hConsult.length() != 0) {
+                        if (Integer.parseInt(hEvent) > Integer.parseInt(hConsult)) {
+                            validationsErrors.add("La hora del evento: (" + hEvent + ") no puede ser mayor que la hora de la consulta (" + hConsult + ") en un mismo dia.");
+                        }
+                    }
+                }
+            } catch (ParseException ex) {
+                Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
         //---------(PARA SECCION TRANSITO) VALIDAR QUE SI ELEMENTOS DE SEGURIDAD ESTA EN SI SELECCIONE ALMENOS UNA OPCION
         if (currentSecurityElements.compareTo("SI") == 0) {
             if (!isBeltUse && !isHelmetUse && !isBicycleHelmetUse && !isVestUse && !isOtherElementUse) {
@@ -1748,12 +1773,11 @@ public class LcenfMB implements Serializable {
             }
 
         }
-        //---------VALIDAR QUE LA FECHA DEL SISTEMA SEA MAYOR A LA FECHA DE CONSULTA
+        //---------VALIDAR QUE SE HAYA INGRESADO UNA INTENCIONALIDAD
         if (currentIntentionality == 0) {
             validationsErrors.add("Es obligatorio seleccionar una intencionalidad");
         }
         //---------MOSTRAR LOS ERRORES SI EXISTEN
-
         if (validationsErrors.isEmpty()) {
             return true;
         } else {
@@ -1827,7 +1851,7 @@ public class LcenfMB implements Serializable {
                 if (currentNeighborhoodHomeCode.trim().length() != 0) {
                     newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(currentNeighborhoodHomeCode)));
                 }
-                newVictim.setVictimDateOfBirth(new Date());
+                //newVictim.setVictimDateOfBirth(new Date());
                 //newVictim.setEpsId(null);
                 if (currentNeighborhoodHomeCode.trim().length() != 0) {
                 }
@@ -1864,10 +1888,12 @@ public class LcenfMB implements Serializable {
 
                 //newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 54));//es 54 por ser no fatal
 
+//                if (currentDepartamentHome != 0) {
+//                    newNonFatalInjuries.setResidenceDepartament(currentDepartamentHome);
+//                }
                 if (currentDepartamentHome != 0) {
-                    newNonFatalInjuries.setResidenceDepartament(currentDepartamentHome);
+                    newVictim.setResidenceDepartment(currentDepartamentHome);
                 }
-
 
                 if (currentNonFatalInjuriId == -1) {//SI ES NUEVO
                     newNonFatalInjuries.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
@@ -2086,10 +2112,10 @@ public class LcenfMB implements Serializable {
                         //------------------------------------------------------------
                         newNonFatalSelfInflicted = new NonFatalSelfInflicted();
                         if (previousAttempt != 0) {
-                            newNonFatalSelfInflicted.setPreviousAttempt(booleanPojoFacade.find(previousAttempt));
+                            newNonFatalSelfInflicted.setPreviousAttempt(boolean3Facade.find(previousAttempt));
                         }
                         if (mentalPastDisorder != 0) {
-                            newNonFatalSelfInflicted.setMentalAntecedent(booleanPojoFacade.find(mentalPastDisorder));
+                            newNonFatalSelfInflicted.setMentalAntecedent(boolean3Facade.find(mentalPastDisorder));
                         }
                         if (currentPrecipitatingFactor != 0) {
                             newNonFatalSelfInflicted.setPrecipitatingFactorId(precipitatingFactorsFacade.find(currentPrecipitatingFactor));
@@ -2102,7 +2128,7 @@ public class LcenfMB implements Serializable {
                             //SE CREA VARIABLE PARA VIOLENCIA INTERPERSONAL
                             //------------------------------------------------------------
                             newNonFatalInterpersonal = new NonFatalInterpersonal();
-                            newNonFatalInterpersonal.setPreviousAntecedent(booleanPojoFacade.find(aggressionPast));
+                            newNonFatalInterpersonal.setPreviousAntecedent(boolean3Facade.find(aggressionPast));
                             if (currentRelationshipToVictim != 0) {
                                 newNonFatalInterpersonal.setRelationshipVictimId(relationshipsToVictimFacade.find(currentRelationshipToVictim));
                             }
@@ -2517,14 +2543,18 @@ public class LcenfMB implements Serializable {
     public void saveAndGoNext() {//guarda cambios si se han realizado y se dirije al siguiente
         if (saveRegistry()) {
             next();
-        } else {
-            //System.out.println("No se guardo");
         }
     }
 
     public void saveAndGoPrevious() {//guarda cambios si se han realizado y se dirije al anterior
-        if (saveRegistry()) {
-            previous();
+        if (currentNonFatalInjuriId != -1) {
+            if (saveRegistry()) {
+                previous();
+            }
+        } else {
+            if (saveRegistry()) {
+                last();
+            }
         }
     }
 
@@ -2580,7 +2610,12 @@ public class LcenfMB implements Serializable {
         openDialogDelete = "-";
         save = true;
         stylePosition = "color: #1471B1;";
-        previous();
+        if (currentNonFatalInjuriId != -1) {
+            previous();
+        } else {
+            last();
+        }
+
     }
 
     public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
@@ -2629,7 +2664,8 @@ public class LcenfMB implements Serializable {
     public void previous() {
         if (save) {
             System.out.println("cargando anterior registro");
-            if (currentNonFatalInjuriId == -1) {//esta en registro nuevo                
+            if (currentNonFatalInjuriId == -1) {//esta en registro nuevo 
+                last();
             } else {
                 auxNonFatalInjury = nonFatalInjuriesFacade.findPrevious(currentNonFatalInjuriId);
                 if (auxNonFatalInjury != null) {
@@ -2738,7 +2774,7 @@ public class LcenfMB implements Serializable {
 
 
         currentDirectionHome = "";
-        
+
         currentTelephoneHome = "";
 
         isSubmitted = false;
@@ -2911,7 +2947,7 @@ public class LcenfMB implements Serializable {
         txtOtherInjury = "";
         otherInjuryDisabled = true;
         isUnknownNatureOfInjurye = false;
-        neighborhoodHomeNameDisabled=false;
+        neighborhoodHomeNameDisabled = false;
         directionHomeDisabled = false;
         save = true;
         loading = false;
@@ -3010,11 +3046,11 @@ public class LcenfMB implements Serializable {
         totalRegisters = nonFatalInjuriesFacade.countLCENF();
         if (currentNonFatalInjuriId == -1) {
             currentPosition = "new" + "/" + String.valueOf(totalRegisters);
-            currentIdForm=String.valueOf(nonFatalInjuriesFacade.findMax() + 1);
+            currentIdForm = String.valueOf(nonFatalInjuriesFacade.findMax() + 1);
             openDialogDelete = "";//es nuevo no se puede borrar
         } else {
             int position = nonFatalInjuriesFacade.findPosition(currentNonFatalInjury.getNonFatalInjuryId());
-            currentIdForm=String.valueOf(currentNonFatalInjury.getNonFatalInjuryId());
+            currentIdForm = String.valueOf(currentNonFatalInjury.getNonFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
         }
@@ -3192,11 +3228,9 @@ public class LcenfMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public void changeStranger() {
-
         if (loading == false) {
             changeForm();
         }
-
         if (stranger) {
             currentMunicipalitieDisabled = true;
             neighborhoodHomeNameDisabled = true;
@@ -3432,46 +3466,52 @@ public class LcenfMB implements Serializable {
     }
 
     public void changeDepartamentHome() {
-
         if (loading == false) {
             changeForm();
         }
-
         if (currentDepartamentHome != 0) {
-            Departaments d = departamentsFacade.findById(currentDepartamentHome);
+            Departaments d = departamentsFacade.findById(currentDepartamentHome);            
             municipalities = new SelectItem[d.getMunicipalitiesList().size() + 1];
             municipalities[0] = new SelectItem(0, "");
             for (int i = 0; i < d.getMunicipalitiesList().size(); i++) {
                 municipalities[i + 1] = new SelectItem(d.getMunicipalitiesList().get(i).getMunicipalitiesPK().getMunicipalityId(), d.getMunicipalitiesList().get(i).getMunicipalityName());
             }
-            currentMunicipalitie = 0;
+            if (currentDepartamentHome == 52) {
+                currentMunicipalitie = 1;
+            } else {
+                currentMunicipalitie = 0;
+            }
         } else {
             municipalities = new SelectItem[1];
             municipalities[0] = new SelectItem(0, "");
             currentMunicipalitie = 0;
         }
-
         neighborhoodHomeNameDisabled = true;
         directionHomeDisabled = true;
         currentNeighborhoodHome = "";
         currentNeighborhoodHomeCode = "";
         currentDirectionHome = "";
+        changeMunicipalitieHome();
     }
 
     public void changeMunicipalitieHome() {
+        //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, currentDepartamentHome);
         if (loading == false) {
             changeForm();
         }
-        //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, (short) 52);
-        if (currentMunicipalitie == 1) {
+        if (currentMunicipalitie == 1 && currentDepartamentHome == 52) {
             neighborhoodHomeNameDisabled = false;
             directionHomeDisabled = false;
         } else {
             neighborhoodHomeNameDisabled = true;
             currentNeighborhoodHome = "";
             currentNeighborhoodHomeCode = "";
+            neighborhoodHomeNameDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
             directionHomeDisabled = true;
             currentDirectionHome = "";
+
         }
     }
 
@@ -6470,7 +6510,7 @@ public class LcenfMB implements Serializable {
     public void setCurrentInsurance(Short currentInsurance) {
         this.currentInsurance = currentInsurance;
     }
-    
+
     public String getCurrentIdForm() {
         return currentIdForm;
     }

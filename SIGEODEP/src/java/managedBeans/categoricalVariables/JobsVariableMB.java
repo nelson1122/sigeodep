@@ -114,7 +114,6 @@ public class JobsVariableMB implements Serializable {
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
-        
     }
 
     public void saveRegistry() {
@@ -185,7 +184,6 @@ public class JobsVariableMB implements Serializable {
 
     public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
         this.selectedRowDataTable = selectedRowDataTable;
-
     }
 
     public int getCurrentSearchCriteria() {

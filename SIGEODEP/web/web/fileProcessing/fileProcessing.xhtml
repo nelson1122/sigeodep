@@ -10,38 +10,13 @@
         <!--======================= CABECERA Y SCRIPTS ======================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />  
-
             <style type="text/css">
                 .bla div { width: 125px; white-space:nowrap;}
             </style>
             <script type="text/javascript">  
                 function clickIdPaint() {                                          
-                    
-                    //document.getElementById('IdForm:IdPaint').click();                    
                     jQuery('#IdPaint').click();
                 }
-                //function start() {  
-                //    startButton1.disable();  
-                //    window['progress'] = setInterval(function() {  
-                //        var oldValue = pbClient.getValue(),  
-                //        newValue = oldValue + 10;  
-                //        pbClient.setValue(pbClient.getValue() + 10);  
-                //        if(newValue == 100) {  
-                //            clearInterval(window['progress']);  
-                //        }  
-                //    }, 100);  
-                //} 
-                //function cancel() {  
-                //    clearInterval(window['progress']);  
-                //    pbClient.setValue(0);  
-                //    startButton1.enable();  
-                //}  
-                //
-                //function mostrarDialog() {  
-                //    jQuery('#IdDialogSolve').fadeIn();
-                //}  
-                
-		
             </script> 
         </ui:define>
         <!--=================================================================-->
@@ -70,7 +45,7 @@
                             </p:row>
                             <p:row>
                                 <p:column colspan="1">
-                                    <h:outputLabel value="Nombre de la Carga de Datos: " /> 
+                                    <h:outputLabel value="Nombre del conjunto de registros: " /> 
                                 </p:column>
                                 <p:column colspan="3">
                                     <p:inputText 
@@ -809,7 +784,7 @@
                                                         <p:selectOneListbox 
                                                             id="IdSelectOneListCategoricalVarsRelated" 
                                                             value="#{relationshipOfValuesMB.currentCategoricalRelatedVariables}"
-                                                            style="height:125px; width: 270px; ">
+                                                            style="height:135px; width: 300px; ">
                                                             <f:selectItems value="#{relationshipOfValuesMB.categoricalRelatedVariables}"/>
                                                             <f:ajax 
                                                                 event="change"                                            
@@ -822,40 +797,41 @@
                                         </td>
                                         <td>
                                             <p:panelGrid>                            
-                                                <p:row>  
+                                                <p:row>                                                      
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Valores relacionados"/>  
-                                                    </p:column>                                                                                                                                
+                                                        <h:outputLabel value="Valores Descartados"/>  
+                                                    </p:column>                                         
                                                 </p:row>  
                                                 <p:row>  
                                                     <p:column>
-                                                        <!--LISTA DE VALORES RELACIONADOS-->
-                                                        <p:selectManyMenu  
-                                                            id="IdSelectOneListValuesRelated" 
-                                                            style="height:85px; width: 385px;"
-                                                            value="#{relationshipOfValuesMB.valuesRelatedSelectedInRelationValues}">
-                                                            <f:selectItems value="#{relationshipOfValuesMB.valuesRelated}"/>
+                                                        <!--LISTA DE VALORES DESCARTADOS-->
+                                                        <p:selectManyMenu                                                             
+                                                            id="IdSelectOneListValuesDiscarded" 
+                                                            value="#{relationshipOfValuesMB.valuesDiscardedSelectedInRelationValues}"
+                                                            style="height:95px; width: 355px;">
+                                                            <f:selectItems value="#{relationshipOfValuesMB.valuesDiscarded}"/>							    
                                                             <f:ajax 
-                                                                event="change" 
-                                                                listener="#{relationshipOfValuesMB.changeValuesRelated}" 
-                                                                render="IdBtnRemoveRelationValues" />
+                                                                event="change"                                            
+                                                                listener="#{relationshipOfValuesMB.changeValuesDiscarded}" 
+                                                                render="IdBtnRemoveDiscardedValues"/>
                                                         </p:selectManyMenu> 
-                                                    </p:column>                                
+                                                    </p:column> 
                                                 </p:row>
                                                 <p:row>  
-                                                    <p:column styleClass="ui-widget-header">
+                                                    <p:column colspan="2" styleClass="ui-widget-header">
                                                         <p:commandButton 
-                                                            id="IdBtnRemoveRelationValues" 
-                                                            disabled="#{relationshipOfValuesMB.btnRemoveRelationValueDisabled}" 
-                                                            actionListener="#{relationshipOfValuesMB.btnRemoveRelationValueClick}"
-                                                            value="Eliminar"                                         
+                                                            id="IdBtnRemoveDiscardedValues" 
+                                                            disabled="#{relationshipOfValuesMB.btnRemoveDiscardedValuesDisabled}" 
+                                                            actionListener="#{relationshipOfValuesMB.btnRemoveDiscardedValuesClick}"
+                                                            value="Eliminar" 
                                                             style="size: 10px;"
-                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues"/>
-                                                    </p:column>                                                                                                                                
-                                                </p:row>  
+                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/>
+                                                    </p:column>
+                                                </p:row>
                                             </p:panelGrid>
                                         </td>
                                     </tr>
+                                    
                                     <tr>
                                         <td colspan="2">
                                             <p:panelGrid>                            
@@ -866,9 +842,6 @@
                                                     <p:column styleClass="ui-widget-header">
                                                         <h:outputLabel value="Valores encontrados"/>  
                                                     </p:column>                                         
-                                                    <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Valores Descartados"/>  
-                                                    </p:column>                                         
                                                 </p:row>  
                                                 <p:row>  
                                                     <p:column>
@@ -876,7 +849,7 @@
                                                         <p:selectOneListbox 
                                                             id="IdSelectOneListValuesExpected2" 
                                                             value="#{relationshipOfValuesMB.currentValueExpected}"
-                                                            style="height:95px; width: 211px; ">
+                                                            style="height:110px; width: 320px; ">
                                                             <f:selectItems value="#{relationshipOfValuesMB.valuesExpected}"/>
                                                             <f:ajax 
                                                                 event="change"                                            
@@ -889,7 +862,7 @@
                                                         <p:selectManyMenu                                                             
                                                             id="IdSelectOneListValuesFound2" 
                                                             value="#{relationshipOfValuesMB.valuesFoundSelectedInRelationValues}"
-                                                            style="height:95px; width: 211px;">
+                                                            style="height:110px; width: 340px;">
                                                             <f:selectItems value="#{relationshipOfValuesMB.valuesFound}"/>
                                                             <f:ajax 
                                                                 event="change"                                            
@@ -897,19 +870,6 @@
                                                                 render="IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/>
                                                         </p:selectManyMenu> 
                                                     </p:column>  
-                                                    <p:column>
-                                                        <!--LISTA DE VALORES DESCARTADOS-->
-                                                        <p:selectManyMenu                                                             
-                                                            id="IdSelectOneListValuesDiscarded" 
-                                                            value="#{relationshipOfValuesMB.valuesDiscardedSelectedInRelationValues}"
-                                                            style="height:95px; width: 211px;">
-                                                            <f:selectItems value="#{relationshipOfValuesMB.valuesDiscarded}"/>							    
-                                                            <f:ajax 
-                                                                event="change"                                            
-                                                                listener="#{relationshipOfValuesMB.changeValuesDiscarded}" 
-                                                                render="IdBtnRemoveDiscardedValues"/>
-                                                        </p:selectManyMenu> 
-                                                    </p:column> 
                                                 </p:row>
                                                 <p:row>  
                                                     <p:column colspan="2" styleClass="ui-widget-header">
@@ -933,17 +893,45 @@
                                                             value="Descartar" 
                                                             style="size: 10px;"
                                                             update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/> 
-                                                    </p:column>   
-                                                    <p:column colspan="2" styleClass="ui-widget-header">
-                                                        <p:commandButton 
-                                                            id="IdBtnRemoveDiscardedValues" 
-                                                            disabled="#{relationshipOfValuesMB.btnRemoveDiscardedValuesDisabled}" 
-                                                            actionListener="#{relationshipOfValuesMB.btnRemoveDiscardedValuesClick}"
-                                                            value="Eliminar" 
-                                                            style="size: 10px;"
-                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/>
-                                                    </p:column>
+                                                    </p:column>  
                                                 </p:row>
+                                            </p:panelGrid>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <p:panelGrid>                            
+                                                <p:row>  
+                                                    <p:column styleClass="ui-widget-header">
+                                                        <h:outputLabel value="Valores relacionados"/>  
+                                                    </p:column>                                                                                                                                
+                                                </p:row>  
+                                                <p:row>  
+                                                    <p:column>
+                                                        <!--LISTA DE VALORES RELACIONADOS-->
+                                                        <p:selectManyMenu  
+                                                            id="IdSelectOneListValuesRelated" 
+                                                            style="height:120px; width: 687px;"
+                                                            value="#{relationshipOfValuesMB.valuesRelatedSelectedInRelationValues}">
+                                                            <f:selectItems value="#{relationshipOfValuesMB.valuesRelated}"/>
+                                                            <f:ajax 
+                                                                event="change" 
+                                                                listener="#{relationshipOfValuesMB.changeValuesRelated}" 
+                                                                render="IdBtnRemoveRelationValues" />
+                                                        </p:selectManyMenu> 
+                                                    </p:column>                                
+                                                </p:row>
+                                                <p:row>  
+                                                    <p:column styleClass="ui-widget-header">
+                                                        <p:commandButton 
+                                                            id="IdBtnRemoveRelationValues" 
+                                                            disabled="#{relationshipOfValuesMB.btnRemoveRelationValueDisabled}" 
+                                                            actionListener="#{relationshipOfValuesMB.btnRemoveRelationValueClick}"
+                                                            value="Eliminar"                                         
+                                                            style="size: 10px;"
+                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues"/>
+                                                    </p:column>                                                                                                                                
+                                                </p:row>  
                                             </p:panelGrid>
                                         </td>
                                     </tr>
@@ -1305,18 +1293,17 @@
                                         <p:column>
                                             <br/>
                                             <h:outputText 
-                                                value="Una vez que se han realizado las relaciones,
-                                                la información contenida en el archivo puede ser
-                                                almacenado en la base de datos mediante el 
+                                                value="Una vez que se ha realizado la validación,
+                                                la información puede ser almacenada en la base de datos mediante el 
                                                 botón registrar datos."/>                                                                           
                                             <br/>
                                             <br/>
-                                            <p:progressBar id="IdProgres" widgetVar="pbAjax" ajax="true" value="#{recordDataMB.progress}" labelTemplate="{value}%" styleClass="animated">  
+                                            <p:progressBar id="IdProgres" interval="500" widgetVar="pbAjax" ajax="true" value="#{recordDataMB.progress}" labelTemplate="{value}%" styleClass="animated">  
                                                 <p:ajax 
                                                     event="complete" 
                                                     listener="#{recordDataMB.onComplete}" 
                                                     update=":IdForm" 
-                                                    oncomplete="startButton3.disable();" />  
+                                                    oncomplete="startButton3.disable(); startButton2.disable();" />  
                                             </p:progressBar>
                                             <br/>
                                         </p:column>
@@ -1326,11 +1313,13 @@
                                             <!-- p:commandButton value="Registrar Datos" type="button" onclick="pbAjax.start();startButton2.disable();" widgetVar="startButton2" / -->  
                                             <p:commandButton 
                                                 value="Registrar Datos" 
+                                                disabled="#{recordDataMB.btnRegisterDataDisabled}"
                                                 actionListener="#{recordDataMB.btnRegisterDataClick}" 
-                                                onclick="pbAjax.start();startButton2.disable();"  
+                                                onclick="pbAjax.start(); startButton2.disable();"  
                                                 widgetVar="startButton2" />  
                                             <p:commandButton 
                                                 value="Cancelar" 
+                                                disabled="true"
                                                 actionListener="#{recordDataMB.cancel}" 
                                                 oncomplete="pbAjax.cancel();startButton2.enable();" 
                                                 widgetVar="startButton3" />  
@@ -1340,9 +1329,6 @@
                             </p:tab>
                         </p:accordionPanel>
                     </p:tab>
-
-
-
                 </p:tabView>  
             </h:form>
         </ui:define>
@@ -1506,7 +1492,7 @@
                         oncomplete="removeDialog.hide()"
                         actionListener="#{storedRelationsMB.btnRemoveConfigurationConfirmationClick}"
                         value="Aceptar"
-                        update=":IdForm:message :IdForm:IdTabView:IdTabRelations"/>   
+                        update=":IdForm:message :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListRelationGroups"/>   
                     <p:commandButton 
                         id="decline"
                         value="Cancelar" 

@@ -62,6 +62,8 @@ public class SuicideMB implements Serializable {
     DepartamentsFacade departamentsFacade;
     private Short currentSourceDepartament = 0;
     private SelectItem[] sourceDepartaments;
+    private Short currentDepartamentHome = 52;//nariño    
+    private boolean currentDepartamentHomeDisabled = false;
     //--------------------    
     @EJB
     MunicipalitiesFacade municipalitiesFacade;
@@ -100,7 +102,7 @@ public class SuicideMB implements Serializable {
     private Short currentIdentification = 0;
     //------------------
     @EJB
-    BooleanPojoFacade booleanPojoFacade;
+    Boolean3Facade boolean3Facade;
     private SelectItem[] booleans;
     private Short currentPreviousIntent = 0;
     private Short currentMentalAntecedents = 0;
@@ -287,7 +289,7 @@ public class SuicideMB implements Serializable {
             }
 
             //categoria boolean
-            List<BooleanPojo> booleanList = booleanPojoFacade.findAll();
+            List<Boolean3> booleanList = boolean3Facade.findAll();
             booleans = new SelectItem[booleanList.size() + 1];
             booleans[0] = new SelectItem(0, "");
             for (int i = 0; i < booleanList.size(); i++) {
@@ -301,7 +303,7 @@ public class SuicideMB implements Serializable {
             for (int i = 0; i < suicideMechanismsList.size(); i++) {
                 suicideMechanisms[i + 1] = new SelectItem(suicideMechanismsList.get(i).getSuicideMechanismId(), suicideMechanismsList.get(i).getSuicideMechanismName());
             }
-            
+
 
             //lista de criterios de busqueda            
             searchCriteriaList = new SelectItem[3];
@@ -840,10 +842,10 @@ public class SuicideMB implements Serializable {
                 FatalInjurySuicide newFatalInjurySuicide = new FatalInjurySuicide();
 
                 if (currentPreviousIntent != 0) {
-                    newFatalInjurySuicide.setPreviousAttempt(booleanPojoFacade.find(currentPreviousIntent));
+                    newFatalInjurySuicide.setPreviousAttempt(boolean3Facade.find(currentPreviousIntent));
                 }
                 if (currentMentalAntecedents != 0) {
-                    newFatalInjurySuicide.setMentalAntecedent(booleanPojoFacade.find(currentMentalAntecedents));
+                    newFatalInjurySuicide.setMentalAntecedent(boolean3Facade.find(currentMentalAntecedents));
                 }
                 if (currentRelatedEvent != 0) {
                     newFatalInjurySuicide.setRelatedEventId(relatedEventsFacade.find(currentRelatedEvent));
@@ -973,11 +975,11 @@ public class SuicideMB implements Serializable {
         totalRegisters = fatalInjurySuicideFacade.count();
         if (currentFatalInjuriId == -1) {
             currentPosition = "new" + "/" + String.valueOf(totalRegisters);
-            currentIdForm=String.valueOf(fatalInjuriesFacade.findMax() + 1);
+            currentIdForm = String.valueOf(fatalInjuriesFacade.findMax() + 1);
             openDialogDelete = "";//es nuevo no se puede borrar
         } else {
             int position = fatalInjurySuicideFacade.findPosition(currentFatalInjurySuicide.getFatalInjuryId());
-            currentIdForm=String.valueOf(currentFatalInjurySuicide.getFatalInjuryId());
+            currentIdForm = String.valueOf(currentFatalInjurySuicide.getFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
         }
@@ -993,8 +995,14 @@ public class SuicideMB implements Serializable {
     }
 
     public void saveAndGoPrevious() {//guarda cambios si se han realizado y se dirije al anterior
-        if (saveRegistry()) {
-            previous();
+        if (currentFatalInjuriId != -1) {
+            if (saveRegistry()) {
+                previous();
+            }
+        } else {
+            if (saveRegistry()) {
+                last();
+            }
         }
     }
 
@@ -1050,7 +1058,11 @@ public class SuicideMB implements Serializable {
         openDialogDelete = "";
         save = true;
         stylePosition = "color: #1471B1;";
-        previous();
+        if (currentFatalInjuriId != -1) {
+            previous();
+        } else {
+            last();
+        }
     }
 
     public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
@@ -1101,7 +1113,6 @@ public class SuicideMB implements Serializable {
             System.out.println("cargando anterior registro");
             if (currentFatalInjuriId == -1) {//esta en registro nuevo
                 last();
-                determinePosition();
             } else {
                 auxFatalInjurySuicide = fatalInjurySuicideFacade.findPrevious(currentFatalInjuriId);
                 if (auxFatalInjurySuicide != null) {
@@ -1163,13 +1174,20 @@ public class SuicideMB implements Serializable {
         strangerDisabled = true;
         stranger = false;
 
-        sourceMunicipalities = new SelectItem[1];
-        sourceMunicipalities[0] = new SelectItem(0, "");
-        sourceDepartaments = new SelectItem[1];
-        sourceDepartaments[0] = new SelectItem(0, "");
+//        sourceMunicipalities = new SelectItem[1];
+//        sourceMunicipalities[0] = new SelectItem(0, "");
+//        sourceDepartaments = new SelectItem[1];
+//        sourceDepartaments[0] = new SelectItem(0, "");
+//        currentSourceDepartament = 0;
+//        currentSourceMunicipalitie = 0;
+//        currentSourceCountry = 0;
+
         currentSourceDepartament = 0;
         currentSourceMunicipalitie = 0;
-        currentSourceCountry = 0;
+        currentSourceCountry = 52;
+
+        findSourceDepartaments();
+
         currentCode = "";
         currentIdentification = 0;
         currentIdentificationNumber = "";
@@ -1197,7 +1215,12 @@ public class SuicideMB implements Serializable {
         currentDirectionEvent = "";
         currentArea = 0;
         currentSuicideMechanismsType = 0;
+        //currentMunicipalitie = 1;
+        currentDepartamentHome = 52;
+        changeDepartamentHome();
         currentMunicipalitie = 1;
+
+
         currentMunicipalitieDisabled = false;
         currentMentalAntecedents = 0;
         currentPreviousIntent = 0;
@@ -1313,7 +1336,7 @@ public class SuicideMB implements Serializable {
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "fatal_injuries.fatal_injury_id, ";
-                sql = sql + "victims.victim_nid, ";                
+                sql = sql + "victims.victim_nid, ";
                 sql = sql + "victims.victim_name ";
                 sql = sql + "FROM ";
                 sql = sql + "victims, ";
@@ -1330,7 +1353,7 @@ public class SuicideMB implements Serializable {
                     case 2://nombres
                         sql = sql + "UPPER(victims.victim_name) LIKE UPPER('%" + currentSearchValue + "%') AND ";
                         break;
-                   case 3://codigo interno
+                    case 3://codigo interno
                         sql = sql + "fatal_injuries.fatal_injury_id = " + currentSearchValue + " AND ";
                         break;
                 }
@@ -1391,21 +1414,22 @@ public class SuicideMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public void changeStranger() {
-
         if (loading == false) {
             changeForm();
         }
-
         if (stranger) {
             currentMunicipalitieDisabled = true;
             neighborhoodHomeNameDisabled = true;
-            currentMunicipalitie = 1;
+            currentDepartamentHomeDisabled = true;
+            currentDirectionHome = "";
+            currentDepartamentHome = 0;
+            municipalities = new SelectItem[1];
+            municipalities[0] = new SelectItem(0, "");
+            currentMunicipalitie = 0;
             currentNeighborhoodHome = "";
         } else {
+            currentDepartamentHomeDisabled = false;
             currentMunicipalitieDisabled = false;
-            neighborhoodHomeNameDisabled = false;
-            currentMunicipalitieDisabled = false;
-            neighborhoodHomeNameDisabled = false;
         }
     }
 
@@ -1522,7 +1546,7 @@ public class SuicideMB implements Serializable {
             changeForm();
         }
 
-        if (currentIdentification == 3||currentIdentification ==2) {//pasaporte
+        if (currentIdentification == 3 || currentIdentification == 2) {//pasaporte
             strangerDisabled = false;
         } else {
             strangerDisabled = true;
@@ -1738,16 +1762,49 @@ public class SuicideMB implements Serializable {
         }
     }
 
-    public void findMunicipalitieCode() {
+    public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
         }
-        if (currentMunicipalitie == 1) {
+        if (currentDepartamentHome != 0) {
+            Departaments d = departamentsFacade.findById(currentDepartamentHome);
+            municipalities = new SelectItem[d.getMunicipalitiesList().size() + 1];
+            municipalities[0] = new SelectItem(0, "");
+            for (int i = 0; i < d.getMunicipalitiesList().size(); i++) {
+                municipalities[i + 1] = new SelectItem(d.getMunicipalitiesList().get(i).getMunicipalitiesPK().getMunicipalityId(), d.getMunicipalitiesList().get(i).getMunicipalityName());
+            }
+            if (currentDepartamentHome == 52) {
+                currentMunicipalitie = 1;
+            } else {
+                currentMunicipalitie = 0;
+            }
+        } else {
+            municipalities = new SelectItem[1];
+            municipalities[0] = new SelectItem(0, "");
+            currentMunicipalitie = 0;
+        }
+        neighborhoodHomeNameDisabled = true;
+        currentNeighborhoodHome = "";
+        currentNeighborhoodHomeCode = "";
+        currentDirectionHome = "";
+        changeMunicipalitieHome();
+    }
+
+    public void changeMunicipalitieHome() {
+        //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, currentDepartamentHome);
+        if (loading == false) {
+            changeForm();
+        }
+        if (currentMunicipalitie == 1 && currentDepartamentHome == 52) {
             neighborhoodHomeNameDisabled = false;
         } else {
             neighborhoodHomeNameDisabled = true;
             currentNeighborhoodHome = "";
             currentNeighborhoodHomeCode = "";
+            neighborhoodHomeNameDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
+            currentDirectionHome = "";
         }
     }
 
@@ -2711,12 +2768,28 @@ public class SuicideMB implements Serializable {
     public void setStrangerDisabled(boolean strangerDisabled) {
         this.strangerDisabled = strangerDisabled;
     }
-    
+
     public String getCurrentIdForm() {
         return currentIdForm;
     }
 
     public void setCurrentIdForm(String currentIdForm) {
         this.currentIdForm = currentIdForm;
+    }
+
+    public Short getCurrentDepartamentHome() {
+        return currentDepartamentHome;
+    }
+
+    public void setCurrentDepartamentHome(Short currentDepartamentHome) {
+        this.currentDepartamentHome = currentDepartamentHome;
+    }
+
+    public boolean isCurrentDepartamentHomeDisabled() {
+        return currentDepartamentHomeDisabled;
+    }
+
+    public void setCurrentDepartamentHomeDisabled(boolean currentDepartamentHomeDisabled) {
+        this.currentDepartamentHomeDisabled = currentDepartamentHomeDisabled;
     }
 }

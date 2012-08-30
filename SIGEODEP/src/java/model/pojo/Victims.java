@@ -65,6 +65,8 @@ public class Victims implements Serializable {
     private Integer victimId;
     @Column(name = "residence_municipality")
     private Short residenceMunicipality;
+    @Column(name = "residence_department")
+    private Short residenceDepartment;
     @JoinTable(name = "victim_vulnerable_group", joinColumns = {
         @JoinColumn(name = "victim_id", referencedColumnName = "victim_id", nullable = false)}, inverseJoinColumns = {
         @JoinColumn(name = "vulnerable_group_id", referencedColumnName = "vulnerable_group_id", nullable = false)})
@@ -188,6 +190,14 @@ public class Victims implements Serializable {
 
     public void setResidenceMunicipality(Short residenceMunicipality) {
 	this.residenceMunicipality = residenceMunicipality;
+    }
+    
+    public Short getResidenceDepartment() {
+        return residenceDepartment;
+    }
+
+    public void setResidenceDepartment(Short residenceDepartment) {
+        this.residenceDepartment = residenceDepartment;
     }
 
     @XmlTransient

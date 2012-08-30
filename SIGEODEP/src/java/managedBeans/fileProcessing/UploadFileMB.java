@@ -64,6 +64,7 @@ public class UploadFileMB implements Serializable {
     private List<String> variablesExpected;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
+    private RecordDataMB recordDataMB;
     private StoredRelationsMB storedRelationsMB;
     private CopyMB copyMB;
 
@@ -81,6 +82,7 @@ public class UploadFileMB implements Serializable {
         copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
         formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
+        recordDataMB=(RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
     }
 
     //@PostConstruct //ejecutar despues de el constructor
@@ -341,6 +343,7 @@ public class UploadFileMB implements Serializable {
                 isr = new InputStreamReader(file.getInputstream());
                 buffer = new BufferedReader(isr);
                 int numLine = 0;
+                boolean una=true;
                 while ((line = buffer.readLine()) != null) {
                     //separo la linea leida dependiendo del delimitador
                     if (currentDelimiter.compareTo("TAB") == 0) {
@@ -364,8 +367,21 @@ public class UploadFileMB implements Serializable {
 
                     //if (headerFile.length == tupla.length && numLine != 0) {
                     if (numLine != 0) {
+                        
+                        
+                        
                         sql = "INSERT INTO temp VALUES (" + "'" + String.valueOf(numLine) + "',";
+                        String value;
                         for (int i = 0; i < tupla.length; i++) {
+                            //value=tupla[i];
+                            //value=value.trim();
+                            char a=160;
+                            char b=32;
+                            tupla[i]=tupla[i].replace(a,b);
+                            tupla[i]=tupla[i].trim();
+                            
+                            //tupla[i]=tupla[i].replaceAll(".", "");
+                            //tupla[i]=tupla[i].replaceAll(":", "");
                             if (tupla.length - 1 == i) {
                                 sql = sql + "'" + tupla[i] + "');";
                             } else {
@@ -413,6 +429,7 @@ public class UploadFileMB implements Serializable {
                 relationshipOfVariablesMB.setVarsFound(variablesFound);
                 relationshipOfVariablesMB.setCurrentRelationsGroup(newRelationsGroup);
                 formsAndFieldsDataMB.setNameForm(currentForm);//relationshipOfVariablesMB.set(variablesFound);
+                recordDataMB.setNameForm(currentForm);
                 storedRelationsMB.setCurrentRelationsGroup(newRelationsGroup);
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Archivo cargado correctamente."));
                 btnResetDisabled = false;

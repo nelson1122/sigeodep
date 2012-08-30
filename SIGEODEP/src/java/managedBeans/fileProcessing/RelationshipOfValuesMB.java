@@ -527,8 +527,9 @@ public class RelationshipOfValuesMB implements Serializable {
         if (relationVarSelected != null) {
             for (int i = 0; i < valuesFound.size(); i++) {
                 for (int j = 0; j < valuesExpected.size(); j++) {
-                    String valueFoundNoAccent = valuesFound.get(i).toUpperCase();
-                    String valueExpectedNoAccent = valuesExpected.get(j).toUpperCase();
+                    String valueFoundNoAccent = valuesFound.get(i).trim().toUpperCase().replace(".", "").replace(";", "");
+                    String valueExpectedNoAccent = valuesExpected.get(j).trim().toUpperCase().replace(".", "").replace(";", "");
+                    
                     valueFoundNoAccent = valueFoundNoAccent.replace("Á", "A");
                     valueFoundNoAccent = valueFoundNoAccent.replace("É", "E");
                     valueFoundNoAccent = valueFoundNoAccent.replace("Í", "I");

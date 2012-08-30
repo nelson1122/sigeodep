@@ -18,13 +18,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "NonFatalInterpersonal.findAll", query = "SELECT n FROM NonFatalInterpersonal n"),
-    @NamedQuery(name = "NonFatalInterpersonal.findByPreviousAntecedent", query = "SELECT n FROM NonFatalInterpersonal n WHERE n.previousAntecedent = :previousAntecedent"),
     @NamedQuery(name = "NonFatalInterpersonal.findByNonFatalInjuryId", query = "SELECT n FROM NonFatalInterpersonal n WHERE n.nonFatalInjuryId = :nonFatalInjuryId")})
 public class NonFatalInterpersonal implements Serializable {
     private static final long serialVersionUID = 1L;
-    @JoinColumn(name = "previous_antecedent", referencedColumnName = "boolean_id")
-    @ManyToOne
-    private BooleanPojo previousAntecedent;
     @Id
     @Basic(optional = false)
     @NotNull
@@ -39,6 +35,9 @@ public class NonFatalInterpersonal implements Serializable {
     @JoinColumn(name = "context_id", referencedColumnName = "context_id")
     @ManyToOne
     private Contexts contextId;
+    @JoinColumn(name = "previous_antecedent", referencedColumnName = "boolean_id")
+    @ManyToOne
+    private Boolean3 previousAntecedent;
     @JoinColumn(name = "aggressor_gender_id", referencedColumnName = "gender_id")
     @ManyToOne
     private AggressorGenders aggressorGenderId;
@@ -48,14 +47,6 @@ public class NonFatalInterpersonal implements Serializable {
 
     public NonFatalInterpersonal(Integer nonFatalInjuryId) {
 	this.nonFatalInjuryId = nonFatalInjuryId;
-    }
-
-    public BooleanPojo getPreviousAntecedent() {
-        return previousAntecedent;
-    }
-
-    public void setPreviousAntecedent(BooleanPojo previousAntecedent) {
-        this.previousAntecedent = previousAntecedent;
     }
 
     public Integer getNonFatalInjuryId() {
@@ -88,6 +79,14 @@ public class NonFatalInterpersonal implements Serializable {
 
     public void setContextId(Contexts contextId) {
 	this.contextId = contextId;
+    }
+
+    public Boolean3 getPreviousAntecedent() {
+        return previousAntecedent;
+    }
+
+    public void setPreviousAntecedent(Boolean3 previousAntecedent) {
+        this.previousAntecedent = previousAntecedent;
     }
 
     public AggressorGenders getAggressorGenderId() {

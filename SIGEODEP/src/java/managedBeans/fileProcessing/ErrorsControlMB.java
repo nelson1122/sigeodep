@@ -147,21 +147,21 @@ public class ErrorsControlMB {
                     case text:
                         break;
                     case integer:
-                        if (!isNumeric(currentNewValue)) {
+                        if (isNumeric(currentNewValue)) {
                             correction = true;
                         } else {
                             correction = false;
                         }
                         break;
                     case age:
-                        if (!isAge(currentNewValue)) {
+                        if (isAge(currentNewValue)) {
                             correction = true;
                         } else {
                             correction = false;
                         }
                         break;
                     case date:
-                        if (!isDate(currentNewValue, currentDateFormat)) {
+                        if (isDate(currentNewValue, currentDateFormat)) {
                             correction = true;
                         } else {
                             correction = false;
@@ -175,42 +175,42 @@ public class ErrorsControlMB {
                         }
                         break;
                     case hour:
-                        if (!isHour(currentNewValue)) {
+                        if (isHour(currentNewValue)) {
                             correction = true;
                         } else {
                             correction = false;
                         }
                         break;
                     case minute:
-                        if (!isMinute(currentNewValue)) {
+                        if (isMinute(currentNewValue)) {
                             correction = true;
                         } else {
                             correction = false;
                         }
                         break;
                     case day:
-                        if (!isDay(currentNewValue)) {
+                        if (isDay(currentNewValue)) {
                             correction = true;
                         } else {
                             correction = false;
                         }
                         break;
                     case month:
-                        if (!isMonth(currentNewValue)) {
+                        if (isMonth(currentNewValue)) {
                             correction = true;
                         } else {
                             correction = false;
                         }
                         break;
                     case year:
-                        if (!isYear(currentNewValue)) {
+                        if (isYear(currentNewValue)) {
                             correction = true;
                         } else {
                             correction = false;
                         }
                         break;
-                    case NOVALUE://categirucal
-                        if (!isCategorical(
+                    case NOVALUE://categorucal
+                        if (isCategorical(
                                 currentNewValue, errorControlArrayList.get(i).getRelationVar().getNameExpected(),
                                 errorControlArrayList.get(i).getRelationVar().getTypeComparisonForCode(), relationVar.getRelationValueList())) {
                             correction = true;

@@ -153,6 +153,7 @@ public enum SCC_F_032Enum {
   txtcie104,
   medico,
   digita,
+  fnacimiento,
   NOVALUE;
   public static SCC_F_032Enum convert(String str)
     {

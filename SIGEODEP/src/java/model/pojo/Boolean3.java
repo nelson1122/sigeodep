@@ -17,13 +17,13 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author SANTOS
  */
 @Entity
-@Table(name = "boolean", catalog = "od", schema = "public")
+@Table(name = "boolean3", catalog = "od", schema = "public")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "BooleanPojo.findAll", query = "SELECT b FROM BooleanPojo b"),
-    @NamedQuery(name = "BooleanPojo.findByBooleanId", query = "SELECT b FROM BooleanPojo b WHERE b.booleanId = :booleanId"),
-    @NamedQuery(name = "BooleanPojo.findByBooleanName", query = "SELECT b FROM BooleanPojo b WHERE b.booleanName = :booleanName")})
-public class BooleanPojo implements Serializable {
+    @NamedQuery(name = "Boolean3.findAll", query = "SELECT b FROM Boolean3 b"),
+    @NamedQuery(name = "Boolean3.findByBooleanId", query = "SELECT b FROM Boolean3 b WHERE b.booleanId = :booleanId"),
+    @NamedQuery(name = "Boolean3.findByBooleanName", query = "SELECT b FROM Boolean3 b WHERE b.booleanName = :booleanName")})
+public class Boolean3 implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -37,73 +37,54 @@ public class BooleanPojo implements Serializable {
     private List<NonFatalSelfInflicted> nonFatalSelfInflictedList;
     @OneToMany(mappedBy = "mentalAntecedent")
     private List<NonFatalSelfInflicted> nonFatalSelfInflictedList1;
+    @OneToMany(mappedBy = "previousAntecedent")
+    private List<NonFatalInterpersonal> nonFatalInterpersonalList;
     @OneToMany(mappedBy = "previousAttempt")
     private List<FatalInjurySuicide> fatalInjurySuicideList;
     @OneToMany(mappedBy = "mentalAntecedent")
     private List<FatalInjurySuicide> fatalInjurySuicideList1;
-    @OneToMany(mappedBy = "previousAntecedent")
-    private List<NonFatalInterpersonal> nonFatalInterpersonalList;
-    
 
-    public BooleanPojo() {
+    public Boolean3() {
     }
 
-    public BooleanPojo(Short booleanId) {
-	this.booleanId = booleanId;
+    public Boolean3(Short booleanId) {
+        this.booleanId = booleanId;
     }
 
     public Short getBooleanId() {
-	return booleanId;
+        return booleanId;
     }
 
     public void setBooleanId(Short booleanId) {
-	this.booleanId = booleanId;
+        this.booleanId = booleanId;
     }
 
     public String getBooleanName() {
-	return booleanName;
+        return booleanName;
     }
 
     public void setBooleanName(String booleanName) {
-	this.booleanName = booleanName;
+        this.booleanName = booleanName;
     }
 
     @XmlTransient
     public List<NonFatalSelfInflicted> getNonFatalSelfInflictedList() {
-	return nonFatalSelfInflictedList;
+        return nonFatalSelfInflictedList;
     }
 
     public void setNonFatalSelfInflictedList(List<NonFatalSelfInflicted> nonFatalSelfInflictedList) {
-	this.nonFatalSelfInflictedList = nonFatalSelfInflictedList;
+        this.nonFatalSelfInflictedList = nonFatalSelfInflictedList;
     }
 
     @XmlTransient
     public List<NonFatalSelfInflicted> getNonFatalSelfInflictedList1() {
-	return nonFatalSelfInflictedList1;
+        return nonFatalSelfInflictedList1;
     }
 
     public void setNonFatalSelfInflictedList1(List<NonFatalSelfInflicted> nonFatalSelfInflictedList1) {
-	this.nonFatalSelfInflictedList1 = nonFatalSelfInflictedList1;
+        this.nonFatalSelfInflictedList1 = nonFatalSelfInflictedList1;
     }
 
-    @XmlTransient
-    public List<FatalInjurySuicide> getFatalInjurySuicideList() {
-	return fatalInjurySuicideList;
-    }
-
-    public void setFatalInjurySuicideList(List<FatalInjurySuicide> fatalInjurySuicideList) {
-	this.fatalInjurySuicideList = fatalInjurySuicideList;
-    }
-
-    @XmlTransient
-    public List<FatalInjurySuicide> getFatalInjurySuicideList1() {
-	return fatalInjurySuicideList1;
-    }
-
-    public void setFatalInjurySuicideList1(List<FatalInjurySuicide> fatalInjurySuicideList1) {
-	this.fatalInjurySuicideList1 = fatalInjurySuicideList1;
-    }
-    
     @XmlTransient
     public List<NonFatalInterpersonal> getNonFatalInterpersonalList() {
         return nonFatalInterpersonalList;
@@ -112,30 +93,48 @@ public class BooleanPojo implements Serializable {
     public void setNonFatalInterpersonalList(List<NonFatalInterpersonal> nonFatalInterpersonalList) {
         this.nonFatalInterpersonalList = nonFatalInterpersonalList;
     }
-    
+
+    @XmlTransient
+    public List<FatalInjurySuicide> getFatalInjurySuicideList() {
+        return fatalInjurySuicideList;
+    }
+
+    public void setFatalInjurySuicideList(List<FatalInjurySuicide> fatalInjurySuicideList) {
+        this.fatalInjurySuicideList = fatalInjurySuicideList;
+    }
+
+    @XmlTransient
+    public List<FatalInjurySuicide> getFatalInjurySuicideList1() {
+        return fatalInjurySuicideList1;
+    }
+
+    public void setFatalInjurySuicideList1(List<FatalInjurySuicide> fatalInjurySuicideList1) {
+        this.fatalInjurySuicideList1 = fatalInjurySuicideList1;
+    }
+
     @Override
     public int hashCode() {
-	int hash = 0;
-	hash += (booleanId != null ? booleanId.hashCode() : 0);
-	return hash;
+        int hash = 0;
+        hash += (booleanId != null ? booleanId.hashCode() : 0);
+        return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-	// TODO: Warning - this method won't work in the case the id fields are not set
-	if (!(object instanceof BooleanPojo)) {
-	    return false;
-	}
-	BooleanPojo other = (BooleanPojo) object;
-	if ((this.booleanId == null && other.booleanId != null) || (this.booleanId != null && !this.booleanId.equals(other.booleanId))) {
-	    return false;
-	}
-	return true;
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof Boolean3)) {
+            return false;
+        }
+        Boolean3 other = (Boolean3) object;
+        if ((this.booleanId == null && other.booleanId != null) || (this.booleanId != null && !this.booleanId.equals(other.booleanId))) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public String toString() {
-	return "model.pojo.BooleanPojo[ booleanId=" + booleanId + " ]";
+        return "pojos.Boolean3[ booleanId=" + booleanId + " ]";
     }
     
 }

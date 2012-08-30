@@ -45,7 +45,7 @@ public class GeoDBConnection implements Serializable {
         msj = "";
         bd = "od";
         login = "postgres";
-        password = "postgres1";
+        password = "1234";
         url = "jdbc:postgresql://" + "localhost" + "/" + bd;// Anadir a la url la bd user y contrasena
         try {
 

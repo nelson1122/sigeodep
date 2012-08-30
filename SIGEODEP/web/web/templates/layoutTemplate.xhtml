@@ -20,16 +20,28 @@
                 <ui:insert name="titlePage">
                 </ui:insert>
             </title>
+
         </h:head>
         <h:body>
             <p:layout fullPage="true" >  
                 <!-- ****************************** MENU LATERAL (PARTE IZQUIERDA) ************************ -->
                 <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
-                    <h:form>
+                    <h:form id="IdForm0">
                         <div id="logo2"></div>                    
+                        <!-- 
+                        timeout="600000" 
+                        document.getElementById('IdForm0:btnLogout').click();
+                        -->
                         <p:idleMonitor 
-                            timeout="180000"
-                            onidle="dialogEnd.show()"/>                                        
+                            timeout="600000"
+                            onidle="dialogEnd.show(); document.getElementById('IdForm0:btnLogout').click();"/>
+
+                        <p:commandButton 
+                            id="btnLogout"
+                            value="-"  
+                            style="display: none;"                            
+                            actionListener="#{loginMB.logout}"/>
+
                         <p:accordionPanel activeIndex="-1" >
                             <p:tab title="REGISTRO DE DATOS">
                                 <p:menu style="width: 240px; z-index:23; overflow:visible">                               
@@ -45,7 +57,7 @@
                                         ajax="false"/>  
                                     <p:menuitem 
                                         icon="ui-icon-folder-collapsed" 
-                                        value="Lotes Registrados" 
+                                        value="Conjuntos de registros" 
                                         actionListener="#"  
                                         ajax="false"/>
                                 </p:menu> 
@@ -120,15 +132,15 @@
                     resizable="false">
                     <br/>
                     <p:inputTextarea 
-                        value="Después de 10 minutos de inactividad (EN ESTE MOMENTO 3) el servidor finaliza la sesión, presione aceptar para volver a acceder a la aplicación"
+                        value="Después de 10 minutos de inactividad el servidor finaliza la sesión, presione aceptar para volver a acceder a la aplicación"
                         readonly="true" 
                         style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 60px; width: 300px;"/>
                     <br/>
                     <br/>
                     <p:commandButton 
-                        value="ACEPTAR"
-                        actionListener="#{loginMB.closeSession}"
-                        action="index"/>
+                        value="ACEPTAR"  
+                        action="index"
+                        ajax="false"/>
                 </p:dialog>
             </h:form>
             <ui:insert name="dialogs">   

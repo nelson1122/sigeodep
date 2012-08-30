@@ -94,6 +94,8 @@ public class TransitMB implements Serializable {
     DepartamentsFacade departamentsFacade;
     private Short currentSourceDepartament = 0;
     private SelectItem[] sourceDepartaments;
+    private Short currentDepartamentHome = 52;//nariño    
+    private boolean currentDepartamentHomeDisabled = false;
     //--------------------    
     @EJB
     MunicipalitiesFacade municipalitiesFacade;
@@ -1316,14 +1318,14 @@ public class TransitMB implements Serializable {
 
     public void determinePosition() {
         totalRegisters = fatalInjuryTrafficFacade.count();
-        
+
         if (currentFatalInjuriId == -1) {
             currentPosition = "new" + "/" + String.valueOf(totalRegisters);
-            currentIdForm=String.valueOf(fatalInjuriesFacade.findMax() + 1);
+            currentIdForm = String.valueOf(fatalInjuriesFacade.findMax() + 1);
             openDialogDelete = "";//es nuevo no se puede borrar
         } else {
             int position = fatalInjuryTrafficFacade.findPosition(currentFatalInjuryTraffic.getFatalInjuryId());
-            currentIdForm=String.valueOf(currentFatalInjuryTraffic.getFatalInjuryId());
+            currentIdForm = String.valueOf(currentFatalInjuryTraffic.getFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
         }
@@ -1339,8 +1341,14 @@ public class TransitMB implements Serializable {
     }
 
     public void saveAndGoPrevious() {//guarda cambios si se han realizado y se dirije al anterior
-        if (saveRegistry()) {
-            previous();
+        if (currentFatalInjuriId != -1) {
+            if (saveRegistry()) {
+                previous();
+            }
+        } else {
+            if (saveRegistry()) {
+                last();
+            }
         }
     }
 
@@ -1396,7 +1404,11 @@ public class TransitMB implements Serializable {
         openDialogDelete = "";
         save = true;
         stylePosition = "color: #1471B1;";
-        previous();
+        if (currentFatalInjuriId != -1) {
+            previous();
+        } else {
+            last();
+        }
     }
 
     public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
@@ -1447,7 +1459,6 @@ public class TransitMB implements Serializable {
             System.out.println("cargando anterior registro");
             if (currentFatalInjuriId == -1) {//esta en registro nuevo
                 last();
-                determinePosition();
             } else {
                 auxFatalInjuryTraffic = fatalInjuryTrafficFacade.findPrevious(currentFatalInjuriId);
                 if (auxFatalInjuryTraffic != null) {
@@ -1510,13 +1521,19 @@ public class TransitMB implements Serializable {
         //------------------------------------------------------------
         //REINICIAR VALORES PARA LA NUEVA VICTIMA
         //------------------------------------------------------------	        
-        sourceMunicipalities = new SelectItem[1];
-        sourceMunicipalities[0] = new SelectItem(0, "");
-        sourceDepartaments = new SelectItem[1];
-        sourceDepartaments[0] = new SelectItem(0, "");
+//        sourceMunicipalities = new SelectItem[1];
+//        sourceMunicipalities[0] = new SelectItem(0, "");
+//        sourceDepartaments = new SelectItem[1];
+//        sourceDepartaments[0] = new SelectItem(0, "");
+//        currentSourceDepartament = 0;
+//        currentSourceMunicipalitie = 0;
+//        currentSourceCountry = 0;
         currentSourceDepartament = 0;
         currentSourceMunicipalitie = 0;
-        currentSourceCountry = 0;
+        currentSourceCountry = 52;
+
+        findSourceDepartaments();
+        
         currentIdentification = 0;
         currentIdentificationNumber = "";
         currentName = "";
@@ -1561,7 +1578,12 @@ public class TransitMB implements Serializable {
         currentDirectionEvent = "";
         currentNeighborhoodHomeCode = "";
         currentNeighborhoodHome = "";
-        currentMunicipalitie = 1;
+        
+        //currentMunicipalitie = 1;
+        currentDepartamentHome = 52;
+        changeDepartamentHome();
+        currentMunicipalitie = 1;        
+        
         currentMunicipalitieDisabled = false;
         neighborhoodHomeNameDisabled = false;
         currentPlace = 0;
@@ -1695,7 +1717,7 @@ public class TransitMB implements Serializable {
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "fatal_injuries.fatal_injury_id, ";
-                sql = sql + "victims.victim_nid, ";                
+                sql = sql + "victims.victim_nid, ";
                 sql = sql + "victims.victim_name ";
                 sql = sql + "FROM ";
                 sql = sql + "victims, ";
@@ -1791,19 +1813,21 @@ public class TransitMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public void changeStranger() {
-        if (!loading) {
-            if (loading == false) {             changeForm();         }
+        if (loading == false) {
+            changeForm();
         }
         if (stranger) {
             currentMunicipalitieDisabled = true;
             neighborhoodHomeNameDisabled = true;
-            currentMunicipalitie = 1;
+            currentDepartamentHomeDisabled = true;
+            currentDepartamentHome = 0;
+            municipalities = new SelectItem[1];
+            municipalities[0] = new SelectItem(0, "");
+            currentMunicipalitie = 0;
             currentNeighborhoodHome = "";
         } else {
+            currentDepartamentHomeDisabled = false;
             currentMunicipalitieDisabled = false;
-            neighborhoodHomeNameDisabled = false;
-            currentMunicipalitieDisabled = false;
-            neighborhoodHomeNameDisabled = false;
         }
     }
 
@@ -1860,7 +1884,9 @@ public class TransitMB implements Serializable {
 //    }
     public void findSourceDepartaments() {
         if (!loading) {
-            if (loading == false) {             changeForm();         }
+            if (loading == false) {
+                changeForm();
+            }
         }
         if (currentSourceCountry == 52) {//colombia
             //cargo departamentos
@@ -1893,7 +1919,9 @@ public class TransitMB implements Serializable {
 
     public void findSourceMunicipalities() {
         if (!loading) {
-            if (loading == false) {             changeForm();         }
+            if (loading == false) {
+                changeForm();
+            }
         }
         if (currentSourceDepartament != 0) {
             Departaments d = departamentsFacade.findById(currentSourceDepartament);
@@ -1920,13 +1948,45 @@ public class TransitMB implements Serializable {
         currentMunicipalitie = d.getMunicipalitiesList().get(0).getMunicipalitiesPK().getMunicipalityId();
 
     }
+    
+        public void changeDepartamentHome() {
+        if (loading == false) {
+            changeForm();
+        }
+        if (currentDepartamentHome != 0) {
+            Departaments d = departamentsFacade.findById(currentDepartamentHome);            
+            municipalities = new SelectItem[d.getMunicipalitiesList().size() + 1];
+            municipalities[0] = new SelectItem(0, "");
+            for (int i = 0; i < d.getMunicipalitiesList().size(); i++) {
+                municipalities[i + 1] = new SelectItem(d.getMunicipalitiesList().get(i).getMunicipalitiesPK().getMunicipalityId(), d.getMunicipalitiesList().get(i).getMunicipalityName());
+            }
+            if (currentDepartamentHome == 52) {
+                currentMunicipalitie = 1;
+            } else {
+                currentMunicipalitie = 0;
+            }
+        } else {
+            municipalities = new SelectItem[1];
+            municipalities[0] = new SelectItem(0, "");
+            currentMunicipalitie = 0;
+        }
+        neighborhoodHomeNameDisabled = true;
+        currentNeighborhoodHome = "";
+        currentNeighborhoodHomeCode = "";
+        changeMunicipalitieHome();
+    }
 
-    public void changeMunicipalitie() {
-        if (loading == false) {             changeForm();         }
-        //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, (short) 52);
-        if (currentMunicipalitie == 1) {
+    public void changeMunicipalitieHome() {
+        //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, currentDepartamentHome);
+        if (loading == false) {
+            changeForm();
+        }
+        if (currentMunicipalitie == 1 && currentDepartamentHome == 52) {
             neighborhoodHomeNameDisabled = false;
         } else {
+            neighborhoodHomeNameDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
             neighborhoodHomeNameDisabled = true;
             currentNeighborhoodHome = "";
             currentNeighborhoodHomeCode = "";
@@ -1935,7 +1995,9 @@ public class TransitMB implements Serializable {
 
     public void changeIdentificationType() {
         if (!loading) {
-            if (loading == false) {             changeForm();         }
+            if (loading == false) {
+                changeForm();
+            }
         }
         if (currentIdentification == 3 || currentIdentification == 2) {//pasaporte
             strangerDisabled = false;
@@ -2057,7 +2119,9 @@ public class TransitMB implements Serializable {
 
     public void changeAmPmEvent() {
         if (loading == false) {
-            if (loading == false) {             changeForm();         }
+            if (loading == false) {
+                changeForm();
+            }
         }
         try {
             if (currentAmPmEvent.compareTo("AM") == 0 || currentAmPmEvent.compareTo("PM") == 0) {
@@ -2166,7 +2230,9 @@ public class TransitMB implements Serializable {
     }
 
     public void changeAlcoholLevel() {
-        if (loading == false) {             changeForm();         }
+        if (loading == false) {
+            changeForm();
+        }
         if (!isNoDataAlcoholLevel && !isPendentAlcoholLevel
                 && !isUnknownAlcoholLevel && !isNegativeAlcoholLevel) {
             currentAlcoholLevelDisabled = false;
@@ -2212,7 +2278,9 @@ public class TransitMB implements Serializable {
     }
 
     public void changeAlcoholLevelC() {
-        if (loading == false) {             changeForm();         }
+        if (loading == false) {
+            changeForm();
+        }
         if (!isNoDataAlcoholLevelC && !isPendentAlcoholLevelC
                 && !isUnknownAlcoholLevelC && !isNegativeAlcoholLevelC) {
             currentAlcoholLevelDisabledC = false;
@@ -2258,7 +2326,9 @@ public class TransitMB implements Serializable {
     }
 
     public void changeNeighborhoodEvent() {
-        if (loading == false) {             changeForm();         }
+        if (loading == false) {
+            changeForm();
+        }
         if (currentNeighborhoodEvent != null) {
             if (currentNeighborhoodEvent.length() != 0) {
                 Neighborhoods n = neighborhoodsFacade.findByName(currentNeighborhoodEvent);
@@ -2283,7 +2353,9 @@ public class TransitMB implements Serializable {
     }
 
     public void changeNeighborhoodHomeName() {
-        if (loading == false) {             changeForm();         }
+        if (loading == false) {
+            changeForm();
+        }
         List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
         for (int i = 0; i < neighborhoodsList.size(); i++) {
             if (neighborhoodsList.get(i).getNeighborhoodName().compareTo(currentNeighborhoodHome) == 0) {
@@ -2294,7 +2366,9 @@ public class TransitMB implements Serializable {
     }
 
     public void changeMeasuresOfAge() {
-        if (loading == false) {             changeForm();         }
+        if (loading == false) {
+            changeForm();
+        }
         if (currentMeasureOfAge == 0 || currentMeasureOfAge == 4) {
             valueAgeDisabled = true;
 
@@ -3344,5 +3418,21 @@ public class TransitMB implements Serializable {
 
     public void setCurrentIdForm(String currentIdForm) {
         this.currentIdForm = currentIdForm;
+    }
+    
+    public Short getCurrentDepartamentHome() {
+        return currentDepartamentHome;
+    }
+
+    public void setCurrentDepartamentHome(Short currentDepartamentHome) {
+        this.currentDepartamentHome = currentDepartamentHome;
+    }
+
+    public boolean isCurrentDepartamentHomeDisabled() {
+        return currentDepartamentHomeDisabled;
+    }
+
+    public void setCurrentDepartamentHomeDisabled(boolean currentDepartamentHomeDisabled) {
+        this.currentDepartamentHomeDisabled = currentDepartamentHomeDisabled;
     }
 }
