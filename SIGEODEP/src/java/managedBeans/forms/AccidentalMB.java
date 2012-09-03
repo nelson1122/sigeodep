@@ -196,25 +196,9 @@ public class AccidentalMB implements Serializable {
 
     @PostConstruct
     public void reset() {
-
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
-
+        loading = true;
         try {
-
-//            //estados de fecha
-//            List<StateDate> stateDateL = stateDateFacade.findAll();
-//            stateDateList = new SelectItem[stateDateL.size()];
-//            for (int i = 0; i < stateDateL.size(); i++) {
-//                stateDateList[i] = new SelectItem(stateDateL.get(i).getIdStateDate(), stateDateL.get(i).getName());
-//            }
-//
-//            //estados de hora
-//            List<StateTime> stateTimeL = stateTimeFacade.findAll();
-//            stateTimeList = new SelectItem[stateTimeL.size()];            
-//            for (int i = 0; i < stateDateL.size(); i++) {
-//                stateTimeList[i] = new SelectItem(stateTimeL.get(i).getIdStateTime(), stateTimeL.get(i).getName());
-//            }
-
             //cargo los tipos de identificacion
             List<IdTypes> idTypesList = idTypesFacade.findAll();
             identifications = new SelectItem[idTypesList.size() + 1];
@@ -237,15 +221,10 @@ public class AccidentalMB implements Serializable {
             for (int i = 0; i < countriesList.size(); i++) {
                 sourceCountries[i + 1] = new SelectItem(countriesList.get(i).getIdCountry(), countriesList.get(i).getName());
             }
-
-
             //cargo municipios de residencia
             findMunicipalities();
-
             currentSourceCountry = 52;
             findSourceDepartaments();
-
-
             //cargo los lugares donde ocurrieron los hechos
             List<Places> placesList = placesFacade.findAll();
             places = new SelectItem[placesList.size() + 1];
@@ -302,6 +281,9 @@ public class AccidentalMB implements Serializable {
         } catch (Exception e) {
             System.out.println("*******************************************ERROR_A1: " + e.toString());
         }
+        loading = false;
+        System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////");
+
     }
 
     public void loadValues() {
@@ -401,16 +383,26 @@ public class AccidentalMB implements Serializable {
         //******eps_id
         //******victim_class
         //******victim_id
-        //******residence_municipality
+        //******residence_municipality residence_department
         try {
-            currentMunicipalitie = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getResidenceMunicipality();
-            if (currentMunicipalitie == 1) {
-                neighborhoodHomeNameDisabled = false;
+            if (currentFatalInjuryAccident.getFatalInjuries().getVictimId().getResidenceDepartment() != null) {
+                currentDepartamentHome = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getResidenceDepartment();
+                changeDepartamentHome();
+                if (currentFatalInjuryAccident.getFatalInjuries().getVictimId().getResidenceMunicipality() != null) {
+                    currentMunicipalitie = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getResidenceMunicipality();
+                    if (currentDepartamentHome == 52 && currentMunicipalitie == 1) {
+                        neighborhoodHomeNameDisabled = false;
+                    }
+                } else {
+                    currentMunicipalitie = 0;
+                }
             } else {
-                neighborhoodHomeNameDisabled = true;
+                currentDepartamentHome = 0;
+                currentMunicipalitie = 0;
             }
         } catch (Exception e) {
-            currentMunicipalitie = 1;
+            currentDepartamentHome = 0;
+            currentMunicipalitie = 0;
         }
         //------------------------------------------------------------
         //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
@@ -430,14 +422,25 @@ public class AccidentalMB implements Serializable {
         }
         //******injury_time
         try {
-            currentHourEvent = String.valueOf(currentFatalInjuryAccident.getFatalInjuries().getInjuryTime().getHours());
-            currentMinuteEvent = String.valueOf(currentFatalInjuryAccident.getFatalInjuries().getInjuryTime().getMinutes());
-            if (Integer.parseInt(currentHourEvent) > 12) {
-                currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) - 12);
-                currentAmPmEvent = "PM";
-            } else {
+            if (currentFatalInjuryAccident.getFatalInjuries().getInjuryTime().getHours() == 0) {
+                currentHourEvent = "12";
                 currentAmPmEvent = "AM";
+            } else {
+                currentHourEvent = String.valueOf(currentFatalInjuryAccident.getFatalInjuries().getInjuryTime().getHours());
+                if (Integer.parseInt(currentHourEvent) != 12) {
+                    if (Integer.parseInt(currentHourEvent) > 12) {
+                        currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) - 12);
+                        currentAmPmEvent = "PM";
+                    } else {
+                        currentAmPmEvent = "AM";
+                    }
+                } else {
+                    currentHourEvent = "12";
+                    currentAmPmEvent = "PM";
+                }
             }
+            currentMinuteEvent = String.valueOf(currentFatalInjuryAccident.getFatalInjuries().getInjuryTime().getMinutes());
+
             calculateTime1();
         } catch (Exception e) {
             currentHourEvent = "";
@@ -714,6 +717,7 @@ public class AccidentalMB implements Serializable {
                 }
                 //******residence_municipality
                 newVictim.setResidenceMunicipality(currentMunicipalitie);
+                newVictim.setResidenceDepartment(currentDepartamentHome);
                 //******victim_date_of_birth
                 //******eps_id
                 //******victim_class
@@ -733,13 +737,8 @@ public class AccidentalMB implements Serializable {
                 }
                 //******injury_time
                 if (currentMilitaryHourEvent.trim().length() != 0) {
-                    if (currentAmPmEvent.compareTo("PM") == 0) {
-                        if (currentHourEvent.compareTo("12") != 0) {
-                            currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) + 12);
-                        }
-                    }
-                    int hourInt = Integer.parseInt(currentHourEvent);
-                    int minuteInt = Integer.parseInt(currentMinuteEvent);
+                    int hourInt = Integer.parseInt(currentMilitaryHourEvent.substring(0, 2));
+                    int minuteInt = Integer.parseInt(currentMilitaryHourEvent.substring(2, 4));
                     Date n = new Date();
                     n.setHours(hourInt);
                     n.setMinutes(minuteInt);
@@ -897,6 +896,7 @@ public class AccidentalMB implements Serializable {
             currentFatalInjuryAccident.getFatalInjuries().getVictimId().setVictimAddress(victim.getVictimAddress());
             currentFatalInjuryAccident.getFatalInjuries().getVictimId().setVictimNeighborhoodId(victim.getVictimNeighborhoodId());
             currentFatalInjuryAccident.getFatalInjuries().getVictimId().setResidenceMunicipality(victim.getResidenceMunicipality());
+            currentFatalInjuryAccident.getFatalInjuries().getVictimId().setResidenceDepartment(victim.getResidenceDepartment());
             //newVictim.setEpsId(null);
             //newVictim.setVictimClass();//si victima es nn
 
@@ -1173,7 +1173,7 @@ public class AccidentalMB implements Serializable {
         currentSourceCountry = 52;
 
         findSourceDepartaments();
-        
+
         currentDateEvent = "";
         currentDayEvent = "";
         currentMonthEvent = "";
@@ -1185,11 +1185,13 @@ public class AccidentalMB implements Serializable {
         currentNeighborhoodHomeCode = "";
         currentNeighborhoodHome = "";
         //currentMunicipalitie = 1;
+
+        currentDepartamentHomeDisabled = false;
         currentDepartamentHome = 52;
         changeDepartamentHome();
         currentMunicipalitie = 1;
-        
-        
+
+
         currentMunicipalitieDisabled = false;
         neighborhoodHomeNameDisabled = false;
         currentPlace = 0;
@@ -1389,6 +1391,7 @@ public class AccidentalMB implements Serializable {
     // FUNCIONES CUANDO LISTAS Y CAMPOS CAMBIAN DE VALOR ----------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+
     public void changeStranger() {
         if (loading == false) {
             changeForm();
@@ -1533,13 +1536,13 @@ public class AccidentalMB implements Serializable {
             currentNeighborhoodHomeCode = "";
         }
     }
-    
+
     public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
         }
         if (currentDepartamentHome != 0) {
-            Departaments d = departamentsFacade.findById(currentDepartamentHome);            
+            Departaments d = departamentsFacade.findById(currentDepartamentHome);
             municipalities = new SelectItem[d.getMunicipalitiesList().size() + 1];
             municipalities[0] = new SelectItem(0, "");
             for (int i = 0; i < d.getMunicipalitiesList().size(); i++) {
@@ -1985,6 +1988,9 @@ public class AccidentalMB implements Serializable {
                                 if (timeInt > 2400) {
                                     timeStr = "00" + minuteStr;
                                 }
+                                if (timeStr.compareTo("2400") == 0) {
+                                    timeStr = "0000";
+                                }
                                 currentMilitaryHourEvent = timeStr;
                             }
                         } else {//hora AM
@@ -2005,6 +2011,9 @@ public class AccidentalMB implements Serializable {
                             timeInt = Integer.parseInt(timeStr);
                             if (timeInt > 2400) {
                                 timeStr = "00" + minuteStr;
+                            }
+                            if (timeStr.compareTo("2400") == 0) {
+                                timeStr = "0000";
                             }
                             currentMilitaryHourEvent = timeStr;
                         }
@@ -2724,7 +2733,7 @@ public class AccidentalMB implements Serializable {
     public void setCurrentIdForm(String currentIdForm) {
         this.currentIdForm = currentIdForm;
     }
-    
+
     public Short getCurrentDepartamentHome() {
         return currentDepartamentHome;
     }

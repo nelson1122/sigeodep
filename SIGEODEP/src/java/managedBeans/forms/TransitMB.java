@@ -243,7 +243,7 @@ public class TransitMB implements Serializable {
     }
 
     public void reset() {
-
+        loading=true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         try {
             determinePosition();
@@ -382,6 +382,8 @@ public class TransitMB implements Serializable {
         } catch (Exception e) {
             System.out.println("*******************************************ERROR: " + e.toString());
         }
+        loading=false;
+        System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////t");
     }
 
     public void loadValues() {
@@ -488,11 +490,26 @@ public class TransitMB implements Serializable {
         //******eps_id
         //******victim_class
         //******victim_id
-        //******residence_municipality
+        //******residence_municipality residence_department
         try {
-            currentMunicipalitie = currentFatalInjuryTraffic.getFatalInjuries().getVictimId().getResidenceMunicipality();
+            if (currentFatalInjuryTraffic.getFatalInjuries().getVictimId().getResidenceDepartment() != null) {
+                currentDepartamentHome = currentFatalInjuryTraffic.getFatalInjuries().getVictimId().getResidenceDepartment();
+                changeDepartamentHome();
+                if (currentFatalInjuryTraffic.getFatalInjuries().getVictimId().getResidenceMunicipality() != null) {
+                    currentMunicipalitie = currentFatalInjuryTraffic.getFatalInjuries().getVictimId().getResidenceMunicipality();
+                    if (currentDepartamentHome == 52 && currentMunicipalitie == 1) {
+                        neighborhoodHomeNameDisabled = false;
+                    }
+                } else {
+                    currentMunicipalitie = 0;
+                }
+            } else {
+                currentDepartamentHome = 0;
+                currentMunicipalitie = 0;
+            }
         } catch (Exception e) {
-            currentMunicipalitie = 1;
+            currentDepartamentHome = 0;
+            currentMunicipalitie = 0;
         }
         //------------------------------------------------------------
         //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
@@ -512,14 +529,25 @@ public class TransitMB implements Serializable {
         }
         //******injury_time
         try {
-            currentHourEvent = String.valueOf(currentFatalInjuryTraffic.getFatalInjuries().getInjuryTime().getHours());
-            currentMinuteEvent = String.valueOf(currentFatalInjuryTraffic.getFatalInjuries().getInjuryTime().getMinutes());
-            if (Integer.parseInt(currentHourEvent) > 12) {
-                currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) - 12);
-                currentAmPmEvent = "PM";
-            } else {
+            if (currentFatalInjuryTraffic.getFatalInjuries().getInjuryTime().getHours() == 0) {
+                currentHourEvent = "12";
                 currentAmPmEvent = "AM";
+            } else {
+                currentHourEvent = String.valueOf(currentFatalInjuryTraffic.getFatalInjuries().getInjuryTime().getHours());
+                if (Integer.parseInt(currentHourEvent) != 12) {
+                    if (Integer.parseInt(currentHourEvent) > 12) {
+                        currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) - 12);
+                        currentAmPmEvent = "PM";
+                    } else {
+                        currentAmPmEvent = "AM";
+                    }
+                } else {
+                    currentHourEvent = "12";
+                    currentAmPmEvent = "PM";
+                }
             }
+            currentMinuteEvent = String.valueOf(currentFatalInjuryTraffic.getFatalInjuries().getInjuryTime().getMinutes());
+
             calculateTime1();
         } catch (Exception e) {
             currentHourEvent = "";
@@ -930,7 +958,7 @@ public class TransitMB implements Serializable {
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
                 //******residence_municipality
                 newVictim.setResidenceMunicipality(currentMunicipalitie);
-
+                newVictim.setResidenceDepartment(currentDepartamentHome);
                 //------------------------------------------------------------
                 //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA FATAL
                 //------------------------------------------------------------
@@ -943,13 +971,8 @@ public class TransitMB implements Serializable {
                 }
                 //******injury_time
                 if (currentMilitaryHourEvent.trim().length() != 0) {
-                    if (currentAmPmEvent.compareTo("PM") == 0) {
-                        if (currentHourEvent.compareTo("12") != 0) {
-                            currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) + 12);
-                        }
-                    }
-                    int hourInt = Integer.parseInt(currentHourEvent);
-                    int minuteInt = Integer.parseInt(currentMinuteEvent);
+                    int hourInt = Integer.parseInt(currentMilitaryHourEvent.substring(0, 2));
+                    int minuteInt = Integer.parseInt(currentMilitaryHourEvent.substring(2, 4));
                     Date n = new Date();
                     n.setHours(hourInt);
                     n.setMinutes(minuteInt);
@@ -1207,6 +1230,7 @@ public class TransitMB implements Serializable {
             currentFatalInjuryTraffic.getFatalInjuries().getVictimId().setVictimAddress(victim.getVictimAddress());
             currentFatalInjuryTraffic.getFatalInjuries().getVictimId().setVictimNeighborhoodId(victim.getVictimNeighborhoodId());
             currentFatalInjuryTraffic.getFatalInjuries().getVictimId().setResidenceMunicipality(victim.getResidenceMunicipality());
+            currentFatalInjuryTraffic.getFatalInjuries().getVictimId().setResidenceDepartment(victim.getResidenceDepartment());
             //newVictim.setEpsId(null);
             //newVictim.setVictimClass();//si victima es nn
 
@@ -1580,6 +1604,7 @@ public class TransitMB implements Serializable {
         currentNeighborhoodHome = "";
         
         //currentMunicipalitie = 1;
+        currentDepartamentHomeDisabled=false;
         currentDepartamentHome = 52;
         changeDepartamentHome();
         currentMunicipalitie = 1;        
@@ -2460,6 +2485,7 @@ public class TransitMB implements Serializable {
                                 if (timeInt > 2400) {
                                     timeStr = "00" + minuteStr;
                                 }
+                                if(timeStr.compareTo("2400")==0)timeStr="0000";
                                 currentMilitaryHourEvent = timeStr;
                             }
                         } else {//hora AM
@@ -2481,6 +2507,7 @@ public class TransitMB implements Serializable {
                             if (timeInt > 2400) {
                                 timeStr = "00" + minuteStr;
                             }
+                            if(timeStr.compareTo("2400")==0)timeStr="0000";
                             currentMilitaryHourEvent = timeStr;
                         }
                     } else {

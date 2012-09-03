@@ -54,9 +54,9 @@
                                         value="#{uploadFileMB.tagName}"
                                         size="70">
                                         <f:ajax 
-                                            event="change"
+                                            event="keyup"
                                             listener="#{uploadFileMB.changeTagName}"
-                                            render="IdBtnFileSelect IdBtnLoadFile"/>                                        
+                                            render="IdBtnFileSelect IdBtnLoadFile :IdForm:message"/>                                        
                                     </p:inputText>
                                 </p:column>
                             </p:row>
@@ -1039,7 +1039,7 @@
                                         <p:column styleClass="ui-widget-header">
                                             VALIDACION
                                         </p:column>
-                                    </p:row>
+                                    </p:row>                                                                        
                                     <p:row>
                                         <p:column>
                                             <br/>
@@ -1049,17 +1049,25 @@
                                                 su correción."/>  
                                             <br/>
                                             <br/>
+                                            <p:progressBar id="IdProgresValidate" interval="500" widgetVar="pbAjaxValidate" ajax="true" value="#{recordDataMB.progressValidate}" labelTemplate="{value}%" styleClass="animated">  
+                                                <p:ajax 
+                                                    event="complete" 
+                                                    listener="#{recordDataMB.onCompleteValidate}" 
+                                                    update=":IdForm" 
+                                                    oncomplete="startButton.enable();" />  
+                                            </p:progressBar>
+                                            <br/>
                                         </p:column>
                                     </p:row>
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
+                                            <!-- p:commandButton value="Registrar Datos" type="button" onclick="pbAjax.start();startButton2.disable();" widgetVar="startButton2" / -->  
                                             <p:commandButton 
                                                 value="Iniciar Validación" 
                                                 actionListener="#{recordDataMB.btnValidateClick}" 
-                                                widgetVar="startButton2"                                                  
-                                                update=":IdForm"/>
+                                                onclick="pbAjaxValidate.start(); startButton.disable();"  
+                                                widgetVar="startButton"/>
                                         </p:column>
-                                        <br/>
                                     </p:row>
                                 </p:panelGrid>
                             </p:tab>

@@ -48,6 +48,7 @@
                                         <p:commandButton 
                                             style="width: 350px;" 
                                             value="HOMICIDIOS" 
+                                            actionListener="#{homicideMB.reset}"
                                             action="homicide"/>
                                     </p:column>
                                 </p:row>                                
@@ -56,6 +57,7 @@
                                         <p:commandButton 
                                             style="width: 350px;" 
                                             value="MUERTES POR ACCIDENTES DE TRANSITO"
+                                            actionListener="#{transitMB.reset}"
                                             action="transit"/>
                                     </p:column>
                                 </p:row>
@@ -64,6 +66,7 @@
                                         <p:commandButton 
                                             style="width: 350px;" 
                                             value="SUICIDIOS"
+                                            actionListener="#{suicideMB.reset}"
                                             action="suicide"/>
                                     </p:column>
                                 </p:row>
@@ -72,6 +75,7 @@
                                         <p:commandButton 
                                             style="width: 350px;" 
                                             value="MUERTES ACCIDENTALES"
+                                            actionListener="#{accidentalMB.reset}"
                                             action="accidental"/>
                                     </p:column>
                                 </p:row>
@@ -80,6 +84,7 @@
                                         <p:commandButton 
                                             style="width: 350px;" 
                                             value="LESIONES DE CAUSA EXTERNA NO FATALES"
+                                            actionListener="#{lcenfMB.reset}"
                                             action="LCENF"/>
                                     </p:column>
                                 </p:row>
@@ -88,6 +93,7 @@
                                         <p:commandButton 
                                             style="width: 350px;" 
                                             value="VIOLENCIA INTRAFAMILIAR"
+                                            actionListener="#{vifMB.reset}"
                                             action="VIF"/>
                                     </p:column>
                                 </p:row>

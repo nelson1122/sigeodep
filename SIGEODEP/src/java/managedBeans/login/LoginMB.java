@@ -38,13 +38,13 @@ public class LoginMB implements Serializable {
     StoredRelationsMB storedRelationsMB;
     RecordDataMB recordDataMB;
     ErrorsControlMB errorsControlMB;
-    LcenfMB lcenfMB;
-    AccidentalMB accidentalMB;
-    HomicideMB homicideMB;
-    SuicideMB suicideMB;
-    TransitMB transitMB;
-    VIFMB vifMB;
-    NeighborhoodsVariableMB neighborhoodsVariableMB;
+    //LcenfMB lcenfMB;
+    //AccidentalMB accidentalMB;
+    //HomicideMB homicideMB;
+    //SuicideMB suicideMB;
+    //TransitMB transitMB;
+    //VIFMB vifMB;
+    //NeighborhoodsVariableMB neighborhoodsVariableMB;
     //progreso de carga de la aplicacion ***********************************    
     private Integer progress;
 
@@ -145,23 +145,23 @@ public class LoginMB implements Serializable {
             storedRelationsMB = (StoredRelationsMB) context.getApplication().evaluateExpressionGet(context, "#{storedRelationsMB}", StoredRelationsMB.class);
             recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
             errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
-            lcenfMB = (LcenfMB) context.getApplication().evaluateExpressionGet(context, "#{lcenfMB}", LcenfMB.class);
-            accidentalMB = (AccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{accidentalMB}", AccidentalMB.class);
-            homicideMB = (HomicideMB) context.getApplication().evaluateExpressionGet(context, "#{homicideMB}", HomicideMB.class);
-            suicideMB = (SuicideMB) context.getApplication().evaluateExpressionGet(context, "#{suicideMB}", SuicideMB.class);
-            transitMB = (TransitMB) context.getApplication().evaluateExpressionGet(context, "#{transitMB}", TransitMB.class);
-            vifMB = (VIFMB) context.getApplication().evaluateExpressionGet(context, "#{vifMB}", VIFMB.class);
-            neighborhoodsVariableMB = (NeighborhoodsVariableMB) context.getApplication().evaluateExpressionGet(context, "#{neighborhoodsVariableMB}", NeighborhoodsVariableMB.class);
+            //lcenfMB = (LcenfMB) context.getApplication().evaluateExpressionGet(context, "#{lcenfMB}", LcenfMB.class);
+            //accidentalMB = (AccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{accidentalMB}", AccidentalMB.class);
+            //homicideMB = (HomicideMB) context.getApplication().evaluateExpressionGet(context, "#{homicideMB}", HomicideMB.class);
+            //suicideMB = (SuicideMB) context.getApplication().evaluateExpressionGet(context, "#{suicideMB}", SuicideMB.class);
+            //transitMB = (TransitMB) context.getApplication().evaluateExpressionGet(context, "#{transitMB}", TransitMB.class);
+            //vifMB = (VIFMB) context.getApplication().evaluateExpressionGet(context, "#{vifMB}", VIFMB.class);
+            //neighborhoodsVariableMB = (NeighborhoodsVariableMB) context.getApplication().evaluateExpressionGet(context, "#{neighborhoodsVariableMB}", NeighborhoodsVariableMB.class);
 
 
             System.out.println("INICIA... carga de informacion formularios");
-            lcenfMB.reset();
-            neighborhoodsVariableMB.reset();
-            accidentalMB.reset();
-            homicideMB.reset();
-            suicideMB.reset();
-            transitMB.reset();
-            vifMB.reset();
+            //lcenfMB.reset();
+            //neighborhoodsVariableMB.reset();
+            //accidentalMB.reset();
+            //homicideMB.reset();
+            //suicideMB.reset();
+            //transitMB.reset();
+            //vifMB.reset();
             uploadFileMB.reset();
             relationshipOfVariablesMB.reset();
 
