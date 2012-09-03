@@ -299,16 +299,26 @@ public class HomicideMB implements Serializable {
         //******eps_id
         //******victim_class
         //******victim_id
-        //******residence_municipality
+        //******residence_municipality residence_department
         try {
-            currentMunicipalitie = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceMunicipality();
-            if (currentMunicipalitie == 1) {
-                neighborhoodHomeNameDisabled = false;
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment() != null) {
+                currentDepartamentHome = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment();
+                changeDepartamentHome();
+                if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceMunicipality() != null) {
+                    currentMunicipalitie = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceMunicipality();
+                    if (currentDepartamentHome == 52 && currentMunicipalitie == 1) {
+                        neighborhoodHomeNameDisabled = false;
+                    }
+                } else {
+                    currentMunicipalitie = 0;
+                }
             } else {
-                neighborhoodHomeNameDisabled = true;
+                currentDepartamentHome = 0;
+                currentMunicipalitie = 0;
             }
         } catch (Exception e) {
-            currentMunicipalitie = 1;
+            currentDepartamentHome = 0;
+            currentMunicipalitie = 0;
         }
         //------------------------------------------------------------
         //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
@@ -327,14 +337,25 @@ public class HomicideMB implements Serializable {
         }
         //******injury_time
         try {
-            currentHourEvent = String.valueOf(currentFatalInjuryMurder.getFatalInjuries().getInjuryTime().getHours());
-            currentMinuteEvent = String.valueOf(currentFatalInjuryMurder.getFatalInjuries().getInjuryTime().getMinutes());
-            if (Integer.parseInt(currentHourEvent) > 12) {
-                currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) - 12);
-                currentAmPmEvent = "PM";
-            } else {
+            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryTime().getHours() == 0) {
+                currentHourEvent = "12";
                 currentAmPmEvent = "AM";
+            } else {
+                currentHourEvent = String.valueOf(currentFatalInjuryMurder.getFatalInjuries().getInjuryTime().getHours());
+                if (Integer.parseInt(currentHourEvent) != 12) {
+                    if (Integer.parseInt(currentHourEvent) > 12) {
+                        currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) - 12);
+                        currentAmPmEvent = "PM";
+                    } else {
+                        currentAmPmEvent = "AM";
+                    }
+                } else {
+                    currentHourEvent = "12";
+                    currentAmPmEvent = "PM";
+                }
             }
+            currentMinuteEvent = String.valueOf(currentFatalInjuryMurder.getFatalInjuries().getInjuryTime().getMinutes());
+
             calculateTime1();
         } catch (Exception e) {
             currentHourEvent = "";
@@ -616,6 +637,7 @@ public class HomicideMB implements Serializable {
                 }
                 //******residence_municipality
                 newVictim.setResidenceMunicipality(currentMunicipalitie);
+                newVictim.setResidenceDepartment(currentDepartamentHome);
                 //******victim_date_of_birth
                 //******eps_id
                 //******victim_class
@@ -635,13 +657,8 @@ public class HomicideMB implements Serializable {
                 }
                 //******injury_time
                 if (currentMilitaryHourEvent.trim().length() != 0) {
-                    if (currentAmPmEvent.compareTo("PM") == 0) {
-                        if (currentHourEvent.compareTo("12") != 0) {
-                            currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) + 12);
-                        }
-                    }
-                    int hourInt = Integer.parseInt(currentHourEvent);
-                    int minuteInt = Integer.parseInt(currentMinuteEvent);
+                    int hourInt = Integer.parseInt(currentMilitaryHourEvent.substring(0, 2));
+                    int minuteInt = Integer.parseInt(currentMilitaryHourEvent.substring(2, 4));
                     Date n = new Date();
                     n.setHours(hourInt);
                     n.setMinutes(minuteInt);
@@ -803,6 +820,7 @@ public class HomicideMB implements Serializable {
             currentFatalInjuryMurder.getFatalInjuries().getVictimId().setVictimAddress(victim.getVictimAddress());
             currentFatalInjuryMurder.getFatalInjuries().getVictimId().setVictimNeighborhoodId(victim.getVictimNeighborhoodId());
             currentFatalInjuryMurder.getFatalInjuries().getVictimId().setResidenceMunicipality(victim.getResidenceMunicipality());
+            currentFatalInjuryMurder.getFatalInjuries().getVictimId().setResidenceDepartment(victim.getResidenceDepartment());
             //newVictim.setEpsId(null);
             //newVictim.setVictimClass();//si victima es nn
 
@@ -1051,7 +1069,7 @@ public class HomicideMB implements Serializable {
         //------------------------------------------------------------
         //REINICIAR VALORES PARA LA NUEVA VICTIMA
         //------------------------------------------------------------	
-        stranger = false;
+
         loading = true;
         currentDayEventDisabled = false;
         currentMonthEventDisabled = false;
@@ -1092,13 +1110,11 @@ public class HomicideMB implements Serializable {
         currentNeighborhoodHomeCode = "";
         currentNeighborhoodHome = "";
         neighborhoodHomeNameDisabled = false;
-
-
         //currentMunicipalitie = 1;
+        currentDepartamentHomeDisabled = false;
         currentDepartamentHome = 52;
         changeDepartamentHome();
         currentMunicipalitie = 1;
-
 
         currentMunicipalitieDisabled = false;
         neighborhoodHomeNameDisabled = false;
@@ -1136,27 +1152,12 @@ public class HomicideMB implements Serializable {
         } else {
             System.out.println("No esta guardado (para poder limpiar formulario)");
         }
-
     }
 
     public void reset() {
         loading = true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         try {
-//            //estados de fecha
-//            List<StateDate> stateDateL = stateDateFacade.findAll();
-//            stateDateList = new SelectItem[stateDateL.size()];
-//            for (int i = 0; i < stateDateL.size(); i++) {
-//                stateDateList[i] = new SelectItem(stateDateL.get(i).getIdStateDate(), stateDateL.get(i).getName());
-//            }
-//
-//            //estados de hora
-//            List<StateTime> stateTimeL = stateTimeFacade.findAll();
-//            stateTimeList = new SelectItem[stateTimeL.size()];            
-//            for (int i = 0; i < stateDateL.size(); i++) {
-//                stateTimeList[i] = new SelectItem(stateTimeL.get(i).getIdStateTime(), stateTimeL.get(i).getName());
-//            }
-
             //cargo los tipos de identificacion
             List<IdTypes> idTypesList = idTypesFacade.findAll();
             identificationsTypes = new SelectItem[idTypesList.size() + 1];
@@ -1185,14 +1186,10 @@ public class HomicideMB implements Serializable {
             for (int i = 0; i < countriesList.size(); i++) {
                 sourceCountries[i + 1] = new SelectItem(countriesList.get(i).getIdCountry(), countriesList.get(i).getName());
             }
-
             //cargo municipios de residencia
             findMunicipalities();
-
             currentSourceCountry = 52;
             findSourceDepartaments();
-
-
             //clase de lugares donde ocurrieron los hechos
             List<Places> placesList = placesFacade.findAll();
             places = new SelectItem[placesList.size() + 1];
@@ -1214,11 +1211,6 @@ public class HomicideMB implements Serializable {
             for (int i = 0; i < jobsList.size(); i++) {
                 jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
             }
-
-
-
-
-
             //cargo las areas del hecho
             List<Areas> areasList = areasFacade.findAll();
             areas = new SelectItem[areasList.size() + 1];
@@ -1233,14 +1225,12 @@ public class HomicideMB implements Serializable {
             for (int i = 0; i < weaponTypesList.size(); i++) {
                 weaponTypes[i + 1] = new SelectItem(weaponTypesList.get(i).getWeaponTypeId(), weaponTypesList.get(i).getWeaponTypeName());
             }
-
             //lista de criterios de busqueda            
             searchCriteriaList = new SelectItem[3];
             searchCriteriaList[0] = new SelectItem(1, "IDENTIFICACION");
             searchCriteriaList[1] = new SelectItem(2, "NOMBRE");
             searchCriteriaList[2] = new SelectItem(3, "CODIGO INTERNO");
-
-
+            //
             rowDataTableList = new ArrayList<RowDataTable>();
             determinePosition();
             openDialogFirst = "";
@@ -1251,12 +1241,12 @@ public class HomicideMB implements Serializable {
             save = true;
             System.out.println("Save=true");
             stylePosition = "color: #1471B1;";
-
         } catch (Exception e) {
             System.out.println("*******************************************ERROR: " + e.toString());
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
+        System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////");
         loading = false;
     }
     //----------------------------------------------------------------------
@@ -1554,12 +1544,12 @@ public class HomicideMB implements Serializable {
         }
     }
 
-        public void changeDepartamentHome() {
+    public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
         }
         if (currentDepartamentHome != 0) {
-            Departaments d = departamentsFacade.findById(currentDepartamentHome);            
+            Departaments d = departamentsFacade.findById(currentDepartamentHome);
             municipalities = new SelectItem[d.getMunicipalitiesList().size() + 1];
             municipalities[0] = new SelectItem(0, "");
             for (int i = 0; i < d.getMunicipalitiesList().size(); i++) {
@@ -1981,6 +1971,9 @@ public class HomicideMB implements Serializable {
                                 if (timeInt > 2400) {
                                     timeStr = "00" + minuteStr;
                                 }
+                                if (timeStr.compareTo("2400") == 0) {
+                                    timeStr = "0000";
+                                }
                                 currentMilitaryHourEvent = timeStr;
                             }
                         } else {//hora AM
@@ -2001,6 +1994,9 @@ public class HomicideMB implements Serializable {
                             timeInt = Integer.parseInt(timeStr);
                             if (timeInt > 2400) {
                                 timeStr = "00" + minuteStr;
+                            }
+                            if (timeStr.compareTo("2400") == 0) {
+                                timeStr = "0000";
                             }
                             currentMilitaryHourEvent = timeStr;
                         }

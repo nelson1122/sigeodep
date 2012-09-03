@@ -47,8 +47,8 @@ public class NonFatalInjuries implements Serializable {
     @Column(name = "injury_time")
     @Temporal(TemporalType.TIME)
     private Date injuryTime;
-    @Size(max = 50)
-    @Column(name = "injury_address", length = 50)
+    @Size(max = 300)
+    @Column(name = "injury_address", length = 300)
     private String injuryAddress;
     @Column(name = "burn_injury_degree")
     private Short burnInjuryDegree;

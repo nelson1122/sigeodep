@@ -204,7 +204,7 @@ public class SuicideMB implements Serializable {
     }
 
     public void reset() {
-
+        loading=true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         try {
 
@@ -325,6 +325,8 @@ public class SuicideMB implements Serializable {
         } catch (Exception e) {
             System.out.println("*******************************************ERROR_S1: " + e.toString());
         }
+        System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////s");
+        loading=false;
     }
 
     public void loadValues() {
@@ -430,16 +432,26 @@ public class SuicideMB implements Serializable {
         //******eps_id
         //******victim_class
         //******victim_id
-        //******residence_municipality
+        //******residence_municipality residence_department
         try {
-            currentMunicipalitie = currentFatalInjurySuicide.getFatalInjuries().getVictimId().getResidenceMunicipality();
-            if (currentMunicipalitie == 1) {
-                neighborhoodHomeNameDisabled = false;
+            if (currentFatalInjurySuicide.getFatalInjuries().getVictimId().getResidenceDepartment() != null) {
+                currentDepartamentHome = currentFatalInjurySuicide.getFatalInjuries().getVictimId().getResidenceDepartment();
+                changeDepartamentHome();
+                if (currentFatalInjurySuicide.getFatalInjuries().getVictimId().getResidenceMunicipality() != null) {
+                    currentMunicipalitie = currentFatalInjurySuicide.getFatalInjuries().getVictimId().getResidenceMunicipality();
+                    if (currentDepartamentHome == 52 && currentMunicipalitie == 1) {
+                        neighborhoodHomeNameDisabled = false;
+                    }
+                } else {
+                    currentMunicipalitie = 0;
+                }
             } else {
-                neighborhoodHomeNameDisabled = true;
+                currentDepartamentHome = 0;
+                currentMunicipalitie = 0;
             }
         } catch (Exception e) {
-            currentMunicipalitie = 1;
+            currentDepartamentHome = 0;
+            currentMunicipalitie = 0;
         }
         //------------------------------------------------------------
         //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
@@ -459,14 +471,25 @@ public class SuicideMB implements Serializable {
         }
         //******injury_time
         try {
-            currentHourEvent = String.valueOf(currentFatalInjurySuicide.getFatalInjuries().getInjuryTime().getHours());
-            currentMinuteEvent = String.valueOf(currentFatalInjurySuicide.getFatalInjuries().getInjuryTime().getMinutes());
-            if (Integer.parseInt(currentHourEvent) > 12) {
-                currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) - 12);
-                currentAmPmEvent = "PM";
-            } else {
+            if (currentFatalInjurySuicide.getFatalInjuries().getInjuryTime().getHours() == 0) {
+                currentHourEvent = "12";
                 currentAmPmEvent = "AM";
+            } else {
+                currentHourEvent = String.valueOf(currentFatalInjurySuicide.getFatalInjuries().getInjuryTime().getHours());
+                if (Integer.parseInt(currentHourEvent) != 12) {
+                    if (Integer.parseInt(currentHourEvent) > 12) {
+                        currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) - 12);
+                        currentAmPmEvent = "PM";
+                    } else {
+                        currentAmPmEvent = "AM";
+                    }
+                } else {
+                    currentHourEvent = "12";
+                    currentAmPmEvent = "PM";
+                }
             }
+            currentMinuteEvent = String.valueOf(currentFatalInjurySuicide.getFatalInjuries().getInjuryTime().getMinutes());
+
             calculateTime1();
         } catch (Exception e) {
             currentHourEvent = "";
@@ -749,7 +772,7 @@ public class SuicideMB implements Serializable {
                 //newVictim.setEpsId(null);
                 //newVictim.setVictimClass(null);            
                 newVictim.setResidenceMunicipality(currentMunicipalitie);
-
+                newVictim.setResidenceDepartment(currentDepartamentHome);
                 //------------------------------------------------------------
                 //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA FATAL
                 //------------------------------------------------------------
@@ -762,13 +785,8 @@ public class SuicideMB implements Serializable {
                     newFatalInjurie.setInjuryDate(formato.parse(currentDateEvent));
                 }
                 if (currentMilitaryHourEvent.trim().length() != 0) {
-                    if (currentAmPmEvent.compareTo("PM") == 0) {
-                        if (currentHourEvent.compareTo("12") != 0) {
-                            currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) + 12);
-                        }
-                    }
-                    int hourInt = Integer.parseInt(currentHourEvent);
-                    int minuteInt = Integer.parseInt(currentMinuteEvent);
+                    int hourInt = Integer.parseInt(currentMilitaryHourEvent.substring(0, 2));
+                    int minuteInt = Integer.parseInt(currentMilitaryHourEvent.substring(2, 4));
                     Date n = new Date();
                     n.setHours(hourInt);
                     n.setMinutes(minuteInt);
@@ -923,6 +941,7 @@ public class SuicideMB implements Serializable {
             currentFatalInjurySuicide.getFatalInjuries().getVictimId().setVictimAddress(victim.getVictimAddress());
             currentFatalInjurySuicide.getFatalInjuries().getVictimId().setVictimNeighborhoodId(victim.getVictimNeighborhoodId());
             currentFatalInjurySuicide.getFatalInjuries().getVictimId().setResidenceMunicipality(victim.getResidenceMunicipality());
+            currentFatalInjurySuicide.getFatalInjuries().getVictimId().setResidenceDepartment(victim.getResidenceDepartment());
             //newVictim.setEpsId(null);
             //newVictim.setVictimClass();//si victima es nn
 
@@ -1216,6 +1235,8 @@ public class SuicideMB implements Serializable {
         currentArea = 0;
         currentSuicideMechanismsType = 0;
         //currentMunicipalitie = 1;
+        
+        currentDepartamentHomeDisabled=false;
         currentDepartamentHome = 52;
         changeDepartamentHome();
         currentMunicipalitie = 1;
@@ -1989,6 +2010,7 @@ public class SuicideMB implements Serializable {
                                 if (timeInt > 2400) {
                                     timeStr = "00" + minuteStr;
                                 }
+                                if(timeStr.compareTo("2400")==0)timeStr="0000";
                                 currentMilitaryHourEvent = timeStr;
                             }
                         } else {//hora AM
@@ -2010,6 +2032,7 @@ public class SuicideMB implements Serializable {
                             if (timeInt > 2400) {
                                 timeStr = "00" + minuteStr;
                             }
+                            if(timeStr.compareTo("2400")==0)timeStr="0000";
                             currentMilitaryHourEvent = timeStr;
                         }
                     } else {
