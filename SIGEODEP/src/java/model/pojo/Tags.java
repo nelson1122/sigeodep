@@ -5,10 +5,12 @@
 package model.pojo;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -40,10 +42,33 @@ public class Tags implements Serializable {
     private String tagFileInput;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 7)
-    @Column(name = "tag_file_stored", nullable = false, length = 7)
+    @Size(min = 1, max = 2147483647)
+    @Column(name = "tag_file_stored", nullable = false, length = 2147483647)
     private String tagFileStored;
+    @JoinColumn(name = "form_id", referencedColumnName = "form_id")
+    @ManyToOne
+    private Forms formId;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "tags")
+    private List<Loads> loadsList;
+    
+    
+    public Forms getFormId() {
+        return formId;
+    }
 
+    public void setFormId(Forms formId) {
+        this.formId = formId;
+    }
+
+    @XmlTransient
+    public List<Loads> getLoadsList() {
+        return loadsList;
+    }
+
+    public void setLoadsList(List<Loads> loadsList) {
+        this.loadsList = loadsList;
+    }
+    
     public Tags() {
     }
 

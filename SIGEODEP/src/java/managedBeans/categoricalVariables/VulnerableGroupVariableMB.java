@@ -41,31 +41,6 @@ public class VulnerableGroupVariableMB implements Serializable {
     private boolean btnEditDisabled=true;
     private boolean btnRemoveDisabled=true;
     
-    LcenfMB lcenfMB;
-    AccidentalMB accidentalMB;
-    HomicideMB homicideMB;
-    SuicideMB suicideMB;
-    TransitMB transitMB;
-    VIFMB vifMB;
-    FacesContext context;
-
-    public void reload() {
-        context = FacesContext.getCurrentInstance();
-        System.out.println("Reiniciando formularios....");
-        lcenfMB = (LcenfMB) context.getApplication().evaluateExpressionGet(context, "#{lcenfMB}", LcenfMB.class);
-        accidentalMB = (AccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{accidentalMB}", AccidentalMB.class);
-        homicideMB = (HomicideMB) context.getApplication().evaluateExpressionGet(context, "#{homicideMB}", HomicideMB.class);
-        suicideMB = (SuicideMB) context.getApplication().evaluateExpressionGet(context, "#{suicideMB}", SuicideMB.class);
-        transitMB = (TransitMB) context.getApplication().evaluateExpressionGet(context, "#{transitMB}", TransitMB.class);
-        vifMB = (VIFMB) context.getApplication().evaluateExpressionGet(context, "#{vifMB}", VIFMB.class);
-        lcenfMB.reset();
-        accidentalMB.reset();
-        homicideMB.reset();
-        suicideMB.reset();
-        transitMB.reset();
-        vifMB.reset();
-    }
-
     public VulnerableGroupVariableMB() {
     }
 
@@ -93,7 +68,8 @@ public class VulnerableGroupVariableMB implements Serializable {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
-        createDynamicTable(); reload(); btnEditDisabled=true; btnRemoveDisabled=true;
+        createDynamicTable();
+        btnEditDisabled=true; btnRemoveDisabled=true;
     }
 
     public void updateRegistry() {
@@ -106,7 +82,8 @@ public class VulnerableGroupVariableMB implements Serializable {
                 name = "";
                 currentVulnerableGroups=null;                
                 selectedRowDataTable=null;
-                createDynamicTable(); reload(); btnEditDisabled=true; btnRemoveDisabled=true;
+                createDynamicTable();
+                btnEditDisabled=true; btnRemoveDisabled=true;
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             } else {                
@@ -128,7 +105,8 @@ public class VulnerableGroupVariableMB implements Serializable {
             newName = "";
             currentVulnerableGroups=null;
             selectedRowDataTable=null;
-            createDynamicTable(); reload(); btnEditDisabled=true; btnRemoveDisabled=true;
+            createDynamicTable();
+            btnEditDisabled=true; btnRemoveDisabled=true;
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         } else {

@@ -46,6 +46,8 @@ public class Forms implements Serializable {
     private List<RelationGroup> relationGroupList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "forms")
     private List<Fields> fieldsList;
+    @OneToMany(mappedBy = "formId")
+    private List<Tags> tagsList;
 
     public Forms() {
     }
@@ -92,6 +94,15 @@ public class Forms implements Serializable {
     public void setRelationGroupList(List<RelationGroup> relationGroupList) {
 	this.relationGroupList = relationGroupList;
     }
+    
+    @XmlTransient
+    public List<Tags> getTagsList() {
+        return tagsList;
+    }
+
+    public void setTagsList(List<Tags> tagsList) {
+        this.tagsList = tagsList;
+    }    
 
     @XmlTransient
     public List<Fields> getFieldsList() {

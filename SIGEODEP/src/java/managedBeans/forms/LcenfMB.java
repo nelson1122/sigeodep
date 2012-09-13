@@ -131,6 +131,11 @@ public class LcenfMB implements Serializable {
     RelationshipsToVictimFacade relationshipsToVictimFacade;
     private Short currentRelationshipToVictim = 0;
     private SelectItem[] relationshipsToVictim;
+    //------------------    
+    @EJB
+    TagsFacade tagsFacade;
+    private SelectItem[] tags;
+    private int currentTag;
     //--------------------
     @EJB
     ContextsFacade contextsFacade;
@@ -221,15 +226,9 @@ public class LcenfMB implements Serializable {
     NonFatalTransportFacade nonFatalTransportFacade;
     @EJB
     SecurityElementsFacade securityElementsFacade;
-    //------------------
-    //@EJB
-    //StateTimeFacade stateTimeFacade;
-    //@EJB
-    //StateDateFacade stateDateFacade;
-    //private SelectItem[] stateDateList;
-    //private SelectItem[] stateTimeList;
-    //private Short currentStateDateEvent = 1;
-    //private Short currentStateTimeEvent = 1;
+    @EJB
+    LoadsFacade loadsFacade;
+    //------------------    
     private boolean strangerDisabled = true;
     private boolean currentDayEventDisabled = false;
     private boolean currentMonthEventDisabled = false;
@@ -237,8 +236,6 @@ public class LcenfMB implements Serializable {
     private boolean currentHourEventDisabled = false;
     private boolean currentMinuteEventDisabled = false;
     private boolean currentAmPmEventDisabled = false;
-//    private Short currentStateDateConsult = 1;
-//    private Short currentStateTimeConsult = 1;
     private boolean currentDayConsultDisabled = false;
     private boolean currentMonthConsultDisabled = false;
     private boolean currentYearConsultDisabled = false;
@@ -471,11 +468,58 @@ public class LcenfMB implements Serializable {
                 + ":IdForm1:IdInsurance :IdForm1:IdFormId";
     }
 
+    /*
+     * Cargar un determinado registro perteneciente a un determinado conjunto
+     * esta funcion es llamada desde la seccion de conjuntos de registros
+     */
+    public void loadValues(List<Tags> tagsList, NonFatalInjuries currentNonFatalI) {
+
+
+
+        //loadsFacade.fin
+        //this.currentTag = currentTag.getTagId();        
+        LoadsPK loadsPK;
+        for (int i = 0; i < tagsList.size(); i++) {
+            loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentNonFatalI.getNonFatalInjuryId());
+            try {
+                reset();
+                clearForm();
+                currentTag = loadsFacade.find(loadsPK).getTags().getTagId();
+                this.currentNonFatalInjury = currentNonFatalI;
+                currentNonFatalInjuriId = currentNonFatalI.getNonFatalInjuryId();
+                determinePosition();
+                loadValues();
+            } catch (Exception e) {
+                reset();
+                noSaveAndGoNew();
+            }
+        }
+
+    }
+
     public void reset() {
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
-        loading=true;
+        loading = true;
         try {
+            //cargo los conjuntos de registros
+            List<Tags> tagsList = tagsFacade.findAll();
+            int count = 0;
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-032") == 0) {
+                    count++;
+                }
+            }
+            tags = new SelectItem[count];
+            count = 0;
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-032") == 0) {
+                    currentTag = tagsList.get(0).getTagId();
+                    tags[count] = new SelectItem(tagsList.get(i).getTagId(), tagsList.get(i).getTagName());
+                    count++;
+                }
+            }
+
             //cargo las aseguradoras
             List<Insurance> insuranceList = insuranceFacade.findAll();
             insurances = new SelectItem[insuranceList.size() + 1];
@@ -698,8 +742,10 @@ public class LcenfMB implements Serializable {
         } catch (Exception e) {
             System.out.println("*******************************************ERROR_L1: " + e.toString());
         }
-        loading=false;
-        System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////");
+        loading = false;
+        //noSaveAndGoNew();
+        determinePosition();
+        System.out.println("////////////// FORMULARIO LCENF REINICIADO //////////////////////////");
     }
 
     @PostConstruct
@@ -1102,11 +1148,11 @@ public class LcenfMB implements Serializable {
             otherActivityDisabled = true;
         }
 
-        try {
-            currentActivities = currentNonFatalInjury.getActivityId().getActivityId();
-        } catch (Exception e) {
-            currentActivities = 0;
-        }
+//        try {
+//            currentActivities = currentNonFatalInjury.getActivityId().getActivityId();
+//        } catch (Exception e) {
+//            currentActivities = 0;
+//        }
         //******intentionality_id
         try {
             currentIntentionality = currentNonFatalInjury.getIntentionalityId().getIntentionalityId();
@@ -1269,8 +1315,6 @@ public class LcenfMB implements Serializable {
         //******user_id
         currentResponsible = "ADMIN";
         //******injury_day_of_week
-
-
         try {
             currentWeekdayEvent = currentNonFatalInjury.getInjuryDayOfWeek();
         } catch (Exception e) {
@@ -2473,6 +2517,10 @@ public class LcenfMB implements Serializable {
                     if (newNonFatalTransport != null) {
                         nonFatalTransportFacade.create(newNonFatalTransport);
                     }
+                    Loads newLoad;
+                    newLoad = new Loads(currentTag, newNonFatalInjuries.getNonFatalInjuryId());//PERSISTO LA CARGA
+                    loadsFacade.create(newLoad);
+
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
@@ -2588,7 +2636,6 @@ public class LcenfMB implements Serializable {
         save = true;
         stylePosition = "color: #1471B1;";
         newForm();
-
     }
 
     public void noSaveAndGoNext() {//va al siguiente sin guardar cambios si se han realizado
@@ -2649,7 +2696,7 @@ public class LcenfMB implements Serializable {
             System.out.println("cargando siguiente registro");
             if (currentNonFatalInjuriId == -1) {//esta en registro nuevo                
             } else {
-                auxNonFatalInjury = nonFatalInjuriesFacade.findNext(currentNonFatalInjuriId);
+                auxNonFatalInjury = nonFatalInjuriesFacade.findNext(currentNonFatalInjuriId, currentTag);
                 if (auxNonFatalInjury != null) {
                     clearForm();
                     currentNonFatalInjury = auxNonFatalInjury;
@@ -2669,7 +2716,7 @@ public class LcenfMB implements Serializable {
             if (currentNonFatalInjuriId == -1) {//esta en registro nuevo 
                 last();
             } else {
-                auxNonFatalInjury = nonFatalInjuriesFacade.findPrevious(currentNonFatalInjuriId);
+                auxNonFatalInjury = nonFatalInjuriesFacade.findPrevious(currentNonFatalInjuriId, currentTag);
                 if (auxNonFatalInjury != null) {
                     clearForm();
                     currentNonFatalInjury = auxNonFatalInjury;
@@ -2693,7 +2740,7 @@ public class LcenfMB implements Serializable {
             openDialogNew = "-";
             //System.out.println("cargando primer registro");
             //System.out.println("esta guardado se dirige a primer registro, opendialogFirst: " + openDialogFirst + " save:" + String.valueOf(save));
-            auxNonFatalInjury = nonFatalInjuriesFacade.findFirst();
+            auxNonFatalInjury = nonFatalInjuriesFacade.findFirst(currentTag);
             if (auxNonFatalInjury != null) {
                 clearForm();
                 currentNonFatalInjury = auxNonFatalInjury;
@@ -2710,7 +2757,7 @@ public class LcenfMB implements Serializable {
     public void last() {
         if (save) {
             System.out.println("cargando ultimo registro");
-            auxNonFatalInjury = nonFatalInjuriesFacade.findLast();
+            auxNonFatalInjury = nonFatalInjuriesFacade.findLast(currentTag);
             if (auxNonFatalInjury != null) {
                 clearForm();
                 currentNonFatalInjury = auxNonFatalInjury;
@@ -2724,8 +2771,6 @@ public class LcenfMB implements Serializable {
     }
 
     public void clearForm() {
-
-
         currentAmPmEvent = "AM";
         currentAmPmConsult = "AM";
         currentMinuteEventDisabled = false;
@@ -2735,8 +2780,6 @@ public class LcenfMB implements Serializable {
         currentMinuteConsultDisabled = false;
         currentHourConsultDisabled = false;
         currentAmPmConsultDisabled = false;
-
-
 
         loading = true;
         strangerDisabled = true;
@@ -2768,12 +2811,6 @@ public class LcenfMB implements Serializable {
         currentDepartamentHome = 52;
         changeDepartamentHome();
         currentMunicipalitie = 1;
-
-//        currentDepartamentHome = 0;
-//        municipalities = new SelectItem[1];
-//        municipalities[0] = new SelectItem(0, "");
-//        currentMunicipalitie = 0;
-
 
         currentDirectionHome = "";
 
@@ -2920,7 +2957,6 @@ public class LcenfMB implements Serializable {
         otherMA = "";
         otherMADisabled = true;
 
-
         isAnatomicalSite1 = false;
         isAnatomicalSite2 = false;
         isAnatomicalSite3 = false;
@@ -2964,7 +3000,6 @@ public class LcenfMB implements Serializable {
         } else {
             //System.out.println("No esta guardado (para poder limpiar formulario)");
         }
-
     }
 
     public void deleteRegistry() {
@@ -2986,13 +3021,13 @@ public class LcenfMB implements Serializable {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
             FacesContext.getCurrentInstance().addMessage(null, msg);
             System.out.println("registro eliminado");
-            noSaveAndGoNew();
+            //noSaveAndGoNew();
+            determinePosition();
         }
     }
 
     public void putDiagnose() {
         //llenas las casillas CIE_CASMPO_1 y TXT_CIE_10_1 seleccionadas del dialog que lista los diagnosticos
-
         String[] splitDiagnose;
         splitDiagnose = currentDiagnoses.split(" - ");
         switch (CIE_selected) {
@@ -3017,7 +3052,6 @@ public class LcenfMB implements Serializable {
         if (loading == false) {
             changeForm();
         }
-
     }
 
     public void setCIE_1() {
@@ -3045,13 +3079,13 @@ public class LcenfMB implements Serializable {
     }
 
     public void determinePosition() {
-        totalRegisters = nonFatalInjuriesFacade.countLCENF();
+        totalRegisters = nonFatalInjuriesFacade.countLCENF(currentTag);
         if (currentNonFatalInjuriId == -1) {
             currentPosition = "new" + "/" + String.valueOf(totalRegisters);
             currentIdForm = String.valueOf(nonFatalInjuriesFacade.findMax() + 1);
             openDialogDelete = "";//es nuevo no se puede borrar
         } else {
-            int position = nonFatalInjuriesFacade.findPosition(currentNonFatalInjury.getNonFatalInjuryId());
+            int position = nonFatalInjuriesFacade.findPosition(currentNonFatalInjury.getNonFatalInjuryId(), currentTag);
             currentIdForm = String.valueOf(currentNonFatalInjury.getNonFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
@@ -3250,109 +3284,6 @@ public class LcenfMB implements Serializable {
         }
     }
 
-//    public void changeStateDateEvent() {
-//       if (loading == false) {             changeForm();         }
-//        currentDayEventDisabled = true;
-//        currentMonthEventDisabled = true;
-//        currentYearEventDisabled = true;
-//        currentDayEvent = "";
-//        currentMonthEvent = "";
-//        currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
-//        switch (currentStateDateEvent) {
-//            case 1://fecha determinada
-//                currentDayEventDisabled = false;
-//                currentMonthEventDisabled = false;
-//                currentYearEventDisabled = false;
-//                break;
-//            case 2://sin determinar
-//                break;
-//            case 3://sin dia                
-//                currentMonthEventDisabled = false;
-//                currentYearEventDisabled = false;
-//                break;
-//            case 4://sin mes
-//                currentYearEventDisabled = false;
-//                break;
-//        }
-//    }
-//
-//    public void changeStateDateConsult() {
-//       if (loading == false) {             changeForm();         }
-//        currentDayConsultDisabled = true;
-//        currentMonthConsultDisabled = true;
-//        currentYearConsultDisabled = true;
-//        currentDayConsult = "";
-//        currentMonthConsult = "";
-//        currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
-//        switch (currentStateDateConsult) {
-//            case 1://fecha determinada
-//                currentDayConsultDisabled = false;
-//                currentMonthConsultDisabled = false;
-//                currentYearConsultDisabled = false;
-//                break;
-//            case 2://sin determinar
-//                break;
-//            case 3://sin dia                
-//                currentMonthConsultDisabled = false;
-//                currentYearConsultDisabled = false;
-//                break;
-//            case 4://sin mes
-//                currentYearConsultDisabled = false;
-//                break;
-//        }
-//    }
-//
-//    public void changeStateTimeEvent() {
-//       if (loading == false) {             changeForm();         }
-//        currentHourEventDisabled = true;
-//        currentMinuteEventDisabled = true;
-//        currentAmPmEventDisabled = true;
-//        currentHourEvent = "";
-//        currentMinuteEvent = "";
-//        currentAmPmEvent = "AM";
-//        switch (currentStateTimeEvent) {
-//            case 1://hora determinada
-//                currentHourEventDisabled = false;
-//                currentMinuteEventDisabled = false;
-//                currentAmPmEventDisabled = false;
-//                break;
-//            case 2://hora sin determinar
-//                break;
-//            case 3://sin minutos                
-//                currentHourEventDisabled = false;
-//                currentAmPmEventDisabled = false;
-//                break;
-//            case 4://sin horas
-//                currentAmPmEventDisabled = false;
-//                break;
-//        }
-//    }
-//
-//    public void changeStateTimeConsult() {
-//       if (loading == false) {             changeForm();         }
-//        currentHourConsultDisabled = true;
-//        currentMinuteConsultDisabled = true;
-//        currentAmPmConsultDisabled = true;
-//        currentHourConsult = "";
-//        currentMinuteConsult = "";
-//        currentAmPmConsult = "AM";
-//        switch (currentStateTimeConsult) {
-//            case 1://hora determinada
-//                currentHourConsultDisabled = false;
-//                currentMinuteConsultDisabled = false;
-//                currentAmPmConsultDisabled = false;
-//                break;
-//            case 2://hora sin determinar
-//                break;
-//            case 3://sin minutos                
-//                currentHourConsultDisabled = false;
-//                currentAmPmConsultDisabled = false;
-//                break;
-//            case 4://sin horas
-//                currentAmPmConsultDisabled = false;
-//                break;
-//        }
-//    }
     public void changeUnknownAG() {
         if (loading == false) {
             changeForm();
@@ -3454,6 +3385,10 @@ public class LcenfMB implements Serializable {
             identificationNumberDisabled = false;
             currentIdentificationNumber = "";
         }
+    }
+
+    public void changeTag() {//cambia el conjunto de registros
+        noSaveAndGoNew();
     }
 
     public void changeForm() {//el formulario fue modificado        
@@ -4434,7 +4369,9 @@ public class LcenfMB implements Serializable {
                                 if (timeInt > 2400) {
                                     timeStr = "00" + minuteStr;
                                 }
-                                if(timeStr.compareTo("2400")==0)timeStr="0000";
+                                if (timeStr.compareTo("2400") == 0) {
+                                    timeStr = "0000";
+                                }
                                 currentMilitaryHourEvent = timeStr;
                             }
                         } else {//hora AM
@@ -4456,7 +4393,9 @@ public class LcenfMB implements Serializable {
                             if (timeInt > 2400) {
                                 timeStr = "00" + minuteStr;
                             }
-                            if(timeStr.compareTo("2400")==0)timeStr="0000";
+                            if (timeStr.compareTo("2400") == 0) {
+                                timeStr = "0000";
+                            }
                             currentMilitaryHourEvent = timeStr;
                         }
                     } else {
@@ -4534,7 +4473,9 @@ public class LcenfMB implements Serializable {
                                 if (timeInt > 2400) {
                                     timeStr = "00" + minuteStr;
                                 }
-                                if(timeStr.compareTo("2400")==0)timeStr="0000";
+                                if (timeStr.compareTo("2400") == 0) {
+                                    timeStr = "0000";
+                                }
                                 currentMilitaryHourConsult = timeStr;
                             }
                         } else {//hora AM
@@ -4556,7 +4497,9 @@ public class LcenfMB implements Serializable {
                             if (timeInt > 2400) {
                                 timeStr = "00" + minuteStr;
                             }
-                            if(timeStr.compareTo("2400")==0)timeStr="0000";
+                            if (timeStr.compareTo("2400") == 0) {
+                                timeStr = "0000";
+                            }
                             currentMilitaryHourConsult = timeStr;
                         }
                     } else {
@@ -6523,5 +6466,21 @@ public class LcenfMB implements Serializable {
 
     public void setCurrentIdForm(String currentIdForm) {
         this.currentIdForm = currentIdForm;
+    }
+
+    public int getCurrentTag() {
+        return currentTag;
+    }
+
+    public void setCurrentTag(int currentTag) {
+        this.currentTag = currentTag;
+    }
+
+    public SelectItem[] getTags() {
+        return tags;
+    }
+
+    public void setTags(SelectItem[] tags) {
+        this.tags = tags;
     }
 }
