@@ -17,15 +17,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Loads.findAll", query = "SELECT l FROM Loads l"),
-    @NamedQuery(name = "Loads.findByTagId", query = "SELECT l FROM Loads l WHERE l.loadsPK.tagId = :tagId"),
-    @NamedQuery(name = "Loads.findByIsFatal", query = "SELECT l FROM Loads l WHERE l.isFatal = :isFatal"),
+    @NamedQuery(name = "Loads.findByTagId", query = "SELECT l FROM Loads l WHERE l.loadsPK.tagId = :tagId"),    
     @NamedQuery(name = "Loads.findByRecordId", query = "SELECT l FROM Loads l WHERE l.loadsPK.recordId = :recordId")})
 public class Loads implements Serializable {
     private static final long serialVersionUID = 1L;
     @EmbeddedId
     protected LoadsPK loadsPK;
-    @Column(name = "is_fatal")
-    private Boolean isFatal;
+    @JoinColumn(name = "tag_id", referencedColumnName = "tag_id", nullable = false, insertable = false, updatable = false)
+    @ManyToOne(optional = false)
+    private Tags tags;
 
     public Loads() {
     }
@@ -46,12 +46,12 @@ public class Loads implements Serializable {
 	this.loadsPK = loadsPK;
     }
 
-    public Boolean getIsFatal() {
-	return isFatal;
+    public Tags getTags() {
+        return tags;
     }
 
-    public void setIsFatal(Boolean isFatal) {
-	this.isFatal = isFatal;
+    public void setTags(Tags tags) {
+        this.tags = tags;
     }
 
     @Override

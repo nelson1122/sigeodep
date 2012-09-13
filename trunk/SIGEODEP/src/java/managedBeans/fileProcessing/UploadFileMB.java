@@ -82,7 +82,6 @@ public class UploadFileMB implements Serializable {
         /*
          * Constructor de la clase
          */
-
         FacesContext context = FacesContext.getCurrentInstance();
         copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
@@ -116,18 +115,21 @@ public class UploadFileMB implements Serializable {
 
     public void changeTagName() {
         try {
+
             if (tagName.trim().length() != 0) {
-                
+
                 for (int i = 0; i < tagsList.size(); i++) {
-                    if (tagsList.get(i).getTagName().compareTo(tagName) == 0) {
-                        selectFileUploadDisabled = true;
-                        btnLoadFileDisabled = true;
-                        printMessage(FacesMessage.SEVERITY_ERROR,"Nombre registrado","El nombre ingresado ya se encuentra registrado, se debe digitar otro nombre para el conjunto de registros");
-                        System.out.println("****YA esta*");
-                    } else {
-                        selectFileUploadDisabled = false;
-                        btnLoadFileDisabled = false;
-                        System.out.println("****No esta*");
+                    if (tagsList.get(i).getTagName() != null) {
+                        if (tagsList.get(i).getTagName().compareTo(tagName) == 0) {
+                            selectFileUploadDisabled = true;
+                            btnLoadFileDisabled = true;
+                            printMessage(FacesMessage.SEVERITY_ERROR, "Nombre registrado", "El nombre ingresado ya se encuentra registrado, se debe digitar otro nombre para el conjunto de registros");
+                            System.out.println("****YA esta*");
+                        } else {
+                            selectFileUploadDisabled = false;
+                            btnLoadFileDisabled = false;
+                            System.out.println("****No esta*");
+                        }
                     }
                 }
             } else {
@@ -136,7 +138,7 @@ public class UploadFileMB implements Serializable {
                 System.out.println("****no esta TA*");
             }
         } catch (Exception e) {
-            printMessage(FacesMessage.SEVERITY_ERROR,"ERROR UploadFileMB_1",e.toString());
+            printMessage(FacesMessage.SEVERITY_ERROR, "ERROR UploadFileMB_1", e.toString());
             selectFileUploadDisabled = true;
             btnLoadFileDisabled = true;
         }
@@ -221,7 +223,7 @@ public class UploadFileMB implements Serializable {
         }
     }
 
-    public void printMessage(FacesMessage.Severity s,String title,String messageStr) {
+    public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
         FacesMessage msg = new FacesMessage(s, title, messageStr);
         FacesContext.getCurrentInstance().addMessage(null, msg);
     }

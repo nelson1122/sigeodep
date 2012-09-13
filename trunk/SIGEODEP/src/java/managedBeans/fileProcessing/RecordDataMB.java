@@ -8,7 +8,6 @@ import beans.connection.ConnectionJDBC;
 import beans.enumerators.DataTypeEnum;
 import beans.enumerators.SCC_F_032Enum;
 import beans.errorsControl.ErrorControl;
-import beans.relations.RelationValue;
 import beans.relations.RelationVar;
 import beans.relations.RelationsGroup;
 import java.io.Serializable;
@@ -41,6 +40,7 @@ public class RecordDataMB implements Serializable {
     private RelationsGroup currentRelationsGroup;
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private StoredRelationsMB storedRelationsMB;
+    private UploadFileMB uploadFileMB;
     private LoginMB loginMB;
     private ErrorsControlMB errorsControlMB;
     private String errorStr;
@@ -163,6 +163,10 @@ public class RecordDataMB implements Serializable {
     NonFatalDataSourcesFacade nonFatalDataSourcesFacade;
     @EJB
     InsuranceFacade insuranceFacade;
+    @EJB
+    TagsFacade tagsFacade;
+    @EJB
+    LoadsFacade loadsFacade;
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //MANEJO E LA BARRA DE PROGRESO DEL ALMACENAMIENTO ---------------------
@@ -182,11 +186,11 @@ public class RecordDataMB implements Serializable {
 
     public void onComplete() {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la adición de " + String.valueOf(tuplesProcessed)
-                + " registros, para filalizar guarde si lo desea la configuración de relaciones actual o reinicie para realizar la carga de registros de otro archivo"));
+                + " registros, para finalizar guarde si lo desea la configuración de relaciones actual o reinicie para realizar la carga de registros de otro archivo"));
     }
 
     public void onCompleteValidate() {
-        if (errorsNumber != 0) {
+        if (errorsNumber != 0) { 
             btnRegisterDataDisabled = true;
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Errores", "Existen: " + String.valueOf(errorsNumber) + " valores que no superaron el proceso de validación, dirijase a la sección de errores para  especificar si los corrige o ignora."));
         } else {
@@ -397,7 +401,6 @@ public class RecordDataMB implements Serializable {
         tuplesProcessed = 0;
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date currentDate;
-        String strDate;
         UseAlcoholDrugs selectUseAlcoholDrugs;
         SecurityElements selectSecurityElement;
         VulnerableGroups selectVulnerableGroups;
@@ -423,6 +426,17 @@ public class RecordDataMB implements Serializable {
                 columnsNames[pos] = resultSetFileData.getMetaData().getColumnName(i);
                 pos++;
             }
+            //VARIABLES PARA CONJUNTOS DE REGISTROS
+
+            int maxTag = tagsFacade.findMax() + 1;
+            Tags newTag = new Tags();//(maxTag, uploadFileMB.getNameFile(), uploadFileMB.getNameFile());
+            newTag.setTagId(maxTag);
+            newTag.setTagName(uploadFileMB.getTagName());
+            newTag.setTagFileInput(uploadFileMB.getNameFile());
+            newTag.setTagFileStored(uploadFileMB.getNameFile());
+            newTag.setFormId(formsFacade.find(nameForm));
+            tagsFacade.create(newTag);
+
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp
                 //***********************************************************creo una nueva victima
 
@@ -430,7 +444,12 @@ public class RecordDataMB implements Serializable {
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
                 newVictim.setVictimClass(Short.parseShort("1"));
                 int MaxIdNFI = nonFatalInjuriesFacade.findMax();//nuevo lesiones_no_fatales
+
+                //newLoad.
+                //loadsFacade
+
                 //VARIABLES NECESARIAS 
+                Loads newLoad;
                 NonFatalInjuries newNonFatalInjuries = new NonFatalInjuries();
                 newNonFatalInjuries.setNonFatalInjuryId(MaxIdNFI + 1);
 
@@ -1032,7 +1051,7 @@ public class RecordDataMB implements Serializable {
                                     selectUseAlcoholDrugs = useAlcoholDrugsFacade.find(Short.parseShort(value));
                                     newNonFatalInjuries.setUseDrugsId(selectUseAlcoholDrugs);
                                     break;
-                                case gradogra:                                    
+                                case gradogra:
                                     newNonFatalInjuries.setBurnInjuryDegree(Short.parseShort(value));
                                     break;
                                 case porcent:
@@ -1067,7 +1086,10 @@ public class RecordDataMB implements Serializable {
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name);
-                }
+                }                
+                //VARIABLES PARA CONJUNTOS DE REGISTROS
+                
+
                 //DETERMINAR TIPO DE IDENTIFICACION
                 if (newVictim.getVictimNid() != null) {
                     if (newVictim.getTypeId() == null) {
@@ -1079,10 +1101,12 @@ public class RecordDataMB implements Serializable {
                     newNonFatalInjuries.setVictimId(newVictim);
                     victimsFacade.create(newVictim);//PERSISTO LA VICTIMA                
                     nonFatalInjuriesFacade.create(newNonFatalInjuries);//PERSISTO LA LESION NO FATAL
+                    newLoad=new Loads(maxTag, newNonFatalInjuries.getNonFatalInjuryId());//PERSISTO LA CARGA
+                    loadsFacade.create(newLoad);
                 } catch (Exception e) {
                     System.out.println(e.toString());
                 }
-                
+
                 tuplesProcessed++;
                 progress = (int) (tuplesProcessed * 100) / tuplesNumber;
                 System.out.println("PROGRESO INGRESANDO: " + String.valueOf(progress));
@@ -1589,5 +1613,13 @@ public class RecordDataMB implements Serializable {
 
     public void setProgressValidate(Integer progressValidate) {
         this.progressValidate = progressValidate;
+    }
+
+    public UploadFileMB getUploadFileMB() {
+        return uploadFileMB;
+    }
+
+    public void setUploadFileMB(UploadFileMB uploadFileMB) {
+        this.uploadFileMB = uploadFileMB;
     }
 }

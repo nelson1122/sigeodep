@@ -51,31 +51,6 @@ public class HealtInstitutionsVariableMB implements Serializable {
     private boolean btnEditDisabled=true;
     private boolean btnRemoveDisabled=true;
     
-    LcenfMB lcenfMB;
-    AccidentalMB accidentalMB;
-    HomicideMB homicideMB;
-    SuicideMB suicideMB;
-    TransitMB transitMB;
-    VIFMB vifMB;
-    FacesContext context;
-
-    public void reload() {
-        context = FacesContext.getCurrentInstance();
-        System.out.println("Reiniciando formularios....");
-        lcenfMB = (LcenfMB) context.getApplication().evaluateExpressionGet(context, "#{lcenfMB}", LcenfMB.class);
-        accidentalMB = (AccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{accidentalMB}", AccidentalMB.class);
-        homicideMB = (HomicideMB) context.getApplication().evaluateExpressionGet(context, "#{homicideMB}", HomicideMB.class);
-        suicideMB = (SuicideMB) context.getApplication().evaluateExpressionGet(context, "#{suicideMB}", SuicideMB.class);
-        transitMB = (TransitMB) context.getApplication().evaluateExpressionGet(context, "#{transitMB}", TransitMB.class);
-        vifMB = (VIFMB) context.getApplication().evaluateExpressionGet(context, "#{vifMB}", VIFMB.class);
-        lcenfMB.reset();
-        accidentalMB.reset();
-        homicideMB.reset();
-        suicideMB.reset();
-        transitMB.reset();
-        vifMB.reset();
-    }
-
     public HealtInstitutionsVariableMB() {
     }
 
@@ -132,7 +107,7 @@ public class HealtInstitutionsVariableMB implements Serializable {
             nonFatalDataSourcesFacade.remove(currentNonFatalDataSources);
             currentNonFatalDataSources = null;
             selectedRowDataTable = null;
-            createDynamicTable(); reload(); btnEditDisabled=true; btnRemoveDisabled=true;
+            createDynamicTable();  btnEditDisabled=true; btnRemoveDisabled=true;
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
@@ -161,7 +136,7 @@ public class HealtInstitutionsVariableMB implements Serializable {
             }
             currentNonFatalDataSources = null;
             selectedRowDataTable = null;
-            createDynamicTable(); reload(); btnEditDisabled=true; btnRemoveDisabled=true;
+            createDynamicTable();  btnEditDisabled=true; btnRemoveDisabled=true;
         }
     }
 
@@ -188,7 +163,7 @@ public class HealtInstitutionsVariableMB implements Serializable {
         }
         currentNonFatalDataSources = null;
         selectedRowDataTable = null;
-        createDynamicTable(); reload(); btnEditDisabled=true; btnRemoveDisabled=true;
+        createDynamicTable();  btnEditDisabled=true; btnRemoveDisabled=true;
     }
 
     public void newRegistry() {

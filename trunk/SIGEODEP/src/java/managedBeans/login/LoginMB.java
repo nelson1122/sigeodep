@@ -105,7 +105,6 @@ public class LoginMB implements Serializable {
     public void reset() {
         uploadFileMB.reset();
         formsAndFieldsDataMB.reset();
-        uploadFileMB.reset();
         relationshipOfVariablesMB.reset();
         relationshipOfValuesMB.reset();
         storedRelationsMB.reset();
@@ -170,6 +169,7 @@ public class LoginMB implements Serializable {
             recordDataMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
             recordDataMB.setErrorsControlMB(errorsControlMB);
             recordDataMB.setLoginMB(this);
+            recordDataMB.setUploadFileMB(uploadFileMB);
 
             formsAndFieldsDataMB.loadFormsData();
             formsAndFieldsDataMB.setNameForm("SCC-F-032");
@@ -183,14 +183,16 @@ public class LoginMB implements Serializable {
 
             errorsControlMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
             errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-
-            uploadFileMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-            uploadFileMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
-
+            
             storedRelationsMB.setUploadFileMB(uploadFileMB);
             storedRelationsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
             storedRelationsMB.setCurrentRelationsGroup(relationshipOfVariablesMB.getCurrentRelationsGroup());
             storedRelationsMB.loadRelatedGroups();
+
+            uploadFileMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
+            uploadFileMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
+
+            
 
             uploadFileMB.setStoredRelationsMB(storedRelationsMB);
 
