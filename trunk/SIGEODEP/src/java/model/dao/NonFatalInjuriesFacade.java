@@ -127,7 +127,7 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
                     + "    public.loads, "
                     + "    public.tags "
                     + "WHERE "
-                    + "    loads.tag_id = non_fatal_injuries.non_fatal_injury_id AND "
+                    + "    loads.record_id = non_fatal_injuries.non_fatal_injury_id AND "
                     + "    tags.tag_id = loads.tag_id AND "
                     + "    tags.tag_id = " + String.valueOf(idTag) + "; ");
             //AQUI VA DEPRONTO EL ID != DE 53

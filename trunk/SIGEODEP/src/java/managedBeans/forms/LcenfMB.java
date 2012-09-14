@@ -473,11 +473,6 @@ public class LcenfMB implements Serializable {
      * esta funcion es llamada desde la seccion de conjuntos de registros
      */
     public void loadValues(List<Tags> tagsList, NonFatalInjuries currentNonFatalI) {
-
-
-
-        //loadsFacade.fin
-        //this.currentTag = currentTag.getTagId();        
         LoadsPK loadsPK;
         for (int i = 0; i < tagsList.size(); i++) {
             loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentNonFatalI.getNonFatalInjuryId());
@@ -494,7 +489,6 @@ public class LcenfMB implements Serializable {
                 noSaveAndGoNew();
             }
         }
-
     }
 
     public void reset() {

@@ -34,6 +34,12 @@ import model.pojo.*;
 @SessionScoped
 public class VIFMB implements Serializable {
 
+    
+    //------------------    
+    @EJB
+    TagsFacade tagsFacade;
+    private SelectItem[] tags;
+    private int currentTag;
     //------------------------
     @EJB
     InsuranceFacade insuranceFacade;
@@ -295,6 +301,23 @@ public class VIFMB implements Serializable {
         save = true;
         stylePosition = "color: #1471B1;";
         try {
+            //cargo los conjuntos de registros
+            List<Tags> tagsList = tagsFacade.findAll();
+            int count = 0;
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-033") == 0) {
+                    count++;
+                }
+            }
+            tags = new SelectItem[count];
+            count = 0;
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-033") == 0) {
+                    currentTag = tagsList.get(0).getTagId();
+                    tags[count] = new SelectItem(tagsList.get(i).getTagId(), tagsList.get(i).getTagName());
+                    count++;
+                }
+            }
             //cargo las aseguradoras
             List<Insurance> insuranceList = insuranceFacade.findAll();
             insurances = new SelectItem[insuranceList.size() + 1];
@@ -2268,6 +2291,10 @@ public class VIFMB implements Serializable {
     // FUNCIONES CUANDO LISTAS CAMBIAN DE VALOR ----------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    public void changeTag() {//cambia el conjunto de registros
+        noSaveAndGoNew();
+    }
+    
     public void changeStranger() {
         if (loading == false) {
             changeForm();
@@ -2288,110 +2315,7 @@ public class VIFMB implements Serializable {
             currentMunicipalitieDisabled = false;
         }
     }
-
-//    public void changeStateDateEvent() {
-//        if (loading == false) {             changeForm();         }
-//        currentDayEventDisabled = true;
-//        currentMonthEventDisabled = true;
-//        currentYearEventDisabled = true;
-//        currentDayEvent = "";
-//        currentMonthEvent = "";
-//        currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
-//        switch (currentStateDateEvent) {
-//            case 1://fecha determinada
-//                currentDayEventDisabled = false;
-//                currentMonthEventDisabled = false;
-//                currentYearEventDisabled = false;
-//                break;
-//            case 2://sin determinar
-//                break;
-//            case 3://sin dia                
-//                currentMonthEventDisabled = false;
-//                currentYearEventDisabled = false;
-//                break;
-//            case 4://sin mes
-//                currentYearEventDisabled = false;
-//                break;
-//        }
-//    }
-//
-//    public void changeStateDateConsult() {
-//        if (loading == false) {             changeForm();         }
-//        currentDayConsultDisabled = true;
-//        currentMonthConsultDisabled = true;
-//        currentYearConsultDisabled = true;
-//        currentDayConsult = "";
-//        currentMonthConsult = "";
-//        currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
-//        switch (currentStateDateConsult) {
-//            case 1://fecha determinada
-//                currentDayConsultDisabled = false;
-//                currentMonthConsultDisabled = false;
-//                currentYearConsultDisabled = false;
-//                break;
-//            case 2://sin determinar
-//                break;
-//            case 3://sin dia                
-//                currentMonthConsultDisabled = false;
-//                currentYearConsultDisabled = false;
-//                break;
-//            case 4://sin mes
-//                currentYearConsultDisabled = false;
-//                break;
-//        }
-//    }
-//
-//    public void changeStateTimeEvent() {
-//        if (loading == false) {             changeForm();         }
-//        currentHourEventDisabled = true;
-//        currentMinuteEventDisabled = true;
-//        currentAmPmEventDisabled = true;
-//        currentHourEvent = "";
-//        currentMinuteEvent = "";
-//        currentAmPmEvent = "AM";
-//        switch (currentStateTimeEvent) {
-//            case 1://hora determinada
-//                currentHourEventDisabled = false;
-//                currentMinuteEventDisabled = false;
-//                currentAmPmEventDisabled = false;
-//                break;
-//            case 2://hora sin determinar
-//                break;
-//            case 3://sin minutos                
-//                currentHourEventDisabled = false;
-//                currentAmPmEventDisabled = false;
-//                break;
-//            case 4://sin horas
-//                currentAmPmEventDisabled = false;
-//                break;
-//        }
-//    }
-//
-//    public void changeStateTimeConsult() {
-//        if (loading == false) {             changeForm();         }
-//        currentHourConsultDisabled = true;
-//        currentMinuteConsultDisabled = true;
-//        currentAmPmConsultDisabled = true;
-//        currentHourConsult = "";
-//        currentMinuteConsult = "";
-//        currentAmPmConsult = "AM";
-//        switch (currentStateTimeConsult) {
-//            case 1://hora determinada
-//                currentHourConsultDisabled = false;
-//                currentMinuteConsultDisabled = false;
-//                currentAmPmConsultDisabled = false;
-//                break;
-//            case 2://hora sin determinar
-//                break;
-//            case 3://sin minutos                
-//                currentHourConsultDisabled = false;
-//                currentAmPmConsultDisabled = false;
-//                break;
-//            case 4://sin horas
-//                currentAmPmConsultDisabled = false;
-//                break;
-//        }
-//    }
+    
     public void changeUnknownAG() {
         if (loading == false) {
             changeForm();
@@ -4503,5 +4427,21 @@ public class VIFMB implements Serializable {
 
     public void setCurrentIdForm(String currentIdForm) {
         this.currentIdForm = currentIdForm;
+    }
+    
+    public int getCurrentTag() {
+        return currentTag;
+    }
+
+    public void setCurrentTag(int currentTag) {
+        this.currentTag = currentTag;
+    }
+
+    public SelectItem[] getTags() {
+        return tags;
+    }
+
+    public void setTags(SelectItem[] tags) {
+        this.tags = tags;
     }
 }

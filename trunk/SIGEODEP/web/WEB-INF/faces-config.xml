@@ -35,15 +35,16 @@
             <redirect/>
         </navigation-case>
         <navigation-case>
-            <from-outcome>homicide</from-outcome>
-            <to-view-id>/web/Forms/homicide.xhtml</to-view-id>
-            <redirect/>
-        </navigation-case>
-        <navigation-case>
             <from-outcome>suicide</from-outcome>
             <to-view-id>/web/Forms/suicide.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
+        <navigation-case>
+            <from-outcome>homicide</from-outcome>
+            <to-view-id>/web/Forms/homicide.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        
         <navigation-case>
             <from-outcome>proccesFile</from-outcome>
             <to-view-id>/web/fileProcessing/fileProcessing.xhtml</to-view-id>
