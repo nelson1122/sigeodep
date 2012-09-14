@@ -91,17 +91,17 @@ public class RecordSetsMB implements Serializable {
             openRecordSets = "recordSetsLCENF";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
-            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsViewMB}", RecordSetsLcenfMB.class);
+            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
             recordSetsLcenfMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsLCENF";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
-            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsViewMB}", RecordSetsLcenfMB.class);
+            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
             recordSetsLcenfMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsLCENF";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
-            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsViewMB}", RecordSetsLcenfMB.class);
+            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
             recordSetsLcenfMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsLCENF";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {
@@ -111,7 +111,7 @@ public class RecordSetsMB implements Serializable {
             openRecordSets = "recordSetsLCENF";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
-            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsViewMB}", RecordSetsLcenfMB.class);
+            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
             recordSetsLcenfMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsLCENF";
         } else {
@@ -133,7 +133,7 @@ public class RecordSetsMB implements Serializable {
             for (int i = 0; i < selectedRowsDataTable.length; i++) {
                 if (currentTagName.length() == 0) {
                     currentTagName = selectedRowsDataTable[0].getColumn3();
-                } else if (currentTagName.compareTo(selectedRowsDataTable[0].getColumn3()) != 0) {
+                } else if (currentTagName.compareTo(selectedRowsDataTable[i].getColumn3()) != 0) {
                     equalTagName = false;
                     break;
                 }

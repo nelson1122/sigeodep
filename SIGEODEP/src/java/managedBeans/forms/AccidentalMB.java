@@ -38,8 +38,13 @@ public class AccidentalMB implements Serializable {
     // DECLARACION DE VARIABLES --------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    
+    //------------------    
+    @EJB
+    TagsFacade tagsFacade;
+    private SelectItem[] tags;
+    private int currentTag;
     //-------------------- 
-
     @EJB
     AccidentMechanismsFacade accidentMechanismsFacade;
     //WeaponTypesFacade weaponTypesFacade;
@@ -199,6 +204,23 @@ public class AccidentalMB implements Serializable {
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         loading = true;
         try {
+            //cargo los conjuntos de registros
+            List<Tags> tagsList = tagsFacade.findAll();
+            int count = 0;
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-031") == 0) {
+                    count++;
+                }
+            }
+            tags = new SelectItem[count];
+            count = 0;
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-031") == 0) {
+                    currentTag = tagsList.get(0).getTagId();
+                    tags[count] = new SelectItem(tagsList.get(i).getTagId(), tagsList.get(i).getTagName());
+                    count++;
+                }
+            }
             //cargo los tipos de identificacion
             List<IdTypes> idTypesList = idTypesFacade.findAll();
             identifications = new SelectItem[idTypesList.size() + 1];
@@ -2748,5 +2770,21 @@ public class AccidentalMB implements Serializable {
 
     public void setCurrentDepartamentHomeDisabled(boolean currentDepartamentHomeDisabled) {
         this.currentDepartamentHomeDisabled = currentDepartamentHomeDisabled;
+    }
+    
+    public int getCurrentTag() {
+        return currentTag;
+    }
+
+    public void setCurrentTag(int currentTag) {
+        this.currentTag = currentTag;
+    }
+
+    public SelectItem[] getTags() {
+        return tags;
+    }
+
+    public void setTags(SelectItem[] tags) {
+        this.tags = tags;
     }
 }

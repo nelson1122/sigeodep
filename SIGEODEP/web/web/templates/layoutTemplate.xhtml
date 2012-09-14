@@ -47,7 +47,7 @@
                                 <p:menu style="width: 240px; z-index:23; overflow:visible">                               
                                     <p:menuitem 
                                         icon="ui-icon-disk"
-                                        value="Carga desde Archivo" 
+                                        value="Conjuntos desde Archivo" 
                                         action="proccesFile" 
                                         ajax="false"/>  
                                     <p:menuitem 
@@ -57,7 +57,8 @@
                                         ajax="false"/>  
                                     <p:menuitem 
                                         icon="ui-icon-folder-collapsed" 
-                                        value="Conjuntos de registros" 
+                                        value="Gestion de Conjuntos" 
+                                        actionListener="#{recordSetsMB.reset}"                                            
                                         action="recordSets"  
                                         ajax="false"/>
                                 </p:menu> 
@@ -137,10 +138,9 @@
                         style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 60px; width: 300px;"/>
                     <br/>
                     <br/>
-                    <p:commandButton 
-                        value="ACEPTAR"  
-                        action="index"
-                        ajax="false"/>
+                    <a href="/SIGEODEP/faces/index.xhtml">
+                        ACEPTAR
+                    </a>
                 </p:dialog>
             </h:form>
             <ui:insert name="dialogs">   

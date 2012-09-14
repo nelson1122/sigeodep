@@ -38,6 +38,12 @@ public class SuicideMB implements Serializable {
     // DECLARACION DE VARIABLES --------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    //------------------    
+    @EJB
+    TagsFacade tagsFacade;
+    private SelectItem[] tags;
+    private int currentTag;
+    //------------------
     @EJB
     RelatedEventsFacade relatedEventsFacade;
     private Short currentRelatedEvent = 0;
@@ -208,19 +214,23 @@ public class SuicideMB implements Serializable {
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         try {
 
-//            //estados de fecha
-//            List<StateDate> stateDateL = stateDateFacade.findAll();
-//            stateDateList = new SelectItem[stateDateL.size()];
-//            for (int i = 0; i < stateDateL.size(); i++) {
-//                stateDateList[i] = new SelectItem(stateDateL.get(i).getIdStateDate(), stateDateL.get(i).getName());
-//            }
-//
-//            //estados de hora
-//            List<StateTime> stateTimeL = stateTimeFacade.findAll();
-//            stateTimeList = new SelectItem[stateTimeL.size()];            
-//            for (int i = 0; i < stateDateL.size(); i++) {
-//                stateTimeList[i] = new SelectItem(stateTimeL.get(i).getIdStateTime(), stateTimeL.get(i).getName());
-//            }
+            //cargo los conjuntos de registros
+            List<Tags> tagsList = tagsFacade.findAll();
+            int count = 0;
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-030") == 0) {
+                    count++;
+                }
+            }
+            tags = new SelectItem[count];
+            count = 0;
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-030") == 0) {
+                    currentTag = tagsList.get(0).getTagId();
+                    tags[count] = new SelectItem(tagsList.get(i).getTagId(), tagsList.get(i).getTagName());
+                    count++;
+                }
+            }
 
             //cargo los tipos de identificacion
             List<IdTypes> idTypesList = idTypesFacade.findAll();
@@ -1434,6 +1444,11 @@ public class SuicideMB implements Serializable {
     // FUNCIONES CUANDO LISTAS CAMBIAN DE VALOR ----------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    
+    public void changeTag() {//cambia el conjunto de registros
+        noSaveAndGoNew();
+    }
+    
     public void changeStranger() {
         if (loading == false) {
             changeForm();
@@ -2814,5 +2829,21 @@ public class SuicideMB implements Serializable {
 
     public void setCurrentDepartamentHomeDisabled(boolean currentDepartamentHomeDisabled) {
         this.currentDepartamentHomeDisabled = currentDepartamentHomeDisabled;
+    }
+    
+    public int getCurrentTag() {
+        return currentTag;
+    }
+
+    public void setCurrentTag(int currentTag) {
+        this.currentTag = currentTag;
+    }
+
+    public SelectItem[] getTags() {
+        return tags;
+    }
+
+    public void setTags(SelectItem[] tags) {
+        this.tags = tags;
     }
 }

@@ -45,9 +45,27 @@
         <ui:define name="content">
             <h:form enctype="multipart/form-data" id="IdForm1"> 
                 <p:growl id="message"  showDetail="true" sticky="true" />
+                <!--================================== FILTRADO DE REGISTROS ===========================================-->
+                <br/>
+                <p:panelGrid style="position: absolute;  margin-left: -375px; left: 50%;" >
+                    <p:row>  
+                        <p:column styleClass="ui-widget-header">
+                            <h:outputLabel value="Conjunto"/>    
+                        </p:column>                                    
+                        <p:column>
+                            <h:selectOneMenu id="IdRecordSets" value="#{accidentalMB.currentTag}" > 
+                                <f:selectItems value="#{accidentalMB.tags}"/>
+                                <f:ajax 
+                                    event="change"
+                                    listener="#{accidentalMB.changeTag}"
+                                    render="@form"/>
+                            </h:selectOneMenu>
+                        </p:column>                                    
+                    </p:row>
+                </p:panelGrid>
                 <!--===================================================================================-->
                 <br/>
-                <p:panelGrid style="position: absolute;  width: 750px;  margin-left: -375px; left: 50%;" >                            
+                <p:panelGrid style="position: absolute; width: 750px; margin-top: 30px;  margin-left: -375px; left: 50%;" >
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
                             <h:outputLabel value="ALCALDIA DE PASTO - SECRETERIA DE GOBIERNO"/><br/>  
