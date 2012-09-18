@@ -37,19 +37,15 @@ public class TransitMB implements Serializable {
     //----------------------------------------------------------------------
     // DECLARACION DE VARIABLES --------------------------------------------
     //----------------------------------------------------------------------
-    //------------------    
     @EJB
     TagsFacade tagsFacade;
     private SelectItem[] tags;
-    private int currentTag;
+    private int currentTag = 0;
     //-------------------- 
     @EJB
     AreasFacade areasFacade;
     private SelectItem[] areas;
     private Short currentArea = 0;
-    //-------------------- 
-    @EJB
-    CounterpartInvolvedVehicleFacade counterpartInvolvedVehicleFacade;
     //-------------------- 
     @EJB
     InvolvedVehiclesFacade involvedVehiclesFacade;
@@ -134,7 +130,11 @@ public class TransitMB implements Serializable {
     boolean neighborhoodHomeNameDisabled = false;
     //--------------------
     @EJB
+    LoadsFacade loadsFacade;
+    @EJB
     HealthProfessionalsFacade healthProfessionalsFacade;
+    @EJB
+    CounterpartInvolvedVehicleFacade counterpartInvolvedVehicleFacade;
     //------------------
     @EJB
     IdTypesFacade idTypesFacade;
@@ -247,8 +247,27 @@ public class TransitMB implements Serializable {
     public TransitMB() {
     }
 
+    public void loadValues(List<Tags> tagsList, FatalInjuryTraffic currentFatalInjuryT) {
+        LoadsPK loadsPK;
+        for (int i = 0; i < tagsList.size(); i++) {
+            loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentFatalInjuryT.getFatalInjuryId());
+            try {
+                reset();
+                clearForm();
+                currentTag = loadsFacade.find(loadsPK).getTags().getTagId();
+                this.currentFatalInjuryTraffic = currentFatalInjuryT;
+                currentFatalInjuriId = currentFatalInjuryT.getFatalInjuryId();
+                determinePosition();
+                loadValues();
+            } catch (Exception e) {
+                reset();
+                noSaveAndGoNew();
+            }
+        }
+    }
+    
     public void reset() {
-        loading=true;
+        loading = true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         try {
             //determinePosition();
@@ -262,9 +281,12 @@ public class TransitMB implements Serializable {
             }
             tags = new SelectItem[count];
             count = 0;
+            currentTag = 0;
             for (int i = 0; i < tagsList.size(); i++) {
                 if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-029") == 0) {
-                    currentTag = tagsList.get(0).getTagId();
+                    if (currentTag == 0) {
+                        currentTag = tagsList.get(i).getTagId();
+                    }
                     tags[count] = new SelectItem(tagsList.get(i).getTagId(), tagsList.get(i).getTagName());
                     count++;
                 }
@@ -390,7 +412,7 @@ public class TransitMB implements Serializable {
         } catch (Exception e) {
             System.out.println("*******************************************ERROR: " + e.toString());
         }
-        loading=false;
+        loading = false;
         System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////t");
     }
 
@@ -1185,6 +1207,11 @@ public class TransitMB implements Serializable {
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryTrafficFacade.create(newFatalInjuryTraffic);
+
+                    Loads newLoad;
+                    newLoad = new Loads(currentTag, newFatalInjurie.getFatalInjuryId());//PERSISTO EL registro en la CARGA
+                    loadsFacade.create(newLoad);
+
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
@@ -1349,14 +1376,14 @@ public class TransitMB implements Serializable {
     }
 
     public void determinePosition() {
-        totalRegisters = fatalInjuryTrafficFacade.count();
+        totalRegisters = fatalInjuryTrafficFacade.countTraffic(currentTag);
 
         if (currentFatalInjuriId == -1) {
             currentPosition = "new" + "/" + String.valueOf(totalRegisters);
             currentIdForm = String.valueOf(fatalInjuriesFacade.findMax() + 1);
             openDialogDelete = "";//es nuevo no se puede borrar
         } else {
-            int position = fatalInjuryTrafficFacade.findPosition(currentFatalInjuryTraffic.getFatalInjuryId());
+            int position = fatalInjuryTrafficFacade.findPosition(currentFatalInjuryTraffic.getFatalInjuryId(), currentTag);
             currentIdForm = String.valueOf(currentFatalInjuryTraffic.getFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
@@ -1472,7 +1499,7 @@ public class TransitMB implements Serializable {
             System.out.println("cargando siguiente registro");
             if (currentFatalInjuriId == -1) {//esta en registro nuevo                
             } else {
-                auxFatalInjuryTraffic = fatalInjuryTrafficFacade.findNext(currentFatalInjuriId);
+                auxFatalInjuryTraffic = fatalInjuryTrafficFacade.findNext(currentFatalInjuriId, currentTag);
                 if (auxFatalInjuryTraffic != null) {
                     clearForm();
                     currentFatalInjuryTraffic = auxFatalInjuryTraffic;
@@ -1492,7 +1519,7 @@ public class TransitMB implements Serializable {
             if (currentFatalInjuriId == -1) {//esta en registro nuevo
                 last();
             } else {
-                auxFatalInjuryTraffic = fatalInjuryTrafficFacade.findPrevious(currentFatalInjuriId);
+                auxFatalInjuryTraffic = fatalInjuryTrafficFacade.findPrevious(currentFatalInjuriId, currentTag);
                 if (auxFatalInjuryTraffic != null) {
                     clearForm();
                     currentFatalInjuryTraffic = auxFatalInjuryTraffic;
@@ -1509,7 +1536,7 @@ public class TransitMB implements Serializable {
     public void first() {
         if (save) {
             System.out.println("cargando primer registro");
-            auxFatalInjuryTraffic = fatalInjuryTrafficFacade.findFirst();
+            auxFatalInjuryTraffic = fatalInjuryTrafficFacade.findFirst(currentTag);
             if (auxFatalInjuryTraffic != null) {
                 clearForm();
                 currentFatalInjuryTraffic = auxFatalInjuryTraffic;
@@ -1525,7 +1552,7 @@ public class TransitMB implements Serializable {
     public void last() {
         if (save) {
             System.out.println("cargando ultimo registro");
-            auxFatalInjuryTraffic = fatalInjuryTrafficFacade.findLast();
+            auxFatalInjuryTraffic = fatalInjuryTrafficFacade.findLast(currentTag);
             if (auxFatalInjuryTraffic != null) {
                 clearForm();
                 currentFatalInjuryTraffic = auxFatalInjuryTraffic;
@@ -1565,7 +1592,7 @@ public class TransitMB implements Serializable {
         currentSourceCountry = 52;
 
         findSourceDepartaments();
-        
+
         currentIdentification = 0;
         currentIdentificationNumber = "";
         currentName = "";
@@ -1610,13 +1637,13 @@ public class TransitMB implements Serializable {
         currentDirectionEvent = "";
         currentNeighborhoodHomeCode = "";
         currentNeighborhoodHome = "";
-        
+
         //currentMunicipalitie = 1;
-        currentDepartamentHomeDisabled=false;
+        currentDepartamentHomeDisabled = false;
         currentDepartamentHome = 52;
         changeDepartamentHome();
-        currentMunicipalitie = 1;        
-        
+        currentMunicipalitie = 1;
+
         currentMunicipalitieDisabled = false;
         neighborhoodHomeNameDisabled = false;
         currentPlace = 0;
@@ -1674,6 +1701,10 @@ public class TransitMB implements Serializable {
         if (currentFatalInjuriId != -1) {
             FatalInjuries auxFatalInjuries = currentFatalInjuryTraffic.getFatalInjuries();
             Victims auxVictims = currentFatalInjuryTraffic.getFatalInjuries().getVictimId();
+
+            LoadsPK loadsPK = new LoadsPK(currentTag, currentFatalInjuryTraffic.getFatalInjuryId());
+            loadsFacade.remove(loadsFacade.find(loadsPK));
+
             fatalInjuryTrafficFacade.remove(currentFatalInjuryTraffic);
             fatalInjuriesFacade.remove(auxFatalInjuries);
             victimsFacade.remove(auxVictims);
@@ -1845,11 +1876,10 @@ public class TransitMB implements Serializable {
     // FUNCIONES CUANDO LISTAS Y CAMPOS CAMBIAN DE VALOR -------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    
     public void changeTag() {//cambia el conjunto de registros
         noSaveAndGoNew();
     }
-    
+
     public void changeStranger() {
         if (loading == false) {
             changeForm();
@@ -1986,13 +2016,16 @@ public class TransitMB implements Serializable {
         currentMunicipalitie = d.getMunicipalitiesList().get(0).getMunicipalitiesPK().getMunicipalityId();
 
     }
-    
-        public void changeDepartamentHome() {
+
+    public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
+            neighborhoodHomeNameDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
         }
         if (currentDepartamentHome != 0) {
-            Departaments d = departamentsFacade.findById(currentDepartamentHome);            
+            Departaments d = departamentsFacade.findById(currentDepartamentHome);
             municipalities = new SelectItem[d.getMunicipalitiesList().size() + 1];
             municipalities[0] = new SelectItem(0, "");
             for (int i = 0; i < d.getMunicipalitiesList().size(); i++) {
@@ -2008,9 +2041,7 @@ public class TransitMB implements Serializable {
             municipalities[0] = new SelectItem(0, "");
             currentMunicipalitie = 0;
         }
-        neighborhoodHomeNameDisabled = true;
-        currentNeighborhoodHome = "";
-        currentNeighborhoodHomeCode = "";
+
         changeMunicipalitieHome();
     }
 
@@ -2498,7 +2529,9 @@ public class TransitMB implements Serializable {
                                 if (timeInt > 2400) {
                                     timeStr = "00" + minuteStr;
                                 }
-                                if(timeStr.compareTo("2400")==0)timeStr="0000";
+                                if (timeStr.compareTo("2400") == 0) {
+                                    timeStr = "0000";
+                                }
                                 currentMilitaryHourEvent = timeStr;
                             }
                         } else {//hora AM
@@ -2520,7 +2553,9 @@ public class TransitMB implements Serializable {
                             if (timeInt > 2400) {
                                 timeStr = "00" + minuteStr;
                             }
-                            if(timeStr.compareTo("2400")==0)timeStr="0000";
+                            if (timeStr.compareTo("2400") == 0) {
+                                timeStr = "0000";
+                            }
                             currentMilitaryHourEvent = timeStr;
                         }
                     } else {
@@ -3459,7 +3494,7 @@ public class TransitMB implements Serializable {
     public void setCurrentIdForm(String currentIdForm) {
         this.currentIdForm = currentIdForm;
     }
-    
+
     public Short getCurrentDepartamentHome() {
         return currentDepartamentHome;
     }
@@ -3475,7 +3510,7 @@ public class TransitMB implements Serializable {
     public void setCurrentDepartamentHomeDisabled(boolean currentDepartamentHomeDisabled) {
         this.currentDepartamentHomeDisabled = currentDepartamentHomeDisabled;
     }
-    
+
     public int getCurrentTag() {
         return currentTag;
     }

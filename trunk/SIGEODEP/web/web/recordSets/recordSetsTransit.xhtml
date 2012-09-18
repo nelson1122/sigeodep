@@ -34,7 +34,7 @@
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
                             <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="CONJUNTO(s): #{recordSetsLcenfMB.data} "/>  
+                            <h:outputLabel value="CONJUNTO(s): #{recordSetsTransitMB.data} "/>  
                         </p:column>                                       
                     </p:row>
                     <p:row>  
@@ -42,9 +42,9 @@
                             <br/>                            
                             <p:dataTable 
                                 id="IdSearchTable" var="rowX" 
-                                value="#{recordSetsLcenfMB.rowDataTableList}" 
+                                value="#{recordSetsTransitMB.rowDataTableList}" 
                                 rowKey="#{rowX.column1}"  
-                                selection="#{recordSetsLcenfMB.selectedRowDataTable}" 
+                                selection="#{recordSetsTransitMB.selectedRowDataTable}" 
                                 paginator="true"
                                 rows="10"                                    
                                 paginatorPosition="bottom"                                
@@ -55,7 +55,7 @@
                                 resizableColumns="true">                                
                                 <p:ajax
                                     event="rowSelect"
-                                    listener="#{recordSetsLcenfMB.load}"                                    
+                                    listener="#{recordSetsTransitMB.load}"                                    
                                     update=":IdForm1:IdControls :IdForm1:message" />                    
 
 
@@ -228,15 +228,15 @@
                                     <p:column styleClass="ui-widget-header" colspan="5">
                                         <p:commandButton 
                                             id="IdEdit"
-                                            disabled="#{recordSetsLcenfMB.btnEditDisabled}"
+                                            disabled="#{recordSetsTransitMB.btnEditDisabled}"
                                             value="Mostrar formulario"                                 
                                             icon="ui-icon-pencil"
-                                            actionListener="#{recordSetsLcenfMB.openInForm}"
-                                            action="#{recordSetsLcenfMB.openForm}"                                            
+                                            actionListener="#{recordSetsTransitMB.openInForm}"
+                                            action="#{recordSetsTransitMB.openForm}"                                            
                                             update=":IdForm1:message"/>
                                         <p:commandButton 
                                             id="IdRemove" 
-                                            disabled="#{recordSetsLcenfMB.btnRemoveDisabled}"
+                                            disabled="#{recordSetsTransitMB.btnRemoveDisabled}"
                                             value="Eliminar registro" 
                                             icon="ui-icon-close"
                                             oncomplete="dialogDelete.show()"                                            
@@ -247,7 +247,7 @@
                                         </p:dataTable>
                                         <h:commandLink >  
                                             <p:graphicImage value="../../resources/img/excel.png"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{recordSetsLcenfMB.postProcessXLS}"/>  
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{recordSetsTransitMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                     </p:column>                            
                                 </p:row>
@@ -276,7 +276,7 @@
                     <br/>
                     <p:commandButton                                                           
                         oncomplete="dialogDelete.hide()"
-                        actionListener="#{recordSetsLcenfMB.deleteRegistry}"
+                        actionListener="#{recordSetsTransitMB.deleteRegistry}"
                         value="Eliminar" 
                         update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>   
                     <p:commandButton
