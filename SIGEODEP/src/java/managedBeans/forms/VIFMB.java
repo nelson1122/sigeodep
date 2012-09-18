@@ -34,7 +34,6 @@ import model.pojo.*;
 @SessionScoped
 public class VIFMB implements Serializable {
 
-    
     //------------------    
     @EJB
     TagsFacade tagsFacade;
@@ -136,7 +135,8 @@ public class VIFMB implements Serializable {
     //------------------------
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
-    //------------------
+    @EJB
+    LoadsFacade loadsFacade;
     @EJB
     VictimsFacade victimsFacade;
     @EJB
@@ -293,6 +293,25 @@ public class VIFMB implements Serializable {
     //----------------------------------------------------------------------
     public VIFMB() {
     }
+    
+    public void loadValues(List<Tags> tagsList, NonFatalDomesticViolence currentNonDomesticV) {
+        LoadsPK loadsPK;
+        for (int i = 0; i < tagsList.size(); i++) {
+            loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentNonDomesticV.getNonFatalInjuryId());
+            try {
+                reset();
+                clearForm();
+                currentTag = loadsFacade.find(loadsPK).getTags().getTagId();
+                this.currentNonFatalDomesticViolence = currentNonDomesticV;
+                currentNonFatalInjuriId = currentNonDomesticV.getNonFatalInjuryId();
+                determinePosition();
+                loadValues();
+            } catch (Exception e) {
+                reset();
+                noSaveAndGoNew();
+            }
+        }
+    }
 
     public void reset() {
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
@@ -311,9 +330,12 @@ public class VIFMB implements Serializable {
             }
             tags = new SelectItem[count];
             count = 0;
+            currentTag = 0;
             for (int i = 0; i < tagsList.size(); i++) {
                 if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-033") == 0) {
-                    currentTag = tagsList.get(0).getTagId();
+                    if (currentTag == 0) {
+                        currentTag = tagsList.get(i).getTagId();
+                    }
                     tags[count] = new SelectItem(tagsList.get(i).getTagId(), tagsList.get(i).getTagName());
                     count++;
                 }
@@ -1646,6 +1668,11 @@ public class VIFMB implements Serializable {
                     victimsFacade.create(newVictim);
                     nonFatalInjuriesFacade.create(newNonFatalInjuries);
                     nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
+
+                    Loads newLoad;
+                    newLoad = new Loads(currentTag, newNonFatalInjuries.getNonFatalInjuryId());//PERSISTO EL registro en la CARGA
+                    loadsFacade.create(newLoad);
+
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
@@ -1887,7 +1914,7 @@ public class VIFMB implements Serializable {
             //System.out.println("cargando siguiente registro");
             if (currentNonFatalInjuriId == -1) {//esta en registro nuevo                
             } else {
-                auxFatalDomesticViolence = nonFatalDomesticViolenceFacade.findNext(currentNonFatalInjuriId);
+                auxFatalDomesticViolence = nonFatalDomesticViolenceFacade.findNext(currentNonFatalInjuriId, currentTag);
                 if (auxFatalDomesticViolence != null) {
                     clearForm();
                     currentNonFatalDomesticViolence = auxFatalDomesticViolence;
@@ -1907,7 +1934,7 @@ public class VIFMB implements Serializable {
             if (currentNonFatalInjuriId == -1) {//esta en registro nuevo                
                 last();
             } else {
-                auxFatalDomesticViolence = nonFatalDomesticViolenceFacade.findPrevious(currentNonFatalInjuriId);
+                auxFatalDomesticViolence = nonFatalDomesticViolenceFacade.findPrevious(currentNonFatalInjuriId, currentTag);
                 if (auxFatalDomesticViolence != null) {
                     clearForm();
                     currentNonFatalDomesticViolence = auxFatalDomesticViolence;
@@ -1924,7 +1951,7 @@ public class VIFMB implements Serializable {
     public void first() {
         if (save) {
             //System.out.println("cargando primer registro");
-            auxFatalDomesticViolence = nonFatalDomesticViolenceFacade.findFirst();
+            auxFatalDomesticViolence = nonFatalDomesticViolenceFacade.findFirst(currentTag);
             if (auxFatalDomesticViolence != null) {
                 clearForm();
                 currentNonFatalDomesticViolence = auxFatalDomesticViolence;
@@ -1940,7 +1967,7 @@ public class VIFMB implements Serializable {
     public void last() {
         if (save) {
             //System.out.println("cargando primer registro");
-            auxFatalDomesticViolence = nonFatalDomesticViolenceFacade.findLast();
+            auxFatalDomesticViolence = nonFatalDomesticViolenceFacade.findLast(currentTag);
             if (auxFatalDomesticViolence != null) {
                 clearForm();
                 currentNonFatalDomesticViolence = auxFatalDomesticViolence;
@@ -2124,6 +2151,10 @@ public class VIFMB implements Serializable {
             NonFatalInjuries auxNonFatalInjuries = currentNonFatalDomesticViolence.getNonFatalInjuries();
             Victims auxVictims = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId();
 
+
+            LoadsPK loadsPK = new LoadsPK(currentTag, currentNonFatalDomesticViolence.getNonFatalInjuryId());
+            loadsFacade.remove(loadsFacade.find(loadsPK));
+
             nonFatalDomesticViolenceFacade.remove(currentNonFatalDomesticViolence);
             nonFatalInjuriesFacade.remove(auxNonFatalInjuries);
             victimsFacade.remove(auxVictims);
@@ -2135,13 +2166,13 @@ public class VIFMB implements Serializable {
     }
 
     public void determinePosition() {
-        totalRegisters = nonFatalDomesticViolenceFacade.countVIF();
+        totalRegisters = nonFatalDomesticViolenceFacade.countVIF(currentTag);
         if (currentNonFatalInjuriId == -1) {
             currentPosition = "new" + "/" + String.valueOf(totalRegisters);
             currentIdForm = String.valueOf(nonFatalInjuriesFacade.findMax() + 1);
             openDialogDelete = "";//es nuevo no se puede borrar
         } else {
-            int position = nonFatalDomesticViolenceFacade.findPosition(currentNonFatalDomesticViolence.getNonFatalInjuryId());
+            int position = nonFatalDomesticViolenceFacade.findPosition(currentNonFatalDomesticViolence.getNonFatalInjuryId(), currentTag);
             currentIdForm = String.valueOf(currentNonFatalDomesticViolence.getNonFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
@@ -2294,7 +2325,7 @@ public class VIFMB implements Serializable {
     public void changeTag() {//cambia el conjunto de registros
         noSaveAndGoNew();
     }
-    
+
     public void changeStranger() {
         if (loading == false) {
             changeForm();
@@ -2315,7 +2346,7 @@ public class VIFMB implements Serializable {
             currentMunicipalitieDisabled = false;
         }
     }
-    
+
     public void changeUnknownAG() {
         if (loading == false) {
             changeForm();
@@ -2679,6 +2710,11 @@ public class VIFMB implements Serializable {
     public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
+            neighborhoodHomeNameDisabled = true;
+            directionHomeDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
+            currentDirectionHome = "";
         }
         if (currentDepartamentHome != 0) {
             Departaments d = departamentsFacade.findById(currentDepartamentHome);
@@ -2697,11 +2733,7 @@ public class VIFMB implements Serializable {
             municipalities[0] = new SelectItem(0, "");
             currentMunicipalitie = 0;
         }
-        neighborhoodHomeNameDisabled = true;
-        directionHomeDisabled = true;
-        currentNeighborhoodHome = "";
-        currentNeighborhoodHomeCode = "";
-        currentDirectionHome = "";
+
         changeMunicipalitieHome();
     }
 
@@ -4428,7 +4460,7 @@ public class VIFMB implements Serializable {
     public void setCurrentIdForm(String currentIdForm) {
         this.currentIdForm = currentIdForm;
     }
-    
+
     public int getCurrentTag() {
         return currentTag;
     }

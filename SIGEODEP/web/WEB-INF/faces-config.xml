@@ -220,5 +220,30 @@
             <to-view-id>/web/recordSets/recordSetsLCENF.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
+        <navigation-case>
+            <from-outcome>recordSetsVIF</from-outcome>
+            <to-view-id>/web/recordSets/recordSetsVIF.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>recordSetsAccidental</from-outcome>
+            <to-view-id>/web/recordSets/recordSetsAccidental.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>recordSetsHomicide</from-outcome>
+            <to-view-id>/web/recordSets/recordSetsHomicide.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>recordSetsSuicide</from-outcome>
+            <to-view-id>/web/recordSets/recordSetsSuicide.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>recordSetsTransit</from-outcome>
+            <to-view-id>/web/recordSets/recordSetsTransit.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
     </navigation-rule>
 </faces-config>

@@ -135,7 +135,7 @@ public class LcenfMB implements Serializable {
     @EJB
     TagsFacade tagsFacade;
     private SelectItem[] tags;
-    private int currentTag;
+    private int currentTag = 0;
     //--------------------
     @EJB
     ContextsFacade contextsFacade;
@@ -506,9 +506,12 @@ public class LcenfMB implements Serializable {
             }
             tags = new SelectItem[count];
             count = 0;
+            currentTag = 0;
             for (int i = 0; i < tagsList.size(); i++) {
                 if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-032") == 0) {
-                    currentTag = tagsList.get(0).getTagId();
+                    if (currentTag == 0) {
+                        currentTag = tagsList.get(i).getTagId();
+                    }
                     tags[count] = new SelectItem(tagsList.get(i).getTagId(), tagsList.get(i).getTagName());
                     count++;
                 }
@@ -2512,7 +2515,7 @@ public class LcenfMB implements Serializable {
                         nonFatalTransportFacade.create(newNonFatalTransport);
                     }
                     Loads newLoad;
-                    newLoad = new Loads(currentTag, newNonFatalInjuries.getNonFatalInjuryId());//PERSISTO LA CARGA
+                    newLoad = new Loads(currentTag, newNonFatalInjuries.getNonFatalInjuryId());//PERSISTO EL registro en la CARGA
                     loadsFacade.create(newLoad);
 
                     save = true;
@@ -3010,8 +3013,17 @@ public class LcenfMB implements Serializable {
             if (currentNonFatalInjury.getNonFatalTransport() != null) {
                 nonFatalTransportFacade.remove(currentNonFatalInjury.getNonFatalTransport());
             }
+
+            LoadsPK loadsPK = new LoadsPK(currentTag, currentNonFatalInjury.getNonFatalInjuryId());
+            loadsFacade.remove(loadsFacade.find(loadsPK));
+
             nonFatalInjuriesFacade.remove(currentNonFatalInjury);
             victimsFacade.remove(currentNonFatalInjury.getVictimId());
+
+
+
+
+
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
             FacesContext.getCurrentInstance().addMessage(null, msg);
             System.out.println("registro eliminado");
@@ -3399,6 +3411,11 @@ public class LcenfMB implements Serializable {
     public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
+            neighborhoodHomeNameDisabled = true;
+            directionHomeDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
+            currentDirectionHome = "";
         }
         if (currentDepartamentHome != 0) {
             Departaments d = departamentsFacade.findById(currentDepartamentHome);
@@ -3417,11 +3434,7 @@ public class LcenfMB implements Serializable {
             municipalities[0] = new SelectItem(0, "");
             currentMunicipalitie = 0;
         }
-        neighborhoodHomeNameDisabled = true;
-        directionHomeDisabled = true;
-        currentNeighborhoodHome = "";
-        currentNeighborhoodHomeCode = "";
-        currentDirectionHome = "";
+
         changeMunicipalitieHome();
     }
 

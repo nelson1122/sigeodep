@@ -139,7 +139,8 @@ public class SuicideMB implements Serializable {
     //------------------
     @EJB
     FatalInjurySuicideFacade fatalInjurySuicideFacade;
-    //------------------
+    @EJB
+    LoadsFacade loadsFacade;
     @EJB
     VictimsFacade victimsFacade;
     @EJB
@@ -208,9 +209,28 @@ public class SuicideMB implements Serializable {
 
     public SuicideMB() {
     }
+    
+    public void loadValues(List<Tags> tagsList, FatalInjurySuicide currentFatalInjuryS) {
+        LoadsPK loadsPK;
+        for (int i = 0; i < tagsList.size(); i++) {
+            loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentFatalInjuryS.getFatalInjuryId());
+            try {
+                reset();
+                clearForm();
+                currentTag = loadsFacade.find(loadsPK).getTags().getTagId();
+                this.currentFatalInjurySuicide = currentFatalInjuryS;
+                currentFatalInjuriId = currentFatalInjuryS.getFatalInjuryId();
+                determinePosition();
+                loadValues();
+            } catch (Exception e) {
+                reset();
+                noSaveAndGoNew();
+            }
+        }
+    }
 
     public void reset() {
-        loading=true;
+        loading = true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         try {
 
@@ -224,9 +244,12 @@ public class SuicideMB implements Serializable {
             }
             tags = new SelectItem[count];
             count = 0;
+            currentTag = 0;
             for (int i = 0; i < tagsList.size(); i++) {
                 if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-030") == 0) {
-                    currentTag = tagsList.get(0).getTagId();
+                    if (currentTag == 0) {
+                        currentTag = tagsList.get(i).getTagId();
+                    }
                     tags[count] = new SelectItem(tagsList.get(i).getTagId(), tagsList.get(i).getTagName());
                     count++;
                 }
@@ -336,7 +359,7 @@ public class SuicideMB implements Serializable {
             System.out.println("*******************************************ERROR_S1: " + e.toString());
         }
         System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////s");
-        loading=false;
+        loading = false;
     }
 
     public void loadValues() {
@@ -898,6 +921,11 @@ public class SuicideMB implements Serializable {
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjurySuicideFacade.create(newFatalInjurySuicide);
+
+                    Loads newLoad;
+                    newLoad = new Loads(currentTag, newFatalInjurie.getFatalInjuryId());//PERSISTO EL registro en la CARGA
+                    loadsFacade.create(newLoad);
+
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
@@ -1001,13 +1029,13 @@ public class SuicideMB implements Serializable {
     }
 
     public void determinePosition() {
-        totalRegisters = fatalInjurySuicideFacade.count();
+        totalRegisters = fatalInjurySuicideFacade.countSuicide(currentTag);
         if (currentFatalInjuriId == -1) {
             currentPosition = "new" + "/" + String.valueOf(totalRegisters);
             currentIdForm = String.valueOf(fatalInjuriesFacade.findMax() + 1);
             openDialogDelete = "";//es nuevo no se puede borrar
         } else {
-            int position = fatalInjurySuicideFacade.findPosition(currentFatalInjurySuicide.getFatalInjuryId());
+            int position = fatalInjurySuicideFacade.findPosition(currentFatalInjurySuicide.getFatalInjuryId(), currentTag);
             currentIdForm = String.valueOf(currentFatalInjurySuicide.getFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
@@ -1123,7 +1151,7 @@ public class SuicideMB implements Serializable {
             System.out.println("cargando siguiente registro");
             if (currentFatalInjuriId == -1) {//esta en registro nuevo                
             } else {
-                auxFatalInjurySuicide = fatalInjurySuicideFacade.findNext(currentFatalInjuriId);
+                auxFatalInjurySuicide = fatalInjurySuicideFacade.findNext(currentFatalInjuriId, currentTag);
                 if (auxFatalInjurySuicide != null) {
                     clearForm();
                     currentFatalInjurySuicide = auxFatalInjurySuicide;
@@ -1143,7 +1171,7 @@ public class SuicideMB implements Serializable {
             if (currentFatalInjuriId == -1) {//esta en registro nuevo
                 last();
             } else {
-                auxFatalInjurySuicide = fatalInjurySuicideFacade.findPrevious(currentFatalInjuriId);
+                auxFatalInjurySuicide = fatalInjurySuicideFacade.findPrevious(currentFatalInjuriId, currentTag);
                 if (auxFatalInjurySuicide != null) {
                     clearForm();
                     currentFatalInjurySuicide = auxFatalInjurySuicide;
@@ -1160,7 +1188,7 @@ public class SuicideMB implements Serializable {
     public void first() {
         if (save) {
             System.out.println("cargando primer registro");
-            auxFatalInjurySuicide = fatalInjurySuicideFacade.findFirst();
+            auxFatalInjurySuicide = fatalInjurySuicideFacade.findFirst(currentTag);
             if (auxFatalInjurySuicide != null) {
                 clearForm();
                 currentFatalInjurySuicide = auxFatalInjurySuicide;
@@ -1176,7 +1204,7 @@ public class SuicideMB implements Serializable {
     public void last() {
         if (save) {
             System.out.println("cargando ultimo registro");
-            auxFatalInjurySuicide = fatalInjurySuicideFacade.findLast();
+            auxFatalInjurySuicide = fatalInjurySuicideFacade.findLast(currentTag);
             if (auxFatalInjurySuicide != null) {
                 clearForm();
                 currentFatalInjurySuicide = auxFatalInjurySuicide;
@@ -1245,8 +1273,8 @@ public class SuicideMB implements Serializable {
         currentArea = 0;
         currentSuicideMechanismsType = 0;
         //currentMunicipalitie = 1;
-        
-        currentDepartamentHomeDisabled=false;
+
+        currentDepartamentHomeDisabled = false;
         currentDepartamentHome = 52;
         changeDepartamentHome();
         currentMunicipalitie = 1;
@@ -1291,6 +1319,10 @@ public class SuicideMB implements Serializable {
         if (currentFatalInjuriId != -1) {
             FatalInjuries auxFatalInjuries = currentFatalInjurySuicide.getFatalInjuries();
             Victims auxVictims = currentFatalInjurySuicide.getFatalInjuries().getVictimId();
+
+            LoadsPK loadsPK = new LoadsPK(currentTag, currentFatalInjurySuicide.getFatalInjuryId());
+            loadsFacade.remove(loadsFacade.find(loadsPK));
+
             fatalInjurySuicideFacade.remove(currentFatalInjurySuicide);
             fatalInjuriesFacade.remove(auxFatalInjuries);
             victimsFacade.remove(auxVictims);
@@ -1444,11 +1476,10 @@ public class SuicideMB implements Serializable {
     // FUNCIONES CUANDO LISTAS CAMBIAN DE VALOR ----------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    
     public void changeTag() {//cambia el conjunto de registros
         noSaveAndGoNew();
     }
-    
+
     public void changeStranger() {
         if (loading == false) {
             changeForm();
@@ -1801,6 +1832,10 @@ public class SuicideMB implements Serializable {
     public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
+            neighborhoodHomeNameDisabled = true;
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
+            currentDirectionHome = "";
         }
         if (currentDepartamentHome != 0) {
             Departaments d = departamentsFacade.findById(currentDepartamentHome);
@@ -1819,10 +1854,6 @@ public class SuicideMB implements Serializable {
             municipalities[0] = new SelectItem(0, "");
             currentMunicipalitie = 0;
         }
-        neighborhoodHomeNameDisabled = true;
-        currentNeighborhoodHome = "";
-        currentNeighborhoodHomeCode = "";
-        currentDirectionHome = "";
         changeMunicipalitieHome();
     }
 
@@ -2025,7 +2056,9 @@ public class SuicideMB implements Serializable {
                                 if (timeInt > 2400) {
                                     timeStr = "00" + minuteStr;
                                 }
-                                if(timeStr.compareTo("2400")==0)timeStr="0000";
+                                if (timeStr.compareTo("2400") == 0) {
+                                    timeStr = "0000";
+                                }
                                 currentMilitaryHourEvent = timeStr;
                             }
                         } else {//hora AM
@@ -2047,7 +2080,9 @@ public class SuicideMB implements Serializable {
                             if (timeInt > 2400) {
                                 timeStr = "00" + minuteStr;
                             }
-                            if(timeStr.compareTo("2400")==0)timeStr="0000";
+                            if (timeStr.compareTo("2400") == 0) {
+                                timeStr = "0000";
+                            }
                             currentMilitaryHourEvent = timeStr;
                         }
                     } else {
@@ -2830,7 +2865,7 @@ public class SuicideMB implements Serializable {
     public void setCurrentDepartamentHomeDisabled(boolean currentDepartamentHomeDisabled) {
         this.currentDepartamentHomeDisabled = currentDepartamentHomeDisabled;
     }
-    
+
     public int getCurrentTag() {
         return currentTag;
     }

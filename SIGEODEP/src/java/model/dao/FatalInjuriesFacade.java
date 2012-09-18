@@ -4,10 +4,13 @@
  */
 package model.dao;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import model.pojo.FatalInjuries;
+import model.pojo.Loads;
 
 /**
  *
@@ -22,6 +25,7 @@ public class FatalInjuriesFacade extends AbstractFacade<FatalInjuries> {
     protected EntityManager getEntityManager() {
 	return em;
     }
+    
     
     
 

@@ -55,10 +55,9 @@ public class RecordSetsMB implements Serializable {
     @EJB
     FatalInjurySuicideFacade fatalInjurySuicideFacade;
     @EJB
-    FatalInjuryMurderFacade fatalInjuryMurderFacade;    
+    FatalInjuryMurderFacade fatalInjuryMurderFacade;
     @EJB
     VictimsFacade victimsFacade;
-    
     private List<Tags> tagsList;
     private List<Loads> loadsList;
     private Tags currentTag;
@@ -67,12 +66,16 @@ public class RecordSetsMB implements Serializable {
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
     private RecordSetsLcenfMB recordSetsLcenfMB;
+    private RecordSetsAccidentalMB recordSetsAccidentalMB;
+    private RecordSetsHomicideMB recordSetsHomicideMB;
+    private RecordSetsSuicideMB recordSetsSuicideMB;
+    private RecordSetsTransitMB recordSetsTransitMB;
+    private RecordSetsVifMB recordSetsVifMB;
     private String openRecordSets;
-    
     private NonFatalInjuries currentNonFatalInjury;
     private NonFatalDomesticViolence currentNonFatalDomesticViolence;
     private FatalInjuryMurder currentFatalInjuryMurder;
-    private FatalInjurySuicide currentFatalInjurySuicide;    
+    private FatalInjurySuicide currentFatalInjurySuicide;
     private FatalInjuryTraffic currentFatalInjuryTraffic;
     private FatalInjuryAccident currentFatalInjuryAccident;
 
@@ -86,24 +89,24 @@ public class RecordSetsMB implements Serializable {
     public void selectTagClick() {
         if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
-            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
-            recordSetsLcenfMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsLCENF";
+            recordSetsHomicideMB = (RecordSetsHomicideMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsHomicideMB}", RecordSetsHomicideMB.class);
+            recordSetsHomicideMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsHomicide";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
-            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
-            recordSetsLcenfMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsLCENF";
+            recordSetsTransitMB = (RecordSetsTransitMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsTransitMB}", RecordSetsTransitMB.class);
+            recordSetsTransitMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsTransit";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
-            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
-            recordSetsLcenfMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsLCENF";
+            recordSetsSuicideMB = (RecordSetsSuicideMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsSuicideMB}", RecordSetsSuicideMB.class);
+            recordSetsSuicideMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsSuicide";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
-            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
-            recordSetsLcenfMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsLCENF";
+            recordSetsAccidentalMB = (RecordSetsAccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsAccidentalMB}", RecordSetsAccidentalMB.class);
+            recordSetsAccidentalMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsAccidental";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
@@ -111,9 +114,9 @@ public class RecordSetsMB implements Serializable {
             openRecordSets = "recordSetsLCENF";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
-            recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
-            recordSetsLcenfMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsLCENF";
+            recordSetsVifMB = (RecordSetsVifMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsVifMB}", RecordSetsVifMB.class);
+            recordSetsVifMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsVIF";
         } else {
             openRecordSets = null;
             printMessage(FacesMessage.SEVERITY_ERROR, "Nada", "nada");
@@ -160,16 +163,16 @@ public class RecordSetsMB implements Serializable {
     private void removeVIF(Tags currentTagRemove) {
         loadsList = loadsFacade.findByTagId(currentTagRemove.getTagId().toString());
         for (int j = 0; j < loadsList.size(); j++) {
-            currentNonFatalDomesticViolence=nonFatalDomesticViolenceFacade.find(loadsList.get(j).getLoadsPK().getRecordId());
+            currentNonFatalDomesticViolence = nonFatalDomesticViolenceFacade.find(loadsList.get(j).getLoadsPK().getRecordId());
             NonFatalInjuries auxNonFatalInjuries = currentNonFatalDomesticViolence.getNonFatalInjuries();
-            Victims auxVictims = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId();            
+            Victims auxVictims = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId();
             loadsFacade.remove(loadsList.get(j));
             nonFatalDomesticViolenceFacade.remove(currentNonFatalDomesticViolence);
             nonFatalInjuriesFacade.remove(auxNonFatalInjuries);
             victimsFacade.remove(auxVictims);
         }
     }
-    
+
     private void removeMurder(Tags currentTagRemove) {
         loadsList = loadsFacade.findByTagId(currentTagRemove.getTagId().toString());
         for (int j = 0; j < loadsList.size(); j++) {
@@ -185,7 +188,7 @@ public class RecordSetsMB implements Serializable {
 
     private void removeAccident(Tags currentTagRemove) {
         loadsList = loadsFacade.findByTagId(currentTagRemove.getTagId().toString());
-        for (int j = 0; j < loadsList.size(); j++) {            
+        for (int j = 0; j < loadsList.size(); j++) {
             currentFatalInjuryAccident = fatalInjuryAccidentFacade.find(loadsList.get(j).getLoadsPK().getRecordId());
             loadsFacade.remove(loadsList.get(j));
             FatalInjuries auxFatalInjuries = currentFatalInjuryAccident.getFatalInjuries();
@@ -199,7 +202,7 @@ public class RecordSetsMB implements Serializable {
     private void removeSuicide(Tags currentTagRemove) {
         loadsList = loadsFacade.findByTagId(currentTagRemove.getTagId().toString());
         for (int j = 0; j < loadsList.size(); j++) {
-            
+
             currentFatalInjurySuicide = fatalInjurySuicideFacade.find(loadsList.get(j).getLoadsPK().getRecordId());
             FatalInjuries auxFatalInjuries = currentFatalInjurySuicide.getFatalInjuries();
             Victims auxVictims = currentFatalInjurySuicide.getFatalInjuries().getVictimId();

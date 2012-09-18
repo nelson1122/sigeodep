@@ -38,7 +38,7 @@ public class AccidentalMB implements Serializable {
     // DECLARACION DE VARIABLES --------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    
+
     //------------------    
     @EJB
     TagsFacade tagsFacade;
@@ -131,7 +131,8 @@ public class AccidentalMB implements Serializable {
     //------------------
     @EJB
     FatalInjuryAccidentFacade fatalInjuryAccidentFacade;
-    //------------------
+    @EJB
+    LoadsFacade loadsFacade;
     @EJB
     VictimsFacade victimsFacade;
     @EJB
@@ -198,6 +199,25 @@ public class AccidentalMB implements Serializable {
 
     public AccidentalMB() {
     }
+    
+    public void loadValues(List<Tags> tagsList, FatalInjuryAccident currentFatalInjuryA) {
+        LoadsPK loadsPK;
+        for (int i = 0; i < tagsList.size(); i++) {
+            loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentFatalInjuryA.getFatalInjuryId());
+            try {
+                reset();
+                clearForm();
+                currentTag = loadsFacade.find(loadsPK).getTags().getTagId();
+                this.currentFatalInjuryAccident = currentFatalInjuryA;
+                currentFatalInjuriId = currentFatalInjuryA.getFatalInjuryId();
+                determinePosition();
+                loadValues();
+            } catch (Exception e) {
+                reset();
+                noSaveAndGoNew();
+            }
+        }
+    }
 
     @PostConstruct
     public void reset() {
@@ -214,9 +234,12 @@ public class AccidentalMB implements Serializable {
             }
             tags = new SelectItem[count];
             count = 0;
+            currentTag = 0;
             for (int i = 0; i < tagsList.size(); i++) {
                 if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-031") == 0) {
-                    currentTag = tagsList.get(0).getTagId();
+                    if (currentTag == 0) {
+                        currentTag = tagsList.get(i).getTagId();
+                    }
                     tags[count] = new SelectItem(tagsList.get(i).getTagId(), tagsList.get(i).getTagName());
                     count++;
                 }
@@ -866,6 +889,11 @@ public class AccidentalMB implements Serializable {
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryAccidentFacade.create(newFatalInjuryAccident);
+
+                    Loads newLoad;
+                    newLoad = new Loads(currentTag, newFatalInjurie.getFatalInjuryId());//PERSISTO EL registro en la CARGA
+                    loadsFacade.create(newLoad);
+
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
@@ -963,13 +991,13 @@ public class AccidentalMB implements Serializable {
     }
 
     public void determinePosition() {
-        totalRegisters = fatalInjuryAccidentFacade.count();
+        totalRegisters = fatalInjuryAccidentFacade.countAccidental(currentTag);
         if (currentFatalInjuriId == -1) {
             currentPosition = "new" + "/" + String.valueOf(totalRegisters);
             currentIdForm = String.valueOf(fatalInjuriesFacade.findMax() + 1);
             openDialogDelete = "";//es nuevo no se puede borrar
         } else {
-            int position = fatalInjuryAccidentFacade.findPosition(currentFatalInjuryAccident.getFatalInjuryId());
+            int position = fatalInjuryAccidentFacade.findPosition(currentFatalInjuryAccident.getFatalInjuryId(), currentTag);
             currentIdForm = String.valueOf(currentFatalInjuryAccident.getFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
@@ -1085,7 +1113,7 @@ public class AccidentalMB implements Serializable {
             System.out.println("cargando siguiente registro");
             if (currentFatalInjuriId == -1) {//esta en registro nuevo                
             } else {
-                auxFatalInjuryAccident = fatalInjuryAccidentFacade.findNext(currentFatalInjuriId);
+                auxFatalInjuryAccident = fatalInjuryAccidentFacade.findNext(currentFatalInjuriId, currentTag);
                 if (auxFatalInjuryAccident != null) {
                     clearForm();
                     currentFatalInjuryAccident = auxFatalInjuryAccident;
@@ -1105,7 +1133,7 @@ public class AccidentalMB implements Serializable {
             if (currentFatalInjuriId == -1) {//esta en registro nuevo
                 last();
             } else {
-                auxFatalInjuryAccident = fatalInjuryAccidentFacade.findPrevious(currentFatalInjuriId);
+                auxFatalInjuryAccident = fatalInjuryAccidentFacade.findPrevious(currentFatalInjuriId, currentTag);
                 if (auxFatalInjuryAccident != null) {
                     clearForm();
                     currentFatalInjuryAccident = auxFatalInjuryAccident;
@@ -1122,7 +1150,7 @@ public class AccidentalMB implements Serializable {
     public void first() {
         if (save) {
             System.out.println("cargando primer registro");
-            auxFatalInjuryAccident = fatalInjuryAccidentFacade.findFirst();
+            auxFatalInjuryAccident = fatalInjuryAccidentFacade.findFirst(currentTag);
             if (auxFatalInjuryAccident != null) {
                 clearForm();
                 currentFatalInjuryAccident = auxFatalInjuryAccident;
@@ -1138,7 +1166,7 @@ public class AccidentalMB implements Serializable {
     public void last() {
         if (save) {
             System.out.println("cargando ultimo registro");
-            auxFatalInjuryAccident = fatalInjuryAccidentFacade.findLast();
+            auxFatalInjuryAccident = fatalInjuryAccidentFacade.findLast(currentTag);
             if (auxFatalInjuryAccident != null) {
                 clearForm();
                 currentFatalInjuryAccident = auxFatalInjuryAccident;
@@ -1262,6 +1290,10 @@ public class AccidentalMB implements Serializable {
             FatalInjuries auxFatalInjuries = currentFatalInjuryAccident.getFatalInjuries();
             Victims auxVictims = currentFatalInjuryAccident.getFatalInjuries().getVictimId();
             fatalInjuryAccidentFacade.remove(currentFatalInjuryAccident);
+
+            LoadsPK loadsPK = new LoadsPK(currentTag, currentFatalInjuryAccident.getFatalInjuryId());
+            loadsFacade.remove(loadsFacade.find(loadsPK));
+
             fatalInjuriesFacade.remove(auxFatalInjuries);
             victimsFacade.remove(auxVictims);
             System.out.println("registro eliminado");
@@ -1562,6 +1594,8 @@ public class AccidentalMB implements Serializable {
     public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
+            currentNeighborhoodHome = "";
+            currentNeighborhoodHomeCode = "";
         }
         if (currentDepartamentHome != 0) {
             Departaments d = departamentsFacade.findById(currentDepartamentHome);
@@ -1580,9 +1614,8 @@ public class AccidentalMB implements Serializable {
             municipalities[0] = new SelectItem(0, "");
             currentMunicipalitie = 0;
         }
-        neighborhoodHomeNameDisabled = true;
-        currentNeighborhoodHome = "";
-        currentNeighborhoodHomeCode = "";
+        //neighborhoodHomeNameDisabled = true;
+
         changeMunicipalitieHome();
     }
 
@@ -2771,7 +2804,7 @@ public class AccidentalMB implements Serializable {
     public void setCurrentDepartamentHomeDisabled(boolean currentDepartamentHomeDisabled) {
         this.currentDepartamentHomeDisabled = currentDepartamentHomeDisabled;
     }
-    
+
     public int getCurrentTag() {
         return currentTag;
     }

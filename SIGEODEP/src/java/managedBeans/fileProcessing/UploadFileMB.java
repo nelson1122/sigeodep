@@ -22,13 +22,14 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import managedBeans.filters.CopyMB;
 import managedBeans.preload.FormsAndFieldsDataMB;
+import model.dao.FatalInjuriesFacade;
 import model.dao.FormsFacade;
+import model.dao.LoadsFacade;
+import model.dao.NonFatalDomesticViolenceFacade;
+import model.dao.NonFatalInjuriesFacade;
 import model.dao.SourcesFacade;
 import model.dao.TagsFacade;
-import model.pojo.Fields;
-import model.pojo.Forms;
-import model.pojo.Sources;
-import model.pojo.Tags;
+import model.pojo.*;
 import org.primefaces.model.UploadedFile;
 
 /**
@@ -111,6 +112,67 @@ public class UploadFileMB implements Serializable {
         btnLoadFileDisabled = true;
         tagNameDisabled = false;
         btnResetDisabled = true;
+    }
+    @EJB
+    FatalInjuriesFacade fatalInjuriesFacade;
+    @EJB
+    LoadsFacade loadsFacade;
+    @EJB
+    NonFatalInjuriesFacade nonFatalInjuriesFacade;
+    @EJB
+    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
+
+    public void relatedRecordSets() {
+        List<FatalInjuries> fatalInjuriesList=fatalInjuriesFacade.findAll();
+        List<NonFatalDomesticViolence> nonFatalDomesticViolenceList=nonFatalDomesticViolenceFacade.findAll();
+        List<NonFatalInjuries> nonFatalInjuriesList=nonFatalInjuriesFacade.findAll();
+        
+        Loads newLoad;
+        for (int i = 0; i < fatalInjuriesList.size(); i++) {
+            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("10")==0){//homicidio
+              newLoad=new Loads(1,fatalInjuriesList.get(i).getFatalInjuryId());
+              loadsFacade.create(newLoad);
+            }
+            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("11")==0){//muerte transito
+                newLoad=new Loads(2,fatalInjuriesList.get(i).getFatalInjuryId());
+                loadsFacade.create(newLoad);
+            }
+            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("12")==0){//suicidio
+                newLoad=new Loads(3,fatalInjuriesList.get(i).getFatalInjuryId());
+                loadsFacade.create(newLoad);
+            }
+            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("13")==0){//muerte accidental
+                newLoad=new Loads(4,fatalInjuriesList.get(i).getFatalInjuryId());
+                loadsFacade.create(newLoad);
+            }
+        }
+        for (int i = 0; i < nonFatalInjuriesList.size(); i++) {
+            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("50")==0){//violencia interpersonal
+              newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+              loadsFacade.create(newLoad);
+            }
+            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("51")==0){//lesion accidente de transito
+                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+                loadsFacade.create(newLoad);
+            }
+            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("52")==0){//intencional autoinflingida
+                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+                loadsFacade.create(newLoad);
+            }
+            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("53")==0){//volencia intrafamiliar
+                newLoad=new Loads(6,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+                loadsFacade.create(newLoad);
+            }
+            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("54")==0){//no intencional
+                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+                loadsFacade.create(newLoad);
+            }
+            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("55")==0){//violencia intrafamiliar LCENF
+                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+                loadsFacade.create(newLoad);
+            }
+        }
+
     }
 
     public void changeTagName() {
