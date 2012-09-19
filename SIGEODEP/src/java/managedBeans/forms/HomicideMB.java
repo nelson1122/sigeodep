@@ -63,6 +63,7 @@ public class HomicideMB implements Serializable {
     DepartamentsFacade departamentsFacade;
     private Short currentSourceDepartament = 0;
     private SelectItem[] sourceDepartaments;
+    private SelectItem[] homeDepartaments;
     private Short currentDepartamentHome = 52;//nariño    
     private boolean currentDepartamentHomeDisabled = false;
     //--------------------    
@@ -1227,6 +1228,17 @@ public class HomicideMB implements Serializable {
             for (int i = 0; i < countriesList.size(); i++) {
                 sourceCountries[i + 1] = new SelectItem(countriesList.get(i).getIdCountry(), countriesList.get(i).getName());
             }
+            
+            //cargo departamentos residencia
+            List<Departaments> departamentsHomeList = departamentsFacade.findAll();
+            homeDepartaments = new SelectItem[departamentsHomeList.size() + 1];
+            homeDepartaments[0] = new SelectItem(0, "");
+            for (int i = 0; i < departamentsHomeList.size(); i++) {
+                homeDepartaments[i + 1] = new SelectItem(departamentsHomeList.get(i).getDepartamentId(), departamentsHomeList.get(i).getDepartamentName());
+            }
+            
+            
+            
             //cargo municipios de residencia
             findMunicipalities();
             currentSourceCountry = 52;
@@ -2561,6 +2573,16 @@ public class HomicideMB implements Serializable {
         this.sourceDepartaments = sourceDepartaments;
     }
 
+    public SelectItem[] getHomeDepartaments() {
+        return homeDepartaments;
+    }
+
+    public void setHomeDepartaments(SelectItem[] homeDepartaments) {
+        this.homeDepartaments = homeDepartaments;
+    }
+    
+    
+
     public SelectItem[] getSourceMunicipalities() {
         return sourceMunicipalities;
     }
@@ -2784,3 +2806,5 @@ public class HomicideMB implements Serializable {
         this.tags = tags;
     }
 }
+
+
