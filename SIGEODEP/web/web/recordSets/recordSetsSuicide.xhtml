@@ -57,169 +57,57 @@
                                     event="rowSelect"
                                     listener="#{recordSetsSuicideMB.load}"                                    
                                     update=":IdForm1:IdControls :IdForm1:message" />                    
-
-
-                                <p:column headerText="#" width="50">#{rowX.column1}</p:column>
-                                <p:column headerText="TIPO IDENT" width="200">#{rowX.column2}</p:column>
-                                <p:column headerText="NUMERO IDENTI" width="100">#{rowX.column3}</p:column>                
-                                <p:column headerText="NOMBRES" width="400">#{rowX.column4}</p:column>                
-                                <p:column headerText="EXTRANJERO" width="100">#{rowX.column5}</p:column>                
-                                <p:column headerText="TIP EDAD" width="100">#{rowX.column6}</p:column>                
-                                <p:column headerText="EDAD CANT" width="100">#{rowX.column7}</p:column>                
-                                <p:column headerText="GENERO" width="100">#{rowX.column8}</p:column>                
-                                <p:column headerText="OCUPACION" width="100">#{rowX.column9}</p:column>
-                                <p:column headerText="GRUPO ETNICO" width="100">#{rowX.column10}</p:column>
-                                <p:column headerText="TELEFONO" width="100">#{rowX.column11}</p:column>
-                                <!--p:column headerText="victim_date_of_birth" width="100">{rowX.column}</p:column-->
-                                <!--p:column headerText="eps_id" width="100">{rowX.column}</p:column-->
-                                <!--p:column headerText="victim_class" width="100">{rowX.column}</p:column-->
-                                <!--p:column headerText="victim_id" width="100">{rowX.column}</p:column-->
-                                <p:column headerText="residence_municipality" width="100">#{rowX.column12}</p:column>
-                                <p:column headerText="residence_department" width="100">#{rowX.column13}</p:column>
-
-                                <p:column headerText="victim_address" width="400">#{rowX.column14}</p:column>
-                                <p:column headerText="victim_neighborhood_id" width="250">#{rowX.column15}</p:column>
-
-
-                                //informacion de grupos vunerables                                
-                                <p:column headerText="isDisplaced" width="100">#{rowX.column16}</p:column>
-                                <p:column headerText="isHandicapped" width="100">#{rowX.column17}</p:column>
-                                <p:column headerText="insurance_id" width="300">#{rowX.column18}</p:column>
-
-                                <p:column headerText="otro grupo etnico" width="100">#{rowX.column19}</p:column>
-                                <p:column headerText="otro de lugar del hecho" width="100">#{rowX.column20}</p:column>
-                                <p:column headerText="otra actividad" width="100">#{rowX.column21}</p:column>
-                                <p:column headerText="Cual altura" width="100">#{rowX.column22}</p:column>
-                                <p:column headerText="Cual polvora" width="100">#{rowX.column23}</p:column>
-                                <p:column headerText="Cual desastre natural" width="100">#{rowX.column24}</p:column>
-                                <p:column headerText="Cual otro mecanismo de objeto" width="100">#{rowX.column25}</p:column>
-                                <p:column headerText="Cual otro animal" width="100">#{rowX.column26}</p:column>
-                                <p:column headerText="Cual otro factor precipitante(Autoinflingida intencional)" width="100">#{rowX.column27}</p:column>
-                                <p:column headerText="Cual otro tipo de agresor(intrafamiliar)" width="100">#{rowX.column28}</p:column>
-                                <p:column headerText="Cual otro tipo de maltrato(intrafamiliar)" width="100">#{rowX.column29}</p:column>
-                                <p:column headerText="Cual otra relación (violencia interpersonal)" width="100">#{rowX.column30}</p:column>
-                                <p:column headerText="Cual otro tipo de transporte(transporte)" width="100">#{rowX.column31}</p:column>
-                                <p:column headerText="Cual otro tipo de transporte de contraparte(transporte)" width="100">#{rowX.column32}</p:column>
-                                <p:column headerText="Cual otro tipo de transporte de usuario(transporte)" width="100">#{rowX.column33}</p:column>
-                                <p:column headerText="Cual otro sitio anatomico" width="100">#{rowX.column34}</p:column>
-                                <p:column headerText="Cual otra naturaleza de la lesión" width="150">#{rowX.column35}</p:column>
-                                <p:column headerText="Cual otro destino del paciente" width="100">#{rowX.column36}</p:column>
-
+                                ////////////////////////////////////////////////////////////////////////
+                                <p:column headerText="non_fatal_injury_id" width="100">#{rowX.column1}</p:column>
+                                <p:column headerText="type_id" width="200">#{rowX.column2}</p:column>
+                                <p:column headerText="victim_nid" width="100">#{rowX.column3}</p:column>
+                                <p:column headerText="victim_name" width="400">#{rowX.column4}</p:column>
+                                <p:column headerText="stranger" width="100">#{rowX.column5}</p:column>
+                                <p:column headerText="age_type_id" width="100">#{rowX.column6}</p:column>
+                                <p:column headerText="victim_age" width="100">#{rowX.column7}</p:column>
+                                <p:column headerText="gender_id" width="100">#{rowX.column8}</p:column>
+                                <p:column headerText="job_id" width="100">#{rowX.column9}</p:column>
+                                <!--p:column headerText="vulnerable_group_id
+                                <p:column headerText="ethnic_group_id        
+                                <p:column headerText="victim_telephone
+                                <p:column headerText="victim_address-->
+                                <p:column headerText="victim_neighborhood_id" width="250">#{rowX.column10}</p:column>
+                                <!--p:column headerText="victim_date_of_birth
+                                <p:column headerText="eps_id
+                                <p:column headerText="victim_class
+                                <p:column headerText="victim_id       -->
+                                <p:column headerText="residence_municipality" width="100">#{rowX.column11}</p:column>
+                                <p:column headerText="residence_department" width="100">#{rowX.column12}</p:column>
+                                <!--p:column headerText="insurance_id-->
                                 //------------------------------------------------------------
-                                //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
-                                //------------------------------------------------------------        
-                                <p:column headerText="checkup_date" width="100">#{rowX.column37}</p:column>
-                                <p:column headerText="checkup_time" width="100">#{rowX.column38}</p:column>
-                                <p:column headerText="injury_date" width="100">#{rowX.column39}</p:column>
-                                <p:column headerText="injury_time" width="100">#{rowX.column40}</p:column>
-                                <p:column headerText="injury_address" width="400">#{rowX.column41}</p:column>
-                                <p:column headerText="injury_neighborhood_id" width="250">#{rowX.column42}</p:column>
-                                <p:column headerText="injury_place_id" width="200">#{rowX.column43}</p:column>
-                                <p:column headerText="activity_id" width="250">#{rowX.column44}</p:column>
-                                <p:column headerText="intentionality_id" width="250">#{rowX.column45}</p:column>
-                                <p:column headerText="use_alcohol_id" width="150">#{rowX.column46}</p:column>
-                                <p:column headerText="use_drugs_id" width="150">#{rowX.column47}</p:column>
-                                <p:column headerText="burn_injury_degree" width="100">#{rowX.column48}</p:column>
-                                <p:column headerText="burn_injury_percentage" width="100">#{rowX.column49}</p:column>
-                                <p:column headerText="submitted_patient" width="100">#{rowX.column50}</p:column>
-                                <p:column headerText="eps_id" width="250">#{rowX.column51}</p:column>
-                                <p:column headerText="destination_patient_id" width="250">#{rowX.column52}</p:column>
-                                <p:column headerText="input_timestamp" width="150">#{rowX.column53}</p:column>
-                                <p:column headerText="health_professional_id" width="300">#{rowX.column54}</p:column>
-
-                                <!--p:column headerText="non_fatal_data_source_id" width="100">{rowX.column}</p:column-->
-                                <p:column headerText="mechanism_id" width="200">#{rowX.column55}</p:column>
-                                <p:column headerText="user_id" width="100">#{rowX.column56}</p:column>
-                                <p:column headerText="injury_day_of_week" width="100">#{rowX.column57}</p:column>
-                                <p:column headerText="non_fatal_data_source_id" width="250">#{rowX.column58}</p:column>
-                                <p:column headerText="injury_id" width="250">#{rowX.column59}</p:column>
-
-
+                                //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
                                 //------------------------------------------------------------
-                                //SE CARGA VARIABLE PARA VIOLENCIA INTERPERSONAL
-                                //-----------------------------------------------------------
-                                <p:column headerText="previousAntecedent" width="100">#{rowX.column60}</p:column>
-                                <p:column headerText="relationshipVictimId" width="150">#{rowX.column61}</p:column>
-                                <p:column headerText="getContextId" width="100">#{rowX.column62}</p:column>
-                                <p:column headerText="getAggressorGenderId" width="100">#{rowX.column63}</p:column>
-
+                                <!--p:column headerText="injury_id-->
+                                <p:column headerText="injury_date" width="100">#{rowX.column13}</p:column>
+                                <p:column headerText="injury_time" width="100">#{rowX.column14}</p:column>
+                                <p:column headerText="injury_address" width="400">#{rowX.column15}</p:column>
+                                <p:column headerText="injury_neighborhood_id" width="250">#{rowX.column16}</p:column>
+                                <p:column headerText="injury_place_id" width="250">#{rowX.column17}</p:column>
+                                <p:column headerText="victim_number" width="100">#{rowX.column18}</p:column>
+                                <p:column headerText="injury_description" width="700">#{rowX.column19}</p:column>                                <!--p:column headerText="user_id	
+                                <p:column headerText="input_timestamp	-->
+                                <p:column headerText="injury_day_of_week" width="100">#{rowX.column20}</p:column>
+                                <!--p:column headerText="victim_id
+                                <p:column headerText="fatal_injury_id-->
+                                <p:column headerText="alcohol_level_victim" width="100">#{rowX.column21}</p:column>
+                                <p:column headerText="alcohol_level_victimId" width="100">#{rowX.column22}</p:column>
+                                <p:column headerText="code" width="100">#{rowX.column23}</p:column>
+                                <p:column headerText="area_id" width="100">#{rowX.column24}</p:column>
+                                <p:column headerText="country_place_of_origin" width="100">#{rowX.column25}</p:column>
+                                <p:column headerText="department_place_of_origin" width="100">#{rowX.column26}</p:column>
+                                <p:column headerText="municipalitie_place_of_origin" width="100">#{rowX.column27}</p:column>        
                                 //------------------------------------------------------------
-                                //SE CARGA DATOS PARA VIOLENCIA INTRAFAMILIAR
-                                //------------------------------------------------------------        
-                                //tipo de agresor
-                                <p:column headerText="AG1 Padre" width="100">#{rowX.column64}</p:column>
-                                <p:column headerText="AG2 Madre" width="100">#{rowX.column65}</p:column>
-                                <p:column headerText="AG3 Padrastro" width="100">#{rowX.column67}</p:column>
-                                <p:column headerText="AG4 Madastra" width="100">#{rowX.column67}</p:column>
-                                <p:column headerText="AG5 Cónyuge" width="100">#{rowX.column68}</p:column>
-                                <p:column headerText="AG6 Hermano" width="100">#{rowX.column69}</p:column>
-                                <p:column headerText="AG7 Hijo" width="100">#{rowX.column70}</p:column>
-                                <p:column headerText="AG8 Otro" width="100">#{rowX.column71}</p:column>
-                                <p:column headerText="AG Sin Dato" width="100">#{rowX.column72}</p:column>
-                                <p:column headerText="AG9 Novio" width="100">#{rowX.column73}</p:column>
-                                //tipo de maltrato
-                                <p:column headerText="MA1 FISICO" width="100">#{rowX.column74}</p:column>
-                                <p:column headerText="MA2 PSICOLOGICO" width="100">#{rowX.column75}</p:column>
-                                <p:column headerText="MA3 VIOLENCIA SEXUAL" width="100">#{rowX.column76}</p:column>
-                                <p:column headerText="MA4 NEGLIGENCIA" width="100">#{rowX.column77}</p:column>
-                                <p:column headerText="MA5 ABANDONO" width="100">#{rowX.column78}</p:column>
-                                <p:column headerText="MA6 INSTITUCIONAL" width="100">#{rowX.column79}</p:column>
-                                <p:column headerText="MA SIN DATO" width="100">#{rowX.column80}</p:column>
-                                <p:column headerText="MA8 OTRO" width="100">#{rowX.column81}</p:column>
-
-                                //sitios anatomicos
-                                <p:column headerText="SA1 SISTEMICO" width="100">#{rowX.column82}</p:column>
-                                <p:column headerText="SA2 CRANEO" width="100">#{rowX.column83}</p:column>
-                                <p:column headerText="SA3 OJOS" width="100">#{rowX.column84}</p:column>
-                                <p:column headerText="SA4 MAXILOFACIAL / NARIZ / OIDOS" width="100">#{rowX.column85}</p:column>
-                                <p:column headerText="SA5 CUELLO" width="100">#{rowX.column86}</p:column>
-                                <p:column headerText="SA6 TORAX" width="100">#{rowX.column87}</p:column>
-                                <p:column headerText="SA7 ABDOMEN" width="100">#{rowX.column88}</p:column>
-                                <p:column headerText="SA8 COLUMNA" width="100">#{rowX.column89}</p:column>
-                                <p:column headerText="SA9 PELVIS / GENITALES" width="100">#{rowX.column90}</p:column>
-                                <p:column headerText="SA10 MIEMBROS SUPERIORES" width="100">#{rowX.column91}</p:column>
-                                <p:column headerText="SA11 MIEMBROS INFERIORES" width="100">#{rowX.column92}</p:column>
-                                <p:column headerText="SA OTRO" width="100">#{rowX.column93}</p:column>
-
-                                //cargo la naturaleza de la lesion
-                                <p:column headerText="NOF1 LACERACION, ABRASION, LESION SUPERFICIAL" width="100">#{rowX.column94}</p:column>
-                                <p:column headerText="NOF2 CORTADA, MORDIDA, HERIDA ABIERTA" width="100">#{rowX.column95}</p:column>
-                                <p:column headerText="NOF3 LESION PROFUNDA / PENETRANTE" width="100">#{rowX.column96}</p:column>
-                                <p:column headerText="NOF4 ESGUINCE, LUXACION" width="100">#{rowX.column97}</p:column>
-                                <p:column headerText="NOF5 FRACTURA" width="100">#{rowX.column98}</p:column>
-                                <p:column headerText="NOF6 QUEMADURA" width="100">#{rowX.column99}</p:column>
-                                <p:column headerText="NOF7 CONTUSION A ORGANOS INTERNOS" width="100">#{rowX.column100}</p:column>
-                                <p:column headerText="NOF8 LESION ORGANICA SISTEMICA" width="100">#{rowX.column101}</p:column>
-                                <p:column headerText="NOF9 TRAUMA CRANEOENCEFALICO" width="100">#{rowX.column102}</p:column>
-                                <p:column headerText="NOF OTRO" width="100">#{rowX.column103}</p:column>
-                                <p:column headerText="NOF SIN DATO" width="100">#{rowX.column104}</p:column>
-
-                                //cargo los diagnosticos
-                                <p:column headerText="CIE-10 1" width="100">#{rowX.column105}</p:column>
-                                <p:column headerText="CIE-10 2" width="100">#{rowX.column106}</p:column>
-                                <p:column headerText="CIE-10 3" width="100">#{rowX.column107}</p:column>
-                                <p:column headerText="CIE-10 4" width="100">#{rowX.column108}</p:column>
-
+                                //SE CARGA DATOS PARA LA NUEVA LESION FATAL POR SUICIDIO
                                 //------------------------------------------------------------
-                                //AUTOINFLINGIDA INTENCIONAL
-                                //------------------------------------------------------------
-                                <p:column headerText="getPreviousAttempt" width="100">#{rowX.column109}</p:column>
-                                <p:column headerText="getMentalAntecedent" width="100">#{rowX.column110}</p:column>
-                                <p:column headerText="getPrecipitatingFactorId" width="100">#{rowX.column111}</p:column>
-
-                                //------------------------------------------------------------
-                                //SE CARGA DATOS PARA TRANSITO
-                                //------------------------------------------------------------
-                                <p:column headerText="getTransportTypeId" width="100">#{rowX.column112}</p:column>
-                                <p:column headerText="getTransportCounterpartId" width="100">#{rowX.column113}</p:column>
-                                <p:column headerText="getTransportUserId" width="100">#{rowX.column114}</p:column>
-                                <p:column headerText="isBeltUse" width="100">#{rowX.column115}</p:column>
-                                <p:column headerText="isHelmetUse" width="100">#{rowX.column116}</p:column>
-                                <p:column headerText="isBicycleHelmetUse" width="100">#{rowX.column117}</p:column>
-                                <p:column headerText="isVestUse" width="100">#{rowX.column118}</p:column>
-                                <p:column headerText="isOtherElementUse" width="100">#{rowX.column119}</p:column>
-                                <!--p:column headerText="currentSecurityElements  "NO"" width="100">{rowX.column}</p:column-->
-                                <!--p:column headerText="currentSecurityElements = "NO SE SABE"" width="100">{rowX.column}</p:column-->        
+                                <p:column headerText="previous_attempt" width="250">#{rowX.column28}</p:column>        
+                                <p:column headerText="mental_antecedent" width="200">#{rowX.column29}</p:column>        
+                                <p:column headerText="related_event_id" width="200">#{rowX.column30}</p:column>        
+                                <p:column headerText="suicide_death_mechanism_id" width="200">#{rowX.column31}</p:column>        
 
                             </p:dataTable>                            
                             <br/>

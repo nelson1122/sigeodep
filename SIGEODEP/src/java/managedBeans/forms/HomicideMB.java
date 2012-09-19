@@ -246,7 +246,6 @@ public class HomicideMB implements Serializable {
         //******type_id
         try {
             currentIdentificationType = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getTypeId().getTypeId();
-
         } catch (Exception e) {
             currentIdentificationType = 0;
         }
@@ -264,22 +263,11 @@ public class HomicideMB implements Serializable {
             identificationNumberDisabled = true;
             currentIdentificationNumber = "";
         }
-        //******victim_firstname
+        //******victim_name
         currentName = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimName();
         if (currentName == null) {
             currentName = "";
         }
-//        
-//        //******victim_firstname
-//        currentName = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimFirstname();
-//        if (currentName == null) {
-//            currentName = "";
-//        }
-//        //******victim_lastname
-//        currentSurname = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimLastname();
-//        if (currentSurname == null) {
-//            currentSurname = "";
-//        }
         //******age_type_id
         try {
             currentMeasureOfAge = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getAgeTypeId();
@@ -314,6 +302,7 @@ public class HomicideMB implements Serializable {
         //******ethnic_group_id
         //******victim_telephone
         //******victim_address
+        
         //******victim_neighborhood_id
         try {
             if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodId() != null) {

@@ -100,7 +100,7 @@ public class RecordSetsVifMB implements Serializable {
         List<NonFatalDomesticViolence> nonFatalDomesticViolenceList;
         for (int i = 0; i < tagsList.size(); i++) {
             nonFatalDomesticViolenceList = nonFatalDomesticViolenceFacade.findFromTag(tagsList.get(i).getTagId());
-            for (int j = 0; j < nonFatalDomesticViolenceList.size(); j++) {                
+            for (int j = 0; j < nonFatalDomesticViolenceList.size(); j++) {
                 rowDataTableList.add(loadValues(nonFatalDomesticViolenceList.get(j)));
             }
         }
@@ -610,59 +610,41 @@ public class RecordSetsVifMB implements Serializable {
             List<Others> othersList = currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getOthersList();
             for (int i = 0; i < othersList.size(); i++) {
                 switch (othersList.get(i).getOthersPK().getFieldId()) {
-                    case 1://1.	Cual otro grupo etnico
+                    case 1://1.	Otro lugar del hecho
                         newRowDataTable.setColumn19(othersList.get(i).getValueText());
                         break;
-                    case 2://2.	Cual otro de lugar del hecho
+                    case 2://2.	Otra actividad
                         newRowDataTable.setColumn20(othersList.get(i).getValueText());
                         break;
-                    case 3://3.	Cual otra actividad
+                    case 3://3.	Altura
                         newRowDataTable.setColumn21(othersList.get(i).getValueText());
                         break;
-                    case 4://4.	Cual altura
+                    case 4://4.	Cual polvora			
                         newRowDataTable.setColumn22(othersList.get(i).getValueText());
                         break;
-                    case 5://5.	Cual polvora
+                    case 5://5.	Cual desastre natural
                         newRowDataTable.setColumn23(othersList.get(i).getValueText());
                         break;
-                    case 6://6.	Cual desastre natural
+                    case 6://6.	Otro mecanismo objeto
                         newRowDataTable.setColumn24(othersList.get(i).getValueText());
                         break;
-                    case 7://7.	Cual otro mecanismo de objeto
+                    case 7://7.	Animal cual
                         newRowDataTable.setColumn25(othersList.get(i).getValueText());
                         break;
-                    case 8://8.	Cual otro animal
+                    case 8://8.	Otro grupo étnico
                         newRowDataTable.setColumn26(othersList.get(i).getValueText());
                         break;
-                    case 9://9.	Cual otro factor precipitante(Autoinflingida intencional)
+                    case 9://9.	Otro grupo vulnerable
                         newRowDataTable.setColumn27(othersList.get(i).getValueText());
                         break;
-                    case 10://10.	Cual otro tipo de agresor(intrafamiliar)
+                    case 10://10.	Otro tipo de agresor
                         newRowDataTable.setColumn28(othersList.get(i).getValueText());
                         break;
-                    case 11://11.	Cual otro tipo de maltrato(intrafamiliar)
+                    case 11://11.	Otro tipo de maltrato
                         newRowDataTable.setColumn29(othersList.get(i).getValueText());
                         break;
-                    case 12://12.	Cual otra relación (violencia interpersonal)
+                    case 12://12.	Otro tipo de agresion
                         newRowDataTable.setColumn30(othersList.get(i).getValueText());
-                        break;
-                    case 13://13.	Cual otro tipo de transporte(transporte)
-                        newRowDataTable.setColumn31(othersList.get(i).getValueText());
-                        break;
-                    case 14://14.	Cual otro tipo de transporte de contraparte(transporte)
-                        newRowDataTable.setColumn32(othersList.get(i).getValueText());
-                        break;
-                    case 15://15.	Cual otro tipo de transporte de usuario(transporte)
-                        newRowDataTable.setColumn33(othersList.get(i).getValueText());
-                        break;
-                    case 16://16.	Cual otro sitio anatomico
-                        newRowDataTable.setColumn34(othersList.get(i).getValueText());
-                        break;
-                    case 17://17.	Cual otra naturaleza de la lesión
-                        newRowDataTable.setColumn35(othersList.get(i).getValueText());
-                        break;
-                    case 18://18.	Cual otro destino del paciente
-                        newRowDataTable.setColumn36(othersList.get(i).getValueText());
                         break;
                 }
             }
@@ -672,527 +654,292 @@ public class RecordSetsVifMB implements Serializable {
         //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
         //------------------------------------------------------------        
         //******checkup_date
-//        try {
-//            if (currentNonFatalDomesticV.getCheckupDate() != null) {
-//                newRowDataTable.setColumn37(sdf.format(currentNonFatalDomesticV.getCheckupDate()));
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******checkup_time
-//        try {
-//            if (currentNonFatalDomesticV.getCheckupTime() != null) {
-//                hours = String.valueOf(currentNonFatalDomesticV.getCheckupTime().getHours());
-//                minutes = String.valueOf(currentNonFatalDomesticV.getCheckupTime().getMinutes());
-//                if (hours.length() != 2) {
-//                    hours = "0" + hours;
-//                }
-//                if (minutes.length() != 2) {
-//                    minutes = "0" + minutes;
-//                }
-//                newRowDataTable.setColumn38(hours + minutes);
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_date
-//        try {
-//            if (currentNonFatalDomesticV.getInjuryDate() != null) {
-//                newRowDataTable.setColumn39(sdf.format(currentNonFatalDomesticV.getInjuryDate()));
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_time
-//        try {
-//            if (currentNonFatalDomesticV.getInjuryTime() != null) {
-//                hours = String.valueOf(currentNonFatalDomesticV.getInjuryTime().getHours());
-//                minutes = String.valueOf(currentNonFatalDomesticV.getInjuryTime().getMinutes());
-//                if (hours.length() != 2) {
-//                    hours = "0" + hours;
-//                }
-//                if (minutes.length() != 2) {
-//                    minutes = "0" + minutes;
-//                }
-//                newRowDataTable.setColumn40(hours + minutes);
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_address
-//        if (currentNonFatalDomesticV.getInjuryAddress() != null) {
-//            newRowDataTable.setColumn41(currentNonFatalDomesticV.getInjuryAddress());
-//        }
-//        //******injury_neighborhood_id
-//        try {
-//            if (currentNonFatalDomesticV.getInjuryNeighborhoodId() != null) {
-//                newRowDataTable.setColumn42(currentNonFatalDomesticV.getInjuryNeighborhoodId().getNeighborhoodName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_place_id
-//        try {
-//            if (currentNonFatalDomesticV.getInjuryPlaceId() != null) {
-//                newRowDataTable.setColumn43(currentNonFatalDomesticV.getInjuryPlaceId().getNonFatalPlaceName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******activity_id
-//        try {
-//            if (currentNonFatalDomesticV.getActivityId() != null) {
-//                newRowDataTable.setColumn44(currentNonFatalDomesticV.getActivityId().getActivityName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******intentionality_id
-//        try {
-//            if (currentNonFatalDomesticV.getIntentionalityId() != null) {
-//                newRowDataTable.setColumn45(currentNonFatalDomesticV.getIntentionalityId().getIntentionalityName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******use_alcohol_id
-//        try {
-//            if (currentNonFatalDomesticV.getUseAlcoholId() != null) {
-//                newRowDataTable.setColumn46(currentNonFatalDomesticV.getUseAlcoholId().getUseAlcoholDrugsName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******use_drugs_id
-//        try {
-//            if (currentNonFatalDomesticV.getUseDrugsId() != null) {
-//                newRowDataTable.setColumn47(currentNonFatalDomesticV.getUseDrugsId().getUseAlcoholDrugsName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******burn_injury_degree
-//        try {
-//            if (currentNonFatalDomesticV.getBurnInjuryDegree() != null) {
-//                newRowDataTable.setColumn48(currentNonFatalDomesticV.getBurnInjuryDegree().toString());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******burn_injury_percentage
-//        try {
-//            if (currentNonFatalDomesticV.getBurnInjuryPercentage() != null) {
-//                newRowDataTable.setColumn49(currentNonFatalDomesticV.getBurnInjuryPercentage().toString());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******submitted_patient
-//
-//        try {
-//            if (currentNonFatalDomesticV.getSubmittedPatient() != null) {
-//                newRowDataTable.setColumn50(currentNonFatalDomesticV.getSubmittedPatient().toString());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******eps_id
-//        try {
-//            if (currentNonFatalDomesticV.getSubmittedDataSourceId() != null) {
-//                newRowDataTable.setColumn51(currentNonFatalDomesticV.getSubmittedDataSourceId().getNonFatalDataSourceName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******destination_patient_id
-//        try {
-//            if (currentNonFatalDomesticV.getDestinationPatientId() != null) {
-//                newRowDataTable.setColumn52(currentNonFatalDomesticV.getDestinationPatientId().getDestinationPatientName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******input_timestamp
-//        try {
-//            if (currentNonFatalDomesticV.getInputTimestamp() != null) {
-//                newRowDataTable.setColumn53(sdf2.format(currentNonFatalDomesticV.getInputTimestamp()));
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******health_professional_id
-//        try {
-//            if (currentNonFatalDomesticV.getHealthProfessionalId() != null) {
-//                newRowDataTable.setColumn54(currentNonFatalDomesticV.getHealthProfessionalId().getHealthProfessionalName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******non_fatal_data_source_id
-//        //******mechanism_id
-//        try {
-//            if (currentNonFatalDomesticV.getMechanismId() != null) {
-//                newRowDataTable.setColumn55(currentNonFatalDomesticV.getMechanismId().getMechanismName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******user_id
-//        try {
-//            if (currentNonFatalDomesticV.getUserId() != null) {
-//                newRowDataTable.setColumn56(currentNonFatalDomesticV.getUserId().getUserFirstname() + "" + currentNonFatalDomesticV.getUserId().getUserLastname());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_day_of_week
-//        try {
-//            if (currentNonFatalDomesticV.getInjuryDayOfWeek() != null) {
-//                newRowDataTable.setColumn57(currentNonFatalDomesticV.getInjuryDayOfWeek());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******non_fatal_data_source_id
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalDataSourceId() != null) {
-//                newRowDataTable.setColumn58(currentNonFatalDomesticV.getNonFatalDataSourceId().getNonFatalDataSourceName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_id
-//        try {
-//            if (currentNonFatalDomesticV.getInjuryId() != null) {
-//                //if (injuriesFacade.find(currentNonFatalI.getInjuryId().getInjuryId()) != null) {
-//                newRowDataTable.setColumn59(injuriesFacade.find(currentNonFatalDomesticV.getInjuryId().getInjuryId()).getInjuryName());
-//                //}
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Error por" + e.toString());
-//        }
-//        //------------------------------------------------------------
-//        //SE CARGA VARIABLE PARA VIOLENCIA INTERPERSONAL
-//        //-----------------------------------------------------------
-//
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalInterpersonal() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalInterpersonal().getPreviousAntecedent() != null) {
-//                    newRowDataTable.setColumn60(currentNonFatalDomesticV.getNonFatalInterpersonal().getPreviousAntecedent().getBooleanName());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalInterpersonal() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalInterpersonal().getRelationshipVictimId() != null) {
-//                    newRowDataTable.setColumn61(currentNonFatalDomesticV.getNonFatalInterpersonal().getRelationshipVictimId().getRelationshipVictimName());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalInterpersonal() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalInterpersonal().getContextId() != null) {
-//                    newRowDataTable.setColumn62(currentNonFatalDomesticV.getNonFatalInterpersonal().getContextId().getContextName());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalInterpersonal() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalInterpersonal().getRelationshipVictimId() != null) {
-//                    newRowDataTable.setColumn63(currentNonFatalDomesticV.getNonFatalInterpersonal().getAggressorGenderId().getGenderName());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//        //------------------------------------------------------------
-//        //SE CARGA DATOS PARA VIOLENCIA INTRAFAMILIAR
-//        //------------------------------------------------------------
-//        //cargo la lista de agresores-----------------------------------
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalDomesticViolence() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalDomesticViolence().getAggressorTypesList() != null) {
-//                    List<AggressorTypes> aggressorTypesList = currentNonFatalDomesticV.getNonFatalDomesticViolence().getAggressorTypesList();
-//                    for (int i = 0; i < aggressorTypesList.size(); i++) {
-//                        int caso = (int) aggressorTypesList.get(i).getAggressorTypeId();
-//                        switch (caso) {
-//                            case 1://isAG1
-//                                newRowDataTable.setColumn64("SI");
-//                                break;
-//                            case 2://isAG2
-//                                newRowDataTable.setColumn65("SI");
-//                                break;
-//                            case 3://isAG3
-//                                newRowDataTable.setColumn66("SI");
-//                                break;
-//                            case 4://isAG4
-//                                newRowDataTable.setColumn67("SI");
-//                                break;
-//                            case 5://isAG5
-//                                newRowDataTable.setColumn68("SI");
-//                                break;
-//                            case 6://isAG6
-//                                newRowDataTable.setColumn69("SI");
-//                                break;
-//                            case 7://isAG7
-//                                newRowDataTable.setColumn70("SI");
-//                                break;
-//                            case 8://isAG8
-//                                newRowDataTable.setColumn71("SI");
-//                                break;
-//                            case 9://isUnknownAG
-//                                newRowDataTable.setColumn72("SI");
-//                                break;
-//                            case 10://isAG10
-//                                newRowDataTable.setColumn73("SI");
-//                                break;
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo violencia intrafamiliar"+e.toString());
-//        }
-//        //cargo la lista de abusos(tipos de maltrato)-----------------------------------
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalDomesticViolence() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalDomesticViolence().getAbuseTypesList() != null) {
-//                    List<AbuseTypes> abuseTypesList = currentNonFatalDomesticV.getNonFatalDomesticViolence().getAbuseTypesList();
-//                    for (int i = 0; i < abuseTypesList.size(); i++) {
-//                        int caso = (int) abuseTypesList.get(i).getAbuseTypeId();
-//                        switch (caso) {
-//                            case 1://isMA1
-//                                newRowDataTable.setColumn74("SI");
-//                                break;
-//                            case 2://isMA2
-//                                newRowDataTable.setColumn75("SI");
-//                                break;
-//                            case 3://isMA3
-//                                newRowDataTable.setColumn76("SI");
-//                                break;
-//                            case 4://isMA4
-//                                newRowDataTable.setColumn77("SI");
-//                                break;
-//                            case 5://isMA5
-//                                newRowDataTable.setColumn78("SI");
-//                                break;
-//                            case 6://isMA6
-//                                newRowDataTable.setColumn79("SI");
-//                                break;
-//                            case 7://isUnknowMA
-//                                newRowDataTable.setColumn80("SI");
-//                                break;
-//                            case 8://isMA8
-//                                newRowDataTable.setColumn81("SI");
-//                                break;
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo tipos de maltrato"+e.toString());
-//        }
-//
-//        //cargo la lista de abusos(tipos de maltrato)-----------------------------------
-//        try {
-//
-//            if (currentNonFatalDomesticV.getAnatomicalLocationsList() != null) {
-//                List<AnatomicalLocations> anatomicalLocationsList = currentNonFatalDomesticV.getAnatomicalLocationsList();
-//                for (int i = 0; i < anatomicalLocationsList.size(); i++) {
-//                    int caso = (int) anatomicalLocationsList.get(i).getAnatomicalLocationId();
-//                    switch (caso) {
-//                        case 1://isAnatomicalSite1
-//                            newRowDataTable.setColumn82("SI");
-//                            break;
-//                        case 2://isAnatomicalSite1
-//                            newRowDataTable.setColumn83("SI");
-//                            break;
-//                        case 3://isAnatomicalSite1
-//                            newRowDataTable.setColumn84("SI");
-//                            break;
-//                        case 4://isAnatomicalSite1
-//                            newRowDataTable.setColumn85("SI");
-//                            break;
-//                        case 5://isAnatomicalSite1
-//                            newRowDataTable.setColumn86("SI");
-//                            break;
-//                        case 6://isAnatomicalSite1
-//                            newRowDataTable.setColumn87("SI");
-//                            break;
-//                        case 7://isAnatomicalSite1
-//                            newRowDataTable.setColumn88("SI");
-//                            break;
-//                        case 8://isAnatomicalSite1
-//                            newRowDataTable.setColumn89("SI");
-//                            break;
-//                        case 9://isAnatomicalSite1
-//                            newRowDataTable.setColumn90("SI");
-//                            break;
-//                        case 10://isAnatomicalSite1
-//                            newRowDataTable.setColumn91("SI");
-//                            break;
-//                        case 11://isAnatomicalSite1    
-//                            newRowDataTable.setColumn92("SI");
-//                            break;
-//                        case 98://checkOtherPlace  otherAnatomicalPlaceDisabled 
-//                            newRowDataTable.setColumn93("SI");
-//                            break;
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo sitios anatomicos"+e.toString());
-//        }
-//        //cargo la naturaleza de la lesion
-//        try {
-//
-//            if (currentNonFatalDomesticV.getKindsOfInjuryList() != null) {
-//                List<KindsOfInjury> kindsOfInjuryList = currentNonFatalDomesticV.getKindsOfInjuryList();
-//                for (int i = 0; i < kindsOfInjuryList.size(); i++) {
-//                    int caso = (int) kindsOfInjuryList.get(i).getKindInjuryId();
-//                    switch (caso) {
-//                        case 1://isNatureOfInjurye1
-//                            newRowDataTable.setColumn94("SI");
-//                            break;
-//                        case 2://isNatureOfInjurye1
-//                            newRowDataTable.setColumn95("SI");
-//                            break;
-//                        case 3://isNatureOfInjurye1
-//                            newRowDataTable.setColumn96("SI");
-//                            break;
-//                        case 4://isNatureOfInjurye1
-//                            newRowDataTable.setColumn97("SI");
-//                            break;
-//                        case 5://isNatureOfInjurye1
-//                            newRowDataTable.setColumn98("SI");
-//                            break;
-//                        case 6://isNatureOfInjurye1
-//                            newRowDataTable.setColumn99("SI");
-//                            break;
-//                        case 7://isNatureOfInjurye1
-//                            newRowDataTable.setColumn100("SI");
-//                            break;
-//                        case 8://isNatureOfInjurye1
-//                            newRowDataTable.setColumn101("SI");
-//                            break;
-//                        case 9://isNatureOfInjurye1
-//                            newRowDataTable.setColumn102("SI");
-//                            break;
-//                        case 98://checkOtherInjury
-//                            newRowDataTable.setColumn103("SI");
-//                            break;
-//                        case 99:// isUnknownNatureOfInjurye
-//                            newRowDataTable.setColumn104("SI");
-//                            break;
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo naturaleza de la lesion"+e.toString());
-//        }
-//        //cargo los diagnosticos
-//        try {
-//
-//            if (currentNonFatalDomesticV.getDiagnosesList() != null) {
-//                List<Diagnoses> diagnosesList = currentNonFatalDomesticV.getDiagnosesList();
-//                for (int i = 0; i < diagnosesList.size(); i++) {
-//                    switch (i) {
-//                        case 0:
-//                            newRowDataTable.setColumn105(diagnosesList.get(i).getDiagnosisId());
-//                            break;
-//                        case 1:
-//                            newRowDataTable.setColumn106(diagnosesList.get(i).getDiagnosisId());
-//                            break;
-//                        case 2:
-//                            newRowDataTable.setColumn107(diagnosesList.get(i).getDiagnosisId());
-//                            break;
-//                        case 3:
-//                            newRowDataTable.setColumn108(diagnosesList.get(i).getDiagnosisId());
-//                            break;
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo codigo CIE"+e.toString());
-//        }
-//
-//        //------------------------------------------------------------
-//        //AUTOINFLINGIDA INTENCIONAL
-//        //------------------------------------------------------------
-//
-//        try {
-//
-//            if (currentNonFatalDomesticV.getNonFatalSelfInflicted() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalSelfInflicted().getPreviousAttempt() != null) {
-//                    newRowDataTable.setColumn109(currentNonFatalDomesticV.getNonFatalSelfInflicted().getPreviousAttempt().getBooleanId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalSelfInflicted() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalSelfInflicted().getMentalAntecedent() != null) {
-//                    newRowDataTable.setColumn110(currentNonFatalDomesticV.getNonFatalSelfInflicted().getMentalAntecedent().getBooleanId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalSelfInflicted() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalSelfInflicted().getPrecipitatingFactorId() != null) {
-//                    newRowDataTable.setColumn111(currentNonFatalDomesticV.getNonFatalSelfInflicted().getPrecipitatingFactorId().getPrecipitatingFactorId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        //------------------------------------------------------------
-//        //SE CARGA DATOS PARA TRANSITO
-//        //------------------------------------------------------------
-//
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalTransport() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalTransport().getTransportTypeId() != null) {
-//                    newRowDataTable.setColumn112(currentNonFatalDomesticV.getNonFatalTransport().getTransportTypeId().getTransportTypeId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalTransport() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalTransport().getTransportCounterpartId() != null) {
-//                    newRowDataTable.setColumn113(currentNonFatalDomesticV.getNonFatalTransport().getTransportCounterpartId().getTransportCounterpartId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalTransport() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalTransport().getTransportUserId() != null) {
-//                    newRowDataTable.setColumn114(currentNonFatalDomesticV.getNonFatalTransport().getTransportUserId().getTransportUserId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//
-//        try {
-//            if (currentNonFatalDomesticV.getNonFatalTransport() != null) {
-//                if (currentNonFatalDomesticV.getNonFatalTransport().getSecurityElementsList() != null) {
-//                    List<SecurityElements> securityElementsList = currentNonFatalDomesticV.getNonFatalTransport().getSecurityElementsList();
-//                    for (int i = 0; i < securityElementsList.size(); i++) {
-//                        switch (securityElementsList.get(i).getSecurityElementId()) {
-//                            case 1://isBeltUse
-//                                newRowDataTable.setColumn115("SI");
-//                                break;
-//                            case 2://isHelmetUse
-//                                newRowDataTable.setColumn116("SI");
-//                                break;
-//                            case 3://isBicycleHelmetUse
-//                                newRowDataTable.setColumn117("SI");
-//                                break;
-//                            case 4://isVestUse
-//                                newRowDataTable.setColumn118("SI");
-//                                break;
-//                            case 5://isOtherElementUse                        
-//                                break;
-//                            case 6://currentSecurityElements  "NO";
-//                                break;
-//                            case 7://currentSecurityElements = "NO SE SABE";
-//                                break;
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo elementos de seguridad"+e.toString());
-//        }
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getCheckupDate() != null) {
+                newRowDataTable.setColumn31(sdf.format(currentNonFatalDomesticV.getNonFatalInjuries().getCheckupDate()));
+            }
+        } catch (Exception e) {
+        }
+        //******checkup_time
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getCheckupTime() != null) {
+                hours = String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getCheckupTime().getHours());
+                minutes = String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getCheckupTime().getMinutes());
+                if (hours.length() != 2) {
+                    hours = "0" + hours;
+                }
+                if (minutes.length() != 2) {
+                    minutes = "0" + minutes;
+                }
+                newRowDataTable.setColumn32(hours + minutes);
+            }
+        } catch (Exception e) {
+        }
+        //******injury_date
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryDate() != null) {
+                newRowDataTable.setColumn33(sdf.format(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryDate()));
+            }
+        } catch (Exception e) {
+        }
+        //******injury_time
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryTime() != null) {
+                hours = String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryTime().getHours());
+                minutes = String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryTime().getMinutes());
+                if (hours.length() != 2) {
+                    hours = "0" + hours;
+                }
+                if (minutes.length() != 2) {
+                    minutes = "0" + minutes;
+                }
+                newRowDataTable.setColumn34(hours + minutes);
+            }
+        } catch (Exception e) {
+        }
+        //******injury_address
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryAddress() != null) {
+            newRowDataTable.setColumn35(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryAddress());
+        }
+        //******injury_neighborhood_id
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId() != null) {
+                newRowDataTable.setColumn36(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId().getNeighborhoodName());
+            }
+        } catch (Exception e) {
+        }
+        //******injury_place_id
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryPlaceId() != null) {
+                newRowDataTable.setColumn37(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryPlaceId().getNonFatalPlaceName());
+            }
+        } catch (Exception e) {
+        }
+        //******activity_id
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getActivityId() != null) {
+                newRowDataTable.setColumn38(currentNonFatalDomesticV.getNonFatalInjuries().getActivityId().getActivityName());
+            }
+        } catch (Exception e) {
+        }
+        //******intentionality_id        
+        //******use_alcohol_id
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getUseAlcoholId() != null) {
+                newRowDataTable.setColumn39(currentNonFatalDomesticV.getNonFatalInjuries().getUseAlcoholId().getUseAlcoholDrugsName());
+            }
+        } catch (Exception e) {
+        }
+        //******use_drugs_id
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getUseDrugsId() != null) {
+                newRowDataTable.setColumn40(currentNonFatalDomesticV.getNonFatalInjuries().getUseDrugsId().getUseAlcoholDrugsName());
+            }
+        } catch (Exception e) {
+        }
+        //******burn_injury_degree
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getBurnInjuryDegree() != null) {
+                newRowDataTable.setColumn41(currentNonFatalDomesticV.getNonFatalInjuries().getBurnInjuryDegree().toString());
+            }
+        } catch (Exception e) {
+        }
+        //******burn_injury_percentage
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getBurnInjuryPercentage() != null) {
+                newRowDataTable.setColumn42(currentNonFatalDomesticV.getNonFatalInjuries().getBurnInjuryPercentage().toString());
+            }
+        } catch (Exception e) {
+        }
+        //******submitted_patient
+
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getSubmittedPatient() != null) {
+                newRowDataTable.setColumn43(currentNonFatalDomesticV.getNonFatalInjuries().getSubmittedPatient().toString());
+            }
+        } catch (Exception e) {
+        }
+        //******eps_id
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getSubmittedDataSourceId() != null) {
+                newRowDataTable.setColumn44(currentNonFatalDomesticV.getNonFatalInjuries().getSubmittedDataSourceId().getNonFatalDataSourceName());
+            }
+        } catch (Exception e) {
+        }
+        //******destination_patient_id        
+        //******input_timestamp
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getInputTimestamp() != null) {
+                newRowDataTable.setColumn45(sdf2.format(currentNonFatalDomesticV.getNonFatalInjuries().getInputTimestamp()));
+            }
+        } catch (Exception e) {
+        }
+        //******health_professional_id        
+        //******non_fatal_data_source_id
+        //******mechanism_id
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getMechanismId() != null) {
+                newRowDataTable.setColumn46(currentNonFatalDomesticV.getNonFatalInjuries().getMechanismId().getMechanismName());
+            }
+        } catch (Exception e) {
+        }
+        //******user_id
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getUserId() != null) {
+                newRowDataTable.setColumn47(currentNonFatalDomesticV.getNonFatalInjuries().getUserId().getUserFirstname() + "" + currentNonFatalDomesticV.getNonFatalInjuries().getUserId().getUserLastname());
+            }
+        } catch (Exception e) {
+        }
+        //******injury_day_of_week
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryDayOfWeek() != null) {
+                newRowDataTable.setColumn48(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryDayOfWeek());
+            }
+        } catch (Exception e) {
+        }
+        //******non_fatal_data_source_id        
+        //******injury_id        
+
+        //------------------------------------------------------------
+        //SE CARGA DATOS PARA VIOLENCIA INTRAFAMILIAR
+        //------------------------------------------------------------
+        //cargo la lista de agresores-----------------------------------
+        try {
+            if (currentNonFatalDomesticV.getAggressorTypesList() != null) {
+                if (currentNonFatalDomesticV.getAggressorTypesList() != null) {
+                    List<AggressorTypes> aggressorTypesList = currentNonFatalDomesticV.getAggressorTypesList();
+                    for (int i = 0; i < aggressorTypesList.size(); i++) {
+                        int caso = (int) aggressorTypesList.get(i).getAggressorTypeId();
+                        switch (caso) {
+                            case 1://isAG1
+                                newRowDataTable.setColumn49("SI");
+                                break;
+                            case 2://isAG2
+                                newRowDataTable.setColumn50("SI");
+                                break;
+                            case 3://isAG3
+                                newRowDataTable.setColumn51("SI");
+                                break;
+                            case 4://isAG4
+                                newRowDataTable.setColumn52("SI");
+                                break;
+                            case 5://isAG5
+                                newRowDataTable.setColumn53("SI");
+                                break;
+                            case 6://isAG6
+                                newRowDataTable.setColumn54("SI");
+                                break;
+                            case 7://isAG7
+                                newRowDataTable.setColumn55("SI");
+                                break;
+                            case 8://isAG8
+                                newRowDataTable.setColumn56("SI");
+                                break;
+                            case 9://isUnknownAG
+                                newRowDataTable.setColumn57("SI");
+                                break;
+                            case 10://isAG10
+                                newRowDataTable.setColumn58("SI");
+                                break;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            //System.out.println("no se cargo violencia intrafamiliar"+e.toString());
+        }
+        //cargo la lista de abusos(tipos de maltrato)-----------------------------------
+        try {
+            if (currentNonFatalDomesticV.getAbuseTypesList() != null) {
+                if (currentNonFatalDomesticV.getAbuseTypesList() != null) {
+                    List<AbuseTypes> abuseTypesList = currentNonFatalDomesticV.getAbuseTypesList();
+                    for (int i = 0; i < abuseTypesList.size(); i++) {
+                        int caso = (int) abuseTypesList.get(i).getAbuseTypeId();
+                        switch (caso) {
+                            case 1://isMA1
+                                newRowDataTable.setColumn59("SI");
+                                break;
+                            case 2://isMA2
+                                newRowDataTable.setColumn60("SI");
+                                break;
+                            case 3://isMA3
+                                newRowDataTable.setColumn61("SI");
+                                break;
+                            case 4://isMA4
+                                newRowDataTable.setColumn62("SI");
+                                break;
+                            case 5://isMA5
+                                newRowDataTable.setColumn63("SI");
+                                break;
+                            case 6://isMA6
+                                newRowDataTable.setColumn64("SI");
+                                break;
+                            case 7://isUnknowMA
+                                newRowDataTable.setColumn65("SI");
+                                break;
+                            case 8://isMA8
+                                newRowDataTable.setColumn66("SI");
+                                break;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            //System.out.println("no se cargo tipos de maltrato"+e.toString());
+        }
+        
+        //cargo la lista de acciones a realizar
+        try {
+            if (currentNonFatalDomesticV.getActionsToTakeList() != null) {
+                List<ActionsToTake> actionsToTakesList = currentNonFatalDomesticV.getActionsToTakeList();
+                for (int i = 0; i < actionsToTakesList.size(); i++) {
+                    int caso = (int) actionsToTakesList.get(i).getActionId();
+                    switch (caso) {
+                        case 1://AR1 Conciliación
+                            newRowDataTable.setColumn67("SI");
+                            break;
+                        case 2://AR2 Caución
+                            newRowDataTable.setColumn68("SI");
+                            break;
+                        case 3://AR3 Dictamén Medicina Legal
+                            newRowDataTable.setColumn69("SI");
+                            break;
+                        case 4://AR4 Remisión a Fiscalía
+                            newRowDataTable.setColumn70("SI");
+                            break;
+                        case 5://AR5 Remisión a Medicina Legal
+                            newRowDataTable.setColumn71("SI");
+                            break;
+                        case 6://AR6 Remisión a Comisaría de Familia
+                            newRowDataTable.setColumn72("SI");
+                            break;
+                        case 7://AR7 Remisión a ICBF
+                            newRowDataTable.setColumn73("SI");
+                            break;
+                        case 8://AR8 Medidas de protección
+                            newRowDataTable.setColumn74("SI");
+                            break;
+                        case 9://AR9 Remisión a salud
+                            newRowDataTable.setColumn75("SI");
+                            break;
+                        case 10://AR10 Atención psicosocial
+                            newRowDataTable.setColumn76("SI");
+                            break;
+                        case 11://AR11 Restablecimiento de derechos
+                            newRowDataTable.setColumn77("SI");
+                            break;
+                        case 12://AR12 Otro, cual?
+                            newRowDataTable.setColumn78("SI");
+                            break;
+                        case 13://AR13 Sin dato
+                            newRowDataTable.setColumn79("SI");
+                            break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            //System.out.println("no se cargo naturaleza de la lesion"+e.toString());
+        }        
 
         return newRowDataTable;
     }

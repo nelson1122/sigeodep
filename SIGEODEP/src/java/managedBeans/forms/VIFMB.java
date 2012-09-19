@@ -540,24 +540,6 @@ public class VIFMB implements Serializable {
         } catch (Exception e) {
             currentName = "";
         }
-//        //******victim_firstname
-//        try {
-//            currentName = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getVictimFirstname();
-//            if (currentName == null) {
-//                currentName = "";
-//            }
-//        } catch (Exception e) {
-//            currentName = "";
-//        }
-//        //******victim_lastname
-//        try {
-//            currentSurname = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getVictimLastname();
-//            if (currentSurname == null) {
-//                currentSurname = "";
-//            }
-//        } catch (Exception e) {
-//            currentSurname = "";
-//        }
         //******age_type_id
         try {
             currentMeasureOfAge = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getAgeTypeId();
@@ -774,26 +756,6 @@ public class VIFMB implements Serializable {
             currentDateConsult = "";
         }
         //******checkup_time
-//        try {            
-//            if (currentNonFatalDomesticViolence.getNonFatalInjuries().getCheckupTime().getHours() == 0) {
-//                currentHourConsult = "24";
-//            } else {
-//                currentHourConsult = String.valueOf(currentNonFatalDomesticViolence.getNonFatalInjuries().getCheckupTime().getHours());
-//            }
-//            currentMinuteConsult = String.valueOf(currentNonFatalDomesticViolence.getNonFatalInjuries().getCheckupTime().getMinutes());
-//            if (Integer.parseInt(currentHourConsult) > 12) {
-//                currentHourConsult = String.valueOf(Integer.parseInt(currentHourConsult) - 12);
-//                currentAmPmConsult = "PM";
-//            } else {
-//                currentAmPmConsult = "AM";
-//            }
-//            calculateTime2();
-//        } catch (Exception e) {
-//            currentHourConsult = "";
-//            currentMinuteConsult = "";
-//            currentAmPmConsult = "SIN DATO";
-//            changeAmPmConsult();
-//        }
         try {
             if (currentNonFatalDomesticViolence.getNonFatalInjuries().getCheckupTime().getHours() == 0) {
                 currentHourConsult = "12";
@@ -835,26 +797,6 @@ public class VIFMB implements Serializable {
             currentDateEvent = "";
         }
         //******injury_time
-//        try {            
-//            if (currentNonFatalDomesticViolence.getNonFatalInjuries().getInjuryTime().getHours() == 0) {
-//                currentHourEvent = "24";
-//            } else {
-//                currentHourEvent = String.valueOf(currentNonFatalDomesticViolence.getNonFatalInjuries().getInjuryTime().getHours());
-//            }            
-//            currentMinuteEvent = String.valueOf(currentNonFatalDomesticViolence.getNonFatalInjuries().getInjuryTime().getMinutes());
-//            if (Integer.parseInt(currentHourEvent) > 12) {
-//                currentHourEvent = String.valueOf(Integer.parseInt(currentHourEvent) - 12);
-//                currentAmPmEvent = "PM";
-//            } else {
-//                currentAmPmEvent = "AM";
-//            }
-//            calculateTime1();
-//        } catch (Exception e) {
-//            currentHourEvent = "";
-//            currentMinuteEvent = "";
-//            currentAmPmEvent = "SIN DATO";
-//            changeAmPmEvent();
-//        }
         try {
             if (currentNonFatalDomesticViolence.getNonFatalInjuries().getInjuryTime().getHours() == 0) {
                 currentHourEvent = "12";

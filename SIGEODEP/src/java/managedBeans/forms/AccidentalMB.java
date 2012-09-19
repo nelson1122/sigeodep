@@ -375,11 +375,6 @@ public class AccidentalMB implements Serializable {
         if (currentName == null) {
             currentName = "";
         }
-//        //******victim_lastname
-//        currentSurname = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getVictimLastname();
-//        if (currentSurname == null) {
-//            currentSurname = "";
-//        }
         //******age_type_id
         try {
             currentMeasureOfAge = currentFatalInjuryAccident.getFatalInjuries().getVictimId().getAgeTypeId();
