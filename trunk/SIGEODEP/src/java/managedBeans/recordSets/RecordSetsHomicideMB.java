@@ -10,14 +10,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 import managedBeans.forms.HomicideMB;
-import managedBeans.forms.LcenfMB;
 import model.dao.*;
-import model.pojo.*;
+import model.pojo.FatalInjuryMurder;
+import model.pojo.MunicipalitiesPK;
+import model.pojo.Tags;
 import org.apache.poi.hssf.usermodel.*;
 
 /**
@@ -37,6 +38,8 @@ public class RecordSetsHomicideMB implements Serializable {
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     @EJB
+    CountriesFacade countriesFacade;    
+    @EJB
     NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
     @EJB
     NonFatalSelfInflictedFacade nonFatalSelfInflictedFacade;
@@ -54,6 +57,8 @@ public class RecordSetsHomicideMB implements Serializable {
     FatalInjuryMurderFacade fatalInjuryMurderFacade;
     @EJB
     InjuriesFacade injuriesFacade;
+    @EJB
+    NeighborhoodsFacade neighborhoodsFacade;
     @EJB
     LoadsFacade loadsFacade;
     private List<RowDataTable> rowDataTableList;
@@ -100,7 +105,7 @@ public class RecordSetsHomicideMB implements Serializable {
         List<FatalInjuryMurder> fatalInjuryMurderList;
         for (int i = 0; i < tagsList.size(); i++) {
             fatalInjuryMurderList = fatalInjuryMurderFacade.findFromTag(tagsList.get(i).getTagId());
-            for (int j = 0; j < fatalInjuryMurderList.size(); j++) {                
+            for (int j = 0; j < fatalInjuryMurderList.size(); j++) {
                 rowDataTableList.add(loadValues(fatalInjuryMurderList.get(j)));
             }
         }
@@ -129,10 +134,9 @@ public class RecordSetsHomicideMB implements Serializable {
         cellStyle.setFont(font);
 
 
-
         row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
 
-        createCell(cellStyle, row, 0, "#");//50">#{rowX.column1}</p:column>
+        createCell(cellStyle, row, 0, "COD INT");//50">#{rowX.column1}</p:column>
         createCell(cellStyle, row, 1, "TIPO IDENT");//150">#{rowX.column2}</p:column>
         createCell(cellStyle, row, 2, "NUMERO IDENTI");//100">#{rowX.column3}</p:column>                
         createCell(cellStyle, row, 3, "NOMBRES");//400">#{rowX.column4}</p:column>                
@@ -475,6 +479,7 @@ public class RecordSetsHomicideMB implements Serializable {
 
         //******non_fatal_injury_id
         newRowDataTable.setColumn1(currentFatalInjuryMurder.getFatalInjuries().getFatalInjuryId().toString());
+        
         //******type_id
         try {
             if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getTypeId() != null) {
@@ -496,703 +501,217 @@ public class RecordSetsHomicideMB implements Serializable {
             }
         } catch (Exception e) {
         }
-//        //******stranger
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getStranger() != null) {
-//                newRowDataTable.setColumn5(currentFatalInjuryMurder.getVictimId().getStranger().toString());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******age_type_id
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getAgeTypeId() != null) {
-//                newRowDataTable.setColumn6(ageTypesFacade.find(currentFatalInjuryMurder.getVictimId().getAgeTypeId()).getAgeTypeName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******victim_age
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getVictimAge() != null) {
-//                newRowDataTable.setColumn7(currentFatalInjuryMurder.getVictimId().getVictimAge().toString());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******gender_id
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getGenderId() != null) {
-//                newRowDataTable.setColumn8(currentFatalInjuryMurder.getVictimId().getGenderId().getGenderName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******job_id
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getJobId() != null) {
-//                newRowDataTable.setColumn9(currentFatalInjuryMurder.getVictimId().getJobId().getJobName());
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        //******ethnic_group_id
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getEthnicGroupId() != null) {
-//                newRowDataTable.setColumn10(currentFatalInjuryMurder.getVictimId().getEthnicGroupId().getEthnicGroupName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******victim_telephone
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getVictimTelephone() != null) {
-//                newRowDataTable.setColumn11(currentFatalInjuryMurder.getVictimId().getVictimTelephone());
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        //******victim_date_of_birth
-//        //******eps_id
-//        //******victim_class
-//        //******victim_id        
-//        //******residence_municipality
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getResidenceDepartment() != null && (currentFatalInjuryMurder.getVictimId().getResidenceMunicipality() != null)) {
-//                short departamentId = currentFatalInjuryMurder.getVictimId().getResidenceDepartment();
-//                short municipalityId = currentFatalInjuryMurder.getVictimId().getResidenceMunicipality();
-//                MunicipalitiesPK mPk = new MunicipalitiesPK(departamentId, municipalityId);
-//                newRowDataTable.setColumn12(municipalitiesFacade.find(mPk).getMunicipalityName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******residence_department
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getResidenceDepartment() != null) {
-//                newRowDataTable.setColumn13(departamentsFacade.find(currentFatalInjuryMurder.getVictimId().getResidenceDepartment()).getDepartamentName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******victim_address
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getVictimAddress() != null) {
-//                newRowDataTable.setColumn14(currentFatalInjuryMurder.getVictimId().getVictimAddress());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******victim_neighborhood_id
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getVictimNeighborhoodId() != null) {
-//                newRowDataTable.setColumn15(currentFatalInjuryMurder.getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //informacion de grupos vunerables
-//        if (currentFatalInjuryMurder.getVictimId().getVulnerableGroupsList() != null) {
-//            if (!currentFatalInjuryMurder.getVictimId().getVulnerableGroupsList().isEmpty()) {
-//                for (int i = 0; i < currentFatalInjuryMurder.getVictimId().getVulnerableGroupsList().size(); i++) {
-//                    if (1 == currentFatalInjuryMurder.getVictimId().getVulnerableGroupsList().get(i).getVulnerableGroupId()) {
-//                        newRowDataTable.setColumn16("SI");//isDisplaced = true;
-//                    }
-//                    if (2 == currentFatalInjuryMurder.getVictimId().getVulnerableGroupsList().get(i).getVulnerableGroupId()) {
-//                        //isHandicapped = true;
-//                        newRowDataTable.setColumn17("SI");
-//                    }
-//                }
-//            }
-//        }
-//
-//        //******insurance_id
-//        try {
-//            if (currentFatalInjuryMurder.getVictimId().getInsuranceId() != null) {
-//                newRowDataTable.setColumn18(currentFatalInjuryMurder.getVictimId().getInsuranceId().getInsuranceName());
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        //-----CARGAR CAMPOS OTROS----------------
-//        if (currentFatalInjuryMurder.getVictimId().getOthersList() != null) {
-//            List<Others> othersList = currentFatalInjuryMurder.getVictimId().getOthersList();
-//            for (int i = 0; i < othersList.size(); i++) {
-//                switch (othersList.get(i).getOthersPK().getFieldId()) {
-//                    case 1://1.	Cual otro grupo etnico
-//                        newRowDataTable.setColumn19(othersList.get(i).getValueText());
-//                        break;
-//                    case 2://2.	Cual otro de lugar del hecho
-//                        newRowDataTable.setColumn20(othersList.get(i).getValueText());
-//                        break;
-//                    case 3://3.	Cual otra actividad
-//                        newRowDataTable.setColumn21(othersList.get(i).getValueText());
-//                        break;
-//                    case 4://4.	Cual altura
-//                        newRowDataTable.setColumn22(othersList.get(i).getValueText());
-//                        break;
-//                    case 5://5.	Cual polvora
-//                        newRowDataTable.setColumn23(othersList.get(i).getValueText());
-//                        break;
-//                    case 6://6.	Cual desastre natural
-//                        newRowDataTable.setColumn24(othersList.get(i).getValueText());
-//                        break;
-//                    case 7://7.	Cual otro mecanismo de objeto
-//                        newRowDataTable.setColumn25(othersList.get(i).getValueText());
-//                        break;
-//                    case 8://8.	Cual otro animal
-//                        newRowDataTable.setColumn26(othersList.get(i).getValueText());
-//                        break;
-//                    case 9://9.	Cual otro factor precipitante(Autoinflingida intencional)
-//                        newRowDataTable.setColumn27(othersList.get(i).getValueText());
-//                        break;
-//                    case 10://10.	Cual otro tipo de agresor(intrafamiliar)
-//                        newRowDataTable.setColumn28(othersList.get(i).getValueText());
-//                        break;
-//                    case 11://11.	Cual otro tipo de maltrato(intrafamiliar)
-//                        newRowDataTable.setColumn29(othersList.get(i).getValueText());
-//                        break;
-//                    case 12://12.	Cual otra relación (violencia interpersonal)
-//                        newRowDataTable.setColumn30(othersList.get(i).getValueText());
-//                        break;
-//                    case 13://13.	Cual otro tipo de transporte(transporte)
-//                        newRowDataTable.setColumn31(othersList.get(i).getValueText());
-//                        break;
-//                    case 14://14.	Cual otro tipo de transporte de contraparte(transporte)
-//                        newRowDataTable.setColumn32(othersList.get(i).getValueText());
-//                        break;
-//                    case 15://15.	Cual otro tipo de transporte de usuario(transporte)
-//                        newRowDataTable.setColumn33(othersList.get(i).getValueText());
-//                        break;
-//                    case 16://16.	Cual otro sitio anatomico
-//                        newRowDataTable.setColumn34(othersList.get(i).getValueText());
-//                        break;
-//                    case 17://17.	Cual otra naturaleza de la lesión
-//                        newRowDataTable.setColumn35(othersList.get(i).getValueText());
-//                        break;
-//                    case 18://18.	Cual otro destino del paciente
-//                        newRowDataTable.setColumn36(othersList.get(i).getValueText());
-//                        break;
-//                }
-//            }
-//        }
-//
-//        //------------------------------------------------------------
-//        //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
-//        //------------------------------------------------------------        
-//        //******checkup_date
-//        try {
-//            if (currentFatalInjuryMurder.getCheckupDate() != null) {
-//                newRowDataTable.setColumn37(sdf.format(currentFatalInjuryMurder.getCheckupDate()));
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******checkup_time
-//        try {
-//            if (currentFatalInjuryMurder.getCheckupTime() != null) {
-//                hours = String.valueOf(currentFatalInjuryMurder.getCheckupTime().getHours());
-//                minutes = String.valueOf(currentFatalInjuryMurder.getCheckupTime().getMinutes());
-//                if (hours.length() != 2) {
-//                    hours = "0" + hours;
-//                }
-//                if (minutes.length() != 2) {
-//                    minutes = "0" + minutes;
-//                }
-//                newRowDataTable.setColumn38(hours + minutes);
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_date
-//        try {
-//            if (currentFatalInjuryMurder.getInjuryDate() != null) {
-//                newRowDataTable.setColumn39(sdf.format(currentFatalInjuryMurder.getInjuryDate()));
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_time
-//        try {
-//            if (currentFatalInjuryMurder.getInjuryTime() != null) {
-//                hours = String.valueOf(currentFatalInjuryMurder.getInjuryTime().getHours());
-//                minutes = String.valueOf(currentFatalInjuryMurder.getInjuryTime().getMinutes());
-//                if (hours.length() != 2) {
-//                    hours = "0" + hours;
-//                }
-//                if (minutes.length() != 2) {
-//                    minutes = "0" + minutes;
-//                }
-//                newRowDataTable.setColumn40(hours + minutes);
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_address
-//        if (currentFatalInjuryMurder.getInjuryAddress() != null) {
-//            newRowDataTable.setColumn41(currentFatalInjuryMurder.getInjuryAddress());
-//        }
-//        //******injury_neighborhood_id
-//        try {
-//            if (currentFatalInjuryMurder.getInjuryNeighborhoodId() != null) {
-//                newRowDataTable.setColumn42(currentFatalInjuryMurder.getInjuryNeighborhoodId().getNeighborhoodName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_place_id
-//        try {
-//            if (currentFatalInjuryMurder.getInjuryPlaceId() != null) {
-//                newRowDataTable.setColumn43(currentFatalInjuryMurder.getInjuryPlaceId().getNonFatalPlaceName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******activity_id
-//        try {
-//            if (currentFatalInjuryMurder.getActivityId() != null) {
-//                newRowDataTable.setColumn44(currentFatalInjuryMurder.getActivityId().getActivityName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******intentionality_id
-//        try {
-//            if (currentFatalInjuryMurder.getIntentionalityId() != null) {
-//                newRowDataTable.setColumn45(currentFatalInjuryMurder.getIntentionalityId().getIntentionalityName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******use_alcohol_id
-//        try {
-//            if (currentFatalInjuryMurder.getUseAlcoholId() != null) {
-//                newRowDataTable.setColumn46(currentFatalInjuryMurder.getUseAlcoholId().getUseAlcoholDrugsName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******use_drugs_id
-//        try {
-//            if (currentFatalInjuryMurder.getUseDrugsId() != null) {
-//                newRowDataTable.setColumn47(currentFatalInjuryMurder.getUseDrugsId().getUseAlcoholDrugsName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******burn_injury_degree
-//        try {
-//            if (currentFatalInjuryMurder.getBurnInjuryDegree() != null) {
-//                newRowDataTable.setColumn48(currentFatalInjuryMurder.getBurnInjuryDegree().toString());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******burn_injury_percentage
-//        try {
-//            if (currentFatalInjuryMurder.getBurnInjuryPercentage() != null) {
-//                newRowDataTable.setColumn49(currentFatalInjuryMurder.getBurnInjuryPercentage().toString());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******submitted_patient
-//
-//        try {
-//            if (currentFatalInjuryMurder.getSubmittedPatient() != null) {
-//                newRowDataTable.setColumn50(currentFatalInjuryMurder.getSubmittedPatient().toString());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******eps_id
-//        try {
-//            if (currentFatalInjuryMurder.getSubmittedDataSourceId() != null) {
-//                newRowDataTable.setColumn51(currentFatalInjuryMurder.getSubmittedDataSourceId().getNonFatalDataSourceName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******destination_patient_id
-//        try {
-//            if (currentFatalInjuryMurder.getDestinationPatientId() != null) {
-//                newRowDataTable.setColumn52(currentFatalInjuryMurder.getDestinationPatientId().getDestinationPatientName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******input_timestamp
-//        try {
-//            if (currentFatalInjuryMurder.getInputTimestamp() != null) {
-//                newRowDataTable.setColumn53(sdf2.format(currentFatalInjuryMurder.getInputTimestamp()));
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******health_professional_id
-//        try {
-//            if (currentFatalInjuryMurder.getHealthProfessionalId() != null) {
-//                newRowDataTable.setColumn54(currentFatalInjuryMurder.getHealthProfessionalId().getHealthProfessionalName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******non_fatal_data_source_id
-//        //******mechanism_id
-//        try {
-//            if (currentFatalInjuryMurder.getMechanismId() != null) {
-//                newRowDataTable.setColumn55(currentFatalInjuryMurder.getMechanismId().getMechanismName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******user_id
-//        try {
-//            if (currentFatalInjuryMurder.getUserId() != null) {
-//                newRowDataTable.setColumn56(currentFatalInjuryMurder.getUserId().getUserFirstname() + "" + currentFatalInjuryMurder.getUserId().getUserLastname());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_day_of_week
-//        try {
-//            if (currentFatalInjuryMurder.getInjuryDayOfWeek() != null) {
-//                newRowDataTable.setColumn57(currentFatalInjuryMurder.getInjuryDayOfWeek());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******non_fatal_data_source_id
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalDataSourceId() != null) {
-//                newRowDataTable.setColumn58(currentFatalInjuryMurder.getNonFatalDataSourceId().getNonFatalDataSourceName());
-//            }
-//        } catch (Exception e) {
-//        }
-//        //******injury_id
-//        try {
-//            if (currentFatalInjuryMurder.getInjuryId() != null) {
-//                //if (injuriesFacade.find(currentNonFatalI.getInjuryId().getInjuryId()) != null) {
-//                newRowDataTable.setColumn59(injuriesFacade.find(currentFatalInjuryMurder.getInjuryId().getInjuryId()).getInjuryName());
-//                //}
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Error por" + e.toString());
-//        }
-//        //------------------------------------------------------------
-//        //SE CARGA VARIABLE PARA VIOLENCIA INTERPERSONAL
-//        //-----------------------------------------------------------
-//
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalInterpersonal() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalInterpersonal().getPreviousAntecedent() != null) {
-//                    newRowDataTable.setColumn60(currentFatalInjuryMurder.getNonFatalInterpersonal().getPreviousAntecedent().getBooleanName());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalInterpersonal() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalInterpersonal().getRelationshipVictimId() != null) {
-//                    newRowDataTable.setColumn61(currentFatalInjuryMurder.getNonFatalInterpersonal().getRelationshipVictimId().getRelationshipVictimName());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalInterpersonal() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalInterpersonal().getContextId() != null) {
-//                    newRowDataTable.setColumn62(currentFatalInjuryMurder.getNonFatalInterpersonal().getContextId().getContextName());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalInterpersonal() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalInterpersonal().getRelationshipVictimId() != null) {
-//                    newRowDataTable.setColumn63(currentFatalInjuryMurder.getNonFatalInterpersonal().getAggressorGenderId().getGenderName());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//        //------------------------------------------------------------
-//        //SE CARGA DATOS PARA VIOLENCIA INTRAFAMILIAR
-//        //------------------------------------------------------------
-//        //cargo la lista de agresores-----------------------------------
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalDomesticViolence() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalDomesticViolence().getAggressorTypesList() != null) {
-//                    List<AggressorTypes> aggressorTypesList = currentFatalInjuryMurder.getNonFatalDomesticViolence().getAggressorTypesList();
-//                    for (int i = 0; i < aggressorTypesList.size(); i++) {
-//                        int caso = (int) aggressorTypesList.get(i).getAggressorTypeId();
-//                        switch (caso) {
-//                            case 1://isAG1
-//                                newRowDataTable.setColumn64("SI");
-//                                break;
-//                            case 2://isAG2
-//                                newRowDataTable.setColumn65("SI");
-//                                break;
-//                            case 3://isAG3
-//                                newRowDataTable.setColumn66("SI");
-//                                break;
-//                            case 4://isAG4
-//                                newRowDataTable.setColumn67("SI");
-//                                break;
-//                            case 5://isAG5
-//                                newRowDataTable.setColumn68("SI");
-//                                break;
-//                            case 6://isAG6
-//                                newRowDataTable.setColumn69("SI");
-//                                break;
-//                            case 7://isAG7
-//                                newRowDataTable.setColumn70("SI");
-//                                break;
-//                            case 8://isAG8
-//                                newRowDataTable.setColumn71("SI");
-//                                break;
-//                            case 9://isUnknownAG
-//                                newRowDataTable.setColumn72("SI");
-//                                break;
-//                            case 10://isAG10
-//                                newRowDataTable.setColumn73("SI");
-//                                break;
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo violencia intrafamiliar"+e.toString());
-//        }
-//        //cargo la lista de abusos(tipos de maltrato)-----------------------------------
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalDomesticViolence() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalDomesticViolence().getAbuseTypesList() != null) {
-//                    List<AbuseTypes> abuseTypesList = currentFatalInjuryMurder.getNonFatalDomesticViolence().getAbuseTypesList();
-//                    for (int i = 0; i < abuseTypesList.size(); i++) {
-//                        int caso = (int) abuseTypesList.get(i).getAbuseTypeId();
-//                        switch (caso) {
-//                            case 1://isMA1
-//                                newRowDataTable.setColumn74("SI");
-//                                break;
-//                            case 2://isMA2
-//                                newRowDataTable.setColumn75("SI");
-//                                break;
-//                            case 3://isMA3
-//                                newRowDataTable.setColumn76("SI");
-//                                break;
-//                            case 4://isMA4
-//                                newRowDataTable.setColumn77("SI");
-//                                break;
-//                            case 5://isMA5
-//                                newRowDataTable.setColumn78("SI");
-//                                break;
-//                            case 6://isMA6
-//                                newRowDataTable.setColumn79("SI");
-//                                break;
-//                            case 7://isUnknowMA
-//                                newRowDataTable.setColumn80("SI");
-//                                break;
-//                            case 8://isMA8
-//                                newRowDataTable.setColumn81("SI");
-//                                break;
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo tipos de maltrato"+e.toString());
-//        }
-//
-//        //cargo la lista de abusos(tipos de maltrato)-----------------------------------
-//        try {
-//
-//            if (currentFatalInjuryMurder.getAnatomicalLocationsList() != null) {
-//                List<AnatomicalLocations> anatomicalLocationsList = currentFatalInjuryMurder.getAnatomicalLocationsList();
-//                for (int i = 0; i < anatomicalLocationsList.size(); i++) {
-//                    int caso = (int) anatomicalLocationsList.get(i).getAnatomicalLocationId();
-//                    switch (caso) {
-//                        case 1://isAnatomicalSite1
-//                            newRowDataTable.setColumn82("SI");
-//                            break;
-//                        case 2://isAnatomicalSite1
-//                            newRowDataTable.setColumn83("SI");
-//                            break;
-//                        case 3://isAnatomicalSite1
-//                            newRowDataTable.setColumn84("SI");
-//                            break;
-//                        case 4://isAnatomicalSite1
-//                            newRowDataTable.setColumn85("SI");
-//                            break;
-//                        case 5://isAnatomicalSite1
-//                            newRowDataTable.setColumn86("SI");
-//                            break;
-//                        case 6://isAnatomicalSite1
-//                            newRowDataTable.setColumn87("SI");
-//                            break;
-//                        case 7://isAnatomicalSite1
-//                            newRowDataTable.setColumn88("SI");
-//                            break;
-//                        case 8://isAnatomicalSite1
-//                            newRowDataTable.setColumn89("SI");
-//                            break;
-//                        case 9://isAnatomicalSite1
-//                            newRowDataTable.setColumn90("SI");
-//                            break;
-//                        case 10://isAnatomicalSite1
-//                            newRowDataTable.setColumn91("SI");
-//                            break;
-//                        case 11://isAnatomicalSite1    
-//                            newRowDataTable.setColumn92("SI");
-//                            break;
-//                        case 98://checkOtherPlace  otherAnatomicalPlaceDisabled 
-//                            newRowDataTable.setColumn93("SI");
-//                            break;
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo sitios anatomicos"+e.toString());
-//        }
-//        //cargo la naturaleza de la lesion
-//        try {
-//
-//            if (currentFatalInjuryMurder.getKindsOfInjuryList() != null) {
-//                List<KindsOfInjury> kindsOfInjuryList = currentFatalInjuryMurder.getKindsOfInjuryList();
-//                for (int i = 0; i < kindsOfInjuryList.size(); i++) {
-//                    int caso = (int) kindsOfInjuryList.get(i).getKindInjuryId();
-//                    switch (caso) {
-//                        case 1://isNatureOfInjurye1
-//                            newRowDataTable.setColumn94("SI");
-//                            break;
-//                        case 2://isNatureOfInjurye1
-//                            newRowDataTable.setColumn95("SI");
-//                            break;
-//                        case 3://isNatureOfInjurye1
-//                            newRowDataTable.setColumn96("SI");
-//                            break;
-//                        case 4://isNatureOfInjurye1
-//                            newRowDataTable.setColumn97("SI");
-//                            break;
-//                        case 5://isNatureOfInjurye1
-//                            newRowDataTable.setColumn98("SI");
-//                            break;
-//                        case 6://isNatureOfInjurye1
-//                            newRowDataTable.setColumn99("SI");
-//                            break;
-//                        case 7://isNatureOfInjurye1
-//                            newRowDataTable.setColumn100("SI");
-//                            break;
-//                        case 8://isNatureOfInjurye1
-//                            newRowDataTable.setColumn101("SI");
-//                            break;
-//                        case 9://isNatureOfInjurye1
-//                            newRowDataTable.setColumn102("SI");
-//                            break;
-//                        case 98://checkOtherInjury
-//                            newRowDataTable.setColumn103("SI");
-//                            break;
-//                        case 99:// isUnknownNatureOfInjurye
-//                            newRowDataTable.setColumn104("SI");
-//                            break;
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo naturaleza de la lesion"+e.toString());
-//        }
-//        //cargo los diagnosticos
-//        try {
-//
-//            if (currentFatalInjuryMurder.getDiagnosesList() != null) {
-//                List<Diagnoses> diagnosesList = currentFatalInjuryMurder.getDiagnosesList();
-//                for (int i = 0; i < diagnosesList.size(); i++) {
-//                    switch (i) {
-//                        case 0:
-//                            newRowDataTable.setColumn105(diagnosesList.get(i).getDiagnosisId());
-//                            break;
-//                        case 1:
-//                            newRowDataTable.setColumn106(diagnosesList.get(i).getDiagnosisId());
-//                            break;
-//                        case 2:
-//                            newRowDataTable.setColumn107(diagnosesList.get(i).getDiagnosisId());
-//                            break;
-//                        case 3:
-//                            newRowDataTable.setColumn108(diagnosesList.get(i).getDiagnosisId());
-//                            break;
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo codigo CIE"+e.toString());
-//        }
-//
-//        //------------------------------------------------------------
-//        //AUTOINFLINGIDA INTENCIONAL
-//        //------------------------------------------------------------
-//
-//        try {
-//
-//            if (currentFatalInjuryMurder.getNonFatalSelfInflicted() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalSelfInflicted().getPreviousAttempt() != null) {
-//                    newRowDataTable.setColumn109(currentFatalInjuryMurder.getNonFatalSelfInflicted().getPreviousAttempt().getBooleanId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalSelfInflicted() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalSelfInflicted().getMentalAntecedent() != null) {
-//                    newRowDataTable.setColumn110(currentFatalInjuryMurder.getNonFatalSelfInflicted().getMentalAntecedent().getBooleanId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalSelfInflicted() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalSelfInflicted().getPrecipitatingFactorId() != null) {
-//                    newRowDataTable.setColumn111(currentFatalInjuryMurder.getNonFatalSelfInflicted().getPrecipitatingFactorId().getPrecipitatingFactorId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        //------------------------------------------------------------
-//        //SE CARGA DATOS PARA TRANSITO
-//        //------------------------------------------------------------
-//
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalTransport() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalTransport().getTransportTypeId() != null) {
-//                    newRowDataTable.setColumn112(currentFatalInjuryMurder.getNonFatalTransport().getTransportTypeId().getTransportTypeId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalTransport() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalTransport().getTransportCounterpartId() != null) {
-//                    newRowDataTable.setColumn113(currentFatalInjuryMurder.getNonFatalTransport().getTransportCounterpartId().getTransportCounterpartId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalTransport() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalTransport().getTransportUserId() != null) {
-//                    newRowDataTable.setColumn114(currentFatalInjuryMurder.getNonFatalTransport().getTransportUserId().getTransportUserId().toString());
-//                }
-//            }
-//        } catch (Exception e) {
-//        }
-//
-//
-//        try {
-//            if (currentFatalInjuryMurder.getNonFatalTransport() != null) {
-//                if (currentFatalInjuryMurder.getNonFatalTransport().getSecurityElementsList() != null) {
-//                    List<SecurityElements> securityElementsList = currentFatalInjuryMurder.getNonFatalTransport().getSecurityElementsList();
-//                    for (int i = 0; i < securityElementsList.size(); i++) {
-//                        switch (securityElementsList.get(i).getSecurityElementId()) {
-//                            case 1://isBeltUse
-//                                newRowDataTable.setColumn115("SI");
-//                                break;
-//                            case 2://isHelmetUse
-//                                newRowDataTable.setColumn116("SI");
-//                                break;
-//                            case 3://isBicycleHelmetUse
-//                                newRowDataTable.setColumn117("SI");
-//                                break;
-//                            case 4://isVestUse
-//                                newRowDataTable.setColumn118("SI");
-//                                break;
-//                            case 5://isOtherElementUse                        
-//                                break;
-//                            case 6://currentSecurityElements  "NO";
-//                                break;
-//                            case 7://currentSecurityElements = "NO SE SABE";
-//                                break;
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            //System.out.println("no se cargo elementos de seguridad"+e.toString());
-//        }
+        //******stranger
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getStranger() != null) {
+                newRowDataTable.setColumn5(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getStranger().toString());
+            }
+        } catch (Exception e) {
+        }
+        //******age_type_id
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getAgeTypeId() != null) {
+                newRowDataTable.setColumn6(ageTypesFacade.find(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getAgeTypeId()).getAgeTypeName());
+            }
+        } catch (Exception e) {
+        }
+        //******victim_age
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimAge() != null) {
+                newRowDataTable.setColumn7(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimAge().toString());
+            }
+        } catch (Exception e) {
+        }
+        //******gender_id
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getGenderId() != null) {
+                newRowDataTable.setColumn8(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getGenderId().getGenderName());
+            }
+        } catch (Exception e) {
+        }
+        //******job_id
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getJobId() != null) {
+                newRowDataTable.setColumn9(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getJobId().getJobName());
+            }
+        } catch (Exception e) {
+        }
+
+
+        //******vulnerable_group_id
+        //******ethnic_group_id        
+        //******victim_telephone
+        //******victim_address
+
+
+        //******victim_neighborhood_id
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
+                newRowDataTable.setColumn10(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
+            }
+        } catch (Exception e) {
+        }
+
+        //******victim_date_of_birth
+        //******eps_id
+        //******victim_class
+        //******victim_id       
+
+        //******residence_municipality
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment() != null && (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceMunicipality() != null)) {
+                short departamentId = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment();
+                short municipalityId = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceMunicipality();
+                MunicipalitiesPK mPk = new MunicipalitiesPK(departamentId, municipalityId);
+                newRowDataTable.setColumn11(municipalitiesFacade.find(mPk).getMunicipalityName());
+            }
+        } catch (Exception e) {
+        }
+        //******residence_department
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment() != null) {
+                newRowDataTable.setColumn12(departamentsFacade.find(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment()).getDepartamentName());
+            }
+        } catch (Exception e) {
+        }
+
+        //******insurance_id
+
+        //------------------------------------------------------------
+        //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
+        //------------------------------------------------------------
+        //******injury_id
+        //******injury_date
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryDate() != null) {
+                newRowDataTable.setColumn13(sdf.format(currentFatalInjuryMurder.getFatalInjuries().getInjuryDate()));
+            }
+        } catch (Exception e) {
+        }
+        //******injury_time
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryTime() != null) {
+                hours = String.valueOf(currentFatalInjuryMurder.getFatalInjuries().getInjuryTime().getHours());
+                minutes = String.valueOf(currentFatalInjuryMurder.getFatalInjuries().getInjuryTime().getMinutes());
+                if (hours.length() != 2) {
+                    hours = "0" + hours;
+                }
+                if (minutes.length() != 2) {
+                    minutes = "0" + minutes;
+                }
+                newRowDataTable.setColumn14(hours + minutes);
+            }
+        } catch (Exception e) {
+        }
+        //******injury_address
+        if (currentFatalInjuryMurder.getFatalInjuries().getInjuryAddress() != null) {
+            newRowDataTable.setColumn15(currentFatalInjuryMurder.getFatalInjuries().getInjuryAddress());
+        }
+        //******injury_neighborhood_id
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryNeighborhoodId() != null) {
+                newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryMurder.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
+            }
+        } catch (Exception e) {
+        }
+        //******injury_place_id
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryPlaceId() != null) {
+                newRowDataTable.setColumn17(currentFatalInjuryMurder.getFatalInjuries().getInjuryPlaceId().getPlaceName());
+            }
+        } catch (Exception e) {
+        }
+
+        //******victim_number
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimNumber() != null) {
+                newRowDataTable.setColumn18(currentFatalInjuryMurder.getFatalInjuries().getVictimNumber().toString());
+
+            }
+        } catch (Exception e) {
+        }
+        //******injury_description
+        if (currentFatalInjuryMurder.getFatalInjuries().getInjuryDescription() != null) {
+            newRowDataTable.setColumn19(currentFatalInjuryMurder.getFatalInjuries().getInjuryDescription());
+        }
+        //******user_id	
+        //******input_timestamp	
+        //******injury_day_of_week
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryDayOfWeek() != null) {
+                newRowDataTable.setColumn20(currentFatalInjuryMurder.getFatalInjuries().getInjuryDayOfWeek());
+            }
+        } catch (Exception e) {
+        }
+
+        //******victim_id
+        //******fatal_injury_id
+        //******alcohol_level_victim
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getAlcoholLevelVictim() != null) {
+                newRowDataTable.setColumn21(currentFatalInjuryMurder.getFatalInjuries().getAlcoholLevelVictim().toString());
+            }
+        } catch (Exception e) {
+        }
+        //******alcohol_level_victimId
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getAlcoholLevelVictimId() != null) {
+                newRowDataTable.setColumn22(currentFatalInjuryMurder.getFatalInjuries().getAlcoholLevelVictimId().getAlcoholLevelName());
+            }
+        } catch (Exception e) {
+        }
+        //******code
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getCode() != null) {
+                newRowDataTable.setColumn23(currentFatalInjuryMurder.getFatalInjuries().getCode());
+            }
+        } catch (Exception e) {
+        }
+        //******area_id
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getAreaId() != null) {
+                newRowDataTable.setColumn24(currentFatalInjuryMurder.getFatalInjuries().getAreaId().getAreaName());
+            }
+        } catch (Exception e) {
+        }        
+        //******victim_place_of_origin
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getVictimPlaceOfOrigin() != null) {
+                String source = currentFatalInjuryMurder.getFatalInjuries().getVictimPlaceOfOrigin();
+                String[] sourceSplit = source.split("-");
+                //determino pais
+                newRowDataTable.setColumn25(countriesFacade.find(Short.parseShort(sourceSplit[0])).getName());                
+                if (Short.parseShort(sourceSplit[0]) == 52) {//colombia
+                    newRowDataTable.setColumn26(departamentsFacade.find(Short.parseShort(sourceSplit[1])).getDepartamentName());
+                    MunicipalitiesPK municipalitiesPK=new MunicipalitiesPK(Short.parseShort(sourceSplit[1]), Short.parseShort(sourceSplit[2]));
+                    newRowDataTable.setColumn27(municipalitiesFacade.find(municipalitiesPK).getMunicipalityName());
+                } 
+            }
+        } catch (Exception e) {
+        }
+        //------------------------------------------------------------
+        //SE CARGA DATOS PARA LA NUEVA LESION FATAL POR HOMICIDIOS
+        //------------------------------------------------------------
+
+        //******murder_context_id
+        try {
+            if (currentFatalInjuryMurder.getMurderContextId() != null) {
+                newRowDataTable.setColumn28(currentFatalInjuryMurder.getMurderContextId().getMurderContextName());
+            }
+        } catch (Exception e) {
+        }
+        //******weapon_type_id
+        try {
+            if (currentFatalInjuryMurder.getWeaponTypeId() != null) {
+                newRowDataTable.setColumn29(currentFatalInjuryMurder.getWeaponTypeId().getWeaponTypeName());
+            }
+        } catch (Exception e) {
+        }
+        //******fatal_injury_id
+        
+        
+        
+        
 
         return newRowDataTable;
     }
@@ -1315,3 +834,4 @@ public class RecordSetsHomicideMB implements Serializable {
         this.data = data;
     }
 }
+
