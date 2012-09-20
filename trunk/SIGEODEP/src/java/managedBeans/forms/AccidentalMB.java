@@ -1919,15 +1919,15 @@ public class AccidentalMB implements Serializable {
     public void changeNumberInjured() {
         try {
             int numberInt = Integer.parseInt(currentNumberInjured);
-            if (numberInt < 1) {
+            if (numberInt < -1) {
                 currentNumberInjured = "";
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El número de lesionados debe ser un número, y mayor que cero");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El número de lesionados debe ser un número, y mayor o igual a cero");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         } catch (Exception e) {
             if (currentNumberInjured.length() != 0) {
                 currentNumberInjured = "";
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El número de lesionados debe ser un número, y mayor que cero");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El número de lesionados debe ser un número, y mayor o igual a cero");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
