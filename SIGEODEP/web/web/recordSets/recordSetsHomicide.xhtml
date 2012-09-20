@@ -46,7 +46,9 @@
                                 rowKey="#{rowX.column1}"  
                                 selection="#{recordSetsHomicideMB.selectedRowDataTable}" 
                                 paginator="true"
-                                rows="10"                                    
+                                rows="10"             
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,20,25,30"
                                 paginatorPosition="bottom"                                
                                 scrollable="true"
                                 scrollWidth="730"                                    
@@ -58,54 +60,35 @@
                                     listener="#{recordSetsHomicideMB.load}"                                    
                                     update=":IdForm1:IdControls :IdForm1:message" />                                                    
                                 ////////////////////////////////////////////////////////////////////////
-                                <p:column headerText="non_fatal_injury_id" width="100">#{rowX.column1}</p:column>
-                                <p:column headerText="type_id" width="200">#{rowX.column2}</p:column>
-                                <p:column headerText="victim_nid" width="100">#{rowX.column3}</p:column>
-                                <p:column headerText="victim_name" width="400">#{rowX.column4}</p:column>
-                                <p:column headerText="stranger" width="100">#{rowX.column5}</p:column>
-                                <p:column headerText="age_type_id" width="100">#{rowX.column6}</p:column>
-                                <p:column headerText="victim_age" width="100">#{rowX.column7}</p:column>
-                                <p:column headerText="gender_id" width="100">#{rowX.column8}</p:column>
-                                <p:column headerText="job_id" width="100">#{rowX.column9}</p:column>
-                                <!--p:column headerText="vulnerable_group_id
-                                <p:column headerText="ethnic_group_id        
-                                <p:column headerText="victim_telephone
-                                <p:column headerText="victim_address-->
-                                <p:column headerText="victim_neighborhood_id" width="250">#{rowX.column10}</p:column>
-                                <!--p:column headerText="victim_date_of_birth
-                                <p:column headerText="eps_id
-                                <p:column headerText="victim_class
-                                <p:column headerText="victim_id       -->
-                                <p:column headerText="residence_municipality" width="100">#{rowX.column11}</p:column>
-                                <p:column headerText="residence_department" width="100">#{rowX.column12}</p:column>
-                                <!--p:column headerText="insurance_id-->
-                                //------------------------------------------------------------
-                                //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
-                                //------------------------------------------------------------
-                                <!--p:column headerText="injury_id-->
-                                <p:column headerText="injury_date" width="100">#{rowX.column13}</p:column>
-                                <p:column headerText="injury_time" width="100">#{rowX.column14}</p:column>
-                                <p:column headerText="injury_address" width="400">#{rowX.column15}</p:column>
-                                <p:column headerText="injury_neighborhood_id" width="250">#{rowX.column16}</p:column>
-                                <p:column headerText="injury_place_id" width="250">#{rowX.column17}</p:column>
-                                <p:column headerText="victim_number" width="100">#{rowX.column18}</p:column>
-                                <p:column headerText="injury_description" width="700">#{rowX.column19}</p:column>                                <!--p:column headerText="user_id	
-                                <p:column headerText="input_timestamp	-->
-                                <p:column headerText="injury_day_of_week" width="100">#{rowX.column20}</p:column>
-                                <!--p:column headerText="victim_id
-                                <p:column headerText="fatal_injury_id-->
-                                <p:column headerText="alcohol_level_victim" width="100">#{rowX.column21}</p:column>
-                                <p:column headerText="alcohol_level_victimId" width="100">#{rowX.column22}</p:column>
-                                <p:column headerText="code" width="100">#{rowX.column23}</p:column>
-                                <p:column headerText="area_id" width="100">#{rowX.column24}</p:column>
-                                <p:column headerText="country_place_of_origin" width="100">#{rowX.column25}</p:column>
-                                <p:column headerText="department_place_of_origin" width="100">#{rowX.column26}</p:column>
-                                <p:column headerText="municipalitie_place_of_origin" width="100">#{rowX.column27}</p:column>        
-                                //------------------------------------------------------------
-                                //SE CARGA DATOS PARA LA NUEVA LESION FATAL POR HOMICIDIOS
-                                //------------------------------------------------------------
-                                <p:column headerText="murder_context_id" width="250">#{rowX.column28}</p:column>        
-                                <p:column headerText="weapon_type_id" width="100">#{rowX.column29}</p:column>        
+                                <p:column headerText="CODIGO INTERNO" width="100">#{rowX.column1}</p:column>
+                                <p:column headerText="CODIGO" width="100">#{rowX.column23}</p:column>
+                                <p:column headerText="FECHA HECHO" width="100">#{rowX.column13}</p:column>
+                                <p:column headerText="DIA EN SEMANA" width="100">#{rowX.column20}</p:column>                                
+                                <p:column headerText="HORA HECHO" width="100">#{rowX.column14}</p:column>
+                                <p:column headerText="DIRECCION HECHO" width="400">#{rowX.column15}</p:column>
+                                <p:column headerText="BARRIO HECHO" width="250">#{rowX.column16}</p:column>
+                                <p:column headerText="AREA DEL HECHO" width="100">#{rowX.column24}</p:column>
+                                <p:column headerText="CLASE DE LUGAR" width="250">#{rowX.column17}</p:column>
+                                <p:column headerText="NUMERO DE VICTIMAS" width="100">#{rowX.column18}</p:column>                                
+                                <p:column headerText="NOMBRES APELLIDOS" width="400">#{rowX.column4}</p:column>
+                                <p:column headerText="SEXO" width="100">#{rowX.column8}</p:column>
+                                <p:column headerText="TIPO EDAD" width="100">#{rowX.column6}</p:column>
+                                <p:column headerText="EDAD" width="100">#{rowX.column7}</p:column>
+                                <p:column headerText="OCUPACION" width="100">#{rowX.column9}</p:column>                                
+                                <p:column headerText="TIPO IDENTIFICACION" width="200">#{rowX.column2}</p:column>
+                                <p:column headerText="IDENTIFICACION" width="100">#{rowX.column3}</p:column>                                
+                                <p:column headerText="EXTRANJERO" width="100">#{rowX.column5}</p:column>
+                                <p:column headerText="DEPARTAMENTO RESIDENCIA" width="100">#{rowX.column12}</p:column>
+                                <p:column headerText="MUNICIPIO RESIDENCIA" width="100">#{rowX.column11}</p:column>
+                                <p:column headerText="BARRIO RESIDENCIA" width="250">#{rowX.column10}</p:column>
+                                <p:column headerText="PAIS PROCEDENCIA" width="100">#{rowX.column25}</p:column>
+                                <p:column headerText="DEPARTAMENTO PROCEDENCIA" width="100">#{rowX.column26}</p:column>
+                                <p:column headerText="MUNICIPIO PROCEDENCIA" width="100">#{rowX.column27}</p:column>                                        
+                                <p:column headerText="ARMA O CAUSA DE MUERTE" width="100">#{rowX.column29}</p:column>        
+                                <p:column headerText="CONTEXTO RELACIONADO CON EL HECHO" width="250">#{rowX.column28}</p:column>                                        
+                                <p:column headerText="NARRACION DEL HECHO" width="700">#{rowX.column19}</p:column>
+                                <p:column headerText="NIVEL DE ALCOHOL" width="100">#{rowX.column21}</p:column>
+                                <p:column headerText="TIPO NIVEL DE ALCOHOL" width="100">#{rowX.column22}</p:column>
                             </p:dataTable>                            
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
