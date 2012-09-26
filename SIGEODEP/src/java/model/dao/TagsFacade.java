@@ -58,4 +58,13 @@ public class TagsFacade extends AbstractFacade<Tags> {
             return 0;
         }
     }
+    
+    public Tags findByName(String name) {
+        try {
+            String hql = "Select x from Tags x where x.tagName=:name";
+            return (Tags)em.createQuery(hql).setParameter("name", name).getSingleResult();            
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

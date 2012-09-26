@@ -79,7 +79,7 @@ public class LoginMB implements Serializable {
             // Sin embargo, como ya está fuera del ciclo de vida 
             // de JSF se debe usar la ruta completa -_-U
             
-            //ctx.redirect(ctxPath + "/faces/index.xhtml");
+            ctx.redirect(ctxPath + "/faces/index.xhtml");
             System.out.println("FINALIZA LA SESION");
             
             

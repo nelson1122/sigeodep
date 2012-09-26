@@ -140,8 +140,7 @@ public class SuicideMB implements Serializable {
     //------------------
     @EJB
     FatalInjurySuicideFacade fatalInjurySuicideFacade;
-    @EJB
-    LoadsFacade loadsFacade;
+    
     @EJB
     VictimsFacade victimsFacade;
     @EJB
@@ -212,13 +211,11 @@ public class SuicideMB implements Serializable {
     }
     
     public void loadValues(List<Tags> tagsList, FatalInjurySuicide currentFatalInjuryS) {
-        LoadsPK loadsPK;
         for (int i = 0; i < tagsList.size(); i++) {
-            loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentFatalInjuryS.getFatalInjuryId());
             try {
                 reset();
                 clearForm();
-                currentTag = loadsFacade.find(loadsPK).getTags().getTagId();
+                currentTag = tagsList.get(i).getTagId();
                 this.currentFatalInjurySuicide = currentFatalInjuryS;
                 currentFatalInjuriId = currentFatalInjuryS.getFatalInjuryId();
                 determinePosition();
@@ -927,13 +924,10 @@ public class SuicideMB implements Serializable {
                 openDialogDelete = "";
                 if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     System.out.println("guardando nuevo registro");
+                    newFatalInjurie.setTagId(tagsFacade.find(currentTag));
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjurySuicideFacade.create(newFatalInjurySuicide);
-
-                    Loads newLoad;
-                    newLoad = new Loads(currentTag, newFatalInjurie.getFatalInjuryId());//PERSISTO EL registro en la CARGA
-                    loadsFacade.create(newLoad);
 
                     save = true;
                     stylePosition = "color: #1471B1;";
@@ -998,7 +992,7 @@ public class SuicideMB implements Serializable {
             //FatalInjuries newFatalInjurie = new FatalInjuries();
             //newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
             //newFatalInjurie.setInjuryId(injuriesFacade.find((short) 10));//es 10 por ser homicidio
-
+            
             currentFatalInjurySuicide.getFatalInjuries().setInjuryDate(fatalInjurie.getInjuryDate());
             currentFatalInjurySuicide.getFatalInjuries().setInjuryTime(fatalInjurie.getInjuryTime());
             currentFatalInjurySuicide.getFatalInjuries().setInjuryAddress(fatalInjurie.getInjuryAddress());
@@ -1328,10 +1322,6 @@ public class SuicideMB implements Serializable {
         if (currentFatalInjuriId != -1) {
             FatalInjuries auxFatalInjuries = currentFatalInjurySuicide.getFatalInjuries();
             Victims auxVictims = currentFatalInjurySuicide.getFatalInjuries().getVictimId();
-
-            LoadsPK loadsPK = new LoadsPK(currentTag, currentFatalInjurySuicide.getFatalInjuryId());
-            loadsFacade.remove(loadsFacade.find(loadsPK));
-
             fatalInjurySuicideFacade.remove(currentFatalInjurySuicide);
             fatalInjuriesFacade.remove(auxFatalInjuries);
             victimsFacade.remove(auxVictims);

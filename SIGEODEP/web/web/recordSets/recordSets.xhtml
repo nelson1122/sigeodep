@@ -70,7 +70,7 @@
                                             value="Buscar" 
                                             icon="ui-icon-search"                                                
                                             actionListener="#{recordSetsMB.createDynamicTable}"
-                                            update="IdSearchTable :IdForm1:message"/>                                                                        
+                                            update="IdSearchTable :IdForm1:message IdControls"/>                                                                        
                                     </p:column>
                                 </p:row>                        
                             </p:panelGrid>
@@ -98,29 +98,59 @@
                                 <p:column headerText="NOMBRE" width="475">  
                                     #{rowX.column2}  
                                 </p:column>                                  
-                                <p:column headerText="FICHA" width="100">  
+                                <p:column headerText="NOMBRE FICHA" width="300">  
+                                    #{rowX.column4}  
+                                </p:column>                                  
+                                <p:column headerText="CODIGO FICHA" width="100">  
                                     #{rowX.column3}  
                                 </p:column>                                  
                             </p:dataTable>                            
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
+                                <p:row> 
+                                    <p:column>
+                                        <p:progressBar 
+                                            id="IdProgresValidate" 
+                                            interval="500" 
+                                            widgetVar="pbAjaxValidate" 
+                                            ajax="true" 
+                                            value="#{recordSetsMB.progress}" 
+                                            labelTemplate="{value}%" 
+                                            styleClass="animated">          
+                                            <p:ajax 
+                                                event="complete" 
+                                                listener="#{recordSetsMB.onCompleteLoad}" 
+                                                update="IdProgresValidate"/>  
+                                        </p:progressBar>
+                                    </p:column>
+                                </p:row>
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" colspan="5">
                                         <p:commandButton 
-                                            id="IdEdit"
-                                            action="#{recordSetsMB.openRecordSets}"
-                                            actionListener="#{recordSetsMB.selectTagClick}"
+                                            id="IdNew"
+                                            value="Nuevo"
+                                            oncomplete="dialogNew.show()"                                            
+                                            update=":IdForm2:IdDialogNew :IdForm1:message"/>   
+                                        <p:commandButton 
+                                            id="IdEdit" 
                                             disabled="#{recordSetsMB.btnEditDisabled}"
-                                            value="Mostrar Datos"                                 
-                                            icon="ui-icon-pencil"/>
+                                            value="Editar"
+                                            oncomplete="dialogEdit.show()"                                            
+                                            update=":IdForm2:IdDialogEdit :IdForm1:message"/>                                        
                                         <p:commandButton 
                                             id="IdRemove" 
                                             disabled="#{recordSetsMB.btnRemoveDisabled}"
-                                            value="Eliminar" 
-                                            icon="ui-icon-close"
+                                            value="Eliminar"
                                             oncomplete="dialogDelete.show()"                                            
                                             update=":IdForm2:IdDialogDelete :IdForm1:message"/>                                        
-                                    </p:column>                            
+                                        <p:commandButton 
+                                            id="IdView"
+                                            action="#{recordSetsMB.openRecordSets}"
+                                            actionListener="#{recordSetsMB.selectTagClick}"
+                                            disabled="#{recordSetsMB.btnViewDisabled}"
+                                            onclick="pbAjaxValidate.start();"  
+                                            value="Mostrar Datos"/>
+                                    </p:column>
                                 </p:row>
                             </p:panelGrid>
                             <br/>
@@ -131,17 +161,99 @@
         </ui:define>
         <ui:define name="dialogs">
             <h:form id="IdForm2">
-
+                <!-- DIALOGO NUEVO-->
+                <p:dialog                                                         
+                    id="IdDialogNew"
+                    modal="true"
+                    resizable="false"
+                    header="NUEVO CONJUNTO" 
+                    widgetVar="dialogNew"> 
+                    <p:panelGrid id="displayNew">                          
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="NOMBRE:" />
+                            </p:column>
+                            <p:column>                                
+                                <p:inputText size="40" value="#{recordSetsMB.groupName}" /> 
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="FICHA:" />
+                            </p:column>
+                            <p:column>                                
+                                <h:selectOneMenu 
+                                    value="#{recordSetsMB.formName}"> 
+                                    <f:selectItems value="#{recordSetsMB.forms}"/>                                    
+                                </h:selectOneMenu>
+                            </p:column>
+                        </p:row>                        
+                        <p:row>
+                            <p:column colspan="2" styleClass="ui-widget-header">
+                                <p:commandButton                                                           
+                                    oncomplete="dialogNew.hide()"                                    
+                                    actionListener="#{recordSetsMB.saveRegistry}"
+                                    value="Crear" 
+                                    update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>   
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogNew.hide()"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid> 
+                </p:dialog>  
+                <!-- DIALOGO EDITAR-->
+                <p:dialog                                                         
+                    id="IdDialogEdit"
+                    modal="true"
+                    resizable="false"
+                    header="EDICION DE CONJUNTO" 
+                    widgetVar="dialogEdit"> 
+                    <p:panelGrid >                          
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="NOMBRE:" />
+                            </p:column>
+                            <p:column>                                
+                                <p:inputText size="40" value="#{recordSetsMB.editGroupName}" /> 
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="FICHA:" />
+                            </p:column>
+                            <p:column>                                
+                                <h:selectOneMenu 
+                                    value="#{recordSetsMB.editFormName}"
+                                    disabled="true"> 
+                                    <f:selectItems value="#{recordSetsMB.forms}"/>                                    
+                                </h:selectOneMenu>                                
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column colspan="2" styleClass="ui-widget-header">
+                                <p:commandButton                                                           
+                                    oncomplete="dialogEdit.hide()"
+                                    actionListener="#{recordSetsMB.updateRegistry}"
+                                    value="Modificar" 
+                                    update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>   
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogEdit.hide()"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>                     
+                </p:dialog>  
                 <!-- DIALOGO ELIMINAR-->
                 <p:dialog                                                         
                     id="IdDialogDelete"
                     modal="true"
                     resizable="false"
-                    header="Eliminar" 
+                    header="ELIMINACION DE CONJUNTO" 
                     widgetVar="dialogDelete"> 
                     <br/>
                     <p:inputTextarea 
-                        value="Confirma la eliminación de este(os) conjunto(s)?" 
+                        value="Confirma la eliminación de los conjuntos seleccionados?" 
                         readonly="true" 
                         style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 48px;"/>
                     <br/>
@@ -154,9 +266,10 @@
                     <p:commandButton
                         value="Cancelar" 
                         onclick="dialogDelete.hide()"/> 
-                </p:dialog>                
+                </p:dialog>
             </h:form>
         </ui:define>
     </ui:composition>
 </html>
+
 

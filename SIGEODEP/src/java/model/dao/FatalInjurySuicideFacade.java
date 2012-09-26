@@ -6,14 +6,11 @@ package model.dao;
 
 import beans.connection.ConnectionJDBC;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import model.pojo.FatalInjuryMurder;
 import model.pojo.FatalInjurySuicide;
-import model.pojo.Loads;
 
 /**
  *
@@ -37,42 +34,40 @@ public class FatalInjurySuicideFacade extends AbstractFacade<FatalInjurySuicide>
     public List<FatalInjurySuicide> findFromTag(int id_tag) {
         String hql;
         try {
-            hql = "Select x from Loads x where x.loadsPK.tagId = " + String.valueOf(id_tag);
-            List<Loads> loadsList = em.createQuery(hql).getResultList();
-            List<FatalInjurySuicide> fatalInjurySuicideList = new ArrayList<FatalInjurySuicide>();
-            FatalInjurySuicide currentFatalInjurySuicide;
-            for (int i = 0; i < loadsList.size(); i++) {
-                currentFatalInjurySuicide = this.find(loadsList.get(i).getLoadsPK().getRecordId());//busco la lesion no fatal
-                fatalInjurySuicideList.add(currentFatalInjurySuicide);
-            }
-            return fatalInjurySuicideList;
+            hql = "Select x from FatalInjurySuicide x where x.fatalInjuries.tagId.tagId = " + String.valueOf(id_tag);
+            return em.createQuery(hql).getResultList();
         } catch (Exception e) {
             System.out.println(e.toString() + "----------------------------------------------------");
             return null;
         }
-
+    }
+    
+    public int countFromTag(int id_tag) {
+        String hql;
+        try {
+            hql = "Select count(x) from FatalInjurySuicide x where x.fatalInjuries.tagId.tagId = " + String.valueOf(id_tag);
+            long l=em.createQuery(hql, Long.class).getSingleResult();
+            String s=String.valueOf(l);
+            return Integer.parseInt(s);
+        } catch (Exception e) {
+            System.out.println(e.toString() + "-----------------------------------------------");
+            return 0;
+        }
     }
     
     public int countSuicide(int idTag) {
-        //select count(*) from non_fatal_injuries where injury_id=54;
         ConnectionJDBC conx;
         try {
             conx = new ConnectionJDBC();
             conx.connect();
-            //ResultSet rs = conx.consult("select count(*) from non_fatal_injuries where injury_id = 53;");
-
             ResultSet rs = conx.consult(""
                     + "SELECT "
                     + "    count(*) "
                     + "FROM "
-                    + "    public.fatal_injuries, "
-                    + "    public.loads, "
-                    + "    public.tags "
+                    + "    public.fatal_injuries "
                     + "WHERE "
                     + "    fatal_injuries.injury_id = 12 AND "
-                    + "    loads.record_id = fatal_injuries.fatal_injury_id AND "
-                    + "    tags.tag_id = loads.tag_id AND "
-                    + "    tags.tag_id = " + String.valueOf(idTag) + "; ");
+                    + "    fatal_injuries.tag_id = " + String.valueOf(idTag) + "; ");
 
             conx.disconnect();
             if (rs.next()) {
@@ -95,18 +90,12 @@ public class FatalInjurySuicideFacade extends AbstractFacade<FatalInjurySuicide>
                     + "("
                     + "   SELECT "
                     + "     ROW_NUMBER() OVER (ORDER BY fatal_injury_id) AS item, "
-                    + "     m2.*,"
-                    + "     m3.*,"
-                    + "     m4.* "
+                    + "     fat_inj.*"
                     + "   FROM "
-                    + "     fatal_injury_suicide m2, "
-                    + "     loads m3, "
-                    + "     tags m4"
+                    + "     fatal_injuries fat_inj "
                     + "   WHERE"
-                    + "      m4.tag_id = m3.tag_id AND"
-                    + "      m2.fatal_injury_id = m3.record_id AND"
-                    + "      m4.form_id LIKE 'SCC-F-030' AND"
-                    + "      m4.tag_id = " + String.valueOf(id_tag) + " "
+                    + "      fat_inj.injury_id = 12 AND"
+                    + "      fat_inj.tag_id = " + String.valueOf(id_tag) + " "
                     + ") "
                     + "as a WHERE fatal_injury_id=" + String.valueOf(injury_id) + "");
             conx.disconnect();
@@ -153,19 +142,15 @@ public class FatalInjurySuicideFacade extends AbstractFacade<FatalInjurySuicide>
             conx.connect();
             ResultSet rs = conx.consult(""
                     + "SELECT "
-                    + "  fatal_injury_suicide.fatal_injury_id "
+                    + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
-                    + "  public.loads, "
-                    + "  public.tags, "
-                    + "  public.fatal_injury_suicide "
+                    + "  public.fatal_injuries "
                     + "WHERE "
-                    + "  tags.tag_id = loads.tag_id AND "
-                    + "  fatal_injury_suicide.fatal_injury_id = loads.record_id AND "
-                    + "  tags.form_id LIKE 'SCC-F-030' AND "
-                    + "  tags.tag_id = " + String.valueOf(id_tag) + " AND "
-                    + "  fatal_injury_suicide.fatal_injury_id > " + String.valueOf(injury_id) + " "
+                    + "  fatal_injuries.injury_id = 12 AND "
+                    + "  fatal_injuries.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "  fatal_injuries.fatal_injury_id > " + String.valueOf(injury_id) + " "
                     + "ORDER BY "
-                    + "  fatal_injury_suicide.fatal_injury_id ASC "
+                    + "  fatal_injuries.fatal_injury_id ASC "
                     + "LIMIT "
                     + "  1;");
             conx.disconnect();
@@ -186,19 +171,15 @@ public class FatalInjurySuicideFacade extends AbstractFacade<FatalInjurySuicide>
             conx.connect();
             ResultSet rs = conx.consult(""
                     + "SELECT "
-                    + "  fatal_injury_suicide.fatal_injury_id "
+                    + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
-                    + "  public.loads, "
-                    + "  public.tags, "
-                    + "  public.fatal_injury_suicide "
+                    + "  public.fatal_injuries "
                     + "WHERE "
-                    + "  tags.tag_id = loads.tag_id AND "
-                    + "  fatal_injury_suicide.fatal_injury_id = loads.record_id AND "
-                    + "  tags.form_id LIKE 'SCC-F-030' AND "
-                    + "  tags.tag_id = " + String.valueOf(id_tag) + " AND "
-                    + "  fatal_injury_suicide.fatal_injury_id < " + String.valueOf(injury_id) + " "
+                    + "  fatal_injuries.injury_id = 12 AND "
+                    + "  fatal_injuries.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "  fatal_injuries.fatal_injury_id < " + String.valueOf(injury_id) + " "
                     + "ORDER BY "
-                    + "  fatal_injury_suicide.fatal_injury_id DESC "
+                    + "  fatal_injuries.fatal_injury_id DESC "
                     + "LIMIT "
                     + "  1;");
             conx.disconnect();
@@ -227,18 +208,14 @@ public class FatalInjurySuicideFacade extends AbstractFacade<FatalInjurySuicide>
             conx.connect();
             ResultSet rs = conx.consult(""
                     + "SELECT "
-                    + "  fatal_injury_suicide.fatal_injury_id "
+                    + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
-                    + "  public.loads, "
-                    + "  public.tags, "
-                    + "  public.fatal_injury_suicide "
+                    + "  public.fatal_injuries "
                     + "WHERE "
-                    + "  tags.tag_id = loads.tag_id AND "
-                    + "  fatal_injury_suicide.fatal_injury_id = loads.record_id AND "
-                    + "  tags.form_id LIKE 'SCC-F-030' AND "
-                    + "  tags.tag_id = " + String.valueOf(id_tag) + " "
+                    + "  fatal_injuries.injury_id = 12 AND "
+                    + "  fatal_injuries.tag_id = " + String.valueOf(id_tag) + " "
                     + "ORDER BY "
-                    + "  fatal_injury_suicide.fatal_injury_id ASC "
+                    + "  fatal_injuries.fatal_injury_id ASC "
                     + "LIMIT "
                     + "  1;");
             conx.disconnect();
@@ -267,18 +244,14 @@ public class FatalInjurySuicideFacade extends AbstractFacade<FatalInjurySuicide>
             conx.connect();
             ResultSet rs = conx.consult(""
                     + "SELECT "
-                    + "  fatal_injury_suicide.fatal_injury_id "
+                    + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
-                    + "  public.loads, "
-                    + "  public.tags, "
-                    + "  public.fatal_injury_suicide "
+                    + "  public.fatal_injuries "
                     + "WHERE "
-                    + "  tags.tag_id = loads.tag_id AND "
-                    + "  fatal_injury_suicide.fatal_injury_id = loads.record_id AND "
-                    + "  tags.form_id LIKE 'SCC-F-030' AND "
-                    + "  tags.tag_id = " + String.valueOf(id_tag) + " "
+                    + "  fatal_injuries.injury_id = 12 AND "
+                    + "  fatal_injuries.tag_id = " + String.valueOf(id_tag) + " "
                     + "ORDER BY "
-                    + "  fatal_injury_suicide.fatal_injury_id DESC "
+                    + "  fatal_injuries.fatal_injury_id DESC "
                     + "LIMIT "
                     + "  1;");
             conx.disconnect();

@@ -105,13 +105,9 @@ public class FatalInjuries implements Serializable {
     private String victimPlaceOfOrigin;
     
     
-//    @JoinColumn(name = "id_state_time", referencedColumnName = "id_state_time")
-//    @ManyToOne
-//    private StateTime idStateTime;
-//    @JoinColumn(name = "id_state_date", referencedColumnName = "id_state_date")
-//    @ManyToOne
-//    private StateDate idStateDate;
-    
+    @JoinColumn(name = "tag_id", referencedColumnName = "tag_id")
+    @ManyToOne
+    private Tags tagId;
     
     public FatalInjuries() {
     }
@@ -233,22 +229,14 @@ public class FatalInjuries implements Serializable {
     public void setUserId(Users userId) {
 	this.userId = userId;
     }
+    
+    public Tags getTagId() {
+        return tagId;
+    }
 
-//    public StateTime getIdStateTime() {
-//        return idStateTime;
-//    }
-//
-//    public void setIdStateTime(StateTime idStateTime) {
-//        this.idStateTime = idStateTime;
-//    }
-//
-//    public StateDate getIdStateDate() {
-//        return idStateDate;
-//    }
-//
-//    public void setIdStateDate(StateDate idStateDate) {
-//        this.idStateDate = idStateDate;
-//    }
+    public void setTagId(Tags tagId) {
+        this.tagId = tagId;
+    }
     
     public Places getInjuryPlaceId() {
 	return injuryPlaceId;

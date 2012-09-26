@@ -44,7 +44,7 @@
                                 id="IdSearchTable" var="rowX" 
                                 value="#{recordSetsVifMB.rowDataTableList}" 
                                 rowKey="#{rowX.column1}"  
-                                selection="#{recordSetsVifMB.selectedRowDataTable}" 
+                                selection="#{recordSetsVifMB.selectedRowsDataTable}" 
                                 paginator="true"
                                 rows="10"   
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -53,7 +53,7 @@
                                 scrollable="true"
                                 scrollWidth="730"                                    
                                 pageLinks="3"
-                                selectionMode="single"
+                                selectionMode="multiple"
                                 resizableColumns="true">                                
                                 <p:ajax
                                     event="rowSelect"
@@ -62,7 +62,7 @@
 
 
                                 <p:column headerText="CODIGO INTERNO" width="50">#{rowX.column1}</p:column>
-                                <p:column headerText="INSTITUCION RECEPTORA" width="50">#{rowX.column80}</p:column>
+                                <p:column headerText="INSTITUCION RECEPTORA" width="200">#{rowX.column80}</p:column>
                                 <p:column headerText="NOMBRES Y APELLIDOS" width="400">#{rowX.column4}</p:column>                                                
                                 <p:column headerText="TIPO IDENTIFICACION" width="200">#{rowX.column2}</p:column>
                                 <p:column headerText="IDENTIFICACION" width="100">#{rowX.column3}</p:column>                
@@ -178,7 +178,8 @@
                                             </p:column>
                                         </p:dataTable>
                                         <h:commandLink >  
-                                            <p:graphicImage value="../../resources/img/excel.png"/>
+                                            <!---p:graphicImage style="margin-top: 200px;" value="../../resources/img/excel.png"/-->
+                                            <p:button value="Exportar"/>
                                             <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{recordSetsVifMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                     </p:column>                            

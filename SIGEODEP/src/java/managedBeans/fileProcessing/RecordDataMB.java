@@ -165,8 +165,7 @@ public class RecordDataMB implements Serializable {
     InsuranceFacade insuranceFacade;
     @EJB
     TagsFacade tagsFacade;
-    @EJB
-    LoadsFacade loadsFacade;
+
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //MANEJO E LA BARRA DE PROGRESO DEL ALMACENAMIENTO ---------------------
@@ -449,7 +448,6 @@ public class RecordDataMB implements Serializable {
                 //loadsFacade
 
                 //VARIABLES NECESARIAS 
-                Loads newLoad;
                 NonFatalInjuries newNonFatalInjuries = new NonFatalInjuries();
                 newNonFatalInjuries.setNonFatalInjuryId(MaxIdNFI + 1);
 
@@ -1088,7 +1086,7 @@ public class RecordDataMB implements Serializable {
                     newVictim.setVictimName(name);
                 }                
                 //VARIABLES PARA CONJUNTOS DE REGISTROS
-                
+                newNonFatalInjuries.setTagId(tagsFacade.find(maxTag));
 
                 //DETERMINAR TIPO DE IDENTIFICACION
                 if (newVictim.getVictimNid() != null) {
@@ -1101,8 +1099,8 @@ public class RecordDataMB implements Serializable {
                     newNonFatalInjuries.setVictimId(newVictim);
                     victimsFacade.create(newVictim);//PERSISTO LA VICTIMA                
                     nonFatalInjuriesFacade.create(newNonFatalInjuries);//PERSISTO LA LESION NO FATAL
-                    newLoad=new Loads(maxTag, newNonFatalInjuries.getNonFatalInjuryId());//PERSISTO LA CARGA
-                    loadsFacade.create(newLoad);
+                    //newLoad=new Loads(maxTag, newNonFatalInjuries.getNonFatalInjuryId());//PERSISTO LA CARGA
+                    //loadsFacade.create(newLoad);
                 } catch (Exception e) {
                     System.out.println(e.toString());
                 }

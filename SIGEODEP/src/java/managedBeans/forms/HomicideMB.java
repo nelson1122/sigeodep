@@ -133,8 +133,7 @@ public class HomicideMB implements Serializable {
     private Short currentMurderContext;
     private SelectItem[] murderContexts;
     //------------------
-    @EJB
-    LoadsFacade loadsFacade;
+    
     @EJB
     VictimsFacade victimsFacade;
     @EJB
@@ -207,14 +206,12 @@ public class HomicideMB implements Serializable {
     
     
 
-    public void loadValues(List<Tags> tagsList, FatalInjuryMurder currentFatalInjuryM) {
-        LoadsPK loadsPK;
-        for (int i = 0; i < tagsList.size(); i++) {
-            loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentFatalInjuryM.getFatalInjuryId());
+    public void loadValues(List<Tags> tagsList, FatalInjuryMurder currentFatalInjuryM) {        
+        for (int i = 0; i < tagsList.size(); i++) {            
             try {
                 reset();
                 clearForm();
-                currentTag = loadsFacade.find(loadsPK).getTags().getTagId();
+                currentTag = tagsList.get(i).getTagId();
                 this.currentFatalInjuryMurder = currentFatalInjuryM;
                 currentFatalInjuriId = currentFatalInjuryM.getFatalInjuryId();
                 determinePosition();
@@ -775,12 +772,12 @@ public class HomicideMB implements Serializable {
                 openDialogDelete = "";
                 if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     System.out.println("guardando nuevo registro");
+                    newFatalInjurie.setTagId(tagsFacade.find(currentTag));
+                    
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryMurderFacade.create(newMurder);
-                    Loads newLoad;
-                    newLoad = new Loads(currentTag, newFatalInjurie.getFatalInjuryId());//PERSISTO EL registro en la CARGA
-                    loadsFacade.create(newLoad);
+                    
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
@@ -813,10 +810,6 @@ public class HomicideMB implements Serializable {
             FatalInjuries auxFatalInjuries = currentFatalInjuryMurder.getFatalInjuries();
             Victims auxVictims = currentFatalInjuryMurder.getFatalInjuries().getVictimId();
             fatalInjuryMurderFacade.remove(currentFatalInjuryMurder);
-
-            LoadsPK loadsPK = new LoadsPK(currentTag, currentFatalInjuryMurder.getFatalInjuryId());
-            loadsFacade.remove(loadsFacade.find(loadsPK));
-
             fatalInjuriesFacade.remove(auxFatalInjuries);
             victimsFacade.remove(auxVictims);
             System.out.println("registro eliminado");
@@ -857,6 +850,7 @@ public class HomicideMB implements Serializable {
             //newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
             //newFatalInjurie.setInjuryId(injuriesFacade.find((short) 10));//es 10 por ser homicidio
 
+            
             currentFatalInjuryMurder.getFatalInjuries().setInjuryDate(fatalInjurie.getInjuryDate());
             currentFatalInjuryMurder.getFatalInjuries().setInjuryTime(fatalInjurie.getInjuryTime());
             currentFatalInjuryMurder.getFatalInjuries().setInjuryAddress(fatalInjurie.getInjuryAddress());

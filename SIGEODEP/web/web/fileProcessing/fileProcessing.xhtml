@@ -41,9 +41,9 @@
                             <p:row>
                                 <p:column colspan="4" styleClass="ui-widget-header">
                                     CARGA DE REGISTROS DESDE ARCHIVO
-                                    <p:commandButton                                         
+                                    <!--p:commandButton                                         
                                         value="Relacionar Conjuntos"
-                                        actionListener="#{uploadFileMB.relatedRecordSets}"/>
+                                        actionListener="{uploadFileMB.crearCopia}"/-->                                    
                                 </p:column>
                             </p:row>
                             <p:row>
@@ -72,7 +72,8 @@
                                     <p:selectOneMenu 
                                         id="IdSelectForm"
                                         value="#{uploadFileMB.currentForm}"                                         
-                                        disabled="#{uploadFileMB.selectFormDisabled}"> 
+                                        disabled="#{uploadFileMB.selectFormDisabled}"
+                                        > 
                                         <f:selectItems value="#{uploadFileMB.forms}"/>  
                                         <f:ajax
                                             render="IdSelectOneMenuSource IdDelimiter IdAccordionPanel:IdSelectOneListVarExpected IdCurrentForm"/>
@@ -166,7 +167,7 @@
                                             <p:selectOneListbox 
                                                 id="copyFieldsListBox" 
                                                 style="height:200px; width: 300px; " 
-                                                value="#{copyMB.copy_field}"                                                            >
+                                                value="#{copyMB.copy_field}">
                                                 <f:selectItems value="#{copyMB.fields}"/>    
                                                 <f:ajax                                             
                                                     event="change" 
@@ -834,7 +835,7 @@
                                             </p:panelGrid>
                                         </td>
                                     </tr>
-                                    
+
                                     <tr>
                                         <td colspan="2">
                                             <p:panelGrid>                            
@@ -1052,7 +1053,9 @@
                                                 su correción."/>  
                                             <br/>
                                             <br/>
-                                            <p:progressBar id="IdProgresValidate" interval="500" widgetVar="pbAjaxValidate" ajax="true" value="#{recordDataMB.progressValidate}" labelTemplate="{value}%" styleClass="animated">  
+                                            <p:progressBar 
+                                                id="IdProgresValidate" 
+                                                interval="500" widgetVar="pbAjaxValidate" ajax="true" value="#{recordDataMB.progressValidate}" labelTemplate="{value}%" styleClass="animated">  
                                                 <p:ajax 
                                                     event="complete" 
                                                     listener="#{recordDataMB.onCompleteValidate}" 
