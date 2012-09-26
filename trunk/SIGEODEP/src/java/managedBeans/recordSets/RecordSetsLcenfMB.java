@@ -53,10 +53,9 @@ public class RecordSetsLcenfMB implements Serializable {
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
     @EJB
     InjuriesFacade injuriesFacade;
-    @EJB
-    LoadsFacade loadsFacade;
     private List<RowDataTable> rowDataTableList;
-    private RowDataTable selectedRowDataTable;
+    //private RowDataTable selectedRowDataTable;
+    private RowDataTable[] selectedRowsDataTable;
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
     private String name = "";
@@ -70,12 +69,18 @@ public class RecordSetsLcenfMB implements Serializable {
     private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     private LcenfMB lcenfMB;
     private String openForm = "";
+    private RecordSetsMB recordSetsMB;
 
     public RecordSetsLcenfMB() {
     }
 
     public String openForm() {
         return openForm;
+    }
+
+    public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
+        FacesMessage msg = new FacesMessage(s, title, messageStr);
+        FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
     public void openInForm() {
@@ -85,22 +90,39 @@ public class RecordSetsLcenfMB implements Serializable {
         openForm = "LCENF";
     }
 
-    void loadValues(RowDataTable[] selectedRowsDataTable) {
-        selectedRowDataTable = null;
+    void loadValues(RowDataTable[] selectedRowsDataTableTags) {
+        
+        FacesContext context = FacesContext.getCurrentInstance();
+        recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
+        recordSetsMB.setProgress(0);
+        int totalRegisters = 0;
+        int totalProcess = 0;
+        
+        selectedRowsDataTable = null;
         rowDataTableList = new ArrayList<RowDataTable>();
         data = "- ";
         //CREO LA LISTA DE TAGS SELECCIONADOS
         tagsList = new ArrayList<Tags>();
-        for (int i = 0; i < selectedRowsDataTable.length; i++) {
-            data = data + selectedRowsDataTable[i].getColumn2() + " -";
-            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
+        for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
+            data = data + selectedRowsDataTableTags[i].getColumn2() + " -";
+            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
+        }
+        //DETERMINO EL NUMERO DE REGISTROS 
+        for (int i = 0; i < tagsList.size(); i++) {
+            totalRegisters = totalRegisters + nonFatalInjuriesFacade.countFromTag(tagsList.get(i).getTagId());
         }
         //RECORRO CADA TAG Y CARGO UN LISTADO DE SUS REGISTROS
         List<NonFatalInjuries> nonFatalInjuriesList;
         for (int i = 0; i < tagsList.size(); i++) {
             nonFatalInjuriesList = nonFatalInjuriesFacade.findFromTag(tagsList.get(i).getTagId());
-            for (int j = 0; j < nonFatalInjuriesList.size(); j++) {
-                rowDataTableList.add(loadValues(nonFatalInjuriesList.get(j)));
+            if (nonFatalInjuriesList != null) {
+                for (int j = 0; j < nonFatalInjuriesList.size(); j++) {
+                    rowDataTableList.add(loadValues(nonFatalInjuriesList.get(j)));
+                    totalProcess++;
+                    if (totalRegisters != 0) {
+                        recordSetsMB.setProgress((int) (totalProcess * 100) / totalRegisters);
+                    }
+                }
             }
         }
     }
@@ -1100,7 +1122,7 @@ public class RecordSetsLcenfMB implements Serializable {
         try {
             if (currentNonFatalI.getNonFatalTransport() != null) {
                 if (currentNonFatalI.getNonFatalTransport().getTransportTypeId() != null) {
-                    newRowDataTable.setColumn112(currentNonFatalI.getNonFatalTransport().getTransportTypeId().getTransportTypeId().toString());
+                    newRowDataTable.setColumn112(currentNonFatalI.getNonFatalTransport().getTransportTypeId().getTransportTypeName());
                 }
             }
         } catch (Exception e) {
@@ -1109,7 +1131,7 @@ public class RecordSetsLcenfMB implements Serializable {
         try {
             if (currentNonFatalI.getNonFatalTransport() != null) {
                 if (currentNonFatalI.getNonFatalTransport().getTransportCounterpartId() != null) {
-                    newRowDataTable.setColumn113(currentNonFatalI.getNonFatalTransport().getTransportCounterpartId().getTransportCounterpartId().toString());
+                    newRowDataTable.setColumn113(currentNonFatalI.getNonFatalTransport().getTransportCounterpartId().getTransportCounterpartName());
                 }
             }
         } catch (Exception e) {
@@ -1118,7 +1140,7 @@ public class RecordSetsLcenfMB implements Serializable {
         try {
             if (currentNonFatalI.getNonFatalTransport() != null) {
                 if (currentNonFatalI.getNonFatalTransport().getTransportUserId() != null) {
-                    newRowDataTable.setColumn114(currentNonFatalI.getNonFatalTransport().getTransportUserId().getTransportUserId().toString());
+                    newRowDataTable.setColumn114(currentNonFatalI.getNonFatalTransport().getTransportUserId().getTransportUserName());
                 }
             }
         } catch (Exception e) {
@@ -1162,47 +1184,64 @@ public class RecordSetsLcenfMB implements Serializable {
 
     public void load() {
         currentNonFatalInjury = null;
-        if (selectedRowDataTable != null) {
-            currentNonFatalInjury = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
-        }
-        if (currentNonFatalInjury != null) {
-            btnEditDisabled = false;
-            btnRemoveDisabled = false;
+        btnEditDisabled = true;
+        btnRemoveDisabled = true;
+        if (selectedRowsDataTable != null) {
+            if (selectedRowsDataTable.length == 1) {
+                currentNonFatalInjury = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
+            }
+            if (selectedRowsDataTable.length > 1) {
+                
+                btnEditDisabled = true;
+                btnRemoveDisabled = false;
+            } else {
+                btnEditDisabled = false;
+                btnRemoveDisabled = false;
+            }
         }
     }
 
     public void deleteRegistry() {
-        if (selectedRowDataTable != null) {
-            if (currentNonFatalInjury.getNonFatalDomesticViolence() != null) {
-                nonFatalDomesticViolenceFacade.remove(currentNonFatalInjury.getNonFatalDomesticViolence());
+        if (selectedRowsDataTable != null) {
+            List<NonFatalInjuries> nonFatalInjuriesList = new ArrayList<NonFatalInjuries>();
+            for (int j = 0; j < selectedRowsDataTable.length; j++) {
+                nonFatalInjuriesList.add(nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
             }
-            if (currentNonFatalInjury.getNonFatalInterpersonal() != null) {
-                nonFatalInterpersonalFacade.remove(currentNonFatalInjury.getNonFatalInterpersonal());
-            }
-            if (currentNonFatalInjury.getNonFatalSelfInflicted() != null) {
-                nonFatalSelfInflictedFacade.remove(currentNonFatalInjury.getNonFatalSelfInflicted());
-            }
-            if (currentNonFatalInjury.getNonFatalTransport() != null) {
-                nonFatalTransportFacade.remove(currentNonFatalInjury.getNonFatalTransport());
-            }
-            LoadsPK loadsPK;
-            Loads currentLoad;
-            for (int i = 0; i < tagsList.size(); i++) {
-                loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentNonFatalInjury.getNonFatalInjuryId());
-                currentLoad = loadsFacade.find(loadsPK);
-                if (currentLoad != null) {
-                    loadsFacade.remove(currentLoad);
-                    nonFatalInjuriesFacade.remove(currentNonFatalInjury);
-                    victimsFacade.remove(currentNonFatalInjury.getVictimId());
-                    rowDataTableList.remove(selectedRowDataTable);
-                    selectedRowDataTable = null;
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                    btnEditDisabled = true;
-                    btnRemoveDisabled = true;
-                    break;
+            if (nonFatalInjuriesList != null) {
+                for (int j = 0; j < nonFatalInjuriesList.size(); j++) {
+
+
+                    if (nonFatalInjuriesList.get(j).getNonFatalDomesticViolence() != null) {
+                        nonFatalDomesticViolenceFacade.remove(nonFatalInjuriesList.get(j).getNonFatalDomesticViolence());
+                    }
+                    if (nonFatalInjuriesList.get(j).getNonFatalInterpersonal() != null) {
+                        nonFatalInterpersonalFacade.remove(nonFatalInjuriesList.get(j).getNonFatalInterpersonal());
+                    }
+                    if (nonFatalInjuriesList.get(j).getNonFatalSelfInflicted() != null) {
+                        nonFatalSelfInflictedFacade.remove(nonFatalInjuriesList.get(j).getNonFatalSelfInflicted());
+                    }
+                    if (nonFatalInjuriesList.get(j).getNonFatalTransport() != null) {
+                        nonFatalTransportFacade.remove(nonFatalInjuriesList.get(j).getNonFatalTransport());
+                    }
+                    nonFatalInjuriesFacade.remove(nonFatalInjuriesList.get(j));
+                    victimsFacade.remove(nonFatalInjuriesList.get(j).getVictimId());
+                    //----------------------------------------------------------
                 }
             }
+            //quito los elementos seleccionados de rowsDataTableList seleccion de 
+            for (int j = 0; j < selectedRowsDataTable.length; j++) {
+                for (int i = 0; i < rowDataTableList.size(); i++) {
+                    if (selectedRowsDataTable[j].getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
+                        rowDataTableList.remove(i);
+                        break;
+                    }
+                }
+            }
+            //deselecciono los controles
+            selectedRowsDataTable = null;
+            btnEditDisabled = true;
+            btnRemoveDisabled = true;
+            printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
         }
     }
 
@@ -1214,12 +1253,12 @@ public class RecordSetsLcenfMB implements Serializable {
         this.rowDataTableList = rowDataTableList;
     }
 
-    public RowDataTable getSelectedRowDataTable() {
-        return selectedRowDataTable;
+    public RowDataTable[] getSelectedRowsDataTable() {
+        return selectedRowsDataTable;
     }
 
-    public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
-        this.selectedRowDataTable = selectedRowDataTable;
+    public void setSelectedRowsDataTable(RowDataTable[] selectedRowsDataTable) {
+        this.selectedRowsDataTable = selectedRowsDataTable;
     }
 
     public int getCurrentSearchCriteria() {

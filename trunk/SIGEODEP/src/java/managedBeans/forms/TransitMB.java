@@ -130,8 +130,7 @@ public class TransitMB implements Serializable {
     private String currentNeighborhoodEventCode = "";
     boolean neighborhoodHomeNameDisabled = false;
     //--------------------
-    @EJB
-    LoadsFacade loadsFacade;
+    
     @EJB
     HealthProfessionalsFacade healthProfessionalsFacade;
     @EJB
@@ -249,13 +248,11 @@ public class TransitMB implements Serializable {
     }
 
     public void loadValues(List<Tags> tagsList, FatalInjuryTraffic currentFatalInjuryT) {
-        LoadsPK loadsPK;
         for (int i = 0; i < tagsList.size(); i++) {
-            loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentFatalInjuryT.getFatalInjuryId());
             try {
                 reset();
                 clearForm();
-                currentTag = loadsFacade.find(loadsPK).getTags().getTagId();
+                currentTag = tagsList.get(i).getTagId();
                 this.currentFatalInjuryTraffic = currentFatalInjuryT;
                 currentFatalInjuriId = currentFatalInjuryT.getFatalInjuryId();
                 determinePosition();
@@ -1213,14 +1210,13 @@ public class TransitMB implements Serializable {
                 openDialogDelete = "";
                 if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     System.out.println("guardando nuevo registro");
+                    
+                    newFatalInjurie.setTagId(tagsFacade.find(currentTag));
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryTrafficFacade.create(newFatalInjuryTraffic);
 
-                    Loads newLoad;
-                    newLoad = new Loads(currentTag, newFatalInjurie.getFatalInjuryId());//PERSISTO EL registro en la CARGA
-                    loadsFacade.create(newLoad);
-
+                    
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
@@ -1284,7 +1280,7 @@ public class TransitMB implements Serializable {
             //FatalInjuries newFatalInjurie = new FatalInjuries();
             //newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
             //newFatalInjurie.setInjuryId(injuriesFacade.find((short) 10));//es 10 por ser homicidio
-
+            //currentFatalInjuryTraffic.getFatalInjuries().setTagId(fatalInjurie.getTagId());
             currentFatalInjuryTraffic.getFatalInjuries().setInjuryDate(fatalInjurie.getInjuryDate());
             currentFatalInjuryTraffic.getFatalInjuries().setInjuryTime(fatalInjurie.getInjuryTime());
             currentFatalInjuryTraffic.getFatalInjuries().setInjuryAddress(fatalInjurie.getInjuryAddress());
@@ -1710,10 +1706,6 @@ public class TransitMB implements Serializable {
         if (currentFatalInjuriId != -1) {
             FatalInjuries auxFatalInjuries = currentFatalInjuryTraffic.getFatalInjuries();
             Victims auxVictims = currentFatalInjuryTraffic.getFatalInjuries().getVictimId();
-
-            LoadsPK loadsPK = new LoadsPK(currentTag, currentFatalInjuryTraffic.getFatalInjuryId());
-            loadsFacade.remove(loadsFacade.find(loadsPK));
-
             fatalInjuryTrafficFacade.remove(currentFatalInjuryTraffic);
             fatalInjuriesFacade.remove(auxFatalInjuries);
             victimsFacade.remove(auxVictims);

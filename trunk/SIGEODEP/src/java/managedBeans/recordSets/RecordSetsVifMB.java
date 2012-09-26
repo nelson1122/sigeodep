@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -51,11 +52,12 @@ public class RecordSetsVifMB implements Serializable {
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     @EJB
-    InjuriesFacade injuriesFacade;
+    NonFatalInjuriesFacade nonFatalInjuriesFacade;
     @EJB
-    LoadsFacade loadsFacade;
+    InjuriesFacade injuriesFacade;
     private List<RowDataTable> rowDataTableList;
-    private RowDataTable selectedRowDataTable;
+    //private RowDataTable selectedRowDataTable;
+    private RowDataTable[] selectedRowsDataTable;
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
     private String name = "";
@@ -69,8 +71,14 @@ public class RecordSetsVifMB implements Serializable {
     private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     private VIFMB vifMB;
     private String openForm = "";
+    private RecordSetsMB recordSetsMB;
 
     public RecordSetsVifMB() {
+    }
+
+    public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
+        FacesMessage msg = new FacesMessage(s, title, messageStr);
+        FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
     public String openForm() {
@@ -84,22 +92,39 @@ public class RecordSetsVifMB implements Serializable {
         openForm = "VIF";
     }
 
-    void loadValues(RowDataTable[] selectedRowsDataTable) {
-        selectedRowDataTable = null;
+    void loadValues(RowDataTable[] selectedRowsDataTableTags) {
+                
+        FacesContext context = FacesContext.getCurrentInstance();
+        recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
+        recordSetsMB.setProgress(0);
+        int totalRegisters = 0;
+        int totalProcess = 0;
+        
+        selectedRowsDataTable = null;
         rowDataTableList = new ArrayList<RowDataTable>();
         data = "- ";
         //CREO LA LISTA DE TAGS SELECCIONADOS
         tagsList = new ArrayList<Tags>();
-        for (int i = 0; i < selectedRowsDataTable.length; i++) {
-            data = data + selectedRowsDataTable[i].getColumn2() + " -";
-            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
+        for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
+            data = data + selectedRowsDataTableTags[i].getColumn2() + " -";
+            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
+        }
+        //DETERMINO EL NUMERO DE REGISTROS 
+        for (int i = 0; i < tagsList.size(); i++) {
+            totalRegisters = totalRegisters + nonFatalInjuriesFacade.countFromTag(tagsList.get(i).getTagId());
         }
         //RECORRO CADA TAG Y CARGO UN LISTADO DE SUS REGISTROS
         List<NonFatalDomesticViolence> nonFatalDomesticViolenceList;
         for (int i = 0; i < tagsList.size(); i++) {
             nonFatalDomesticViolenceList = nonFatalDomesticViolenceFacade.findFromTag(tagsList.get(i).getTagId());
-            for (int j = 0; j < nonFatalDomesticViolenceList.size(); j++) {
-                rowDataTableList.add(loadValues(nonFatalDomesticViolenceList.get(j)));
+            if (nonFatalDomesticViolenceList != null) {
+                for (int j = 0; j < nonFatalDomesticViolenceList.size(); j++) {
+                    rowDataTableList.add(loadValues(nonFatalDomesticViolenceList.get(j)));
+                    totalProcess++;
+                    if (totalRegisters != 0) {
+                        recordSetsMB.setProgress((int) (totalProcess * 100) / totalRegisters);
+                    }
+                }
             }
         }
     }
@@ -224,7 +249,7 @@ public class RecordSetsVifMB implements Serializable {
 
         for (int i = 0; i < rowDataTableList.size(); i++) {
             row = sheet.createRow(i + 1);
-            
+
             createCell(row, 0, rowDataTableList.get(i).getColumn1());//"CODIGO INTERNO");//50">#{rowX.column1}</p:column>
             createCell(row, 1, rowDataTableList.get(i).getColumn80());//"INSTITUCION RECEPTORA");//50">#{rowX.column80}</p:column>
             createCell(row, 2, rowDataTableList.get(i).getColumn4());//"NOMBRES Y APELLIDOS");//400">#{rowX.column4}</p:column>                                                
@@ -800,48 +825,54 @@ public class RecordSetsVifMB implements Serializable {
 
     public void load() {
         currentNonFatalDomesticViolence = null;
-        if (selectedRowDataTable != null) {
-            currentNonFatalDomesticViolence = nonFatalDomesticViolenceFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
-        }
-        if (currentNonFatalDomesticViolence != null) {
-            btnEditDisabled = false;
-            btnRemoveDisabled = false;
+        btnEditDisabled = true;
+        btnRemoveDisabled = true;
+        if (selectedRowsDataTable != null) {
+            
+            if (selectedRowsDataTable.length == 1) {
+                currentNonFatalDomesticViolence = nonFatalDomesticViolenceFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
+            }
+            if (selectedRowsDataTable.length > 1) {
+                
+                btnEditDisabled = true;
+                btnRemoveDisabled = false;
+            } else {
+                btnEditDisabled = false;
+                btnRemoveDisabled = false;
+            }
         }
     }
 
     public void deleteRegistry() {
-//        if (selectedRowDataTable != null) {
-//            if (currentNonFatalDomesticViolence.getNonFatalDomesticViolence() != null) {
-//                nonFatalDomesticViolenceFacade.remove(currentNonFatalDomesticViolence.getNonFatalDomesticViolence());
-//            }
-//            if (currentNonFatalDomesticViolence.getNonFatalInterpersonal() != null) {
-//                nonFatalInterpersonalFacade.remove(currentNonFatalDomesticViolence.getNonFatalInterpersonal());
-//            }
-//            if (currentNonFatalDomesticViolence.getNonFatalSelfInflicted() != null) {
-//                nonFatalSelfInflictedFacade.remove(currentNonFatalDomesticViolence.getNonFatalSelfInflicted());
-//            }
-//            if (currentNonFatalDomesticViolence.getNonFatalTransport() != null) {
-//                nonFatalTransportFacade.remove(currentNonFatalDomesticViolence.getNonFatalTransport());
-//            }
-//            LoadsPK loadsPK;
-//            Loads currentLoad;
-//            for (int i = 0; i < tagsList.size(); i++) {
-//                loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentNonFatalDomesticViolence.getNonFatalInjuryId());
-//                currentLoad = loadsFacade.find(loadsPK);
-//                if (currentLoad != null) {
-//                    loadsFacade.remove(currentLoad);
-//                    nonFatalDomesticViolenceFacade.remove(currentNonFatalDomesticViolence);
-//                    victimsFacade.remove(currentNonFatalDomesticViolence.getVictimId());
-//                    rowDataTableList.remove(selectedRowDataTable);
-//                    selectedRowDataTable = null;
-//                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
-//                    FacesContext.getCurrentInstance().addMessage(null, msg);
-//                    btnEditDisabled = true;
-//                    btnRemoveDisabled = true;
-//                    break;
-//                }
-//            }
-//        }
+        if (selectedRowsDataTable != null) {
+            List<NonFatalDomesticViolence> nonFatalDomesticViolenceList = new ArrayList<NonFatalDomesticViolence>();
+            for (int j = 0; j < selectedRowsDataTable.length; j++) {
+                nonFatalDomesticViolenceList.add(nonFatalDomesticViolenceFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
+            }
+            if (nonFatalDomesticViolenceList != null) {
+                for (int j = 0; j < nonFatalDomesticViolenceList.size(); j++) {
+                    NonFatalInjuries auxNonFatalInjuries = nonFatalDomesticViolenceList.get(j).getNonFatalInjuries();
+                    Victims auxVictims = nonFatalDomesticViolenceList.get(j).getNonFatalInjuries().getVictimId();
+                    nonFatalDomesticViolenceFacade.remove(nonFatalDomesticViolenceList.get(j));
+                    nonFatalInjuriesFacade.remove(auxNonFatalInjuries);
+                    victimsFacade.remove(auxVictims);
+                }
+            }
+            //quito los elementos seleccionados de rowsDataTableList seleccion de 
+            for (int j = 0; j < selectedRowsDataTable.length; j++) {
+                for (int i = 0; i < rowDataTableList.size(); i++) {
+                    if (selectedRowsDataTable[j].getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
+                        rowDataTableList.remove(i);
+                        break;
+                    }
+                }
+            }
+            //deselecciono los controles
+            selectedRowsDataTable = null;
+            btnEditDisabled = true;
+            btnRemoveDisabled = true;
+            printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
+        }
     }
 
     public List<RowDataTable> getRowDataTableList() {
@@ -852,12 +883,12 @@ public class RecordSetsVifMB implements Serializable {
         this.rowDataTableList = rowDataTableList;
     }
 
-    public RowDataTable getSelectedRowDataTable() {
-        return selectedRowDataTable;
+    public RowDataTable[] getSelectedRowsDataTable() {
+        return selectedRowsDataTable;
     }
 
-    public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
-        this.selectedRowDataTable = selectedRowDataTable;
+    public void setSelectedRowsDataTable(RowDataTable[] selectedRowsDataTable) {
+        this.selectedRowsDataTable = selectedRowsDataTable;
     }
 
     public int getCurrentSearchCriteria() {

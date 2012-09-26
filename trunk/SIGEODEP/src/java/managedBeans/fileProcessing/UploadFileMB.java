@@ -22,14 +22,15 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import managedBeans.filters.CopyMB;
 import managedBeans.preload.FormsAndFieldsDataMB;
-import model.dao.FatalInjuriesFacade;
-import model.dao.FormsFacade;
-import model.dao.LoadsFacade;
-import model.dao.NonFatalDomesticViolenceFacade;
-import model.dao.NonFatalInjuriesFacade;
-import model.dao.SourcesFacade;
-import model.dao.TagsFacade;
-import model.pojo.*;
+import model.dao.*;
+import model.pojo.Fields;
+import model.pojo.Forms;
+import model.pojo.Sources;
+import model.pojo.Tags;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFRichTextString;
+import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.primefaces.model.UploadedFile;
 
 /**
@@ -116,62 +117,80 @@ public class UploadFileMB implements Serializable {
     @EJB
     FatalInjuriesFacade fatalInjuriesFacade;
     @EJB
-    LoadsFacade loadsFacade;
-    @EJB
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
+    
+    
+//    public void crearCopia(Object document){
+//        HSSFWorkbook book = (HSSFWorkbook) document;
+//        BufferedWriter bw = new BufferedWriter(new FileWriter(sFichero));
+//        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+//        HSSFRow row;
+//        HSSFCellStyle cellStyle = book.createCellStyle();
+//        HSSFFont font = book.createFont();
+//        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+//        cellStyle.setFont(font);
+//        row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
+//        createCell(cellStyle, row, 0, "CODIGO INTERNO");//"100">#{rowX.column1}</p:column>
+//    }
+    private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
+        HSSFCell cell;
+        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
+        cell.setCellValue(new HSSFRichTextString(value));
+        cell.setCellStyle(cellStyle);
+    }
 
     public void relatedRecordSets() {
-        List<FatalInjuries> fatalInjuriesList=fatalInjuriesFacade.findAll();
-        List<NonFatalDomesticViolence> nonFatalDomesticViolenceList=nonFatalDomesticViolenceFacade.findAll();
-        List<NonFatalInjuries> nonFatalInjuriesList=nonFatalInjuriesFacade.findAll();
-        
-        Loads newLoad;
-        for (int i = 0; i < fatalInjuriesList.size(); i++) {
-            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("10")==0){//homicidio
-              newLoad=new Loads(1,fatalInjuriesList.get(i).getFatalInjuryId());
-              loadsFacade.create(newLoad);
-            }
-            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("11")==0){//muerte transito
-                newLoad=new Loads(2,fatalInjuriesList.get(i).getFatalInjuryId());
-                loadsFacade.create(newLoad);
-            }
-            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("12")==0){//suicidio
-                newLoad=new Loads(3,fatalInjuriesList.get(i).getFatalInjuryId());
-                loadsFacade.create(newLoad);
-            }
-            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("13")==0){//muerte accidental
-                newLoad=new Loads(4,fatalInjuriesList.get(i).getFatalInjuryId());
-                loadsFacade.create(newLoad);
-            }
-        }
-        for (int i = 0; i < nonFatalInjuriesList.size(); i++) {
-            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("50")==0){//violencia interpersonal
-              newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
-              loadsFacade.create(newLoad);
-            }
-            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("51")==0){//lesion accidente de transito
-                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
-                loadsFacade.create(newLoad);
-            }
-            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("52")==0){//intencional autoinflingida
-                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
-                loadsFacade.create(newLoad);
-            }
-            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("53")==0){//volencia intrafamiliar
-                newLoad=new Loads(6,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
-                loadsFacade.create(newLoad);
-            }
-            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("54")==0){//no intencional
-                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
-                loadsFacade.create(newLoad);
-            }
-            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("55")==0){//violencia intrafamiliar LCENF
-                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
-                loadsFacade.create(newLoad);
-            }
-        }
+//        List<FatalInjuries> fatalInjuriesList=fatalInjuriesFacade.findAll();
+//        List<NonFatalDomesticViolence> nonFatalDomesticViolenceList=nonFatalDomesticViolenceFacade.findAll();
+//        List<NonFatalInjuries> nonFatalInjuriesList=nonFatalInjuriesFacade.findAll();
+//        
+//        Loads newLoad;
+//        for (int i = 0; i < fatalInjuriesList.size(); i++) {
+//            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("10")==0){//homicidio
+//              newLoad=new Loads(1,fatalInjuriesList.get(i).getFatalInjuryId());
+//              loadsFacade.create(newLoad);
+//            }
+//            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("11")==0){//muerte transito
+//                newLoad=new Loads(2,fatalInjuriesList.get(i).getFatalInjuryId());
+//                loadsFacade.create(newLoad);
+//            }
+//            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("12")==0){//suicidio
+//                newLoad=new Loads(3,fatalInjuriesList.get(i).getFatalInjuryId());
+//                loadsFacade.create(newLoad);
+//            }
+//            if(fatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("13")==0){//muerte accidental
+//                newLoad=new Loads(4,fatalInjuriesList.get(i).getFatalInjuryId());
+//                loadsFacade.create(newLoad);
+//            }
+//        }
+//        for (int i = 0; i < nonFatalInjuriesList.size(); i++) {
+//            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("50")==0){//violencia interpersonal
+//              newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+//              loadsFacade.create(newLoad);
+//            }
+//            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("51")==0){//lesion accidente de transito
+//                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+//                loadsFacade.create(newLoad);
+//            }
+//            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("52")==0){//intencional autoinflingida
+//                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+//                loadsFacade.create(newLoad);
+//            }
+//            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("53")==0){//volencia intrafamiliar
+//                newLoad=new Loads(6,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+//                loadsFacade.create(newLoad);
+//            }
+//            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("54")==0){//no intencional
+//                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+//                loadsFacade.create(newLoad);
+//            }
+//            if(nonFatalInjuriesList.get(i).getInjuryId().getInjuryId().toString().compareTo("55")==0){//violencia intrafamiliar LCENF
+//                newLoad=new Loads(5,nonFatalInjuriesList.get(i).getNonFatalInjuryId());
+//                loadsFacade.create(newLoad);
+//            }
+//        }
 
     }
 
@@ -476,28 +495,7 @@ public class UploadFileMB implements Serializable {
                             }
                         }
                         conx.non_query(sql);
-                    }
-                    /*
-                     * //llega un numero mayor de registros que la cabecera if
-                     * (headerFile.length < tupla.length && numLine != 0) {
-                     * continuar = false;
-                     * FacesContext.getCurrentInstance().addMessage(null, new
-                     * FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "En la
-                     * linea: " + String.valueOf(numLine + 1) + " del archivo
-                     * llega un numero mayor de registros que la cabecera"));
-                     * System.out.println("Cabecera: " +
-                     * String.valueOf(headerFile.length) + " tupla: " +
-                     * String.valueOf(tupla.length)); break; } //llega un numero
-                     * menor de registros que la cabecera if (headerFile.length
-                     * > tupla.length && numLine != 0) { continuar = false;
-                     * FacesContext.getCurrentInstance().addMessage(null, new
-                     * FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "En la
-                     * linea: " + String.valueOf(numLine + 1) + " del archivo
-                     * llega un numero menor de registros que la cabecera"));
-                     * System.out.println("Cabecera: " +
-                     * String.valueOf(headerFile.length) + " tupla: " +
-                     * String.valueOf(tupla.length)); break; }
-                     */
+                    }                    
                     numLine++;
                 }
             }

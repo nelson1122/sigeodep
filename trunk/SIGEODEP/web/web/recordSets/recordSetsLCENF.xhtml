@@ -44,7 +44,7 @@
                                 id="IdSearchTable" var="rowX" 
                                 value="#{recordSetsLcenfMB.rowDataTableList}" 
                                 rowKey="#{rowX.column1}"  
-                                selection="#{recordSetsLcenfMB.selectedRowDataTable}" 
+                                selection="#{recordSetsLcenfMB.selectedRowsDataTable}" 
                                 paginator="true"
                                 rows="10" 
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -53,7 +53,7 @@
                                 scrollable="true"
                                 scrollWidth="730"                                    
                                 pageLinks="3"
-                                selectionMode="single"
+                                selectionMode="multiple"
                                 resizableColumns="true">                                
                                 <p:ajax
                                     event="rowSelect"
@@ -81,10 +81,10 @@
                                 <p:column headerText="BARRIO RESIDENCIA" width="250">#{rowX.column15}</p:column>
                                 <p:column headerText="DIRECCION RESIDENCIA" width="400">#{rowX.column14}</p:column>
                                 <p:column headerText="TELEFONO" width="100">#{rowX.column11}</p:column>
-                                
+
                                 <p:column headerText="BARRIO EVENTO" width="250">#{rowX.column42}</p:column>
                                 <p:column headerText="DIRECCION EVENTO" width="400">#{rowX.column41}</p:column>
-                                
+
                                 //------------------------------------------------------------
                                 //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
                                 //------------------------------------------------------------        
@@ -108,7 +108,7 @@
                                 <p:column headerText="CUAL ANIMAL" width="100">#{rowX.column26}</p:column>
                                 <p:column headerText="USO DE ALCOHOL" width="150">#{rowX.column46}</p:column>
                                 <p:column headerText="USO DE DROGAS" width="150">#{rowX.column47}</p:column>
-                                
+
                                 <p:column headerText="GRADO (QUEMADOS)" width="100">#{rowX.column48}</p:column>
                                 <p:column headerText="PORCENTAJE(QUEMADOS)" width="100">#{rowX.column49}</p:column>
                                 <!-- p:column headerText="injury_id" width="250">{rowX.column59}</p:column -->
@@ -126,7 +126,7 @@
                                 <p:column headerText="SA11 MIEMBROS INFERIORES" width="100">#{rowX.column92}</p:column>
                                 <p:column headerText="SA OTRO" width="100">#{rowX.column93}</p:column>
                                 <p:column headerText="CUAL OTRO SITIO" width="100">#{rowX.column34}</p:column>
-                                
+
                                 //cargo la naturaleza de la lesion
                                 <p:column headerText="NL1 LACERACION" width="100">#{rowX.column94}</p:column>
                                 <p:column headerText="NL2 CORTADA" width="100">#{rowX.column95}</p:column>
@@ -140,19 +140,19 @@
                                 <p:column headerText="NL SIN DATO" width="100">#{rowX.column104}</p:column>
                                 <p:column headerText="NL OTRO" width="100">#{rowX.column103}</p:column>
                                 <p:column headerText="CUAL OTRA NATURALEZA" width="150">#{rowX.column35}</p:column>
-                                
+
                                 <p:column headerText="DESTINO DEL PACIENTE" width="250">#{rowX.column52}</p:column>
                                 <p:column headerText="CUAL OTRO DESTINO" width="100">#{rowX.column36}</p:column>
-                                
+
                                 //cargo los diagnosticos
                                 <p:column headerText="CIE-10 1" width="500">#{rowX.column105}</p:column>
                                 <p:column headerText="CIE-10 2" width="500">#{rowX.column106}</p:column>
                                 <p:column headerText="CIE-10 3" width="500">#{rowX.column107}</p:column>
                                 <p:column headerText="CIE-10 4" width="500">#{rowX.column108}</p:column>
-                                
+
                                 <p:column headerText="MEDICO" width="300">#{rowX.column54}</p:column>
                                 <p:column headerText="DIGITADOR" width="100">#{rowX.column56}</p:column>
-                                
+
                                 //------------------------------------------------------------
                                 //AUTOINFLINGIDA INTENCIONAL
                                 //------------------------------------------------------------
@@ -160,7 +160,7 @@
                                 <p:column headerText="ANTECEDENTES MENTALES (INTENCIONAL AUTOINFLIGIDA)" width="100">#{rowX.column110}</p:column>
                                 <p:column headerText="FACTOR PRECIPITANTE (INTENCIONAL AUTOINFLIGIDA)" width="100">#{rowX.column111}</p:column>
                                 <p:column headerText="CUAL OTRO FACTOR (INTENCIONAL AUTOINFLIGIDA)" width="100">#{rowX.column27}</p:column>                                
-                                
+
                                 //------------------------------------------------------------
                                 //SE CARGA VARIABLE PARA VIOLENCIA INTERPERSONAL
                                 //-----------------------------------------------------------
@@ -169,7 +169,7 @@
                                 <p:column headerText="CUAL OTRA RELACION (INTERPERSONAL)" width="100">#{rowX.column30}</p:column>
                                 <p:column headerText="CONTEXTO (INTERPERSONAL)" width="200">#{rowX.column62}</p:column>
                                 <p:column headerText="SEXO AGRESORES (INTERPERSONAL)" width="100">#{rowX.column63}</p:column>
-                                
+
                                 //------------------------------------------------------------
                                 //SE CARGA DATOS PARA VIOLENCIA INTRAFAMILIAR
                                 //------------------------------------------------------------        
@@ -185,7 +185,7 @@
                                 <p:column headerText="CUAL OTRO AGRESOR(VIF)" width="100">#{rowX.column28}</p:column>
                                 <p:column headerText="AG9 SIN DATO(VIF)" width="100">#{rowX.column72}</p:column>
                                 <p:column headerText="AG10 NOVIO(VIF)" width="100">#{rowX.column73}</p:column>                                
-                                
+
                                 //tipo de maltrato
                                 <p:column headerText="MA1 FISICO(VIF)" width="100">#{rowX.column74}</p:column>
                                 <p:column headerText="MA2 PSICOLOGICO(VIF)" width="100">#{rowX.column75}</p:column>
@@ -196,8 +196,8 @@
                                 <p:column headerText="MA SIN DATO(VIF)" width="100">#{rowX.column80}</p:column>
                                 <p:column headerText="MA8 OTRO(VIF)" width="100">#{rowX.column81}</p:column>
                                 <p:column headerText="CUAL OTRO TIPO MALTRATO(VIF)" width="100">#{rowX.column29}</p:column>
-                                
-                                
+
+
                                 //------------------------------------------------------------
                                 //SE CARGA DATOS PARA TRANSITO
                                 //------------------------------------------------------------
@@ -207,18 +207,18 @@
                                 <p:column headerText="CUAL OTRO TIPO TRANSPORTE CONTRAPARTE" width="100">#{rowX.column32}</p:column>                                
                                 <p:column headerText="TIPO DE TRANSPORTE DEL USUARIO" width="100">#{rowX.column114}</p:column>
                                 <p:column headerText="CUAL OTRO TIPO DE TRANSPORTE DEL USUARIO" width="100">#{rowX.column33}</p:column>
-                                
+
                                 <p:column headerText="CINTURON" width="100">#{rowX.column115}</p:column>
                                 <p:column headerText="CASCO MOTO" width="100">#{rowX.column116}</p:column>
                                 <p:column headerText="CASCO BICICLETA" width="100">#{rowX.column117}</p:column>
                                 <p:column headerText="CHALECO" width="100">#{rowX.column118}</p:column>
                                 <p:column headerText="OTRO ELEMENTO" width="100">#{rowX.column119}</p:column>
-                                
+
                             </p:dataTable>                            
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
                                 <p:row>  
-                                    <p:column styleClass="ui-widget-header" colspan="5">
+                                    <p:column  colspan="5">
                                         <p:commandButton 
                                             id="IdEdit"
                                             disabled="#{recordSetsLcenfMB.btnEditDisabled}"
@@ -234,14 +234,15 @@
                                             icon="ui-icon-close"
                                             oncomplete="dialogDelete.show()"                                            
                                             update=":IdForm2:IdDialogDelete :IdForm1:message"/>                                        
+                                        <h:commandLink >  
+                                            <!---p:graphicImage style="margin-top: 200px;" value="../../resources/img/excel.png"/-->
+                                            <p:button value="Exportar"/>
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{recordSetsLcenfMB.postProcessXLS}"/>  
+                                        </h:commandLink>
                                         <p:dataTable id="IdOutFile" style="display: none">
                                             <p:column>                                                  
                                             </p:column>
-                                        </p:dataTable>
-                                        <h:commandLink >  
-                                            <p:graphicImage value="../../resources/img/excel.png"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{recordSetsLcenfMB.postProcessXLS}"/>  
-                                        </h:commandLink>
+                                        </p:dataTable>                                        
                                     </p:column>                            
                                 </p:row>
                             </p:panelGrid>

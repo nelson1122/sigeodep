@@ -48,8 +48,12 @@ public class Tags implements Serializable {
     @JoinColumn(name = "form_id", referencedColumnName = "form_id")
     @ManyToOne
     private Forms formId;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "tags")
-    private List<Loads> loadsList;
+    //@OneToMany(cascade = CascadeType.ALL, mappedBy = "tags")
+    //private List<Loads> loadsList;
+    @OneToMany(mappedBy = "tagId")
+    private List<FatalInjuries> fatalInjuriesList;
+    @OneToMany(mappedBy = "tagId")
+    private List<NonFatalInjuries> nonFatalInjuriesList;
     
     
     public Forms getFormId() {
@@ -60,14 +64,33 @@ public class Tags implements Serializable {
         this.formId = formId;
     }
 
+//    @XmlTransient
+//    public List<Loads> getLoadsList() {
+//        return loadsList;
+//    }
+//
+//    public void setLoadsList(List<Loads> loadsList) {
+//        this.loadsList = loadsList;
+//    }
+    
     @XmlTransient
-    public List<Loads> getLoadsList() {
-        return loadsList;
+    public List<FatalInjuries> getFatalInjuriesList() {
+        return fatalInjuriesList;
     }
 
-    public void setLoadsList(List<Loads> loadsList) {
-        this.loadsList = loadsList;
+    public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
+        this.fatalInjuriesList = fatalInjuriesList;
     }
+
+    @XmlTransient
+    public List<NonFatalInjuries> getNonFatalInjuriesList() {
+        return nonFatalInjuriesList;
+    }
+
+    public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
+        this.nonFatalInjuriesList = nonFatalInjuriesList;
+    }
+    
     
     public Tags() {
     }

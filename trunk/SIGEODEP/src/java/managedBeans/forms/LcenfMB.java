@@ -226,8 +226,6 @@ public class LcenfMB implements Serializable {
     NonFatalTransportFacade nonFatalTransportFacade;
     @EJB
     SecurityElementsFacade securityElementsFacade;
-    @EJB
-    LoadsFacade loadsFacade;
     //------------------    
     private boolean strangerDisabled = true;
     private boolean currentDayEventDisabled = false;
@@ -473,13 +471,11 @@ public class LcenfMB implements Serializable {
      * esta funcion es llamada desde la seccion de conjuntos de registros
      */
     public void loadValues(List<Tags> tagsList, NonFatalInjuries currentNonFatalI) {
-        LoadsPK loadsPK;
         for (int i = 0; i < tagsList.size(); i++) {
-            loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentNonFatalI.getNonFatalInjuryId());
             try {
                 reset();
                 clearForm();
-                currentTag = loadsFacade.find(loadsPK).getTags().getTagId();
+                currentTag = tagsList.get(i).getTagId();
                 this.currentNonFatalInjury = currentNonFatalI;
                 currentNonFatalInjuriId = currentNonFatalI.getNonFatalInjuryId();
                 determinePosition();
@@ -1807,6 +1803,9 @@ public class LcenfMB implements Serializable {
                     String hEvent, hConsult;
                     hEvent = currentMilitaryHourEvent.trim();
                     hConsult = currentMilitaryHourConsult.trim();
+                    if (hConsult.compareTo("0000") == 0) {
+                        hConsult = "2400";
+                    }
                     if (hEvent.length() != 0 && hConsult.length() != 0) {
                         if (Integer.parseInt(hEvent) > Integer.parseInt(hConsult)) {
                             validationsErrors.add("La hora del evento: (" + hEvent + ") no puede ser mayor que la hora de la consulta (" + hConsult + ") en un mismo dia.");
@@ -1950,8 +1949,10 @@ public class LcenfMB implements Serializable {
 
                 if (currentNonFatalInjuriId == -1) {//SI ES NUEVO
                     newNonFatalInjuries.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                    //newNonFatalInjuries.setTagId(currentNonFatalInjury.getTagId());
                 } else {//SI SE ESTA MODIFICANDO
                     newNonFatalInjuries.setNonFatalInjuryId(currentNonFatalInjury.getNonFatalInjuryId());
+                    newNonFatalInjuries.setTagId(currentNonFatalInjury.getTagId());
                 }
 
                 if (currentDateConsult.trim().length() != 0) {
@@ -2483,7 +2484,10 @@ public class LcenfMB implements Serializable {
                 openDialogNew = "";
                 openDialogDelete = "";
                 if (currentNonFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
-                    //System.out.println("guardando nuevo registro");
+                    System.out.println("guardando nuevo registro");
+
+                    newNonFatalInjuries.setTagId(tagsFacade.find(currentTag));
+
                     if (currentIntentionality == 1) {
                         newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 54));//54. No intencional
                     }
@@ -2514,9 +2518,6 @@ public class LcenfMB implements Serializable {
                     if (newNonFatalTransport != null) {
                         nonFatalTransportFacade.create(newNonFatalTransport);
                     }
-                    Loads newLoad;
-                    newLoad = new Loads(currentTag, newNonFatalInjuries.getNonFatalInjuryId());//PERSISTO EL registro en la CARGA
-                    loadsFacade.create(newLoad);
 
                     save = true;
                     stylePosition = "color: #1471B1;";
@@ -3013,10 +3014,6 @@ public class LcenfMB implements Serializable {
             if (currentNonFatalInjury.getNonFatalTransport() != null) {
                 nonFatalTransportFacade.remove(currentNonFatalInjury.getNonFatalTransport());
             }
-
-            LoadsPK loadsPK = new LoadsPK(currentTag, currentNonFatalInjury.getNonFatalInjuryId());
-            loadsFacade.remove(loadsFacade.find(loadsPK));
-
             nonFatalInjuriesFacade.remove(currentNonFatalInjury);
             victimsFacade.remove(currentNonFatalInjury.getVictimId());
 
@@ -3027,7 +3024,7 @@ public class LcenfMB implements Serializable {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
             FacesContext.getCurrentInstance().addMessage(null, msg);
             System.out.println("registro eliminado");
-            //noSaveAndGoNew();
+            noSaveAndGoNew();
             determinePosition();
         }
     }
@@ -3891,6 +3888,11 @@ public class LcenfMB implements Serializable {
 
         if (loading == false) {
             changeForm();
+            heightWhich = "";
+            powderWhich = "";
+            otherMechanism = "";
+            otherAnimal = "";
+            disasterWhich = "";
         }
 
         heightWhichDisabled = true;
@@ -3899,11 +3901,6 @@ public class LcenfMB implements Serializable {
         disasterWhichDisabled = true;
         otherAnimalDisabled = true;
         forBurned = "none";
-        heightWhich = "";
-        powderWhich = "";
-        otherMechanism = "";
-        otherAnimal = "";
-        disasterWhich = "";
         displayTransport = "none";
         currentContext = 0;
         currentContextDisabled = false;

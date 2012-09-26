@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -57,9 +58,10 @@ public class RecordSetsSuicideMB implements Serializable {
     @EJB
     InjuriesFacade injuriesFacade;
     @EJB
-    LoadsFacade loadsFacade;
+    FatalInjuriesFacade fatalInjuriesFacade;
     private List<RowDataTable> rowDataTableList;
-    private RowDataTable selectedRowDataTable;
+    //private RowDataTable selectedRowDataTable;
+    private RowDataTable[] selectedRowsDataTable;
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
     private String name = "";
@@ -73,12 +75,18 @@ public class RecordSetsSuicideMB implements Serializable {
     private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     private SuicideMB suicideMB;
     private String openForm = "";
+    private RecordSetsMB recordSetsMB;
 
     public RecordSetsSuicideMB() {
     }
 
     public String openForm() {
         return openForm;
+    }
+
+    public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
+        FacesMessage msg = new FacesMessage(s, title, messageStr);
+        FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
     public void openInForm() {
@@ -88,22 +96,39 @@ public class RecordSetsSuicideMB implements Serializable {
         openForm = "suicide";
     }
 
-    void loadValues(RowDataTable[] selectedRowsDataTable) {
-        selectedRowDataTable = null;
+    void loadValues(RowDataTable[] selectedRowsDataTableTags) {
+        
+        FacesContext context = FacesContext.getCurrentInstance();
+        recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
+        recordSetsMB.setProgress(0);
+        int totalRegisters = 0;
+        int totalProcess = 0;
+        
+        selectedRowsDataTable = null;
         rowDataTableList = new ArrayList<RowDataTable>();
         data = "- ";
         //CREO LA LISTA DE TAGS SELECCIONADOS
         tagsList = new ArrayList<Tags>();
-        for (int i = 0; i < selectedRowsDataTable.length; i++) {
-            data = data + selectedRowsDataTable[i].getColumn2() + " -";
-            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
+        for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
+            data = data + selectedRowsDataTableTags[i].getColumn2() + " -";
+            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
+        }
+        //DETERMINO EL NUMERO DE REGISTROS 
+        for (int i = 0; i < tagsList.size(); i++) {
+            totalRegisters = totalRegisters + fatalInjurySuicideFacade.countFromTag(tagsList.get(i).getTagId());
         }
         //RECORRO CADA TAG Y CARGO UN LISTADO DE SUS REGISTROS
         List<FatalInjurySuicide> fatalInjurySuicideList;
         for (int i = 0; i < tagsList.size(); i++) {
             fatalInjurySuicideList = fatalInjurySuicideFacade.findFromTag(tagsList.get(i).getTagId());
-            for (int j = 0; j < fatalInjurySuicideList.size(); j++) {
-                rowDataTableList.add(loadValues(fatalInjurySuicideList.get(j)));
+            if (fatalInjurySuicideList != null) {
+                for (int j = 0; j < fatalInjurySuicideList.size(); j++) {
+                    rowDataTableList.add(loadValues(fatalInjurySuicideList.get(j)));
+                    totalProcess++;
+                    if (totalRegisters != 0) {
+                        recordSetsMB.setProgress((int) (totalProcess * 100) / totalRegisters);
+                    }
+                }
             }
         }
     }
@@ -467,48 +492,53 @@ public class RecordSetsSuicideMB implements Serializable {
 
     public void load() {
         currentFatalInjurySuicide = null;
-        if (selectedRowDataTable != null) {
-            currentFatalInjurySuicide = fatalInjurySuicideFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
-        }
-        if (currentFatalInjurySuicide != null) {
-            btnEditDisabled = false;
-            btnRemoveDisabled = false;
+        btnEditDisabled = true;
+        btnRemoveDisabled = true;
+        if (selectedRowsDataTable != null) {
+            if (selectedRowsDataTable.length == 1) {
+                currentFatalInjurySuicide = fatalInjurySuicideFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
+            }
+            if (selectedRowsDataTable.length > 1) {
+                
+                btnEditDisabled = true;
+                btnRemoveDisabled = false;
+            } else {
+                btnEditDisabled = false;
+                btnRemoveDisabled = false;
+            }
         }
     }
 
     public void deleteRegistry() {
-//        if (selectedRowDataTable != null) {
-//            if (currentFatalInjurySuicide.getNonFatalDomesticViolence() != null) {
-//                nonFatalDomesticViolenceFacade.remove(currentFatalInjurySuicide.getNonFatalDomesticViolence());
-//            }
-//            if (currentFatalInjurySuicide.getNonFatalInterpersonal() != null) {
-//                nonFatalInterpersonalFacade.remove(currentFatalInjurySuicide.getNonFatalInterpersonal());
-//            }
-//            if (currentFatalInjurySuicide.getNonFatalSelfInflicted() != null) {
-//                nonFatalSelfInflictedFacade.remove(currentFatalInjurySuicide.getNonFatalSelfInflicted());
-//            }
-//            if (currentFatalInjurySuicide.getNonFatalTransport() != null) {
-//                nonFatalTransportFacade.remove(currentFatalInjurySuicide.getNonFatalTransport());
-//            }
-//            LoadsPK loadsPK;
-//            Loads currentLoad;
-//            for (int i = 0; i < tagsList.size(); i++) {
-//                loadsPK = new LoadsPK(tagsList.get(i).getTagId(), currentFatalInjurySuicide.getNonFatalInjuryId());
-//                currentLoad = loadsFacade.find(loadsPK);
-//                if (currentLoad != null) {
-//                    loadsFacade.remove(currentLoad);
-//                    fatalInjurySuicideFacade.remove(currentFatalInjurySuicide);
-//                    victimsFacade.remove(currentFatalInjurySuicide.getVictimId());
-//                    rowDataTableList.remove(selectedRowDataTable);
-//                    selectedRowDataTable = null;
-//                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
-//                    FacesContext.getCurrentInstance().addMessage(null, msg);
-//                    btnEditDisabled = true;
-//                    btnRemoveDisabled = true;
-//                    break;
-//                }
-//            }
-//        }
+        if (selectedRowsDataTable != null) {
+            List<FatalInjurySuicide> fatalInjurySuicideList = new ArrayList<FatalInjurySuicide>();
+            for (int j = 0; j < selectedRowsDataTable.length; j++) {
+                fatalInjurySuicideList.add(fatalInjurySuicideFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
+            }
+            if (fatalInjurySuicideList != null) {
+                for (int j = 0; j < fatalInjurySuicideList.size(); j++) {
+                    FatalInjuries auxFatalInjuries = fatalInjurySuicideList.get(j).getFatalInjuries();
+                    Victims auxVictims = fatalInjurySuicideList.get(j).getFatalInjuries().getVictimId();
+                    fatalInjurySuicideFacade.remove(fatalInjurySuicideList.get(j));
+                    fatalInjuriesFacade.remove(auxFatalInjuries);
+                    victimsFacade.remove(auxVictims);
+                }
+            }
+            //quito los elementos seleccionados de rowsDataTableList seleccion de 
+            for (int j = 0; j < selectedRowsDataTable.length; j++) {
+                for (int i = 0; i < rowDataTableList.size(); i++) {
+                    if (selectedRowsDataTable[j].getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
+                        rowDataTableList.remove(i);
+                        break;
+                    }
+                }
+            }
+            //deselecciono los controles
+            selectedRowsDataTable = null;
+            btnEditDisabled = true;
+            btnRemoveDisabled = true;
+            printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
+        }
     }
 
     public List<RowDataTable> getRowDataTableList() {
@@ -519,12 +549,12 @@ public class RecordSetsSuicideMB implements Serializable {
         this.rowDataTableList = rowDataTableList;
     }
 
-    public RowDataTable getSelectedRowDataTable() {
-        return selectedRowDataTable;
+    public RowDataTable[] getSelectedRowsDataTable() {
+        return selectedRowsDataTable;
     }
 
-    public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
-        this.selectedRowDataTable = selectedRowDataTable;
+    public void setSelectedRowsDataTable(RowDataTable[] selectedRowsDataTable) {
+        this.selectedRowsDataTable = selectedRowsDataTable;
     }
 
     public int getCurrentSearchCriteria() {
