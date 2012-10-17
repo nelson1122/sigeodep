@@ -73,7 +73,7 @@ public class UsersMB {
         if (currentUser != null) {
             btnEditDisabled = false;
             btnRemoveDisabled = false;
-            
+
             if (currentUser.getUserName() != null) {
                 name = currentUser.getUserName();
             } else {
@@ -90,9 +90,9 @@ public class UsersMB {
                 institution = "";
             }
             if (currentUser.getUserTelephone() != null) {
-                institution = currentUser.getUserTelephone();
+                telephone = currentUser.getUserTelephone();
             } else {
-                institution = "";
+                telephone = "";
             }
             if (currentUser.getUserEmail() != null) {
                 email = currentUser.getUserEmail();
@@ -133,58 +133,69 @@ public class UsersMB {
     public void updateRegistry() {
         //determinar consecutivo
         if (currentUser != null) {
-            if (name.trim().length() != 0) {
-                name = name.toUpperCase();
-                currentUser.setUserName(name);
-                currentUser.setUserLogin(login);
-                currentUser.setUserName(name);
-                currentUser.setUserJob(job);
-                currentUser.setUserInstitution(institution);
-                currentUser.setUserTelephone(telephone);
-                currentUser.setUserEmail(email);
-                currentUser.setUserAddress(address);
-                currentUser.setUserPassword(password);
-                usersFacade.edit(currentUser);
-                name = "";
-                currentUser = null;
-                selectedRowDataTable = null;
-                createDynamicTable();
-                btnEditDisabled = true;
-                btnRemoveDisabled = true;
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
+            if (name.trim().length() == 0 || password.trim().length() == 0 || login.trim().length() == 0) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Faltan datos", "los campos: NOMBRE, PASWORD y LOGIN son obligatorios");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             } else {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
+                Users u = usersFacade.findByLogin(login);
+                if (currentUser.getUserLogin().compareTo(u.getUserLogin())==0) {                    
+                    currentUser.setUserName(name);
+                    currentUser.setUserLogin(login);
+                    currentUser.setUserName(name);
+                    currentUser.setUserJob(job);
+                    currentUser.setUserInstitution(institution);
+                    currentUser.setUserTelephone(telephone);
+                    currentUser.setUserEmail(email);
+                    currentUser.setUserAddress(address);
+                    currentUser.setUserPassword(password);
+                    usersFacade.edit(currentUser);
+                    name = "";
+                    currentUser = null;
+                    selectedRowDataTable = null;
+                    createDynamicTable();
+                    btnEditDisabled = true;
+                    btnRemoveDisabled = true;
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                } else {
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "El login digitado ya esta en uso");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                }
             }
         }
     }
 
     public void saveRegistry() {
-        if (newName.trim().length() != 0) {
-            newName = newName.toUpperCase();
-            Users newRegistry = new Users();
-            newRegistry.setUserId(usersFacade.findMax() + 1);
-            newRegistry.setUserLogin(newLogin);
-            newRegistry.setUserName(newName);
-            newRegistry.setUserJob(newJob);
-            newRegistry.setUserInstitution(newInstitution);
-            newRegistry.setUserTelephone(newtelephone);
-            newRegistry.setUserEmail(newEmail);
-            newRegistry.setUserAddress(newAddress);
-            newRegistry.setUserPassword(newPasword);
-            usersFacade.create(newRegistry);
-            newRegistry();
-            currentUser = null;
-            selectedRowDataTable = null;
-            createDynamicTable();
-            btnEditDisabled = true;
-            btnRemoveDisabled = true;
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
+        if (newName.trim().length() == 0 || newPasword.trim().length() == 0 || newLogin.trim().length() == 0) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Faltan datos", "los campos: NOMBRE, PASWORD y LOGIN son obligatorios");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         } else {
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
+            Users u = usersFacade.findByLogin(newLogin);
+            if (u == null) {
+                newName = newName.toUpperCase();
+                Users newRegistry = new Users();
+                newRegistry.setUserId(usersFacade.findMax() + 1);
+                newRegistry.setUserLogin(newLogin);
+                newRegistry.setUserName(newName);
+                newRegistry.setUserJob(newJob);
+                newRegistry.setUserInstitution(newInstitution);
+                newRegistry.setUserTelephone(newtelephone);
+                newRegistry.setUserEmail(newEmail);
+                newRegistry.setUserAddress(newAddress);
+                newRegistry.setUserPassword(newPasword);
+                usersFacade.create(newRegistry);
+                newRegistry();
+                currentUser = null;
+                selectedRowDataTable = null;
+                createDynamicTable();
+                btnEditDisabled = true;
+                btnRemoveDisabled = true;
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            } else {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "El login digitado ya esta en uso");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         }
     }
 
@@ -203,6 +214,8 @@ public class UsersMB {
         newPasword = "";
         address = "";
         newAddress = "";
+        login="";
+        newLogin="";
     }
 
     public void createDynamicTable() {

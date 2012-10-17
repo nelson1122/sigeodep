@@ -16,18 +16,19 @@ import model.pojo.Users;
  */
 @Stateless
 public class UsersFacade extends AbstractFacade<Users> {
+
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
     @Override
     protected EntityManager getEntityManager() {
-	return em;
+        return em;
     }
 
     public UsersFacade() {
-	super(Users.class);
+        super(Users.class);
     }
-    
+
     public int findMax() {
         try {
             String hql = "Select MAX(x.userId) from Users x";
@@ -36,7 +37,7 @@ public class UsersFacade extends AbstractFacade<Users> {
             return 0;
         }
     }
-    
+
     public List<Users> findCriteria(int variable, String value) {
         String hql;
         try {
@@ -58,18 +59,26 @@ public class UsersFacade extends AbstractFacade<Users> {
         return null;
     }
 
-    public Users findUser(String loginname, String password) {
-        List<Users> usersList=this.findAll();
+    public Users findByLogin(String newLogin) {
+        List<Users> usersList = this.findAll();
         for (int i = 0; i < usersList.size(); i++) {
-            if(usersList.get(i).getUserPassword().compareTo(password)==0
-                    && usersList.get(i).getUserLogin().compareTo(loginname)==0)
-            {
+            if ( usersList.get(i).getUserLogin().compareTo(newLogin) == 0) {
                 return usersList.get(i);
             }
         }
-            
-            return null;
-        
+        return null;
     }
-    
+
+    public Users findUser(String loginname, String password) {
+        List<Users> usersList = this.findAll();
+        for (int i = 0; i < usersList.size(); i++) {
+            if (usersList.get(i).getUserPassword().compareTo(password) == 0
+                    && usersList.get(i).getUserLogin().compareTo(loginname) == 0) {
+                return usersList.get(i);
+            }
+        }
+
+        return null;
+
+    }
 }
