@@ -4,26 +4,27 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui">
     <h:head>
-        <title>INICIO</title>	
-	<script type="text/javascript">  
-	    function mostrar(bloq) {
-		obj = document.getElementById(bloq);
-		var uname = document.getElementById("IdImgCarga");
-		obj.style.display = (obj.style.display=='none') ? 'block' : 'none';
-	    }
-	    function show() {
-		uname = document.getElementById("IdImgCarga");
-		//jQuery("#IdImgCarga").fadeIn();
-		uname.style.display='block';
-		alert("cargando");
-	    }
-	    function hide() {  
-		var uname = document.getElementById("IdImgCarga");
-		//jQuery("#IdImgCarga").fadeOut();
-		uname.style.display='none';
-		alert("ocultando");
-	    }
-	</script>
+        <link rel="shortcut icon" href="resources/img/icon.gif"/>
+        <title>INICIO</title>	        
+        <script type="text/javascript">  
+            function mostrar(bloq) {
+                obj = document.getElementById(bloq);
+                var uname = document.getElementById("IdImgCarga");
+                obj.style.display = (obj.style.display=='none') ? 'block' : 'none';
+            }
+            function show() {
+                uname = document.getElementById("IdImgCarga");
+                //jQuery("#IdImgCarga").fadeIn();
+                uname.style.display='block';
+                alert("cargando");
+            }
+            function hide() {  
+                var uname = document.getElementById("IdImgCarga");
+                //jQuery("#IdImgCarga").fadeOut();
+                uname.style.display='none';
+                alert("ocultando");
+            }
+        </script>
     </h:head>
     <h:body style="font-size: 10px;">
         <div style=" 
@@ -35,10 +36,17 @@
              top: 50%;
              margin-top: -190px;
              background-image:url(resources/img/entrada.png);">
-            <h:form>
-
+            <h:form id="IdForm3">
+                <p:idleMonitor 
+                    timeout="600000"
+                    onidle="document.getElementById('IdForm3:btnLogout').click();"/>
+                <p:commandButton 
+                    id="btnLogout"
+                    value="A"  
+                    style="display: none;"                            
+                    actionListener="#{loginMB.logout}"/>
                 <p:growl id="message"  showDetail="true" sticky="true" />
-		<h:graphicImage id="IdImgCarga" value="resources/img/ajaxloading.gif"  style="display: none" />
+                <h:graphicImage id="IdImgCarga" value="resources/img/ajaxloading.gif"  style="display: none" />
                 <p:panelGrid style="margin-top: 160px; margin-left: 210px; "  > 
 
                     <p:row>  
@@ -53,11 +61,11 @@
                     <p:row>
                         <p:column colspan="2" style="text-align: center;" >
                             <p:commandButton 
-				value="INGRESAR" 												
-				action="#{loginMB.CheckValidUser}" 
-				onclick="show();"
-				oncomplete="hide();"
-				update="message" />
+                                value="INGRESAR" 												
+                                action="#{loginMB.CheckValidUser}" 
+                                onclick="show();"
+                                oncomplete="hide();"
+                                update="message" />
                         </p:column>
                     </p:row>  
                 </p:panelGrid>

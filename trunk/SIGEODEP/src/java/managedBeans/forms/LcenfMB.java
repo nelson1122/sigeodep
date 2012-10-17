@@ -23,6 +23,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
 
@@ -411,6 +412,7 @@ public class LcenfMB implements Serializable {
     private Date date1;
     private Date date2;
     private String currentIdForm = "";
+    private Users currentUser;
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -488,6 +490,12 @@ public class LcenfMB implements Serializable {
     }
 
     public void reset() {
+        
+        //determino el usuario
+        
+        LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        currentUser=loginMB.getCurrentUser();
+        
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         loading = true;
@@ -1269,6 +1277,7 @@ public class LcenfMB implements Serializable {
                     powderWhichDisabled = false;
                     forBurned = "block";
                     break;
+                case 19:// 19. hidrocarburos
                 case 21:// 21. Minas / munición sin explotar
                 case 22:// 22. Otro artefacto explosivo
                 case 25:// 25. Electricidad
@@ -1292,8 +1301,7 @@ public class LcenfMB implements Serializable {
                 case 15:// 15. Asfixia por cuerpo extraño
                 case 16:// 16. Lesion por cuerpo extraño
                 case 17:// 17. Fármacos
-                case 18:// 18. Plaguicidas
-                case 19:// 19. Hidrocarburos
+                case 18:// 18. Plaguicidas                
                 case 20:// 20. Otros tóxicos
                 case 23:// 23. Mordedura de persona
                 case 24:// 24. Animal, cual?                
@@ -1306,7 +1314,11 @@ public class LcenfMB implements Serializable {
         }
         changeMechanisms();
         //******user_id
-        currentResponsible = "ADMIN";
+        try {
+            currentResponsible = currentNonFatalInjury.getUserId().getUserName();
+        } catch (Exception e) {
+            currentResponsible = "";
+        }
         //******injury_day_of_week
         try {
             currentWeekdayEvent = currentNonFatalInjury.getInjuryDayOfWeek();
@@ -1952,7 +1964,7 @@ public class LcenfMB implements Serializable {
                     //newNonFatalInjuries.setTagId(currentNonFatalInjury.getTagId());
                 } else {//SI SE ESTA MODIFICANDO
                     newNonFatalInjuries.setNonFatalInjuryId(currentNonFatalInjury.getNonFatalInjuryId());
-                    newNonFatalInjuries.setTagId(currentNonFatalInjury.getTagId());
+                    newVictim.setTagId(currentNonFatalInjury.getVictimId().getTagId());
                 }
 
                 if (currentDateConsult.trim().length() != 0) {
@@ -2035,7 +2047,7 @@ public class LcenfMB implements Serializable {
 
                 }
 
-                newNonFatalInjuries.setUserId(usersFacade.find(1));
+                newNonFatalInjuries.setUserId(currentUser);
 
                 if (currentWeekdayEvent.trim().length() != 0) {
                     newNonFatalInjuries.setInjuryDayOfWeek(currentWeekdayEvent);
@@ -2310,164 +2322,92 @@ public class LcenfMB implements Serializable {
                 Others newOther;
                 OthersPK newOtherPK;
                 if (otherEthnicGroup.trim().length() != 0) {//1.	Cual otro grupo etnico
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 1);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 1));
                     newOther.setValueText(otherEthnicGroup);
                     othersList.add(newOther);
                 }
                 if (currentOtherPlace.trim().length() != 0) {//2.	Cual otro de lugar del hecho
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 2);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 2));
                     newOther.setValueText(currentOtherPlace);
                     othersList.add(newOther);
                 }
                 if (currentOtherActivitie.trim().length() != 0) {//3.	Cual otra actividad
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 3);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 3));
                     newOther.setValueText(currentOtherActivitie);
                     othersList.add(newOther);
                 }
                 if (heightWhich.trim().length() != 0) {//4.	Cual altura
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 4);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 4));
                     newOther.setValueText(heightWhich);
                     othersList.add(newOther);
                 }
                 if (powderWhich.trim().length() != 0) {//5.	Cual polvora
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 5);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 5));
                     newOther.setValueText(powderWhich);
                     othersList.add(newOther);
                 }
                 if (disasterWhich.trim().length() != 0) {//6.	Cual desastre natural
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 6);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 6));
                     newOther.setValueText(disasterWhich);
                     othersList.add(newOther);
                 }
                 if (otherMechanism.trim().length() != 0) {//7.	Cual otro mecanismo de objeto
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 7);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 7));
                     newOther.setValueText(otherMechanism);
                     othersList.add(newOther);
                 }
                 if (otherAnimal.trim().length() != 0) {//8.	Cual otro animal
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 8);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 8));
                     newOther.setValueText(otherAnimal);
                     othersList.add(newOther);
                 }
                 if (otherFactor.trim().length() != 0) {//9.	Cual otro factor precipitante(Autoinflingida intencional)
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 0);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 9));                    
                     newOther.setValueText(otherFactor);
                     othersList.add(newOther);
                 }
                 if (otherAG.trim().length() != 0) {//10.	Cual otro tipo de agresor(intrafamiliar)
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 10);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 10));
                     newOther.setValueText(otherAG);
                     othersList.add(newOther);
                 }
                 if (otherMA.trim().length() != 0) {//11.	Cual otro tipo de maltrato(intrafamiliar)
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 11);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 11));
                     newOther.setValueText(otherMA);
                     othersList.add(newOther);
                 }
                 if (otherRelation.trim().length() != 0) {//12.	Cual otra relación (violencia interpersonal)
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 12);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 12));
                     newOther.setValueText(otherRelation);
                     othersList.add(newOther);
                 }
                 if (otherTransportType.trim().length() != 0) {//13.	Cual otro tipo de transporte(transporte)
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 13);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 13));
                     newOther.setValueText(otherTransportType);
                     othersList.add(newOther);
                 }
                 if (otherTransportCounterpartsType.trim().length() != 0) {//14.	Cual otro tipo de transporte de contraparte(transporte)
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 14);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 14));
                     newOther.setValueText(otherTransportCounterpartsType);
                     othersList.add(newOther);
                 }
                 if (otherTransportUserType.trim().length() != 0) {//15.	Cual otro tipo de transporte de usuario(transporte)
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 15);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 15));
                     newOther.setValueText(otherTransportUserType);
                     othersList.add(newOther);
                 }
                 if (txtOtherPlace.trim().length() != 0) {//16.	Cual otro sitio anatomico
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 16);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 16));
                     newOther.setValueText(txtOtherPlace);
                     othersList.add(newOther);
                 }
                 if (txtOtherInjury.trim().length() != 0) {//17.	Cual otra naturaleza de la lesión
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 17);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 17));
                     newOther.setValueText(txtOtherInjury);
                     othersList.add(newOther);
                 }
                 if (otherDestinationPatient.trim().length() != 0) {//18.	Cual otro destino del paciente
-                    newOther = new Others();
-                    newOtherPK = new OthersPK();
-                    newOtherPK.setVictimId(newVictim.getVictimId());
-                    newOtherPK.setFieldId((short) 18);
-                    newOther.setOthersPK(newOtherPK);
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 18));
                     newOther.setValueText(otherDestinationPatient);
                     othersList.add(newOther);
                 }
@@ -2486,7 +2426,7 @@ public class LcenfMB implements Serializable {
                 if (currentNonFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     System.out.println("guardando nuevo registro");
 
-                    newNonFatalInjuries.setTagId(tagsFacade.find(currentTag));
+                    newVictim.setTagId(tagsFacade.find(currentTag));
 
                     if (currentIntentionality == 1) {
                         newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 54));//54. No intencional
@@ -3931,6 +3871,7 @@ public class LcenfMB implements Serializable {
             case 24://animal cual
                 otherAnimalDisabled = false;
                 break;
+            case 19://hidrocarburos    
             case 10://Fuego / llama
             case 11://objeto caliente
             case 21://explotar

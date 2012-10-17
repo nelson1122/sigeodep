@@ -14,49 +14,68 @@
                 rel="stylesheet" 
                 href="./../../resources/css/style.css" 
                 type="text/css" />
+            <!--script type="text/javascript">  
+                function contador(){
+                    document.getElementById('IdForm0:btnCountLogout').click();
+                }
+            </script-->
             <ui:insert name="head">  
             </ui:insert>
             <title>
                 <ui:insert name="titlePage">
                 </ui:insert>
             </title>
-
         </h:head>
+        <!-- h:body onload="setInterval('contador()',2000);" -->
         <h:body>
             <p:layout fullPage="true" >  
                 <!-- ****************************** MENU LATERAL (PARTE IZQUIERDA) ************************ -->
                 <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
                     <h:form id="IdForm0">
-                        <div id="logo2"></div>                    
+
                         <!-- 
                         timeout="600000" 
                         document.getElementById('IdForm0:btnLogout').click();
                         -->
-                        <p:idleMonitor 
-                            timeout="600000"
-                            onidle="dialogEnd.show(); document.getElementById('IdForm0:btnLogout').click();"/>
+                        <!--p:idleMonitor 
+                            timeout="2000"
+                            onidle="document.getElementById('IdForm0:btnCountLogout').click();"
+                            onactive="document.getElementById('IdForm0:btnResetLogout').click();"/ -->
+
+
+                        <p:idleMonitor timeout="600000">
+
+                            <p:ajax event="active" listener="#{loginMB.resetLogout}"/>
+                        </p:idleMonitor>
 
                         <p:commandButton 
-                            id="btnLogout"
+                            transient="true"
+                            id="btnCountLogout"
                             value="A"  
                             style="display: none;"                            
-                            actionListener="#{loginMB.logout}"/>
+                            actionListener="#{loginMB.countLogout}"/>
+                        <br/><br/>
+                        <p:graphicImage value="../../resources/img/logo2.png"/>
+                        <br/><br/>
 
-                        <p:accordionPanel activeIndex="-1" >
+
+
+                        <p:accordionPanel activeIndex="-1" >                            
                             <p:tab title="REGISTRO DE DATOS">
                                 <p:menu style="width: 240px; z-index:23; overflow:visible">                               
                                     <p:menuitem 
-                                        icon="ui-icon-disk"
-                                        value="Conjuntos desde Archivo" 
+                                        icon="ui-icon-document"
+                                        value="Conjuntos desde Archivo"
+                                        actionListener="#{formsAndFieldsDataMB.loadFormsData}"
                                         action="proccesFile" 
                                         ajax="false"/>  
                                     <p:menuitem 
-                                        icon="ui-icon-document"
+                                        icon="ui-icon-clipboard"                                        
                                         value="Registro desde Formularios" 
                                         action="forms" 
                                         ajax="false"/>  
                                     <p:menuitem 
-                                        icon="ui-icon-folder-collapsed" 
+                                        icon="ui-icon-newwin" 
                                         value="Gestion de Conjuntos" 
                                         actionListener="#{recordSetsMB.reset}"                                            
                                         action="recordSets"  
@@ -66,7 +85,7 @@
                             <p:tab title="REPORTES">
                                 <p:menu style="width: 240px; z-index:23; overflow:visible">                               
                                     <p:menuitem 
-                                        icon="ui-icon-disk"
+                                        icon="ui-icon-copy"
                                         value="Cruce de variables" 
                                         action="crossing" 
                                         ajax="false"/>
@@ -75,7 +94,7 @@
                             <p:tab title="GEORREFERENCIACION">
                                 <p:menu style="width: 240px; z-index:23; overflow:visible">                               
                                     <p:menuitem 
-                                        icon="ui-icon-disk"
+                                        icon="ui-icon-image"
                                         value="Mapas Temáticos" 
                                         action="geo" 
                                         ajax="false"/>
@@ -84,9 +103,35 @@
                             <p:tab title="CONFIGURACIONES">
                                 <p:menu style="width: 240px; z-index:23; overflow:visible">                               
                                     <p:menuitem 
-                                        icon="ui-icon-disk"
+                                        icon="ui-icon-calculator"
                                         value="Variables Categoricas" 
                                         action="categoricalVariables" 
+                                        ajax="false"/>                                      
+                                </p:menu> 
+                            </p:tab>
+                            <p:tab title="GENERAL">
+                                <p:panel 
+                                    footer="#{loginMB.userName}" 
+                                    header="#{loginMB.userLogin} - #{loginMB.userJob}" >
+                                    <p:graphicImage value="../../resources/img/user.png"/>                                    
+                                </p:panel>
+
+                                <br/>
+                                <p:menu style="width: 240px; z-index:23; overflow:visible">                               
+                                    <p:menuitem 
+                                        icon="ui-icon-home"
+                                        value="Inicio"
+                                        action="homePage"
+                                        ajax="false"/>  
+                                    <p:menuitem 
+                                        icon="ui-icon-circle-close"
+                                        value="Cerrar Sesión"
+                                        actionListener="#{loginMB.logout2}"
+                                        ajax="false"/>  
+                                    <p:menuitem 
+                                        icon="ui-icon-person"
+                                        value="Gestión de Usuarios" 
+                                        action="users" 
                                         ajax="false"/>  
                                 </p:menu> 
                             </p:tab>
@@ -123,26 +168,7 @@
                     </div>
 
                 </p:layoutUnit>
-            </p:layout>
-            <h:form> 
-                <p:dialog 
-                    header="SESION FINALIZADA"
-                    widgetVar="dialogEnd"
-                    modal="true"
-                    closable="false"
-                    resizable="false">
-                    <br/>
-                    <p:inputTextarea 
-                        value="Después de 10 minutos de inactividad el servidor finaliza la sesión, presione aceptar para volver a acceder a la aplicación"
-                        readonly="true" 
-                        style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 60px; width: 300px;"/>
-                    <br/>
-                    <br/>
-                    <a href="/SIGEODEP/faces/index.xhtml">
-                        ACEPTAR
-                    </a>
-                </p:dialog>
-            </h:form>
+            </p:layout>            
             <ui:insert name="dialogs">   
             </ui:insert>
         </h:body>

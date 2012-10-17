@@ -23,6 +23,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
 
@@ -141,8 +142,8 @@ public class VIFMB implements Serializable {
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
     @EJB
     InjuriesFacade injuriesFacade;
-    @EJB
-    UsersFacade usersFacade;
+    //@EJB
+    //UsersFacade usersFacade;
     @EJB
     AlcoholLevelsFacade alcoholLevelsFacade;
     @EJB
@@ -283,7 +284,7 @@ public class VIFMB implements Serializable {
     private Calendar c = Calendar.getInstance();
     private String stylePosition = "color: #1471B1;";
     private String currentIdForm = "";
-
+    private Users currentUser;
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
@@ -310,6 +311,9 @@ public class VIFMB implements Serializable {
     }
 
     public void reset() {
+        
+        LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        currentUser=loginMB.getCurrentUser();
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         loading = true;
@@ -942,7 +946,11 @@ public class VIFMB implements Serializable {
             currentMechanisms = 0;
         }
         //******user_id
-        currentResponsible = "ADMIN";
+        try {
+            currentResponsible = currentNonFatalDomesticViolence.getNonFatalInjuries().getUserId().getUserName();
+        } catch (Exception e) {
+            currentResponsible = "";
+        }
         //******injury_day_of_week
         try {
             currentWeekdayEvent = currentNonFatalDomesticViolence.getNonFatalInjuries().getInjuryDayOfWeek();
@@ -1359,7 +1367,7 @@ public class VIFMB implements Serializable {
                     newNonFatalInjuries.setMechanismId(mechanismsFacade.find(currentMechanisms));
                 }
 
-                newNonFatalInjuries.setUserId(usersFacade.find(1));
+                newNonFatalInjuries.setUserId(currentUser);
 
                 if (currentWeekdayEvent.trim().length() != 0) {
                     newNonFatalInjuries.setInjuryDayOfWeek(currentWeekdayEvent);
@@ -1607,7 +1615,7 @@ public class VIFMB implements Serializable {
                 openDialogDelete = "";
                 if (currentNonFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR  //System.out.println("guardando nuevo registro");
                     
-                    newNonFatalInjuries.setTagId(tagsFacade.find(currentTag));
+                    newVictim.setTagId(tagsFacade.find(currentTag));
                     victimsFacade.create(newVictim);
                     nonFatalInjuriesFacade.create(newNonFatalInjuries);
                     nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);

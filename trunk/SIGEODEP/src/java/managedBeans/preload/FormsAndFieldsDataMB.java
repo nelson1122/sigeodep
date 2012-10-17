@@ -19,7 +19,11 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import model.dao.CountriesFacade;
+import model.dao.DepartamentsFacade;
 import model.dao.MunicipalitiesFacade;
+import model.pojo.Countries;
+import model.pojo.Departaments;
 import model.pojo.Municipalities;
 
 /**
@@ -37,7 +41,11 @@ public class FormsAndFieldsDataMB implements Serializable {
     private boolean loaded = false;
     private String nameForm;
     @EJB
+    DepartamentsFacade departamentsFacade;
+    @EJB
     MunicipalitiesFacade municipalitiesFacade;
+    @EJB
+    CountriesFacade countriesFacade;
 
     public FormsAndFieldsDataMB() {
         /**
@@ -135,81 +143,53 @@ public class FormsAndFieldsDataMB implements Serializable {
         return "";
     }
 
-    public ArrayList<String> categoricalNameList(String typeVarExepted, int amount) {
+    private String searchCountry(String value) {
         /*
-         * retorna una lista con los nombres pertenecientes a una categoria
-         * amount me idica cuantos registros tendra la lista, si amount es 0
-         * indica que se la lista contendra todos los que existan.
+         * COMO PARAMETRO LLEGA UNA CADENA: COLOMBIA-NARIÑO-PASTO ME RETORNA UNA
+         * CADENA CON : 20-52-1 OSEA: id_pais - id_departamento - id_municipio
          */
-        ArrayList<Field> fieldsList;
-        ArrayList<String> returnList = new ArrayList<String>();
-        for (int i = 0; i < forms.size(); i++) {
-            if (forms.get(i).getCode().compareTo(nameForm) == 0) {
-                fieldsList = forms.get(i).fieldsList;
-                for (int j = 0; j < fieldsList.size(); j++) {
-                    if (fieldsList.get(j).getFieldName().compareTo(typeVarExepted) == 0) {
-                        if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {
-                            List<Municipalities> municipalitiesList = municipalitiesFacade.findAll();
-                            for (int k = 0; k < municipalitiesList.size(); k++) {
-                                if (k > amount && amount != 0) {
-                                    break;
-                                }
-                                returnList.add(municipalitiesList.get(k).getMunicipalityName() + " - " + municipalitiesList.get(k).getDepartaments().getDepartamentName());
-                            }
-                            return returnList;
-                        }
-                        if (amount != 0) {
-                            for (int k = 0; k < amount; k++) {
-                                if (fieldsList.get(j).categoricalNamesList.size() > k) {
-                                    returnList.add(fieldsList.get(j).categoricalNamesList.get(k));
-                                }
-                            }
-                            return returnList;
-                        } else {
-                            return fieldsList.get(j).categoricalNamesList;
+        String nameSearch;
+        List<Countries> countriesList = countriesFacade.findAll();
+        for (int k = 0; k < countriesList.size(); k++) {
+            nameSearch = countriesList.get(k).getName();
+            if (nameSearch.compareTo("COLOMBIA") == 0) {
+                List<Departaments> departamentsList = departamentsFacade.findAll();
+                for (int l = 0; l < departamentsList.size(); l++) {
+                    nameSearch = countriesList.get(k).getName() + "-" + departamentsList.get(l).getDepartamentName();
+                    if (nameSearch.compareTo(value) == 0) {
+                        nameSearch = countriesList.get(k).getIdCountry().toString();
+                        nameSearch = nameSearch + "-" + departamentsList.get(l).getDepartamentId().toString();
+                        return nameSearch;
+                    }
+                    for (int m = 0; m < departamentsList.get(l).getMunicipalitiesList().size(); m++) {
+                        nameSearch = nameSearch + "-" + departamentsList.get(l).getMunicipalitiesList().get(m).getMunicipalityName();
+                        if (nameSearch.compareTo(value) == 0) {
+                            nameSearch = countriesList.get(k).getIdCountry().toString();
+                            nameSearch = nameSearch + "-" + departamentsList.get(l).getDepartamentId().toString();
+                            nameSearch = nameSearch + "-" + String.valueOf(departamentsList.get(l).getMunicipalitiesList().get(m).getMunicipalitiesPK().getMunicipalityId());
+                            return nameSearch;
                         }
                     }
+                }
+            } else {
+                if (nameSearch.compareTo(value) == 0) {
+                    return countriesList.get(k).getIdCountry().toString();
                 }
             }
         }
         return null;
     }
 
-    public String findIdByCategoricalName(String category, String value) {
-        /*
-         * busca un codigo dentro de una categoria y me retorna su id, cuando
-         * retorna null es por que no fue encontrado
-         */
-        ArrayList<Field> fieldsList;
-        for (int i = 0; i < forms.size(); i++) {
-            if (forms.get(i).getCode().compareTo(nameForm) == 0) {
-                fieldsList = forms.get(i).fieldsList;
-                for (int j = 0; j < fieldsList.size(); j++) {
-                    if (fieldsList.get(j).getFieldName().compareTo(category) == 0) {
-
-                        if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {
-                            List<Municipalities> municipalitiesList = municipalitiesFacade.findAll();
-                            for (int k = 0; k < municipalitiesList.size(); k++) {                                
-                                String name=municipalitiesList.get(k).getMunicipalityName() + " - " + municipalitiesList.get(k).getDepartaments().getDepartamentName();
-                                if(name.compareTo(value)==0){
-                                    name=String.valueOf(municipalitiesList.get(k).getMunicipalitiesPK().getDepartamentId());
-                                    name=name+"-";
-                                    name=name+String.valueOf(municipalitiesList.get(k).getMunicipalitiesPK().getMunicipalityId());
-                                    return name;
-                                }
-                            }
-                            return null;
-                        }
-
-
-
-                        for (int k = 0; k < fieldsList.get(j).categoricalNamesList.size(); k++) {
-                            if (fieldsList.get(j).categoricalNamesList.get(k).compareTo(value) == 0) {
-                                return fieldsList.get(j).categoricalCodeList.get(k);
-                            }
-                        }
-                    }
-                }
+    private String searchMunicipalitie(String value) {
+                
+        List<Municipalities> municipalitiesList = municipalitiesFacade.findAll();
+        for (int k = 0; k < municipalitiesList.size(); k++) {
+            String name = municipalitiesList.get(k).getMunicipalityName() + " - " + municipalitiesList.get(k).getDepartaments().getDepartamentName();
+            if (name.compareTo(value) == 0) {
+                name = String.valueOf(municipalitiesList.get(k).getMunicipalitiesPK().getDepartamentId());
+                name = name + "-";
+                name = name + String.valueOf(municipalitiesList.get(k).getMunicipalitiesPK().getMunicipalityId());
+                return name;
             }
         }
         return null;
@@ -226,23 +206,115 @@ public class FormsAndFieldsDataMB implements Serializable {
                 fieldsList = forms.get(i).fieldsList;
                 for (int j = 0; j < fieldsList.size(); j++) {
                     if (fieldsList.get(j).getFieldName().compareTo(category) == 0) {
-                        if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {
-                            List<Municipalities> municipalitiesList = municipalitiesFacade.findAll();
-                            for (int k = 0; k < municipalitiesList.size(); k++) {                                
-                                String name=municipalitiesList.get(k).getMunicipalityName() + " - " + municipalitiesList.get(k).getDepartaments().getDepartamentName();
-                                if(name.compareTo(value)==0){
-                                    name=String.valueOf(municipalitiesList.get(k).getMunicipalitiesPK().getDepartamentId());
-                                    name=name+"-";
-                                    name=name+String.valueOf(municipalitiesList.get(k).getMunicipalitiesPK().getMunicipalityId());
-                                    return name;
-                                }
-                            }
-                            return null;
+                        if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {                            
+                            return searchMunicipalitie(value);
+                        }
+                        if (fieldsList.get(j).getFieldType().compareTo("countries") == 0) {
+                            return searchCountry(value);
                         }
                         for (int k = 0; k < fieldsList.get(j).categoricalCodeList.size(); k++) {
                             if (fieldsList.get(j).categoricalCodeList.get(k).compareTo(value) == 0) {
                                 return fieldsList.get(j).categoricalCodeList.get(k);
                             }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public String findIdByCategoricalName(String category, String value) {
+        /*
+         * busca un codigo dentro de una categoria y me retorna su id, cuando
+         * retorna null es por que no fue encontrado
+         */
+        ArrayList<Field> fieldsList;
+        for (int i = 0; i < forms.size(); i++) {
+            if (forms.get(i).getCode().compareTo(nameForm) == 0) {
+                fieldsList = forms.get(i).fieldsList;
+                for (int j = 0; j < fieldsList.size(); j++) {
+                    if (fieldsList.get(j).getFieldName().compareTo(category) == 0) {
+
+                        if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {                            
+                            return searchMunicipalitie(value);
+                        }
+                        if (fieldsList.get(j).getFieldType().compareTo("countries") == 0) {
+                            return searchCountry(value);
+                        }
+                        for (int k = 0; k < fieldsList.get(j).categoricalNamesList.size(); k++) {
+                            if (fieldsList.get(j).categoricalNamesList.get(k).compareTo(value) == 0) {
+                                return fieldsList.get(j).categoricalCodeList.get(k);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public ArrayList<String> categoricalNameList(String typeVarExepted, int amount) {
+        /*
+         * retorna una lista con los nombres pertenecientes a una categoria
+         * amount me idica cuantos registros tendra la lista, si amount es 0
+         * indica que se la lista contendra todos los que existan.
+         */
+        ArrayList<Field> fieldsList;
+        ArrayList<String> returnList = new ArrayList<String>();
+        for (int i = 0; i < forms.size(); i++) {
+            if (forms.get(i).getCode().compareTo(nameForm) == 0) {
+                fieldsList = forms.get(i).fieldsList;
+                for (int j = 0; j < fieldsList.size(); j++) {
+                    if (fieldsList.get(j).getFieldName().compareTo(typeVarExepted) == 0) {
+                        if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {
+                            
+                            List<Municipalities> municipalitiesList = municipalitiesFacade.findAll();
+                            for (int k = 0; k < municipalitiesList.size(); k++) {
+                                if (k > amount && amount != 0) {
+                                    break;
+                                }
+                                returnList.add(municipalitiesList.get(k).getMunicipalityName() + " - " + municipalitiesList.get(k).getDepartaments().getDepartamentName());
+                            }
+                            return returnList;
+                        }
+                        
+                        if (fieldsList.get(j).getFieldType().compareTo("countries") == 0) {
+                            List<Countries> countriesList = countriesFacade.findAll();
+                            for (int k = 0; k < countriesList.size(); k++) {
+                                if (k > amount && amount != 0) {
+                                    break;
+                                }
+                                
+                                if (countriesList.get(k).getName().compareTo("COLOMBIA") == 0) {                                    
+                                    String returnItem;
+                                    List<Departaments> departamentsList = departamentsFacade.findAll();
+                                    for (int l = 0; l < departamentsList.size(); l++) {
+                                        returnItem = countriesList.get(k).getName() + "-" + departamentsList.get(l).getDepartamentName();
+                                        returnList.add(returnItem);
+                                        for (int m = 0; m < departamentsList.get(l).getMunicipalitiesList().size(); m++) {
+                                            returnList.add(returnItem + "-" + departamentsList.get(l).getMunicipalitiesList().get(m).getMunicipalityName());
+                                        }
+                                    }
+                                } else {
+                                    //returnItem=returnItem+"- - ";
+                                    returnList.add(countriesList.get(k).getName());
+                                }
+                            }
+                            return returnList;
+                        }
+                        if (amount != 0) {
+                            for (int k = 0; k < amount; k++) {
+                                if (fieldsList.get(j).categoricalNamesList.size() > k) {
+                                    returnList.add(fieldsList.get(j).categoricalNamesList.get(k));
+                                }
+                            }
+                            return returnList;
+                        } else {
+                            for (int k = 0; k < fieldsList.get(j).categoricalNamesList.size(); k++) {
+                                returnList.add(fieldsList.get(j).categoricalNamesList.get(k));
+                            }
+                            return returnList;
                         }
                     }
                 }
@@ -278,6 +350,33 @@ public class FormsAndFieldsDataMB implements Serializable {
                             }
                             return returnList;
                         }
+                        
+                        if (fieldsList.get(j).getFieldType().compareTo("countries") == 0) {
+                            List<Countries> countriesList = countriesFacade.findAll();
+                            for (int k = 0; k < countriesList.size(); k++) {
+                                if (k > amount && amount != 0) {
+                                    break;
+                                }
+                                
+                                if (countriesList.get(k).getName().compareTo("COLOMBIA") == 0) {
+                                    String returnItem;
+                                    List<Departaments> departamentsList = departamentsFacade.findAll();
+                                    for (int l = 0; l < departamentsList.size(); l++) {
+                                        returnItem = countriesList.get(k).getName() + "-" + departamentsList.get(l).getDepartamentName();
+                                        returnList.add(returnItem);
+                                        for (int m = 0; m < departamentsList.get(l).getMunicipalitiesList().size(); m++) {
+                                            returnList.add(returnItem + "-" + departamentsList.get(l).getMunicipalitiesList().get(m).getMunicipalityName());
+                                        }
+                                    }
+                                } else {
+                                    //returnItem=returnItem+"- - ";
+                                    returnList.add(countriesList.get(k).getName());
+                                }
+
+
+                            }
+                            return returnList;
+                        }
                         if (amount != 0) {
                             for (int k = 0; k < amount; k++) {
                                 if (fieldsList.get(j).categoricalCodeList.size() > k) {
@@ -286,7 +385,11 @@ public class FormsAndFieldsDataMB implements Serializable {
                             }
                             return returnList;
                         } else {
-                            return fieldsList.get(j).categoricalCodeList;
+                            //return fieldsList.get(j).categoricalCodeList;
+                            for (int k = 0; k < fieldsList.get(j).categoricalCodeList.size(); k++) {
+                                returnList.add(fieldsList.get(j).categoricalCodeList.get(k));
+                            }
+                            return returnList;
                         }
                     }
                 }

@@ -4,32 +4,36 @@
  */
 package managedBeans.login;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Serializable;
+import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
+import javax.faces.bean.SessionScoped;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
-import managedBeans.categoricalVariables.NeighborhoodsVariableMB;
 import managedBeans.fileProcessing.*;
-import managedBeans.forms.*;
 import managedBeans.preload.FormsAndFieldsDataMB;
+import model.dao.UsersFacade;
+import model.pojo.Users;
 
 /**
  *
  * @author santos
  */
 @ManagedBean(name = "loginMB")
-@RequestScoped
+@SessionScoped
 public class LoginMB implements Serializable {
 
     private String loginname = "admin";
     private String password = "123";
+    private String userLogin = "";
+    private String userName = "";
+    private String userJob = "";
+    private Users currentUser;
+    
+    private int countLogout=0;//si este valor llega a 10 se finaliza la sesion
     FacesContext context;
     FormsAndFieldsDataMB formsAndFieldsDataMB;
     UploadFileMB uploadFileMB;
@@ -38,6 +42,10 @@ public class LoginMB implements Serializable {
     StoredRelationsMB storedRelationsMB;
     RecordDataMB recordDataMB;
     ErrorsControlMB errorsControlMB;
+    
+    @EJB
+    UsersFacade usersFacade;
+    
     //LcenfMB lcenfMB;
     //AccidentalMB accidentalMB;
     //HomicideMB homicideMB;
@@ -65,26 +73,39 @@ public class LoginMB implements Serializable {
         progress = null;
     }
     //progreso de carga de la aplicacion***********************************    
-
-    public void logout() {
+   
+    
+    public void countLogout() {
+        /*
+         * incrementa un contador antes de salir
+         */
+        countLogout=countLogout+1;
+        System.out.println("Contador Logout: "+String.valueOf(countLogout));
+        if(countLogout>10){
+            ExternalContext ctx =  FacesContext.getCurrentInstance().getExternalContext();
+            String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
+            try {
+                ((HttpSession) ctx.getSession(false)).invalidate();
+                ctx.redirect(ctxPath + "/index.html?v=XX");
+                System.out.println("FINALIZA LA SESION");
+            } catch (Exception ex) {
+                System.out.println("Exepcion cerrando sesion: "+ex.toString());
+            }
+        }
+    }
+    public void resetLogout(){
+        countLogout=1;
+        System.out.println("Contador reseteado: "+String.valueOf(countLogout));
+    }
+    public void logout2() {
         ExternalContext ctx =  FacesContext.getCurrentInstance().getExternalContext();
         String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
         try {
-            // Usar el contexto de JSF para invalidar la sesión,
-            // NO EL DE SERVLETS (nada de HttpServletRequest)
             ((HttpSession) ctx.getSession(false)).invalidate();
-
-            // Redirección de nuevo con el contexto de JSF,
-            // si se usa una HttpServletResponse fallará.
-            // Sin embargo, como ya está fuera del ciclo de vida 
-            // de JSF se debe usar la ruta completa -_-U
-            
-            ctx.redirect(ctxPath + "/faces/index.xhtml");
+            ctx.redirect(ctxPath + "/index.html");
             System.out.println("FINALIZA LA SESION");
-            
-            
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println("Exepcion cerrando sesion: "+ex.toString());
         }
     }
 
@@ -97,8 +118,8 @@ public class LoginMB implements Serializable {
 //            System.setOut(out);
 //            PrintStream out2 = new PrintStream(new FileOutputStream("output2.txt"));
 //            System.setErr(out2);
-//        } catch (Exception e) {
-//            System.out.println("error:    " + e);
+//        } catch (Exception booleanValue) {
+//            System.out.println("error:    " + booleanValue);
 //        }
     }
 
@@ -131,7 +152,13 @@ public class LoginMB implements Serializable {
     }
 
     public String CheckValidUser() {
-        if (loginname.equals("admin") && password.equals("123")) {
+        
+        currentUser =usersFacade.findUser(loginname,password);
+        
+        if(currentUser!=null){
+            userLogin=currentUser.getUserLogin();
+            userName=currentUser.getUserName();
+            userJob=currentUser.getUserJob();
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto!!", "Se ha ingresado al sistema");
             FacesContext.getCurrentInstance().addMessage(null, msg);
 
@@ -195,6 +222,8 @@ public class LoginMB implements Serializable {
             
 
             uploadFileMB.setStoredRelationsMB(storedRelationsMB);
+            
+            reset();
 
             return "homePage";
         } else {
@@ -220,4 +249,40 @@ public class LoginMB implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getUserLogin() {
+        return userLogin;
+    }
+
+    public void setUserLogin(String userLogin) {
+        this.userLogin = userLogin;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserJob() {
+        return userJob;
+    }
+
+    public void setUserJob(String userJob) {
+        this.userJob = userJob;
+    }
+
+    public Users getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(Users currentUser) {
+        this.currentUser = currentUser;
+    }
+    
+    
+    
 }
+

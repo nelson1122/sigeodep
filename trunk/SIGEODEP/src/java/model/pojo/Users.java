@@ -23,8 +23,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @NamedQueries({
     @NamedQuery(name = "Users.findAll", query = "SELECT u FROM Users u"),
     @NamedQuery(name = "Users.findByUserId", query = "SELECT u FROM Users u WHERE u.userId = :userId"),
-    @NamedQuery(name = "Users.findByUserFirstname", query = "SELECT u FROM Users u WHERE u.userFirstname = :userFirstname"),
-    @NamedQuery(name = "Users.findByUserLastname", query = "SELECT u FROM Users u WHERE u.userLastname = :userLastname"),
+    @NamedQuery(name = "Users.findByUserName", query = "SELECT u FROM Users u WHERE u.userName = :userName"),
     @NamedQuery(name = "Users.findByUserJob", query = "SELECT u FROM Users u WHERE u.userJob = :userJob"),
     @NamedQuery(name = "Users.findByUserInstitution", query = "SELECT u FROM Users u WHERE u.userInstitution = :userInstitution"),
     @NamedQuery(name = "Users.findByUserTelephone", query = "SELECT u FROM Users u WHERE u.userTelephone = :userTelephone"),
@@ -40,14 +39,9 @@ public class Users implements Serializable {
     private Integer userId;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 100)
-    @Column(name = "user_firstname", nullable = false, length = 100)
-    private String userFirstname;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 100)
-    @Column(name = "user_lastname", nullable = false, length = 100)
-    private String userLastname;
+    @Size(min = 1, max = 2147483647)
+    @Column(name = "user_name", nullable = false, length = 2147483647)
+    private String userName;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 100)
@@ -80,6 +74,9 @@ public class Users implements Serializable {
     private List<NonFatalInjuries> nonFatalInjuriesList;
     @OneToMany(mappedBy = "userId")
     private List<FatalInjuries> fatalInjuriesList;
+    @Size(max = 2147483647)
+    @Column(name = "user_login", length = 2147483647)
+    private String userLogin;
 
     public Users() {
     }
@@ -88,10 +85,9 @@ public class Users implements Serializable {
 	this.userId = userId;
     }
 
-    public Users(Integer userId, String userFirstname, String userLastname, String userJob, String userInstitution, String userEmail, String userPassword, String userAddress) {
+    public Users(Integer userId, String userName, String userJob, String userInstitution, String userEmail, String userPassword, String userAddress) {
 	this.userId = userId;
-	this.userFirstname = userFirstname;
-	this.userLastname = userLastname;
+	this.userName = userName;
 	this.userJob = userJob;
 	this.userInstitution = userInstitution;
 	this.userEmail = userEmail;
@@ -107,20 +103,12 @@ public class Users implements Serializable {
 	this.userId = userId;
     }
 
-    public String getUserFirstname() {
-	return userFirstname;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUserFirstname(String userFirstname) {
-	this.userFirstname = userFirstname;
-    }
-
-    public String getUserLastname() {
-	return userLastname;
-    }
-
-    public void setUserLastname(String userLastname) {
-	this.userLastname = userLastname;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getUserJob() {
@@ -169,6 +157,14 @@ public class Users implements Serializable {
 
     public void setUserAddress(String userAddress) {
 	this.userAddress = userAddress;
+    }
+    
+    public String getUserLogin() {
+        return userLogin;
+    }
+
+    public void setUserLogin(String userLogin) {
+        this.userLogin = userLogin;
     }
 
     @XmlTransient

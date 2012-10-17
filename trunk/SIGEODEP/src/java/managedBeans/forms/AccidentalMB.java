@@ -23,6 +23,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
 
@@ -138,8 +139,8 @@ public class AccidentalMB implements Serializable {
     FatalInjuriesFacade fatalInjuriesFacade;
     @EJB
     InjuriesFacade injuriesFacade;
-    @EJB
-    UsersFacade usersFacade;
+    //@EJB
+    //UsersFacade usersFacade;
     @EJB
     AlcoholLevelsFacade alcoholLevelsFacade;
     private String currentNarrative = "";
@@ -190,6 +191,7 @@ public class AccidentalMB implements Serializable {
     private Calendar c = Calendar.getInstance();
     private String stylePosition = "color: #1471B1;";
     private String currentIdForm = "";
+    private Users currentUser;
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
@@ -216,8 +218,11 @@ public class AccidentalMB implements Serializable {
         }
     }
 
-    @PostConstruct
+    
     public void reset() {
+        
+        LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        currentUser=loginMB.getCurrentUser();
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         loading = true;
         try {
@@ -811,13 +816,13 @@ public class AccidentalMB implements Serializable {
                 if (currentNarrative.trim().length() != 0) {
                     newFatalInjurie.setInjuryDescription(currentNarrative);
                 }
+                
+                //******user_id	
                 try {
-                    newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
+                    newFatalInjurie.setUserId(currentUser);//usuario que se encuentre logueado
                 } catch (Exception e) {
                     System.out.println("*******************************************ERROR_A1: " + e.toString());
                 }
-                //******user_id	
-                newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
                 //******input_timestamp	
                 newFatalInjurie.setInputTimestamp(new Date());//momento en que se capturo el registro
                 //******injury_day_of_week
@@ -887,7 +892,7 @@ public class AccidentalMB implements Serializable {
                 openDialogDelete = "";
                 if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     System.out.println("guardando nuevo registro");
-                    newFatalInjurie.setTagId(tagsFacade.find(currentTag));
+                    newVictim.setTagId(tagsFacade.find(currentTag));
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryAccidentFacade.create(newFatalInjuryAccident);

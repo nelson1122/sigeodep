@@ -111,7 +111,36 @@ public class StoredRelationsMB implements Serializable{
                 selectRelationGroup.getFormId().getFormId(),
                 selectRelationGroup.getSourceId().toString());
         
-        for (int i = 0; i < relationVariablesList.size(); i++) {
+        List<String> varsExpected = uploadFileMB.getVariablesExpected();//variables esperadas
+        List<String> varsFound = uploadFileMB.getVariablesFound();
+        List<String> varsNotFound = new ArrayList<String>();//listado de variables encontradas que no aparecen
+        List<String> varsNotExpected = new ArrayList<String>();//listado de variables esperadas que no aparecen  
+        boolean exist;
+        for (int i = 0; i < relationVariablesList.size(); i++) {            
+            //determino si existen las variables esperadas y encontradas            
+            exist=false;
+            //int esta=varsExpected.indexOf(relationVariablesList.get(i).getNameExpected());
+            //System.out.println("En variables esperadas el valor"+ relationVariablesList.get(i).getNameExpected()+", ESTA= "+String.valueOf(esta));
+            for (int j = 0; j < varsExpected.size(); j++) {
+                if(varsExpected.get(j).compareTo(relationVariablesList.get(i).getNameExpected())==0){
+                    exist=true;
+                    break;
+                }
+            }
+            if(!exist){
+                varsNotFound.add(relationVariablesList.get(i).getNameExpected());
+            }            
+            exist=false;
+            for (int j = 0; j < varsFound.size(); j++) {
+                if(varsFound.get(j).compareTo(relationVariablesList.get(i).getNameFound())==0){
+                    exist=true;
+                    break;
+                }
+            }
+            if(!exist){
+                varsNotExpected.add(relationVariablesList.get(i).getNameFound());
+            }
+            
             RelationVar newRelationVar = new RelationVar(
                     relationVariablesList.get(i).getNameExpected(),
                     relationVariablesList.get(i).getNameFound(),
@@ -135,15 +164,35 @@ public class StoredRelationsMB implements Serializable{
                         relationValuesList.get(j).getNameFound());
             }           
         }
-        //recargo los controles de relackoan de variables
+        //recargo los controles de relacion de variables
         relationshipOfVariablesMB.setCurrentRelationsGroup(currentRelationsGroup);
         relationshipOfVariablesMB.loadRelatedVars();
         relationshipOfVariablesMB.loadVarsExpectedAndFound();
         relationshipOfVariablesMB.setValuesExpected(new ArrayList<String>());
         relationshipOfVariablesMB.setValuesFound(new ArrayList<String>());
-
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "El grupo de relaciones (" + currentRelationGroupName + ") se ha cargado satisfactoriamente"));
-
+        
+        String result="";
+        exist=false;
+        if(!varsNotExpected.isEmpty()){
+            //result=" VARIABLES ESPERADAS QUE NO COINCIDEN: ";
+            for (int i = 0; i < varsNotExpected.size(); i++) {
+                result=result+" "+String.valueOf(i)+". "+varsNotExpected.get(i)+" ";
+            }
+            exist=true;
+        }
+        if(!varsNotFound.isEmpty()){
+            //result=" VARIABLES ENCONTRADAS QUE NO COINCIDEN: ";
+            for (int i = 0; i < varsNotFound.size(); i++) {
+                result=result+" "+String.valueOf(i)+". "+varsNotExpected.get(i)+" ";
+            }
+            exist=true;
+        }
+        if(!exist){
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "El grupo de relaciones" + currentRelationGroupName + ") se ha cargado satisfactoriamente"));
+        }
+        else{
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,"Advertencia!!", "El grupo de relaciones se ha cargado, pero existen variables que no coinciden: "+result));
+        }
     }
 
     public void btnRemoveConfigurationConfirmationClick() {

@@ -91,13 +91,13 @@ public class RecordSetsLcenfMB implements Serializable {
     }
 
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
-        
+
         FacesContext context = FacesContext.getCurrentInstance();
         recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
         recordSetsMB.setProgress(0);
         int totalRegisters = 0;
         int totalProcess = 0;
-        
+
         selectedRowsDataTable = null;
         rowDataTableList = new ArrayList<RowDataTable>();
         data = "- ";
@@ -484,7 +484,12 @@ public class RecordSetsLcenfMB implements Serializable {
         //******stranger
         try {
             if (currentNonFatalI.getVictimId().getStranger() != null) {
-                newRowDataTable.setColumn5(currentNonFatalI.getVictimId().getStranger().toString());
+                if (currentNonFatalI.getVictimId().getStranger()) {
+                    newRowDataTable.setColumn5("SI");
+                } else {
+                    newRowDataTable.setColumn5("NO");
+                }
+
             }
         } catch (Exception e) {
         }
@@ -764,7 +769,12 @@ public class RecordSetsLcenfMB implements Serializable {
 
         try {
             if (currentNonFatalI.getSubmittedPatient() != null) {
-                newRowDataTable.setColumn50(currentNonFatalI.getSubmittedPatient().toString());
+                if (currentNonFatalI.getSubmittedPatient()) {
+                    newRowDataTable.setColumn50("SI");
+                } else {
+                    newRowDataTable.setColumn50("NO");
+                }
+                
             }
         } catch (Exception e) {
         }
@@ -807,7 +817,7 @@ public class RecordSetsLcenfMB implements Serializable {
         //******user_id
         try {
             if (currentNonFatalI.getUserId() != null) {
-                newRowDataTable.setColumn56(currentNonFatalI.getUserId().getUserFirstname() + "" + currentNonFatalI.getUserId().getUserLastname());
+                newRowDataTable.setColumn56(currentNonFatalI.getUserId().getUserName());
             }
         } catch (Exception e) {
         }
@@ -1091,7 +1101,7 @@ public class RecordSetsLcenfMB implements Serializable {
 
             if (currentNonFatalI.getNonFatalSelfInflicted() != null) {
                 if (currentNonFatalI.getNonFatalSelfInflicted().getPreviousAttempt() != null) {
-                    newRowDataTable.setColumn109(currentNonFatalI.getNonFatalSelfInflicted().getPreviousAttempt().getBooleanId().toString());
+                    newRowDataTable.setColumn109(currentNonFatalI.getNonFatalSelfInflicted().getPreviousAttempt().getBooleanName());
                 }
             }
         } catch (Exception e) {
@@ -1100,7 +1110,7 @@ public class RecordSetsLcenfMB implements Serializable {
         try {
             if (currentNonFatalI.getNonFatalSelfInflicted() != null) {
                 if (currentNonFatalI.getNonFatalSelfInflicted().getMentalAntecedent() != null) {
-                    newRowDataTable.setColumn110(currentNonFatalI.getNonFatalSelfInflicted().getMentalAntecedent().getBooleanId().toString());
+                    newRowDataTable.setColumn110(currentNonFatalI.getNonFatalSelfInflicted().getMentalAntecedent().getBooleanName());
                 }
             }
         } catch (Exception e) {
@@ -1109,7 +1119,7 @@ public class RecordSetsLcenfMB implements Serializable {
         try {
             if (currentNonFatalI.getNonFatalSelfInflicted() != null) {
                 if (currentNonFatalI.getNonFatalSelfInflicted().getPrecipitatingFactorId() != null) {
-                    newRowDataTable.setColumn111(currentNonFatalI.getNonFatalSelfInflicted().getPrecipitatingFactorId().getPrecipitatingFactorId().toString());
+                    newRowDataTable.setColumn111(currentNonFatalI.getNonFatalSelfInflicted().getPrecipitatingFactorId().getPrecipitatingFactorName());
                 }
             }
         } catch (Exception e) {
@@ -1191,7 +1201,7 @@ public class RecordSetsLcenfMB implements Serializable {
                 currentNonFatalInjury = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
             }
             if (selectedRowsDataTable.length > 1) {
-                
+
                 btnEditDisabled = true;
                 btnRemoveDisabled = false;
             } else {

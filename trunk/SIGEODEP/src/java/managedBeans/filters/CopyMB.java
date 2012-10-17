@@ -173,6 +173,7 @@ public class CopyMB{
             replicate_model2 = new LazyQueryDataModel();
         } catch (Exception e) {
         }
+        relationshipOfVariablesMB.refresh();
     }
 
     public void cleanBackupTables() {
@@ -327,7 +328,7 @@ public class CopyMB{
             split_newheaders.add(split_field_name1);
             split_newheaders.add(split_field_name2);
             connection.saveNewFields(split_newheaders, split_newfields, split_field);
-            relationshipOfVariablesMB.refresh();
+            //relationshipOfVariablesMB.refresh();
             this.refresh();
             undoSplit++;
             btnSplitDisable = false;

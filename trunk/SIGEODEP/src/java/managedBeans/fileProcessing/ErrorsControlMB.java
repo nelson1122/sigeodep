@@ -35,20 +35,20 @@ public class ErrorsControlMB {
     private String currentError = "";//error actual
     private SelectItem[] errors;
     private boolean btnSolveDisabled = true;
+    private boolean btnDiscardDisabled = true;
+    //private boolean btnDeleteRecordDisabled = true;
+    private boolean btnUndoDisabled = true;
+    private boolean selectDateFormatDisabled;
+    private boolean btnSeeRecordDisabled = true;
     private String currentAceptedValue = "";//proveedor actual    
     private SelectItem[] aceptedValues;
     private SelectItem[] correctionList;
     private String currentCorrection;
-    private boolean btnUndoDisabled = true;
     private ArrayList<ErrorControl> errorControlArrayList;
     private ArrayList<ErrorControl> errorCorrectionArrayList;
     private int sizeErrorsList = 0;
     private String solution = " ";
     private String currentDateFormat;
-    private boolean selectDateFormatDisabled;
-    //private boolean btnSeeRecordDisabled = true;
-    private boolean btnSeeRecordDisabled = true;
-    //#{car[column.property]}  
     private String currentDateFormatAcepted;
     private String currentNewValue;
     private String description = "";
@@ -102,6 +102,9 @@ public class ErrorsControlMB {
     }
 
     public void reset() {
+        correctionList = new SelectItem[0];
+        errorControlArrayList = new ArrayList<ErrorControl>();
+        errorCorrectionArrayList = new ArrayList<ErrorControl>();
     }
 
     private void updateErrors() {
@@ -133,9 +136,97 @@ public class ErrorsControlMB {
         }
     }
 
+//    public void deleteErrorRecord() {
+//        for (int i = 0; i < errorControlArrayList.size(); i++) {
+//            if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
+//                currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();
+//                relationVar = currentRelationsGroup.findRelationVar(errorControlArrayList.get(i).getRelationVar().getNameFound());
+//                //////////////////////////////
+//                //creo la instruccion que revertira la eliminacion
+//                //String sql="";
+//                //se realiza la eliminacion de la tabla                    
+//                conx = new ConnectionJDBC();
+//                conx.connect();
+//                String rowId=errorControlArrayList.get(i).getRowId();
+//                conx.remove("temp", "id=" + rowId);
+//
+//                //quitamos los errores de esta linea de la lista
+//                for (int j = errorControlArrayList.size(); j > -1; j--) {
+//                    if(errorControlArrayList.get(j).getRowId().compareTo(rowId)==0){
+//                        errorControlArrayList.remove(j);
+//                        sizeErrorsList--;
+//                    }
+//                }
+//                //adiciono la nueva correccion
+//                //errorCorrectionArrayList.add(errorControlArrayList.get(i));               
+//                
+//                updateErrorsArrayList();
+//                updateCorrectionArrayList();
+//                btnSolveDisabled = true;
+//                btnDiscardDisabled = true;
+//                btnDeleteRecordDisabled = true;
+//                btnSeeRecordDisabled = true;
+//                conx.disconnect();
+//                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Registro eliminado");
+//                FacesContext.getCurrentInstance().addMessage(null, msg);
+////                    return 0;
+////                }
+//            }
+//        }
+////        return 0;
+//    }
+
+    public int discardError() {
+        boolean correction = false;
+        for (int i = 0; i < errorControlArrayList.size(); i++) {
+            if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
+                currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();
+                relationVar = currentRelationsGroup.findRelationVar(errorControlArrayList.get(i).getRelationVar().getNameFound());
+                //////////////////////////////
+
+                //verifico que la columna a descartar no sea la de intencionalidad
+                switch (DataTypeEnum.convert(errorControlArrayList.get(i).getRelationVar().getFieldType())) {//tipo de relacion                    
+                    case NOVALUE://categorical
+                        if (errorControlArrayList.get(i).getRelationVar().getNameExpected().compareTo("intenci") == 0) {
+                            correction = false;
+                        } else {
+                            correction = true;
+                        }
+                        break;
+                }
+                ///////////////////////////////                
+                if (!correction) {
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Este campo debe contener un valor obligatoriamente");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                } else {
+                    //se realiza la actualizacion de la tabla                    
+                    String sqlUpdate = errorControlArrayList.get(i).getRelationVar().getNameFound() + "=''";
+                    String sqlId = "id=" + errorControlArrayList.get(i).getRowId();
+                    conx = new ConnectionJDBC();
+                    conx.connect();
+                    conx.update("temp", sqlUpdate, sqlId);
+                    //quitamos el error de la lista
+                    errorControlArrayList.get(i).setNewValue(currentNewValue);
+                    errorCorrectionArrayList.add(errorControlArrayList.get(i));
+                    errorControlArrayList.remove(i);
+                    sizeErrorsList--;
+                    updateErrorsArrayList();
+                    updateCorrectionArrayList();
+                    btnSolveDisabled = true;
+                    btnDiscardDisabled = true;
+                    //btnDeleteRecordDisabled = true;
+                    btnSeeRecordDisabled = true;
+                    conx.disconnect();
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                    return 0;
+                }
+            }
+        }
+        return 0;
+    }
+
     public int solveError() {
-        String sqlUpdate = "";
-        String sqlId = "";
         boolean correction = false;
         //verifico que el nuevo dato sea un valor esperado
         for (int i = 0; i < errorControlArrayList.size(); i++) {
@@ -209,7 +300,14 @@ public class ErrorsControlMB {
                             correction = false;
                         }
                         break;
-                    case NOVALUE://categorucal
+                    case percentage:
+                        if (isPercentage(currentNewValue)) {
+                            correction = true;
+                        } else {
+                            correction = false;
+                        }
+                        break;
+                    case NOVALUE://categorical
                         if (isCategorical(
                                 currentNewValue, errorControlArrayList.get(i).getRelationVar().getNameExpected(),
                                 errorControlArrayList.get(i).getRelationVar().getTypeComparisonForCode(), relationVar.getRelationValueList())) {
@@ -225,8 +323,8 @@ public class ErrorsControlMB {
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 } else {
                     //se realiza la actualizacion de la tabla
-                    sqlUpdate = errorControlArrayList.get(i).getRelationVar().getNameFound() + "='" + currentNewValue + "'";
-                    sqlId = "id=" + errorControlArrayList.get(i).getRowId();
+                    String sqlUpdate = errorControlArrayList.get(i).getRelationVar().getNameFound() + "='" + currentNewValue + "'";
+                    String sqlId = "id=" + errorControlArrayList.get(i).getRowId();
                     conx = new ConnectionJDBC();
                     conx.connect();
                     conx.update("temp", sqlUpdate, sqlId);
@@ -238,6 +336,9 @@ public class ErrorsControlMB {
                     updateErrorsArrayList();
                     updateCorrectionArrayList();
                     btnSolveDisabled = true;
+                    btnDiscardDisabled = true;
+                    //btnDeleteRecordDisabled = true;
+                    btnSeeRecordDisabled = true;
                     conx.disconnect();
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
@@ -302,6 +403,42 @@ public class ErrorsControlMB {
         try {
             int i = Integer.parseInt(str);
             return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+
+    private boolean isPercentage(String str) {
+        /*
+         * validacion de si un numero es porcentaje 1-100
+         */
+        if (str.trim().length() == 0) {
+            return true;
+        }
+        try {
+            int i = Integer.parseInt(str);
+            if (i < 0 || i > 100) {
+                return false;
+            }
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+    }
+
+    private boolean isDegree(String str) {
+        /*
+         * Grado quemadura 1,2,3
+         */
+        if (str.trim().length() == 0) {
+            return true;
+        }
+        try {
+            int i = Integer.parseInt(str);
+            if (i == 1 || i == 2 || i == 3) {
+                return true;
+            }
+            return false;
         } catch (NumberFormatException nfe) {
             return false;
         }
@@ -381,8 +518,8 @@ public class ErrorsControlMB {
         /*
          * validacion de si un string es un hora miitar
          */
-        
-        
+
+
         //----------------------------------------------
         //determinar si hay caracteres
         if (str.trim().length() == 0) {
@@ -390,10 +527,10 @@ public class ErrorsControlMB {
         }
         //----------------------------------------------
         //quitar " AM A.M.
-        str=str.trim().toUpperCase();
-        str=str.replace("AM", "");
-        str=str.replace("A.M.", "");
-        str=str.replace("\"", "");
+        str = str.trim().toUpperCase();
+        str = str.replace("AM", "");
+        str = str.replace("A.M.", "");
+        str = str.replace("\"", "");
 
         //determinar si es un timestamp
         if (str.trim().length() == 12 || str.trim().length() == 8) {
@@ -605,6 +742,11 @@ public class ErrorsControlMB {
 
     public void changeErrorsList() {
         updateErrorsArrayList();
+        btnSolveDisabled = true;
+        btnSeeRecordDisabled = true;
+        //btnDeleteRecordDisabled = true;
+        btnDiscardDisabled = true;
+
         for (int i = 0; i < errorControlArrayList.size(); i++) {
             if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
                 selectDateFormatDisabled = true;
@@ -642,9 +784,18 @@ public class ErrorsControlMB {
                     case hour:
                         aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 0 a 24"),};
                         break;
+//                    case degree:
+//                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero 1, 2, 3"),};
+//                        break;
+                    case percentage:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 100"),};
+                        break;
+                    case error:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", " "),};
+                        break;
                     case NOVALUE:
                         selectDateFormatDisabled = true;
-                        btnSolveDisabled = false;
+                        //btnSolveDisabled = false;
                         ArrayList<String> categoricalList;
                         if (errorControlArrayList.get(i).getRelationVar().getTypeComparisonForCode()) {
                             categoricalList = formsAndFieldsDataMB.categoricalCodeList(
@@ -659,11 +810,19 @@ public class ErrorsControlMB {
                         }
                         break;
                 }
-                btnSolveDisabled = false;
-                btnSeeRecordDisabled = false;
-                createDynamicTable();
-                valueFound = errorControlArrayList.get(i).getValue();//valor actual
-                solution = errorControlArrayList.get(i).getErrorSolution();//solucion
+
+                if (errorControlArrayList.get(i).getRelationVar().getFieldType().compareTo("error") != 0) {
+                    createDynamicTable();
+                    btnSeeRecordDisabled = false;
+                    //btnDeleteRecordDisabled = false;
+                    btnDiscardDisabled = false;
+                    valueFound = errorControlArrayList.get(i).getValue();//valor actual
+                    solution = errorControlArrayList.get(i).getErrorSolution();//solucion
+                } else {
+                    valueFound = "";//valor actual
+                    solution = errorControlArrayList.get(i).getErrorSolution();//solucion
+                }
+
                 break;
             }
         }
@@ -677,7 +836,6 @@ public class ErrorsControlMB {
         setAceptedValues(new SelectItem[0]);
         setBtnSolveDisabled(false);
         setCurrentAceptedValue("");
-        //setCurrentError("");
         setCurrentNewValue("");
         setDescription("");
         setSelectDateFormatDisabled(true);
@@ -710,6 +868,22 @@ public class ErrorsControlMB {
 
     public void setBtnSolveDisabled(boolean btnSolveDisabled) {
         this.btnSolveDisabled = btnSolveDisabled;
+    }
+
+//    public boolean isBtnDeleteRecordDisabled() {
+//        return btnDeleteRecordDisabled;
+//    }
+//
+//    public void setBtnDeleteRecordDisabled(boolean btnDeleteRecordDisabled) {
+//        this.btnDeleteRecordDisabled = btnDeleteRecordDisabled;
+//    }
+
+    public boolean isBtnDiscardDisabled() {
+        return btnDiscardDisabled;
+    }
+
+    public void setBtnDiscardDisabled(boolean btnDiscardDisabled) {
+        this.btnDiscardDisabled = btnDiscardDisabled;
     }
 
     public String getCurrentAceptedValue() {

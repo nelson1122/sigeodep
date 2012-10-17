@@ -172,7 +172,9 @@ public class RelationshipOfVariablesMB implements Serializable {
         }
         varsFound = varsFound2;
         //recargo la lista de variables relacionadas pero para la seccion de relacionar variables        
-        relationshipOfValuesMB.loadCategoricalRelatedVariables(currentRelationsGroup);
+        if (currentRelationsGroup != null) {
+            relationshipOfValuesMB.loadCategoricalRelatedVariables(currentRelationsGroup);
+        }
     }
 
     public void loadValuesExpected() {
@@ -182,7 +184,7 @@ public class RelationshipOfVariablesMB implements Serializable {
         if (currentVarExpected.trim().length() != 0) {
             typeVarExepted = formsAndFieldsDataMB.searchField(currentVarExpected);
             valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
-            selectDateFormatDisabled=true;
+            selectDateFormatDisabled = true;
             switch (DataTypeEnum.convert(typeVarExepted.getFieldType())) {//tipo de relacion
                 case integer:
                     valuesExpected.add("Cualquier entero");
@@ -192,7 +194,7 @@ public class RelationshipOfVariablesMB implements Serializable {
                     break;
                 case date:
                     valuesExpected.add("Cualquier fecha");
-                    selectDateFormatDisabled=false;                    
+                    selectDateFormatDisabled = false;
                     break;
                 case age:
                     valuesExpected.add("Edad representada por un entero o definida en meses y años");
@@ -215,6 +217,12 @@ public class RelationshipOfVariablesMB implements Serializable {
                 case year:
                     valuesExpected.add("El año es un valor entero de dos o 4 cifras");
                     break;
+                case percentage:
+                    valuesExpected.add("El porcentaje es un valor entero de 1 a 100");
+                    break;
+//                case degree:
+//                    valuesExpected.add("El grado mas grave para quemados es un valor entero de 1 a 3 ");
+//                    break;
                 case NOVALUE://se espera un valor categorico compareForCodeDisabled = false;
                     if (compareForCode == true) {
                         valuesExpected = formsAndFieldsDataMB.categoricalCodeList(currentVarExpected, 20);
@@ -350,7 +358,7 @@ public class RelationshipOfVariablesMB implements Serializable {
                 nextStep = false;
             } else {
                 if (currentVarFound.trim().length() == 0) {
-                    error = "Debe seleccionarse una variable encontradad de la lista";
+                    error = "Debe seleccionarse una variable encontrada de la lista";
                     nextStep = false;
                 }
             }
@@ -409,13 +417,13 @@ public class RelationshipOfVariablesMB implements Serializable {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
             }
         } else {//se produjo un error
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", error));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
         }
     }
-
     /*
      * cargar las listas de variables encontradas y esperadas
      */
+
     public void loadRelatedVars() {
         relatedVars = new ArrayList<String>();
         List<RelationVar> relationVarList = currentRelationsGroup.getRelationVarList();
@@ -428,8 +436,6 @@ public class RelationshipOfVariablesMB implements Serializable {
         /*
          * click sobre boton remover relacion de variables
          */
-
-
         //como se elimina un item de la lista busco cual es el siguinte item seleccionado
         String nextRelatedVarsSelected = "";
         for (int i = 0; i < relatedVars.size(); i++) {
@@ -445,26 +451,30 @@ public class RelationshipOfVariablesMB implements Serializable {
             }
         }
         //elimino el item de la lista de variables relacionadas
-        String[] splitVarRelated = currentRelatedVars.split("->");
-        currentRelationsGroup.removeRelationVar(splitVarRelated[0], splitVarRelated[1]);//elimino la relacion de el grupo de relaciones actual
-        for (int i = 0; i < relatedVars.size(); i++) {//remuevo de la lista de relaciones de variables        
-            if (relatedVars.get(i).compareTo(currentRelatedVars) == 0) {
-                relatedVars.remove(i);
-                break;
+        if (currentRelatedVars.trim().length() != 0) {
+            String[] splitVarRelated = currentRelatedVars.split("->");
+            currentRelationsGroup.removeRelationVar(splitVarRelated[0], splitVarRelated[1]);//elimino la relacion de el grupo de relaciones actual
+            for (int i = 0; i < relatedVars.size(); i++) {//remuevo de la lista de relaciones de variables        
+                if (relatedVars.get(i).compareTo(currentRelatedVars) == 0) {
+                    relatedVars.remove(i);
+                    break;
+                }
             }
-        }
-        loadVarsExpectedAndFound();//recargo lista de variables esperadas y encontradas
-        valuesExpected = new ArrayList<String>();
-        valuesFound = new ArrayList<String>();
-        //valuesDiscarded=new ArrayList<String>();
-        //valuesRela
+            loadVarsExpectedAndFound();//recargo lista de variables esperadas y encontradas
+            valuesExpected = new ArrayList<String>();
+            valuesFound = new ArrayList<String>();
+            //valuesDiscarded=new ArrayList<String>();
+            //valuesRela
 
 
-        currentRelatedVars = nextRelatedVarsSelected;//asigno el item que queda seleccionado
-        if (currentRelatedVars.trim().length() == 0) {
-            btnRemoveRelationVarDisabled = true;
+            currentRelatedVars = nextRelatedVarsSelected;//asigno el item que queda seleccionado
+            if (currentRelatedVars.trim().length() == 0) {
+                btnRemoveRelationVarDisabled = true;
+            }
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "La relación ha sido eliminada."));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", "Seleccione una relación a eliminar."));
         }
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "La relación ha sido eliminada."));
     }
 
     //----------------------------------------------------------------------

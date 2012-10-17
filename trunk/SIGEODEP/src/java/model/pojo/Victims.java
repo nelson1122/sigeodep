@@ -63,6 +63,7 @@ public class Victims implements Serializable {
     @NotNull
     @Column(name = "victim_id", nullable = false)
     private Integer victimId;
+    
     @Column(name = "residence_municipality")
     private Short residenceMunicipality;
     @Column(name = "residence_department")
@@ -96,6 +97,10 @@ public class Victims implements Serializable {
     private List<NonFatalInjuries> nonFatalInjuriesList;
     @OneToMany(mappedBy = "victimId")
     private List<FatalInjuries> fatalInjuriesList;
+    
+    @JoinColumn(name = "tag_id", referencedColumnName = "tag_id")
+    @ManyToOne
+    private Tags tagId;
 
     public Victims() {
     }
@@ -198,6 +203,16 @@ public class Victims implements Serializable {
 
     public void setResidenceDepartment(Short residenceDepartment) {
         this.residenceDepartment = residenceDepartment;
+    }
+    
+    
+    
+    public Tags getTagId() {
+        return tagId;
+    }
+
+    public void setTagId(Tags tagId) {
+        this.tagId = tagId;
     }
 
     @XmlTransient

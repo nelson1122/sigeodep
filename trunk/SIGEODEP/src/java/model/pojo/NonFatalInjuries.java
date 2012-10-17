@@ -138,9 +138,7 @@ public class NonFatalInjuries implements Serializable {
     @ManyToMany
     private List<KindsOfInjury> kindsOfInjuryList;
     
-    @JoinColumn(name = "tag_id", referencedColumnName = "tag_id")
-    @ManyToOne
-    private Tags tagId;
+    
 
 //    @JoinColumn(name = "id_state_checkup_date", referencedColumnName = "id_state_date")
 //    @ManyToOne
@@ -429,13 +427,7 @@ public class NonFatalInjuries implements Serializable {
 	this.nonFatalTransport = nonFatalTransport;
     }
     
-    public Tags getTagId() {
-        return tagId;
-    }
-
-    public void setTagId(Tags tagId) {
-        this.tagId = tagId;
-    }
+    
     
     @Override
     public int hashCode() {

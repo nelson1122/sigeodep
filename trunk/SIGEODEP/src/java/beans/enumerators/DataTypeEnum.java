@@ -20,6 +20,9 @@ public enum DataTypeEnum {
     date,
     age,
     military,
+    percentage,
+    level,
+    error,
     NOVALUE;
 
     public static DataTypeEnum convert(String str) {

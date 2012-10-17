@@ -74,6 +74,21 @@ public class RelationVar {
             }
         }
     }
+    
+//    public String findCodeOrName(String value){
+//        for (int i = 0; i < relationValueList.size(); i++) {
+//            if (relationValueList.get(i).getNameExpected().compareTo(value)==0){
+//                relationValueList.remove(i);
+//                brea
+//            }
+//            if (relationValueList.get(i).getNameExpected().compareTo(value)==0){
+//                relationValueList.remove(i);
+//                break;
+//            }
+//            
+//        }
+//        return null;
+//    }
 
     public ArrayList<RelationValue> getRelationValueList() {
         return relationValueList;

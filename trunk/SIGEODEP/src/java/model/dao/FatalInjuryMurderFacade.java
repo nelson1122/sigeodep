@@ -34,7 +34,7 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
     public List<FatalInjuryMurder> findFromTag(int id_tag) {
         String hql;
         try {
-            hql = "Select x from FatalInjuryMurder x where x.fatalInjuries.tagId.tagId = " + String.valueOf(id_tag);
+            hql = "Select x from FatalInjuryMurder x where x.fatalInjuries.victimId.tagId.tagId = " + String.valueOf(id_tag);
             return em.createQuery(hql).getResultList();
         } catch (Exception e) {
             System.out.println(e.toString() + "----------------------------------------------------");
@@ -46,7 +46,7 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
     public int countFromTag(int id_tag) {
         String hql;
         try {
-            hql = "Select count(x) from FatalInjuryMurder x where x.fatalInjuries.tagId.tagId = " + String.valueOf(id_tag);
+            hql = "Select count(x) from FatalInjuryMurder x where x.fatalInjuries.victimId.tagId.tagId = " + String.valueOf(id_tag);
             long l=em.createQuery(hql, Long.class).getSingleResult();
             String s=String.valueOf(l);
             return Integer.parseInt(s);
@@ -66,10 +66,12 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
                     + "SELECT "
                     + "    count(*) "
                     + "FROM "
-                    + "    public.fatal_injuries "
+                    + "    public.fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "
                     + "    fatal_injuries.injury_id = 10 AND "
-                    + "    fatal_injuries.tag_id = " + String.valueOf(idTag) + "; ");
+                    + "    fatal_injuries.victim_id = victims.victim_id AND "
+                    + "    victims.tag_id = " + String.valueOf(idTag) + "; ");
             conx.disconnect();
             if (rs.next()) {
                 return rs.getInt(1);
@@ -93,10 +95,12 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
                     + "     ROW_NUMBER() OVER (ORDER BY fatal_injury_id) AS item, "
                     + "     fat_inj.* "
                     + "   FROM "
-                    + "     fatal_injuries fat_inj "
+                    + "     fatal_injuries fat_inj, "
+                    + "      victims vic"
                     + "   WHERE"
                     + "      fat_inj.injury_id = 10 AND"
-                    + "      fat_inj.tag_id = " + String.valueOf(id_tag) + " "
+                    + "      fat_inj.victim_id = vic.victim_id AND "
+                    + "      vic.tag_id = " + String.valueOf(id_tag) + " "
                     + ") "
                     + "as a WHERE fatal_injury_id=" + String.valueOf(injury_id) + "");
             conx.disconnect();
@@ -146,10 +150,12 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
                     + "SELECT "
                     + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
-                    + "  public.fatal_injuries "
+                    + "  public.fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "                    
                     + "  fatal_injuries.injury_id = 10 AND "
-                    + "  fatal_injuries.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "    fatal_injuries.victim_id = victims.victim_id AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " AND "
                     + "  fatal_injuries.fatal_injury_id > " + String.valueOf(injury_id) + " "
                     + "ORDER BY "
                     + "  fatal_injuries.fatal_injury_id ASC "
@@ -175,10 +181,12 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
                     + "SELECT "
                     + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
-                    + "  public.fatal_injuries "
+                    + "  public.fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "                    
                     + "  fatal_injuries.injury_id = 10 AND "
-                    + "  fatal_injuries.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "    fatal_injuries.victim_id = victims.victim_id AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " AND "
                     + "  fatal_injuries.fatal_injury_id < " + String.valueOf(injury_id) + " "
                     + "ORDER BY "
                     + "  fatal_injuries.fatal_injury_id DESC "
@@ -212,10 +220,12 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
                     + "SELECT "
                     + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
-                    + "  public.fatal_injuries "
+                    + "  public.fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "
                     + "  fatal_injuries.injury_id = 10 AND "
-                    + "  fatal_injuries.tag_id = " + String.valueOf(id_tag) + " "
+                    + "    fatal_injuries.victim_id = victims.victim_id AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " "
                     + "ORDER BY "
                     + "  fatal_injuries.fatal_injury_id ASC "
                     + "LIMIT "
@@ -248,10 +258,12 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
                     + "SELECT "
                     + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
-                    + "  public.fatal_injuries "
+                    + "  public.fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "
                     + "  fatal_injuries.injury_id = 10 AND "
-                    + "  fatal_injuries.tag_id = " + String.valueOf(id_tag) + " "
+                    + "    fatal_injuries.victim_id = victims.victim_id AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " "
                     + "ORDER BY "
                     + "  fatal_injuries.fatal_injury_id DESC "
                     + "LIMIT "

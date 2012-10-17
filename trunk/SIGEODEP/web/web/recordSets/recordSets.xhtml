@@ -75,13 +75,16 @@
                                 </p:row>                        
                             </p:panelGrid>
                             <br/>
+                            
                             <p:dataTable 
                                 id="IdSearchTable" var="rowX" 
                                 value="#{recordSetsMB.rowDataTableList}" 
                                 rowKey="#{rowX.column1}"  
                                 selection="#{recordSetsMB.selectedRowsDataTable}" 
                                 paginator="true"
-                                rows="10"                                    
+                                rows="10" 
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,20,25,30"
                                 paginatorPosition="bottom"                                
                                 scrollable="true"
                                 scrollWidth="730"                                    
@@ -115,8 +118,7 @@
                                             widgetVar="pbAjaxValidate" 
                                             ajax="true" 
                                             value="#{recordSetsMB.progress}" 
-                                            labelTemplate="{value}%" 
-                                            styleClass="animated">          
+                                            labelTemplate="{value}%">          
                                             <p:ajax 
                                                 event="complete" 
                                                 listener="#{recordSetsMB.onCompleteLoad}" 
@@ -150,6 +152,13 @@
                                             disabled="#{recordSetsMB.btnViewDisabled}"
                                             onclick="pbAjaxValidate.start();"  
                                             value="Mostrar Datos"/>
+                                        <p:commandButton 
+                                            id="IdViewDuplicate"
+                                            action="#{recordSetsMB.openDuplicateSets}"
+                                            actionListener="#{recordSetsMB.duplicateTagClick}"
+                                            disabled="#{recordSetsMB.btnViewDisabled}"
+                                            onclick="pbAjaxValidate.start();"  
+                                            value="Detectar duplicados"/>
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>
@@ -249,23 +258,40 @@
                     id="IdDialogDelete"
                     modal="true"
                     resizable="false"
-                    header="ELIMINACION DE CONJUNTO" 
+                    header="ELIMINACION DE CONJUNTOS" 
                     widgetVar="dialogDelete"> 
                     <br/>
                     <p:inputTextarea 
-                        value="Confirma la eliminación de los conjuntos seleccionados?" 
+                        value="                                                       Confirma la eliminación de los conjuntos seleccionados?" 
                         readonly="true" 
-                        style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 48px;"/>
+                        style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; width: 250px; height: 68px;"/>
                     <br/>
                     <br/>
+                    <p:progressBar 
+                        id="IdProgresDelete" 
+                        interval="500" 
+                        widgetVar="pbAjaxDelete" 
+                        ajax="true" 
+                        value="#{recordSetsMB.progressDelete}" 
+                        labelTemplate="{value}%">          
+                        <p:ajax 
+                            event="complete" 
+                            listener="#{recordSetsMB.onCompleteDelete}" 
+                            update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message IdProgresDelete"/>  
+                    </p:progressBar>
+                    <br/>
+
                     <p:commandButton                                                           
                         oncomplete="dialogDelete.hide()"
-                        actionListener="#{recordSetsMB.deleteRegistry}"
-                        value="Eliminar" 
-                        update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>   
+                        actionListener="#{recordSetsMB.deleteTag}"
+                        onclick="pbAjaxDelete.start();btnDelete.disable();btnCancelDelete.disable();"  
+                        value="Eliminar"                        
+                        widgetVar="btnDelete"/>   
                     <p:commandButton
+                        widgetVar="btnCancelDelete"
                         value="Cancelar" 
-                        onclick="dialogDelete.hide()"/> 
+                        onclick="dialogDelete.hide()"
+                        /> 
                 </p:dialog>
             </h:form>
         </ui:define>

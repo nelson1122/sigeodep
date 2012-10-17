@@ -661,7 +661,7 @@ public class RecordSetsVifMB implements Serializable {
         //******user_id
         try {
             if (currentNonFatalDomesticV.getNonFatalInjuries().getUserId() != null) {
-                newRowDataTable.setColumn47(currentNonFatalDomesticV.getNonFatalInjuries().getUserId().getUserFirstname() + "" + currentNonFatalDomesticV.getNonFatalInjuries().getUserId().getUserLastname());
+                newRowDataTable.setColumn47(currentNonFatalDomesticV.getNonFatalInjuries().getUserId().getUserName());
             }
         } catch (Exception e) {
         }
