@@ -33,7 +33,7 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
     public List<NonFatalDomesticViolence> findFromTag(int id_tag) {
         String hql;
         try {
-            hql = "Select x from NonFatalDomesticViolence x where x.nonFatalInjuries.tagId.tagId = " + String.valueOf(id_tag);
+            hql = "Select x from NonFatalDomesticViolence x where x.nonFatalInjuries.victimId.tagId.tagId = " + String.valueOf(id_tag);
             return em.createQuery(hql).getResultList();
         } catch (Exception e) {
             System.out.println(e.toString() + "----------------------------------------------------");
@@ -54,9 +54,11 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
                     + "     ROW_NUMBER() OVER (ORDER BY non_fatal_injury_id) AS item, "
                     + "     non_fat_in.* "
                     + "   FROM "
-                    + "      non_fatal_injuries non_fat_in "
+                    + "      non_fatal_injuries non_fat_in, "
+                    + "      victims vic"
                     + "   WHERE "
-                    + "      non_fat_in.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "      vic.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "      non_fat_in.victim_id = vic.victim_id AND "
                     + "      non_fat_in.injury_id = 53"
 		    + ") "
 		    + "AS "
@@ -110,10 +112,12 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
                     + "SELECT "
                     + "    count(*) "
                     + "FROM "
-                    + "    public.non_fatal_injuries "
+                    + "    public.non_fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "
                     + "    non_fatal_injuries.injury_id = 53 AND "
-                    + "    non_fatal_injuries.tag_id = " + String.valueOf(idTag) + "; ");
+                    + "    non_fatal_injuries.victim_id = victims.victim_id AND "
+                    + "    victims.tag_id = " + String.valueOf(idTag) + "; ");
             
 	    conx.disconnect();
 	    if (rs.next()) {
@@ -135,10 +139,12 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
                     + "SELECT "
                     + "  non_fatal_injuries.non_fatal_injury_id "
                     + "FROM "
-                    + "  public.non_fatal_injuries "
+                    + "  public.non_fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "                                        
                     + "  non_fatal_injuries.injury_id = 53 AND "
-                    + "  non_fatal_injuries.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "    non_fatal_injuries.victim_id = victims.victim_id AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " AND "
                     + "  non_fatal_injuries.non_fatal_injury_id > " + String.valueOf(injury_id) + " "
                     + "ORDER BY "
                     + "  non_fatal_injuries.non_fatal_injury_id ASC "
@@ -165,10 +171,12 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
                     + "SELECT "
                     + "  non_fatal_injuries.non_fatal_injury_id "
                     + "FROM "
-                    + "  public.non_fatal_injuries "
+                    + "  public.non_fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "                                        
                     + "  non_fatal_injuries.injury_id = 53 AND "
-                    + "  non_fatal_injuries.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "    non_fatal_injuries.victim_id = victims.victim_id AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " AND "
                     + "  non_fatal_injuries.non_fatal_injury_id < " + String.valueOf(injury_id) + " "
                     + "ORDER BY "
                     + "  non_fatal_injuries.non_fatal_injury_id DESC "
@@ -200,10 +208,12 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
                     + "SELECT "
                     + "  non_fatal_injuries.non_fatal_injury_id "
                     + "FROM "
-                    + "  non_fatal_injuries "
+                    + "  non_fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "
                     + "  non_fatal_injuries.injury_id = 53 AND "
-                    + "  non_fatal_injuries.tag_id = " + String.valueOf(id_tag) + " "                    
+                    + "    non_fatal_injuries.victim_id = victims.victim_id AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " "                    
                     + "ORDER BY "
                     + "  non_fatal_injuries.non_fatal_injury_id ASC "
                     + "LIMIT "
@@ -234,10 +244,12 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
                     + "SELECT "
                     + "  non_fatal_injuries.non_fatal_injury_id "
                     + "FROM "                    
-                    + "  non_fatal_injuries "
+                    + "  non_fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "
                     + "  non_fatal_injuries.injury_id = 53 AND "
-                    + "  non_fatal_injuries.tag_id = " + String.valueOf(id_tag) + " "
+                    + "    non_fatal_injuries.victim_id = victims.victim_id AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " "
                     + "ORDER BY "
                     + "  non_fatal_injuries.non_fatal_injury_id DESC "
                     + "LIMIT "

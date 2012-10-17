@@ -48,6 +48,7 @@ public class Forms implements Serializable {
     private List<Fields> fieldsList;
     @OneToMany(mappedBy = "formId")
     private List<Tags> tagsList;
+    
 
     public Forms() {
     }

@@ -105,9 +105,7 @@ public class FatalInjuries implements Serializable {
     private String victimPlaceOfOrigin;
     
     
-    @JoinColumn(name = "tag_id", referencedColumnName = "tag_id")
-    @ManyToOne
-    private Tags tagId;
+    
     
     public FatalInjuries() {
     }
@@ -230,13 +228,7 @@ public class FatalInjuries implements Serializable {
 	this.userId = userId;
     }
     
-    public Tags getTagId() {
-        return tagId;
-    }
-
-    public void setTagId(Tags tagId) {
-        this.tagId = tagId;
-    }
+    
     
     public Places getInjuryPlaceId() {
 	return injuryPlaceId;

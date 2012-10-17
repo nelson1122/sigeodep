@@ -2477,8 +2477,8 @@
                 </p:panelGrid>
                 <!--===========CONTROLES: PRIMERO SIGUIENTE ANTERIOR ULTIMO REGISTRO ===========================-->
                 <div style="position:fixed; bottom: 3px; right: 20px; ">                    
-                    <p:panelGrid id="IdControls">
-                        <p:row >
+                    <p:panelGrid id="IdControls" style="width: 600px;">
+                        <p:row  >
                             <p:column styleClass="ui-widget-header">
                                 <p:commandButton 
                                     icon="ui-icon-plus" 
@@ -2492,11 +2492,13 @@
                                     actionListener="#{lcenfMB.clearSearch}"
                                     oncomplete="#{lcenfMB.openDialogDelete}"                                    
                                     update="#{lcenfMB.idElements1}"/>                                
+                                
                                 <p:commandButton 
                                     icon="ui-icon-search" 
                                     title="Buscar"  
                                     actionListener="#{lcenfMB.clearSearch}"
                                     oncomplete="dialogFind.show();"/>
+                                
                             </p:column>
                             <p:column styleClass="ui-widget-header">
                                 <p:commandButton

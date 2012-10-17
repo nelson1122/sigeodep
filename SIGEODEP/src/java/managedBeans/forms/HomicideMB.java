@@ -22,6 +22,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
 
@@ -140,8 +141,8 @@ public class HomicideMB implements Serializable {
     FatalInjuryMurderFacade fatalInjuryMurderFacade;
     @EJB
     FatalInjuriesFacade fatalInjuriesFacade;
-    @EJB
-    UsersFacade usersFacade;
+    //@EJB
+    //UsersFacade usersFacade;
     @EJB
     InjuriesFacade injuriesFacade;
     @EJB
@@ -194,6 +195,8 @@ public class HomicideMB implements Serializable {
     private Calendar c = Calendar.getInstance();
     private String stylePosition = "color: #1471B1;";
     private String currentIdForm = "";
+    
+    private Users currentUser;
     //soundex levestein methaphone
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -702,7 +705,7 @@ public class HomicideMB implements Serializable {
                     newFatalInjurie.setInjuryDescription(currentNarrative);
                 }
                 //******user_id		    
-                newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
+                newFatalInjurie.setUserId(currentUser);//usuario que se encuentre logueado
 
                 //******input_timestamp	
                 newFatalInjurie.setInputTimestamp(new Date());//momento en que se capturo el registro
@@ -772,7 +775,7 @@ public class HomicideMB implements Serializable {
                 openDialogDelete = "";
                 if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     System.out.println("guardando nuevo registro");
-                    newFatalInjurie.setTagId(tagsFacade.find(currentTag));
+                    newVictim.setTagId(tagsFacade.find(currentTag));
                     
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
@@ -1171,6 +1174,8 @@ public class HomicideMB implements Serializable {
     }
 
     public void reset() {
+        LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        currentUser=loginMB.getCurrentUser();
         loading = true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         try {

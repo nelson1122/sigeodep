@@ -6,13 +6,10 @@ package model.dao;
 
 import beans.connection.ConnectionJDBC;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import model.pojo.NonFatalInjuries;
 
 /**
@@ -39,20 +36,20 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
     public List<NonFatalInjuries> findFromTag(int id_tag) {
         String hql;
         try {
-            hql = "Select x from NonFatalInjuries x where x.tagId.tagId = " + String.valueOf(id_tag);
+            hql = "Select x from NonFatalInjuries x where x.victimId.tagId.tagId = " + String.valueOf(id_tag);
             return em.createQuery(hql).getResultList();
         } catch (Exception e) {
             System.out.println(e.toString() + "----------------------------------------------------");
             return null;
         }
     }
-    
+
     public int countFromTag(int id_tag) {
         String hql;
         try {
-            hql = "Select count(x) from NonFatalInjuries x where x.tagId.tagId = " + String.valueOf(id_tag);
-            long l=em.createQuery(hql, Long.class).getSingleResult();
-            String s=String.valueOf(l);
+            hql = "Select count(x) from NonFatalInjuries x where x.victimId.tagId.tagId = " + String.valueOf(id_tag);
+            long l = em.createQuery(hql, Long.class).getSingleResult();
+            String s = String.valueOf(l);
             return Integer.parseInt(s);
         } catch (Exception e) {
             System.out.println(e.toString() + "-----------------------------------------------");
@@ -65,29 +62,10 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
     }
 
     public int findMax() {
-        ConnectionJDBC conx;
         try {
-//            MANERA DE ACCEDER A UNA CONSULTA NATIVA QUE RETORNE UN ARREGLO DE OBJETOS            
-            //Query consulta = em.createNativeQuery(" SELECT * FROM non_fatal_injuries");
-            
-//            List<Object> resultado = consulta.getResultList();
-//            for(Object i : resultado) {
-//                Object[] prms = (Object[]) i;
-//               System.out.println(prms[0].toString().concat(" ").concat(prms[1].toString()) );
-//            }
-
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet rs = conx.consult(""
-                    + "SELECT MAX(non_fatal_injury_id) "
-                    + "FROM non_fatal_injuries;");
-            conx.disconnect();
-            if (rs.next()) {
-                return rs.getInt(1);
-            } else {
-                return 0;
-            }
-        } catch (Exception ex) {
+            String hql = "Select MAX(x.nonFatalInjuryId) from NonFatalInjuries x";
+            return em.createQuery(hql, Integer.class).getSingleResult();
+        } catch (Exception e) {
             return 0;
         }
     }
@@ -122,10 +100,12 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
                     + "SELECT "
                     + "    count(*) "
                     + "FROM "
-                    + "    public.non_fatal_injuries "
+                    + "    public.non_fatal_injuries, "
+                    + "    public.victims "
                     + "WHERE "
                     + "    non_fatal_injuries.injury_id != 53 AND "
-                    + "    non_fatal_injuries.tag_id = " + String.valueOf(idTag) + "; ");
+                    + "    non_fatal_injuries.victim_id = victims.victim_id AND "
+                    + "    victims.tag_id = " + String.valueOf(idTag) + "; ");
             conx.disconnect();
             if (rs.next()) {
                 return rs.getInt(1);
@@ -149,9 +129,11 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
                     + "     ROW_NUMBER() OVER (ORDER BY non_fatal_injury_id) AS item, "
                     + "     non_fat_in.*"
                     + "   FROM "
-                    + "      non_fatal_injuries non_fat_in"
+                    + "      non_fatal_injuries non_fat_in, "
+                    + "      victims vic"
                     + "   WHERE "
-                    + "      non_fat_in.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "      vic.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "      non_fat_in.victim_id = vic.victim_id AND "
                     + "      non_fat_in.injury_id != 53 "
                     + ") "
                     + "AS "
@@ -211,10 +193,12 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
                     + "SELECT "
                     + "  non_fatal_injuries.non_fatal_injury_id "
                     + "FROM "
-                    + "  public.non_fatal_injuries "
-                    + "WHERE "                                        
+                    + "  public.non_fatal_injuries, "
+                    + "  public.victims "
+                    + "WHERE "
                     + "  non_fatal_injuries.injury_id != 53 AND "
-                    + "  non_fatal_injuries.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "  non_fatal_injuries.victim_id = victims.victim_id AND "
                     + "  non_fatal_injuries.non_fatal_injury_id > " + String.valueOf(injury_id) + " "
                     + "ORDER BY "
                     + "  non_fatal_injuries.non_fatal_injury_id ASC "
@@ -246,10 +230,12 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
                     + "SELECT "
                     + "  non_fatal_injuries.non_fatal_injury_id "
                     + "FROM "
-                    + "  public.non_fatal_injuries "
-                    + "WHERE "                                        
+                    + "  public.non_fatal_injuries, "
+                    + "  public.victims "
+                    + "WHERE "
                     + "  non_fatal_injuries.injury_id != 53 AND "
-                    + "  non_fatal_injuries.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " AND "
+                    + "  non_fatal_injuries.victim_id = victims.victim_id AND "
                     + "  non_fatal_injuries.non_fatal_injury_id < " + String.valueOf(injury_id) + " "
                     + "ORDER BY "
                     + "  non_fatal_injuries.non_fatal_injury_id DESC "
@@ -282,10 +268,13 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
                     + "SELECT "
                     + "  non_fatal_injuries.non_fatal_injury_id "
                     + "FROM "
-                    + "  public.non_fatal_injuries "
-                    + "WHERE "                    
+                    + "  public.non_fatal_injuries, "
+                    + "  public.victims "
+                    + "WHERE "
                     + "  non_fatal_injuries.injury_id != 53 AND "
-                    + "  non_fatal_injuries.tag_id = " + String.valueOf(id_tag) + " "
+                    + "  non_fatal_injuries.victim_id = victims.victim_id AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " "
+                    
                     + "ORDER BY "
                     + "  non_fatal_injuries.non_fatal_injury_id ASC "
                     + "LIMIT "
@@ -316,10 +305,12 @@ public class NonFatalInjuriesFacade extends AbstractFacade<NonFatalInjuries> {
                     + "SELECT "
                     + "  non_fatal_injuries.non_fatal_injury_id "
                     + "FROM "
-                    + "  public.non_fatal_injuries "
+                    + "  public.non_fatal_injuries, "
+                    + "  public.victims "
                     + "WHERE "
                     + "  non_fatal_injuries.injury_id != 53 AND "
-                    + "  non_fatal_injuries.tag_id = " + String.valueOf(id_tag) + " "
+                    + "  non_fatal_injuries.victim_id = victims.victim_id AND "
+                    + "  victims.tag_id = " + String.valueOf(id_tag) + " "
                     + "ORDER BY "
                     + "  non_fatal_injuries.non_fatal_injury_id DESC "
                     + "LIMIT "

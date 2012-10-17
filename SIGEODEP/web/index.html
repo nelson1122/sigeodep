@@ -1,0 +1,64 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="shortcut icon" href="resources/img/icon.gif"/>
+        <title>
+
+        </title>        
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script type="text/javascript"> 
+            function leerGET(){ 
+                var cadGET = location.search.substr(1,location.search.length); 
+                //var arrGET = cadGET.split("&"); 
+                //var asocGET = new Array(); 
+                //var variable = ""; 
+                //var valor = ""; 
+                //for(i=0;i<arrGET.length;i++){ 
+                //    var aux = arrGET[i].split("="); 
+                //    variable = aux[0]; 
+                //   valor = aux[1]; 
+                //    asocGET[variable] = valor; 
+                //} 
+                if(cadGET.indexOf("XX") != -1){
+                    //alert('cerro sesion'); 
+                    div = document.getElementById('IdEndSession');
+                    div.style.display ='block';
+                }else{
+                    div = document.getElementById('IdEndSession');
+                    div.style.display ='none';
+                }
+            } 
+        </script> 
+    </head>
+    <body onload="leerGET()">
+        <div style=" 
+             position:absolute;
+             width: 500px; 
+             height: 380px; 
+             left: 50%; 
+             margin-left: -250px;  
+             top: 50%;
+             margin-top: -190px;
+             background-image:url(resources/img/entrada.png);">
+            <div style="
+                 margin-top: 195px;
+                 margin-left: 250px;">                
+                    <a href="faces/index.xhtml">                     
+                    <img src="resources/img/inicio_1.png" />                
+                </a>
+            </div>
+        </div>
+        <div style="
+             display: none;
+             position: absolute;
+             top: 10px;
+             right: 10px;"
+             id="IdEndSession">
+            <img src="resources/img/fin_sesion.png" />                
+        </div>
+    </body>
+</html>

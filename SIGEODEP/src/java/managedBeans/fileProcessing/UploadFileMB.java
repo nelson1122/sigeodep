@@ -69,6 +69,7 @@ public class UploadFileMB implements Serializable {
     private List<String> variablesFound;
     private List<String> variablesExpected;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
+    private RelationshipOfValuesMB relationshipOfValuesMB;
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private RecordDataMB recordDataMB;
     private StoredRelationsMB storedRelationsMB;
@@ -87,6 +88,7 @@ public class UploadFileMB implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
+        relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
         formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
         recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
     }
@@ -120,8 +122,7 @@ public class UploadFileMB implements Serializable {
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
-    
-    
+
 //    public void crearCopia(Object document){
 //        HSSFWorkbook book = (HSSFWorkbook) document;
 //        BufferedWriter bw = new BufferedWriter(new FileWriter(sFichero));
@@ -191,14 +192,12 @@ public class UploadFileMB implements Serializable {
 //                loadsFacade.create(newLoad);
 //            }
 //        }
-
     }
 
     public void changeTagName() {
         try {
 
             if (tagName.trim().length() != 0) {
-
                 for (int i = 0; i < tagsList.size(); i++) {
                     if (tagsList.get(i).getTagName() != null) {
                         if (tagsList.get(i).getTagName().compareTo(tagName) == 0) {
@@ -251,11 +250,18 @@ public class UploadFileMB implements Serializable {
         /*
          * cargar la lista de formularios existentes
          */
-        List<Forms> formsList = formsFacade.findAll();
-        forms = new SelectItem[formsList.size()];
-        for (int i = 0; i < formsList.size(); i++) {
-            forms[i] = new SelectItem(formsList.get(i).toString(), formsList.get(i).getFormName());
+        try {
+            List<Forms> formsList = formsFacade.findAll();
+            forms = new SelectItem[formsList.size()];
+            for (int i = 0; i < formsList.size(); i++) {
+                forms[i] = new SelectItem(formsList.get(i).toString(), formsList.get(i).getFormName());
+            }
+
+        } catch (Exception e) {
         }
+
+
+
     }
 
     private void loadSources() {
@@ -317,8 +323,9 @@ public class UploadFileMB implements Serializable {
     public void upload() {
         /*
          * cargar un archivo y almacenarlo en una tabla temporal para verificar
-         * sus datos e introducirlos a la DB
+         * sus datos booleanValue introducirlos a la DB
          */
+
         String line;
         InputStreamReader isr;
         BufferedReader buffer;
@@ -361,8 +368,8 @@ public class UploadFileMB implements Serializable {
                         String salida = "";
 
                         line = line.toLowerCase();//pasar a minusculas
-                        line = line.replaceAll(" ", "_");//quitar espacion y acentos
-                        line = line.replaceAll("ñ", "n");
+                        line = line.replaceAll(" ", "_");//quitar espacioS y acentos
+                        //line = line.replaceAll("ñ", "n");
                         line = line.replaceAll("á", "a");
                         line = line.replaceAll("é", "e");
                         line = line.replaceAll("í", "i");
@@ -495,11 +502,20 @@ public class UploadFileMB implements Serializable {
                             }
                         }
                         conx.non_query(sql);
-                    }                    
+                    }
                     numLine++;
                 }
             }
             if (continuar) {
+
+                //le asigno la direccion de residencia si existe barrio de residencia
+                try {
+                    conx.non_query("update temp set dirres = baveres where dirres like '';");
+                    conx.non_query("update temp set baveres = dirres where baveres like  '';");
+                } catch (Exception e) {
+                }
+
+
                 btnLoadFileDisabled = true;
                 selectDelimiterDisabled = true;
                 selectFormDisabled = true;
@@ -509,18 +525,22 @@ public class UploadFileMB implements Serializable {
                 nameFile = "Archivo cargado: " + file.getFileName();
 
                 RelationsGroup newRelationsGroup = new RelationsGroup("TEMP", currentForm, currentSource);
-                copyMB.refresh();
-                copyMB.cleanBackupTables();
+                
                 relationshipOfVariablesMB.setVarsFound(variablesFound);
                 relationshipOfVariablesMB.setCurrentRelationsGroup(newRelationsGroup);
+                relationshipOfValuesMB.setCurrentRelationsGroup(newRelationsGroup);
+                
                 formsAndFieldsDataMB.setNameForm(currentForm);//relationshipOfVariablesMB.set(variablesFound);
                 recordDataMB.setNameForm(currentForm);
+                recordDataMB.setCurrentSource(currentSource);
+                recordDataMB.setBtnValidateDisabled(false);
                 storedRelationsMB.setCurrentRelationsGroup(newRelationsGroup);
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Archivo cargado correctamente."));
                 btnResetDisabled = false;
+                copyMB.refresh();
+                copyMB.cleanBackupTables();
             }
-            if (conx
-                    != null) {
+            if (conx != null) {
                 conx.disconnect();
             }
         } catch (IOException e) {
@@ -552,6 +572,7 @@ public class UploadFileMB implements Serializable {
         this.currentForm = currentF;
         loadSources();
         loadVarsExpected();
+        formsAndFieldsDataMB.setNameForm(currentForm);
     }
 
     public SelectItem[] getForms() {

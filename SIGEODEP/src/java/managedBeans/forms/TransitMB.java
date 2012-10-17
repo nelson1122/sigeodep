@@ -22,6 +22,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
 
@@ -227,6 +228,7 @@ public class TransitMB implements Serializable {
     private Calendar c = Calendar.getInstance();
     private String stylePosition = "color: #1471B1;";
     private String currentIdForm = "";
+    private Users currentUser;
     //----------------------
     @EJB
     VictimsFacade victimsFacade;
@@ -234,8 +236,8 @@ public class TransitMB implements Serializable {
     FatalInjuriesFacade fatalInjuriesFacade;
     @EJB
     InjuriesFacade injuriesFacade;
-    @EJB
-    UsersFacade usersFacade;
+    //@EJB
+    //UsersFacade usersFacade;
     @EJB
     AlcoholLevelsFacade alcoholLevelsFacade;
 
@@ -265,6 +267,9 @@ public class TransitMB implements Serializable {
     }
     
     public void reset() {
+        
+        LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        currentUser=loginMB.getCurrentUser();
         loading = true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         try {
@@ -1037,7 +1042,7 @@ public class TransitMB implements Serializable {
                 }
                 //******user_id	
                 try {
-                    newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
+                    newFatalInjurie.setUserId(currentUser);//usuario que se encuentre logueado
                 } catch (Exception e) {
                     System.out.println("*******************************************ERROR_A1: " + e.toString());
                 }
@@ -1211,7 +1216,7 @@ public class TransitMB implements Serializable {
                 if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     System.out.println("guardando nuevo registro");
                     
-                    newFatalInjurie.setTagId(tagsFacade.find(currentTag));
+                    newVictim.setTagId(tagsFacade.find(currentTag));
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryTrafficFacade.create(newFatalInjuryTraffic);

@@ -48,12 +48,9 @@ public class Tags implements Serializable {
     @JoinColumn(name = "form_id", referencedColumnName = "form_id")
     @ManyToOne
     private Forms formId;
-    //@OneToMany(cascade = CascadeType.ALL, mappedBy = "tags")
-    //private List<Loads> loadsList;
     @OneToMany(mappedBy = "tagId")
-    private List<FatalInjuries> fatalInjuriesList;
-    @OneToMany(mappedBy = "tagId")
-    private List<NonFatalInjuries> nonFatalInjuriesList;
+    private List<Victims> victimsList;
+    
     
     
     public Forms getFormId() {
@@ -73,22 +70,15 @@ public class Tags implements Serializable {
 //        this.loadsList = loadsList;
 //    }
     
-    @XmlTransient
-    public List<FatalInjuries> getFatalInjuriesList() {
-        return fatalInjuriesList;
-    }
-
-    public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
-        this.fatalInjuriesList = fatalInjuriesList;
-    }
+    
 
     @XmlTransient
-    public List<NonFatalInjuries> getNonFatalInjuriesList() {
-        return nonFatalInjuriesList;
+    public List<Victims> getVictimsList() {
+        return victimsList;
     }
 
-    public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-        this.nonFatalInjuriesList = nonFatalInjuriesList;
+    public void setNonFatalInjuriesList(List<Victims> victimsList) {
+        this.victimsList = victimsList;
     }
     
     

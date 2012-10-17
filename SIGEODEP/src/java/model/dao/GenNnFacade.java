@@ -27,4 +27,13 @@ public class GenNnFacade extends AbstractFacade<GenNn> {
 	super(GenNn.class);
     }
     
+    public int findMax() {
+        try {
+            String hql = "Select MAX(x.codNn) from GenNn x";
+            return em.createQuery(hql, Integer.class).getSingleResult();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+    
 }

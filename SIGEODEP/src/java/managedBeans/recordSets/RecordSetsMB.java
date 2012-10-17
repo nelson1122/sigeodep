@@ -15,6 +15,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.duplicateSets.*;
 import model.dao.*;
 import model.pojo.*;
 
@@ -67,7 +68,18 @@ public class RecordSetsMB implements Serializable {
     private RecordSetsSuicideMB recordSetsSuicideMB;
     private RecordSetsTransitMB recordSetsTransitMB;
     private RecordSetsVifMB recordSetsVifMB;
+    
+    private DuplicateSetsLcenfMB duplicateSetsLcenfMB;
+    private DuplicateSetsAccidentalMB duplicateSetsAccidentalMB;
+    private DuplicateSetsHomicideMB duplicateSetsHomicideMB;
+    private DuplicateSetsSuicideMB duplicateSetsSuicideMB;
+    private DuplicateSetsTransitMB duplicateSetsTransitMB;
+    private DuplicateSetsVifMB duplicateSetsVifMB;
+    
+    
+    
     private String openRecordSets;
+    private String openDuplicateSets;
     @EJB
     FormsFacade formsFacade;
     private SelectItem[] forms;
@@ -76,61 +88,120 @@ public class RecordSetsMB implements Serializable {
     private String groupName = "";
     private String editGroupName = "";
     private String editFormName = "";
-    
-    private int progress=0;
+    private int progress = 0;//PROGRESO AL ABRIR CONJUNTOS
+    private int progressDelete = 0;//PROGRESO AL ELIMINAR CONJUNTOS
+    private int totalRegisters = 0;
+    private int totalProcess = 0;
+    FacesMessage msg;
 
     public RecordSetsMB() {
     }
 
-    public void onCompleteLoad(){
-        progress=0;
+    public void onCompleteLoad() {
+        progress = 0;
     }
-    
+
+    public void onCompleteDelete() {
+        progressDelete = 0;
+        FacesContext.getCurrentInstance().addMessage(null, msg);
+    }
+
     public String openRecordSets() {
         return openRecordSets;
+    }
+
+    public String openDuplicateSets() {
+        return openDuplicateSets;
+    }
+    
+    public void duplicateTagClick() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {                                    
+            duplicateSetsHomicideMB = (DuplicateSetsHomicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsHomicideMB}", DuplicateSetsHomicideMB.class);
+            duplicateSetsHomicideMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsHomicide";
+            openDuplicateSets = "duplicateSetsHomicide";
+        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {            
+            duplicateSetsTransitMB = (DuplicateSetsTransitMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsTransitMB}", DuplicateSetsTransitMB.class);
+            duplicateSetsTransitMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsTransit";
+            openDuplicateSets = "duplicateSetsTransit";
+        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {
+            duplicateSetsSuicideMB = (DuplicateSetsSuicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsSuicideMB}", DuplicateSetsSuicideMB.class);
+            duplicateSetsSuicideMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsSuicide";
+            openDuplicateSets = "duplicateSetsSuicide";
+        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {
+            duplicateSetsAccidentalMB = (DuplicateSetsAccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsAccidentalMB}", DuplicateSetsAccidentalMB.class);
+            duplicateSetsAccidentalMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsAccidental";
+            openDuplicateSets = "duplicateSetsAccidental";
+        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {
+            duplicateSetsLcenfMB = (DuplicateSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsLcenfMB}", DuplicateSetsLcenfMB.class);
+            duplicateSetsLcenfMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsLCENF";
+            openDuplicateSets = "duplicateSetsLCENF";
+        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0) {
+            duplicateSetsVifMB = (DuplicateSetsVifMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsVifMB}", DuplicateSetsVifMB.class);
+            duplicateSetsVifMB.loadValues(selectedRowsDataTable);
+            openRecordSets = "recordSetsVIF";
+            openDuplicateSets = "duplicateSetsVIF";
+        } else {
+            openRecordSets = null;
+            openDuplicateSets = null;
+            printMessage(FacesMessage.SEVERITY_ERROR, "Nada", "nada");
+        }
+        progress = 0;
     }
 
     public void selectTagClick() {
         if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsHomicideMB = (RecordSetsHomicideMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsHomicideMB}", RecordSetsHomicideMB.class);
-            recordSetsHomicideMB.loadValues(selectedRowsDataTable);            
+            recordSetsHomicideMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsHomicide";
+            openDuplicateSets = "duplicateSetsHomicide";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsTransitMB = (RecordSetsTransitMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsTransitMB}", RecordSetsTransitMB.class);
             recordSetsTransitMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsTransit";
+            openDuplicateSets = "duplicateSetsTransit";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsSuicideMB = (RecordSetsSuicideMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsSuicideMB}", RecordSetsSuicideMB.class);
             recordSetsSuicideMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsSuicide";
+            openDuplicateSets = "duplicateSetsSuicide";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsAccidentalMB = (RecordSetsAccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsAccidentalMB}", RecordSetsAccidentalMB.class);
             recordSetsAccidentalMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsAccidental";
+            openDuplicateSets = "duplicateSetsAccidental";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
             recordSetsLcenfMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsLCENF";
+            openDuplicateSets = "duplicateSetsLCENF";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsVifMB = (RecordSetsVifMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsVifMB}", RecordSetsVifMB.class);
             recordSetsVifMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsVIF";
+            openDuplicateSets = "duplicateSetsVIF";
         } else {
             openRecordSets = null;
+            openDuplicateSets = null;
             printMessage(FacesMessage.SEVERITY_ERROR, "Nada", "nada");
         }
-        progress=0;
+        progress = 0;
     }
 
     public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
-        FacesMessage msg = new FacesMessage(s, title, messageStr);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
+        FacesMessage msg2 = new FacesMessage(s, title, messageStr);
+        FacesContext.getCurrentInstance().addMessage(null, msg2);
     }
 
     public void load() {
@@ -149,11 +220,16 @@ public class RecordSetsMB implements Serializable {
                 editGroupName = selectedRowsDataTable[0].getColumn2();
             }
             for (int i = 0; i < selectedRowsDataTable.length; i++) {
+                if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 7) {
+                    if (!btnRemoveDisabled) {
+                        btnRemoveDisabled = true;
+                    }
+                }
+
                 if (currentTagName.length() == 0) {
                     currentTagName = selectedRowsDataTable[0].getColumn3();
                 } else if (currentTagName.compareTo(selectedRowsDataTable[i].getColumn3()) != 0) {
                     equalTagName = false;
-                    break;
                 }
             }
             if (equalTagName) {
@@ -183,7 +259,7 @@ public class RecordSetsMB implements Serializable {
                 victimsFacade.remove(auxVictims);
             }
         }
-        tagsFacade.remove(currentTag);
+        //tagsFacade.remove(currentTag);
     }
 
     private void removeMurder(Tags currentTagRemove) {
@@ -195,9 +271,13 @@ public class RecordSetsMB implements Serializable {
                 fatalInjuryMurderFacade.remove(fatalInjuryMurderList.get(j));
                 fatalInjuriesFacade.remove(auxFatalInjuries);
                 victimsFacade.remove(auxVictims);
+                totalProcess++;
+                if (totalRegisters != 0) {
+                    progressDelete = (int) (totalProcess * 100) / totalRegisters;
+                }
             }
         }
-        tagsFacade.remove(currentTag);
+        //tagsFacade.remove(currentTag);
     }
 
     private void removeAccident(Tags currentTagRemove) {
@@ -209,9 +289,13 @@ public class RecordSetsMB implements Serializable {
                 fatalInjuryAccidentFacade.remove(fatalInjuryAccidentList.get(j));
                 fatalInjuriesFacade.remove(auxFatalInjuries);
                 victimsFacade.remove(auxVictims);
+                totalProcess++;
+                if (totalRegisters != 0) {
+                    progressDelete = (int) (totalProcess * 100) / totalRegisters;
+                }
             }
         }
-        tagsFacade.remove(currentTag);
+        //tagsFacade.remove(currentTag);
     }
 
     private void removeSuicide(Tags currentTagRemove) {
@@ -223,9 +307,13 @@ public class RecordSetsMB implements Serializable {
                 fatalInjurySuicideFacade.remove(fatalInjurySuicideList.get(j));
                 fatalInjuriesFacade.remove(auxFatalInjuries);
                 victimsFacade.remove(auxVictims);
+                totalProcess++;
+                if (totalRegisters != 0) {
+                    progressDelete = (int) (totalProcess * 100) / totalRegisters;
+                }
             }
         }
-        tagsFacade.remove(currentTag);
+        //tagsFacade.remove(currentTag);
     }
 
     private void removeTransit(Tags currentTagRemove) {
@@ -237,9 +325,13 @@ public class RecordSetsMB implements Serializable {
                 fatalInjuryTrafficFacade.remove(fatalInjuryTrafficList.get(j));
                 fatalInjuriesFacade.remove(auxFatalInjuries);
                 victimsFacade.remove(auxVictims);
+                totalProcess++;
+                if (totalRegisters != 0) {
+                    progressDelete = (int) (totalProcess * 100) / totalRegisters;
+                }
             }
         }
-        tagsFacade.remove(currentTag);
+        //tagsFacade.remove(currentTag);
     }
 
     private void removeLCENF(Tags currentTagRemove) {
@@ -261,14 +353,19 @@ public class RecordSetsMB implements Serializable {
                 }
                 nonFatalInjuriesFacade.remove(nonFatalInjuriesList.get(j));
                 victimsFacade.remove(nonFatalInjuriesList.get(j).getVictimId());
+                totalProcess++;
+                if (totalRegisters != 0) {
+                    progressDelete = (int) (totalProcess * 100) / totalRegisters;
+                    System.out.print("PROGRESO ELIMINANDO: " + String.valueOf(progressDelete));
+                }
             }
         }
-        tagsFacade.remove(currentTag);
+        //tagsFacade.remove(currentTag);
     }
 
-    public void deleteRegistry() {
+    public void deleteTag() {
         currentTag = null;
-        System.out.print("ENTRANDO EN ELIMINAR");
+        System.out.print("ENTRANDO EN ELIMINAR CONJUNTO");
         if (selectedRowsDataTable != null) {
             //CREO LA LISTA DE TAGS SELECCIONADOS
             boolean defaultSetSelected = false;
@@ -276,39 +373,53 @@ public class RecordSetsMB implements Serializable {
             for (int i = 0; i < selectedRowsDataTable.length; i++) {
                 if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 7) {
                     defaultSetSelected = true;
+                } else {
+                    tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
                 }
             }
             if (defaultSetSelected) {//SE SELECCIONO UN CONJUNTO POR DEFECTO DEL SISTEMA
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Se ha seleccionado un conjunto por defecto del sistema "
+                totalProcess = 100;
+                msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Se ha seleccionado un conjunto por defecto del sistema "
                         + "por lo cual no se puede realizar la eliminación");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
             } else {
-                for (int i = 0; i < selectedRowsDataTable.length; i++) {
-                    currentTag = tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1()));
-                    if (currentTag != null) {
-                        if (currentTag.getFormId().getFormId().compareTo("SCC-F-028") == 0) {
-                            removeMurder(currentTag);
-                            tagsFacade.remove(currentTag);//ELIMINO EL CONJUNTO
-                        } else if (currentTag.getFormId().getFormId().compareTo("SCC-F-029") == 0) {
-                            removeTransit(currentTag);
-                            tagsFacade.remove(currentTag);//ELIMINO EL CONJUNTO
-                        } else if (currentTag.getFormId().getFormId().compareTo("SCC-F-030") == 0) {
-                            removeSuicide(currentTag);
-                            tagsFacade.remove(currentTag);//ELIMINO EL CONJUNTO
-                        } else if (currentTag.getFormId().getFormId().compareTo("SCC-F-031") == 0) {
-                            removeAccident(currentTag);
-                            tagsFacade.remove(currentTag);//ELIMINO EL CONJUNTO
-                        } else if (currentTag.getFormId().getFormId().compareTo("SCC-F-032") == 0) {
-                            removeLCENF(currentTag);
-                            tagsFacade.remove(currentTag);//ELIMINO EL CONJUNTO
-                        } else if (currentTag.getFormId().getFormId().compareTo("SCC-F-033") == 0) {
-                            removeVIF(currentTag);
-                            tagsFacade.remove(currentTag);//ELIMINO EL CONJUNTO
-                        }
+                //DETERMINO EL NUMERO DE REGISTROS 
+                totalProcess = 0;
+                totalRegisters = 0;
+                for (int i = 0; i < tagsList.size(); i++) {
+                    if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-028") == 0) {
+                        totalRegisters = totalRegisters + fatalInjuryMurderFacade.countFromTag(tagsList.get(i).getTagId());
+                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-029") == 0) {
+                        totalRegisters = totalRegisters + fatalInjuryTrafficFacade.countFromTag(tagsList.get(i).getTagId());
+                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-030") == 0) {
+                        totalRegisters = totalRegisters + fatalInjurySuicideFacade.countFromTag(tagsList.get(i).getTagId());
+                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-031") == 0) {
+                        totalRegisters = totalRegisters + fatalInjuryAccidentFacade.countFromTag(tagsList.get(i).getTagId());
+                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-032") == 0) {
+                        totalRegisters = totalRegisters + nonFatalInjuriesFacade.countFromTag(tagsList.get(i).getTagId());
+                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-033") == 0) {
+                        totalRegisters = totalRegisters + nonFatalInjuriesFacade.countFromTag(tagsList.get(i).getTagId());
                     }
                 }
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Los conjuntos seleccionados fueron eliminados");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
+                System.out.println("Total de registros = " + String.valueOf(totalRegisters));
+                //RECORRO CADA TAG Y REALIZO LA ELIMINACION
+                for (int i = 0; i < tagsList.size(); i++) {
+                    if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-028") == 0) {
+                        removeMurder(tagsList.get(i));
+                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-029") == 0) {
+                        removeTransit(tagsList.get(i));
+                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-030") == 0) {
+                        removeSuicide(tagsList.get(i));
+                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-031") == 0) {
+                        removeAccident(tagsList.get(i));
+                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-032") == 0) {
+                        removeLCENF(tagsList.get(i));
+                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-033") == 0) {
+                        removeVIF(tagsList.get(i));
+                    }
+                    tagsFacade.remove(tagsList.get(i));
+                }
+                msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Los conjuntos seleccionados fueron eliminados");
+                totalProcess = 100;
                 btnEditDisabled = false;
                 btnRemoveDisabled = false;
                 selectedRowsDataTable = null;
@@ -336,14 +447,14 @@ public class RecordSetsMB implements Serializable {
                     btnEditDisabled = true;
                     btnRemoveDisabled = true;
                     btnViewDisabled = true;
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
+                    msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 } else {
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "NOMBRE EXISTE", "El nombre ingresado ya esta registrado");
+                    msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "NOMBRE EXISTE", "El nombre ingresado ya esta registrado");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
             } else {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
+                msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
@@ -363,14 +474,14 @@ public class RecordSetsMB implements Serializable {
                 newTag.setTagName(groupName);
                 tagsFacade.create(newTag);
                 reset();
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Se ha registrado el nuevo conjunto");
+                msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Se ha registrado el nuevo conjunto");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             } else {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "NOMBRE EXISTE", "El nombre ingresado ya esta registrado");
+                msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "NOMBRE EXISTE", "El nombre ingresado ya esta registrado");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         } else {
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
+            msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
@@ -387,7 +498,7 @@ public class RecordSetsMB implements Serializable {
             rowDataTableList = new ArrayList<RowDataTable>();
             tagsList = tagsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
             if (tagsList.isEmpty()) {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
+                msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
             for (int i = 0; i < tagsList.size(); i++) {
@@ -499,6 +610,14 @@ public class RecordSetsMB implements Serializable {
         this.openRecordSets = openRecordSets;
     }
 
+    public String getOpenDuplicateSets() {
+        return openDuplicateSets;
+    }
+
+    public void setOpenDuplicateSets(String openDuplicateSets) {
+        this.openDuplicateSets = openDuplicateSets;
+    }
+
     public Short getCurrentForm() {
         return currentForm;
     }
@@ -538,12 +657,20 @@ public class RecordSetsMB implements Serializable {
     public void setEditGroupName(String editGroupName) {
         this.editGroupName = editGroupName;
     }
-    
+
     public int getProgress() {
         return progress;
     }
 
     public void setProgress(int progress) {
         this.progress = progress;
+    }
+
+    public int getProgressDelete() {
+        return progressDelete;
+    }
+
+    public void setProgressDelete(int progressDelete) {
+        this.progressDelete = progressDelete;
     }
 }

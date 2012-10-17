@@ -201,6 +201,11 @@
             <redirect/>
         </navigation-case>        
         <navigation-case>
+            <from-outcome>users</from-outcome>
+            <to-view-id>/web/configurations/users.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>        
+        <navigation-case>
             <from-outcome>index</from-outcome>
             <to-view-id>index.xhtml</to-view-id>
             <redirect/>
@@ -243,6 +248,36 @@
         <navigation-case>
             <from-outcome>recordSetsTransit</from-outcome>
             <to-view-id>/web/recordSets/recordSetsTransit.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>duplicateSetsLCENF</from-outcome>
+            <to-view-id>/web/duplicateSets/duplicateSetsLCENF.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>duplicateSetsVIF</from-outcome>
+            <to-view-id>/web/duplicateSets/duplicateSetsVIF.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>duplicateSetsAccidental</from-outcome>
+            <to-view-id>/web/duplicateSets/duplicateSetsAccidental.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>duplicateSetsHomicide</from-outcome>
+            <to-view-id>/web/duplicateSets/duplicateSetsHomicide.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>duplicateSetsSuicide</from-outcome>
+            <to-view-id>/web/duplicateSets/duplicateSetsSuicide.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>duplicateSetsTransit</from-outcome>
+            <to-view-id>/web/duplicateSets/duplicateSetsTransit.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
     </navigation-rule>
