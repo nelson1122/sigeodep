@@ -49,16 +49,18 @@ public class ErrorsControlMB implements Serializable {
     private ArrayList<ErrorControl> errorCorrectionArrayList;
     private int sizeErrorsList = 0;
     private String solution = " ";
-    private String currentDateFormat="dd/MM/yyyy";
+    private String currentDateFormat = "dd/MM/yyyy";
     private String currentDateFormatAcepted;
     private String currentNewValue;
     private String description = "";
     private String valueFound = "";
+    private RecordDataMB recordDataMB;
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private RelationVar relationVar;
     private RelationsGroup currentRelationsGroup;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     DinamicTable dinamicTable = new DinamicTable();
+    
 
     public ErrorsControlMB() {
         correctionList = new SelectItem[0];
@@ -176,7 +178,6 @@ public class ErrorsControlMB implements Serializable {
 //        }
 ////        return 0;
 //    }
-
     public int discardError() {
         boolean correction = false;
         for (int i = 0; i < errorControlArrayList.size(); i++) {
@@ -341,8 +342,19 @@ public class ErrorsControlMB implements Serializable {
                     //btnDeleteRecordDisabled = true;
                     btnSeeRecordDisabled = true;
                     conx.disconnect();
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                    FacesContext context = FacesContext.getCurrentInstance();
+                    recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
+                    //si no hay errores permitir el registro
+                    if (errorControlArrayList.isEmpty()) {
+                        recordDataMB.setBtnRegisterDataDisabled(false);                        
+                        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el último error, puede proceder a registrar la informacion");
+                        FacesContext.getCurrentInstance().addMessage(null, msg);
+
+                    } else {
+                        recordDataMB.setBtnRegisterDataDisabled(true);
+                        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error, prosiga hasta corregir todos los errores");
+                        FacesContext.getCurrentInstance().addMessage(null, msg);
+                    }
                     return 0;
                 }
             }
@@ -726,6 +738,9 @@ public class ErrorsControlMB implements Serializable {
                     //updateErrorsArrayList();
                     updateCorrectionArrayList();
                     conx.disconnect();
+                    FacesContext context = FacesContext.getCurrentInstance();
+                    recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
+                    recordDataMB.setBtnRegisterDataDisabled(true);
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El cambio se a revertido");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 } catch (Exception ex) {
@@ -878,7 +893,6 @@ public class ErrorsControlMB implements Serializable {
 //    public void setBtnDeleteRecordDisabled(boolean btnDeleteRecordDisabled) {
 //        this.btnDeleteRecordDisabled = btnDeleteRecordDisabled;
 //    }
-
     public boolean isBtnDiscardDisabled() {
         return btnDiscardDisabled;
     }
