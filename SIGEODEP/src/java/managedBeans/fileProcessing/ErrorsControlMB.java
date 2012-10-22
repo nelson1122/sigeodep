@@ -10,6 +10,7 @@ import beans.errorsControl.ErrorControl;
 import beans.relations.RelationValue;
 import beans.relations.RelationVar;
 import beans.relations.RelationsGroup;
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -29,7 +30,7 @@ import managedBeans.preload.FormsAndFieldsDataMB;
  */
 @ManagedBean(name = "errorsControlMB")
 @SessionScoped
-public class ErrorsControlMB {
+public class ErrorsControlMB implements Serializable {
 
     ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
     private String currentError = "";//error actual
@@ -48,7 +49,7 @@ public class ErrorsControlMB {
     private ArrayList<ErrorControl> errorCorrectionArrayList;
     private int sizeErrorsList = 0;
     private String solution = " ";
-    private String currentDateFormat;
+    private String currentDateFormat="dd/MM/yyyy";
     private String currentDateFormatAcepted;
     private String currentNewValue;
     private String description = "";

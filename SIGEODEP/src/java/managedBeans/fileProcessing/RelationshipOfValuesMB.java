@@ -94,6 +94,17 @@ public class RelationshipOfValuesMB implements Serializable {
         foundValuesFilter = "";
         nameOfValueExpected = "";
         String[] splitValuesRelated;
+        currentValueExpected = "";
+        valuesFound = new ArrayList<String>();
+        valuesExpected = new ArrayList<String>();
+        valuesRelated = new ArrayList<String>();
+        valuesDiscarded = new ArrayList<String>();
+
+        btnAssociateRelationValueDisabled = true;
+        btnAutomaticRelationValueDisabled = true;
+        btnRemoveRelationValueDisabled = true;
+        btnDiscardValueDisabled = true;
+        btnRemoveDiscardedValuesDisabled = true;
         if (currentCategoricalRelatedVariables.trim().length() != 0) {
             splitValuesRelated = currentCategoricalRelatedVariables.split("->");
             currentVariableExpected = splitValuesRelated[0];
@@ -102,19 +113,6 @@ public class RelationshipOfValuesMB implements Serializable {
             valuesFoundSelectedInRelationValues = new ArrayList<String>();
             valuesRelatedSelectedInRelationValues = new ArrayList<String>();
             valuesDiscardedSelectedInRelationValues = new ArrayList<String>();
-
-            currentValueExpected = "";
-            valuesFound = new ArrayList<String>();
-            valuesExpected = new ArrayList<String>();
-            valuesRelated = new ArrayList<String>();
-            valuesDiscarded = new ArrayList<String>();
-
-            btnAssociateRelationValueDisabled = true;
-            btnAutomaticRelationValueDisabled = true;
-            btnRemoveRelationValueDisabled = true;
-            btnDiscardValueDisabled = true;
-            btnRemoveDiscardedValuesDisabled = true;
-
             loadExpectedAndFoundValues();
             loadRelatedAndDiscardedValues();
         }
@@ -125,7 +123,7 @@ public class RelationshipOfValuesMB implements Serializable {
         foundValuesFilter = "";
         nameOfValueExpected = "";
         if (relationsGroup != null) {
-            
+
             currentRelationsGroup = relationsGroup;
         }
 
@@ -185,6 +183,7 @@ public class RelationshipOfValuesMB implements Serializable {
         btnAssociateRelationValueDisabled = true;
         btnRemoveRelationValueDisabled = true;
         btnAutomaticRelationValueDisabled = true;
+        btnViewValueDisabled = true;
     }
 
     //----------------------------------------------------------------------
@@ -401,8 +400,8 @@ public class RelationshipOfValuesMB implements Serializable {
         //como se quita de la lista un item se determina que item quedara seleccionado
         //---------------------------------------------------------------------------        
         String nextValuesDiscardedSelected = "";
-        String firstValuesDiscardedSelected = "";//primer relacion de valores a eliminar
-        String lastValuesDiscardedSelected = "";//ultima relacion de valores a eliminar
+        String firstValuesDiscardedSelected;//primer relacion de valores a eliminar
+        String lastValuesDiscardedSelected;//ultima relacion de valores a eliminar
         if (!valuesDiscardedSelectedInRelationValues.isEmpty()) {
             firstValuesDiscardedSelected = valuesDiscardedSelectedInRelationValues.get(0);
             lastValuesDiscardedSelected = valuesDiscardedSelectedInRelationValues.get(valuesDiscardedSelectedInRelationValues.size() - 1);
@@ -450,8 +449,8 @@ public class RelationshipOfValuesMB implements Serializable {
         //como se quita de la lista un item se determina que item quedara seleccionado
         //---------------------------------------------------------------------------        
         String nextValuesFoundSelected = "";
-        String firstValuesFoundSelected = "";//primer relacion de valores a eliminar
-        String lastValuesFoundSelected = "";//ultima relacion de valores a eliminar
+        String firstValuesFoundSelected;//primer relacion de valores a eliminar
+        String lastValuesFoundSelected;//ultima relacion de valores a eliminar
         if (!valuesFoundSelectedInRelationValues.isEmpty()) {
             firstValuesFoundSelected = valuesFoundSelectedInRelationValues.get(0);
             lastValuesFoundSelected = valuesFoundSelectedInRelationValues.get(valuesFoundSelectedInRelationValues.size() - 1);
@@ -495,8 +494,8 @@ public class RelationshipOfValuesMB implements Serializable {
         //como se quita de la lista un item se determina que item quedara seleccionado
         //---------------------------------------------------------------------------        
         String nextValuesFoundSelected = "";
-        String firstValuesFoundSelected = "";//primer relacion de valores a eliminar
-        String lastValuesFoundSelected = "";//ultima relacion de valores a eliminar
+        String firstValuesFoundSelected;//primer relacion de valores a eliminar
+        String lastValuesFoundSelected;//ultima relacion de valores a eliminar
         if (!valuesFoundSelectedInRelationValues.isEmpty()) {
             firstValuesFoundSelected = valuesFoundSelectedInRelationValues.get(0);
             lastValuesFoundSelected = valuesFoundSelectedInRelationValues.get(valuesFoundSelectedInRelationValues.size() - 1);
@@ -668,8 +667,8 @@ public class RelationshipOfValuesMB implements Serializable {
         //como se quita de la lista un item se determina que item quedara seleccionado
         //---------------------------------------------------------------------------        
         String nextValuesRelatedSelected = "";
-        String firstValuesRelatedSelected = "";//primer relacion de valores a eliminar
-        String lastValuesRelatedSelected = "";//ultima relacion de valores a eliminar
+        String firstValuesRelatedSelected;//primer relacion de valores a eliminar
+        String lastValuesRelatedSelected;//ultima relacion de valores a eliminar
         if (!valuesRelatedSelectedInRelationValues.isEmpty()) {
             firstValuesRelatedSelected = valuesRelatedSelectedInRelationValues.get(0);
             lastValuesRelatedSelected = valuesRelatedSelectedInRelationValues.get(valuesRelatedSelectedInRelationValues.size() - 1);

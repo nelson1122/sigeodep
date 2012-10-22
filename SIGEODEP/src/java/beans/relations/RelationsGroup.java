@@ -58,8 +58,20 @@ public class RelationsGroup {
     
     public RelationVar findRelationVar(String varFound)
     {
+        //retorna una relacion de variables dada una variable encontrada
          for (int i = 0; i < relationVarList.size(); i++) {
-            if(relationVarList.get(i).compareNames(varFound))
+            if(relationVarList.get(i).getNameFound().compareTo(varFound)==0)
+            {
+                return relationVarList.get(i);
+            }
+        }
+        return null;
+    }
+    public RelationVar findRelationVar2(String varExpected)
+    {
+        //retorna una relacion de variables dada una variable esperada
+         for (int i = 0; i < relationVarList.size(); i++) {
+            if(relationVarList.get(i).getNameExpected().compareTo(varExpected)==0)
             {
                 return relationVarList.get(i);
             }

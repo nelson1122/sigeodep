@@ -62,12 +62,46 @@ public class RelationshipOfVariablesMB implements Serializable {
     private RelationsGroup currentRelationsGroup;
     private UploadFileMB uploadFileMB;
     private RelationshipOfValuesMB relationshipOfValuesMB;
+    //-----------------------------
+    private String expectedVariablesFilter = "";
+    private String foundVariablesFilter = "";
+    private String filterText;
+    private String foundText;
+
+    public void changeFoundVariablesFilter() {
+//        valuesFoundSelectedInRelationValues = new ArrayList<String>();
+          loadVarsExpectedAndFound();
+//        activeButtons();
+    }
+
+    public void changeExpectedVariablesFilter() {
+//        currentValueExpected = "";
+//        nameOfValueExpected = "";
+        loadVarsExpectedAndFound();
+//        activeButtons();
+    }
+
+    public String getExpectedVariablesFilter() {
+        return expectedVariablesFilter;
+    }
+
+    public void setExpectedVariablesFilter(String expectedVariablesFilter) {
+        this.expectedVariablesFilter = expectedVariablesFilter;
+    }
+
+    public String getFoundVariablesFilter() {
+        return foundVariablesFilter;
+    }
+
+    public void setFoundVariablesFilter(String foundVariablesFilter) {
+        this.foundVariablesFilter = foundVariablesFilter;
+    }
+
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES DE PROPOSITO GENERAL ---------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-
     public RelationshipOfVariablesMB() {
         /*
          * Constructor de la clase
@@ -83,9 +117,11 @@ public class RelationshipOfVariablesMB implements Serializable {
     public void reset() {//@PostConstruct ejecutar despues de el constructor
         this.relatedVars = new ArrayList<String>();
         this.valuesExpected = new ArrayList<String>();
-        this.varsFound = new ArrayList<String>();
         this.valuesFound = new ArrayList<String>();
+        this.varsFound = new ArrayList<String>();        
+        this.variablesExpected = new ArrayList<String>();
         this.currentVarFound = "";
+        this.currentVarExpected = "";
         //this.btnValidateRelationVarDisabled = true;
         //this.btnAssociateRelationVarDisabled = true;
         this.btnRemoveRelationVarDisabled = true;
@@ -156,9 +192,24 @@ public class RelationshipOfVariablesMB implements Serializable {
             }
         }
         variablesExpected = varsExpected;
-        //recargo la lista de variables encontradas
-        varsFound = new ArrayList<String>();
+        
+        //filtro los datos
+        if (expectedVariablesFilter.trim().length() != 0) {
+            filterText = expectedVariablesFilter.toUpperCase();
+            for (int j = 0; j < variablesExpected.size(); j++) {
+                foundText = variablesExpected.get(j).toUpperCase();
+                if (foundText.indexOf(filterText) == -1) {
+                    variablesExpected.remove(j);
+                    j--;
+                }
+            }
+        }
+        
+        
+
+        //recargo la lista de variables encontradas        
         List<String> varsFound2 = uploadFileMB.getVariablesFound();
+        varsFound = new ArrayList<String>();
 
         //quito las variables esperadas que ya esten relacionadas
         for (int i = 0; i < relatedVars.size(); i++) {
@@ -171,6 +222,19 @@ public class RelationshipOfVariablesMB implements Serializable {
             }
         }
         varsFound = varsFound2;
+
+        //filtro los datos
+        if (foundVariablesFilter.trim().length() != 0) {
+            filterText = foundVariablesFilter.toUpperCase();
+            for (int j = 0; j < varsFound.size(); j++) {
+                foundText = varsFound.get(j).toUpperCase();
+                if (foundText.indexOf(filterText) == -1) {
+                    varsFound.remove(j);
+                    j--;
+                }
+            }
+        }
+
         //recargo la lista de variables relacionadas pero para la seccion de relacionar variables        
         if (currentRelationsGroup != null) {
             relationshipOfValuesMB.loadCategoricalRelatedVariables(currentRelationsGroup);
@@ -349,6 +413,7 @@ public class RelationshipOfVariablesMB implements Serializable {
             } else {
                 if (currentVarExpected.trim().length() == 0) {
                     error = "Debe seleccionarse una variable esperada";
+                    nextStep = false;
                 }
             }
         }

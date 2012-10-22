@@ -46,14 +46,12 @@
                 <p:tabView id="IdTabView"  style=" width: 750px;  margin-left: -375px; left: 50%;" > 
                     <!--===================================================================================-->
                     <!--========================SECCION PARA LA CARGA DEL ARCHIVO==========================-->
+
                     <p:tab id="tab1" title="ARCHIVO PLANO">  
                         <p:panelGrid style=" margin-left: 30px;">     
                             <p:row>
                                 <p:column colspan="4" styleClass="ui-widget-header">
                                     CARGA DE REGISTROS DESDE ARCHIVO
-                                    <!--p:commandButton                                         
-                                        value="Relacionar Conjuntos"
-                                        actionListener="{uploadFileMB.crearCopia}"/-->                                    
                                 </p:column>
                             </p:row>
                             <p:row>
@@ -69,7 +67,7 @@
                                         <f:ajax 
                                             event="keyup"
                                             listener="#{uploadFileMB.changeTagName}"
-                                            render="IdBtnFileSelect IdBtnLoadFile :IdForm:message"/>                                        
+                                            render="IdBtnFileSelect :IdForm:message"/>                                        
                                     </p:inputText>
                                 </p:column>
                             </p:row>
@@ -101,17 +99,18 @@
                                 </p:column>
                                 <p:column colspan="3">
                                     <p:selectOneMenu 
-                                        id="IdSelectOneMenuSource" 
-                                        value="#{uploadFileMB.currentSource}" 
-                                        disabled="#{uploadFileMB.selectSourceDisabled}">                                  
-                                        <f:selectItems value="#{uploadFileMB.sources}"/>
+                                        id="IdSelectOneMenuSource"
+                                        value="#{uploadFileMB.currentSource}"                                         
+                                        disabled="#{uploadFileMB.selectSourceDisabled}"> 
+                                        <f:selectItems value="#{uploadFileMB.sources}"/>                                          
+                                        <f:ajax
+                                            render="IdSelectOneMenuSource IdDelimiter IdAccordionPanel:IdSelectOneListVarExpected IdCurrentForm"/>
                                     </p:selectOneMenu> 
                                 </p:column>
                             </p:row>
                             <p:row>
                                 <p:column colspan="1">
-                                    <h:outputLabel
-                                        value="Delimitador: "/>  
+                                    <h:outputLabel value="Delimitador: "/>  
                                 </p:column>
                                 <p:column colspan="3">
                                     <p:selectOneMenu 
@@ -129,47 +128,43 @@
                                 </p:column>
                                 <p:column colspan="3">
                                     <p:fileUpload 
-                                        id="IdBtnFileSelect"
-                                        value="#{uploadFileMB.file}" 
+                                        id="IdBtnFileSelect"                                        
+                                        fileUploadListener="#{uploadFileMB.handleFileUpload}"  
                                         disabled="#{uploadFileMB.selectFileUploadDisabled}"
-                                        mode="simple"                                         
-                                        update="IdBtnLoadFile"/> 
-                                </p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column colspan="4" styleClass="ui-widget-header">
-                                    <p:commandButton 
-                                        id="IdBtnLoadFile" 
-                                        disabled="#{uploadFileMB.btnLoadFileDisabled}" 
-                                        value="Cargar Archivo" 
-                                        ajax="false"                                     
-                                        actionListener="#{uploadFileMB.upload}"/>
+                                        mode="advanced"                                           
+                                        sizeLimit="5000000"   
+                                        onstart="pbAjaxUpload.start();"
+                                        allowTypes="/(\.|\/)(xlsx|txt|csv)$/">                                        
+                                    </p:fileUpload>                                      
+                                    <p:progressBar id="IdProgresUpload" interval="2000" widgetVar="pbAjaxUpload" ajax="true"  value="#{uploadFileMB.progressUpload}" labelTemplate="{value}%" />
                                     <p:commandButton 
                                         disabled="#{uploadFileMB.btnResetDisabled}" 
                                         value="Reiniciar"                                         
-                                        onclick="confirmation.show()"/>                                     
+                                        onclick="confirmation.show()"/> 
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="4" styleClass="ui-widget-header">                                  
+                                    <br/>
                                     <h:outputLabel                                         
-                                        id="IdNameFile"
-                                        value="#{uploadFileMB.nameFile}"/>
-
-
+                                        id="IdNameFile" value="#{uploadFileMB.nameFile}"/>
                                 </p:column>
                             </p:row>
                         </p:panelGrid>
                     </p:tab>  
                     <!--===================================================================================-->
                     <!--========================SECCION PARA LA APLICACION DE FILTROS======================-->                    
-                    <p:tab title="FILTROS" >
+                    <p:tab title="FILTROS" disabled="#{uploadFileMB.inactiveTabs}" >
                         <p:accordionPanel id="IdAccordionPanel2" activeIndex="-1">
                             <!--======================== Copiar Columnas ======================-->
-                            <p:tab title="Copiar Columnas">
+                            <p:tab title="COPIAR COLUMNAS">
                                 <p:panelGrid >
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Variable a copiar"/>  
+                                            <h:outputLabel value="VARIABLE A COPIAR"/>  
                                         </p:column>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Valores de la variable"/>  
+                                            <h:outputLabel value="VALORES DE LA VARIABLE"/>  
                                         </p:column>                
                                     </p:row>
                                     <p:row>
@@ -195,10 +190,10 @@
                                     </p:row>
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Número de copias"/>  
+                                            <h:outputLabel value="NUMERO DE COPIAS"/>  
                                         </p:column>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Prefijo"/>  
+                                            <h:outputLabel value="PREFIJO"/>  
                                         </p:column>                
                                     </p:row>
                                     <p:row>
@@ -218,24 +213,24 @@
                                             <p:commandButton 
                                                 id="copyUndo"                                   
                                                 actionListener="#{copyMB.undoCopy}"
-                                                value="Deshacer" 
+                                                value="DESHACER" 
                                                 disabled="#{copyMB.btnCopyDisable}"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet copyUndo renameValuesFieldsListBox"/>
+                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet copyUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel"/>
                                             <p:commandButton 
                                                 id="copyButtonSave"                                   
                                                 actionListener="#{copyMB.saveCopies}"
-                                                value="Copiar" 
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet copyUndo renameValuesFieldsListBox"/>
+                                                value="COPIAR" 
+                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet copyUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel"/>
                                         </p:column>
                                     </p:row>
                                 </p:panelGrid>
                             </p:tab>
                             <!--======================== Eliminar Columnas ======================-->
-                            <p:tab title="Eliminar Columnas" >
+                            <p:tab title="ELIMINAR COLUMNAS" >
                                 <p:panelGrid >
                                     <p:row>
                                         <p:column styleClass="ui-widget-header" colspan="2">
-                                            <h:outputLabel value="Variables a elimnar"/>  
+                                            <h:outputLabel value="VARIABLES A ELIMINAR"/>  
                                         </p:column>              
                                     </p:row>                                        
                                     <p:row>
@@ -251,24 +246,24 @@
                                             <p:commandButton 
                                                 id="undoDelete"                                 
                                                 actionListener="#{copyMB.undoDelete}"
-                                                value="Deshacer"
+                                                value="DESHACER"
                                                 disabled="#{copyMB.btnDeleteDisable}"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoDelete renameValuesFieldsListBox"/>   
+                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoDelete renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel"/>   
                                             <p:commandButton 
                                                 id="deleteButton"                                 
                                                 actionListener="#{copyMB.deleteFields}"
-                                                value="Eliminar"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoDelete renameValuesFieldsListBox"/>
+                                                value="ELIMINAR"
+                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoDelete renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel"/>
                                         </p:column>                
                                     </p:row>
                                 </p:panelGrid>
                             </p:tab>
                             <!--======================== Filtrar registros ======================-->
-                            <p:tab title="Filtrar Registros">
+                            <p:tab title="FILTRAR REGISTROS">
                                 <p:panelGrid>
                                     <p:row>
                                         <p:column styleClass="ui-widget-header" colspan="2">
-                                            <h:outputLabel value="Variable a filtrar"/>  
+                                            <h:outputLabel value="VARIABLE A FILTRAR"/>  
                                         </p:column>              
                                     </p:row>  
                                     <p:row>
@@ -287,9 +282,10 @@
                                     </p:row>
                                     <p:row>
                                         <p:column>
-                                            <p:dataTable id="filterDataTable" value="#{copyMB.filter_queryModel}" var="fields" 
-                                                         rowKey="#{fields}" rows="10" paginator="true"
-                                                         selection="#{copyMB.filter_selected}" >
+                                            <p:dataTable 
+                                                id="filterDataTable" value="#{copyMB.filter_queryModel}" var="fields" 
+                                                rowKey="#{fields}" rows="10" paginator="true"
+                                                selection="#{copyMB.filter_selected}" >
                                                 <p:column selectionMode="multiple" />
                                                 <p:columns value="#{copyMB.filter_headers}" var="headers" columnIndexVar="index">
                                                     <f:facet name="header">
@@ -298,29 +294,31 @@
                                                     <h:outputText value="#{fields[headers]}"/>
                                                 </p:columns>
                                                 <f:facet name="footer">  
-                                                    <p:commandButton value="Deshacer" icon="ui-icon-search"
-                                                                     actionListener="#{copyMB.redoFilter}"
-                                                                     update="filterDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet"
-                                                                     disabled="#{copyMB.btnFilterDisable}"/>  
-                                                    <p:commandButton value="Filtrar" icon="ui-icon-search"
-                                                                     actionListener="#{copyMB.deleteRecords}"
-                                                                     update="filterDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet"/>  
+                                                    <p:commandButton 
+                                                        value="DESHACER" icon="ui-icon-search"
+                                                        actionListener="#{copyMB.redoFilter}"
+                                                        update="filterDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel"
+                                                        disabled="#{copyMB.btnFilterDisable}"/>  
+                                                    <p:commandButton 
+                                                        value="FILTRAR" icon="ui-icon-search"
+                                                        actionListener="#{copyMB.deleteRecords}"
+                                                        update="filterDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel"/>  
                                                 </f:facet>                              
                                             </p:dataTable>
-                                            
+
                                         </p:column>
                                     </p:row>
                                 </p:panelGrid>
                             </p:tab>
                             <!--======================== Dividir Columna ======================-->
-                            <p:tab title="Dividir Columna">
+                            <p:tab title="DIVIDIR COLUMNA">
                                 <p:panelGrid >
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Columnas actuales"/>  
+                                            <h:outputLabel value="COLUMNAS ACTUALES"/>  
                                         </p:column>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Valores actuales"/>  
+                                            <h:outputLabel value="VALORES ACTUALES"/>  
                                         </p:column>                
                                     </p:row>
                                     <p:row>
@@ -346,10 +344,10 @@
                                     </p:row>
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Nuevos nombres de columna"/>  
+                                            <h:outputLabel value="NUEVOS NOMBRES DE COLUMNA"/>  
                                         </p:column>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Separador"/>  
+                                            <h:outputLabel value="SEPARADOR"/>  
                                         </p:column>                
                                     </p:row>
                                     <p:row>
@@ -369,10 +367,13 @@
                                                         update="splitWrapper" /> 
                                             </h:inputText>
                                             <h:panelGroup id="splitWrapper">
-                                                <h:outputText id="splitOutput" 
-                                                              rendered="#{copyMB.split_rendered}" value="Incluir digitos: " />  
-                                                <p:selectBooleanCheckbox id="splitCheck" 
-                                                                         rendered="#{copyMB.split_rendered}" />
+                                                <h:outputText 
+                                                    id="splitOutput" 
+                                                    rendered="#{copyMB.split_rendered}" 
+                                                    value="INCLUIR DIGITOS: " />  
+                                                <p:selectBooleanCheckbox 
+                                                    id="splitCheck" 
+                                                    rendered="#{copyMB.split_rendered}" />
                                             </h:panelGroup>
                                         </p:column>
                                     </p:row>
@@ -381,22 +382,23 @@
                                             <p:commandButton 
                                                 id="splitUndo"                                   
                                                 actionListener="#{copyMB.undoSplit}"
-                                                value="Deshacer" 
+                                                value="DESHACER" 
                                                 disabled="#{copyMB.btnSplitDisable}"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox splitDataTable mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet splitUndo renameValuesFieldsListBox"/>                                            
+                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox splitDataTable mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet splitUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel"/>                                            
                                             <p:commandButton 
                                                 id="splitButtonSplit"                                   
                                                 actionListener="#{copyMB.divideAField}"
-                                                value="Dividir" 
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox splitDataTable mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet splitUndo renameValuesFieldsListBox :IdForm:IdTabView :IdForm:message"/>
+                                                value="DIVIDIR" 
+                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox splitDataTable mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet splitUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel"/>
                                         </p:column>
                                     </p:row>
                                     <p:row>
                                         <p:column colspan="2">
-                                            <p:dataTable id="splitDataTable" value="#{copyMB.split_newfields}" var="newfields" 
-                                                         paginator="true" rows="10"
-                                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                         rowsPerPageTemplate="5,10,15">
+                                            <p:dataTable 
+                                                id="splitDataTable" value="#{copyMB.split_newfields}" var="newfields" 
+                                                paginator="true" rows="10"
+                                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                rowsPerPageTemplate="5,10,15">
                                                 <p:columns value="#{copyMB.split_newheaders}" var="newheaders" columnIndexVar="split_index">
                                                     <f:facet name="header">
                                                         <h:outputText value="#{newheaders}"/>
@@ -409,27 +411,28 @@
                                 </p:panelGrid>
                             </p:tab>
                             <!--======================== Unir Columna ======================-->
-                            <p:tab title="Unir Columnas">
+                            <p:tab title="UNIR COLUMNAS">
                                 <p:panelGrid >
                                     <p:row>
                                         <p:column colspan="2" styleClass="ui-widget-header">
-                                            <h:outputLabel value="Variables a unir"/>  
+                                            <h:outputLabel value="VARIABLES A UNIR"/>  
                                         </p:column>             
                                     </p:row>
                                     <p:row>
                                         <p:column colspan="2">
-                                            <p:pickList id="mergePickList" value="#{copyMB.merge_pickfields}" 
-                                                        var="field"
-                                                        itemLabel="#{field}" itemValue="#{field}" 
-                                                        showTargetControls="true" />
+                                            <p:pickList 
+                                                id="mergePickList" value="#{copyMB.merge_pickfields}" 
+                                                var="field"
+                                                itemLabel="#{field}" itemValue="#{field}" 
+                                                showTargetControls="true" />
                                         </p:column>
                                     </p:row>
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Nombre de la nueva columna"/>  
+                                            <h:outputLabel value="NOMBRE DE LA NUEVA COLUMNA"/>  
                                         </p:column>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Separador"/>  
+                                            <h:outputLabel value="SEPARADOR"/>  
                                         </p:column>                
                                     </p:row>
                                     <p:row>
@@ -449,15 +452,15 @@
                                             <p:commandButton 
                                                 id="undoMerge"                                   
                                                 actionListener="#{copyMB.undoMerge}"
-                                                value="Deshacer"
+                                                value="DESHACER"
                                                 disabled="#{copyMB.btnMergeDisable}"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList mergeDataTable replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoMerge renameValuesFieldsListBox">
+                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList mergeDataTable replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoMerge renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel">
                                             </p:commandButton>
                                             <p:commandButton 
                                                 id="mergeButtonMerge"                                   
                                                 actionListener="#{copyMB.mergeFields}"
-                                                value="Unir"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList mergeDataTable replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoMerge renameValuesFieldsListBox">                     
+                                                value="UNIR"
+                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList mergeDataTable replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoMerge renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel">                     
                                             </p:commandButton>
                                         </p:column>                
                                     </p:row>
@@ -479,7 +482,7 @@
                                 </p:panelGrid>
                             </p:tab>
                             <!--======================== Renombrar Valores ======================-->
-                            <p:tab title="Renombrar Valores">
+                            <p:tab title="RENOMBRAR VALORES">
                                 <p:panelGrid>
                                     <p:row>
                                         <p:column colspan="2">
@@ -497,15 +500,16 @@
                                     </p:row>
                                     <p:row>
                                         <p:column>
-                                            <p:dataTable id="renameValuesDataTable" value="#{copyMB.rename_model}" var="fields" 
-                                                         rowKey="#{fields}" rows="10" paginator="true" editable="true">
+                                            <p:dataTable 
+                                                id="renameValuesDataTable" value="#{copyMB.rename_model}" var="fields" 
+                                                rowKey="#{fields}" rows="10" paginator="true" editable="true">
                                                 <p:column>
                                                     <f:facet name="header">
                                                         Valor Actual
                                                     </f:facet>
                                                     <h:outputText value="#{fields.oldValue}" />
                                                 </p:column>
-                                                <p:column headerText="Nuevo Valor" style="width:125px">
+                                                <p:column headerText="NUEVO VALOR" style="width:125px">
                                                     <p:cellEditor>
                                                         <f:facet name="output">
                                                             <h:outputText value="#{fields.newValue}" />
@@ -515,17 +519,19 @@
                                                         </f:facet>
                                                     </p:cellEditor>
                                                 </p:column>
-                                                <p:column headerText="Edición" style="width:50px">
+                                                <p:column headerText="EDICION" style="width:50px">
                                                     <p:rowEditor />
                                                 </p:column>
                                                 <f:facet name="footer">  
-                                                    <p:commandButton value="Deshacer" icon="ui-icon-search"
-                                                                     actionListener="#{copyMB.redoRename}"
-                                                                     update="renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet"
-                                                                     disabled="#{copyMB.btnRenameDisable}"/>  
-                                                    <p:commandButton value="Renombrar" icon="ui-icon-search"
-                                                                     actionListener="#{copyMB.renameRecords}"
-                                                                     update="renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet"/>  
+                                                    <p:commandButton 
+                                                        value="DESHACER" icon="ui-icon-search"
+                                                        actionListener="#{copyMB.redoRename}"
+                                                        update="renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel"
+                                                        disabled="#{copyMB.btnRenameDisable}"/>  
+                                                    <p:commandButton 
+                                                        value="RENOMBRAR" icon="ui-icon-search"
+                                                        actionListener="#{copyMB.renameRecords}"
+                                                        update="renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel"/>  
                                                 </f:facet>                              
                                             </p:dataTable>
                                         </p:column>
@@ -533,28 +539,30 @@
                                 </p:panelGrid>
                             </p:tab>
                             <!--======================== Replicar Registros ======================-->
-                            <p:tab title="Replicar Registros">
+                            <p:tab title="REPLICAR REGISTROS">
                                 <p:panelGrid >
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Variables a replicar"/>  
+                                            <h:outputLabel value="VARIABLES A REPLICAR"/>  
                                         </p:column>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Variables correspondientes"/>  
+                                            <h:outputLabel value="VARIABLES CORRESPONDIENTES"/>  
                                         </p:column>                
                                     </p:row>
                                     <p:row>
                                         <p:column>
-                                            <h:selectManyMenu id="replicateFieldsListBox1" 
-                                                              value="#{copyMB.replicate_source}"
-                                                              style="height:200px; width: 200px;">
+                                            <h:selectManyMenu 
+                                                id="replicateFieldsListBox1" 
+                                                value="#{copyMB.replicate_source}"
+                                                style="height:200px; width: 250px;">
                                                 <f:selectItems value="#{copyMB.fields}"/> 
                                             </h:selectManyMenu>
                                         </p:column>
                                         <p:column>
-                                            <h:selectManyMenu id="replicateFieldsListBox2" 
-                                                              value="#{copyMB.replicate_target}"
-                                                              style="height:200px; width: 200px;">
+                                            <h:selectManyMenu 
+                                                id="replicateFieldsListBox2" 
+                                                value="#{copyMB.replicate_target}"
+                                                style="height:200px; width: 250px;">
                                                 <f:selectItems value="#{copyMB.fields}"/> 
                                             </h:selectManyMenu>
                                         </p:column>
@@ -564,27 +572,29 @@
                                             <p:commandButton 
                                                 id="replicateUndo"                                   
                                                 actionListener="#{copyMB.undoReplicate}"
-                                                value="Deshacer..." 
-                                                update="replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet replicateUndo"
+                                                value="DESHACER..." 
+                                                update="replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet replicateUndo :IdForm:IdTabView:IdAccordionPanel"
                                                 disabled="#{copyMB.btnReplicateDisable}"/>
                                             <p:commandButton 
                                                 id="replicateReplicate"                                   
                                                 actionListener="#{copyMB.replicate}"
-                                                value="Replicar" 
-                                                update="replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet replicateUndo"/>
+                                                value="REPLICAR" 
+                                                update="replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet replicateUndo :IdForm:IdTabView:IdAccordionPanel"/>
                                         </p:column>
                                     </p:row>
                                     <p:row>
                                         <p:column colspan="2">
-                                            <p:dataTable id="replicateSheet" value="#{copyMB.replicate_model2}" var="table" 
-                                                         paginator="true" rows="10" paginatorPosition="bottom"
-                                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                         rowsPerPageTemplate="5,10,15" 
-                                                         rowKey="#{table.get(0)}" rowIndexVar="rowIndex"
-                                                         scrollable="true" scrollWidth="600"
-                                                         resizableColumns="true" >
-                                                <p:columns styleClass="bla" 
-                                                           value="#{copyMB.replicate_columns2}" var="columns" columnIndexVar="index">
+                                            <p:dataTable 
+                                                id="replicateSheet" value="#{copyMB.replicate_model2}" var="table" 
+                                                paginator="true" rows="10" paginatorPosition="bottom"
+                                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                rowsPerPageTemplate="5,10,15" 
+                                                rowKey="#{table.get(0)}" rowIndexVar="rowIndex"
+                                                scrollable="true" scrollWidth="600"
+                                                resizableColumns="true" >
+                                                <p:columns 
+                                                    styleClass="bla" 
+                                                    value="#{copyMB.replicate_columns2}" var="columns" columnIndexVar="index">
                                                     <f:facet name="header" >
                                                         <h:outputText styleClass="bla" value="#{columns}" />
                                                     </f:facet>
@@ -599,7 +609,7 @@
                     </p:tab>  
                     <!--===================================================================================-->
                     <!--========================SECCION PARA RELACIONES ===================================-->                    
-                    <p:tab id="IdTabRelations"  title="RELACIONES" > 
+                    <p:tab id="IdTabRelations"  title="RELACIONES" disabled="#{uploadFileMB.inactiveTabs}">
                         <p:accordionPanel id="IdAccordionPanel" activeIndex="-1">
                             <!--======================== SECCION PARA LA RELACION DE VARIABLES ======================-->
                             <p:tab title="RELACION DE VARIABLES">
@@ -609,11 +619,35 @@
                                             <p:panelGrid >                            
                                                 <p:row>  
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Variables esperadas"/>  
+                                                        <h:outputLabel value="VARIABLES ESPERADAS"/>                                                          
+                                                        <h:inputText 
+                                                            id="IdExpectedVariablesFilter"                                                                                         
+                                                            value="#{relationshipOfVariablesMB.expectedVariablesFilter}"                                                                                                                        
+                                                            size="20">
+                                                            <f:ajax 
+                                                                event="keyup"
+                                                                listener="#{relationshipOfVariablesMB.changeExpectedVariablesFilter}"
+                                                                render="IdSelectOneListVarExpected IdSelectOneListValuesExpected"/>
+                                                        </h:inputText>
                                                     </p:column>                                       
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Muestra"/>  
-                                                    </p:column>                                         
+
+                                                        <h:outputLabel 
+                                                            value="MUESTRA" style="text-align: left;"/>                                                          
+                                                        <h:outputText 
+                                                            value="USAR CODIGO:&nbsp;" 
+                                                            style="margin-left: 200px; margin-top: 5px;"/>
+
+
+                                                        <p:selectBooleanCheckbox 
+                                                            id="IdCheckCompareForCode"
+                                                            style="size: 10px;"  
+                                                            value="#{relationshipOfVariablesMB.compareForCode}">  
+                                                            <p:ajax
+                                                                listener="#{relationshipOfVariablesMB.loadValuesExpected}"
+                                                                update="IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat"/>  
+                                                        </p:selectBooleanCheckbox>
+                                                    </p:column>  
                                                 </p:row>  
                                                 <p:row>  
                                                     <p:column>
@@ -621,21 +655,21 @@
                                                         <h:selectOneListbox 
                                                             id="IdSelectOneListVarExpected" 
                                                             value="#{relationshipOfVariablesMB.currentVarExpected}"
-                                                            style="height:110px; width: 180px; ">
+                                                            style="height:100px; width: 280px; ">
                                                             <f:selectItems value="#{relationshipOfVariablesMB.variablesExpected}"/>
                                                             <f:selectItem itemLabel=" " itemValue=" " />
                                                             <f:ajax 
                                                                 event="change"                                            
                                                                 listener="#{relationshipOfVariablesMB.changeVarExpected}" 
-                                                                render="IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdVariableDescription IdCheckCompareForCode IdSelectDateFormat"/>
+                                                                render="IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat"/>
                                                         </h:selectOneListbox> 
                                                     </p:column>
                                                     <p:column>
-                                                        <!--LISTA DE VALORES ESPERADOS-->
+                                                        <!--MUESTRA VALORES ESPERADOS-->
                                                         <h:selectOneListbox 
                                                             disabled="true"
                                                             id="IdSelectOneListValuesExpected"                                                             
-                                                            style="height:110px; width: 180px;">
+                                                            style="height:100px; width: 380px; ">
                                                             <f:selectItems value="#{relationshipOfVariablesMB.valuesExpected}"/>							    
                                                             <f:selectItem itemLabel=" " itemValue=" " />
                                                         </h:selectOneListbox> 
@@ -643,130 +677,30 @@
                                                 </p:row>                                                                               
                                             </p:panelGrid> 
                                         </td>
-                                        <td rowspan="2">
-                                            <p:panelGrid style="margin-bottom: 4px; "  id="IdVariableDescription">                            
-                                                <p:row>  
-                                                    <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Descripción de variable: "/>  
-                                                        <h:outputLabel value="#{relationshipOfVariablesMB.currentVarExpected}" />  
-                                                    </p:column>                       
-                                                </p:row>
-                                                <p:row>  
-                                                    <p:column >
-                                                        <p:inputTextarea value="#{relationshipOfVariablesMB.variableDescription}" rows="3" cols="35" autoResize="false" disabled="true" />
-                                                    </p:column>                       
-                                                </p:row>
-                                            </p:panelGrid>
-
-                                            <p:panelGrid >                            
-                                                <p:row>  
-                                                    <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Relaciones creadas"/>  
-                                                    </p:column>                                         
-                                                </p:row>  
-                                                <p:row>  
-                                                    <p:column>							
-                                                        <!--LISTA DE VARIABLES RELACIONADAS ACTUALMENTE-->
-                                                        <h:selectOneListbox  
-                                                            value="#{relationshipOfVariablesMB.currentRelatedVars}" 
-                                                            style="height:134px; width: 268px; "
-                                                            id="IdSelectOneListVarRelated" >
-                                                            <f:selectItems value="#{relationshipOfVariablesMB.relatedVars}"/>
-                                                            <f:selectItem itemLabel=" " itemValue=" " />
-                                                            <f:ajax 
-                                                                event="change" 
-                                                                listener="#{relationshipOfVariablesMB.changeRelatedVars}" 
-                                                                render="IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdVariableDescription IdCheckCompareForCode IdSelectDateFormat"/>
-                                                        </h:selectOneListbox> 
-                                                    </p:column>                                         
-                                                </p:row>  
-                                                <p:row>  
-                                                    <p:column styleClass="ui-widget-header">							
-                                                        <p:commandButton 
-                                                            id="IdBtnRemoveRelationVar" 
-                                                            disabled="#{relationshipOfVariablesMB.btnRemoveRelationVarDisabled}" 
-                                                            actionListener="#{relationshipOfVariablesMB.btnRemoveRelationVarClick}"
-                                                            value="Quitar Relación"                                             
-                                                            style="size: 10px;"                                            
-                                                            update="IdSelectOneListValuesDiscarded IdSelectOneListValuesRelated IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdVariableDescription IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdSelectOneListVarRelated"/>
-                                                    </p:column>                                         
-                                                </p:row>
-                                            </p:panelGrid>
-                                        </td>
                                     </tr>
                                     <tr>
                                         <td>
                                             <p:panelGrid >                            
                                                 <p:row>  
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Variables encontradas"/>  
+                                                        <h:outputLabel value="VARIABLES ENCONTRADAS"/>  
+                                                        <h:inputText 
+                                                            id="IdFoundVariablesFilter"                                                                                         
+                                                            value="#{relationshipOfVariablesMB.foundVariablesFilter}"                                                            
+                                                            size="20">
+                                                            <f:ajax 
+                                                                event="keyup"
+                                                                listener="#{relationshipOfVariablesMB.changeFoundVariablesFilter}"
+                                                                render="IdSelectOneListVarFound IdSelectOneListValuesFound"/>
+                                                        </h:inputText>
                                                     </p:column>                                       
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Muestra"/>                                                          
-                                                    </p:column>                                         
-                                                </p:row>  
-                                                <p:row> 						    
-                                                    <p:column>
-                                                        <!--LISTA DE VARIABLES ENCONTRADAS EN RELACION DE VARIABLES-->
-                                                        <h:selectOneListbox 
-                                                            id="IdSelectOneListVarFound"
-                                                            value="#{relationshipOfVariablesMB.currentVarFound}" 
-                                                            style="height:110px; width: 180px; ">
-                                                            <f:selectItems value="#{relationshipOfVariablesMB.varsFound}" />                                        
-                                                            <f:selectItem itemLabel=" " itemValue=" " />
-                                                            <f:ajax                                             
-                                                                event="change" 
-                                                                listener="#{relationshipOfVariablesMB.changeVarFound}"                                                                   
-                                                                render="IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdVariableDescription IdCheckCompareForCode IdSelectDateFormat"/>
-                                                        </h:selectOneListbox> 
-                                                    </p:column>
-                                                    <p:column>
-                                                        <!--LISTA DE VALORES ENCONTRADOS EN RELACION DE VARIABLES-->
-                                                        <h:selectOneListbox 
-                                                            id="IdSelectOneListValuesFound" 
-                                                            style="height:110px; width: 180px; "
-                                                            disabled="true">
-                                                            <f:selectItems value="#{relationshipOfVariablesMB.valuesFound}"/>							    
-                                                            <f:selectItem itemLabel=" " itemValue=" " />
-                                                        </h:selectOneListbox>
-                                                    </p:column>                                        
-                                                </p:row>
-                                            </p:panelGrid> 
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="2">
-                                            <!--BOTONES DE REALCION DE VARIABLES--> 
-                                            <table border="0" >
-                                                <tr>
-                                                    <td>                                                        
-                                                        <p:commandButton 
-                                                            id="IdBtnAssociateRelationVar"                                                             
-                                                            actionListener="#{relationshipOfVariablesMB.btnAssociateVarClick}"
-                                                            value="Asociar" 
-                                                            style="size: 10px;"
-                                                            update="IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListVarRelated IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdVariableDescription IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdExpectedValuesFilter IdFoundValuesFilter"/>
-                                                    </td>
-                                                    <td>
-                                                        <h:outputText value="Por&nbsp;Codigo:&nbsp;"/>
-                                                    </td>
-                                                    <td>
-                                                        <p:selectBooleanCheckbox 
-                                                            id="IdCheckCompareForCode"
-                                                            style="size: 10px;"  
-                                                            value="#{relationshipOfVariablesMB.compareForCode}">  
-                                                            <p:ajax
-                                                                listener="#{relationshipOfVariablesMB.loadValuesExpected}"
-                                                                update="IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdVariableDescription IdCheckCompareForCode IdSelectDateFormat"/>  
-                                                        </p:selectBooleanCheckbox>
-                                                    </td>
-                                                    <td>
-                                                        <h:outputLabel  
-                                                            value="&nbsp;Formato:&nbsp;"/>
-                                                    </td>
-                                                    <td>
+                                                        <h:outputLabel value="MUESTRA"/>                                                                                                                                                 
+                                                        <h:outputText 
+                                                            value="&nbsp;FORMATO:&nbsp;" 
+                                                            style="margin-left: 120px; margin-top: 5px;"/>
                                                         <p:selectOneMenu 
-                                                            id="IdSelectDateFormat"
+                                                            id="IdSelectDateFormat"                                                            
                                                             value="#{relationshipOfVariablesMB.currentDateFormat}" 
                                                             disabled="#{relationshipOfVariablesMB.selectDateFormatDisabled}"
                                                             effect="fold" 
@@ -782,9 +716,74 @@
                                                             <f:selectItem itemLabel="yy/MM/dd" itemValue="yy/MM/dd" />  
                                                             <f:selectItem itemLabel="yy-MM-dd" itemValue="yy-MM-dd" />  
                                                         </p:selectOneMenu>
-                                                    </td>                                                    
-                                                </tr>
-                                            </table>
+                                                    </p:column>                                         
+                                                </p:row>  
+                                                <p:row> 						    
+                                                    <p:column>
+                                                        <!--LISTA DE VARIABLES ENCONTRADAS EN RELACION DE VARIABLES-->
+                                                        <h:selectOneListbox 
+                                                            id="IdSelectOneListVarFound"
+                                                            value="#{relationshipOfVariablesMB.currentVarFound}" 
+                                                            style="height:100px; width: 280px; ">
+                                                            <f:selectItems value="#{relationshipOfVariablesMB.varsFound}" />                                        
+                                                            <f:selectItem itemLabel=" " itemValue=" " />
+                                                            <f:ajax                                             
+                                                                event="change" 
+                                                                listener="#{relationshipOfVariablesMB.changeVarFound}"                                                                   
+                                                                render="IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat"/>
+                                                        </h:selectOneListbox> 
+                                                    </p:column>
+                                                    <p:column>
+                                                        <!--MUESTRA DE VALORES ENCONTRADOS EN RELACION DE VARIABLES-->
+                                                        <h:selectOneListbox 
+                                                            id="IdSelectOneListValuesFound" 
+                                                            style="height:100px; width: 380px; "
+                                                            disabled="true">
+                                                            <f:selectItems value="#{relationshipOfVariablesMB.valuesFound}"/>							    
+                                                            <f:selectItem itemLabel=" " itemValue=" " />
+                                                        </h:selectOneListbox>
+                                                    </p:column>                                        
+                                                </p:row>
+                                            </p:panelGrid> 
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <p:panelGrid >                            
+                                                <p:row>  
+                                                    <p:column styleClass="ui-widget-header">
+                                                        <p:commandButton 
+                                                            id="IdBtnAssociateRelationVar"                                                             
+                                                            actionListener="#{relationshipOfVariablesMB.btnAssociateVarClick}"
+                                                            value="ASOCIAR" 
+                                                            style="size: 10px;"
+                                                            update="IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListVarRelated IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdExpectedValuesFilter IdFoundValuesFilter"/>
+                                                        <p:commandButton 
+                                                            id="IdBtnRemoveRelationVar" 
+                                                            disabled="#{relationshipOfVariablesMB.btnRemoveRelationVarDisabled}" 
+                                                            actionListener="#{relationshipOfVariablesMB.btnRemoveRelationVarClick}"
+                                                            value="QUITAR RELACION"                                             
+                                                            style="size: 10px;"                                            
+                                                            update="IdSelectOneListValuesDiscarded IdSelectOneListValuesRelated IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdSelectOneListVarRelated"/>
+                                                    </p:column>                                         
+                                                </p:row>  
+                                                <p:row>  
+                                                    <p:column>							
+                                                        <!--LISTA DE VARIABLES RELACIONADAS ACTUALMENTE-->
+                                                        <h:selectOneListbox  
+                                                            value="#{relationshipOfVariablesMB.currentRelatedVars}" 
+                                                            style="height:90px; width: 680px; "
+                                                            id="IdSelectOneListVarRelated" >
+                                                            <f:selectItems value="#{relationshipOfVariablesMB.relatedVars}"/>
+                                                            <f:selectItem itemLabel=" " itemValue=" " />
+                                                            <f:ajax 
+                                                                event="change" 
+                                                                listener="#{relationshipOfVariablesMB.changeRelatedVars}" 
+                                                                render="IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat"/>
+                                                        </h:selectOneListbox> 
+                                                    </p:column>                                         
+                                                </p:row>
+                                            </p:panelGrid>
                                         </td>
                                     </tr>
                                 </table>
@@ -797,7 +796,7 @@
                                             <p:panelGrid >                            
                                                 <p:row>  
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Variables Categóricas Relacionadas"/>  
+                                                        <h:outputLabel value="VARIABLES CATEGORICAS RELACIONADAS"/>  
                                                     </p:column>                                       
                                                 </p:row>  
                                                 <p:row>  
@@ -822,7 +821,7 @@
                                             <p:panelGrid>                            
                                                 <p:row>                                                      
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Valores Descartados"/>  
+                                                        <h:outputLabel value="VALORES DESCARTADOS"/>  
                                                     </p:column>                                         
                                                 </p:row>  
                                                 <p:row>  
@@ -846,7 +845,7 @@
                                                             id="IdBtnRemoveDiscardedValues" 
                                                             disabled="#{relationshipOfValuesMB.btnRemoveDiscardedValuesDisabled}" 
                                                             actionListener="#{relationshipOfValuesMB.btnRemoveDiscardedValuesClick}"
-                                                            value="Quitar de valores descartados" 
+                                                            value="QUITAR DE VALORES DESCARTADOS" 
                                                             style="size: 10px;"
                                                             update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/>
                                                     </p:column>
@@ -860,7 +859,7 @@
                                             <p:panelGrid>                            
                                                 <p:row>  
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Valores esperados   "/>  
+                                                        <h:outputLabel value="VALORES ESPERADOS   "/>  
                                                     </p:column>                                       
                                                     <p:column styleClass="ui-widget-header">
                                                         <h:inputText 
@@ -874,7 +873,7 @@
                                                         </h:inputText>
                                                     </p:column>                                       
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Valores encontrados   "/>  
+                                                        <h:outputLabel value="VALORES ENCONTRADOS   "/>  
                                                     </p:column>                                       
                                                     <p:column styleClass="ui-widget-header">
                                                         <h:inputText 
@@ -894,7 +893,7 @@
                                                         <h:selectOneListbox 
                                                             id="IdSelectOneListValuesExpected2" 
                                                             value="#{relationshipOfValuesMB.currentValueExpected}"
-                                                            style="height:110px; width: 320px; ">
+                                                            style="height:110px; width: 300px; ">
                                                             <f:selectItems value="#{relationshipOfValuesMB.valuesExpected}"/>                                                            
                                                             <f:selectItem itemLabel=" " itemValue=" " />
                                                             <f:ajax 
@@ -909,7 +908,7 @@
 
                                                             id="IdSelectOneListValuesFound2" 
                                                             value="#{relationshipOfValuesMB.valuesFoundSelectedInRelationValues}"
-                                                            style="height:110px; width: 340px;">
+                                                            style="height:110px; width: 360px;">
                                                             <f:selectItems value="#{relationshipOfValuesMB.valuesFound}"/>
                                                             <f:ajax 
                                                                 event="change"                                            
@@ -928,27 +927,27 @@
                                                             id="IdBtnAssociateValues"
                                                             disabled="#{relationshipOfValuesMB.btnAssociateRelationValueDisabled}"  
                                                             actionListener="#{relationshipOfValuesMB.btnAssociateRelationValueClick}"
-                                                            value="Asociar"
+                                                            value="ASOCIAR"
                                                             update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdBtnView"/>
                                                         <p:commandButton 
                                                             id="IdBtnAutomaticRelationValues" 
                                                             disabled="#{relationshipOfValuesMB.btnAutomaticRelationValueDisabled}" 
                                                             actionListener="#{relationshipOfValuesMB.btnAutomaticRelationClick}"
-                                                            value="Automático" 
+                                                            value="AUTOMATICO" 
                                                             style="size: 10px;"
                                                             update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdBtnView"/> 
                                                         <p:commandButton 
                                                             id="IdBtnDiscardValue" 
                                                             disabled="#{relationshipOfValuesMB.btnDiscardValueDisabled}" 
                                                             actionListener="#{relationshipOfValuesMB.btnDiscardValueClick}"
-                                                            value="Descartar" 
+                                                            value="DESCARTAR" 
                                                             style="size: 10px;"
                                                             update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdBtnView"/> 
                                                         <p:commandButton 
                                                             id="IdBtnView" 
                                                             disabled="#{relationshipOfValuesMB.btnViewValueDisabled}"                                                             
                                                             onclick="seeCoincidentsDialog.hide(); seeCoincidentsDialog.show();"
-                                                            value="Ver" 
+                                                            value="VER" 
                                                             style="size: 10px;"
                                                             update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/> 
                                                     </p:column>  
@@ -961,7 +960,7 @@
                                             <p:panelGrid>                            
                                                 <p:row>  
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="Valores relacionados"/>  
+                                                        <h:outputLabel value="VALORES RELACIONADOS"/>  
                                                     </p:column>                                                                                                                                
                                                 </p:row>  
                                                 <p:row>  
@@ -969,7 +968,7 @@
                                                         <!--LISTA DE VALORES RELACIONADOS-->
                                                         <h:selectManyMenu  
                                                             id="IdSelectOneListValuesRelated" 
-                                                            style="height:120px; width: 687px;"
+                                                            style="height:120px; width: 680px;"
                                                             value="#{relationshipOfValuesMB.valuesRelatedSelectedInRelationValues}">
                                                             <f:selectItems value="#{relationshipOfValuesMB.valuesRelated}"/>
                                                             <f:ajax 
@@ -985,7 +984,7 @@
                                                             id="IdBtnRemoveRelationValues" 
                                                             disabled="#{relationshipOfValuesMB.btnRemoveRelationValueDisabled}" 
                                                             actionListener="#{relationshipOfValuesMB.btnRemoveRelationValueClick}"
-                                                            value="Eliminar Relacion"
+                                                            value="ELIMINAR RELACION"
                                                             style="size: 10px;"
                                                             update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues"/>
                                                     </p:column>                                                                                                                                
@@ -1005,15 +1004,15 @@
                                             <p:panelGrid >
                                                 <p:row>
                                                     <p:column colspan="2" styleClass="ui-widget-header">
-                                                        <h:outputText value="CONFIGURACIONES GUARDADAS"/>
+                                                        <h:outputText value="CONJUNTOS DE RELACIONES GUARDADOS"/>
                                                     </p:column>                                        
                                                 </p:row>
                                                 <p:row>
-                                                    <p:column>
+                                                    <p:column colspan="2">
                                                         <!--LISTA DE GRUPOS DE RELACIONES ALMACENADAS-->
                                                         <p:selectOneListbox 
                                                             id="IdSelectOneListRelationGroups" 
-                                                            style="height:100px; width: 300px; "
+                                                            style="height:100px; width: 620px; "
                                                             value="#{storedRelationsMB.currentRelationGroupName}">
                                                             <f:selectItems value="#{storedRelationsMB.relationGroups}"/>                                    
                                                             <f:ajax 
@@ -1024,68 +1023,37 @@
                                                     </p:column>                                        
                                                 </p:row>
                                                 <p:row>
-                                                    <p:column colspan="2" styleClass="ui-widget-header">
+                                                    <p:column styleClass="ui-widget-header">
                                                         <p:commandButton  
                                                             id="IdBtnLoadConfiguration"
-                                                            value="Cargar Relaciones"                                         
+                                                            value="CARGAR CONJUNTO"                                         
                                                             style="margin:0;"
                                                             disabled="#{storedRelationsMB.btnLoadConfigurationDisabled}"
                                                             onclick="openDialog.show()"    
                                                             update=":IdForm:message"/>                                                        
                                                         <p:commandButton
                                                             id="IdBtnRemoveConfiguration"
-                                                            value="Eliminar Relaciones"
+                                                            value="ELIMINAR CONJUNTO"
                                                             disabled="#{storedRelationsMB.btnRemoveConfigurationDisabled}"                                                            
                                                             style="margin:0;"
                                                             onclick="removeDialog.show()"/>                                                         
-                                                    </p:column>                                        
-                                                </p:row>
-                                            </p:panelGrid>
-                                        </td>
-                                        <td style="vertical-align: top; padding-left: 20px;">
-                                            <!--GUARDAR CONFIGURACION-->
-                                            <p:panelGrid >
-                                                <p:row>
-                                                    <p:column colspan="2" styleClass="ui-widget-header">
-                                                        <h:outputText value="GUARDAR CONFIGURACION"/>
-                                                    </p:column>                                        
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column>
-                                                        <h:outputText  value="Nombre: "/>
-                                                        <p:inputText
-                                                            id="IdrelationGroupName"
-                                                            style="width: 200px;" 
-                                                            value="#{storedRelationsMB.newConfigurationName}">
-                                                            <f:ajax 
-                                                                event="keyup"                                                                                                            
-                                                                render=":IdForm:message IdBtnSaveConfiguration"/>
-                                                        </p:inputText>
-
-                                                    </p:column>                                        
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column colspan="2" styleClass="ui-widget-header">
                                                         <p:commandButton
-                                                            id="IdBtnSaveConfiguration"
-                                                            disabled="#{storedRelationsMB.btnSaveConfigurationDisabled}"
-                                                            value="Guardar"
+                                                            id="IdBtnNewConfiguration"
+                                                            value="GUARDAR RELACIONES ACTUALES"
                                                             style="margin:0;"
-                                                            actionListener="#{storedRelationsMB.btnSaveConfiguration}"
-                                                            update="IdrelationGroupName IdSelectOneListRelationGroups :IdForm:message"/>  
-                                                    </p:column>                                        
+                                                            onclick="newDialog.show()"/>
+                                                    </p:column>                                                                                            
                                                 </p:row>
                                             </p:panelGrid>
                                         </td>
                                     </tr>
                                 </table>
-
                             </p:tab>
                         </p:accordionPanel>
                     </p:tab> 
                     <!--===================================================================================-->
                     <!--======================== SECCION PARA PROCESAR DATOS ==============================-->
-                    <p:tab id="tab4" title="PROCESAMIENTO"> 
+                    <p:tab id="tab4" title="PROCESAMIENTO" disabled="#{uploadFileMB.inactiveTabs}"> 
                         <p:accordionPanel id="IdAccordionPanel4" activeIndex="-1">
 
                             <!--======================== SECCION PARA LA  VALIDACION DE LOS DATOS======================-->
@@ -1123,7 +1091,7 @@
                                         <p:column styleClass="ui-widget-header">
                                             <!-- p:commandButton value="Registrar Datos" type="button" onclick="pbAjax.start();startButton2.disable();" widgetVar="startButton2" / -->  
                                             <p:commandButton 
-                                                value="Iniciar Validación" 
+                                                value="INICIAR VALIDACION" 
                                                 disabled="#{recordDataMB.btnValidateDisabled}"
                                                 actionListener="#{recordDataMB.btnValidateClick}" 
                                                 onclick="pbAjaxValidate.start(); startButton.disable();"  
@@ -1160,8 +1128,8 @@
                                                     </p:column>
                                                 </p:row>
                                                 <p:row>
-                                                    <p:column styleClass="ui-widget-header" > <h:outputText value="Descripción" /> </p:column>
-                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="Valores Aceptados" /> </p:column>
+                                                    <p:column styleClass="ui-widget-header" > <h:outputText value="DESCRIPCION" /> </p:column>
+                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="VALORES ACEPTADOS" /> </p:column>
                                                 </p:row>
                                                 <p:row>
                                                     <p:column> 
@@ -1184,8 +1152,8 @@
                                                     </p:column>
                                                 </p:row>                                                
                                                 <p:row>
-                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="Valor encontrado" /> </p:column>
-                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="Nuevo valor" />      </p:column>
+                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="VALOR ENCONTRADO" /> </p:column>
+                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="NUEVO VALOR" />      </p:column>
                                                 </p:row>
                                                 <p:row>
                                                     <p:column> 
@@ -1208,8 +1176,7 @@
                                                 </p:row>
                                                 <p:row>
                                                     <p:column colspan="2"  styleClass="ui-widget-header" style="text-align: left;">
-
-                                                        <h:outputText value="Formato: " />
+                                                        <h:outputText value="FORMATO: " />
                                                         <p:inputText 
                                                             id="IdSelectDateFormatAccepted"
                                                             value="#{errorsControlMB.currentDateFormatAcepted}" 
@@ -1217,30 +1184,21 @@
                                                         </p:inputText>
                                                         <p:commandButton 
                                                             id="IdBtnSolve" 
-                                                            value="Resolver"
+                                                            value="RESOLVER"
                                                             disabled="#{errorsControlMB.btnSolveDisabled}"
                                                             actionListener="#{errorsControlMB.solveError}"
                                                             update="IdAccordionPanel4:IdValueFound IdAccordionPanel4:IdAcceptedValuesList IdDescription IdAccordionPanel4:IdListErrors IdSizeErrors IdSelectDateFormatAccepted IdNewValue IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve IdHistorialList"/> 
-
                                                         <p:commandButton 
                                                             id="IdBtnDiscardErrorValue" 
-                                                            value="Descartar"
+                                                            value="DESCARTAR"
                                                             disabled="#{errorsControlMB.btnDiscardDisabled}"
                                                             actionListener="#{errorsControlMB.discardError}"
                                                             update="IdAccordionPanel4:IdValueFound IdAccordionPanel4:IdAcceptedValuesList IdDescription IdAccordionPanel4:IdListErrors IdSizeErrors IdSelectDateFormatAccepted IdNewValue IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve IdHistorialList"/> 
-
                                                         <p:commandButton                                                             
                                                             id="IdBtnSeeErrorRecord"
-                                                            value="Ver Registro"
+                                                            value="VER REGISTRO"
                                                             disabled="#{errorsControlMB.btnSeeRecordDisabled}"
-                                                            onclick="seeRecordDialog.hide(); seeRecordDialog.show();"/>                                                         
-
-                                                        <!--p:commandButton 
-                                                           id="IdBtnDeleteErrorRecord" 
-                                                           value="Eliminar Registro"
-                                                           disabled="# {errorsControlMB.btnDeleteRecordDisabled}"
-                                                           actionListener="# {errorsControlMB.deleteErrorRecord}"
-                                                           update="IdAccordionPanel4:IdValueFound IdAccordionPanel4:IdAcceptedValuesList IdDescription IdAccordionPanel4:IdListErrors IdSizeErrors IdSelectDateFormatAccepted IdNewValue IdBtnDeleteErrorRecord IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve IdHistorialList"/-->
+                                                            onclick="seeRecordDialog.hide(); seeRecordDialog.show();"/>
                                                     </p:column>
                                                 </p:row>
                                             </p:panelGrid>  
@@ -1253,7 +1211,7 @@
                                 <p:panelGrid>
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputText value="Listado de cambios : " />
+                                            <h:outputText value="LISTADO DE CAMBIOS : " />
                                         </p:column>
                                     </p:row>
                                     <p:row>
@@ -1282,81 +1240,11 @@
                                                 disabled="#{errorsControlMB.btnUndoDisabled}"
                                                 actionListener="#{errorsControlMB.btnUndoErrorClick}"
                                                 id="IdBtnDeshacer"
-                                                value="Deshacer"
+                                                value="DESHACER"
                                                 update="IdHistorialList :IdForm:message"/>
                                         </p:column></p:row>
                                 </p:panelGrid>
-                            </p:tab>  
-                            <!--========================DUPLICIDAD DE REGISTROS ==============================-->
-                            <!--p:tab id="tab20" title="DETECCION DE REGISTROS DUPLICADOS">                                    
-                                <p:panelGrid style=" width: 500px; margin-top:5px; text-align:left;">
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            REGISTROS DUPLICADOS
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column>
-                                            <br/>
-                                            <h:outputText 
-                                                value="Es común que algunos registros se encuentren registrados dos veces,
-                                                esta seccion permite visualizar aquellos registros con campos similares y 
-                                                permitirle al usuario determinar si es duplicado o no."/>  
-                                            <br/>                                            
-                                            <br/>                                
-                                            <p:dataTable 
-                                                id="IdSearchTable" var="rowX" 
-                                                value="# {duplicateRecordsMB.rowDataTableList}" 
-                                                rowKey="# {rowX.column4}"  
-                                                selection="# {duplicateRecordsMB.selectedRowDataTable}" 
-                                                paginator="true"
-                                                rows="10"
-                                                paginatorPosition="bottom"                                
-                                                scrollable="true"
-                                                scrollWidth="650"                                    
-                                                pageLinks="3"
-                                                selectionMode="single"
-                                                resizableColumns="true">                                
-                                                
-                                                <p:column headerText="IDENTIFICACION" width="140">  
-                                                    # {rowX.column1}  
-                                                </p:column>  
-                                                <p:column headerText="NOMBRES APELLIDOS" width="335">  
-                                                    # {rowX.column2}  
-                                                </p:column>  
-                                                <p:column headerText="CANTIDAD" width="110">  
-                                                    # {rowX.column3}  
-                                                </p:column>  
-                                                <p:column headerText="ID" width="50">  
-                                                    # {rowX.column4}  
-                                                </p:column>  
-                                            </p:dataTable>                            
-                                            <br/>
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            <p:commandButton 
-                                                value="Iniciar deteccion" 
-                                                actionListener="# {duplicateRecordsMB.btnDetectionClick}"
-                                                update="IdSearchTable"/>    
-                                            <p:commandButton 
-                                                value="Resetear" 
-                                                actionListener="# {duplicateRecordsMB.btnResetDetectionClick}"
-                                                update="IdSearchTable"/> 
-                                            <p:commandButton 
-                                                value="Calcular"
-                                                actionListener="# {duplicateRecordsMB.loadDuplicateRecords}"                                                                                
-                                                update=":IdForm2:IdDialogEdit :IdForm2:display :IdForm:message"
-                                                oncomplete="clickIdPaint()"/>  
-                                            <p:commandButton
-                                                id="IdPaint"
-                                                value="Mostrar"                                                
-                                                onclick="dialogEdit.show();"/>
-                                        </p:column>
-                                    </p:row>                                    
-                                </p:panelGrid>
-                            </p:tab -->  
+                            </p:tab>                              
                             <!--======================== SECCION PARA EL REGISTRO DE LA INFORMACION======================-->
                             <p:tab title="REGISTRO DE LA INFORMACION">
                                 <p:panelGrid 
@@ -1389,13 +1277,13 @@
                                         <p:column styleClass="ui-widget-header">
                                             <!-- p:commandButton value="Registrar Datos" type="button" onclick="pbAjax.start();startButton2.disable();" widgetVar="startButton2" / -->  
                                             <p:commandButton 
-                                                value="Registrar Datos" 
+                                                value="REGISTRAR DATOS" 
                                                 disabled="#{recordDataMB.btnRegisterDataDisabled}"
                                                 actionListener="#{recordDataMB.btnRegisterDataClick}" 
                                                 onclick="pbAjax.start(); startButton2.disable();"  
                                                 widgetVar="startButton2" />  
                                             <p:commandButton 
-                                                value="Cancelar" 
+                                                value="CANCELAR" 
                                                 disabled="true"
                                                 actionListener="#{recordDataMB.cancel}" 
                                                 oncomplete="pbAjax.cancel();startButton2.enable();" 
@@ -1433,7 +1321,7 @@
                         </p:dataTable>
                     </div>
                     <p:commandButton                                                                         
-                        value="Cerrar" 
+                        value="CERRAR" 
                         onclick="seeRecordDialog.hide()"/>
                 </p:dialog>
                 <p:dialog 
@@ -1456,83 +1344,13 @@
                         </p:dataTable>
                     </div>
                     <p:commandButton                                                                         
-                        value="Cerrar" 
+                        value="CERRAR" 
                         onclick="seeCoincidentsDialog.hide()"/>
-                </p:dialog>
-                <!--p:dialog 
-                    id="IdDialogEdit" 
-                    header="Comparacion de registros" 
-                    widgetVar="dialogEdit" 
-                    resizable="false"
-                    closable="false"
-                    modal="true" >
-                    <p:panelGrid id="display">
-
-                        <p:row>
-                            <p:column styleClass="ui-widget-header">
-                                REGISTRO BASE
-                            </p:column>
-                        </p:row>                        
-                        <p:row>
-                            <p:column>
-                                <div style="width: 600px;  padding-right: 10px; overflow: scroll; ">
-                                    <p:dataTable 
-                                        value="# {duplicateRecordsMB.dinamicTable1.listOfRecords}" 
-                                        var="listOfRecords"                                        
-                                        id="IdDataTable"
-                                        >
-                                        <p:columns  value="# {duplicateRecordsMB.dinamicTable1.titles}" var="titles" columnIndexVar="index">
-                                            <f:facet name="header" >
-                                                <h:outputText value="# {titles}"/>                                                
-                                            </f:facet>
-                                            <h:outputText value="# {listOfRecords[index]}"/>
-                                        </p:columns>
-                                    </p:dataTable>                                    
-                                </div>
-                            </p:column>
-                        </p:row>
-                        <p:row>
-                            <p:column styleClass="ui-widget-header">
-                                REGISTROS COINCIDENTES
-                            </p:column>
-                        </p:row>                        
-                        <p:row>
-                            <p:column>
-                                <div style="width: 600px;  padding-right: 10px; overflow: scroll; ">
-                                    <p:dataTable 
-                                        value="# {duplicateRecordsMB.dinamicTable2.listOfRecords}" 
-                                        var="listOfRecords"
-                                        id="IdDataTable2">
-                                        <p:columns value="# {duplicateRecordsMB.dinamicTable2.titles}" var="titles" columnIndexVar="index">
-                                            <f:facet name="header">
-                                                <h:outputText value="# {titles}"/>
-                                            </f:facet>
-                                            <h:outputText value="# {listOfRecords[index]}"/>
-                                        </p:columns>
-                                    </p:dataTable>
-                                </div>
-                            </p:column>
-                        </p:row>
-
-                        <p:row>
-                            <p:column styleClass="ui-widget-header">
-                                <p:commandButton                                                                         
-                                    value="Cerrar" 
-                                    actionListener="# {duplicateRecordsMB.btnDetectionClick}"
-                                    update=":IdForm"
-                                    onclick="dialogEdit.hide()"/>
-                                <p:commandButton                                                                         
-                                    value="Editar" />
-                                <p:commandButton                                                                         
-                                    value="Elimnar" />
-                            </p:column>
-                        </p:row>
-                    </p:panelGrid>
-                </p:dialog -->                
+                </p:dialog>                
                 <p:dialog
                     id="IdResetDialog" 
                     modal="true"
-                    header="Reiniciar controles"  
+                    header="REINICIAR CONTROLES"  
                     widgetVar="confirmation"
                     resizable="false"> 
                     <br/>
@@ -1543,19 +1361,20 @@
                     <br/>
                     <br/>                    
                     <p:commandButton                                             
-                        value="Si"                                 
+                        value="CONTINUAR"                                 
                         oncomplete="confirmation.hide();startButton2.enable(); startButton3.enable();" 
-                        actionListener="#{recordDataMB.btnResetClick}" 
+                        actionListener="#{uploadFileMB.btnResetClick}" 
+                        ajax="false"
                         update=":IdForm" /> 
                     <p:commandButton 
-                        value="No" 
+                        value="CANCELAR" 
                         onclick="confirmation.hide()"/>   
 
                 </p:dialog>                
                 <p:dialog 
                     id="IdOpenDialog"                                                             
                     resizable="false"
-                    header="Cargar Configuración?" 
+                    header="CARGAR CONFIGURACION" 
                     widgetVar="openDialog" 
                     modal="true"
                     style="width: 100px; height: 120px;">                                                             
@@ -1567,18 +1386,18 @@
                     <br/>
                     <br/>
                     <p:commandButton                                                                                                                                                         
-                        value="Cargar Configuración" 
+                        value="CONTINUAR" 
                         actionListener="#{storedRelationsMB.btnLoadConfigurationClick}"
                         onclick="openDialog.hide()"
-                        update=":IdForm:IdTabView :IdForm:message"/>   
+                        update=":IdForm:IdTabView:IdAccordionPanel :IdForm:message"/>   
                     <p:commandButton                                                                         
-                        value="Cancelar" 
+                        value="CANCELAR" 
                         onclick="openDialog.hide()"/> 
                 </p:dialog>
                 <p:dialog
                     id="IdRemoveDialog"  
                     modal="true"
-                    header="Confirmar la eliminación"                                     
+                    header="CONFIRMAR ELIMINACION"                                     
                     widgetVar="removeDialog">  
                     <br/>
                     <p:inputTextarea 
@@ -1591,13 +1410,54 @@
                         id="confirm"
                         oncomplete="removeDialog.hide()"
                         actionListener="#{storedRelationsMB.btnRemoveConfigurationConfirmationClick}"
-                        value="Aceptar"
-                        update=":IdForm:message :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListRelationGroups"/>   
+                        value="CONTINUAR"
+                        update=":IdForm:message :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListRelationGroups :IdForm:IdTabView:IdAccordionPanel:IdBtnRemoveConfiguration :IdForm:IdTabView:IdAccordionPanel:IdBtnLoadConfiguration"/>   
                     <p:commandButton 
                         id="decline"
-                        value="Cancelar" 
+                        value="CANCELAR" 
                         onclick="removeDialog.hide()"
                         type="button"/>   
+                </p:dialog>
+                <p:dialog
+                    id="IdNewDialog"  
+                    modal="true"
+                    header="NUEVA CONFIGURACION"         
+                    resizable="false"                    
+                    widgetVar="newDialog">  
+                    <p:panelGrid>
+                        <p:row>
+                            <p:column>
+                                Nombre:
+                            </p:column>
+                            <p:column>
+                                <p:inputText
+                                    id="IdrelationGroupName"
+                                    style="width: 200px;" 
+                                    value="#{storedRelationsMB.newConfigurationName}">
+                                    <f:ajax 
+                                        event="keyup"                                                                                                            
+                                        render=":IdForm:message IdBtnSaveConfiguration"/>
+                                </p:inputText>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column colspan="2">
+                                <p:commandButton
+                                    id="IdBtnSaveConfiguration"
+                                    disabled="#{storedRelationsMB.btnSaveConfigurationDisabled}"
+                                    value="CONTINUAR"
+                                    style="margin:0;"
+                                    actionListener="#{storedRelationsMB.btnSaveConfiguration}"
+                                    onclick="newDialog.hide()"
+                                    update=":IdForm:IdTabView:IdAccordionPanel:IdSelectOneListRelationGroups :IdForm:message"/>  
+                                <p:commandButton 
+                                    id="declineNew"
+                                    value="CANCELAR" 
+                                    onclick="newDialog.hide()"
+                                    type="button"/>   
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>                    
                 </p:dialog>
             </h:form>
         </ui:define>
