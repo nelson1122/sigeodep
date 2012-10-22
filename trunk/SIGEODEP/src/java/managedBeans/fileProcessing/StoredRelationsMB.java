@@ -24,7 +24,7 @@ import model.pojo.*;
  */
 @ManagedBean(name = "storedRelationsMB")
 @SessionScoped
-public class StoredRelationsMB implements Serializable{
+public class StoredRelationsMB implements Serializable {
 
     private String currentRelationGroupName;
     private List<String> relationGroups;
@@ -47,7 +47,6 @@ public class StoredRelationsMB implements Serializable{
     RelationValuesFacade relationValuesFacade;
     @EJB
     RelationsDiscardedValuesFacade relationDiscardedValuesFacade;
-    
     private UploadFileMB uploadFileMB;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private RelationsGroup currentRelationsGroup;//grupo de relaciones actual
@@ -59,6 +58,11 @@ public class StoredRelationsMB implements Serializable{
     }
 
     public void reset() {
+        currentRelationGroupName = "";
+        newConfigurationName = "";
+        btnSaveConfigurationDisabled = true;
+        btnLoadConfigurationDisabled = true;
+        btnRemoveConfigurationDisabled = true;
     }
 
     public String btnSaveConfiguration() {
@@ -67,7 +71,6 @@ public class StoredRelationsMB implements Serializable{
             FacesContext.getCurrentInstance().addMessage(null, msg);
             return "";
         }
-
         if (currentRelationsGroup != null) {
             List<RelationVar> relationVarList = currentRelationsGroup.getRelationVarList();
             if (relationVarList.isEmpty()) {
@@ -103,129 +106,135 @@ public class StoredRelationsMB implements Serializable{
     public void btnLoadConfigurationClick() {
         //se prueba que las relacion que se este abriendo corresponda a las variables encontradas
         //y variables esperadas
-        RelationGroup selectRelationGroup = relationGroupFacade.findByName(currentRelationGroupName);
-        List<RelationVariables> relationVariablesList = relationVariablesFacade.findByRelationGroup(selectRelationGroup.getIdRelationGroup());
-        List<RelationValues> relationValuesList;
-        currentRelationsGroup = new RelationsGroup(
-                selectRelationGroup.getNameRelationGroup(),
-                selectRelationGroup.getFormId().getFormId(),
-                selectRelationGroup.getSourceId().toString());
-        
-        List<String> varsExpected = uploadFileMB.getVariablesExpected();//variables esperadas
-        List<String> varsFound = uploadFileMB.getVariablesFound();
-        List<String> varsNotFound = new ArrayList<String>();//listado de variables encontradas que no aparecen
-        List<String> varsNotExpected = new ArrayList<String>();//listado de variables esperadas que no aparecen  
-        boolean exist;
-        for (int i = 0; i < relationVariablesList.size(); i++) {            
-            //determino si existen las variables esperadas y encontradas            
-            exist=false;
-            //int esta=varsExpected.indexOf(relationVariablesList.get(i).getNameExpected());
-            //System.out.println("En variables esperadas el valor"+ relationVariablesList.get(i).getNameExpected()+", ESTA= "+String.valueOf(esta));
-            for (int j = 0; j < varsExpected.size(); j++) {
-                if(varsExpected.get(j).compareTo(relationVariablesList.get(i).getNameExpected())==0){
-                    exist=true;
-                    break;
+        if (currentRelationGroupName.trim().length() != 0) {
+            RelationGroup selectRelationGroup = relationGroupFacade.findByName(currentRelationGroupName);
+            List<RelationVariables> relationVariablesList = relationVariablesFacade.findByRelationGroup(selectRelationGroup.getIdRelationGroup());
+            List<RelationValues> relationValuesList;
+            currentRelationsGroup = new RelationsGroup(
+                    selectRelationGroup.getNameRelationGroup(),
+                    selectRelationGroup.getFormId().getFormId(),
+                    selectRelationGroup.getSourceId().toString());
+
+            List<String> varsExpected = uploadFileMB.getVariablesExpected();//variables esperadas
+            List<String> varsFound = uploadFileMB.getVariablesFound();
+
+            List<String> varsNotFound;//listado de variables encontradas que no aparecen
+            List<String> varsNotExpected;//listado de variables esperadas que no aparecen  
+            boolean exist;
+            int countNotFound = 0;//cuento cuantas relaciones no pueden ser cargadas
+            int countFound = 0;//cuento cuantas relaciones pueden ser cargadas        
+            for (int i = 0; i < relationVariablesList.size(); i++) {
+
+                varsNotFound = new ArrayList<String>();//listado de variables encontradas que no aparecen
+                varsNotExpected = new ArrayList<String>();//listado de variables esperadas que no aparecen  
+
+                //determino si existen las variables esperadas y encontradas            
+                exist = false;
+                for (int j = 0; j < varsExpected.size(); j++) {
+                    if (varsExpected.get(j).compareTo(relationVariablesList.get(i).getNameExpected()) == 0) {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (!exist) {//existe el nombre de la variable encontrada
+                    varsNotFound.add(relationVariablesList.get(i).getNameExpected());
+                }
+                exist = false;
+                for (int j = 0; j < varsFound.size(); j++) {
+                    if (varsFound.get(j).compareTo(relationVariablesList.get(i).getNameFound()) == 0) {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (!exist) {//existe el nombre de la variable esperada
+                    varsNotExpected.add(relationVariablesList.get(i).getNameFound());
+                }
+                if (varsNotFound.isEmpty() && varsNotExpected.isEmpty())//si existe el nombre de variable esperada y nombre de variable encontrada
+                {
+
+
+                    RelationVar newRelationVar = new RelationVar(
+                            relationVariablesList.get(i).getNameExpected(),
+                            relationVariablesList.get(i).getNameFound(),
+                            relationVariablesList.get(i).getFieldType(),
+                            relationVariablesList.get(i).getComparisonForCode(),
+                            relationVariablesList.get(i).getDateFormat());
+                    //cargo los valores descartados
+                    ArrayList<String> discardedValues = new ArrayList<String>();
+                    if (relationVariablesList.get(i).getRelationsDiscardedValuesList() != null) {
+                        for (int j = 0; j < relationVariablesList.get(i).getRelationsDiscardedValuesList().size(); j++) {
+                            discardedValues.add(relationVariablesList.get(i).getRelationsDiscardedValuesList().get(j).getDiscardedValueName());
+                        }
+                    }
+
+                    newRelationVar.setDiscardedValues(discardedValues);
+                    currentRelationsGroup.addRelationVar(newRelationVar);
+                    relationValuesList = relationValuesFacade.findByRelationVariables(relationVariablesList.get(i).getIdRelationVariables());
+                    for (int j = 0; j < relationValuesList.size(); j++) {
+                        newRelationVar.addRelationValue(
+                                relationValuesList.get(j).getNameExpected(),
+                                relationValuesList.get(j).getNameFound());
+                    }
+                    countFound++;//relacion fue cargada
+                } else {
+                    countNotFound++;//esta relacion de variables no pudo ser cargada
                 }
             }
-            if(!exist){
-                varsNotFound.add(relationVariablesList.get(i).getNameExpected());
-            }            
-            exist=false;
-            for (int j = 0; j < varsFound.size(); j++) {
-                if(varsFound.get(j).compareTo(relationVariablesList.get(i).getNameFound())==0){
-                    exist=true;
-                    break;
-                }
+            //recargo los controles de relacion de variables
+            relationshipOfVariablesMB.reset();
+
+            relationshipOfVariablesMB.setCurrentRelationsGroup(currentRelationsGroup);
+            relationshipOfVariablesMB.loadRelatedVars();
+            relationshipOfVariablesMB.loadVarsExpectedAndFound();
+            relationshipOfVariablesMB.setValuesExpected(new ArrayList<String>());
+            relationshipOfVariablesMB.setValuesFound(new ArrayList<String>());
+
+
+            String result = "";
+            exist = false;
+            if (countNotFound == 0) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "El grupo de relaciones (" + currentRelationGroupName + ") se ha cargado satisfactoriamente"));
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Advertencia!!", "Relaciones cargadas: (" + String.valueOf(countFound) + "). Relaciones que no pudieron ser cargadas (" + String.valueOf(countNotFound) + ")."));
             }
-            if(!exist){
-                varsNotExpected.add(relationVariablesList.get(i).getNameFound());
-            }
-            
-            RelationVar newRelationVar = new RelationVar(
-                    relationVariablesList.get(i).getNameExpected(),
-                    relationVariablesList.get(i).getNameFound(),
-                    relationVariablesList.get(i).getFieldType(),
-                    relationVariablesList.get(i).getComparisonForCode(),
-                    relationVariablesList.get(i).getDateFormat());
-            //cargo los valores descartados
-            ArrayList<String> discardedValues=new ArrayList<String>();
-            if(relationVariablesList.get(i).getRelationsDiscardedValuesList()!=null){
-                for (int j = 0; j < relationVariablesList.get(i).getRelationsDiscardedValuesList().size(); j++) {
-                    discardedValues.add(relationVariablesList.get(i).getRelationsDiscardedValuesList().get(j).getDiscardedValueName());
-                }                
-            }
-            newRelationVar.setDiscardedValues(discardedValues);
-            
-            currentRelationsGroup.addRelationVar(newRelationVar);
-            relationValuesList = relationValuesFacade.findByRelationVariables(relationVariablesList.get(i).getIdRelationVariables());
-            for (int j = 0; j < relationValuesList.size(); j++) {
-                newRelationVar.addRelationValue(
-                        relationValuesList.get(j).getNameExpected(),
-                        relationValuesList.get(j).getNameFound());
-            }           
-        }
-        //recargo los controles de relacion de variables
-        relationshipOfVariablesMB.setCurrentRelationsGroup(currentRelationsGroup);
-        relationshipOfVariablesMB.loadRelatedVars();
-        relationshipOfVariablesMB.loadVarsExpectedAndFound();
-        relationshipOfVariablesMB.setValuesExpected(new ArrayList<String>());
-        relationshipOfVariablesMB.setValuesFound(new ArrayList<String>());
-        
-        String result="";
-        exist=false;
-        if(!varsNotExpected.isEmpty()){
-            //result=" VARIABLES ESPERADAS QUE NO COINCIDEN: ";
-            for (int i = 0; i < varsNotExpected.size(); i++) {
-                result=result+" "+String.valueOf(i)+". "+varsNotExpected.get(i)+" ";
-            }
-            exist=true;
-        }
-        if(!varsNotFound.isEmpty()){
-            //result=" VARIABLES ENCONTRADAS QUE NO COINCIDEN: ";
-            for (int i = 0; i < varsNotFound.size(); i++) {
-                result=result+" "+String.valueOf(i)+". "+varsNotExpected.get(i)+" ";
-            }
-            exist=true;
-        }
-        if(!exist){
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "El grupo de relaciones" + currentRelationGroupName + ") se ha cargado satisfactoriamente"));
-        }
-        else{
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,"Advertencia!!", "El grupo de relaciones se ha cargado, pero existen variables que no coinciden: "+result));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Advertencia!!", "Debe seleccionar un grupo de relaciones de la lista"));
         }
     }
 
     public void btnRemoveConfigurationConfirmationClick() {
-        try {
+        if (currentRelationGroupName.trim().length() != 0) {
+            try {
+                RelationGroup selectRelationGroup = relationGroupFacade.findByName(currentRelationGroupName);
+                List<RelationVariables> relationVariablesList = selectRelationGroup.getRelationVariablesList();
+                for (int i = 0; i < relationVariablesList.size(); i++) {
+                    List<RelationsDiscardedValues> relationDiscardedValuesList = relationVariablesList.get(i).getRelationsDiscardedValuesList();
+                    for (int j = 0; j < relationDiscardedValuesList.size(); j++) {
+                        relationDiscardedValuesFacade.remove(relationDiscardedValuesList.get(j));
+                    }
+                    relationVariablesList.get(i).setRelationsDiscardedValuesList(null);
 
+                    List<RelationValues> relationValuesList = relationVariablesList.get(i).getRelationValuesList();
+                    for (int j = 0; j < relationValuesList.size(); j++) {
+                        relationValuesFacade.remove(relationValuesList.get(j));
+                    }
+                    //relationVariablesFacade.findAll();
+                    relationVariablesList.get(i).setRelationValuesList(null);
+                    relationVariablesFacade.remove(relationVariablesList.get(i));
+                }
+                //relationGroupFacade.findAll();
+                selectRelationGroup.setRelationVariablesList(null);
+                relationGroupFacade.remove(selectRelationGroup);
 
-            RelationGroup selectRelationGroup = relationGroupFacade.findByName(currentRelationGroupName);
-            List<RelationVariables> relationVariablesList = selectRelationGroup.getRelationVariablesList();            
-            for (int i = 0; i < relationVariablesList.size(); i++) {
-                List<RelationsDiscardedValues> relationDiscardedValuesList = relationVariablesList.get(i).getRelationsDiscardedValuesList();
-                for (int j = 0; j < relationDiscardedValuesList.size(); j++) {
-                    relationDiscardedValuesFacade.remove(relationDiscardedValuesList.get(j));
-                }                              
-                relationVariablesList.get(i).setRelationsDiscardedValuesList(null);
-                
-                List<RelationValues> relationValuesList = relationVariablesList.get(i).getRelationValuesList();
-                for (int j = 0; j < relationValuesList.size(); j++) {
-                    relationValuesFacade.remove(relationValuesList.get(j));
-                }              
-                //relationVariablesFacade.findAll();
-                relationVariablesList.get(i).setRelationValuesList(null);
-                relationVariablesFacade.remove(relationVariablesList.get(i));
+                loadRelatedGroups();
+                btnLoadConfigurationDisabled = true;
+                btnRemoveConfigurationDisabled = true;
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "grupo de relaciones eliminado"));
+            } catch (Exception e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error", e.toString()));
             }
-            //relationGroupFacade.findAll();
-            selectRelationGroup.setRelationVariablesList(null);
-            relationGroupFacade.remove(selectRelationGroup);
-
-            loadRelatedGroups();
-            btnLoadConfigurationDisabled = true;
-            btnRemoveConfigurationDisabled = true;
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "grupo de relaciones eliminado"));
-        } catch (Exception e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error", e.toString()));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Advertencia!!", "Debe seleccionar un grupo de relaciones de la lista"));
         }
     }
 
@@ -247,7 +256,7 @@ public class StoredRelationsMB implements Serializable{
 
         newRelationGroup.setSourceId(selectedSource.getSourceId());
         newRelationGroup.setNameRelationGroup(newConfigurationName);
-        newRelationGroup.setIdRelationGroup(idRelationGroup+1);
+        newRelationGroup.setIdRelationGroup(idRelationGroup + 1);
         newRelationGroup.setFormId(selectedForm);
         //persiste correctamente
         relationGroupFacade.create(newRelationGroup);//persistir en la tabla relation_group
@@ -282,13 +291,13 @@ public class StoredRelationsMB implements Serializable{
                 //aqui es donde no quiere persistir
                 relationValuesFacade.create(newRelationValues);//persisto el objeto
             }
-            relationDiscartedValuesList= relationVarList.get(i).getDiscardedValues();
+            relationDiscartedValuesList = relationVarList.get(i).getDiscardedValues();
             for (int j = 0; j < relationDiscartedValuesList.size(); j++) {//recorrer lista de valores
                 idRelationDiscarded++;//por prueba
                 RelationsDiscardedValues newRelationDiscardedValues = new RelationsDiscardedValues();
                 newRelationDiscardedValues.setDiscardedValueName(relationDiscartedValuesList.get(j));
                 newRelationDiscardedValues.setIdRelationVariables(newRelationVariables);
-                newRelationDiscardedValues.setIdDiscardedValue(idRelationDiscarded);                
+                newRelationDiscardedValues.setIdDiscardedValue(idRelationDiscarded);
                 relationDiscardedValuesFacade.create(newRelationDiscardedValues);//persisto el objeto
             }
         }

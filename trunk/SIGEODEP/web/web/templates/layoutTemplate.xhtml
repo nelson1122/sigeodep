@@ -7,6 +7,7 @@
     <f:view contentType="text/html">
         <h:head> 
             <link rel="shortcut icon" href="../../resources/img/icon.gif"/>
+            
             <meta 
                 http-equiv="Content-Type" 
                 content="text/html; charset=UTF-8" />
@@ -45,7 +46,7 @@
 
                         <p:idleMonitor timeout="600000">
 
-                            <p:ajax event="active" listener="#{loginMB.resetLogout}"/>
+                            <p:ajax event="active" listener="#{loginMB.logout1}"/>
                         </p:idleMonitor>
 
                         <p:commandButton 
@@ -57,6 +58,7 @@
                         <br/><br/>
                         <p:graphicImage value="../../resources/img/logo2.png"/>
                         <br/><br/>
+                        <!--p:graphicImage value="# {loginMB.chartImage}" /-->
 
 
 

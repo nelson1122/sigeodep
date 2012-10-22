@@ -280,6 +280,8 @@ public class RecordDataMB implements Serializable {
                 + " registros, para finalizar guarde si lo desea la configuración de relaciones actual o reinicie para realizar la carga de registros de otro archivo"));
     }
 
+    
+
     public void onCompleteValidate() {
         if (errorsNumber != 0) {
             btnRegisterDataDisabled = true;
@@ -308,18 +310,8 @@ public class RecordDataMB implements Serializable {
         /*
          * Cargar el formulario con los valores iniciales
          */
-        btnRegisterDataDisabled=true;
-        btnValidateDisabled=true;
-    }
-
-    public void btnResetClick() {
-        /*
-         * click sobre el boton reset
-         */
-        progress = 0;
-        progressValidate = 0;
-        loginMB.reset();
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Se han reinicidado los controles"));
+        btnRegisterDataDisabled = true;
+        btnValidateDisabled = true;
     }
 
     private boolean relationshipsRequired() {
@@ -333,14 +325,14 @@ public class RecordDataMB implements Serializable {
             case SCC_F_030:
             case SCC_F_031:
                 //RELACION PARA FECHA DE EVENTO
-                if (currentRelationsGroup.findRelationVar("fechah") == null) {
-                    if (currentRelationsGroup.findRelationVar("dia") == null) {
+                if (currentRelationsGroup.findRelationVar2("fechah") == null) {
+                    if (currentRelationsGroup.findRelationVar2("dia") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar("mes") == null) {
+                    if (currentRelationsGroup.findRelationVar2("mes") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar("ao") == null) {
+                    if (currentRelationsGroup.findRelationVar2("ao") == null) {
                         noErrors = false;
                     }
                 }
@@ -349,7 +341,7 @@ public class RecordDataMB implements Serializable {
                     errorsNumber++;
                 }
                 //RELACION PARA TIPO DE IDENTIFICACION                
-                if (currentRelationsGroup.findRelationVar("nid") == null) {
+                if (currentRelationsGroup.findRelationVar2("nid") == null) {
                     noErrors = false;
                     errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la identificacion de la víctima", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (nid)"));
                     errorsNumber++;
@@ -357,14 +349,14 @@ public class RecordDataMB implements Serializable {
                 break;
             case SCC_F_033:
                 //RELACION PARA FECHA DE EVENTO
-                if (currentRelationsGroup.findRelationVar("fecha1") == null) {
-                    if (currentRelationsGroup.findRelationVar("fecha") == null) {
+                if (currentRelationsGroup.findRelationVar2("fecha1") == null) {
+                    if (currentRelationsGroup.findRelationVar2("fecha") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar("mes") == null) {
+                    if (currentRelationsGroup.findRelationVar2("mes") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar("ao") == null) {
+                    if (currentRelationsGroup.findRelationVar2("ao") == null) {
                         noErrors = false;
                     }
                 }
@@ -374,7 +366,7 @@ public class RecordDataMB implements Serializable {
                 }
 
                 //RELACION PARA NUMERO DE IDENTIFICACION                
-                if (currentRelationsGroup.findRelationVar("numero") == null) {
+                if (currentRelationsGroup.findRelationVar2("numero") == null) {
                     noErrors = false;
                     errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la identificacion de la víctima", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (numero)"));
                     errorsNumber++;
@@ -383,14 +375,14 @@ public class RecordDataMB implements Serializable {
 
             case SCC_F_032:
                 //RELACION PARA FECHA DE EVENTO
-                if (currentRelationsGroup.findRelationVar("fechaev") == null) {
-                    if (currentRelationsGroup.findRelationVar("dia") == null) {
+                if (currentRelationsGroup.findRelationVar2("fechaev") == null) {
+                    if (currentRelationsGroup.findRelationVar2("dia") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar("mes") == null) {
+                    if (currentRelationsGroup.findRelationVar2("mes") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar("ao") == null) {
+                    if (currentRelationsGroup.findRelationVar2("ao") == null) {
                         noErrors = false;
                     }
                 }
@@ -399,14 +391,14 @@ public class RecordDataMB implements Serializable {
                     errorsNumber++;
                 }
                 //RELACION PARA LA INTENCIONALIDAD
-                if (currentRelationsGroup.findRelationVar("intenci") == null) {
+                if (currentRelationsGroup.findRelationVar2("intenci") == null) {
                     noErrors = false;
                     errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la intencionalidad", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (intenci)"));
                     errorsNumber++;
                 }
 
                 //RELACION PARA NUMERO DE IDENTIFICACION                
-                if (currentRelationsGroup.findRelationVar("nid") == null) {
+                if (currentRelationsGroup.findRelationVar2("nid") == null) {
                     noErrors = false;
                     errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la identificacion de la víctima", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (nid)"));
                     errorsNumber++;
@@ -468,6 +460,9 @@ public class RecordDataMB implements Serializable {
                     mes1 = "";
                     ao1 = "";
                     intencionality = "";
+//                    if(currentNumberOfRow==27){
+//                        intencionality = "";
+//                    }
 
                     for (int i = 0; i < columnsNames.length; i++) {//recorro cada una de las columnas de cada registro                    
                         relationVar = currentRelationsGroup.findRelationVar(columnsNames[i]);//determino la relacion de variables
@@ -619,6 +614,7 @@ public class RecordDataMB implements Serializable {
                             }
                         }
                     }
+
                     switch (FormsEnum.convert(nameForm.replace("-", "_"))) {//tipo de relacion                        
                         case SCC_F_028:
                         case SCC_F_029:
@@ -626,7 +622,7 @@ public class RecordDataMB implements Serializable {
                         case SCC_F_031:
                             //DETERMINAR FECHA DE EVENTO                                
                             if (existDateEvent == false) {//no se puede determinar la fecha
-                                relationVar = currentRelationsGroup.findRelationVar("fechah");//determino la relacion de variables
+                                relationVar = currentRelationsGroup.findRelationVar2("fechah");//determino la relacion de variables
                                 errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "fechah"));
                                 errorsNumber++;
                             }
@@ -634,19 +630,20 @@ public class RecordDataMB implements Serializable {
                         case SCC_F_032:
                             //RELACION PARA LA INTENCIONALIDAD
                             if (intencionality == null) {
-                                relationVar = currentRelationsGroup.findRelationVar("intenci");//determino la relacion de variables
-                                errorsControlMB.addError(new ErrorControl(relationVar, "NO DETERMINADO", String.valueOf(currentNumberOfRow), "intencionalidad"));
+                                relationVar = currentRelationsGroup.findRelationVar2("intenci");//determino la relacion de variables
+                                errorsControlMB.addError(new ErrorControl(relationVar, " ", String.valueOf(currentNumberOfRow), "intencionalidad"));
                                 errorsNumber++;
                             }
                         case SCC_F_033:
                             //DETERMINAR FECHA DE EVENTO                                
                             if (existDateEvent == false) {//no se puede determinar la fecha
-                                relationVar = currentRelationsGroup.findRelationVar("fechacon");//determino la relacion de variables
+                                relationVar = currentRelationsGroup.findRelationVar2("fechacon");//determino la relacion de variables
                                 errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "fechacon"));
                                 errorsNumber++;
                             }
                             break;
                     }
+
                     //..........................................................
                     currentNumberOfRow++;
                     tuplesProcessed++;
@@ -1173,7 +1170,7 @@ public class RecordDataMB implements Serializable {
                 newFatalInjuryTraffic = new FatalInjuryTraffic();
                 newFatalInjuryTraffic.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
-                
+
                 newFatalInjurie.setInjuryId(injuriesFacade.find((short) 12));//es 12 por ser suicidio
                 serviceTypesList = new ArrayList<CounterpartServiceType>();
                 involvedVehiclesList = new ArrayList<CounterpartInvolvedVehicle>();

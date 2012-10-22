@@ -4,6 +4,8 @@
  */
 package managedBeans.login;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -17,6 +19,13 @@ import managedBeans.fileProcessing.*;
 import managedBeans.preload.FormsAndFieldsDataMB;
 import model.dao.UsersFacade;
 import model.pojo.Users;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -32,8 +41,27 @@ public class LoginMB implements Serializable {
     private String userName = "";
     private String userJob = "";
     private Users currentUser;
-    
-    private int countLogout=0;//si este valor llega a 10 se finaliza la sesion
+    //funciones para crear un chart--------------------------
+    private StreamedContent chartImage;
+
+    private PieDataset createDataset() {
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        dataset.setValue("Dato A", new Double(45.0));
+        dataset.setValue("Dato B", new Double(15.0));
+        dataset.setValue("Dato C", new Double(25.2));
+        dataset.setValue("Daro E", new Double(14.8));
+        return dataset;
+    }
+
+    public StreamedContent getChartImage() {
+        return chartImage;
+    }
+
+    public void setChartImage(StreamedContent chartImage) {
+        this.chartImage = chartImage;
+    }
+    //---------------------------------------------------------
+    private int countLogout = 0;//si este valor llega a 10 se finaliza la sesion
     FacesContext context;
     FormsAndFieldsDataMB formsAndFieldsDataMB;
     UploadFileMB uploadFileMB;
@@ -42,10 +70,8 @@ public class LoginMB implements Serializable {
     StoredRelationsMB storedRelationsMB;
     RecordDataMB recordDataMB;
     ErrorsControlMB errorsControlMB;
-    
     @EJB
     UsersFacade usersFacade;
-    
     //LcenfMB lcenfMB;
     //AccidentalMB accidentalMB;
     //HomicideMB homicideMB;
@@ -73,39 +99,40 @@ public class LoginMB implements Serializable {
         progress = null;
     }
     //progreso de carga de la aplicacion***********************************    
-   
-    
-    public void countLogout() {
+
+    public void logout1() {
         /*
          * incrementa un contador antes de salir
          */
-        countLogout=countLogout+1;
-        System.out.println("Contador Logout: "+String.valueOf(countLogout));
-        if(countLogout>10){
-            ExternalContext ctx =  FacesContext.getCurrentInstance().getExternalContext();
+        //countLogout = countLogout + 1;
+        //System.out.println("Contador Logout: " + String.valueOf(countLogout));
+        //if (countLogout > 10) {
+            ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
             String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
             try {
                 ((HttpSession) ctx.getSession(false)).invalidate();
                 ctx.redirect(ctxPath + "/index.html?v=XX");
                 System.out.println("FINALIZA LA SESION");
             } catch (Exception ex) {
-                System.out.println("Exepcion cerrando sesion: "+ex.toString());
+                System.out.println("Exepcion cerrando sesion: " + ex.toString());
             }
-        }
+        //}
     }
-    public void resetLogout(){
-        countLogout=1;
-        System.out.println("Contador reseteado: "+String.valueOf(countLogout));
-    }
+
+    //public void resetLogout() {
+    //    countLogout = 1;
+    //    System.out.println("Contador reseteado: " + String.valueOf(countLogout));
+    //}
+
     public void logout2() {
-        ExternalContext ctx =  FacesContext.getCurrentInstance().getExternalContext();
+        ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
         String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
         try {
             ((HttpSession) ctx.getSession(false)).invalidate();
             ctx.redirect(ctxPath + "/index.html");
             System.out.println("FINALIZA LA SESION");
         } catch (Exception ex) {
-            System.out.println("Exepcion cerrando sesion: "+ex.toString());
+            System.out.println("Exepcion cerrando sesion: " + ex.toString());
         }
     }
 
@@ -131,6 +158,7 @@ public class LoginMB implements Serializable {
         storedRelationsMB.reset();
         recordDataMB.reset();
         errorsControlMB.reset();
+        
     }
 
     public void btnRegisterDataClick() {
@@ -152,19 +180,20 @@ public class LoginMB implements Serializable {
     }
 
     public String CheckValidUser() {
-        
-        currentUser =usersFacade.findUser(loginname,password);
-        
-        if(currentUser!=null){
-            userLogin=currentUser.getUserLogin();
-            userName=currentUser.getUserName();
-            userJob=currentUser.getUserJob();
+
+        currentUser = usersFacade.findUser(loginname, password);
+
+        if (currentUser != null) {
+            userLogin = currentUser.getUserLogin();
+            userName = currentUser.getUserName();
+            userJob = currentUser.getUserJob();
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto!!", "Se ha ingresado al sistema");
             FacesContext.getCurrentInstance().addMessage(null, msg);
 
             context = FacesContext.getCurrentInstance();
             System.out.println("INICIA... carga de ManagedBeans");
             formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
+            //uploadFileMB = (uploadFileMB) context.getApplication().evaluateExpressionGet(context, "#{uploadFileDataMB}", uploadFileMB.class);
             uploadFileMB = (UploadFileMB) context.getApplication().evaluateExpressionGet(context, "#{uploadFileMB}", UploadFileMB.class);
             relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
             relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
@@ -210,7 +239,7 @@ public class LoginMB implements Serializable {
 
             errorsControlMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
             errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-            
+
             storedRelationsMB.setUploadFileMB(uploadFileMB);
             storedRelationsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
             storedRelationsMB.setCurrentRelationsGroup(relationshipOfVariablesMB.getCurrentRelationsGroup());
@@ -219,11 +248,24 @@ public class LoginMB implements Serializable {
             uploadFileMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
             uploadFileMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
 
-            
+
 
             uploadFileMB.setStoredRelationsMB(storedRelationsMB);
-            
+
             reset();
+
+            //-------------------------------------------------
+//            try {
+//                JFreeChart jfreechart = ChartFactory.createPieChart("Prueba de CHART", createDataset(), true, true, false);
+//                File chartFile = new File("dynamichart");
+//                ChartUtilities.saveChartAsPNG(chartFile, jfreechart, 375, 300);
+//                chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
+//            } catch (Exception e) {
+//            }
+
+
+            //-------------------------------------------------
+
 
             return "homePage";
         } else {
@@ -281,8 +323,4 @@ public class LoginMB implements Serializable {
     public void setCurrentUser(Users currentUser) {
         this.currentUser = currentUser;
     }
-    
-    
-    
 }
-

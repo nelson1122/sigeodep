@@ -15,13 +15,13 @@ public class ErrorControl {
 
     //private String varFoundName;//nombre de la variable encontrada
     //p/rivate String varExeptedName;//nombre de la variable esperada    
-    private String value;//valor que esta presentando el conflicto
-    private String newValue;//valor que soluciona el conflicto
-    private String rowId;//numero de linea del archivo donde esta el error
-    private String errorDescription;//me describe el error probocado
-    private String errorSubject;//me describe el error probocado(largo)
-    private String errorSolution;//me describe la solucion al error
-    private String relationDescription;//me describe la solucion al error
+    private String value="";//valor que esta presentando el conflicto
+    private String newValue="";//valor que soluciona el conflicto
+    private String rowId="";//numero de linea del archivo donde esta el error
+    private String errorDescription="";//me describe el error probocado
+    private String errorSubject="";//me describe el error probocado(largo)
+    private String errorSolution="";//me describe la solucion al error
+    private String relationDescription="";//me describe la solucion al error
     RelationVar relationVar;
 
     public ErrorControl(RelationVar relationVar, String value, String rowId, String relationDescription) {
@@ -39,6 +39,12 @@ public class ErrorControl {
             errorDescription=rowId;
             errorSubject ="";
         } else {
+            
+            if(relationVar==null)
+            {
+                System.out.println("MAS ERRORES");
+                        
+            }else{
             errorDescription = "En la Linea (" + rowId + ")"
                     + ", Columna (" + relationVar.getNameFound() + ")"
                     + " el valor (" + value + ")"
@@ -83,6 +89,7 @@ public class ErrorControl {
                 case NOVALUE:
                     errorSolution = "El valor esperado debe ser: (" + this.relationDescription + ") seleccione un valor de la lista de valores aceptados o digite un valor válido en la casilla (nuevo valor) y presione resolver";
                     break;
+            }
             }
         }
     }
