@@ -88,15 +88,22 @@ public class FormsAndFieldsDataMB implements Serializable {
 //                              newField.getFieldType().compareTo("text") != 0) {
                         switch (DataTypeEnum.convert(newField.getFieldType())) {//tipo de relacion
                             case NOVALUE:
-                                rsCategorical = conx.consult("SELECT * FROM " + newField.getFieldType());
-                                while (rsCategorical.next()) {
-                                    //Category newCategory = new Category(rsCategorical.getString(1), rsCategorical.getString(2));
-                                    //newField.categoricalList.add(newCategory);
-                                    newField.categoricalNamesList.add(rsCategorical.getString(2));
-                                    newField.categoricalCodeList.add(rsCategorical.getString(1));
+                                try {
+
+
+                                    rsCategorical = conx.consult("SELECT * FROM " + newField.getFieldType());
+                                    while (rsCategorical.next()) {
+                                        //Category newCategory = new Category(rsCategorical.getString(1), rsCategorical.getString(2));
+                                        //newField.categoricalList.add(newCategory);
+                                        newField.categoricalNamesList.add(rsCategorical.getString(2));
+                                        newField.categoricalCodeList.add(rsCategorical.getString(1));
+                                        amount++;
+                                    }
+                                    break;
+                                } catch (Exception e) {
                                     amount++;
+                                    amount--;
                                 }
-                                break;
                         }
 //                        }
                         newForm.fieldsList.add(newField);
@@ -181,7 +188,7 @@ public class FormsAndFieldsDataMB implements Serializable {
     }
 
     private String searchMunicipalitie(String value) {
-                
+
         List<Municipalities> municipalitiesList = municipalitiesFacade.findAll();
         for (int k = 0; k < municipalitiesList.size(); k++) {
             String name = municipalitiesList.get(k).getMunicipalityName() + " - " + municipalitiesList.get(k).getDepartaments().getDepartamentName();
@@ -206,7 +213,7 @@ public class FormsAndFieldsDataMB implements Serializable {
                 fieldsList = forms.get(i).fieldsList;
                 for (int j = 0; j < fieldsList.size(); j++) {
                     if (fieldsList.get(j).getFieldName().compareTo(category) == 0) {
-                        if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {                            
+                        if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {
                             return searchMunicipalitie(value);
                         }
                         if (fieldsList.get(j).getFieldType().compareTo("countries") == 0) {
@@ -223,7 +230,7 @@ public class FormsAndFieldsDataMB implements Serializable {
         }
         return null;
     }
-    
+
     public String findIdByCategoricalName(String category, String value) {
         /*
          * busca un codigo dentro de una categoria y me retorna su id, cuando
@@ -236,7 +243,7 @@ public class FormsAndFieldsDataMB implements Serializable {
                 for (int j = 0; j < fieldsList.size(); j++) {
                     if (fieldsList.get(j).getFieldName().compareTo(category) == 0) {
 
-                        if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {                            
+                        if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {
                             return searchMunicipalitie(value);
                         }
                         if (fieldsList.get(j).getFieldType().compareTo("countries") == 0) {
@@ -253,7 +260,7 @@ public class FormsAndFieldsDataMB implements Serializable {
         }
         return null;
     }
-    
+
     public ArrayList<String> categoricalNameList(String typeVarExepted, int amount) {
         /*
          * retorna una lista con los nombres pertenecientes a una categoria
@@ -268,7 +275,7 @@ public class FormsAndFieldsDataMB implements Serializable {
                 for (int j = 0; j < fieldsList.size(); j++) {
                     if (fieldsList.get(j).getFieldName().compareTo(typeVarExepted) == 0) {
                         if (fieldsList.get(j).getFieldType().compareTo("municipalities") == 0) {
-                            
+
                             List<Municipalities> municipalitiesList = municipalitiesFacade.findAll();
                             for (int k = 0; k < municipalitiesList.size(); k++) {
                                 if (k > amount && amount != 0) {
@@ -278,15 +285,15 @@ public class FormsAndFieldsDataMB implements Serializable {
                             }
                             return returnList;
                         }
-                        
+
                         if (fieldsList.get(j).getFieldType().compareTo("countries") == 0) {
                             List<Countries> countriesList = countriesFacade.findAll();
                             for (int k = 0; k < countriesList.size(); k++) {
                                 if (k > amount && amount != 0) {
                                     break;
                                 }
-                                
-                                if (countriesList.get(k).getName().compareTo("COLOMBIA") == 0) {                                    
+
+                                if (countriesList.get(k).getName().compareTo("COLOMBIA") == 0) {
                                     String returnItem;
                                     List<Departaments> departamentsList = departamentsFacade.findAll();
                                     for (int l = 0; l < departamentsList.size(); l++) {
@@ -350,14 +357,14 @@ public class FormsAndFieldsDataMB implements Serializable {
                             }
                             return returnList;
                         }
-                        
+
                         if (fieldsList.get(j).getFieldType().compareTo("countries") == 0) {
                             List<Countries> countriesList = countriesFacade.findAll();
                             for (int k = 0; k < countriesList.size(); k++) {
                                 if (k > amount && amount != 0) {
                                     break;
                                 }
-                                
+
                                 if (countriesList.get(k).getName().compareTo("COLOMBIA") == 0) {
                                     String returnItem;
                                     List<Departaments> departamentsList = departamentsFacade.findAll();

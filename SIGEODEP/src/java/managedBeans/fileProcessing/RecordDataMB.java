@@ -3129,7 +3129,6 @@ public class RecordDataMB implements Serializable {
                                 newNonFatalInjury.setUseDrugsId(useAlcoholDrugsFacade.find(Short.parseShort(value)));
                                 break;
                             case gradogra:
-
                                 newNonFatalInjury.setBurnInjuryDegree(Short.parseShort(value));
                                 break;
                             case porcent:
@@ -3516,7 +3515,7 @@ public class RecordDataMB implements Serializable {
         } catch (SQLException ex) {
             System.out.println("errorSQL INGRESANDO LCENF: " + ex.toString());
         } catch (Exception ex2) {
-            System.out.println("EXCEPTION INGRESANDO LCENF: " + ex2.toString() + "  " + relationVar.getNameExpected() + " " + String.valueOf(tuplesProcessed));
+            System.out.println("EXCEPTION INGRESANDO LCENF: " + ex2.toString() + "  " + " " + String.valueOf(tuplesProcessed));
         }
 
     }

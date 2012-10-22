@@ -1187,7 +1187,7 @@
                                                             value="RESOLVER"
                                                             disabled="#{errorsControlMB.btnSolveDisabled}"
                                                             actionListener="#{errorsControlMB.solveError}"
-                                                            update="IdAccordionPanel4:IdValueFound IdAccordionPanel4:IdAcceptedValuesList IdDescription IdAccordionPanel4:IdListErrors IdSizeErrors IdSelectDateFormatAccepted IdNewValue IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve IdHistorialList"/> 
+                                                            update="IdAccordionPanel4:IdValueFound IdAccordionPanel4:IdAcceptedValuesList IdDescription IdAccordionPanel4:IdListErrors IdSizeErrors IdSelectDateFormatAccepted IdNewValue IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve IdHistorialList IdBtnRegisterData"/> 
                                                         <p:commandButton 
                                                             id="IdBtnDiscardErrorValue" 
                                                             value="DESCARTAR"
@@ -1241,7 +1241,7 @@
                                                 actionListener="#{errorsControlMB.btnUndoErrorClick}"
                                                 id="IdBtnDeshacer"
                                                 value="DESHACER"
-                                                update="IdHistorialList :IdForm:message"/>
+                                                update="IdHistorialList :IdForm:message IdBtnRegisterData"/>
                                         </p:column></p:row>
                                 </p:panelGrid>
                             </p:tab>                              
@@ -1277,6 +1277,7 @@
                                         <p:column styleClass="ui-widget-header">
                                             <!-- p:commandButton value="Registrar Datos" type="button" onclick="pbAjax.start();startButton2.disable();" widgetVar="startButton2" / -->  
                                             <p:commandButton 
+                                                id="IdBtnRegisterData"
                                                 value="REGISTRAR DATOS" 
                                                 disabled="#{recordDataMB.btnRegisterDataDisabled}"
                                                 actionListener="#{recordDataMB.btnRegisterDataClick}" 
