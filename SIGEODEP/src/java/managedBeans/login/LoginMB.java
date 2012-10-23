@@ -4,8 +4,6 @@
  */
 package managedBeans.login;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -19,12 +17,8 @@ import managedBeans.fileProcessing.*;
 import managedBeans.preload.FormsAndFieldsDataMB;
 import model.dao.UsersFacade;
 import model.pojo.Users;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
-import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 /**
@@ -72,13 +66,7 @@ public class LoginMB implements Serializable {
     ErrorsControlMB errorsControlMB;
     @EJB
     UsersFacade usersFacade;
-    //LcenfMB lcenfMB;
-    //AccidentalMB accidentalMB;
-    //HomicideMB homicideMB;
-    //SuicideMB suicideMB;
-    //TransitMB transitMB;
-    //VIFMB vifMB;
-    //NeighborhoodsVariableMB neighborhoodsVariableMB;
+    
     //progreso de carga de la aplicacion ***********************************    
     private Integer progress;
 
@@ -158,26 +146,25 @@ public class LoginMB implements Serializable {
         storedRelationsMB.reset();
         recordDataMB.reset();
         errorsControlMB.reset();
-        
     }
 
-    public void btnRegisterDataClick() {
-        progress = 0;
-        for (int i = 0; i < 100; i++) {
-            progress++;
-            for (int j = 0; j < 10000; j++) {
-                for (int k = 0; k < 100; k++) {
-                    if (progress > 100) {
-                        progress = 0;
-                    }
-                }
-            }
-        }
-        progress = 100;
-    }
+//    public void btnRegisterDataClick() {
+//        progress = 0;
+//        for (int i = 0; i < 100; i++) {
+//            progress++;
+//            for (int j = 0; j < 10000; j++) {
+//                for (int k = 0; k < 100; k++) {
+//                    if (progress > 100) {
+//                        progress = 0;
+//                    }
+//                }
+//            }
+//        }
+//        progress = 100;
+//    }
 
-    public void closeSession() {
-    }
+    ///public void closeSession() {
+    //}
 
     public String CheckValidUser() {
 
@@ -193,30 +180,15 @@ public class LoginMB implements Serializable {
             context = FacesContext.getCurrentInstance();
             System.out.println("INICIA... carga de ManagedBeans");
             formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
-            //uploadFileMB = (uploadFileMB) context.getApplication().evaluateExpressionGet(context, "#{uploadFileDataMB}", uploadFileMB.class);
             uploadFileMB = (UploadFileMB) context.getApplication().evaluateExpressionGet(context, "#{uploadFileMB}", UploadFileMB.class);
             relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
             relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
             storedRelationsMB = (StoredRelationsMB) context.getApplication().evaluateExpressionGet(context, "#{storedRelationsMB}", StoredRelationsMB.class);
             recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
             errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
-            //lcenfMB = (LcenfMB) context.getApplication().evaluateExpressionGet(context, "#{lcenfMB}", LcenfMB.class);
-            //accidentalMB = (AccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{accidentalMB}", AccidentalMB.class);
-            //homicideMB = (HomicideMB) context.getApplication().evaluateExpressionGet(context, "#{homicideMB}", HomicideMB.class);
-            //suicideMB = (SuicideMB) context.getApplication().evaluateExpressionGet(context, "#{suicideMB}", SuicideMB.class);
-            //transitMB = (TransitMB) context.getApplication().evaluateExpressionGet(context, "#{transitMB}", TransitMB.class);
-            //vifMB = (VIFMB) context.getApplication().evaluateExpressionGet(context, "#{vifMB}", VIFMB.class);
-            //neighborhoodsVariableMB = (NeighborhoodsVariableMB) context.getApplication().evaluateExpressionGet(context, "#{neighborhoodsVariableMB}", NeighborhoodsVariableMB.class);
-
 
             System.out.println("INICIA... carga de informacion formularios");
-            //lcenfMB.reset();
-            //neighborhoodsVariableMB.reset();
-            //accidentalMB.reset();
-            //homicideMB.reset();
-            //suicideMB.reset();
-            //transitMB.reset();
-            //vifMB.reset();
+            
             uploadFileMB.reset();
             relationshipOfVariablesMB.reset();
 
