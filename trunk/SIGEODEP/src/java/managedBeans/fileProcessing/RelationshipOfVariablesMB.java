@@ -122,8 +122,6 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.variablesExpected = new ArrayList<String>();
         this.currentVarFound = "";
         this.currentVarExpected = "";
-        //this.btnValidateRelationVarDisabled = true;
-        //this.btnAssociateRelationVarDisabled = true;
         this.btnRemoveRelationVarDisabled = true;
     }
 

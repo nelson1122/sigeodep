@@ -6,8 +6,11 @@ package managedBeans.fileProcessing;
 
 import beans.connection.ConnectionJDBC;
 import beans.relations.RelationsGroup;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.Serializable;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -16,8 +19,10 @@ import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.servlet.ServletContext;
 import managedBeans.filters.CopyMB;
 import managedBeans.preload.FormsAndFieldsDataMB;
 import model.dao.*;
@@ -26,21 +31,12 @@ import model.pojo.Forms;
 import model.pojo.Sources;
 import model.pojo.Tags;
 import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.primefaces.model.UploadedFile;
-import java.io.File;
-import java.io.FileInputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import javax.faces.context.ExternalContext;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.UploadedFile;
 
 /**
  *
@@ -59,6 +55,7 @@ public class UploadFileMB implements Serializable {
     TagsFacade tagsFacade;
     private boolean tagNameDisabled = false;
     private boolean btnResetDisabled = true;
+    //private boolean btnProcessFileDisabled = true;
     private String tagName = "";
     private String currentForm = "";//ficha actual
     private SelectItem[] forms;
@@ -66,13 +63,13 @@ public class UploadFileMB implements Serializable {
     private String currentSource = "";//proveedor actual    
     private SelectItem[] sources;
     private boolean selectSourceDisabled = false;
-    private String currentDelimiter = "";//ficha actual
-    private SelectItem[] delimiters;
-    private boolean selectDelimiterDisabled = false;
+    private String errorTagName = "Campo Obligatorio";
+    //private SelectItem[] delimiters;
+    //private boolean selectDelimiterDisabled = false;
     private UploadedFile file;
-    private boolean selectFileUploadDisabled = true;
+    //private boolean selectFileUploadDisabled = true;
     private boolean nameFileRendered = false;
-    private boolean btnLoadFileDisabled = false;//si esta en true el boton esta
+    private boolean btnProcessFileDisabled = true;//si esta en true el boton esta
     private String nameFile = "";
     private String[] headerFile;//caberecera del archivo
     private List<String> variablesFound;
@@ -115,24 +112,25 @@ public class UploadFileMB implements Serializable {
         /*
          * Cargar el formulario con los valores iniciales
          */
-
+        errorTagName = "Campo Obligatorio";
         currentForm = "SCC-F-032";
-        
+        file = null;
+        tagName = "";
         loadForms();
         loadSources();
-        currentSource=sources[0].getLabel();
+        currentSource = sources[0].getLabel();
         loadVarsExpected();
-        loadDelimiters();
+        //loadDelimiters();
         tagsList = tagsFacade.findAll();
         variablesFound = new ArrayList<String>();
         nameFile = "";
         tagName = "";
         selectFormDisabled = false;
-        selectFileUploadDisabled = true;
+        //selectFileUploadDisabled = true;
         nameFileRendered = false;
         selectSourceDisabled = false;
-        selectDelimiterDisabled = false;
-        btnLoadFileDisabled = true;
+        //selectDelimiterDisabled = false;
+        btnProcessFileDisabled = true;
         tagNameDisabled = false;
         btnResetDisabled = true;
         progressUpload = 0;
@@ -166,51 +164,20 @@ public class UploadFileMB implements Serializable {
     public void relatedRecordSets() {
     }
 
-    public void changeTagName() {
-        try {
-
-            if (tagName.trim().length() != 0) {
-                for (int i = 0; i < tagsList.size(); i++) {
-                    if (tagsList.get(i).getTagName() != null) {
-                        if (tagsList.get(i).getTagName().compareTo(tagName) == 0) {
-                            selectFileUploadDisabled = true;
-                            btnLoadFileDisabled = true;
-                            printMessage(FacesMessage.SEVERITY_ERROR, "Nombre registrado", "El nombre ingresado ya se encuentra registrado, se debe digitar otro nombre para el conjunto de registros");
-                            System.out.println("****YA esta*");
-                        } else {
-                            selectFileUploadDisabled = false;
-                            btnLoadFileDisabled = false;
-                            System.out.println("****No esta*");
-                        }
-                    }
-                }
-            } else {
-                selectFileUploadDisabled = true;
-                btnLoadFileDisabled = true;
-                System.out.println("****no esta TA*");
-            }
-        } catch (Exception e) {
-            printMessage(FacesMessage.SEVERITY_ERROR, "ERROR UploadFileMB_1", e.toString());
-            selectFileUploadDisabled = true;
-            btnLoadFileDisabled = true;
-        }
-    }
-
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES QUE CARGAN VALORES -----------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    private void loadDelimiters() {
-        /*
-         * Cargar los delimitadores
-         */
-        delimiters = new SelectItem[]{
-            new SelectItem("TAB", "TAB"),
-            new SelectItem(";", ";"),
-            new SelectItem(",", ","),};
-    }
-
+//    private void loadDelimiters() {
+//        /*
+//         * Cargar los delimitadores
+//         */
+//        delimiters = new SelectItem[]{
+//            new SelectItem("TAB", "TAB"),
+//            new SelectItem(";", ";"),
+//            new SelectItem(",", ","),};
+//    }
     private void loadForms() {
         /*
          * cargar la lista de formularios existentes
@@ -236,10 +203,10 @@ public class UploadFileMB implements Serializable {
          */
         List<Sources> sourcesList = formsFacade.findSources(currentForm);
         sources = new SelectItem[sourcesList.size()];
-        
-        for (int i = 0; i < sourcesList.size(); i++) { 
+
+        for (int i = 0; i < sourcesList.size(); i++) {
             sources[i] = new SelectItem(sourcesList.get(i).getSourceName(), sourcesList.get(i).toString());
-            currentSource=sources[0].getLabel();
+            currentSource = sources[0].getLabel();
         }
 
     }
@@ -287,51 +254,18 @@ public class UploadFileMB implements Serializable {
     //----------------------------------------------------------------------
     //CLIK SOBRE BOTONOES --------------------------------------------------
     //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
-    private void printToConsole(List cellDataList) {
-        String stringCellValue;
-        for (int i = 0; i < cellDataList.size(); i++) {
-            List cellTempList = (List) cellDataList.get(i);
-            for (int j = 0; j < cellTempList.size(); j++) {
-                HSSFCell hssfCell = (HSSFCell) cellTempList.get(j);
-                if (hssfCell.getCellType() == HSSFCell.CELL_TYPE_NUMERIC) {
-                    stringCellValue = hssfCell.toString().replaceAll(".0", "");
-                } else {
-                    stringCellValue = hssfCell.toString();
-                }
-
-                System.out.print(stringCellValue + "\t");
-            }
-            System.out.println();
-        }
-    }
-
-    private void Leer(List cellDataList) {
-        String txt;
-        for (int i = 0; i < cellDataList.size(); i++) {
-            txt = "";
-            List cellTempList = (List) cellDataList.get(i);
-            for (int j = 0; j < cellTempList.size(); j++) {
-                XSSFCell hssfCell = (XSSFCell) cellTempList.get(j);
-                String stringCellValue = hssfCell.toString();
-                txt = txt + "    " + stringCellValue;
-            }
-            System.out.println(txt);
-        }
-    }
-
+    //----------------------------------------------------------------------    
     private void uploadXls() throws IOException {
-
-
-        //List cellDataList = new ArrayList();
         ArrayList<String> rowFileData;
-        String txt;
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy H:mm");
             FileInputStream fileInputStream = (FileInputStream) file.getInputstream();
             XSSFWorkbook workBook = new XSSFWorkbook(fileInputStream);
             XSSFSheet hssfSheet = workBook.getSheetAt(0);
             Iterator rowIterator = hssfSheet.rowIterator();
+            XSSFRow hssfRow;
+            Iterator columnIterator;
+            XSSFCell hssfCell;
             tuplesNumber = 0;
             tuplesProcessed = 0;
             while (rowIterator.hasNext()) {
@@ -341,14 +275,11 @@ public class UploadFileMB implements Serializable {
             System.out.println("Numero de Lineas: " + tuplesNumber);
             rowIterator = hssfSheet.rowIterator();
             while (rowIterator.hasNext()) {
-                XSSFRow hssfRow = (XSSFRow) rowIterator.next();
-                Iterator iterator = hssfRow.cellIterator();
+                hssfRow = (XSSFRow) rowIterator.next();
+                columnIterator = hssfRow.cellIterator();
                 rowFileData = new ArrayList<String>();
-                txt = "";
-                //String cellText = "";
-                while (iterator.hasNext()) {
-                    XSSFCell hssfCell = (XSSFCell) iterator.next();
-                    txt = "";
+                while (columnIterator.hasNext()) {
+                    hssfCell = (XSSFCell) columnIterator.next();
                     if (hssfCell.getCellType() == HSSFCell.CELL_TYPE_NUMERIC) {
                         double d = hssfCell.getNumericCellValue();
                         if (HSSFDateUtil.isCellDateFormatted(hssfCell)) {
@@ -372,14 +303,12 @@ public class UploadFileMB implements Serializable {
         } catch (Exception e) {
         }
         progressUpload = 100;
-        btnLoadFileDisabled = true;
-        selectDelimiterDisabled = true;
+        btnProcessFileDisabled = true;
         selectFormDisabled = true;
         selectSourceDisabled = true;
-        selectFileUploadDisabled = true;
+        //selectFileUploadDisabled = true;
         tagNameDisabled = true;
         nameFile = "Archivo cargado: " + file.getFileName();
-        //currentSource=uploadFileMB.getCurrentSource();
         RelationsGroup newRelationsGroup = new RelationsGroup("TEMP", currentForm, currentSource);
 
         relationshipOfVariablesMB.setVarsFound(variablesFound);
@@ -389,14 +318,37 @@ public class UploadFileMB implements Serializable {
         formsAndFieldsDataMB.setNameForm(currentForm);//relationshipOfVariablesMB.set(variablesFound);
         recordDataMB.setNameForm(currentForm);
         recordDataMB.setCurrentSource(currentSource);
-        recordDataMB.setBtnValidateDisabled(false);
+        //recordDataMB.setBtnValidateDisabled(false);
         storedRelationsMB.setCurrentRelationsGroup(newRelationsGroup);
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Archivo cargado correctamente."));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Archivo procesado correctamente."));
         inactiveTabs = false;
         btnResetDisabled = false;
         copyMB.refresh();
         copyMB.cleanBackupTables();
-        progressUpload = 0;
+        
+    }
+
+    public void tagNameKeyPress() {
+        errorTagName = "";
+        if (file != null) {
+            btnProcessFileDisabled = false;
+        }
+
+        if (tagName.trim().length() != 0) {
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (tagsList.get(i).getTagName() != null) {
+                    if (tagsList.get(i).getTagName().toUpperCase().compareTo(tagName.toUpperCase().trim()) == 0) {
+                        //selectFileUploadDisabled = true;
+                        errorTagName = "El nombre ingresado ya esta registrado";
+                        btnProcessFileDisabled = true;
+                        //printMessage(FacesMessage.SEVERITY_ERROR, "Error", "El nombre ingresado ya se encuentra registrado, se debe digitar otro nombre para el conjunto de registros");
+                    }
+                }
+            }
+        } else {
+            errorTagName = "Campo Obligatorio";
+            btnProcessFileDisabled = true;
+        }
     }
 
     private void addTableTemp(ArrayList<String> rowFileData, int numLine) {
@@ -504,274 +456,49 @@ public class UploadFileMB implements Serializable {
         conx.disconnect();
     }
 
-    private void uploadFileDelimiter() {
-        /*
-         * CARGA DE UN ARCHIVO CON DELIMITADOR
-         */
-        String line;
-        InputStreamReader isr;
-        BufferedReader buffer;
-        String salida = "";
-        boolean continueProcess = true;
-        int currentNumberLine = 0;
-        headerFile = null;
-        String[] tupla;
-        String[] tupla2;
-        try {
-            isr = new InputStreamReader(file.getInputstream());
-            buffer = new BufferedReader(isr);
-            //Leer el la informacion del archivo linea por linea                       
-            while ((line = buffer.readLine()) != null) {
-                /*
-                 * DEJAMOS UNA CABECERA VALIDA SIN ESPACIOS NI SIMBOLOS NO
-                 * VALIDOS Y QUE NO INICIE CON UN NUMERO
-                 */
-                if (currentNumberLine == 0) {
-
-                    line = line.toLowerCase();//pasar a minusculas
-                    line = line.replaceAll(" ", "_");//quitar espacioS y acentos
-                    line = line.replaceAll("ñ", "n");
-                    line = line.replaceAll("á", "a");
-                    line = line.replaceAll("é", "e");
-                    line = line.replaceAll("í", "i");
-                    line = line.replaceAll("ó", "o");
-                    line = line.replaceAll("ú", "u");
-                    for (int i = 0; i < line.length(); i++) {//quitar caracteres no aceptados
-                        int k = (int) line.charAt(i);
-                        if (k >= 97 && k <= 122 || k >= 65 && k <= 90 || k >= 48 && k <= 57 || k == '\t' || k == '_') {
-                            salida = salida + line.charAt(i);
-                        }
-                    }
-                    line = salida;
-                    line = line.replaceAll("__", "_");//eliminar dobles raya bajas
-                    //creamos un vector con cada una de las cadenas separadas por un determinado delimitador
-                    if (currentDelimiter.compareTo("TAB") == 0) {
-                        headerFile = line.split("\t");
-                    } else if (currentDelimiter.compareTo(",") == 0) {
-                        headerFile = line.split(",");
-                    } else {
-                        headerFile = line.split(";");
-                    }
-                    int count;//le asigno a los nombres un numero(cosecutivo) para que no se repitan los nombres
-                    String currentName = "";
-                    for (int i = 0; i < headerFile.length; i++) {
-                        currentName = headerFile[i];
-                        count = 1;
-                        for (int j = i + 1; j < headerFile.length; j++) {
-                            if (currentName.compareTo(headerFile[j]) == 0) {
-                                count++;
-                                headerFile[j] = headerFile[j] + "_" + String.valueOf(count);
-                            }
-                        }
-                        if (count != 1) {//hubo repetidos
-                            headerFile[i] = headerFile[i] + "_1";
-                        }
-                    }
-                    for (int i = 0; i < headerFile.length; i++) {//si la cadena inicia con un numero, le antepongo una raya baja
-                        if (headerFile[i].startsWith("0") || headerFile[i].startsWith("1") || headerFile[i].startsWith("2")
-                                || headerFile[i].startsWith("3") || headerFile[i].startsWith("4") || headerFile[i].startsWith("5")
-                                || headerFile[i].startsWith("6") || headerFile[i].startsWith("7") || headerFile[i].startsWith("8")
-                                || headerFile[i].startsWith("9")) {
-                            headerFile[i] = "_" + headerFile[i];
-                        }
-                    }
-//                    if (!continueProcess) {
-//                        break;
-//                    }
-                    variablesFound.addAll(Arrays.asList(headerFile));
-                    currentNumberLine++;
-                } else {
-                    currentNumberLine++;
-                    if (currentNumberLine > 1) {
-                        break;
-                    }
-                }
-            }
-            if (currentNumberLine < 2) {//solo hay cabecera
-                continueProcess = false;
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "El archivo no contiene registros"));
-            }
-            if (continueProcess) {//hay cabecera y datos
-                /*
-                 * EXISTEN REGISTROS POR TANTO SE DEBE CREAR LA TABLA TEMP
-                 */
-                conx = new ConnectionJDBC();
-                conx.connect();
-                String sql = "DROP TABLE IF EXISTS temp;";//elimino si existe
-                conx.non_query(sql);
-                sql = "CREATE TABLE temp ( id integer NOT NULL,";//creo tabla temporal
-                for (int i = 0; i < headerFile.length; i++) {
-                    if (headerFile.length - 1 == i) {
-                        sql = sql + " " + headerFile[i] + " text, "
-                                + "CONSTRAINT pkey_temp PRIMARY KEY (id)); ";
-                    } else {
-                        sql = sql + " " + headerFile[i] + " text,";
-                    }
-                }
-                conx.non_query(sql);
-                //inserto los registros----------------------------------------
-                isr = new InputStreamReader(file.getInputstream());
-                buffer = new BufferedReader(isr);
-                int numLine = 0;
-                boolean una = true;
-                while ((line = buffer.readLine()) != null) {
-                    //dejo la linea solo con caracteres validos
-//                    for (int i = 0; i < line.length(); i++) {//quitar caracteres no aceptados
-//                        int k = (int) line.charAt(i);
-//                        if (k >= 32 && k <= 127
-//                                || k == '\t'
-//                                || k == 'á'
-//                                || k == 'é'
-//                                || k == 'í'
-//                                || k == 'ó'
-//                                || k == 'ú'
-//                                || k == 'ü'
-//                                || k == 'Ü'
-//                                || k == 'Á'
-//                                || k == 'É'
-//                                || k == 'Í'
-//                                || k == 'Ó'
-//                                || k == 'Ú') {
-//                            salida = salida + line.charAt(i);
-//                        }
-//                    }
-//                    line = salida;
-                    //separo la linea leida dependiendo del delimitador---------
-                    if (currentDelimiter.compareTo("TAB") == 0) {
-                        tupla = line.split("\t");
-                    } else if (currentDelimiter.compareTo(",") == 0) {
-                        tupla = line.split(",");
-                    } else {
-                        tupla = line.split(";");
-                    }
-                    //viene igual numero de campos que la cabecera                                
-                    tupla2 = new String[headerFile.length];
-                    for (int i = 0; i < tupla2.length; i++) {
-                        tupla2[i] = "";
-                        if (tupla.length > i) {
-                            tupla2[i] = tupla[i];
-                        }
-                    }
-                    tupla = tupla2;
-                    if (numLine != 0) {
-                        sql = "INSERT INTO temp VALUES (" + "'" + String.valueOf(numLine) + "',";
-                        String value;
-                        for (int i = 0; i < tupla.length; i++) {
-                            char a = 160;
-                            char b = 32;
-                            tupla[i] = tupla[i].replace(a, b);
-                            tupla[i] = tupla[i].trim();
-                            if (tupla.length - 1 == i) {
-                                sql = sql + "'" + tupla[i] + "');";
-                            } else {
-                                sql = sql + "'" + tupla[i] + "',";
-                            }
-                        }
-                        conx.non_query(sql);
-                    }
-                    numLine++;
-                }
-            }
-            if (continueProcess) {
-
-                //le asigno la direccion de residencia si existe barrio de residencia
-                try {
-                    conx.non_query("update temp set dirres = baveres where dirres like '';");
-                    conx.non_query("update temp set baveres = dirres where baveres like  '';");
-                } catch (Exception e) {
-                }
-
-
-                btnLoadFileDisabled = true;
-                selectDelimiterDisabled = true;
-                selectFormDisabled = true;
-                selectSourceDisabled = true;
-                selectFileUploadDisabled = true;
-                tagNameDisabled = true;
-                nameFile = "Archivo cargado: " + file.getFileName();
-
-                RelationsGroup newRelationsGroup = new RelationsGroup("TEMP", currentForm, currentSource);
-
-                relationshipOfVariablesMB.setVarsFound(variablesFound);
-                relationshipOfVariablesMB.setCurrentRelationsGroup(newRelationsGroup);
-                relationshipOfValuesMB.setCurrentRelationsGroup(newRelationsGroup);
-
-                formsAndFieldsDataMB.setNameForm(currentForm);//relationshipOfVariablesMB.set(variablesFound);
-                recordDataMB.setNameForm(currentForm);
-                recordDataMB.setCurrentSource(currentSource);
-                recordDataMB.setBtnValidateDisabled(false);
-                storedRelationsMB.setCurrentRelationsGroup(newRelationsGroup);
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Archivo cargado correctamente."));
-                inactiveTabs = false;
-                btnResetDisabled = false;
-                copyMB.refresh();
-                copyMB.cleanBackupTables();
-            }
-            if (conx != null) {
-                conx.disconnect();
-            }
-        } catch (IOException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", e.toString()));
-        } catch (Exception ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error", ex.toString()));
-        }
-    }
-
     public void handleFileUpload(FileUploadEvent event) {
-        FacesMessage msg = new FacesMessage("Achivo cargado", "Se inicia con el procesamiento...");
         file = event.getFile();
-        upload();
+        if (errorTagName.length() == 0) {
+            btnProcessFileDisabled = false;
+        }
+        FacesMessage msg = new FacesMessage("Archivo cargado", "Archivo cargado correctamente, presione procesar para que sea procesado");
+        FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
-    public void upload() {
+    public void processFile() {
         /*
-         * cargar un archivo y almacenarlo en una tabla temporal para verificar
-         * sus datos booleanValue introducirlos a la DB
+         * almacenar archivo cargado en una tabla temporal para verificar sus
+         * datos e introducirlos a la DB
          */
-        // file = event.getFile();
         boolean continueProcess = true;
-        try {
-            if (file == null) {
-                continueProcess = false;
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe Seleccionar un archivo");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
-            }
-            if (continueProcess) {
-                if (file.getFileName().length() == 0) {
+
+
+        if (continueProcess) {
+            try {
+                if (file == null) {
                     continueProcess = false;
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe Seleccionar el archivo");
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Primero debe subir un un archivo");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
-            }
-            if (continueProcess) {
-                if (tagName.trim().length() == 0) {
-                    continueProcess = false;
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe Escribir el nombre de la carga de datos ");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                }
-            }
-            if (continueProcess) {
-                if (file.getFileName().indexOf(".xls") != -1 || file.getFileName().indexOf(".XLS") != -1) {
+                if (continueProcess) {
                     uploadXls();
-                } else {
-                    uploadFileDelimiter();
+                    //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Archivo procesado correctamente");
+                    //FacesContext.getCurrentInstance().addMessage(null, msg);
+                    //redireccionar
+//                    ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+//                    String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
+//                    try {
+//                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha cargado el archivo correctamente"));
+//                        ctx.redirect(ctxPath + "/faces/web/fileProcessing/fileProcessing.xhtml");
+//                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha cargado el archivo correctamente"));
+//                        System.out.println("redirecciona a fileprocessing");
+//                    } catch (Exception ex) {
+//                        System.out.println("redirecciona a fileprocessing fallo: " + ex.toString());
+//                    }
                 }
-
-                //redireccionar
-
-                ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
-                String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
-                try {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha cargado el archivo correctamente"));
-                    ctx.redirect(ctxPath + "/faces/web/fileProcessing/fileProcessing.xhtml");
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha cargado el archivo correctamente"));
-                    System.out.println("redirecciona a fileprocessing");
-                } catch (Exception ex) {
-                    System.out.println("redirecciona a fileprocessing fallo: " + ex.toString());
-                }
+            } catch (Exception ex) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error procesando el archivo", ex.toString()));
             }
-        } catch (Exception ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error cargando el archivo", ex.toString()));
         }
     }
 
@@ -782,7 +509,7 @@ public class UploadFileMB implements Serializable {
         //progress = 0;
         //progressValidate = 0;
         //loginMB.reset();
-
+        progressUpload = 0;
         formsAndFieldsDataMB.reset();
         relationshipOfVariablesMB.reset();
         relationshipOfValuesMB.reset();
@@ -836,8 +563,6 @@ public class UploadFileMB implements Serializable {
         this.currentSource = currentSource;
     }
 
-    
-
     public SelectItem[] getSources() {
         return sources;
     }
@@ -874,38 +599,28 @@ public class UploadFileMB implements Serializable {
         this.nameFile = nameFile;
     }
 
-    public boolean isBtnLoadFileDisabled() {
-        return btnLoadFileDisabled;
-    }
-
-    public void setBtnLoadFileDisabled(boolean btnLoadFileDisabled) {
-        this.btnLoadFileDisabled = btnLoadFileDisabled;
-    }
-
-    public String getCurrentDelimiter() {
-        return currentDelimiter;
-    }
-
-    public void setCurrentDelimiter(String currentDelimiter) {
-        this.currentDelimiter = currentDelimiter;
-    }
-
-    public SelectItem[] getDelimiters() {
-        return delimiters;
-    }
-
-    public void setDelimiters(SelectItem[] delimiters) {
-        this.delimiters = delimiters;
-    }
-
-    public boolean isSelectDelimiterDisabled() {
-        return selectDelimiterDisabled;
-    }
-
-    public void setSelectDelimiterDisabled(boolean selectDelimiterDisabled) {
-        this.selectDelimiterDisabled = selectDelimiterDisabled;
-    }
-
+//    public String getCurrentDelimiter() {
+//        return currentDelimiter;
+//    }
+//    public void setCurrentDelimiter(String currentDelimiter) {
+//        this.currentDelimiter = currentDelimiter;
+//    }
+//
+//    public SelectItem[] getDelimiters() {
+//        return delimiters;
+//    }
+//
+//    public void setDelimiters(SelectItem[] delimiters) {
+//        this.delimiters = delimiters;
+//    }
+//
+//    public boolean isSelectDelimiterDisabled() {
+//        return selectDelimiterDisabled;
+//    }
+//
+//    public void setSelectDelimiterDisabled(boolean selectDelimiterDisabled) {
+//        this.selectDelimiterDisabled = selectDelimiterDisabled;
+//    }
     public boolean isSelectFormDisabled() {
         return selectFormDisabled;
     }
@@ -922,14 +637,13 @@ public class UploadFileMB implements Serializable {
         this.selectSourceDisabled = selectSourceDisabled;
     }
 
-    public boolean isSelectFileUploadDisabled() {
-        return selectFileUploadDisabled;
-    }
-
-    public void setSelectFileUploadDisabled(boolean selectFileUploadDisabled) {
-        this.selectFileUploadDisabled = selectFileUploadDisabled;
-    }
-
+//    public boolean isSelectFileUploadDisabled() {
+//        return selectFileUploadDisabled;
+//    }
+//
+//    public void setSelectFileUploadDisabled(boolean selectFileUploadDisabled) {
+//        this.selectFileUploadDisabled = selectFileUploadDisabled;
+//    }
     public String getTagName() {
         return tagName;
     }
@@ -964,6 +678,22 @@ public class UploadFileMB implements Serializable {
 
     public void setNameFileRendered(boolean nameFileRendered) {
         this.nameFileRendered = nameFileRendered;
+    }
+
+    public boolean isBtnProcessFileDisabled() {
+        return btnProcessFileDisabled;
+    }
+
+    public String getErrorTagName() {
+        return errorTagName;
+    }
+
+    public void setErrorTagName(String errorTagName) {
+        this.errorTagName = errorTagName;
+    }
+
+    public void setBtnProcessFileDisabled(boolean btnProcessFileDisabled) {
+        this.btnProcessFileDisabled = btnProcessFileDisabled;
     }
 
     public boolean isBtnResetDisabled() {

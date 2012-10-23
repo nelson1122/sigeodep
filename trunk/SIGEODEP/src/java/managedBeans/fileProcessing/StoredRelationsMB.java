@@ -50,6 +50,8 @@ public class StoredRelationsMB implements Serializable {
     private UploadFileMB uploadFileMB;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private RelationsGroup currentRelationsGroup;//grupo de relaciones actual
+    ErrorsControlMB errorsControlMB;
+    RecordDataMB recordDataMB;
 
     public StoredRelationsMB() {
         /**
@@ -181,17 +183,17 @@ public class StoredRelationsMB implements Serializable {
                 }
             }
             //recargo los controles de relacion de variables
+            FacesContext context = FacesContext.getCurrentInstance();
+            errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
+            recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
+            errorsControlMB.reset();
+            recordDataMB.reset();
             relationshipOfVariablesMB.reset();
-
             relationshipOfVariablesMB.setCurrentRelationsGroup(currentRelationsGroup);
             relationshipOfVariablesMB.loadRelatedVars();
             relationshipOfVariablesMB.loadVarsExpectedAndFound();
             relationshipOfVariablesMB.setValuesExpected(new ArrayList<String>());
             relationshipOfVariablesMB.setValuesFound(new ArrayList<String>());
-
-
-            String result = "";
-            exist = false;
             if (countNotFound == 0) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "El grupo de relaciones (" + currentRelationGroupName + ") se ha cargado satisfactoriamente"));
             } else {

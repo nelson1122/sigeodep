@@ -197,7 +197,7 @@ public class RecordDataMB implements Serializable {
     private int tuplesNumber;
     private int tuplesProcessed;
     private boolean btnRegisterDataDisabled = true;
-    private boolean btnValidateDisabled = true;
+    //private boolean btnValidateDisabled = true;
     private Victims newVictim;
     //private int MaxId;
     private NonFatalInjuries newNonFatalInjury;
@@ -310,8 +310,9 @@ public class RecordDataMB implements Serializable {
         /*
          * Cargar el formulario con los valores iniciales
          */
+        progressValidate=0;
         btnRegisterDataDisabled = true;
-        btnValidateDisabled = true;
+        //btnValidateDisabled = true;
     }
 
     private boolean relationshipsRequired() {
@@ -476,7 +477,7 @@ public class RecordDataMB implements Serializable {
                                     //System.out.println("Validando Entero: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//error = "No es entero";
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "integer"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "integer"));
                                     }
                                     break;
                                 case age:
@@ -484,7 +485,7 @@ public class RecordDataMB implements Serializable {
                                     //System.out.println("Validando Age: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//error = "fecha no corresponde al formato";
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "age"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "age"));
                                     }
                                     break;
                                 case date:
@@ -500,7 +501,7 @@ public class RecordDataMB implements Serializable {
                                     }
                                     if (value == null) {
                                         errorsNumber++;//error = "fecha no corresponde al formato";
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "date"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "date"));
                                     }
 
                                     break;
@@ -509,7 +510,7 @@ public class RecordDataMB implements Serializable {
                                     //System.out.println("Validando Militar: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "military"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "military"));
                                     }
                                     break;
                                 case hour:
@@ -517,7 +518,7 @@ public class RecordDataMB implements Serializable {
                                     //System.out.println("Validando Hora: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "hour"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "hour"));
                                     }
                                     break;
                                 case minute:
@@ -525,7 +526,7 @@ public class RecordDataMB implements Serializable {
                                     //System.out.println("Validando Minuto: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "minute"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "minute"));
                                     }
                                     break;
                                 case day:
@@ -539,7 +540,7 @@ public class RecordDataMB implements Serializable {
                                     }
                                     if (value == null) {
                                         errorsNumber++;//la hora militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "day"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "day"));
                                     }
                                     break;
                                 case month:
@@ -553,7 +554,7 @@ public class RecordDataMB implements Serializable {
                                     }
                                     if (value == null) {
                                         errorsNumber++;//la hora militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "month"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "month"));
                                     }
                                     break;
                                 case year:
@@ -567,7 +568,7 @@ public class RecordDataMB implements Serializable {
                                     //System.out.println("Validando Año: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "year"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "year"));
                                     }
                                     break;
                                 case percentage:
@@ -575,7 +576,7 @@ public class RecordDataMB implements Serializable {
                                     //System.out.println("Validando porcentaje: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + String.valueOf(value));
                                     if (value == null) {
                                         errorsNumber++;//el porcentaje no puede ser determinado
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "percentage"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "percentage"));
                                     }
                                     break;
                                 case NOVALUE:
@@ -587,7 +588,7 @@ public class RecordDataMB implements Serializable {
 
                                     if (value == null) {
                                         errorsNumber++;//error = "no esta en la categoria ni es un valor descartado";
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), formsAndFieldsDataMB.variableDescription(relationVar.getNameExpected())));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), formsAndFieldsDataMB.variableDescription(relationVar.getNameExpected())));
                                     }
                                     break;
                             }
@@ -623,7 +624,7 @@ public class RecordDataMB implements Serializable {
                             //DETERMINAR FECHA DE EVENTO                                
                             if (existDateEvent == false) {//no se puede determinar la fecha
                                 relationVar = currentRelationsGroup.findRelationVar2("fechah");//determino la relacion de variables
-                                errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "fechah"));
+                                errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "fechah"));
                                 errorsNumber++;
                             }
                             break;
@@ -631,14 +632,14 @@ public class RecordDataMB implements Serializable {
                             //RELACION PARA LA INTENCIONALIDAD
                             if (intencionality == null) {
                                 relationVar = currentRelationsGroup.findRelationVar2("intenci");//determino la relacion de variables
-                                errorsControlMB.addError(new ErrorControl(relationVar, " ", String.valueOf(currentNumberOfRow), "intencionalidad"));
+                                errorsControlMB.addError(new ErrorControl(relationVar, " ", resultSetFileData.getString("id"), "intencionalidad"));
                                 errorsNumber++;
                             }
                         case SCC_F_033:
                             //DETERMINAR FECHA DE EVENTO                                
                             if (existDateEvent == false) {//no se puede determinar la fecha
                                 relationVar = currentRelationsGroup.findRelationVar2("fechacon");//determino la relacion de variables
-                                errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), String.valueOf(currentNumberOfRow), "fechacon"));
+                                errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "fechacon"));
                                 errorsNumber++;
                             }
                             break;
@@ -4854,14 +4855,14 @@ public class RecordDataMB implements Serializable {
     public void setBtnRegisterDataDisabled(boolean btnRegisterDataDisabled) {
         this.btnRegisterDataDisabled = btnRegisterDataDisabled;
     }
-
-    public boolean isBtnValidateDisabled() {
-        return btnValidateDisabled;
-    }
-
-    public void setBtnValidateDisabled(boolean btnValidateDisabled) {
-        this.btnValidateDisabled = btnValidateDisabled;
-    }
+//
+//    public boolean isBtnValidateDisabled() {
+//        return btnValidateDisabled;
+//    }
+//
+//    public void setBtnValidateDisabled(boolean btnValidateDisabled) {
+//        this.btnValidateDisabled = btnValidateDisabled;
+//    }
 
     public Integer getProgressValidate() {
         return progressValidate;

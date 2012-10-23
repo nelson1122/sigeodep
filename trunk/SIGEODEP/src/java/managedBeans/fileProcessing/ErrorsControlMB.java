@@ -60,7 +60,6 @@ public class ErrorsControlMB implements Serializable {
     private RelationsGroup currentRelationsGroup;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     DinamicTable dinamicTable = new DinamicTable();
-    
 
     public ErrorsControlMB() {
         correctionList = new SelectItem[0];
@@ -108,6 +107,10 @@ public class ErrorsControlMB implements Serializable {
         correctionList = new SelectItem[0];
         errorControlArrayList = new ArrayList<ErrorControl>();
         errorCorrectionArrayList = new ArrayList<ErrorControl>();
+        errors = new SelectItem[0];
+        btnSolveDisabled = true;
+        btnSeeRecordDisabled = true;
+        sizeErrorsList = 0;        
     }
 
     private void updateErrors() {
@@ -346,7 +349,7 @@ public class ErrorsControlMB implements Serializable {
                     recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
                     //si no hay errores permitir el registro
                     if (errorControlArrayList.isEmpty()) {
-                        recordDataMB.setBtnRegisterDataDisabled(false);                        
+                        recordDataMB.setBtnRegisterDataDisabled(false);
                         FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el último error, puede proceder a registrar la informacion");
                         FacesContext.getCurrentInstance().addMessage(null, msg);
 

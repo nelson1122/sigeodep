@@ -12,6 +12,8 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import managedBeans.fileProcessing.ErrorsControlMB;
+import managedBeans.fileProcessing.RecordDataMB;
 import managedBeans.fileProcessing.RelationshipOfVariablesMB;
 import org.primefaces.model.DualListModel;
 import org.primefaces.model.LazyDataModel;
@@ -25,6 +27,8 @@ import org.primefaces.model.LazyDataModel;
 public class CopyMB{
 
     RelationshipOfVariablesMB relationshipOfVariablesMB;
+    ErrorsControlMB errorsControlMB;
+    RecordDataMB recordDataMB;
     private final FilterConnection connection;
     //copy
     private String copy_field;
@@ -88,6 +92,8 @@ public class CopyMB{
 
         FacesContext context = FacesContext.getCurrentInstance();
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
+        errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
+        recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
         connection = new FilterConnection();
         connection.connect();
         // copy
@@ -174,6 +180,8 @@ public class CopyMB{
         } catch (Exception e) {
         }
         relationshipOfVariablesMB.refresh();
+        errorsControlMB.reset();
+        recordDataMB.reset();
     }
 
     public void cleanBackupTables() {
