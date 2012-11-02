@@ -4,18 +4,22 @@
  */
 package managedBeans.duplicateSets;
 
-import managedBeans.recordSets.*;
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.forms.AccidentalMB;
+import managedBeans.recordSets.RecordSetsMB;
 import model.dao.*;
 import model.pojo.*;
 import org.apache.poi.hssf.usermodel.*;
@@ -24,7 +28,7 @@ import org.apache.poi.hssf.usermodel.*;
  *
  * @author SANTOS
  */
-@ManagedBean(name = "recordSetsAccidentalMB")
+@ManagedBean(name = "duplicateSetsAccidentalMB")
 @SessionScoped
 public class DuplicateSetsAccidentalMB implements Serializable {
 
@@ -32,8 +36,7 @@ public class DuplicateSetsAccidentalMB implements Serializable {
     @EJB
     TagsFacade tagsFacade;
     private List<Tags> tagsList;
-    private Tags currentTag;
-    private FatalInjuryAccident currentFatalInjuryAccident;
+    //private NonFatalInjuries currentNonFatalInjury;
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     @EJB
@@ -53,28 +56,38 @@ public class DuplicateSetsAccidentalMB implements Serializable {
     @EJB
     FatalInjuryAccidentFacade fatalInjuryAccidentFacade;
     @EJB
-    FatalInjuriesFacade fatalInjuriesFacade;
-    @EJB
     NeighborhoodsFacade neighborhoodsFacade;
+    @EJB
+    InjuriesFacade injuriesFacade;
     @EJB
     CountriesFacade countriesFacade;
     private List<RowDataTable> rowDataTableList;
-    //private RowDataTable selectedRowDataTable;
-    private RowDataTable[] selectedRowsDataTable;
+    private List<RowDataTable> rowDuplicatedTableList;
+    private RowDataTable selectedRowDataTable;
+    private RowDataTable selectedRowDuplicatedTable;
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
     private String name = "";
     private String newName = "";
-    private boolean btnEditDisabled = true;
+    private boolean btnViewDisabled = true;
     private boolean btnRemoveDisabled = true;
     private String data = "-";
     private String hours = "";
     private String minutes = "";
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
-    private AccidentalMB accidentalMB;
     private String openForm = "";
     private RecordSetsMB recordSetsMB;
+    ConnectionJdbcMB connectionJdbcMB;
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa
+     * variables y carga la conexion por jdbc
+     */
+
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+    }
 
     public DuplicateSetsAccidentalMB() {
     }
@@ -88,22 +101,164 @@ public class DuplicateSetsAccidentalMB implements Serializable {
         FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
-    public void openInForm() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        accidentalMB = (AccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{accidentalMB}", AccidentalMB.class);
-        accidentalMB.loadValues(tagsList, currentFatalInjuryAccident);
-        openForm = "accidental";
+    public void loadDuplicatedRecords() {
+        /*
+         * saca la lista con todos lo s campos de los registros que pueden ser
+         * duplicados de un
+         */
+        if (selectedRowDuplicatedTable != null) {
+            try {
+                rowDataTableList = new ArrayList<RowDataTable>();
+                int id;
+                //cargo el registro con el que estoy comparando
+                ResultSet resultSet2 = connectionJdbcMB.consult(""
+                        + "SELECT "
+                        + "   fatal_injuries.fatal_injury_id "
+                        + "FROM "
+                        + "   fatal_injuries "
+                        + "WHERE"
+                        + "   fatal_injuries.victim_id = " + selectedRowDuplicatedTable.getColumn1() + "");
+                resultSet2.next();
+                id = Integer.parseInt(resultSet2.getString(1));
+                rowDataTableList.add(loadValues("", fatalInjuryAccidentFacade.find(id)));
+
+
+                String sql = "";
+                sql = sql + "SELECT ";
+                sql = sql + "t1.victim_id ";
+                sql = sql + "FROM ";
+                sql = sql + "duplicate t1, duplicate t2 ";
+                sql = sql + "WHERE ";
+                sql = sql + "t2.victim_id = " + selectedRowDuplicatedTable.getColumn1() + " ";
+                sql = sql + "AND t1.victim_id != t2.victim_id ";
+                sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 6 ";
+                sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 6 ";
+                ResultSet resultSetCount = connectionJdbcMB.consult(sql);
+
+
+                id = -1;
+                int cont = 0;
+                //cargo los posibles duplicados 
+
+                while (resultSetCount.next()) {
+                    resultSet2 = connectionJdbcMB.consult(""
+                            + "SELECT "
+                            + "   fatal_injuries.fatal_injury_id "
+                            + "FROM "
+                            + "   fatal_injuries "
+                            + "WHERE"
+                            + "   fatal_injuries.victim_id = " + resultSetCount.getString("victim_id") + "");
+                    resultSet2.next();
+                    cont++;
+                    id = Integer.parseInt(resultSet2.getString(1));
+                    rowDataTableList.add(loadValues("", fatalInjuryAccidentFacade.find(id)));
+                }
+                if (id == -1) {
+                    printMessage(FacesMessage.SEVERITY_WARN, "Sin datos", "La búsqueda no produjo resultados");
+                } else {
+                    printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se encontraron " + String.valueOf(cont) + " posibles duplicados");
+                }
+                selectedRowDataTable = null;
+            } catch (SQLException ex) {
+                //Logger.getLogger(DuplicateRecordsMB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public void loadDuplicatedList() {
+        selectedRowDuplicatedTable = null;
+        selectedRowDataTable = null;
+        rowDataTableList = new ArrayList<RowDataTable>();
+        rowDuplicatedTableList = new ArrayList<RowDataTable>();
+        btnViewDisabled = true;
+        btnRemoveDisabled = true;
+
+        /*
+         * saca una lista con el nombre, identificacion y numero registros que
+         * posiblemente son duplicados
+         */
+        try {
+            String sql = "DROP VIEW IF EXISTS duplicate";
+            connectionJdbcMB.non_query(sql);
+            sql = "create view duplicate as "
+                    + "SELECT "
+                    + "   * "
+                    + "FROM "
+                    + "   victims "
+                    + "WHERE ";
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (i == 0) {
+                    sql = sql + " tag_id = " + tagsList.get(i).getTagId().toString() + " ";
+                } else {
+                    sql = sql + " OR tag_id = " + tagsList.get(i).getTagId().toString() + " ";
+                }
+            }
+            connectionJdbcMB.non_query(sql);
+            rowDuplicatedTableList = new ArrayList<RowDataTable>();
+            sql = "Select * from duplicate";
+            ResultSet resultSetFileData = connectionJdbcMB.consult(sql);
+            ArrayList<String> addedRecords = new ArrayList<String>();;
+            boolean first;
+            boolean found;
+            int countRegisters;
+            while (resultSetFileData.next()) {
+                //contamos el numero de registros que pueden ser posibles repeticiones
+                //si supera la validacion se agregamos a la lista
+                found = false;
+                for (int i = 0; i < addedRecords.size(); i++) {//saber si ya fue evaluado
+                    if (resultSetFileData.getString("victim_id").compareTo(addedRecords.get(i)) == 0) {
+                        found = true;
+                    }
+                }
+                if (!found) {//el elemento no ha sido evaluado ni adicionado
+                    sql = "";
+                    sql = sql + "SELECT ";
+                    sql = sql + "t1.victim_id ";
+                    sql = sql + "FROM ";
+                    sql = sql + "duplicate t1, duplicate t2 ";
+                    sql = sql + "WHERE ";
+                    sql = sql + "t2.victim_id = " + resultSetFileData.getString("victim_id") + " ";
+                    sql = sql + "AND t1.victim_id != t2.victim_id ";
+                    sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 6 ";
+                    sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 6 ";
+                    ResultSet resultSetCount = connectionJdbcMB.consult(sql);
+                    first = true;
+                    countRegisters = 0;
+                    while (resultSetCount.next()) {
+                        countRegisters++;
+                        if (first) {
+                            addedRecords.add(resultSetFileData.getString("victim_id"));
+                            first = false;
+                        }
+                        addedRecords.add(resultSetCount.getString("victim_id"));
+                    }
+                    if (countRegisters != 0) {//adiciono el registro a la tabla
+                        rowDuplicatedTableList.add(new RowDataTable(
+                                resultSetFileData.getString("victim_id"),
+                                resultSetFileData.getString("victim_nid"),
+                                resultSetFileData.getString("victim_name"),
+                                String.valueOf(countRegisters)));
+                    }
+                }
+            }
+            selectedRowDataTable = null;
+        } catch (SQLException ex) {
+            //Logger.getLogger(DuplicateRecordsMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void loadValues(RowDataTable[] selectedRowsDataTableTags) {
-
+        /*
+         * se llama a esta funcion desde record sets cuando se presiona el boton
+         * "registros duplicados"
+         */
         FacesContext context = FacesContext.getCurrentInstance();
         recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
         recordSetsMB.setProgress(0);
         int totalRegisters = 0;
         int totalProcess = 0;
 
-        selectedRowsDataTable = null;
+        selectedRowDataTable = null;
         rowDataTableList = new ArrayList<RowDataTable>();
         data = "- ";
         //CREO LA LISTA DE TAGS SELECCIONADOS
@@ -116,121 +271,12 @@ public class DuplicateSetsAccidentalMB implements Serializable {
         for (int i = 0; i < tagsList.size(); i++) {
             totalRegisters = totalRegisters + fatalInjuryAccidentFacade.countFromTag(tagsList.get(i).getTagId());
         }
-
-        //RECORRO CADA TAG Y CARGO UN LISTADO DE SUS REGISTROS
-        List<FatalInjuryAccident> fatalInjuryAccidentList;
-        for (int i = 0; i < tagsList.size(); i++) {
-            fatalInjuryAccidentList = fatalInjuryAccidentFacade.findFromTag(tagsList.get(i).getTagId());
-            if (fatalInjuryAccidentList != null) {
-                for (int j = 0; j < fatalInjuryAccidentList.size(); j++) {
-                    rowDataTableList.add(loadValues(fatalInjuryAccidentList.get(j)));
-                    totalProcess++;
-                    if (totalRegisters != 0) {
-                        recordSetsMB.setProgress((int) (totalProcess * 100) / totalRegisters);
-                    }
-                }
-            }
-        }
+        loadDuplicatedList();
     }
 
-    private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
-        HSSFCell cell;
-        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
-        cell.setCellValue(new HSSFRichTextString(value));
-        cell.setCellStyle(cellStyle);
-    }
-
-    private void createCell(HSSFRow fila, int position, String value) {
-        HSSFCell cell;
-        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
-        cell.setCellValue(new HSSFRichTextString(value));
-    }
-
-    public void postProcessXLS(Object document) {
-        HSSFWorkbook book = (HSSFWorkbook) document;
-        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
-        HSSFRow row;
-        HSSFCellStyle cellStyle = book.createCellStyle();
-        HSSFFont font = book.createFont();
-        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-        cellStyle.setFont(font);
-
-
-
-        row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
-
-
-        createCell(cellStyle, row, 0, "CODIGO INTERNO");//"100">#{rowX.column1}</p:column>
-        createCell(cellStyle, row, 1, "CODIGO");//"100">#{rowX.column23}</p:column>                                
-        createCell(cellStyle, row, 2, "FECHA HECHO");//"100">#{rowX.column13}</p:column>
-        createCell(cellStyle, row, 3, "DIA EN SEMANA");//"100">#{rowX.column20}</p:column>
-        createCell(cellStyle, row, 4, "HORA HECHO");//"100">#{rowX.column14}</p:column>
-        createCell(cellStyle, row, 5, "DIRECCION HECHO");//"400">#{rowX.column15}</p:column>
-        createCell(cellStyle, row, 6, "BARRIO HECHO");//"250">#{rowX.column16}</p:column>
-        createCell(cellStyle, row, 7, "AREA HECHO");//"100">#{rowX.column24}</p:column>
-        createCell(cellStyle, row, 8, "CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
-        createCell(cellStyle, row, 9, "NUMERO VICTIMAS EN HECHO");//"100">#{rowX.column18}</p:column>
-        createCell(cellStyle, row, 10, "NUMERO LESIONADOS EN ECHO");//"250">#{rowX.column28}</p:column>        
-        createCell(cellStyle, row, 11, "NOMBRES Y APELLIDOS");//"400">#{rowX.column4}</p:column>
-        createCell(cellStyle, row, 12, "SEXO");//"100">#{rowX.column8}</p:column> 
-        createCell(cellStyle, row, 13, "TIPO EDAD");//"100">#{rowX.column6}</p:column>
-        createCell(cellStyle, row, 14, "EDAD");//"100">#{rowX.column7}</p:column> 
-        createCell(cellStyle, row, 15, "OCUPACION");//"100">#{rowX.column9}</p:column> 
-        createCell(cellStyle, row, 16, "TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
-        createCell(cellStyle, row, 17, "IDENTIFICACION");//"100">#{rowX.column3}</p:column>
-        createCell(cellStyle, row, 18, "EXTRANJERO");//"100">#{rowX.column5}</p:column>
-        createCell(cellStyle, row, 19, "DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
-        createCell(cellStyle, row, 20, "MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
-        createCell(cellStyle, row, 21, "BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>                                
-        createCell(cellStyle, row, 22, "PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
-        createCell(cellStyle, row, 23, "DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
-        createCell(cellStyle, row, 24, "MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>        
-        createCell(cellStyle, row, 25, "ARMA O CAUSA DE MUERTE");//"200">#{rowX.column29}</p:column>                                    
-        createCell(cellStyle, row, 26, "NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>                                
-        createCell(cellStyle, row, 27, "NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
-        createCell(cellStyle, row, 28, "TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
-
-
-
-        for (int i = 0; i < rowDataTableList.size(); i++) {
-            row = sheet.createRow(i + 1);
-            createCell(row, 0, rowDataTableList.get(i).getColumn1());//CODIGO INTERNO"
-            createCell(row, 1, rowDataTableList.get(i).getColumn23());//CODIGO"
-            createCell(row, 2, rowDataTableList.get(i).getColumn13());//FECHA HECHO"
-            createCell(row, 3, rowDataTableList.get(i).getColumn20());//DIA EN SEMANA"
-            createCell(row, 4, rowDataTableList.get(i).getColumn14());//HORA HECHO"
-            createCell(row, 5, rowDataTableList.get(i).getColumn15());//DIRECCION HECHO"
-            createCell(row, 6, rowDataTableList.get(i).getColumn16());//BARRIO HECHO"
-            createCell(row, 7, rowDataTableList.get(i).getColumn24());//AREA HECHO"
-            createCell(row, 8, rowDataTableList.get(i).getColumn17());//CLASE DE LUGAR"
-            createCell(row, 9, rowDataTableList.get(i).getColumn18());//NUMERO VICTIMAS EN HECHO"
-            createCell(row, 10, rowDataTableList.get(i).getColumn28());//NUMERO LESIONADOS EN ECHO"
-            createCell(row, 11, rowDataTableList.get(i).getColumn4());//NOMBRES Y APELLIDOS"
-            createCell(row, 12, rowDataTableList.get(i).getColumn8());//SEXO"
-            createCell(row, 13, rowDataTableList.get(i).getColumn6());//TIPO EDAD"
-            createCell(row, 14, rowDataTableList.get(i).getColumn7());//EDAD"
-            createCell(row, 15, rowDataTableList.get(i).getColumn9());//OCUPACION"
-            createCell(row, 16, rowDataTableList.get(i).getColumn2());//TIPO IDENTIFICACION"
-            createCell(row, 17, rowDataTableList.get(i).getColumn3());//IDENTIFICACION"
-            createCell(row, 18, rowDataTableList.get(i).getColumn5());//EXTRANJERO"
-            createCell(row, 19, rowDataTableList.get(i).getColumn12());//DEPARTAMENTO RESIDENCIA"
-            createCell(row, 20, rowDataTableList.get(i).getColumn11());//MUNICIPIO RESIDENCIA"
-            createCell(row, 21, rowDataTableList.get(i).getColumn10());//BARRIO RESIDENCIA"
-            createCell(row, 22, rowDataTableList.get(i).getColumn25());//PAIS PROCEDENCIA"
-            createCell(row, 23, rowDataTableList.get(i).getColumn26());//DEPARTAMENTO PROCEDENCIA"
-            createCell(row, 24, rowDataTableList.get(i).getColumn27());//MUNICIPIO PROCEDENCIA"
-            createCell(row, 25, rowDataTableList.get(i).getColumn29());//ARMA O CAUSA DE MUERTE"
-            createCell(row, 26, rowDataTableList.get(i).getColumn19());//NARRACION DEL HECHO"
-            createCell(row, 27, rowDataTableList.get(i).getColumn21());//NIVEL DE ALCOHOL"
-            createCell(row, 28, rowDataTableList.get(i).getColumn22());//TIPO NIVEL DE ALCOHOL"
-
-        }
-
-    }
-
-    private RowDataTable loadValues(FatalInjuryAccident currentFatalInjuryA) {
+    private RowDataTable loadValues(String c, FatalInjuryAccident currentFatalInjuryA) {
         //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
-        btnEditDisabled = true;
+
         btnRemoveDisabled = true;
         RowDataTable newRowDataTable = new RowDataTable();
         //------------------------------------------------------------
@@ -472,54 +518,65 @@ public class DuplicateSetsAccidentalMB implements Serializable {
         return newRowDataTable;
     }
 
-    public void load() {
-        currentFatalInjuryAccident = null;
-        btnEditDisabled = true;
+    public void rowDuplicatedTableListSelect() {
+        selectedRowDataTable = null;
+        rowDataTableList = new ArrayList<RowDataTable>();
+        btnViewDisabled = true;
         btnRemoveDisabled = true;
-        if (selectedRowsDataTable != null) {
-            if (selectedRowsDataTable.length > 1) {
-                currentFatalInjuryAccident = fatalInjuryAccidentFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
-            }
-            if (selectedRowsDataTable.length > 1) {
-                btnEditDisabled = true;
+        if (selectedRowDuplicatedTable != null) {
+            loadDuplicatedRecords();
+        }
+    }
+
+    public void rowDataTableListSelect() {
+        //currentNonFatalInjury = null;
+        btnRemoveDisabled = true;
+        if (selectedRowDataTable != null) {
+            if (selectedRowDataTable.getColumn1().compareTo("COMPARADO") != 0) {
                 btnRemoveDisabled = false;
-            } else {
-                btnEditDisabled = false;
-                btnRemoveDisabled = false;
             }
+            //currentNonFatalInjury = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
         }
     }
 
     public void deleteRegistry() {
-        if (selectedRowsDataTable != null) {
-            List<FatalInjuryAccident> fatalInjuryAccidentList = new ArrayList<FatalInjuryAccident>();
-            for (int j = 0; j < selectedRowsDataTable.length; j++) {
-                fatalInjuryAccidentList.add(fatalInjuryAccidentFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
-            }
-            if (fatalInjuryAccidentList != null) {
-                for (int j = 0; j < fatalInjuryAccidentList.size(); j++) {
-                    FatalInjuries auxFatalInjuries = fatalInjuryAccidentList.get(j).getFatalInjuries();
-                    Victims auxVictims = fatalInjuryAccidentList.get(j).getFatalInjuries().getVictimId();
-                    fatalInjuryAccidentFacade.remove(fatalInjuryAccidentList.get(j));
-                    fatalInjuriesFacade.remove(auxFatalInjuries);
-                    victimsFacade.remove(auxVictims);
-                }
-            }
-            //quito los elementos seleccionados de rowsDataTableList seleccion de 
-            for (int j = 0; j < selectedRowsDataTable.length; j++) {
-                for (int i = 0; i < rowDataTableList.size(); i++) {
-                    if (selectedRowsDataTable[j].getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
-                        rowDataTableList.remove(i);
-                        break;
-                    }
-                }
-            }
-            //deselecciono los controles
-            selectedRowsDataTable = null;
-            btnEditDisabled = true;
-            btnRemoveDisabled = true;
-            printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
-        }
+//        if (selectedRowDataTable != null) {
+//            List<NonFatalInjuries> nonFatalInjuriesList = new ArrayList<NonFatalInjuries>();
+//            nonFatalInjuriesList.add(nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1())));
+//            if (nonFatalInjuriesList != null) {
+//                for (int j = 0; j < nonFatalInjuriesList.size(); j++) {
+//                    if (nonFatalInjuriesList.get(j).getNonFatalDomesticViolence() != null) {
+//                        nonFatalDomesticViolenceFacade.remove(nonFatalInjuriesList.get(j).getNonFatalDomesticViolence());
+//                    }
+//                    if (nonFatalInjuriesList.get(j).getNonFatalInterpersonal() != null) {
+//                        nonFatalInterpersonalFacade.remove(nonFatalInjuriesList.get(j).getNonFatalInterpersonal());
+//                    }
+//                    if (nonFatalInjuriesList.get(j).getNonFatalSelfInflicted() != null) {
+//                        nonFatalSelfInflictedFacade.remove(nonFatalInjuriesList.get(j).getNonFatalSelfInflicted());
+//                    }
+//                    if (nonFatalInjuriesList.get(j).getNonFatalTransport() != null) {
+//                        nonFatalTransportFacade.remove(nonFatalInjuriesList.get(j).getNonFatalTransport());
+//                    }
+//                    nonFatalInjuriesFacade.remove(nonFatalInjuriesList.get(j));
+//                    victimsFacade.remove(nonFatalInjuriesList.get(j).getVictimId());
+//                    //----------------------------------------------------------
+//                }
+//                printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
+//            } else {
+//                printMessage(FacesMessage.SEVERITY_WARN, "Alerta", "El registro seleccionado es quien se esta comparando, por tanto no se puede eliminar");
+//            }
+//            //quito los elementos seleccionados de rowsDataTableList seleccion de 
+//            for (int i = 0; i < rowDataTableList.size(); i++) {
+//                if (selectedRowDataTable.getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
+//                    rowDataTableList.remove(i);
+//                    break;
+//                }
+//            }
+//            //deselecciono los controles
+//            selectedRowDataTable = null;
+//            btnRemoveDisabled = true;
+//
+//        }
     }
 
     public List<RowDataTable> getRowDataTableList() {
@@ -530,19 +587,28 @@ public class DuplicateSetsAccidentalMB implements Serializable {
         this.rowDataTableList = rowDataTableList;
     }
 
-//    public RowDataTable getSelectedRowDataTable() {
-//        return selectedRowDataTable;
-//    }
-//
-//    public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
-//        this.selectedRowDataTable = selectedRowDataTable;
-//    }
-    public RowDataTable[] getSelectedRowsDataTable() {
-        return selectedRowsDataTable;
+    public List<RowDataTable> getRowDuplicatedTableList() {
+        return rowDuplicatedTableList;
     }
 
-    public void setSelectedRowsDataTable(RowDataTable[] selectedRowsDataTable) {
-        this.selectedRowsDataTable = selectedRowsDataTable;
+    public void setRowDuplicatedTableList(List<RowDataTable> rowDuplicatedTableList) {
+        this.rowDuplicatedTableList = rowDuplicatedTableList;
+    }
+
+    public RowDataTable getSelectedRowDuplicatedTable() {
+        return selectedRowDuplicatedTable;
+    }
+
+    public void setSelectedRowDuplicatedTable(RowDataTable selectedRowDuplicatedTable) {
+        this.selectedRowDuplicatedTable = selectedRowDuplicatedTable;
+    }
+
+    public RowDataTable getSelectedRowDataTable() {
+        return selectedRowDataTable;
+    }
+
+    public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
+        this.selectedRowDataTable = selectedRowDataTable;
     }
 
     public int getCurrentSearchCriteria() {
@@ -577,12 +643,12 @@ public class DuplicateSetsAccidentalMB implements Serializable {
         this.newName = newName;
     }
 
-    public boolean isBtnEditDisabled() {
-        return btnEditDisabled;
+    public boolean isBtnViewDisabled() {
+        return btnViewDisabled;
     }
 
-    public void setBtnEditDisabled(boolean btnEditDisabled) {
-        this.btnEditDisabled = btnEditDisabled;
+    public void setBtnViewDisabled(boolean btnViewDisabled) {
+        this.btnViewDisabled = btnViewDisabled;
     }
 
     public boolean isBtnRemoveDisabled() {

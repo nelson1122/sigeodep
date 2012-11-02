@@ -41,6 +41,9 @@ public class Fields implements Serializable {
     @NotNull
     @Column(name = "field_optional", nullable = false)
     private boolean fieldOptional;
+    @Size(max = 2147483647)
+    @Column(name = "field_name_small", length = 2147483647)
+    private String fieldNameSmall;
     @JoinColumn(name = "form_id", referencedColumnName = "form_id", nullable = false, insertable = false, updatable = false)
     @ManyToOne(optional = false)
     private Forms forms;
@@ -99,6 +102,14 @@ public class Fields implements Serializable {
 
     public void setFieldOptional(boolean fieldOptional) {
 	this.fieldOptional = fieldOptional;
+    }
+    
+    public String getFieldNameSmall() {
+        return fieldNameSmall;
+    }
+
+    public void setFieldNameSmall(String fieldNameSmall) {
+        this.fieldNameSmall = fieldNameSmall;
     }
 
     public Forms getForms() {

@@ -4,7 +4,8 @@
  */
 package managedBeans.forms;
 
-import beans.connection.ConnectionJDBC;
+
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -16,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -201,9 +203,17 @@ public class SuicideMB implements Serializable {
     private String openDialogDelete = "";
     private Calendar c = Calendar.getInstance();
     private String stylePosition = "color: #1471B1;";
-    private String currentIdForm = "";
-    
+    private String currentIdForm = "";    
     private Users currentUser;
+    ConnectionJdbcMB connectionJdbcMB;
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * variables y carga la conexion por jdbc
+     */
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+    }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
@@ -232,6 +242,7 @@ public class SuicideMB implements Serializable {
 
     public void reset() {
         
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
         LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         currentUser=loginMB.getCurrentUser();
         loading = true;
@@ -1349,7 +1360,7 @@ public class SuicideMB implements Serializable {
     private int currentSearchCriteria = 0;
     private SelectItem[] searchCriteriaList;
     private String currentSearchValue = "";
-    ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
+    
 
     public List<RowDataTable> getRowDataTableList() {
         return rowDataTableList;
@@ -1399,8 +1410,7 @@ public class SuicideMB implements Serializable {
         if (s) {
             try {
                 rowDataTableList = new ArrayList<RowDataTable>();
-                conx = new ConnectionJDBC();
-                conx.connect();
+                
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "fatal_injuries.fatal_injury_id, ";
@@ -1439,8 +1449,7 @@ public class SuicideMB implements Serializable {
 //                sql = sql + "injuries.injury_id = 54 OR ";
 //                sql = sql + "injuries.injury_id = 55);";
                 System.out.println(sql);
-                ResultSet rs = conx.consult(sql);
-                conx.disconnect();
+                ResultSet rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
                     rowDataTableList.add(new RowDataTable(rs.getString(1), rs.getString(2), rs.getString(3)));
                     s = false;//aqui se usa para saber si hay registros

@@ -34,14 +34,14 @@ public class RelationVariables implements Serializable {
     @NotNull
     @Column(name = "id_relation_variables", nullable = false)
     private Integer idRelationVariables;
-    @Size(max = 20)
-    @Column(name = "name_expected", length = 20)
+    @Size(max = 2147483647)
+    @Column(name = "name_expected", length = 2147483647)
     private String nameExpected;
-    @Size(max = 20)
-    @Column(name = "name_found", length = 20)
+    @Size(max = 2147483647)
+    @Column(name = "name_found", length = 2147483647)
     private String nameFound;
-    @Size(max = 20)
-    @Column(name = "date_format", length = 20)
+    @Size(max = 2147483647)
+    @Column(name = "date_format", length = 2147483647)
     private String dateFormat;
     @Size(max = 2147483647)
     @Column(name = "field_type", length = 2147483647)

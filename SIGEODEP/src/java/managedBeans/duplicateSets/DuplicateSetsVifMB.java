@@ -4,18 +4,22 @@
  */
 package managedBeans.duplicateSets;
 
-import managedBeans.recordSets.*;
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.forms.VIFMB;
+import managedBeans.recordSets.RecordSetsMB;
 import model.dao.*;
 import model.pojo.*;
 import org.apache.poi.hssf.usermodel.*;
@@ -32,10 +36,9 @@ public class DuplicateSetsVifMB implements Serializable {
     @EJB
     TagsFacade tagsFacade;
     private List<Tags> tagsList;
-    private Tags currentTag;
-    private NonFatalDomesticViolence currentNonFatalDomesticViolence;
-//    @EJB
-//    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
+    //private NonFatalInjuries currentNonFatalInjury;
+    @EJB
+    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     @EJB
     NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
     @EJB
@@ -51,30 +54,42 @@ public class DuplicateSetsVifMB implements Serializable {
     @EJB
     VictimsFacade victimsFacade;
     @EJB
-    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
-    @EJB
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
+    
     @EJB
     InjuriesFacade injuriesFacade;
     private List<RowDataTable> rowDataTableList;
-    //private RowDataTable selectedRowDataTable;
-    private RowDataTable[] selectedRowsDataTable;
+    private List<RowDataTable> rowDuplicatedTableList;
+    private RowDataTable selectedRowDataTable;
+    private RowDataTable selectedRowDuplicatedTable;
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
     private String name = "";
     private String newName = "";
-    private boolean btnEditDisabled = true;
+    private boolean btnViewDisabled = true;
     private boolean btnRemoveDisabled = true;
     private String data = "-";
     private String hours = "";
     private String minutes = "";
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
-    private VIFMB vifMB;
     private String openForm = "";
     private RecordSetsMB recordSetsMB;
+    ConnectionJdbcMB connectionJdbcMB;
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa
+     * variables y carga la conexion por jdbc
+     */
+
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+    }
 
     public DuplicateSetsVifMB() {
+    }
+public String openForm() {
+        return openForm;
     }
 
     public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
@@ -82,26 +97,167 @@ public class DuplicateSetsVifMB implements Serializable {
         FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
-    public String openForm() {
-        return openForm;
+    public void loadDuplicatedRecords() {
+        /*
+         * saca la lista con todos lo s campos de los registros que pueden ser
+         * duplicados de un
+         */
+        if (selectedRowDuplicatedTable != null) {
+            try {
+                rowDataTableList = new ArrayList<RowDataTable>();
+                int id;
+                //cargo el registro con el que estoy comparando
+                ResultSet resultSet2 = connectionJdbcMB.consult(""
+                        + "SELECT "
+                        + "   non_fatal_injuries.non_fatal_injury_id "
+                        + "FROM "
+                        + "   non_fatal_injuries "
+                        + "WHERE"
+                        + "   non_fatal_injuries.victim_id = " + selectedRowDuplicatedTable.getColumn1() + "");
+                resultSet2.next();
+                id = Integer.parseInt(resultSet2.getString(1));
+                rowDataTableList.add(loadValues("", nonFatalDomesticViolenceFacade.find(id)));
+
+
+                String sql = "";
+                sql = sql + "SELECT ";
+                sql = sql + "t1.victim_id ";
+                sql = sql + "FROM ";
+                sql = sql + "duplicate t1, duplicate t2 ";
+                sql = sql + "WHERE ";
+                sql = sql + "t2.victim_id = " + selectedRowDuplicatedTable.getColumn1() + " ";
+                sql = sql + "AND t1.victim_id != t2.victim_id ";
+                sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 6 ";
+                sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 6 ";
+                ResultSet resultSetCount = connectionJdbcMB.consult(sql);
+
+
+                id = -1;
+                int cont = 0;
+                //cargo los posibles duplicados 
+
+                while (resultSetCount.next()) {
+                    resultSet2 = connectionJdbcMB.consult(""
+                            + "SELECT "
+                            + "   non_fatal_injuries.fatal_injury_id "
+                            + "FROM "
+                            + "   non_fatal_injuries "
+                            + "WHERE"
+                            + "   non_fatal_injuries.victim_id = " + resultSetCount.getString("victim_id") + "");
+                    resultSet2.next();
+                    cont++;
+                    id = Integer.parseInt(resultSet2.getString(1));
+                    rowDataTableList.add(loadValues("", nonFatalDomesticViolenceFacade.find(id)));
+                }
+                if (id == -1) {
+                    printMessage(FacesMessage.SEVERITY_WARN, "Sin datos", "La búsqueda no produjo resultados");
+                } else {
+                    printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se encontraron " + String.valueOf(cont) + " posibles duplicados");
+                }
+                selectedRowDataTable = null;
+            } catch (SQLException ex) {
+                //Logger.getLogger(DuplicateRecordsMB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+
+
     }
 
-    public void openInForm() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        vifMB = (VIFMB) context.getApplication().evaluateExpressionGet(context, "#{vifMB}", VIFMB.class);
-        vifMB.loadValues(tagsList, currentNonFatalDomesticViolence);
-        openForm = "VIF";
+    public void loadDuplicatedList() {
+        selectedRowDuplicatedTable = null;
+        selectedRowDataTable = null;
+        rowDataTableList = new ArrayList<RowDataTable>();
+        rowDuplicatedTableList = new ArrayList<RowDataTable>();
+        btnViewDisabled = true;
+        btnRemoveDisabled = true;
+
+        /*
+         * saca una lista con el nombre, identificacion y numero registros que
+         * posiblemente son duplicados
+         */
+        try {
+            String sql = "DROP VIEW IF EXISTS duplicate";
+            connectionJdbcMB.non_query(sql);
+            sql = "create view duplicate as "
+                    + "SELECT "
+                    + "   * "
+                    + "FROM "
+                    + "   victims "
+                    + "WHERE ";
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (i == 0) {
+                    sql = sql + " tag_id = " + tagsList.get(i).getTagId().toString() + " ";
+                } else {
+                    sql = sql + " OR tag_id = " + tagsList.get(i).getTagId().toString() + " ";
+                }
+            }
+            connectionJdbcMB.non_query(sql);
+            rowDuplicatedTableList = new ArrayList<RowDataTable>();
+            sql = "Select * from duplicate";
+            ResultSet resultSetFileData = connectionJdbcMB.consult(sql);
+            ArrayList<String> addedRecords = new ArrayList<String>();;
+            boolean first;
+            boolean found;
+            int countRegisters;
+            while (resultSetFileData.next()) {
+                //contamos el numero de registros que pueden ser posibles repeticiones
+                //si supera la validacion se agregamos a la lista
+                found = false;
+                for (int i = 0; i < addedRecords.size(); i++) {//saber si ya fue evaluado
+                    if (resultSetFileData.getString("victim_id").compareTo(addedRecords.get(i)) == 0) {
+                        found = true;
+                    }
+                }
+                if (!found) {//el elemento no ha sido evaluado ni adicionado
+                    sql = "";
+                    sql = sql + "SELECT ";
+                    sql = sql + "t1.victim_id ";
+                    sql = sql + "FROM ";
+                    sql = sql + "duplicate t1, duplicate t2 ";
+                    sql = sql + "WHERE ";
+                    sql = sql + "t2.victim_id = " + resultSetFileData.getString("victim_id") + " ";
+                    sql = sql + "AND t1.victim_id != t2.victim_id ";
+                    sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 6 ";
+                    sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 6 ";
+                    ResultSet resultSetCount = connectionJdbcMB.consult(sql);
+                    first = true;
+                    countRegisters = 0;
+                    while (resultSetCount.next()) {
+                        countRegisters++;
+                        if (first) {
+                            addedRecords.add(resultSetFileData.getString("victim_id"));
+                            first = false;
+                        }
+                        addedRecords.add(resultSetCount.getString("victim_id"));
+                    }
+                    if (countRegisters != 0) {//adiciono el registro a la tabla
+                        rowDuplicatedTableList.add(new RowDataTable(
+                                resultSetFileData.getString("victim_id"),
+                                resultSetFileData.getString("victim_nid"),
+                                resultSetFileData.getString("victim_name"),
+                                String.valueOf(countRegisters)));
+                    }
+                }
+            }
+            selectedRowDataTable = null;
+        } catch (SQLException ex) {
+            //Logger.getLogger(DuplicateRecordsMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void loadValues(RowDataTable[] selectedRowsDataTableTags) {
-                
+        /*
+         * se llama a esta funcion desde record sets cuando se presiona el boton
+         * "registros duplicados"
+         */
         FacesContext context = FacesContext.getCurrentInstance();
         recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
         recordSetsMB.setProgress(0);
         int totalRegisters = 0;
         int totalProcess = 0;
-        
-        selectedRowsDataTable = null;
+
+        selectedRowDataTable = null;
         rowDataTableList = new ArrayList<RowDataTable>();
         data = "- ";
         //CREO LA LISTA DE TAGS SELECCIONADOS
@@ -114,243 +270,12 @@ public class DuplicateSetsVifMB implements Serializable {
         for (int i = 0; i < tagsList.size(); i++) {
             totalRegisters = totalRegisters + nonFatalInjuriesFacade.countFromTag(tagsList.get(i).getTagId());
         }
-        //RECORRO CADA TAG Y CARGO UN LISTADO DE SUS REGISTROS
-        List<NonFatalDomesticViolence> nonFatalDomesticViolenceList;
-        for (int i = 0; i < tagsList.size(); i++) {
-            nonFatalDomesticViolenceList = nonFatalDomesticViolenceFacade.findFromTag(tagsList.get(i).getTagId());
-            if (nonFatalDomesticViolenceList != null) {
-                for (int j = 0; j < nonFatalDomesticViolenceList.size(); j++) {
-                    rowDataTableList.add(loadValues(nonFatalDomesticViolenceList.get(j)));
-                    totalProcess++;
-                    if (totalRegisters != 0) {
-                        recordSetsMB.setProgress((int) (totalProcess * 100) / totalRegisters);
-                    }
-                }
-            }
-        }
+        loadDuplicatedList();
     }
 
-    private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
-        HSSFCell cell;
-        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
-        cell.setCellValue(new HSSFRichTextString(value));
-        cell.setCellStyle(cellStyle);
-    }
-
-    private void createCell(HSSFRow fila, int position, String value) {
-        HSSFCell cell;
-        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
-        cell.setCellValue(new HSSFRichTextString(value));
-    }
-
-    public void postProcessXLS(Object document) {
-        HSSFWorkbook book = (HSSFWorkbook) document;
-        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
-        HSSFRow row;
-        HSSFCellStyle cellStyle = book.createCellStyle();
-        HSSFFont font = book.createFont();
-        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-        cellStyle.setFont(font);
-
-        row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
-        createCell(cellStyle, row, 0, "CODIGO INTERNO");//50">#{rowX.column1}</p:column>
-        createCell(cellStyle, row, 1, "INSTITUCION RECEPTORA");//50">#{rowX.column80}</p:column>
-        createCell(cellStyle, row, 2, "NOMBRES Y APELLIDOS");//400">#{rowX.column4}</p:column>                                                
-        createCell(cellStyle, row, 3, "TIPO IDENTIFICACION");//200">#{rowX.column2}</p:column>
-        createCell(cellStyle, row, 4, "IDENTIFICACION");//100">#{rowX.column3}</p:column>                
-        createCell(cellStyle, row, 5, "TIP EDAD");//100">#{rowX.column6}</p:column>                
-        createCell(cellStyle, row, 6, "EDAD CANT");//100">#{rowX.column7}</p:column>                
-        createCell(cellStyle, row, 7, "GENERO");//100">#{rowX.column8}</p:column>                
-        createCell(cellStyle, row, 8, "OCUPACION");//100">#{rowX.column9}</p:column>
-        createCell(cellStyle, row, 9, "ASEGURADORA");//300">#{rowX.column18}</p:column>
-        createCell(cellStyle, row, 10, "EXTRANJERO");//100">#{rowX.column5}</p:column>  
-        createCell(cellStyle, row, 11, "DEPARTAMENTO RESIDENCIA");//100">#{rowX.column13}</p:column>
-        createCell(cellStyle, row, 11, "MUNICIPIO RESIDENCIA");//100">#{rowX.column12}</p:column>
-        createCell(cellStyle, row, 12, "BARRIO RESIDENCIA");//250">#{rowX.column15}</p:column>
-        createCell(cellStyle, row, 13, "DIRECCION RESIDENCIA");//400">#{rowX.column14}</p:column>
-        createCell(cellStyle, row, 14, "TELEFONO");//100">#{rowX.column11}</p:column>
-
-        createCell(cellStyle, row, 15, "BARRIO EVENTO");//250">#{rowX.column36}</p:column>
-        createCell(cellStyle, row, 16, "DIRECCION EVENTO");//400">#{rowX.column35}</p:column>
-
-
-        //------------------------------------------------------------
-        //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
-        //------------------------------------------------------------        
-        createCell(cellStyle, row, 17, "FECHA EVENTO");//100">#{rowX.column33}</p:column>
-        createCell(cellStyle, row, 18, "HORA EVENTO");//100">#{rowX.column48}</p:column>
-        createCell(cellStyle, row, 19, "DIA SEMANA EVENTO");//100">#{rowX.column57}</p:column>
-        createCell(cellStyle, row, 20, "FECHA CONSULTA");//100">#{rowX.column31}</p:column>
-        createCell(cellStyle, row, 21, "HORA CONSULTA");//100">#{rowX.column32}</p:column>
-        createCell(cellStyle, row, 22, "REMITIDO");//100">#{rowX.column43}</p:column>
-        createCell(cellStyle, row, 23, "REMITIDO DE DONDE");//250">#{rowX.column44}</p:column>
-
-        createCell(cellStyle, row, 24, "LUGAR DEL HECHO");//200">#{rowX.column37}</p:column>
-        createCell(cellStyle, row, 25, "OTRO LUGAR DEL HECHO");//200">#{rowX.column19}</p:column>
-        createCell(cellStyle, row, 26, "ACTIVIDAD");//250">#{rowX.column38}</p:column>
-        createCell(cellStyle, row, 27, "OTRA ACTIVIDAD");//250">#{rowX.column20}</p:column>
-        createCell(cellStyle, row, 28, "MECANISMO / OBJETO DE LA LESION");//200">#{rowX.column46}</p:column>
-        createCell(cellStyle, row, 29, "CUAL ALTURA");//100">#{rowX.column21}</p:column>
-        createCell(cellStyle, row, 30, "CUAL POLVORA");//100">#{rowX.column22}</p:column>                                
-        createCell(cellStyle, row, 31, "CUAL OTRO MECANISMO / OBJETO");//100">#{rowX.column24}</p:column>                                
-        createCell(cellStyle, row, 32, "USO DE ALCOHOL");//150">#{rowX.column39}</p:column>
-        createCell(cellStyle, row, 33, "USO DE DROGAS");//150">#{rowX.column40}</p:column>
-
-        createCell(cellStyle, row, 34, "GRADO (QUEMADOS)");//100">#{rowX.column41}</p:column>
-        createCell(cellStyle, row, 35, "PORCENTAJE(QUEMADOS)");//100">#{rowX.column42}</p:column>
-
-
-        createCell(cellStyle, row, 36, "GRUPO ETNICO");//100">#{rowX.column10}</p:column>
-        createCell(cellStyle, row, 37, "OTRO GRUPO ETNICO");//100">#{rowX.column26}</p:column>
-        createCell(cellStyle, row, 38, "GRUPO VULNERABLE");//100">#{rowX.column16}</p:column>
-        createCell(cellStyle, row, 39, "OTRO GRUPO VULNERABLE");//100">#{rowX.column27}</p:column>
-
-
-        //tipo de agresor
-        createCell(cellStyle, row, 40, "AG1 PADRE(VIF)");//100">#{rowX.column49}</p:column>
-        createCell(cellStyle, row, 41, "AG2 MADRE(VIF)");//100">#{rowX.column50}</p:column>
-        createCell(cellStyle, row, 42, "AG3 PADRASTRO(VIF)");//100">#{rowX.column51}</p:column>
-        createCell(cellStyle, row, 43, "AG4 MADRASTRA(VIF)");//100">#{rowX.column52}</p:column>
-        createCell(cellStyle, row, 44, "AG5 CONYUGE(VIF)");//100">#{rowX.column53}</p:column>
-        createCell(cellStyle, row, 45, "AG6 HERMANO(VIF)");//100">#{rowX.column54}</p:column>
-        createCell(cellStyle, row, 46, "AG7 HIJO(VIF)");//100">#{rowX.column55}</p:column>
-        createCell(cellStyle, row, 47, "AG8 OTRO(VIF)");//100">#{rowX.column56}</p:column>
-        createCell(cellStyle, row, 48, "CUAL OTRO AGRESOR(VIF)");//100">#{rowX.column28}</p:column>
-        createCell(cellStyle, row, 49, "AG9 SIN DATO(VIF)");//100">#{rowX.column57}</p:column>
-        createCell(cellStyle, row, 50, "AG10 NOVIO(VIF)");//100">#{rowX.column58}</p:column>                                
-
-        //tipo de maltrato
-        createCell(cellStyle, row, 51, "MA1 FISICO(VIF)");//100">#{rowX.column59}</p:column>
-        createCell(cellStyle, row, 52, "MA2 PSICOLOGICO(VIF)");//100">#{rowX.column60}</p:column>
-        createCell(cellStyle, row, 53, "MA3 VIOLENCIA SEXUAL(VIF)");//100">#{rowX.column61}</p:column>
-        createCell(cellStyle, row, 54, "MA4 NEGLIGENCIA(VIF)");//100">#{rowX.column62}</p:column>
-        createCell(cellStyle, row, 55, "MA5 ABANDONO(VIF)");//100">#{rowX.column63}</p:column>
-        createCell(cellStyle, row, 56, "MA6 INSTITUCIONAL(VIF)");//100">#{rowX.column64}</p:column>
-        createCell(cellStyle, row, 57, "MA SIN DATO(VIF)");//100">#{rowX.column65}</p:column>
-        createCell(cellStyle, row, 58, "MA8 OTRO(VIF)");//100">#{rowX.column66}</p:column>
-        createCell(cellStyle, row, 59, "CUAL OTRO TIPO MALTRATO(VIF)");//100">#{rowX.column29}</p:column>
-
-        //acciones a realizar
-        createCell(cellStyle, row, 60, "AR1 CONCILIACION");//100">#{rowX.column67}</p:column>
-        createCell(cellStyle, row, 61, "AR2 CAUCION");//100">#{rowX.column68}</p:column>
-        createCell(cellStyle, row, 62, "AR3 DICTAMEN MEDICINA LEGAL");//100">#{rowX.column69}</p:column>
-        createCell(cellStyle, row, 63, "AR4 REMISION FISCALIA");//100">#{rowX.column70}</p:column>
-        createCell(cellStyle, row, 64, "AR5 REMISION MEDICINA LEGAL");//100">#{rowX.column71}</p:column>
-        createCell(cellStyle, row, 65, "AR6 REMISION COM FAMILIA");//100">#{rowX.column72}</p:column>
-        createCell(cellStyle, row, 66, "AR7 REMISION ICBF");//100">#{rowX.column73}</p:column>
-        createCell(cellStyle, row, 67, "AR8 MEDIDAS PROTECCION");//100">#{rowX.column74}</p:column>
-        createCell(cellStyle, row, 68, "AR9 REMISION A SALUD");//100">#{rowX.column75}</p:column>
-        createCell(cellStyle, row, 69, "AR10 ATENCION PSICOSOCIAL");//100">#{rowX.column76}</p:column>
-        createCell(cellStyle, row, 70, "AR11 RESTABLECIMIENTO DERECHOS");//100">#{rowX.column77}</p:column>
-        createCell(cellStyle, row, 71, "AR12 OTRA?");//100">#{rowX.column78}</p:column>
-        createCell(cellStyle, row, 72, "AR CUAL OTRA");//100">#{rowX.column30}</p:column>
-        createCell(cellStyle, row, 73, "AR13 SIN DATO");//100">#{rowX.column79}</p:column>
-
-
-
-        for (int i = 0; i < rowDataTableList.size(); i++) {
-            row = sheet.createRow(i + 1);
-
-            createCell(row, 0, rowDataTableList.get(i).getColumn1());//"CODIGO INTERNO");//50">#{rowX.column1}</p:column>
-            createCell(row, 1, rowDataTableList.get(i).getColumn80());//"INSTITUCION RECEPTORA");//50">#{rowX.column80}</p:column>
-            createCell(row, 2, rowDataTableList.get(i).getColumn4());//"NOMBRES Y APELLIDOS");//400">#{rowX.column4}</p:column>                                                
-            createCell(row, 3, rowDataTableList.get(i).getColumn2());//"TIPO IDENTIFICACION");//200">#{rowX.column2}</p:column>
-            createCell(row, 4, rowDataTableList.get(i).getColumn3());//"IDENTIFICACION");//100">#{rowX.column3}</p:column>                
-            createCell(row, 5, rowDataTableList.get(i).getColumn6());//"TIP EDAD");//100">#{rowX.column6}</p:column>                
-            createCell(row, 6, rowDataTableList.get(i).getColumn7());//"EDAD CANT");//100">#{rowX.column7}</p:column>                
-            createCell(row, 7, rowDataTableList.get(i).getColumn8());//"GENERO");//100">#{rowX.column8}</p:column>                
-            createCell(row, 8, rowDataTableList.get(i).getColumn9());//"OCUPACION");//100">#{rowX.column9}</p:column>
-            createCell(row, 9, rowDataTableList.get(i).getColumn18());//"ASEGURADORA");//300">#{rowX.column18}</p:column>
-            createCell(row, 10, rowDataTableList.get(i).getColumn5());//"EXTRANJERO");//100">#{rowX.column5}</p:column>  
-            createCell(row, 11, rowDataTableList.get(i).getColumn13());//"DEPARTAMENTO RESIDENCIA");//100">#{rowX.column13}</p:column>
-            createCell(row, 11, rowDataTableList.get(i).getColumn12());//"MUNICIPIO RESIDENCIA");//100">#{rowX.column12}</p:column>
-            createCell(row, 12, rowDataTableList.get(i).getColumn15());//"BARRIO RESIDENCIA");//250">#{rowX.column15}</p:column>
-            createCell(row, 13, rowDataTableList.get(i).getColumn14());//"DIRECCION RESIDENCIA");//400">#{rowX.column14}</p:column>
-            createCell(row, 14, rowDataTableList.get(i).getColumn11());//"TELEFONO");//100">#{rowX.column11}</p:column>
-
-            createCell(row, 15, rowDataTableList.get(i).getColumn36());//"BARRIO EVENTO");//250">#{rowX.column36}</p:column>
-            createCell(row, 16, rowDataTableList.get(i).getColumn35());//"DIRECCION EVENTO");//400">#{rowX.column35}</p:column>
-
-
-            //------------------------------------------------------------
-            //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
-            //------------------------------------------------------------        
-            createCell(row, 17, rowDataTableList.get(i).getColumn33());//"FECHA EVENTO");//100">#{rowX.column33}</p:column>
-            createCell(row, 18, rowDataTableList.get(i).getColumn48());//"HORA EVENTO");//100">#{rowX.column48}</p:column>
-            createCell(row, 19, rowDataTableList.get(i).getColumn57());//"DIA SEMANA EVENTO");//100">#{rowX.column57}</p:column>
-            createCell(row, 20, rowDataTableList.get(i).getColumn31());//"FECHA CONSULTA");//100">#{rowX.column31}</p:column>
-            createCell(row, 21, rowDataTableList.get(i).getColumn32());//"HORA CONSULTA");//100">#{rowX.column32}</p:column>
-            createCell(row, 22, rowDataTableList.get(i).getColumn43());//"REMITIDO");//100">#{rowX.column43}</p:column>
-            createCell(row, 23, rowDataTableList.get(i).getColumn44());//"REMITIDO DE DONDE");//250">#{rowX.column44}</p:column>
-
-            createCell(row, 24, rowDataTableList.get(i).getColumn37());//"LUGAR DEL HECHO");//200">#{rowX.column37}</p:column>
-            createCell(row, 25, rowDataTableList.get(i).getColumn19());//"OTRO LUGAR DEL HECHO");//200">#{rowX.column19}</p:column>
-            createCell(row, 26, rowDataTableList.get(i).getColumn38());//"ACTIVIDAD");//250">#{rowX.column38}</p:column>
-            createCell(row, 27, rowDataTableList.get(i).getColumn20());//"OTRA ACTIVIDAD");//250">#{rowX.column20}</p:column>
-            createCell(row, 28, rowDataTableList.get(i).getColumn46());//"MECANISMO / OBJETO DE LA LESION");//200">#{rowX.column46}</p:column>
-            createCell(row, 29, rowDataTableList.get(i).getColumn21());//"CUAL ALTURA");//100">#{rowX.column21}</p:column>
-            createCell(row, 30, rowDataTableList.get(i).getColumn22());//"CUAL POLVORA");//100">#{rowX.column22}</p:column>                                
-            createCell(row, 31, rowDataTableList.get(i).getColumn24());//"CUAL OTRO MECANISMO / OBJETO");//100">#{rowX.column24}</p:column>                                
-            createCell(row, 32, rowDataTableList.get(i).getColumn39());//"USO DE ALCOHOL");//150">#{rowX.column39}</p:column>
-            createCell(row, 33, rowDataTableList.get(i).getColumn40());//"USO DE DROGAS");//150">#{rowX.column40}</p:column>
-
-            createCell(row, 34, rowDataTableList.get(i).getColumn41());//"GRADO (QUEMADOS)");//100">#{rowX.column41}</p:column>
-            createCell(row, 35, rowDataTableList.get(i).getColumn42());//"PORCENTAJE(QUEMADOS)");//100">#{rowX.column42}</p:column>
-
-
-            createCell(row, 36, rowDataTableList.get(i).getColumn10());//"GRUPO ETNICO");//100">#{rowX.column10}</p:column>
-            createCell(row, 37, rowDataTableList.get(i).getColumn26());//"OTRO GRUPO ETNICO");//100">#{rowX.column26}</p:column>
-            createCell(row, 38, rowDataTableList.get(i).getColumn16());//"GRUPO VULNERABLE");//100">#{rowX.column16}</p:column>
-            createCell(row, 39, rowDataTableList.get(i).getColumn27());//"OTRO GRUPO VULNERABLE");//100">#{rowX.column27}</p:column>
-
-
-            //tipo de agresor
-            createCell(row, 40, rowDataTableList.get(i).getColumn49());//"AG1 PADRE(VIF)");//100">#{rowX.column49}</p:column>
-            createCell(row, 41, rowDataTableList.get(i).getColumn50());//"AG2 MADRE(VIF)");//100">#{rowX.column50}</p:column>
-            createCell(row, 42, rowDataTableList.get(i).getColumn51());//"AG3 PADRASTRO(VIF)");//100">#{rowX.column51}</p:column>
-            createCell(row, 43, rowDataTableList.get(i).getColumn52());//"AG4 MADRASTRA(VIF)");//100">#{rowX.column52}</p:column>
-            createCell(row, 44, rowDataTableList.get(i).getColumn53());//"AG5 CONYUGE(VIF)");//100">#{rowX.column53}</p:column>
-            createCell(row, 45, rowDataTableList.get(i).getColumn54());//"AG6 HERMANO(VIF)");//100">#{rowX.column54}</p:column>
-            createCell(row, 46, rowDataTableList.get(i).getColumn55());//"AG7 HIJO(VIF)");//100">#{rowX.column55}</p:column>
-            createCell(row, 47, rowDataTableList.get(i).getColumn56());//"AG8 OTRO(VIF)");//100">#{rowX.column56}</p:column>
-            createCell(row, 48, rowDataTableList.get(i).getColumn28());//"CUAL OTRO AGRESOR(VIF)");//100">#{rowX.column28}</p:column>
-            createCell(row, 49, rowDataTableList.get(i).getColumn57());//"AG9 SIN DATO(VIF)");//100">#{rowX.column57}</p:column>
-            createCell(row, 50, rowDataTableList.get(i).getColumn58());//"AG10 NOVIO(VIF)");//100">#{rowX.column58}</p:column>                                
-
-            //tipo de maltrato
-            createCell(row, 51, rowDataTableList.get(i).getColumn59());//"MA1 FISICO(VIF)");//100">#{rowX.column59}</p:column>
-            createCell(row, 52, rowDataTableList.get(i).getColumn60());//"MA2 PSICOLOGICO(VIF)");//100">#{rowX.column60}</p:column>
-            createCell(row, 53, rowDataTableList.get(i).getColumn61());//"MA3 VIOLENCIA SEXUAL(VIF)");//100">#{rowX.column61}</p:column>
-            createCell(row, 54, rowDataTableList.get(i).getColumn62());//"MA4 NEGLIGENCIA(VIF)");//100">#{rowX.column62}</p:column>
-            createCell(row, 55, rowDataTableList.get(i).getColumn62());//"MA5 ABANDONO(VIF)");//100">#{rowX.column63}</p:column>
-            createCell(row, 56, rowDataTableList.get(i).getColumn64());//"MA6 INSTITUCIONAL(VIF)");//100">#{rowX.column64}</p:column>
-            createCell(row, 57, rowDataTableList.get(i).getColumn65());//"MA SIN DATO(VIF)");//100">#{rowX.column65}</p:column>
-            createCell(row, 58, rowDataTableList.get(i).getColumn66());//"MA8 OTRO(VIF)");//100">#{rowX.column66}</p:column>
-            createCell(row, 59, rowDataTableList.get(i).getColumn29());//"CUAL OTRO TIPO MALTRATO(VIF)");//100">#{rowX.column29}</p:column>
-
-            //acciones a realizar
-            createCell(row, 60, rowDataTableList.get(i).getColumn67());//"AR1 CONCILIACION");//100">#{rowX.column67}</p:column>
-            createCell(row, 61, rowDataTableList.get(i).getColumn68());//"AR2 CAUCION");//100">#{rowX.column68}</p:column>
-            createCell(row, 62, rowDataTableList.get(i).getColumn69());//"AR3 DICTAMEN MEDICINA LEGAL");//100">#{rowX.column69}</p:column>
-            createCell(row, 63, rowDataTableList.get(i).getColumn70());//"AR4 REMISION FISCALIA");//100">#{rowX.column70}</p:column>
-            createCell(row, 64, rowDataTableList.get(i).getColumn71());//"AR5 REMISION MEDICINA LEGAL");//100">#{rowX.column71}</p:column>
-            createCell(row, 65, rowDataTableList.get(i).getColumn72());//"AR6 REMISION COM FAMILIA");//100">#{rowX.column72}</p:column>
-            createCell(row, 66, rowDataTableList.get(i).getColumn73());//"AR7 REMISION ICBF");//100">#{rowX.column73}</p:column>
-            createCell(row, 67, rowDataTableList.get(i).getColumn74());//"AR8 MEDIDAS PROTECCION");//100">#{rowX.column74}</p:column>
-            createCell(row, 68, rowDataTableList.get(i).getColumn75());//"AR9 REMISION A SALUD");//100">#{rowX.column75}</p:column>
-            createCell(row, 69, rowDataTableList.get(i).getColumn76());//"AR10 ATENCION PSICOSOCIAL");//100">#{rowX.column76}</p:column>
-            createCell(row, 70, rowDataTableList.get(i).getColumn77());//"AR11 RESTABLECIMIENTO DERECHOS");//100">#{rowX.column77}</p:column>
-            createCell(row, 71, rowDataTableList.get(i).getColumn78());//"AR12 OTRA?");//100">#{rowX.column78}</p:column>
-            createCell(row, 72, rowDataTableList.get(i).getColumn30());//"AR CUAL OTRA");//100">#{rowX.column30}</p:column>
-            createCell(row, 73, rowDataTableList.get(i).getColumn79());//"AR13 SIN DATO");//100">#{rowX.column79}</p:column>
-
-        }
-
-    }
-
-    private RowDataTable loadValues(NonFatalDomesticViolence currentNonFatalDomesticV) {
+    private RowDataTable loadValues(String c, NonFatalDomesticViolence currentNonFatalDomesticV) {
         //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
-        btnEditDisabled = true;
+
         btnRemoveDisabled = true;
         RowDataTable newRowDataTable = new RowDataTable();
         //------------------------------------------------------------
@@ -824,55 +749,64 @@ public class DuplicateSetsVifMB implements Serializable {
         return newRowDataTable;
     }
 
-    public void load() {
-        currentNonFatalDomesticViolence = null;
-        btnEditDisabled = true;
+    public void rowDuplicatedTableListSelect() {
+        selectedRowDataTable = null;
+        rowDataTableList = new ArrayList<RowDataTable>();
+        btnViewDisabled = true;
         btnRemoveDisabled = true;
-        if (selectedRowsDataTable != null) {
-            
-            if (selectedRowsDataTable.length == 1) {
-                currentNonFatalDomesticViolence = nonFatalDomesticViolenceFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
-            }
-            if (selectedRowsDataTable.length > 1) {
-                
-                btnEditDisabled = true;
+        if (selectedRowDuplicatedTable != null) {
+            loadDuplicatedRecords();
+        }
+    }
+
+    public void rowDataTableListSelect() {
+        //currentNonFatalInjury = null;
+        btnRemoveDisabled = true;
+        if (selectedRowDataTable != null) {
+            if (selectedRowDataTable.getColumn1().compareTo("COMPARADO") != 0) {
                 btnRemoveDisabled = false;
-            } else {
-                btnEditDisabled = false;
-                btnRemoveDisabled = false;
             }
+            //currentNonFatalInjury = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
         }
     }
 
     public void deleteRegistry() {
-        if (selectedRowsDataTable != null) {
-            List<NonFatalDomesticViolence> nonFatalDomesticViolenceList = new ArrayList<NonFatalDomesticViolence>();
-            for (int j = 0; j < selectedRowsDataTable.length; j++) {
-                nonFatalDomesticViolenceList.add(nonFatalDomesticViolenceFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
-            }
-            if (nonFatalDomesticViolenceList != null) {
-                for (int j = 0; j < nonFatalDomesticViolenceList.size(); j++) {
-                    NonFatalInjuries auxNonFatalInjuries = nonFatalDomesticViolenceList.get(j).getNonFatalInjuries();
-                    Victims auxVictims = nonFatalDomesticViolenceList.get(j).getNonFatalInjuries().getVictimId();
-                    nonFatalDomesticViolenceFacade.remove(nonFatalDomesticViolenceList.get(j));
-                    nonFatalInjuriesFacade.remove(auxNonFatalInjuries);
-                    victimsFacade.remove(auxVictims);
+        if (selectedRowDataTable != null) {
+            List<NonFatalInjuries> nonFatalInjuriesList = new ArrayList<NonFatalInjuries>();
+            nonFatalInjuriesList.add(nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1())));
+            if (nonFatalInjuriesList != null) {
+                for (int j = 0; j < nonFatalInjuriesList.size(); j++) {
+                    if (nonFatalInjuriesList.get(j).getNonFatalDomesticViolence() != null) {
+                        nonFatalDomesticViolenceFacade.remove(nonFatalInjuriesList.get(j).getNonFatalDomesticViolence());
+                    }
+                    if (nonFatalInjuriesList.get(j).getNonFatalInterpersonal() != null) {
+                        nonFatalInterpersonalFacade.remove(nonFatalInjuriesList.get(j).getNonFatalInterpersonal());
+                    }
+                    if (nonFatalInjuriesList.get(j).getNonFatalSelfInflicted() != null) {
+                        nonFatalSelfInflictedFacade.remove(nonFatalInjuriesList.get(j).getNonFatalSelfInflicted());
+                    }
+                    if (nonFatalInjuriesList.get(j).getNonFatalTransport() != null) {
+                        nonFatalTransportFacade.remove(nonFatalInjuriesList.get(j).getNonFatalTransport());
+                    }
+                    nonFatalInjuriesFacade.remove(nonFatalInjuriesList.get(j));
+                    victimsFacade.remove(nonFatalInjuriesList.get(j).getVictimId());
+                    //----------------------------------------------------------
                 }
+                printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
+            } else {
+                printMessage(FacesMessage.SEVERITY_WARN, "Alerta", "El registro seleccionado es quien se esta comparando, por tanto no se puede eliminar");
             }
             //quito los elementos seleccionados de rowsDataTableList seleccion de 
-            for (int j = 0; j < selectedRowsDataTable.length; j++) {
-                for (int i = 0; i < rowDataTableList.size(); i++) {
-                    if (selectedRowsDataTable[j].getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
-                        rowDataTableList.remove(i);
-                        break;
-                    }
+            for (int i = 0; i < rowDataTableList.size(); i++) {
+                if (selectedRowDataTable.getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
+                    rowDataTableList.remove(i);
+                    break;
                 }
             }
             //deselecciono los controles
-            selectedRowsDataTable = null;
-            btnEditDisabled = true;
+            selectedRowDataTable = null;
             btnRemoveDisabled = true;
-            printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
+
         }
     }
 
@@ -884,12 +818,28 @@ public class DuplicateSetsVifMB implements Serializable {
         this.rowDataTableList = rowDataTableList;
     }
 
-    public RowDataTable[] getSelectedRowsDataTable() {
-        return selectedRowsDataTable;
+    public List<RowDataTable> getRowDuplicatedTableList() {
+        return rowDuplicatedTableList;
     }
 
-    public void setSelectedRowsDataTable(RowDataTable[] selectedRowsDataTable) {
-        this.selectedRowsDataTable = selectedRowsDataTable;
+    public void setRowDuplicatedTableList(List<RowDataTable> rowDuplicatedTableList) {
+        this.rowDuplicatedTableList = rowDuplicatedTableList;
+    }
+
+    public RowDataTable getSelectedRowDuplicatedTable() {
+        return selectedRowDuplicatedTable;
+    }
+
+    public void setSelectedRowDuplicatedTable(RowDataTable selectedRowDuplicatedTable) {
+        this.selectedRowDuplicatedTable = selectedRowDuplicatedTable;
+    }
+
+    public RowDataTable getSelectedRowDataTable() {
+        return selectedRowDataTable;
+    }
+
+    public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
+        this.selectedRowDataTable = selectedRowDataTable;
     }
 
     public int getCurrentSearchCriteria() {
@@ -924,12 +874,12 @@ public class DuplicateSetsVifMB implements Serializable {
         this.newName = newName;
     }
 
-    public boolean isBtnEditDisabled() {
-        return btnEditDisabled;
+    public boolean isBtnViewDisabled() {
+        return btnViewDisabled;
     }
 
-    public void setBtnEditDisabled(boolean btnEditDisabled) {
-        this.btnEditDisabled = btnEditDisabled;
+    public void setBtnViewDisabled(boolean btnViewDisabled) {
+        this.btnViewDisabled = btnViewDisabled;
     }
 
     public boolean isBtnRemoveDisabled() {

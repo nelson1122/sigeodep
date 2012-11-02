@@ -4,7 +4,7 @@
  */
 package managedBeans.fileProcessing;
 
-import beans.connection.ConnectionJDBC;
+import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.DataTypeEnum;
 import beans.errorsControl.ErrorControl;
 import beans.relations.RelationValue;
@@ -17,11 +17,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.login.LoginMB;
 import managedBeans.preload.FormsAndFieldsDataMB;
 
 /**
@@ -32,7 +34,7 @@ import managedBeans.preload.FormsAndFieldsDataMB;
 @SessionScoped
 public class ErrorsControlMB implements Serializable {
 
-    ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
+    //ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
     private String currentError = "";//error actual
     private SelectItem[] errors;
     private boolean btnSolveDisabled = true;
@@ -59,12 +61,28 @@ public class ErrorsControlMB implements Serializable {
     private RelationVar relationVar;
     private RelationsGroup currentRelationsGroup;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
+    
     DinamicTable dinamicTable = new DinamicTable();
+    ConnectionJdbcMB connectionJdbcMB;
+    private LoginMB loginMB;
+    private String nameTableTemp="temp";
+
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * variables y carga la conexion por jdbc
+     */
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+    }
 
     public ErrorsControlMB() {
         correctionList = new SelectItem[0];
         errorControlArrayList = new ArrayList<ErrorControl>();
         errorCorrectionArrayList = new ArrayList<ErrorControl>();
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        nameTableTemp="temp"+loginMB.getLoginname();
     }
 
     public final void createDynamicTable() {
@@ -79,10 +97,8 @@ public class ErrorsControlMB implements Serializable {
                     break;
                 }
             }
-            if (currentE != null) {
-                conx = new ConnectionJDBC();
-                conx.connect();
-                ResultSet rs = conx.consult("SELECT * FROM temp WHERE id='" + currentE.getRowId() + "'");
+            if (currentE != null) {                
+                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+" WHERE id='" + currentE.getRowId() + "'");
                 // determino las cabeceras
                 for (int j = 1; j < rs.getMetaData().getColumnCount(); j++) {
                     titles.add(rs.getMetaData().getColumnName(j));
@@ -97,7 +113,6 @@ public class ErrorsControlMB implements Serializable {
                 listOfRecords.add(newRow);
                 dinamicTable = new DinamicTable(listOfRecords, titles);
             }
-            conx.disconnect();
         } catch (SQLException ex) {
             System.out.println("Error en la creacion de columnas dinamicas: " + ex.toString());
         }
@@ -207,9 +222,7 @@ public class ErrorsControlMB implements Serializable {
                     //se realiza la actualizacion de la tabla                    
                     String sqlUpdate = errorControlArrayList.get(i).getRelationVar().getNameFound() + "=''";
                     String sqlId = "id=" + errorControlArrayList.get(i).getRowId();
-                    conx = new ConnectionJDBC();
-                    conx.connect();
-                    conx.update("temp", sqlUpdate, sqlId);
+                    connectionJdbcMB.update(nameTableTemp, sqlUpdate, sqlId);
                     //quitamos el error de la lista
                     errorControlArrayList.get(i).setNewValue(currentNewValue);
                     errorCorrectionArrayList.add(errorControlArrayList.get(i));
@@ -219,9 +232,7 @@ public class ErrorsControlMB implements Serializable {
                     updateCorrectionArrayList();
                     btnSolveDisabled = true;
                     btnDiscardDisabled = true;
-                    //btnDeleteRecordDisabled = true;
                     btnSeeRecordDisabled = true;
-                    conx.disconnect();
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                     return 0;
@@ -330,9 +341,7 @@ public class ErrorsControlMB implements Serializable {
                     //se realiza la actualizacion de la tabla
                     String sqlUpdate = errorControlArrayList.get(i).getRelationVar().getNameFound() + "='" + currentNewValue + "'";
                     String sqlId = "id=" + errorControlArrayList.get(i).getRowId();
-                    conx = new ConnectionJDBC();
-                    conx.connect();
-                    conx.update("temp", sqlUpdate, sqlId);
+                    connectionJdbcMB.update(nameTableTemp, sqlUpdate, sqlId);
                     //quitamos el error de la lista
                     errorControlArrayList.get(i).setNewValue(currentNewValue);
                     errorCorrectionArrayList.add(errorControlArrayList.get(i));
@@ -342,9 +351,7 @@ public class ErrorsControlMB implements Serializable {
                     updateCorrectionArrayList();
                     btnSolveDisabled = true;
                     btnDiscardDisabled = true;
-                    //btnDeleteRecordDisabled = true;
                     btnSeeRecordDisabled = true;
-                    conx.disconnect();
                     FacesContext context = FacesContext.getCurrentInstance();
                     recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
                     //si no hay errores permitir el registro
@@ -726,21 +733,14 @@ public class ErrorsControlMB implements Serializable {
             if (correctionList[i].getValue().toString().compareTo(currentCorrection) == 0) {
 
                 try {
-                    conx = new ConnectionJDBC();
-                    conx.connect();
-                    //determino el error que esta seleccionado en la lista
-                    //ErrorControl currentE = null;
-                    //ResultSet rs = conx.consult("SELECT * FROM temp WHERE id='" + currentE.getRowId() + "'");
+                    //determino el error que esta seleccionado en la lista                    
                     int id_int = Integer.parseInt(errorCorrectionArrayList.get(i).getRowId());
 
-                    conx.update("temp",
+                    connectionJdbcMB.update(nameTableTemp,
                             errorCorrectionArrayList.get(i).getRelationVar().getNameFound() + "='" + errorCorrectionArrayList.get(i).getValue() + "'",
                             "id=" + String.valueOf(id_int));
-                    //elimino del historial
-                    errorCorrectionArrayList.remove(i);
-                    //updateErrorsArrayList();
+                    errorCorrectionArrayList.remove(i);//elimino del historial
                     updateCorrectionArrayList();
-                    conx.disconnect();
                     FacesContext context = FacesContext.getCurrentInstance();
                     recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
                     recordDataMB.setBtnRegisterDataDisabled(true);

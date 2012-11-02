@@ -118,7 +118,7 @@ public class RecordSetsHomicideMB implements Serializable {
         for (int i = 0; i < tagsList.size(); i++) {
             totalRegisters = totalRegisters + fatalInjuryMurderFacade.countFromTag(tagsList.get(i).getTagId());
         }
-        System.out.println("Total de registros = "+String.valueOf(totalRegisters));
+        System.out.println("Total de registros = " + String.valueOf(totalRegisters));
         //RECORRO CADA TAG Y CARGO UN LISTADO DE SUS REGISTROS
         List<FatalInjuryMurder> fatalInjuryMurderList;
         for (int i = 0; i < tagsList.size(); i++) {
@@ -164,67 +164,78 @@ public class RecordSetsHomicideMB implements Serializable {
 
         createCell(cellStyle, row, 0, "CODIGO INTERNO");//"100">#{rowX.column1}</p:column>
         createCell(cellStyle, row, 1, "CODIGO");//"100">#{rowX.column23}</p:column>
-        createCell(cellStyle, row, 2, "FECHA HECHO");//"100">#{rowX.column13}</p:column>
-        createCell(cellStyle, row, 3, "DIA EN SEMANA");//"100">#{rowX.column20}</p:column>                                
-        createCell(cellStyle, row, 4, "HORA HECHO");//"100">#{rowX.column14}</p:column>
-        createCell(cellStyle, row, 5, "DIRECCION HECHO");//"400">#{rowX.column15}</p:column>
-        createCell(cellStyle, row, 6, "BARRIO HECHO");//"250">#{rowX.column16}</p:column>
-        createCell(cellStyle, row, 7, "AREA DEL HECHO");//"100">#{rowX.column24}</p:column>
-        createCell(cellStyle, row, 8, "CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
-        createCell(cellStyle, row, 9, "NUMERO DE VICTIMAS");//"100">#{rowX.column18}</p:column>                                
-        createCell(cellStyle, row, 10, "NOMBRES APELLIDOS");//"400">#{rowX.column4}</p:column>
-        createCell(cellStyle, row, 11, "SEXO");//"100">#{rowX.column8}</p:column>
-        createCell(cellStyle, row, 12, "TIPO EDAD");//"100">#{rowX.column6}</p:column>
-        createCell(cellStyle, row, 13, "EDAD");//"100">#{rowX.column7}</p:column>
-        createCell(cellStyle, row, 14, "OCUPACION");//"100">#{rowX.column9}</p:column>                                
-        createCell(cellStyle, row, 15, "TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
-        createCell(cellStyle, row, 16, "IDENTIFICACION");//"100">#{rowX.column3}</p:column>                                
-        createCell(cellStyle, row, 17, "EXTRANJERO");//"100">#{rowX.column5}</p:column>
-        createCell(cellStyle, row, 18, "DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
-        createCell(cellStyle, row, 19, "MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
-        createCell(cellStyle, row, 20, "BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
-        createCell(cellStyle, row, 21, "PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
-        createCell(cellStyle, row, 22, "DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
-        createCell(cellStyle, row, 23, "MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>                                        
-        createCell(cellStyle, row, 24, "ARMA O CAUSA DE MUERTE");//"100">#{rowX.column29}</p:column>        
-        createCell(cellStyle, row, 25, "CONTEXTO RELACIONADO CON EL HECHO");//"250">#{rowX.column28}</p:column>                                        
-        createCell(cellStyle, row, 26, "NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>
-        createCell(cellStyle, row, 27, "NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
-        createCell(cellStyle, row, 28, "TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
+        createCell(cellStyle, row, 2, "DIA HECHO");//100">#{rowX.column37}</p:column>
+        createCell(cellStyle, row, 3, "MES HECHO");//100">#{rowX.column37}</p:column>
+        createCell(cellStyle, row, 4, "AÑO HECHO");//100">#{rowX.column37}</p:column>
+        createCell(cellStyle, row, 5, "FECHA HECHO");//"100">#{rowX.column13}</p:column>
+        createCell(cellStyle, row, 6, "DIA EN SEMANA");//"100">#{rowX.column20}</p:column>                                
+        createCell(cellStyle, row, 7, "HORA HECHO");//"100">#{rowX.column14}</p:column>
+        createCell(cellStyle, row, 8, "DIRECCION HECHO");//"400">#{rowX.column15}</p:column>
+        createCell(cellStyle, row, 9, "BARRIO HECHO");//"250">#{rowX.column16}</p:column>
+        createCell(cellStyle, row, 10, "AREA DEL HECHO");//"100">#{rowX.column24}</p:column>
+        createCell(cellStyle, row, 11, "CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
+        createCell(cellStyle, row, 12, "NUMERO DE VICTIMAS");//"100">#{rowX.column18}</p:column>                                
+        createCell(cellStyle, row, 13, "NOMBRES APELLIDOS");//"400">#{rowX.column4}</p:column>
+        createCell(cellStyle, row, 14, "SEXO");//"100">#{rowX.column8}</p:column>
+        createCell(cellStyle, row, 15, "TIPO EDAD");//"100">#{rowX.column6}</p:column>
+        createCell(cellStyle, row, 16, "EDAD");//"100">#{rowX.column7}</p:column>
+        createCell(cellStyle, row, 17, "OCUPACION");//"100">#{rowX.column9}</p:column>                                
+        createCell(cellStyle, row, 18, "TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
+        createCell(cellStyle, row, 19, "IDENTIFICACION");//"100">#{rowX.column3}</p:column>                                
+        createCell(cellStyle, row, 20, "EXTRANJERO");//"100">#{rowX.column5}</p:column>
+        createCell(cellStyle, row, 21, "DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
+        createCell(cellStyle, row, 22, "MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
+        createCell(cellStyle, row, 23, "BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
+        createCell(cellStyle, row, 24, "PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
+        createCell(cellStyle, row, 25, "DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
+        createCell(cellStyle, row, 26, "MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>                                        
+        createCell(cellStyle, row, 27, "ARMA O CAUSA DE MUERTE");//"100">#{rowX.column29}</p:column>        
+        createCell(cellStyle, row, 28, "CONTEXTO RELACIONADO CON EL HECHO");//"250">#{rowX.column28}</p:column>                                        
+        createCell(cellStyle, row, 29, "NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>
+        createCell(cellStyle, row, 30, "NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
+        createCell(cellStyle, row, 31, "TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
 
 
-
+        String[] splitDate;
         for (int i = 0; i < rowDataTableList.size(); i++) {
             row = sheet.createRow(i + 1);
             createCell(row, 0, rowDataTableList.get(i).getColumn1());//"CODIGO INTERNO");//"100">#{rowX.column1}</p:column>
             createCell(row, 1, rowDataTableList.get(i).getColumn23());//"CODIGO");//"100">#{rowX.column23}</p:column>
-            createCell(row, 2, rowDataTableList.get(i).getColumn13());//"FECHA HECHO");//"100">#{rowX.column13}</p:column>
-            createCell(row, 3, rowDataTableList.get(i).getColumn20());//"DIA EN SEMANA");//"100">#{rowX.column20}</p:column>                                
-            createCell(row, 4, rowDataTableList.get(i).getColumn14());//"HORA HECHO");//"100">#{rowX.column14}</p:column>
-            createCell(row, 5, rowDataTableList.get(i).getColumn15());//"DIRECCION HECHO");//"400">#{rowX.column15}</p:column>
-            createCell(row, 6, rowDataTableList.get(i).getColumn16());//"BARRIO HECHO");//"250">#{rowX.column16}</p:column>
-            createCell(row, 7, rowDataTableList.get(i).getColumn24());//"AREA DEL HECHO");//"100">#{rowX.column24}</p:column>
-            createCell(row, 8, rowDataTableList.get(i).getColumn17());//"CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
-            createCell(row, 9, rowDataTableList.get(i).getColumn18());//"NUMERO DE VICTIMAS");//"100">#{rowX.column18}</p:column>                                
-            createCell(row, 10, rowDataTableList.get(i).getColumn4());//"NOMBRES APELLIDOS");//"400">#{rowX.column4}</p:column>
-            createCell(row, 11, rowDataTableList.get(i).getColumn8());//"SEXO");//"100">#{rowX.column8}</p:column>
-            createCell(row, 12, rowDataTableList.get(i).getColumn6());//"TIPO EDAD");//"100">#{rowX.column6}</p:column>
-            createCell(row, 13, rowDataTableList.get(i).getColumn7());//"EDAD");//"100">#{rowX.column7}</p:column>
-            createCell(row, 14, rowDataTableList.get(i).getColumn9());//"OCUPACION");//"100">#{rowX.column9}</p:column>                                
-            createCell(row, 15, rowDataTableList.get(i).getColumn2());//"TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
-            createCell(row, 16, rowDataTableList.get(i).getColumn3());//"IDENTIFICACION");//"100">#{rowX.column3}</p:column>                                
-            createCell(row, 17, rowDataTableList.get(i).getColumn5());//"EXTRANJERO");//"100">#{rowX.column5}</p:column>
-            createCell(row, 18, rowDataTableList.get(i).getColumn12());//"DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
-            createCell(row, 19, rowDataTableList.get(i).getColumn11());//"MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
-            createCell(row, 20, rowDataTableList.get(i).getColumn10());//"BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
-            createCell(row, 21, rowDataTableList.get(i).getColumn25());//"PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
-            createCell(row, 22, rowDataTableList.get(i).getColumn26());//"DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
-            createCell(row, 23, rowDataTableList.get(i).getColumn27());//"MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>                                        
-            createCell(row, 24, rowDataTableList.get(i).getColumn29());//"ARMA O CAUSA DE MUERTE");//"100">#{rowX.column29}</p:column>        
-            createCell(row, 25, rowDataTableList.get(i).getColumn28());//"CONTEXTO RELACIONADO CON EL HECHO");//"250">#{rowX.column28}</p:column>                                        
-            createCell(row, 26, rowDataTableList.get(i).getColumn19());//"NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>
-            createCell(row, 27, rowDataTableList.get(i).getColumn21());//"NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
-            createCell(row, 28, rowDataTableList.get(i).getColumn22());//"TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
+            if (rowDataTableList.get(i).getColumn13() != null) {
+                splitDate = rowDataTableList.get(i).getColumn13().split("/");
+                if (splitDate.length == 3) {
+                    createCell(row, 2, splitDate[0]);//"DIA HECHO");
+                    createCell(row, 3, splitDate[1]);//"MES HECHO");
+                    createCell(row, 4, splitDate[2]);//"AÑO HECHO");
+                }
+            }
+            createCell(row, 5, rowDataTableList.get(i).getColumn13());//"FECHA HECHO");//"100">#{rowX.column13}</p:column>
+            createCell(row, 6, rowDataTableList.get(i).getColumn20());//"DIA EN SEMANA");//"100">#{rowX.column20}</p:column>                                
+            createCell(row, 7, rowDataTableList.get(i).getColumn14());//"HORA HECHO");//"100">#{rowX.column14}</p:column>
+            createCell(row, 8, rowDataTableList.get(i).getColumn15());//"DIRECCION HECHO");//"400">#{rowX.column15}</p:column>
+            createCell(row, 9, rowDataTableList.get(i).getColumn16());//"BARRIO HECHO");//"250">#{rowX.column16}</p:column>
+            createCell(row, 10, rowDataTableList.get(i).getColumn24());//"AREA DEL HECHO");//"100">#{rowX.column24}</p:column>
+            createCell(row, 11, rowDataTableList.get(i).getColumn17());//"CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
+            createCell(row, 12, rowDataTableList.get(i).getColumn18());//"NUMERO DE VICTIMAS");//"100">#{rowX.column18}</p:column>                                
+            createCell(row, 13, rowDataTableList.get(i).getColumn4());//"NOMBRES APELLIDOS");//"400">#{rowX.column4}</p:column>
+            createCell(row, 14, rowDataTableList.get(i).getColumn8());//"SEXO");//"100">#{rowX.column8}</p:column>
+            createCell(row, 15, rowDataTableList.get(i).getColumn6());//"TIPO EDAD");//"100">#{rowX.column6}</p:column>
+            createCell(row, 16, rowDataTableList.get(i).getColumn7());//"EDAD");//"100">#{rowX.column7}</p:column>
+            createCell(row, 17, rowDataTableList.get(i).getColumn9());//"OCUPACION");//"100">#{rowX.column9}</p:column>                                
+            createCell(row, 18, rowDataTableList.get(i).getColumn2());//"TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
+            createCell(row, 19, rowDataTableList.get(i).getColumn3());//"IDENTIFICACION");//"100">#{rowX.column3}</p:column>                                
+            createCell(row, 20, rowDataTableList.get(i).getColumn5());//"EXTRANJERO");//"100">#{rowX.column5}</p:column>
+            createCell(row, 21, rowDataTableList.get(i).getColumn12());//"DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
+            createCell(row, 22, rowDataTableList.get(i).getColumn11());//"MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
+            createCell(row, 23, rowDataTableList.get(i).getColumn10());//"BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
+            createCell(row, 24, rowDataTableList.get(i).getColumn25());//"PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
+            createCell(row, 25, rowDataTableList.get(i).getColumn26());//"DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
+            createCell(row, 26, rowDataTableList.get(i).getColumn27());//"MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>                                        
+            createCell(row, 27, rowDataTableList.get(i).getColumn29());//"ARMA O CAUSA DE MUERTE");//"100">#{rowX.column29}</p:column>        
+            createCell(row, 28, rowDataTableList.get(i).getColumn28());//"CONTEXTO RELACIONADO CON EL HECHO");//"250">#{rowX.column28}</p:column>                                        
+            createCell(row, 29, rowDataTableList.get(i).getColumn19());//"NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>
+            createCell(row, 30, rowDataTableList.get(i).getColumn21());//"NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
+            createCell(row, 31, rowDataTableList.get(i).getColumn22());//"TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
 
         }
 

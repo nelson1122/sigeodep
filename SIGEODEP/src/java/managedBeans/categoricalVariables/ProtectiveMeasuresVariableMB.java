@@ -16,6 +16,7 @@ import javax.faces.context.FacesContext;
 import managedBeans.forms.*;
 import model.dao.ProtectiveMeasuresFacade;
 import model.pojo.ProtectiveMeasures;
+import org.apache.poi.hssf.usermodel.*;
 
 /**
  *
@@ -42,6 +43,39 @@ public class ProtectiveMeasuresVariableMB implements Serializable {
     private boolean btnRemoveDisabled=true;
     
     public ProtectiveMeasuresVariableMB() {
+    }
+    
+    private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
+        HSSFCell cell;
+        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
+        cell.setCellValue(new HSSFRichTextString(value));
+        cell.setCellStyle(cellStyle);
+    }
+
+    private void createCell(HSSFRow fila, int position, String value) {
+        HSSFCell cell;
+        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
+        cell.setCellValue(new HSSFRichTextString(value));
+    }
+
+    public void postProcessXLS(Object document) {
+        HSSFWorkbook book = (HSSFWorkbook) document;
+        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+        HSSFRow row;
+        HSSFCellStyle cellStyle = book.createCellStyle();
+        HSSFFont font = book.createFont();
+        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        cellStyle.setFont(font);
+
+        row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
+        createCell(cellStyle, row, 0, "CODIGO");//"100">#{rowX.column1}</p:column>
+        createCell(cellStyle, row, 1, "NOMBRE");//"100">#{rowX.column23}</p:column>                                
+        protectiveMeasuresFacadeList=protectiveMeasuresFacade.findAll();
+        for (int i = 0; i < protectiveMeasuresFacadeList.size(); i++) {
+            row = sheet.createRow(i + 1);
+            createCell(row, 0, protectiveMeasuresFacadeList.get(i).getProtectiveMeasuresId().toString());//CODIGO
+            createCell(row, 1, protectiveMeasuresFacadeList.get(i).getProtectiveMeasuresName());//NOMBRE            
+        }
     }
 
     public void load() {

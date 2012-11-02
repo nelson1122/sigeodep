@@ -4,7 +4,8 @@
  */
 package managedBeans.forms;
 
-import beans.connection.ConnectionJDBC;
+
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -40,7 +41,7 @@ public class LcenfMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
 
-    ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
+    
     //------------------------
     @EJB
     InsuranceFacade insuranceFacade;
@@ -184,6 +185,9 @@ public class LcenfMB implements Serializable {
     //--------------------
     private SelectItem[] healthInstitutions;
     private Short currentHealthInstitution = 0;
+    //-------------------
+    @EJB
+    GenNnFacade genNnFacade;
     //------------------
     @EJB
     IdTypesFacade idTypesFacade;
@@ -413,6 +417,15 @@ public class LcenfMB implements Serializable {
     private Date date2;
     private String currentIdForm = "";
     private Users currentUser;
+    ConnectionJdbcMB connectionJdbcMB;
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * variables y carga la conexion por jdbc
+     */
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+    }
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -421,6 +434,7 @@ public class LcenfMB implements Serializable {
     //----------------------------------------------------------------------
     public LcenfMB() {
 
+        
         idElements1 = "IdHealthInstitution IdName IdIdentificationType IdIdentificationNumber IdMeasureOfAge "
                 + "IdValueAge IdGender IdJob IdDisplaced IdHandicapped IdEthnicGroup IdOtherEthnicGroup "
                 + "IdTelephoneHome IdNeighborhoodEvent IdNeighborhoodsEventCode IdDirectionEvent "
@@ -491,8 +505,8 @@ public class LcenfMB implements Serializable {
 
     public void reset() {
         
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
         //determino el usuario
-        
         LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         currentUser=loginMB.getCurrentUser();
         
@@ -2414,8 +2428,221 @@ public class LcenfMB implements Serializable {
 
                 newVictim.setOthersList(othersList);
 
-                //-------------------------------------------------------------------------------
-                //-------------------GUARDAR----------------------------
+                
+                
+                
+                //--------------------------------------------------------------
+                //--------------AUTOCOMPLETAR LOS FORMULARIOS-------------------
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newVictim.getVictimNeighborhoodId() == null) {
+                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newNonFatalInjuries.getInjuryNeighborhoodId() == null) {
+                    newNonFatalInjuries.setInjuryNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+
+                //DATOS DE LA CONLUSTA..........................................
+                //SI NO HAY FECHA DE CONSULTA PASAR LA DE EVENTO
+                if (newNonFatalInjuries.getCheckupDate() == null) {
+                    if (newNonFatalInjuries.getInjuryDate() != null) {
+                        newNonFatalInjuries.setCheckupDate(newNonFatalInjuries.getInjuryDate());
+                    }
+                }
+                //SI NO HAY HORA DE CONSULTA PASAR LA DE EVENTO
+                if (newNonFatalInjuries.getCheckupTime() == null) {
+                    if (newNonFatalInjuries.getInjuryTime() != null) {
+                        newNonFatalInjuries.setCheckupTime(newNonFatalInjuries.getInjuryTime());
+                    }
+                }
+
+                //SI NO HAY FECHA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
+//                if (newNonFatalInjuries.getCheckupDate() == null) {
+//                    dia1 = haveData(dia1);
+//                    mes1 = haveData(mes1);
+//                    ao1 = haveData(ao1);
+//                    if (dia1 != null && mes1 != null && ao1 != null) {
+//                        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+//                        Date fechaI;
+//                        fechaI = formato.parse(dia1 + "/" + mes1 + "/" + ao1);
+//                        newNonFatalInjuries.setCheckupDate(fechaI);
+//                    }
+//                }
+                //SI NO HAY HORA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
+//                if (newNonFatalInjuries.getCheckupTime() == null) {
+//                    horas1 = haveData(horas1);
+//                    minutos1 = haveData(minutos1);
+//                    ampm1 = haveData(ampm1);
+//                    if (horas1 != null && minutos1 != null && ampm1 != null) {
+//                        hourInt = Integer.parseInt(horas1);
+//                        minuteInt = Integer.parseInt(minutos1);
+//                        if (ampm1.compareTo("2") == 0) {
+//                            hourInt = hourInt + 12;
+//                            if (hourInt == 24) {
+//                                hourInt = 0;
+//                            }
+//                        }
+//                        currentDate = new Date();
+//                        currentDate.setHours(hourInt);
+//                        currentDate.setMinutes(minuteInt);
+//                        currentDate.setSeconds(0);
+//                        newNonFatalInjuries.setCheckupTime(currentDate);
+//                    }
+//                }
+
+                //DATOS PARA EL EVENTO..........................................
+                //SI NO HAY FECHA DE EVENTO PASAR LA DE CONSULTA
+                if (newNonFatalInjuries.getInjuryDate() == null) {
+                    if (newNonFatalInjuries.getCheckupDate() != null) {
+                        newNonFatalInjuries.setInjuryDate(newNonFatalInjuries.getCheckupDate());
+                    }
+                }
+
+                //SI NO HAY HORA DE EVENTO PASAR LA DE CONSULTA
+                if (newNonFatalInjuries.getInjuryTime() == null) {
+                    if (newNonFatalInjuries.getCheckupTime() != null) {
+                        newNonFatalInjuries.setInjuryTime(newNonFatalInjuries.getCheckupTime());
+                    }
+                }
+
+
+                //SI NO HAY FECHA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
+//                if (newNonFatalInjuries.getInjuryDate() == null) {
+//                    dia = haveData(dia);
+//                    mes = haveData(mes);
+//                    ao = haveData(ao);
+//                    if (dia != null && mes != null && ao != null) {
+//                        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+//                        Date fechaI;
+//                        fechaI = formato.parse(dia + "/" + mes + "/" + ao);
+//                        newNonFatalInjuries.setInjuryDate(fechaI);
+//                    }
+//                }
+
+                //SI NO HAY HORA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
+//                if (newNonFatalInjuries.getInjuryTime() == null) {
+//                    horas = haveData(horas);
+//                    minutos = haveData(minutos);
+//                    ampm = haveData(ampm);
+//                    if (horas != null && minutos != null && ampm != null) {
+//                        hourInt = Integer.parseInt(horas);
+//                        minuteInt = Integer.parseInt(minutos);
+//                        if (ampm.compareTo("2") == 0) {
+//                            hourInt = hourInt + 12;
+//                            if (hourInt == 24) {
+//                                hourInt = 0;
+//                            }
+//                        }
+//                        currentDate = new Date();
+//                        currentDate.setHours(hourInt);
+//                        currentDate.setMinutes(minuteInt);
+//                        currentDate.setSeconds(0);
+//                        newNonFatalInjuries.setInjuryTime(currentDate);
+//                    }
+//                }
+
+
+                //SI LA HORA DE LA CONSULTA ES 0000 PASAR LA HORA DEL EVENTO A LA DE LA CONSULTA
+                if (newNonFatalInjuries.getCheckupTime() != null) {
+                    if (newNonFatalInjuries.getInjuryTime() != null) {
+                        int hour = newNonFatalInjuries.getInjuryTime().getHours();
+                        int minute = newNonFatalInjuries.getInjuryTime().getMinutes();
+                        if (hour == 0 && minute == 0) {
+                            newNonFatalInjuries.setInjuryTime(newNonFatalInjuries.getCheckupTime());
+                        }
+                    } else {
+                        newNonFatalInjuries.setInjuryTime(newNonFatalInjuries.getCheckupTime());
+                    }
+                }
+                //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
+                if (newNonFatalInjuries.getInjuryDate() != null) {
+                    if (newNonFatalInjuries.getInjuryDayOfWeek() == null) {
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(newNonFatalInjuries.getInjuryDate());
+                        newNonFatalInjuries.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
+                    }
+                }
+
+                //UNION DE NOMBRES Y APELLIOS
+//                name = name + " " + surname;
+//                if (name.trim().length() > 1) {
+//                    newVictim.setVictimName(name);
+//                }
+
+                //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
+//                if (newNonFatalInjuries.getNonFatalDataSourceId() == null) {
+//                    if (currentSource.compareTo("OBSERVATORIO DEL DELITO") != 0) {
+//                        newNonFatalInjuries.setNonFatalDataSourceId(nonFatalDataSourcesFacade.findByName(currentSource));
+//                    }
+//                }
+
+                //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
+                if (newVictim.getVictimDateOfBirth() != null) {
+                    if (newVictim.getVictimAge() == null) {
+                        int birthMonths;
+                        int eventMonths;
+
+                        Calendar systemCalendar = Calendar.getInstance();
+                        Calendar birthCalendar = Calendar.getInstance();
+                        birthCalendar.setTime(newVictim.getVictimDateOfBirth());
+
+                        try {//DETERMINO LA EDAD EN MESES
+                            birthMonths = birthCalendar.get(Calendar.YEAR);
+                            birthMonths = birthMonths * 12;
+                            birthMonths = birthMonths + birthCalendar.get(Calendar.MONTH);
+                            if (newNonFatalInjuries.getInjuryDate() != null) {//SE CALCULA EDAD SEGUN LA FECHA DE EVENTO
+                                systemCalendar.setTime(newNonFatalInjuries.getInjuryDate());
+                            }
+                            eventMonths = systemCalendar.get(Calendar.YEAR);
+                            eventMonths = eventMonths * 12;
+                            eventMonths = eventMonths + systemCalendar.get(Calendar.MONTH);
+
+                            int ageMonths = eventMonths - birthMonths;
+                            if (ageMonths < 0) {
+                                System.out.println("ERROR fecha de nacimiento mayor a la del sistema o evento: ");
+                            } else {
+                                int ageYears = (int) (ageMonths / 12);
+                                if (ageYears == 0) {
+                                    ageYears = 1;
+                                }
+                                newVictim.setVictimAge((short) ageYears);
+                                newVictim.setAgeTypeId((short) 1);
+                                if (newVictim.getTypeId() == null) {
+                                    if (ageYears >= 18) {
+                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+                                    } else {
+                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
+                                    }
+                                }
+                            }
+                        } catch (Exception ex) {
+                            Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+                //SI EXISTE EDAD Y NO HAY TIPO DE EDAD DETERMINARLA EN AÑOS
+
+                //DETERMINAR EL NUMERO DE IDENTIFICACION
+                if (newVictim.getVictimNid() == null) {
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
+                    newVictim.setVictimClass((short) 2);//nn
+                    newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion
+                    GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
+                    currentGenNn.setCodNn(genNnFacade.findMax() + 1);
+                    genNnFacade.edit(currentGenNn);
+                }
+
+
+                //DETERMINAR TIPO DE IDENTIFICACION
+                if (newVictim.getVictimNid() != null) {
+                    if (newVictim.getTypeId() == null) {
+                        //DETERMINAR SEGUN EDAD SI ES POSIBLE
+                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+                    }
+                }
+                
+                //--------------------------------------------------------------
+                //-------------------GUARDAR------------------------------------
                 //if (validationsErrors.isEmpty()) {
                 openDialogFirst = "";
                 openDialogNext = "";
@@ -2423,6 +2650,9 @@ public class LcenfMB implements Serializable {
                 openDialogPrevious = "";
                 openDialogNew = "";
                 openDialogDelete = "";
+                
+                
+                
                 if (currentNonFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     System.out.println("guardando nuevo registro");
 
@@ -3090,9 +3320,7 @@ public class LcenfMB implements Serializable {
         }
         if (s) {
             try {
-                rowDataTableList = new ArrayList<RowDataTable>();
-                conx = new ConnectionJDBC();
-                conx.connect();
+                rowDataTableList = new ArrayList<RowDataTable>();                
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "non_fatal_injuries.non_fatal_injury_id, ";
@@ -3130,13 +3358,14 @@ public class LcenfMB implements Serializable {
                 sql = sql + "injuries.injury_id = 54 OR ";
                 sql = sql + "injuries.injury_id = 55);";
                 System.out.println(sql);
-                ResultSet rs = conx.consult(sql);
-                conx.disconnect();
+                ResultSet rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
                     rowDataTableList.add(new RowDataTable(rs.getString(1), rs.getString(2), rs.getString(3)));
                     s = false;//aqui se usa para saber si hay registros
+                    System.out.println("hubieron");
                 }
                 if (s) {//si es true no hay registros
+                    System.out.println("no hubieron");
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "No hay coincidencias", "No se encontraron registros para esta búsqueda");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }

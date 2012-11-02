@@ -4,26 +4,28 @@
  */
 package managedBeans.fileProcessing;
 
-import beans.connection.ConnectionJDBC;
+
+import beans.connection.ConnectionJdbcMB;
 import beans.relations.RelationsGroup;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.ResultSet;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
-import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import javax.servlet.ServletContext;
 import managedBeans.filters.CopyMB;
+import managedBeans.login.LoginMB;
 import managedBeans.preload.FormsAndFieldsDataMB;
 import model.dao.*;
 import model.pojo.Fields;
@@ -45,8 +47,40 @@ import org.primefaces.model.UploadedFile;
 @ManagedBean(name = "uploadFileMB")
 @SessionScoped
 public class UploadFileMB implements Serializable {
+    
+    
+    
+    //------------------------------------------------
+    //------------------------------------------------
+    //-------prueba de algoritmo de comparacion-------
+//    private String str1="abc";
+//    private String str2="cba";
+//
+//    public String getStr1() {
+//        return str1;
+//    }
+//
+//    public void setStr1(String str1) {
+//        this.str1 = str1;
+//    }
+//
+//    public String getStr2() {
+//        return str2;
+//    }
+//
+//    public void setStr2(String str2) {
+//        this.str2 = str2;
+//    }
+//    
+//    public void winkler(){
+//        
+//        
+//    }
+    
+    //------------------------------------------------
+    //------------------------------------------------
 
-    ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
+    //ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
     @EJB
     FormsFacade formsFacade;
     @EJB
@@ -64,7 +98,7 @@ public class UploadFileMB implements Serializable {
     private SelectItem[] sources;
     private boolean selectSourceDisabled = false;
     private String errorTagName = "Campo Obligatorio";
-    //private SelectItem[] delimiters;
+    private SelectItem[] delimiters;
     //private boolean selectDelimiterDisabled = false;
     private UploadedFile file;
     //private boolean selectFileUploadDisabled = true;
@@ -78,7 +112,7 @@ public class UploadFileMB implements Serializable {
     private RelationshipOfValuesMB relationshipOfValuesMB;
     private ErrorsControlMB errorsControlMB;
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
-    //private UploadFileMB uploadFileMB;
+    private LoginMB loginMB;
     private RecordDataMB recordDataMB;
     private StoredRelationsMB storedRelationsMB;
     private CopyMB copyMB;
@@ -87,24 +121,44 @@ public class UploadFileMB implements Serializable {
     private Integer progressUpload;
     private int tuplesNumber;
     private int tuplesProcessed;
+    private String nameTableTemp="temp";
+    
+    private String currentDelimiter="";
+    
+
+    
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES DE PROPOSITO GENERAL ---------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    ConnectionJdbcMB connectionJdbcMB;
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * variables y carga la conexion por jdbc
+     */
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+    }
+    
     public UploadFileMB() {
         /*
          * Constructor de la clase
          */
+        
         FacesContext context = FacesContext.getCurrentInstance();
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
         copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
         relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
         errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
         formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
-        //uploadFileMB = (UploadFileMB) context.getApplication().evaluateExpressionGet(context, "#{uploadFileMB}", UploadFileMB.class);
+        
         recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
+        loginMB = (LoginMB) context.getApplication().evaluateExpressionGet(context, "#{loginMB}", LoginMB.class);
+        nameTableTemp="temp"+loginMB.getLoginname();
     }
 
     //@PostConstruct //ejecutar despues de el constructor
@@ -120,7 +174,7 @@ public class UploadFileMB implements Serializable {
         loadSources();
         currentSource = sources[0].getLabel();
         loadVarsExpected();
-        //loadDelimiters();
+        loadDelimiters();
         tagsList = tagsFacade.findAll();
         variablesFound = new ArrayList<String>();
         nameFile = "";
@@ -169,15 +223,15 @@ public class UploadFileMB implements Serializable {
     //FUNCIONES QUE CARGAN VALORES -----------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-//    private void loadDelimiters() {
-//        /*
-//         * Cargar los delimitadores
-//         */
-//        delimiters = new SelectItem[]{
-//            new SelectItem("TAB", "TAB"),
-//            new SelectItem(";", ";"),
-//            new SelectItem(",", ","),};
-//    }
+    private void loadDelimiters() {
+        /*
+         * Cargar los delimitadores
+         */
+        delimiters = new SelectItem[]{
+            new SelectItem("TAB", "TAB"),
+            new SelectItem(";", ";"),
+            new SelectItem(",", ","),};
+    }
     private void loadForms() {
         /*
          * cargar la lista de formularios existentes
@@ -188,12 +242,9 @@ public class UploadFileMB implements Serializable {
             for (int i = 0; i < formsList.size(); i++) {
                 forms[i] = new SelectItem(formsList.get(i).toString(), formsList.get(i).getFormName());
             }
-
         } catch (Exception e) {
+            System.out.println("Error: ufMB_1 > "+e.toString());
         }
-
-
-
     }
 
     private void loadSources() {
@@ -212,10 +263,8 @@ public class UploadFileMB implements Serializable {
     }
 
     private void reloadVarsFound() {
-        try {
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet resultSetFileData = conx.consult("SELECT * FROM temp;");
+        try {            
+            ResultSet resultSetFileData = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+";");
             int columnsNumber = resultSetFileData.getMetaData().getColumnCount();
             int pos = 0;
             headerFile = new String[columnsNumber - 1];//creo un arreglo con los nombres de las columnas
@@ -223,8 +272,8 @@ public class UploadFileMB implements Serializable {
                 headerFile[pos] = resultSetFileData.getMetaData().getColumnName(i);
                 pos++;
             }
-            conx.disconnect();
         } catch (Exception e) {
+            System.out.println("Error: ufMB_2 > "+e.toString());
         }
     }
 
@@ -240,7 +289,7 @@ public class UploadFileMB implements Serializable {
         }
         try {
             relationshipOfVariablesMB.setVariablesExpected(variablesExpected);
-        } catch (Exception e) {
+        } catch (Exception e) {            
             System.out.println("******PRIMER INGRESO******");
         }
     }
@@ -256,39 +305,63 @@ public class UploadFileMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------    
     private void uploadXls() throws IOException {
+        
         ArrayList<String> rowFileData;
-        try {
+        try {            
+            tuplesProcessed = 0;
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy H:mm");
+            NumberFormat formatter = new DecimalFormat("#0");
             FileInputStream fileInputStream = (FileInputStream) file.getInputstream();
             XSSFWorkbook workBook = new XSSFWorkbook(fileInputStream);
             XSSFSheet hssfSheet = workBook.getSheetAt(0);
-            Iterator rowIterator = hssfSheet.rowIterator();
             XSSFRow hssfRow;
-            Iterator columnIterator;
-            XSSFCell hssfCell;
-            tuplesNumber = 0;
-            tuplesProcessed = 0;
-            while (rowIterator.hasNext()) {
-                rowIterator.next();
-                tuplesNumber++;
-            }
-            System.out.println("Numero de Lineas: " + tuplesNumber);
-            rowIterator = hssfSheet.rowIterator();
-            while (rowIterator.hasNext()) {
-                hssfRow = (XSSFRow) rowIterator.next();
-                columnIterator = hssfRow.cellIterator();
+            XSSFCell xssfCell;
+            tuplesNumber = hssfSheet.getPhysicalNumberOfRows();
+            int columnsNumber = hssfSheet.getRow(0).getLastCellNum();
+            for (int i = 0; i < tuplesNumber; i++) {
                 rowFileData = new ArrayList<String>();
-                while (columnIterator.hasNext()) {
-                    hssfCell = (XSSFCell) columnIterator.next();
-                    if (hssfCell.getCellType() == HSSFCell.CELL_TYPE_NUMERIC) {
-                        double d = hssfCell.getNumericCellValue();
-                        if (HSSFDateUtil.isCellDateFormatted(hssfCell)) {
-                            rowFileData.add(dateFormat.format(HSSFDateUtil.getJavaDate(d)));
-                        } else {
-                            rowFileData.add(hssfCell.toString().replaceAll(".0", ""));
-                        }
+                hssfRow = hssfSheet.getRow(i);
+                for (int j = 0; j < columnsNumber; j++) {
+                    xssfCell = hssfRow.getCell(j);
+                    if (xssfCell == null) {
+                        rowFileData.add("");
                     } else {
-                        rowFileData.add(hssfCell.toString());
+                        switch (xssfCell.getCellType()) {
+                            case HSSFCell.CELL_TYPE_NUMERIC://0
+                                if (HSSFDateUtil.isCellDateFormatted(xssfCell)) {
+                                    rowFileData.add(dateFormat.format(HSSFDateUtil.getJavaDate(xssfCell.getNumericCellValue())));
+                                } else {
+                                    rowFileData.add(formatter.format(xssfCell.getNumericCellValue()));
+                                }
+                                break;
+                            case HSSFCell.CELL_TYPE_BLANK://3
+                                rowFileData.add("");
+                                break;
+                            case HSSFCell.CELL_TYPE_BOOLEAN://4
+                                rowFileData.add(String.valueOf(xssfCell.getBooleanCellValue()));
+                                break;
+                            case HSSFCell.CELL_TYPE_ERROR:
+                                rowFileData.add(String.valueOf(xssfCell.getErrorCellValue()));
+                                break;
+                            case HSSFCell.CELL_TYPE_FORMULA://2
+                                if (xssfCell.getCellFormula().compareTo("FALSE()") == 0) {
+                                    rowFileData.add("FALSO");
+                                } else {
+                                    if (xssfCell.getCellFormula().compareTo("TRUE()") == 0) {
+                                        rowFileData.add("VERDADERO");
+                                    } else {
+                                        rowFileData.add(xssfCell.getCellFormula());
+                                    }
+                                }
+                                break;
+                            case HSSFCell.CELL_TYPE_STRING://1
+                                
+                                rowFileData.add(xssfCell.getStringCellValue().replace("'", ""));
+                                break;
+                            default:
+                                rowFileData.add(xssfCell.toString());
+                                break;
+                        }
                     }
                 }
                 tuplesProcessed++;
@@ -299,8 +372,9 @@ public class UploadFileMB implements Serializable {
                 }
                 System.out.println(progressUpload);
                 progressUpload = (int) (tuplesProcessed * 100) / tuplesNumber;
-            }
+            }            
         } catch (Exception e) {
+            System.out.println("Error: ufMB_3 > "+e.toString());
         }
         progressUpload = 100;
         btnProcessFileDisabled = true;
@@ -325,9 +399,9 @@ public class UploadFileMB implements Serializable {
         btnResetDisabled = false;
         copyMB.refresh();
         copyMB.cleanBackupTables();
-        
-    }
 
+    }
+        
     public void tagNameKeyPress() {
         errorTagName = "";
         if (file != null) {
@@ -355,9 +429,9 @@ public class UploadFileMB implements Serializable {
         /*
          * AGREGA UN REGISTRO A LA TABLA TEMP EN BASE A UN ARRAY LIST
          */
-        conx = new ConnectionJDBC();
-        conx.connect();
-        String sql = "INSERT INTO temp VALUES (" + "'" + String.valueOf(numLine) + "',";
+        
+        //conx.connect();
+        String sql = "INSERT INTO "+nameTableTemp+" VALUES (" + "'" + String.valueOf(numLine) + "',";
         for (int i = 0; i < rowFileData.size(); i++) {
             //char a = 160;
             //char b = 32;
@@ -368,8 +442,14 @@ public class UploadFileMB implements Serializable {
                 sql = sql + "'" + rowFileData.get(i) + "',";
             }
         }
-        conx.non_query(sql);
-        conx.disconnect();
+        connectionJdbcMB.non_query(sql);
+        if(connectionJdbcMB.getMsj().startsWith("ERROR")){
+            System.out.println("---------------------------------------------------------------");
+            System.out.println("-------------------------------ERRROR--------------------------");
+            System.out.println(sql);
+            System.out.println("---------------------------------------------------------------");
+        }
+        
     }
 
     private ArrayList<String> prepareArray(ArrayList<String> rowFile) {
@@ -433,27 +513,39 @@ public class UploadFileMB implements Serializable {
         return rowFile;
     }
 
+    
+    
     private void createTableTemp(ArrayList<String> rowFileData) {
         /*
          * CREA LA TABLA TEMP EN BASE A UN ARRAY LIST
-         */
-        conx = new ConnectionJDBC();
-        conx.connect();
-        String sql = "DROP TABLE IF EXISTS temp;";//elimino si existe
-        conx.non_query(sql);
-        sql = "CREATE TABLE temp ( id integer NOT NULL,";//creo tabla temporal        
+         */        
+        String sql = "DROP TABLE IF EXISTS "+nameTableTemp+";";//elimino si existe
+        connectionJdbcMB.non_query(sql);
+        if(connectionJdbcMB.getMsj().startsWith("ERROR")){
+            System.out.println("---------------------------------------------------------------");
+            System.out.println("-------------------------------ERRROR--------------------------");
+            System.out.println(sql);
+            System.out.println("---------------------------------------------------------------");
+        }
+        sql = "CREATE TABLE "+nameTableTemp+" ( id integer NOT NULL,";//creo tabla temporal        
         //inserto los registros----------------------------------------        
         if (rowFileData != null) {//VIENE DE UN XLS
             for (int i = 0; i < rowFileData.size(); i++) {
                 if (rowFileData.size() - 1 == i) {
-                    sql = sql + " " + rowFileData.get(i) + " text, CONSTRAINT pkey_temp PRIMARY KEY (id)); ";
+                    sql = sql + " " + rowFileData.get(i) + " text, CONSTRAINT pkey_"+nameTableTemp+" PRIMARY KEY (id)); ";
                 } else {
                     sql = sql + " " + rowFileData.get(i) + " text,";
                 }
             }
         }
-        conx.non_query(sql);
-        conx.disconnect();
+        connectionJdbcMB.non_query(sql);
+        if(connectionJdbcMB.getMsj().startsWith("ERROR")){
+            System.out.println("---------------------------------------------------------------");
+            System.out.println("-------------------------------ERRROR--------------------------");
+            System.out.println(sql);
+            System.out.println("---------------------------------------------------------------");
+        }
+        
     }
 
     public void handleFileUpload(FileUploadEvent event) {
@@ -497,6 +589,7 @@ public class UploadFileMB implements Serializable {
 //                    }
                 }
             } catch (Exception ex) {
+                System.out.println("Error: ufMB_4 > "+ex.toString());
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error procesando el archivo", ex.toString()));
             }
         }
@@ -599,21 +692,21 @@ public class UploadFileMB implements Serializable {
         this.nameFile = nameFile;
     }
 
-//    public String getCurrentDelimiter() {
-//        return currentDelimiter;
-//    }
-//    public void setCurrentDelimiter(String currentDelimiter) {
-//        this.currentDelimiter = currentDelimiter;
-//    }
-//
-//    public SelectItem[] getDelimiters() {
-//        return delimiters;
-//    }
-//
-//    public void setDelimiters(SelectItem[] delimiters) {
-//        this.delimiters = delimiters;
-//    }
-//
+    public String getCurrentDelimiter() {
+        return currentDelimiter;
+    }
+    public void setCurrentDelimiter(String currentDelimiter) {
+        this.currentDelimiter = currentDelimiter;
+    }
+
+    public SelectItem[] getDelimiters() {
+        return delimiters;
+    }
+
+    public void setDelimiters(SelectItem[] delimiters) {
+        this.delimiters = delimiters;
+    }
+
 //    public boolean isSelectDelimiterDisabled() {
 //        return selectDelimiterDisabled;
 //    }

@@ -13,9 +13,9 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import managedBeans.forms.*;
 import model.dao.NeighborhoodsFacade;
 import model.pojo.Neighborhoods;
+import org.apache.poi.hssf.usermodel.*;
 
 /**
  *
@@ -53,6 +53,48 @@ public class NeighborhoodsVariableMB implements Serializable {
     private boolean btnRemoveDisabled = true;
     
     public NeighborhoodsVariableMB() {
+    }
+    
+    private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
+        HSSFCell cell;
+        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
+        cell.setCellValue(new HSSFRichTextString(value));
+        cell.setCellStyle(cellStyle);
+    }
+
+    private void createCell(HSSFRow fila, int position, String value) {
+        HSSFCell cell;
+        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
+        cell.setCellValue(new HSSFRichTextString(value));
+    }
+
+    public void postProcessXLS(Object document) {
+        HSSFWorkbook book = (HSSFWorkbook) document;
+        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+        HSSFRow row;
+        HSSFCellStyle cellStyle = book.createCellStyle();
+        HSSFFont font = book.createFont();
+        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        cellStyle.setFont(font);
+
+        row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
+        createCell(cellStyle, row, 0, "CODIGO");
+        createCell(cellStyle, row, 1, "NOMBRE");
+        createCell(cellStyle, row, 2, "ZONA");
+        neighborhoodsList=neighborhoodsFacade.findAll();
+        for (int i = 0; i < neighborhoodsList.size(); i++) {
+            row = sheet.createRow(i + 1);
+            createCell(row, 0, neighborhoodsList.get(i).getNeighborhoodId().toString());//CODIGO
+            createCell(row, 1, neighborhoodsList.get(i).getNeighborhoodName());//NOMBRE            
+            if (neighborhoodsList.get(i).getNeighborhoodType() != null) {
+                neighborhoodType = String.valueOf(currentNeighborhood.getNeighborhoodType());// character(1), -- Tipo de barrio.
+                if (neighborhoodsList.get(i).getNeighborhoodType().toString().compareTo("1") == 0) {//ZONA URBANA
+                    createCell(row, 2, "ZONA URBANA");//NOMBRE            
+                } else {//ZONA RURAL
+                    createCell(row, 2, "ZONA RURAL");//NOMBRE            
+                }
+            } 
+        }
     }
 
     public void load() {
@@ -97,7 +139,7 @@ public class NeighborhoodsVariableMB implements Serializable {
             }
         }
     }
-
+    
     public void deleteRegistry() {
         if (currentNeighborhood != null) {
             neighborhoodsFacade.remove(currentNeighborhood);

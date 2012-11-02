@@ -4,7 +4,7 @@
  */
 package managedBeans.duplicateSets;
 
-import beans.connection.ConnectionJDBC;
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -12,12 +12,12 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-//import managedBeans.fileProcessing.DuplicateRecordsMB;
 import managedBeans.recordSets.RecordSetsMB;
 import model.dao.*;
 import model.pojo.*;
@@ -72,6 +72,16 @@ public class DuplicateSetsLcenfMB implements Serializable {
     private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     private String openForm = "";
     private RecordSetsMB recordSetsMB;
+    ConnectionJdbcMB connectionJdbcMB;
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa
+     * variables y carga la conexion por jdbc
+     */
+
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+    }
 
     public DuplicateSetsLcenfMB() {
     }
@@ -92,12 +102,10 @@ public class DuplicateSetsLcenfMB implements Serializable {
          */
         if (selectedRowDuplicatedTable != null) {
             try {
-                ConnectionJDBC conx = new ConnectionJDBC();
-                conx.connect();
                 rowDataTableList = new ArrayList<RowDataTable>();
                 int idNFI;
                 //cargo el registro con el que estoy comparando
-                ResultSet resultSet2 = conx.consult(""
+                ResultSet resultSet2 = connectionJdbcMB.consult(""
                         + "SELECT "
                         + "   non_fatal_injuries.non_fatal_injury_id "
                         + "FROM "
@@ -106,12 +114,11 @@ public class DuplicateSetsLcenfMB implements Serializable {
                         + "   non_fatal_injuries.victim_id = " + selectedRowDuplicatedTable.getColumn1() + "");
                 resultSet2.next();
                 idNFI = Integer.parseInt(resultSet2.getString(1));
-                rowDataTableList.add(loadValues("COMPARADO", nonFatalInjuriesFacade.find(idNFI)));
-
+                rowDataTableList.add(loadValues("", nonFatalInjuriesFacade.find(idNFI)));
 
                 String sql = "";
                 sql = sql + "SELECT ";
-                sql = sql + "* ";
+                sql = sql + "t1.victim_id ";
                 sql = sql + "FROM ";
                 sql = sql + "duplicate t1, duplicate t2 ";
                 sql = sql + "WHERE ";
@@ -119,15 +126,14 @@ public class DuplicateSetsLcenfMB implements Serializable {
                 sql = sql + "AND t1.victim_id != t2.victim_id ";
                 sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 6 ";
                 sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 6 ";
-                ResultSet resultSetCount = conx.consult(sql);
-                
+                ResultSet resultSetCount = connectionJdbcMB.consult(sql);
 
                 idNFI = -1;
-                int cont=0;
+                int cont = 0;
                 //cargo los posibles duplicados 
-                
+
                 while (resultSetCount.next()) {
-                    resultSet2 = conx.consult(""
+                    resultSet2 = connectionJdbcMB.consult(""
                             + "SELECT "
                             + "   non_fatal_injuries.non_fatal_injury_id "
                             + "FROM "
@@ -139,14 +145,12 @@ public class DuplicateSetsLcenfMB implements Serializable {
                     idNFI = Integer.parseInt(resultSet2.getString(1));
                     rowDataTableList.add(loadValues("", nonFatalInjuriesFacade.find(idNFI)));
                 }
-                if(idNFI==-1){
+                if (idNFI == -1) {
                     printMessage(FacesMessage.SEVERITY_WARN, "Sin datos", "La búsqueda no produjo resultados");
-                }
-                else{
-                    printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se encontraron "+String.valueOf(cont)+" posibles duplicados");
+                } else {
+                    printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se encontraron " + String.valueOf(cont) + " posibles duplicados");
                 }
                 selectedRowDataTable = null;
-                conx.disconnect();
             } catch (SQLException ex) {
                 //Logger.getLogger(DuplicateRecordsMB.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -169,12 +173,8 @@ public class DuplicateSetsLcenfMB implements Serializable {
          * posiblemente son duplicados
          */
         try {
-            ConnectionJDBC conx = new ConnectionJDBC();
-            conx.connect();
-
             String sql = "DROP VIEW IF EXISTS duplicate";
-            conx.non_query(sql);
-
+            connectionJdbcMB.non_query(sql);
             sql = "create view duplicate as "
                     + "SELECT "
                     + "   * "
@@ -188,41 +188,55 @@ public class DuplicateSetsLcenfMB implements Serializable {
                     sql = sql + " OR tag_id = " + tagsList.get(i).getTagId().toString() + " ";
                 }
             }
-
-            conx.non_query(sql);
-
+            connectionJdbcMB.non_query(sql);
             rowDuplicatedTableList = new ArrayList<RowDataTable>();
-
             sql = "Select * from duplicate";
-            ResultSet resultSetFileData = conx.consult(sql);
-
+            ResultSet resultSetFileData = connectionJdbcMB.consult(sql);
+            ArrayList<String> addedRecords = new ArrayList<String>();;
+            boolean first;
+            boolean found;
+            int countRegisters;
             while (resultSetFileData.next()) {
                 //contamos el numero de registros que pueden ser posibles repeticiones
                 //si supera la validacion se agregamos a la lista
-                sql = "";
-                sql = sql + "SELECT ";
-                sql = sql + "count(*) ";
-                sql = sql + "FROM ";
-                sql = sql + "duplicate t1, duplicate t2 ";
-                sql = sql + "WHERE ";
-                sql = sql + "t2.victim_id = " + resultSetFileData.getString("victim_id") + " ";
-                sql = sql + "AND t1.victim_id != t2.victim_id ";
-                sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 6 ";
-                sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 6 ";
-                ResultSet resultSetCount = conx.consult(sql);
-                if (resultSetCount.next()) {
-                    if (resultSetCount.getInt(1) != 0) {
+                found = false;
+                for (int i = 0; i < addedRecords.size(); i++) {//saber si ya fue evaluado
+                    if (resultSetFileData.getString("victim_id").compareTo(addedRecords.get(i)) == 0) {
+                        found = true;
+                    }
+                }
+                if (!found) {//el elemento no ha sido evaluado ni adicionado
+                    sql = "";
+                    sql = sql + "SELECT ";
+                    sql = sql + "t1.victim_id ";
+                    sql = sql + "FROM ";
+                    sql = sql + "duplicate t1, duplicate t2 ";
+                    sql = sql + "WHERE ";
+                    sql = sql + "t2.victim_id = " + resultSetFileData.getString("victim_id") + " ";
+                    sql = sql + "AND t1.victim_id != t2.victim_id ";
+                    sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 6 ";
+                    sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 6 ";
+                    ResultSet resultSetCount = connectionJdbcMB.consult(sql);
+                    first = true;
+                    countRegisters = 0;
+                    while (resultSetCount.next()) {
+                        countRegisters++;
+                        if (first) {
+                            addedRecords.add(resultSetFileData.getString("victim_id"));
+                            first = false;
+                        }
+                        addedRecords.add(resultSetCount.getString("victim_id"));
+                    }
+                    if (countRegisters != 0) {//adiciono el registro a la tabla
                         rowDuplicatedTableList.add(new RowDataTable(
                                 resultSetFileData.getString("victim_id"),
                                 resultSetFileData.getString("victim_nid"),
                                 resultSetFileData.getString("victim_name"),
-                                String.valueOf(resultSetCount.getInt(1))));
+                                String.valueOf(countRegisters)));
                     }
                 }
-
             }
             selectedRowDataTable = null;
-            conx.disconnect();
         } catch (SQLException ex) {
             //Logger.getLogger(DuplicateRecordsMB.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -237,7 +251,6 @@ public class DuplicateSetsLcenfMB implements Serializable {
         recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
         recordSetsMB.setProgress(0);
         int totalRegisters = 0;
-        int totalProcess = 0;
 
         selectedRowDataTable = null;
         rowDataTableList = new ArrayList<RowDataTable>();
@@ -265,11 +278,11 @@ public class DuplicateSetsLcenfMB implements Serializable {
         //------------------------------------------------------------
 
         //******non_fatal_injury_id
-        if (c.length() == 0) {
+        //if (c.length() == 0) {
             newRowDataTable.setColumn1(currentNonFatalI.getNonFatalInjuryId().toString());
-        } else {
-            newRowDataTable.setColumn1("COMPARADO");
-        }
+        //} else {
+        //    newRowDataTable.setColumn1("COMPARADO");
+        //}
 
         //******type_id
         try {
@@ -1009,7 +1022,7 @@ public class DuplicateSetsLcenfMB implements Serializable {
         btnViewDisabled = true;
         btnRemoveDisabled = true;
         if (selectedRowDuplicatedTable != null) {
-            btnViewDisabled = false;
+            loadDuplicatedRecords();
         }
     }
 
@@ -1017,7 +1030,7 @@ public class DuplicateSetsLcenfMB implements Serializable {
         //currentNonFatalInjury = null;
         btnRemoveDisabled = true;
         if (selectedRowDataTable != null) {
-            if(selectedRowDataTable.getColumn1().compareTo("COMPARADO")!=0){
+            if (selectedRowDataTable.getColumn1().compareTo("COMPARADO") != 0) {
                 btnRemoveDisabled = false;
             }
             //currentNonFatalInjury = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));

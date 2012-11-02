@@ -6,7 +6,8 @@ package managedBeans.fileProcessing;
 
 //import SessionBeans.AreaFacade;
 //import entities.Area;
-import beans.connection.ConnectionJDBC;
+
+import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.DataTypeEnum;
 import beans.lists.Field;
 import beans.relations.RelationVar;
@@ -19,10 +20,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import managedBeans.login.LoginMB;
 import managedBeans.preload.FormsAndFieldsDataMB;
 
 /**
@@ -33,9 +36,6 @@ import managedBeans.preload.FormsAndFieldsDataMB;
 @SessionScoped
 public class RelationshipOfVariablesMB implements Serializable {
 
-    private ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
-    //private boolean btnValidateRelationVarDisabled = true;
-    //private boolean btnAssociateRelationVarDisabled = true;
     private boolean btnRemoveRelationVarDisabled = true;
     private boolean btnSaveConfigurationDisabled = true;
     private boolean btnLoadConfigurationDisabled = false;
@@ -62,15 +62,27 @@ public class RelationshipOfVariablesMB implements Serializable {
     private RelationsGroup currentRelationsGroup;
     private UploadFileMB uploadFileMB;
     private RelationshipOfValuesMB relationshipOfValuesMB;
+    private LoginMB loginMB;
     //-----------------------------
     private String expectedVariablesFilter = "";
     private String foundVariablesFilter = "";
     private String filterText;
     private String foundText;
+    ConnectionJdbcMB connectionJdbcMB;
+    private String nameTableTemp="temp";
+
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa
+     * variables y carga la conexion por jdbc
+     */
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+    }
 
     public void changeFoundVariablesFilter() {
 //        valuesFoundSelectedInRelationValues = new ArrayList<String>();
-          loadVarsExpectedAndFound();
+        loadVarsExpectedAndFound();
 //        activeButtons();
     }
 
@@ -106,6 +118,9 @@ public class RelationshipOfVariablesMB implements Serializable {
         /*
          * Constructor de la clase
          */
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        nameTableTemp="temp"+loginMB.getLoginname();
     }
 
     public void refresh() {
@@ -118,7 +133,7 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.relatedVars = new ArrayList<String>();
         this.valuesExpected = new ArrayList<String>();
         this.valuesFound = new ArrayList<String>();
-        this.varsFound = new ArrayList<String>();        
+        this.varsFound = new ArrayList<String>();
         this.variablesExpected = new ArrayList<String>();
         this.currentVarFound = "";
         this.currentVarExpected = "";
@@ -190,7 +205,7 @@ public class RelationshipOfVariablesMB implements Serializable {
             }
         }
         variablesExpected = varsExpected;
-        
+
         //filtro los datos
         if (expectedVariablesFilter.trim().length() != 0) {
             filterText = expectedVariablesFilter.toUpperCase();
@@ -202,8 +217,8 @@ public class RelationshipOfVariablesMB implements Serializable {
                 }
             }
         }
-        
-        
+
+
 
         //recargo la lista de variables encontradas        
         List<String> varsFound2 = uploadFileMB.getVariablesFound();
@@ -296,40 +311,35 @@ public class RelationshipOfVariablesMB implements Serializable {
         }
     }
 
+    /*
+     * crear una lista de valores de una determinada columna proveniente del
+     * archivo
+     */
     public ArrayList createListOfValuesFromFile(String column) {
-        /*
-         * crear una lista de valores de una determinada columna proveniente del
-         * archivo
-         */
+
         ArrayList<String> array = new ArrayList<String>();
         try {
-            //determino el nombre de la columna
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet rs = conx.consult("SELECT " + column + " FROM temp; ");
+            //determino el nombre de la columna            
+            ResultSet rs = connectionJdbcMB.consult("SELECT " + column + " FROM "+nameTableTemp+"; ");
             while (rs.next()) {
                 array.add(rs.getString(1));
             }
-            conx.disconnect();
         } catch (SQLException ex) {
         }
         return array;
     }
 
+    /*
+     * crear una lista de valores de una determinada columna proveniente del
+     * archivo con valores no repetidos
+     */
     public void loadValuesFound(String column, int amount) {
-        /*
-         * crear una lista de valores de una determinada columna proveniente del
-         * archivo con valores no repetidos
-         */
+
         ArrayList<String> array = new ArrayList<String>();
         int currentAmount = 0;
-        //saco todos los valores distintos de la tabla temp
-        //correspondientes a la variable encontrada y los hubico en DistinctVarsExpectedArrayList     
         try {
-            //determino el nombre de la columna
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet rs = conx.consult("SELECT DISTINCT(" + column + ") FROM temp; ");
+            //determino el nombre de la columna            
+            ResultSet rs = connectionJdbcMB.consult("SELECT DISTINCT(" + column + ") FROM "+nameTableTemp+"; ");
             while (rs.next()) {
                 if (currentAmount < amount) {
                     array.add(rs.getString(1));
@@ -338,7 +348,6 @@ public class RelationshipOfVariablesMB implements Serializable {
                     break;
                 }
             }
-            conx.disconnect();
         } catch (SQLException ex) {
         }
         valuesFound = array;

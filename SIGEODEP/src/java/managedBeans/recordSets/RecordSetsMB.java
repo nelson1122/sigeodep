@@ -402,6 +402,7 @@ public class RecordSetsMB implements Serializable {
                 }
                 System.out.println("Total de registros = " + String.valueOf(totalRegisters));
                 //RECORRO CADA TAG Y REALIZO LA ELIMINACION
+                //if(totalRegisters!=0)
                 for (int i = 0; i < tagsList.size(); i++) {
                     if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-028") == 0) {
                         removeMurder(tagsList.get(i));

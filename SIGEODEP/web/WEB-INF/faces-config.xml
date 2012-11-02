@@ -12,6 +12,7 @@
             <var>bundle</var>
         </resource-bundle>
     </application>
+    
     <navigation-rule>
         <from-view-id>*</from-view-id>
         <navigation-case>
@@ -279,6 +280,56 @@
             <from-outcome>duplicateSetsTransit</from-outcome>
             <to-view-id>/web/duplicateSets/duplicateSetsTransit.xhtml</to-view-id>
             <redirect/>
+        </navigation-case>        
+        <navigation-case>
+            <from-outcome>fatalAccidentalIndicators</from-outcome>            
+            <to-view-id>/web/indicators/fatalAccidentalIndicators.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>        
+        <navigation-case>
+            <from-outcome>fatalIndicators</from-outcome>
+            <to-view-id>/web/indicators/fatalIndicators.xhtml</to-view-id>
+            <redirect/>
         </navigation-case>
+        <navigation-case>
+            <from-outcome>fatalMurderIndicators</from-outcome>
+            <to-view-id>/web/indicators/fatalMurderIndicators.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>fatalSuicideIndicators</from-outcome>
+            <to-view-id>/web/indicators/fatalSuicideIndicators.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>fatalTransitIndicators</from-outcome>
+            <to-view-id>/web/indicators/fatalTransitIndicators.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>nonFatalDomesticViolenceIndicators</from-outcome>
+            <to-view-id>/web/indicators/nonFatalDomesticViolenceIndicators.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>nonFatalExternalCauseIndicators</from-outcome>
+            <to-view-id>/web/indicators/nonFatalExternalCauseIndicators.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>nonFatalIndicators</from-outcome>
+            <to-view-id>/web/indicators/nonFatalIndicators.xhtml</to-view-id>            
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>nonFatalNonIntentionalIndicators</from-outcome>
+            <to-view-id>/web/indicators/nonFatalNonIntentionalIndicators.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>nonFatalSelfInflictedIndicators</from-outcome>
+            <to-view-id>/web/indicators/nonFatalSelfInflictedIndicators.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>        
     </navigation-rule>
 </faces-config>

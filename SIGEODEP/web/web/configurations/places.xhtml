@@ -123,6 +123,10 @@
                                             actionListener="#{placesVariableMB.newRegistry}"
                                             oncomplete="dialogNew.show()"                                            
                                             update=":IdForm2:IdDialogNew :IdForm2:displayNew :IdForm1:message"/>
+                                        <h:commandLink >                                              
+                                            <p:button value="Exportar"/>
+                                            <p:dataExporter type="xls" target="IdSearchTable" fileName="CLASE DE LUGAR DE LOS HECHOS - FATALES" postProcessor="#{placesVariableMB.postProcessXLS}"/>  
+                                        </h:commandLink>
                                     </p:column>                            
                                 </p:row>
                             </p:panelGrid>
