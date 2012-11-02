@@ -4,7 +4,7 @@
  */
 package managedBeans.forms;
 
-import beans.connection.ConnectionJDBC;
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -192,6 +192,15 @@ public class AccidentalMB implements Serializable {
     private String stylePosition = "color: #1471B1;";
     private String currentIdForm = "";
     private Users currentUser;
+    ConnectionJdbcMB connectionJdbcMB;
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * variables y carga la conexion por jdbc
+     */
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+    }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
@@ -220,7 +229,7 @@ public class AccidentalMB implements Serializable {
 
     
     public void reset() {
-        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
         LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         currentUser=loginMB.getCurrentUser();
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
@@ -340,6 +349,10 @@ public class AccidentalMB implements Serializable {
         loading = false;
         System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////");
 
+    }
+    
+    public void changeTag() {//cambia el conjunto de registros
+        noSaveAndGoNew();
     }
 
     public void loadValues() {
@@ -1312,8 +1325,7 @@ public class AccidentalMB implements Serializable {
     private Date date2;
     private int currentSearchCriteria = 0;
     private SelectItem[] searchCriteriaList;
-    private String currentSearchValue = "";
-    ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
+    private String currentSearchValue = "";    
 
     public List<RowDataTable> getRowDataTableList() {
         return rowDataTableList;
@@ -1362,9 +1374,7 @@ public class AccidentalMB implements Serializable {
         }
         if (s) {
             try {
-                rowDataTableList = new ArrayList<RowDataTable>();
-                conx = new ConnectionJDBC();
-                conx.connect();
+                rowDataTableList = new ArrayList<RowDataTable>();                
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "fatal_injuries.fatal_injury_id, ";
@@ -1390,21 +1400,8 @@ public class AccidentalMB implements Serializable {
                         break;
                 }
                 sql = sql + "fatal_injuries.injury_id = 13";
-//                if (date1 != null) {
-//                    sql = sql + "non_fatal_injuries.input_timestamp < " + date1.toString() + " AND ";
-//                }
-//                if (date2 != null) {
-//                    sql = sql + "non_fatal_injuries.input_timestamp > " + date2.toString() + " AND ";
-//                }
-//                sql = sql + "(injuries.injury_id = 53 OR ";
-//                sql = sql + "injuries.injury_id = 50 OR ";
-//                sql = sql + "injuries.injury_id = 51 OR ";
-//                sql = sql + "injuries.injury_id = 52 OR ";
-//                sql = sql + "injuries.injury_id = 54 OR ";
-//                sql = sql + "injuries.injury_id = 55);";
                 System.out.println(sql);
-                ResultSet rs = conx.consult(sql);
-                conx.disconnect();
+                ResultSet rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
                     rowDataTableList.add(new RowDataTable(rs.getString(1), rs.getString(2), rs.getString(3)));
                     s = false;//aqui se usa para saber si hay registros

@@ -40,7 +40,7 @@
         <!--=================================================================-->
         <!--============================= CONTENIDO =========================-->
         <ui:define name="content">
-             
+
             <h:form enctype="multipart/form-data" id="IdForm"> 
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
                 <br/>
@@ -48,7 +48,7 @@
                     <!--===================================================================================-->
                     <!--========================SECCION PARA LA CARGA DEL ARCHIVO==========================-->
 
-                    <p:tab id="tab1" title="ARCHIVO PLANO">  
+                    <p:tab id="tab1" title="ARCHIVO">  
                         <p:panelGrid style=" margin-left: 30px;" >     
                             <p:row>
                                 <p:column colspan="4" styleClass="ui-widget-header">
@@ -58,7 +58,7 @@
                             <p:row>
                                 <p:column colspan="1">
                                     <h:outputLabel value="Nombre del conjunto de registros: " /> 
-                                    
+
                                 </p:column>
                                 <p:column colspan="2">
                                     <h:inputText 
@@ -79,7 +79,7 @@
                                         style="color: #FF1111;" /> 
                                 </p:column>
                                 <p:column rowspan="2" colspan="1">
-                                    
+
                                     <h:outputLabel
                                         id="IdCurrentForm"
                                         value="#{uploadFileMB.currentForm}"/>
@@ -97,10 +97,10 @@
                                         disabled="#{uploadFileMB.selectFormDisabled}"> 
                                         <f:selectItems value="#{uploadFileMB.forms}"/>                                          
                                         <f:ajax
-                                            render="IdSelectOneMenuSource IdAccordionPanel:IdSelectOneListVarExpected IdCurrentForm"/>
+                                            render="IdSelectOneMenuSource IdDelimiter IdAccordionPanel:IdSelectOneListVarExpected IdCurrentForm"/>
                                     </h:selectOneMenu>  
                                 </p:column>
-                                
+
                             </p:row>
                             <p:row>
                                 <p:column colspan="1">
@@ -113,23 +113,23 @@
                                         disabled="#{uploadFileMB.selectSourceDisabled}"> 
                                         <f:selectItems value="#{uploadFileMB.sources}"/>                                          
                                         <f:ajax
-                                            render="IdSelectOneMenuSource IdAccordionPanel:IdSelectOneListVarExpected IdCurrentForm"/>
+                                            render="IdSelectOneMenuSource IdDelimiter IdAccordionPanel:IdSelectOneListVarExpected IdCurrentForm"/>
                                     </h:selectOneMenu> 
                                 </p:column>
                             </p:row>
-                            <!--p:row>
+                            <p:row>
                                 <p:column colspan="1">
                                     <h:outputLabel value="Delimitador: "/>  
                                 </p:column>
                                 <p:column colspan="3">
                                     <p:selectOneMenu 
                                         id="IdDelimiter" 
-                                        value="# {uploadFileMB.currentDelimiter}" 
-                                        disabled="# {uploadFileMB.selectDelimiterDisabled}">                                  
-                                        <f:selectItems value="# {uploadFileMB.delimiters}"/>
+                                        value="#{uploadFileMB.currentDelimiter}" 
+                                        disabled="#{uploadFileMB.selectSourceDisabled}">                                  
+                                        <f:selectItems value="#{uploadFileMB.delimiters}"/>
                                     </p:selectOneMenu> 
                                 </p:column>
-                            </p:row-->
+                            </p:row>
                             <p:row>
                                 <p:column colspan="1">
                                     <h:outputLabel
@@ -154,6 +154,8 @@
                                         actionListener="#{uploadFileMB.processFile}"
                                         value="Procesar"
                                         update="@form"  
+                                        widgetVar="startButtonP"
+                                        onclick="startButtonP.disable();"
                                         onstart="pbAjaxUpload.start();"/> 
                                     <p:commandButton 
                                         disabled="#{uploadFileMB.btnResetDisabled}" 
@@ -922,8 +924,7 @@
                                                     </p:column>
                                                     <p:column colspan="2">
                                                         <!--LISTA DE VALORES ENCONTRADOS EN RELACION DE VALORES-->
-                                                        <h:selectManyMenu  
-
+                                                        <h:selectManyMenu                                                              
                                                             id="IdSelectOneListValuesFound2" 
                                                             value="#{relationshipOfValuesMB.valuesFoundSelectedInRelationValues}"
                                                             style="height:110px; width: 360px;">
@@ -961,13 +962,22 @@
                                                             value="Descartar" 
                                                             style="size: 10px;"
                                                             update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdBtnView"/> 
-                                                        <p:commandButton 
+                                                        <!--p:commandButton 
                                                             id="IdBtnView" 
-                                                            disabled="#{relationshipOfValuesMB.btnViewValueDisabled}"                                                             
+                                                            disabled="# {relationshipOfValuesMB.btnViewValueDisabled}"                                                             
                                                             onclick="seeCoincidentsDialog.hide(); seeCoincidentsDialog.show();"
                                                             value="Ver" 
                                                             style="size: 10px;"
-                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/> 
+                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/-->                                                         
+                                                        <p:commandButton 
+                                                            id="IdBtnView" 
+                                                            disabled="#{relationshipOfValuesMB.btnViewValueDisabled}"            
+                                                            oncomplete="seeCoincidentsDialog.hide(); seeCoincidentsDialog.show();"
+                                                            
+                                                            actionListener="#{relationshipOfValuesMB.createDynamicTable}"
+                                                            value="Ver" 
+                                                            style="size: 10px;"
+                                                            update="IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdBtnView :IdForm2:IdSeeCoincidentsDialog"/>                                                         
                                                     </p:column>  
                                                 </p:row>
                                             </p:panelGrid>
@@ -1106,13 +1116,10 @@
                                         </p:column>
                                     </p:row>
                                     <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            <!-- p:commandButton value="Registrar Datos" type="button" onclick="pbAjax.start();startButton2.disable();" widgetVar="startButton2" / 
-                                            disabled="# {recordDataMB.btnValidateDisabled}"
-                                            -->  
+                                        <p:column styleClass="ui-widget-header">                                            
                                             <p:commandButton 
                                                 value="INICIAR VALIDACION" 
-                                                
+
                                                 actionListener="#{recordDataMB.btnValidateClick}" 
                                                 onclick="pbAjaxValidate.start(); startButton.disable();"  
                                                 widgetVar="startButton"/>
@@ -1302,13 +1309,7 @@
                                                 disabled="#{recordDataMB.btnRegisterDataDisabled}"
                                                 actionListener="#{recordDataMB.btnRegisterDataClick}" 
                                                 onclick="pbAjax.start(); startButton2.disable();"  
-                                                widgetVar="startButton2" />  
-                                            <p:commandButton 
-                                                value="CANCELAR" 
-                                                disabled="true"
-                                                actionListener="#{recordDataMB.cancel}" 
-                                                oncomplete="pbAjax.cancel();startButton2.enable();" 
-                                                widgetVar="startButton3" />  
+                                                widgetVar="startButton2" />                                              
                                         </p:column>
                                     </p:row>
                                 </p:panelGrid>
@@ -1320,6 +1321,7 @@
         </ui:define>
         <!--=================================================================-->
         <!--==================== CUADROS DE DIALOGOS ========================-->
+        
         <ui:define name="dialogs">
             <h:form id="IdForm2">
                 <p:dialog 
@@ -1332,7 +1334,11 @@
                         <p:dataTable 
                             value="#{errorsControlMB.dinamicTable.listOfRecords}" 
                             var="listOfRecords"                                        
-                            id="IdDataTableR">
+                            id="IdDataTableR"
+                            editable="true">
+                            <p:column headerText="EDICION" style="width:50px">
+                                <p:rowEditor />
+                            </p:column>
                             <p:columns  value="#{errorsControlMB.dinamicTable.titles}" var="titles" columnIndexVar="index">
                                 <f:facet name="header" >
                                     <h:outputText value="#{titles}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"/>                                                
@@ -1348,25 +1354,67 @@
                 <p:dialog 
                     id="IdSeeCoincidentsDialog" 
                     header="Registros coincidentes con el valor encontrado seleccionado"
-                    widgetVar="seeCoincidentsDialog" 
-                    resizable="false"
-                    modal="true" >
-                    <div style="width: 700px; height: 300px; overflow:scroll; padding-right: 10px; ">
-                        <p:dataTable 
-                            value="#{relationshipOfValuesMB.dinamicTable.listOfRecords}" 
-                            var="listOfRecords"                                        
-                            id="IdDataTableR2">
-                            <p:columns  value="#{relationshipOfValuesMB.dinamicTable.titles}" var="titles" columnIndexVar="index">
-                                <f:facet name="header" >
-                                    <h:outputText value="#{titles}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"/>                                                
-                                </f:facet>
-                                <h:outputText value="#{listOfRecords[index]}"/>
-                            </p:columns>
-                        </p:dataTable>
-                    </div>
-                    <p:commandButton                                                                         
-                        value="CERRAR" 
-                        onclick="seeCoincidentsDialog.hide()"/>
+                    widgetVar="seeCoincidentsDialog"                     
+                    resizable="false"                    
+                    modal="true" 
+                    >
+                    <p:panelGrid>
+                        <p:row>
+                            <p:column colspan="3" >
+                                <!--div style="width: 400px;    padding-right: 10px; "-->
+                                <p:dataTable 
+                                    id="IdCoincidentsTable"                                     
+                                    var="listOfRecords"
+                                    rowKey="#{listOfRecords[0]}" 
+                                    value="#{relationshipOfValuesMB.dinamicTable.listOfRecords}"
+                                    selection="#{relationshipOfValuesMB.selectedRowDataTable}" 
+                                    paginator="true"
+                                    rows="5"                                    
+                                    paginatorPosition="bottom"  
+                                    selectionMode="single"
+                                    scrollable="true"
+                                    scrollWidth="700"                                    
+                                    pageLinks="3"
+                                    resizableColumns="true"> 
+                                    <p:ajax
+                                        event="rowSelect"
+                                        listener="#{relationshipOfValuesMB.loadCoincidentsRgisters}"                                    
+                                        update=":IdForm2:IdInputNewValue :IdForm2:IdChangeNewValue" />
+                                    <p:columns styleClass="bla" value="#{relationshipOfValuesMB.dinamicTable.titles}" var="titles" sortBy="a" columnIndexVar="index">
+                                        <f:facet name="header" >
+                                            <h:outputText value="#{titles}" style="width:100%"/>                                                
+                                        </f:facet>
+                                        <h:outputText styleClass="bla" value="#{listOfRecords[index]}" />  
+                                    </p:columns>
+                                </p:dataTable>  
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column colspan="1">
+                                <p:commandButton                                     
+                                    value="CERRAR" 
+                                    actionListener="#{relationshipOfValuesMB.changeCategoricalRelatedVariables}"
+                                    oncomplete="seeCoincidentsDialog.hide()"
+                                    update=":IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesExpected2 :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesFound2 :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesRelated :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesDiscarded :IdForm:IdTabView:IdAccordionPanel:IdBtnAssociateValues :IdForm:IdTabView:IdAccordionPanel:IdBtnAutomaticRelationValues :IdForm:IdTabView:IdAccordionPanel:IdBtnRemoveRelationValues :IdForm:IdTabView:IdAccordionPanel:IdBtnDiscardValue :IdForm:IdTabView:IdAccordionPanel:IdBtnRemoveDiscardedValues :IdForm:IdTabView:IdAccordionPanel:IdExpectedValuesFilter :IdForm:IdTabView:IdAccordionPanel:IdFoundValuesFilter :IdForm:IdTabView:IdAccordionPanel:IdBtnView :IdForm:IdTabView:IdAccordionPanel:IdNameOfValueExpected"/>
+                            </p:column>
+                            <p:column colspan="2">
+                                <h:outputText 
+                                    value="nuevo valor para [#{relationshipOfValuesMB.currentVariableFound}] :"/>
+                                <p:inputText 
+                                    id="IdInputNewValue" 
+                                    disabled="#{relationshipOfValuesMB.newValueDisabled}"
+                                    value="#{relationshipOfValuesMB.coincidentNewValue}"
+                                    size="50"/>
+                                <p:commandButton 
+                                    id="IdChangeNewValue"
+                                    disabled="#{relationshipOfValuesMB.newValueDisabled}"
+                                    actionListener="#{relationshipOfValuesMB.changeCoincidentValue}"
+                                    value="Cambiar" 
+                                    update=":IdForm2:IdInputNewValue :IdForm2:IdChangeNewValue :IdForm2:IdCoincidentsTable"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+
                 </p:dialog>                
                 <p:dialog
                     id="IdResetDialog" 
@@ -1397,8 +1445,7 @@
                     resizable="false"
                     header="CARGAR CONFIGURACION" 
                     widgetVar="openDialog" 
-                    modal="true"
-                    style="width: 100px; height: 120px;">                                                             
+                    modal="true">                                                             
                     <br/>
                     <p:inputTextarea 
                         value=" Al cargar una configuración existente se perderan todos los cambio que haya relaizado hasta el momento, confirma que desea relizar la carga de el grupo de relaciones seleccionado?" 

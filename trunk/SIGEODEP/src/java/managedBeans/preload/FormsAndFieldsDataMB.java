@@ -6,9 +6,8 @@
  */
 package managedBeans.preload;
 
-import beans.connection.ConnectionJDBC;
+import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.DataTypeEnum;
-import beans.lists.Category;
 import beans.lists.Field;
 import beans.lists.Form;
 import java.io.Serializable;
@@ -16,9 +15,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
 import model.dao.CountriesFacade;
 import model.dao.DepartamentsFacade;
 import model.dao.MunicipalitiesFacade;
@@ -46,6 +47,15 @@ public class FormsAndFieldsDataMB implements Serializable {
     MunicipalitiesFacade municipalitiesFacade;
     @EJB
     CountriesFacade countriesFacade;
+    ConnectionJdbcMB connectionJdbcMB;
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * variables y carga la conexion por jdbc
+     */
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+    }
 
     public FormsAndFieldsDataMB() {
         /**
@@ -65,13 +75,12 @@ public class FormsAndFieldsDataMB implements Serializable {
         if (!loaded)//no se han cargado aun los datos de los formularios
         {
             try {
-                ConnectionJDBC conx = new ConnectionJDBC();
-                conx.connect();
-                rsForms = conx.consult("SELECT * FROM forms;");
+                
+                rsForms = connectionJdbcMB.consult("SELECT * FROM forms;");
                 //**********************************************RECORRER FORMULARIOS
                 while (rsForms.next()) {
                     Form newForm = new Form(rsForms.getString("form_name"), rsForms.getString("form_id"));
-                    rsFields = conx.consult("SELECT * FROM fields WHERE form_id like '" + rsForms.getString("form_id") + "'");
+                    rsFields = connectionJdbcMB.consult("SELECT * FROM fields WHERE form_id like '" + rsForms.getString("form_id") + "'");
                     //**********************RECORRER CAMPOS
                     while (rsFields.next()) {
                         Field newField = new Field(
@@ -91,7 +100,7 @@ public class FormsAndFieldsDataMB implements Serializable {
                                 try {
 
 
-                                    rsCategorical = conx.consult("SELECT * FROM " + newField.getFieldType());
+                                    rsCategorical = connectionJdbcMB.consult("SELECT * FROM " + newField.getFieldType());
                                     while (rsCategorical.next()) {
                                         //Category newCategory = new Category(rsCategorical.getString(1), rsCategorical.getString(2));
                                         //newField.categoricalList.add(newCategory);
@@ -112,7 +121,6 @@ public class FormsAndFieldsDataMB implements Serializable {
                 }
                 loaded = true;
                 System.out.println("LA CANTIDAD DE PROCESOS NECESARIOS FUE DE " + String.valueOf(amount));
-                conx.disconnect();
             } catch (SQLException ex) {
                 System.out.println(ex.toString());
             }

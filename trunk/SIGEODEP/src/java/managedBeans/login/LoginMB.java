@@ -4,6 +4,7 @@
  */
 package managedBeans.login;
 
+import beans.connection.ConnectionJdbcMB;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -35,6 +36,8 @@ public class LoginMB implements Serializable {
     private String userName = "";
     private String userJob = "";
     private Users currentUser;
+    private String activeIndexAcoordion1="-1";
+    private String activeIndexAcoordion2="-1";
     //funciones para crear un chart--------------------------
     private StreamedContent chartImage;
 
@@ -58,6 +61,7 @@ public class LoginMB implements Serializable {
     private int countLogout = 0;//si este valor llega a 10 se finaliza la sesion
     FacesContext context;
     FormsAndFieldsDataMB formsAndFieldsDataMB;
+    ConnectionJdbcMB connectionJdbcMB;
     UploadFileMB uploadFileMB;
     RelationshipOfVariablesMB relationshipOfVariablesMB;
     RelationshipOfValuesMB relationshipOfValuesMB;
@@ -66,7 +70,6 @@ public class LoginMB implements Serializable {
     ErrorsControlMB errorsControlMB;
     @EJB
     UsersFacade usersFacade;
-    
     //progreso de carga de la aplicacion ***********************************    
     private Integer progress;
 
@@ -95,15 +98,15 @@ public class LoginMB implements Serializable {
         //countLogout = countLogout + 1;
         //System.out.println("Contador Logout: " + String.valueOf(countLogout));
         //if (countLogout > 10) {
-            ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
-            String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
-            try {
-                ((HttpSession) ctx.getSession(false)).invalidate();
-                ctx.redirect(ctxPath + "/index.html?v=XX");
-                System.out.println("FINALIZA LA SESION");
-            } catch (Exception ex) {
-                System.out.println("Exepcion cerrando sesion: " + ex.toString());
-            }
+        ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+        String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
+        try {
+            ((HttpSession) ctx.getSession(false)).invalidate();
+            ctx.redirect(ctxPath + "/index.html?v=XX");
+            System.out.println("FINALIZA LA SESION");
+        } catch (Exception ex) {
+            System.out.println("Excepcion cerrando sesion: " + ex.toString());
+        }
         //}
     }
 
@@ -111,7 +114,6 @@ public class LoginMB implements Serializable {
     //    countLogout = 1;
     //    System.out.println("Contador reseteado: " + String.valueOf(countLogout));
     //}
-
     public void logout2() {
         ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
         String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
@@ -147,7 +149,6 @@ public class LoginMB implements Serializable {
         recordDataMB.reset();
         errorsControlMB.reset();
     }
-
 //    public void btnRegisterDataClick() {
 //        progress = 0;
 //        for (int i = 0; i < 100; i++) {
@@ -162,11 +163,13 @@ public class LoginMB implements Serializable {
 //        }
 //        progress = 100;
 //    }
-
     ///public void closeSession() {
     //}
 
     public String CheckValidUser() {
+
+        //get database connection
+        
 
         currentUser = usersFacade.findUser(loginname, password);
 
@@ -179,6 +182,9 @@ public class LoginMB implements Serializable {
 
             context = FacesContext.getCurrentInstance();
             System.out.println("INICIA... carga de ManagedBeans");
+            connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+            connectionJdbcMB.connectToDb();
+            
             formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
             uploadFileMB = (UploadFileMB) context.getApplication().evaluateExpressionGet(context, "#{uploadFileMB}", UploadFileMB.class);
             relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
@@ -188,7 +194,7 @@ public class LoginMB implements Serializable {
             errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
 
             System.out.println("INICIA... carga de informacion formularios");
-            
+
             uploadFileMB.reset();
             relationshipOfVariablesMB.reset();
 
@@ -295,4 +301,23 @@ public class LoginMB implements Serializable {
     public void setCurrentUser(Users currentUser) {
         this.currentUser = currentUser;
     }
+
+    public String getActiveIndexAcoordion1() {
+        return activeIndexAcoordion1;
+    }
+
+    public void setActiveIndexAcoordion1(String activeIndexAcoordion1) {
+        this.activeIndexAcoordion1 = activeIndexAcoordion1;
+    }
+
+    public String getActiveIndexAcoordion2() {
+        return activeIndexAcoordion2;
+    }
+
+    public void setActiveIndexAcoordion2(String activeIndexAcoordion2) {
+        this.activeIndexAcoordion2 = activeIndexAcoordion2;
+    }
+
+    
+    
 }

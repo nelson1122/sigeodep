@@ -4,7 +4,8 @@
  */
 package managedBeans.forms;
 
-import beans.connection.ConnectionJDBC;
+
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -285,6 +286,15 @@ public class VIFMB implements Serializable {
     private String stylePosition = "color: #1471B1;";
     private String currentIdForm = "";
     private Users currentUser;
+    ConnectionJdbcMB connectionJdbcMB;
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * variables y carga la conexion por jdbc
+     */
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+    }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
@@ -312,6 +322,7 @@ public class VIFMB implements Serializable {
 
     public void reset() {
         
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
         LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         currentUser=loginMB.getCurrentUser();
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
@@ -2136,7 +2147,7 @@ public class VIFMB implements Serializable {
     private int currentSearchCriteria = 0;
     private SelectItem[] searchCriteriaList;
     private String currentSearchValue = "";
-    ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
+    
 
     public List<RowDataTable> getRowDataTableList() {
         return rowDataTableList;
@@ -2186,8 +2197,7 @@ public class VIFMB implements Serializable {
         if (s) {
             try {
                 rowDataTableList = new ArrayList<RowDataTable>();
-                conx = new ConnectionJDBC();
-                conx.connect();
+                
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "non_fatal_injuries.non_fatal_injury_id, ";
@@ -2225,8 +2235,7 @@ public class VIFMB implements Serializable {
                 //sql = sql + "injuries.injury_id = 54 OR ";
                 //sql = sql + "injuries.injury_id = 55);";
                 System.out.println(sql);
-                ResultSet rs = conx.consult(sql);
-                conx.disconnect();
+                ResultSet rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
                     rowDataTableList.add(new RowDataTable(rs.getString(1), rs.getString(2), rs.getString(3)));
                     s = false;//aqui se usa para saber si hay registros

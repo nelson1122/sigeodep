@@ -4,10 +4,12 @@
  */
 package model.dao;
 
-import beans.connection.ConnectionJDBC;
+import beans.connection.ConnectionJdbcMB;
 import java.sql.ResultSet;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
+import javax.faces.context.FacesContext;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import model.pojo.FatalInjuryAccident;
@@ -25,6 +27,16 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
     @Override
     protected EntityManager getEntityManager() {
         return em;
+    }
+    
+    ConnectionJdbcMB connectionJdbcMB;
+    /*
+     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * variables y carga la conexion por jdbc
+     */
+    @PostConstruct
+    private void initialize() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
     }
 
     public FatalInjuryAccidentFacade() {
@@ -55,12 +67,9 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
         }
     }
 
-    public int countAccidental(int idTag) {
-        ConnectionJDBC conx;
+    public int countAccidental(int idTag) {        
         try {
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet rs = conx.consult(""
+            ResultSet rs = connectionJdbcMB.consult(""
                     + "SELECT "
                     + "    count(*) "
                     + "FROM "
@@ -70,8 +79,6 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
                     + "    fatal_injuries.injury_id = 13 AND "
                     + "    fatal_injuries.victim_id = victims.victim_id AND "
                     + "    victims.tag_id = " + String.valueOf(idTag) + "; ");
-
-            conx.disconnect();
             if (rs.next()) {
                 return rs.getInt(1);
             } else {
@@ -82,12 +89,9 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
         }
     }
 
-    public int findPosition(int injury_id, int id_tag) {
-        ConnectionJDBC conx;
-        try {
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet rs = conx.consult(""
+    public int findPosition(int injury_id, int id_tag) {        
+        try {            
+            ResultSet rs = connectionJdbcMB.consult(""
                     + "SELECT item from"
                     + "("
                     + "   SELECT "
@@ -102,7 +106,6 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
                     + "      vic.tag_id = " + String.valueOf(id_tag) + " "
                     + ") "
                     + "as a WHERE fatal_injury_id=" + String.valueOf(injury_id) + "");
-            conx.disconnect();
             if (rs.next()) {
                 return rs.getInt(1);
             } else {
@@ -120,15 +123,11 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
 //        } catch (Exception e) {
 //            return null;//no existe siguiente
 //        }
-        ConnectionJDBC conx;
         try {
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet rs = conx.consult(""
+            ResultSet rs = connectionJdbcMB.consult(""
                     + "SELECT fatal_injury_id FROM fatal_injuries, victims "
                     + "WHERE victims.victim_id = " + id + " "
                     + "AND victims.victim_id = fatal_injuries.victim_id ");
-            conx.disconnect();
             if (rs.next()) {
                 return this.find(Integer.parseInt(rs.getString(1)));
             } else {
@@ -140,11 +139,8 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
     }
 
     public FatalInjuryAccident findNext(int injury_id, int id_tag) {
-        ConnectionJDBC conx;
         try {
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet rs = conx.consult(""
+            ResultSet rs = connectionJdbcMB.consult(""
                     + "SELECT "
                     + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
@@ -159,7 +155,6 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
                     + "  fatal_injuries.fatal_injury_id ASC "
                     + "LIMIT "
                     + "  1;");
-            conx.disconnect();
             if (rs.next()) {
                 return this.find(Integer.parseInt(rs.getString(1)));
             } else {
@@ -171,11 +166,8 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
     }
 
     public FatalInjuryAccident findPrevious(int injury_id, int id_tag) {
-        ConnectionJDBC conx;
         try {
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet rs = conx.consult(""
+            ResultSet rs = connectionJdbcMB.consult(""
                     + "SELECT "
                     + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
@@ -190,7 +182,6 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
                     + "  fatal_injuries.fatal_injury_id DESC "
                     + "LIMIT "
                     + "  1;");
-            conx.disconnect();
             if (rs.next()) {
                 return this.find(Integer.parseInt(rs.getString(1)));
             } else {
@@ -210,11 +201,8 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
 //            //System.out.println(e.toString());
 //            return null;//no existe primero
 //        }
-        ConnectionJDBC conx;
         try {
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet rs = conx.consult(""
+            ResultSet rs = connectionJdbcMB.consult(""
                     + "SELECT "
                     + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
@@ -228,7 +216,6 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
                     + "  fatal_injuries.fatal_injury_id ASC "
                     + "LIMIT "
                     + "  1;");
-            conx.disconnect();
             if (rs.next()) {
                 return this.find(Integer.parseInt(rs.getString(1)));
             } else {
@@ -248,11 +235,8 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
 //            //System.out.println(e.toString());
 //            return null;//no existe ultimo
 //        }
-        ConnectionJDBC conx;
         try {
-            conx = new ConnectionJDBC();
-            conx.connect();
-            ResultSet rs = conx.consult(""
+            ResultSet rs = connectionJdbcMB.consult(""
                     + "SELECT "
                     + "  fatal_injuries.fatal_injury_id "
                     + "FROM "
@@ -266,7 +250,6 @@ public class FatalInjuryAccidentFacade extends AbstractFacade<FatalInjuryAcciden
                     + "  fatal_injuries.fatal_injury_id DESC "
                     + "LIMIT "
                     + "  1;");
-            conx.disconnect();
             if (rs.next()) {
                 return this.find(Integer.parseInt(rs.getString(1)));
             } else {

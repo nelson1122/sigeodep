@@ -123,6 +123,10 @@
                                             actionListener="#{healtInstitutionsVariableMB.newRegistry}"
                                             oncomplete="dialogNew.show()"                                            
                                             update=":IdForm2:IdDialogNew :IdForm2:displayNew :IdForm1:message"/>
+                                        <h:commandLink >                                              
+                                            <p:button value="Exportar"/>
+                                            <p:dataExporter type="xls" target="IdSearchTable" fileName="INSTITUCIONES DE SALUD" postProcessor="#{healtInstitutionsVariableMB.postProcessXLS}"/>  
+                                        </h:commandLink>
                                     </p:column>                            
                                 </p:row>
                             </p:panelGrid>

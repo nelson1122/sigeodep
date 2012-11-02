@@ -123,6 +123,10 @@
                                             actionListener="#{relatedEventsVariableMB.newRegistry}"
                                             oncomplete="dialogNew.show()"                                            
                                             update=":IdForm2:IdDialogNew :IdForm2:displayNew :IdForm1:message"/>
+                                        <h:commandLink >                                              
+                                            <p:button value="Exportar"/>
+                                            <p:dataExporter type="xls" target="IdSearchTable" fileName="EVENTOS RELACIONADOS" postProcessor="#{relatedEventsVariableMB.postProcessXLS}"/>  
+                                        </h:commandLink>
                                     </p:column>                            
                                 </p:row>
                             </p:panelGrid>

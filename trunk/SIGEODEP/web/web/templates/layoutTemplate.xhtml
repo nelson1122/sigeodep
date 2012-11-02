@@ -7,7 +7,6 @@
     <f:view contentType="text/html; charset=UTF-8">
         <h:head> 
             <link rel="shortcut icon" href="../../resources/img/icon.gif"/>
-            
             <meta 
                 http-equiv="Content-Type" 
                 content="text/html; charset=UTF-8" />
@@ -29,11 +28,11 @@
         </h:head>
         <!-- h:body onload="setInterval('contador()',2000);" -->
         <h:body>
+
             <p:layout fullPage="true" >  
                 <!-- ****************************** MENU LATERAL (PARTE IZQUIERDA) ************************ -->
                 <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
                     <h:form id="IdForm0">
-
                         <!-- 
                         timeout="600000" 
                         document.getElementById('IdForm0:btnLogout').click();
@@ -42,29 +41,16 @@
                             timeout="2000"
                             onidle="document.getElementById('IdForm0:btnCountLogout').click();"
                             onactive="document.getElementById('IdForm0:btnResetLogout').click();"/ -->
-
-
                         <p:idleMonitor timeout="600000">
-
                             <p:ajax event="active" listener="#{loginMB.logout1}"/>
                         </p:idleMonitor>
-
-                        <p:commandButton 
-                            transient="true"
-                            id="btnCountLogout"
-                            value="A"  
-                            style="display: none;"                            
-                            actionListener="#{loginMB.countLogout}"/>
                         <br/><br/>
                         <p:graphicImage value="../../resources/img/logo2.png"/>
                         <br/><br/>
                         <!--p:graphicImage value="# {loginMB.chartImage}" /-->
-
-
-
-                        <p:accordionPanel activeIndex="-1" >                            
+                        <p:accordionPanel  activeIndex="#{loginMB.activeIndexAcoordion1}" >                            
                             <p:tab title="REGISTRO DE DATOS">
-                                <p:menu style="width: 240px; z-index:23; overflow:visible">                               
+                                <p:menu style="width: 200px; z-index:23; overflow: no-display;">
                                     <p:menuitem 
                                         icon="ui-icon-document"
                                         value="Conjuntos desde Archivo"
@@ -72,7 +58,7 @@
                                         action="proccesFile" 
                                         ajax="false"/>  
                                     <p:menuitem 
-                                        icon="ui-icon-clipboard"                                        
+                                        icon="ui-icon-clipboard"
                                         value="Registro desde Formularios" 
                                         action="forms" 
                                         ajax="false"/>  
@@ -84,17 +70,70 @@
                                         ajax="false"/>
                                 </p:menu> 
                             </p:tab>
-                            <p:tab title="REPORTES">
-                                <p:menu style="width: 240px; z-index:23; overflow:visible">                               
-                                    <p:menuitem 
-                                        icon="ui-icon-copy"
-                                        value="Cruce de variables" 
-                                        action="crossing" 
-                                        ajax="false"/>
-                                </p:menu> 
+                            <p:tab title="INDICADORES">
+                                <p:accordionPanel activeIndex="#{loginMB.activeIndexAcoordion2}" > 
+                                    <p:tab title="FATALES">
+                                        <p:menu >                               
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="General" 
+                                                action="fatalIndicators" 
+                                                ajax="false"/>
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="Homicidios" 
+                                                action="fatalMurderIndicators" 
+                                                ajax="false"/>
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="Suicidios" 
+                                                action="fatalSuicideIndicators" 
+                                                ajax="false"/>
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="Accidentes" 
+                                                action="fatalAccidentalIndicators" 
+                                                ajax="false"/>
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="Transito" 
+                                                action="fatalTransitIndicators" 
+                                                ajax="false"/>
+                                        </p:menu> 
+                                    </p:tab>
+                                    <p:tab title="NO FATALES">
+                                        <p:menu >                               
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="General" 
+                                                action="nonFatalIndicators" 
+                                                ajax="false"/>
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="Autoinflingida" 
+                                                action="nonFatalSelfInflictedIndicators" 
+                                                ajax="false"/>
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="Causa externa" 
+                                                action="nonFatalExternalCauseIndicators" 
+                                                ajax="false"/>
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="Intrafamiliar" 
+                                                action="nonFatalDomesticViolenceIndicators" 
+                                                ajax="false"/>
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="No intencional" 
+                                                action="nonFatalNonIntentionalIndicators" 
+                                                ajax="false"/>
+                                        </p:menu> 
+                                    </p:tab>
+                                </p:accordionPanel>
                             </p:tab>
                             <p:tab title="GEORREFERENCIACION">
-                                <p:menu style="width: 240px; z-index:23; overflow:visible">                               
+                                <p:menu style="width: 200px; z-index:23;">                               
                                     <p:menuitem 
                                         icon="ui-icon-image"
                                         value="Mapas Temáticos" 
@@ -103,7 +142,7 @@
                                 </p:menu> 
                             </p:tab>
                             <p:tab title="CONFIGURACIONES">
-                                <p:menu style="width: 240px; z-index:23; overflow:visible">                               
+                                <p:menu style="width: 200px; z-index:23;">                               
                                     <p:menuitem 
                                         icon="ui-icon-calculator"
                                         value="Variables Categoricas" 
@@ -119,7 +158,7 @@
                                 </p:panel>
 
                                 <br/>
-                                <p:menu style="width: 240px; z-index:23; overflow:visible">                               
+                                <p:menu style="width: 200px; z-index:23;">                               
                                     <p:menuitem 
                                         icon="ui-icon-home"
                                         value="Inicio"

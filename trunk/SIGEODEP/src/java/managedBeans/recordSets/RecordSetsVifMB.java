@@ -93,13 +93,13 @@ public class RecordSetsVifMB implements Serializable {
     }
 
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
-                
+
         FacesContext context = FacesContext.getCurrentInstance();
         recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
         recordSetsMB.setProgress(0);
         int totalRegisters = 0;
         int totalProcess = 0;
-        
+
         selectedRowsDataTable = null;
         rowDataTableList = new ArrayList<RowDataTable>();
         data = "- ";
@@ -157,96 +157,98 @@ public class RecordSetsVifMB implements Serializable {
         createCell(cellStyle, row, 2, "NOMBRES Y APELLIDOS");//400">#{rowX.column4}</p:column>                                                
         createCell(cellStyle, row, 3, "TIPO IDENTIFICACION");//200">#{rowX.column2}</p:column>
         createCell(cellStyle, row, 4, "IDENTIFICACION");//100">#{rowX.column3}</p:column>                
-        createCell(cellStyle, row, 5, "TIP EDAD");//100">#{rowX.column6}</p:column>                
+        createCell(cellStyle, row, 5, "TIPO EDAD");//100">#{rowX.column6}</p:column>                
         createCell(cellStyle, row, 6, "EDAD CANT");//100">#{rowX.column7}</p:column>                
         createCell(cellStyle, row, 7, "GENERO");//100">#{rowX.column8}</p:column>                
         createCell(cellStyle, row, 8, "OCUPACION");//100">#{rowX.column9}</p:column>
         createCell(cellStyle, row, 9, "ASEGURADORA");//300">#{rowX.column18}</p:column>
         createCell(cellStyle, row, 10, "EXTRANJERO");//100">#{rowX.column5}</p:column>  
         createCell(cellStyle, row, 11, "DEPARTAMENTO RESIDENCIA");//100">#{rowX.column13}</p:column>
-        createCell(cellStyle, row, 11, "MUNICIPIO RESIDENCIA");//100">#{rowX.column12}</p:column>
-        createCell(cellStyle, row, 12, "BARRIO RESIDENCIA");//250">#{rowX.column15}</p:column>
-        createCell(cellStyle, row, 13, "DIRECCION RESIDENCIA");//400">#{rowX.column14}</p:column>
-        createCell(cellStyle, row, 14, "TELEFONO");//100">#{rowX.column11}</p:column>
-
-        createCell(cellStyle, row, 15, "BARRIO EVENTO");//250">#{rowX.column36}</p:column>
-        createCell(cellStyle, row, 16, "DIRECCION EVENTO");//400">#{rowX.column35}</p:column>
-
-
+        createCell(cellStyle, row, 12, "MUNICIPIO RESIDENCIA");//100">#{rowX.column12}</p:column>
+        createCell(cellStyle, row, 13, "BARRIO RESIDENCIA");//250">#{rowX.column15}</p:column>
+        createCell(cellStyle, row, 14, "DIRECCION RESIDENCIA");//400">#{rowX.column14}</p:column>
+        createCell(cellStyle, row, 15, "TELEFONO");//100">#{rowX.column11}</p:column>
+        createCell(cellStyle, row, 16, "BARRIO EVENTO");//250">#{rowX.column36}</p:column>
+        createCell(cellStyle, row, 17, "DIRECCION EVENTO");//400">#{rowX.column35}</p:column>
         //------------------------------------------------------------
         //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
         //------------------------------------------------------------        
-        createCell(cellStyle, row, 17, "FECHA EVENTO");//100">#{rowX.column33}</p:column>
-        createCell(cellStyle, row, 18, "HORA EVENTO");//100">#{rowX.column48}</p:column>
-        createCell(cellStyle, row, 19, "DIA SEMANA EVENTO");//100">#{rowX.column57}</p:column>
-        createCell(cellStyle, row, 20, "FECHA CONSULTA");//100">#{rowX.column31}</p:column>
-        createCell(cellStyle, row, 21, "HORA CONSULTA");//100">#{rowX.column32}</p:column>
-        createCell(cellStyle, row, 22, "REMITIDO");//100">#{rowX.column43}</p:column>
-        createCell(cellStyle, row, 23, "REMITIDO DE DONDE");//250">#{rowX.column44}</p:column>
+        createCell(cellStyle, row, 18, "DIA EVENTO");//100">#{rowX.column37}</p:column>
+        createCell(cellStyle, row, 19, "MES EVENTO");//100">#{rowX.column37}</p:column>
+        createCell(cellStyle, row, 20, "AÑO EVENTO");//100">#{rowX.column37}</p:column>
+        createCell(cellStyle, row, 21, "FECHA EVENTO");//100">#{rowX.column33}</p:column>
+        createCell(cellStyle, row, 22, "HORA EVENTO");//100">#{rowX.column48}</p:column>
+        createCell(cellStyle, row, 23, "DIA SEMANA EVENTO");//100">#{rowX.column57}</p:column>
+        createCell(cellStyle, row, 24, "DIA CONSULTA");//100">#{rowX.column37}</p:column>
+        createCell(cellStyle, row, 25, "MES CONSULTA");//100">#{rowX.column37}</p:column>
+        createCell(cellStyle, row, 26, "AÑO CONSULTA");//100">#{rowX.column37}</p:column>
+        createCell(cellStyle, row, 27, "FECHA CONSULTA");//100">#{rowX.column31}</p:column>
+        createCell(cellStyle, row, 28, "HORA CONSULTA");//100">#{rowX.column32}</p:column>
+        createCell(cellStyle, row, 29, "REMITIDO");//100">#{rowX.column43}</p:column>
+        createCell(cellStyle, row, 30, "REMITIDO DE DONDE");//250">#{rowX.column44}</p:column>
 
-        createCell(cellStyle, row, 24, "LUGAR DEL HECHO");//200">#{rowX.column37}</p:column>
-        createCell(cellStyle, row, 25, "OTRO LUGAR DEL HECHO");//200">#{rowX.column19}</p:column>
-        createCell(cellStyle, row, 26, "ACTIVIDAD");//250">#{rowX.column38}</p:column>
-        createCell(cellStyle, row, 27, "OTRA ACTIVIDAD");//250">#{rowX.column20}</p:column>
-        createCell(cellStyle, row, 28, "MECANISMO / OBJETO DE LA LESION");//200">#{rowX.column46}</p:column>
-        createCell(cellStyle, row, 29, "CUAL ALTURA");//100">#{rowX.column21}</p:column>
-        createCell(cellStyle, row, 30, "CUAL POLVORA");//100">#{rowX.column22}</p:column>                                
-        createCell(cellStyle, row, 31, "CUAL OTRO MECANISMO / OBJETO");//100">#{rowX.column24}</p:column>                                
-        createCell(cellStyle, row, 32, "USO DE ALCOHOL");//150">#{rowX.column39}</p:column>
-        createCell(cellStyle, row, 33, "USO DE DROGAS");//150">#{rowX.column40}</p:column>
+        createCell(cellStyle, row, 31, "LUGAR DEL HECHO");//200">#{rowX.column37}</p:column>
+        createCell(cellStyle, row, 32, "OTRO LUGAR DEL HECHO");//200">#{rowX.column19}</p:column>
+        createCell(cellStyle, row, 33, "ACTIVIDAD");//250">#{rowX.column38}</p:column>
+        createCell(cellStyle, row, 34, "OTRA ACTIVIDAD");//250">#{rowX.column20}</p:column>
+        createCell(cellStyle, row, 35, "MECANISMO / OBJETO DE LA LESION");//200">#{rowX.column46}</p:column>
+        createCell(cellStyle, row, 36, "CUAL ALTURA");//100">#{rowX.column21}</p:column>
+        createCell(cellStyle, row, 37, "CUAL POLVORA");//100">#{rowX.column22}</p:column>                                
+        createCell(cellStyle, row, 38, "CUAL OTRO MECANISMO / OBJETO");//100">#{rowX.column24}</p:column>                                
+        createCell(cellStyle, row, 39, "USO DE ALCOHOL");//150">#{rowX.column39}</p:column>
+        createCell(cellStyle, row, 40, "USO DE DROGAS");//150">#{rowX.column40}</p:column>
 
-        createCell(cellStyle, row, 34, "GRADO (QUEMADOS)");//100">#{rowX.column41}</p:column>
-        createCell(cellStyle, row, 35, "PORCENTAJE(QUEMADOS)");//100">#{rowX.column42}</p:column>
+        createCell(cellStyle, row, 41, "GRADO (QUEMADOS)");//100">#{rowX.column41}</p:column>
+        createCell(cellStyle, row, 42, "PORCENTAJE(QUEMADOS)");//100">#{rowX.column42}</p:column>
 
 
-        createCell(cellStyle, row, 36, "GRUPO ETNICO");//100">#{rowX.column10}</p:column>
-        createCell(cellStyle, row, 37, "OTRO GRUPO ETNICO");//100">#{rowX.column26}</p:column>
-        createCell(cellStyle, row, 38, "GRUPO VULNERABLE");//100">#{rowX.column16}</p:column>
-        createCell(cellStyle, row, 39, "OTRO GRUPO VULNERABLE");//100">#{rowX.column27}</p:column>
+        createCell(cellStyle, row, 43, "GRUPO ETNICO");//100">#{rowX.column10}</p:column>
+        createCell(cellStyle, row, 44, "OTRO GRUPO ETNICO");//100">#{rowX.column26}</p:column>
+        createCell(cellStyle, row, 45, "GRUPO VULNERABLE");//100">#{rowX.column16}</p:column>
+        createCell(cellStyle, row, 46, "OTRO GRUPO VULNERABLE");//100">#{rowX.column27}</p:column>
 
 
         //tipo de agresor
-        createCell(cellStyle, row, 40, "AG1 PADRE(VIF)");//100">#{rowX.column49}</p:column>
-        createCell(cellStyle, row, 41, "AG2 MADRE(VIF)");//100">#{rowX.column50}</p:column>
-        createCell(cellStyle, row, 42, "AG3 PADRASTRO(VIF)");//100">#{rowX.column51}</p:column>
-        createCell(cellStyle, row, 43, "AG4 MADRASTRA(VIF)");//100">#{rowX.column52}</p:column>
-        createCell(cellStyle, row, 44, "AG5 CONYUGE(VIF)");//100">#{rowX.column53}</p:column>
-        createCell(cellStyle, row, 45, "AG6 HERMANO(VIF)");//100">#{rowX.column54}</p:column>
-        createCell(cellStyle, row, 46, "AG7 HIJO(VIF)");//100">#{rowX.column55}</p:column>
-        createCell(cellStyle, row, 47, "AG8 OTRO(VIF)");//100">#{rowX.column56}</p:column>
-        createCell(cellStyle, row, 48, "CUAL OTRO AGRESOR(VIF)");//100">#{rowX.column28}</p:column>
-        createCell(cellStyle, row, 49, "AG9 SIN DATO(VIF)");//100">#{rowX.column57}</p:column>
-        createCell(cellStyle, row, 50, "AG10 NOVIO(VIF)");//100">#{rowX.column58}</p:column>                                
+        createCell(cellStyle, row, 47, "AG1 PADRE(VIF)");//100">#{rowX.column49}</p:column>
+        createCell(cellStyle, row, 48, "AG2 MADRE(VIF)");//100">#{rowX.column50}</p:column>
+        createCell(cellStyle, row, 49, "AG3 PADRASTRO(VIF)");//100">#{rowX.column51}</p:column>
+        createCell(cellStyle, row, 50, "AG4 MADRASTRA(VIF)");//100">#{rowX.column52}</p:column>
+        createCell(cellStyle, row, 51, "AG5 CONYUGE(VIF)");//100">#{rowX.column53}</p:column>
+        createCell(cellStyle, row, 52, "AG6 HERMANO(VIF)");//100">#{rowX.column54}</p:column>
+        createCell(cellStyle, row, 53, "AG7 HIJO(VIF)");//100">#{rowX.column55}</p:column>
+        createCell(cellStyle, row, 54, "AG8 OTRO(VIF)");//100">#{rowX.column56}</p:column>
+        createCell(cellStyle, row, 55, "CUAL OTRO AGRESOR(VIF)");//100">#{rowX.column28}</p:column>
+        createCell(cellStyle, row, 56, "AG9 SIN DATO(VIF)");//100">#{rowX.column57}</p:column>
+        createCell(cellStyle, row, 57, "AG10 NOVIO(VIF)");//100">#{rowX.column58}</p:column>                                
 
         //tipo de maltrato
-        createCell(cellStyle, row, 51, "MA1 FISICO(VIF)");//100">#{rowX.column59}</p:column>
-        createCell(cellStyle, row, 52, "MA2 PSICOLOGICO(VIF)");//100">#{rowX.column60}</p:column>
-        createCell(cellStyle, row, 53, "MA3 VIOLENCIA SEXUAL(VIF)");//100">#{rowX.column61}</p:column>
-        createCell(cellStyle, row, 54, "MA4 NEGLIGENCIA(VIF)");//100">#{rowX.column62}</p:column>
-        createCell(cellStyle, row, 55, "MA5 ABANDONO(VIF)");//100">#{rowX.column63}</p:column>
-        createCell(cellStyle, row, 56, "MA6 INSTITUCIONAL(VIF)");//100">#{rowX.column64}</p:column>
-        createCell(cellStyle, row, 57, "MA SIN DATO(VIF)");//100">#{rowX.column65}</p:column>
-        createCell(cellStyle, row, 58, "MA8 OTRO(VIF)");//100">#{rowX.column66}</p:column>
-        createCell(cellStyle, row, 59, "CUAL OTRO TIPO MALTRATO(VIF)");//100">#{rowX.column29}</p:column>
+        createCell(cellStyle, row, 58, "MA1 FISICO(VIF)");//100">#{rowX.column59}</p:column>
+        createCell(cellStyle, row, 59, "MA2 PSICOLOGICO(VIF)");//100">#{rowX.column60}</p:column>
+        createCell(cellStyle, row, 60, "MA3 VIOLENCIA SEXUAL(VIF)");//100">#{rowX.column61}</p:column>
+        createCell(cellStyle, row, 61, "MA4 NEGLIGENCIA(VIF)");//100">#{rowX.column62}</p:column>
+        createCell(cellStyle, row, 62, "MA5 ABANDONO(VIF)");//100">#{rowX.column63}</p:column>
+        createCell(cellStyle, row, 63, "MA6 INSTITUCIONAL(VIF)");//100">#{rowX.column64}</p:column>
+        createCell(cellStyle, row, 64, "MA SIN DATO(VIF)");//100">#{rowX.column65}</p:column>
+        createCell(cellStyle, row, 65, "MA8 OTRO(VIF)");//100">#{rowX.column66}</p:column>
+        createCell(cellStyle, row, 66, "CUAL OTRO TIPO MALTRATO(VIF)");//100">#{rowX.column29}</p:column>
 
         //acciones a realizar
-        createCell(cellStyle, row, 60, "AR1 CONCILIACION");//100">#{rowX.column67}</p:column>
-        createCell(cellStyle, row, 61, "AR2 CAUCION");//100">#{rowX.column68}</p:column>
-        createCell(cellStyle, row, 62, "AR3 DICTAMEN MEDICINA LEGAL");//100">#{rowX.column69}</p:column>
-        createCell(cellStyle, row, 63, "AR4 REMISION FISCALIA");//100">#{rowX.column70}</p:column>
-        createCell(cellStyle, row, 64, "AR5 REMISION MEDICINA LEGAL");//100">#{rowX.column71}</p:column>
-        createCell(cellStyle, row, 65, "AR6 REMISION COM FAMILIA");//100">#{rowX.column72}</p:column>
-        createCell(cellStyle, row, 66, "AR7 REMISION ICBF");//100">#{rowX.column73}</p:column>
-        createCell(cellStyle, row, 67, "AR8 MEDIDAS PROTECCION");//100">#{rowX.column74}</p:column>
-        createCell(cellStyle, row, 68, "AR9 REMISION A SALUD");//100">#{rowX.column75}</p:column>
-        createCell(cellStyle, row, 69, "AR10 ATENCION PSICOSOCIAL");//100">#{rowX.column76}</p:column>
-        createCell(cellStyle, row, 70, "AR11 RESTABLECIMIENTO DERECHOS");//100">#{rowX.column77}</p:column>
-        createCell(cellStyle, row, 71, "AR12 OTRA?");//100">#{rowX.column78}</p:column>
-        createCell(cellStyle, row, 72, "AR CUAL OTRA");//100">#{rowX.column30}</p:column>
-        createCell(cellStyle, row, 73, "AR13 SIN DATO");//100">#{rowX.column79}</p:column>
+        createCell(cellStyle, row, 67, "AR1 CONCILIACION");//100">#{rowX.column67}</p:column>
+        createCell(cellStyle, row, 68, "AR2 CAUCION");//100">#{rowX.column68}</p:column>
+        createCell(cellStyle, row, 69, "AR3 DICTAMEN MEDICINA LEGAL");//100">#{rowX.column69}</p:column>
+        createCell(cellStyle, row, 70, "AR4 REMISION FISCALIA");//100">#{rowX.column70}</p:column>
+        createCell(cellStyle, row, 71, "AR5 REMISION MEDICINA LEGAL");//100">#{rowX.column71}</p:column>
+        createCell(cellStyle, row, 72, "AR6 REMISION COM FAMILIA");//100">#{rowX.column72}</p:column>
+        createCell(cellStyle, row, 73, "AR7 REMISION ICBF");//100">#{rowX.column73}</p:column>
+        createCell(cellStyle, row, 74, "AR8 MEDIDAS PROTECCION");//100">#{rowX.column74}</p:column>
+        createCell(cellStyle, row, 75, "AR9 REMISION A SALUD");//100">#{rowX.column75}</p:column>
+        createCell(cellStyle, row, 76, "AR10 ATENCION PSICOSOCIAL");//100">#{rowX.column76}</p:column>
+        createCell(cellStyle, row, 77, "AR11 RESTABLECIMIENTO DERECHOS");//100">#{rowX.column77}</p:column>
+        createCell(cellStyle, row, 78, "AR12 OTRA?");//100">#{rowX.column78}</p:column>
+        createCell(cellStyle, row, 79, "AR CUAL OTRA");//100">#{rowX.column30}</p:column>
+        createCell(cellStyle, row, 80, "AR13 SIN DATO");//100">#{rowX.column79}</p:column>
 
-
-
+        String[] splitDate;
         for (int i = 0; i < rowDataTableList.size(); i++) {
             row = sheet.createRow(i + 1);
 
@@ -262,86 +264,102 @@ public class RecordSetsVifMB implements Serializable {
             createCell(row, 9, rowDataTableList.get(i).getColumn18());//"ASEGURADORA");//300">#{rowX.column18}</p:column>
             createCell(row, 10, rowDataTableList.get(i).getColumn5());//"EXTRANJERO");//100">#{rowX.column5}</p:column>  
             createCell(row, 11, rowDataTableList.get(i).getColumn13());//"DEPARTAMENTO RESIDENCIA");//100">#{rowX.column13}</p:column>
-            createCell(row, 11, rowDataTableList.get(i).getColumn12());//"MUNICIPIO RESIDENCIA");//100">#{rowX.column12}</p:column>
-            createCell(row, 12, rowDataTableList.get(i).getColumn15());//"BARRIO RESIDENCIA");//250">#{rowX.column15}</p:column>
-            createCell(row, 13, rowDataTableList.get(i).getColumn14());//"DIRECCION RESIDENCIA");//400">#{rowX.column14}</p:column>
-            createCell(row, 14, rowDataTableList.get(i).getColumn11());//"TELEFONO");//100">#{rowX.column11}</p:column>
+            createCell(row, 12, rowDataTableList.get(i).getColumn12());//"MUNICIPIO RESIDENCIA");//100">#{rowX.column12}</p:column>
+            createCell(row, 13, rowDataTableList.get(i).getColumn15());//"BARRIO RESIDENCIA");//250">#{rowX.column15}</p:column>
+            createCell(row, 14, rowDataTableList.get(i).getColumn14());//"DIRECCION RESIDENCIA");//400">#{rowX.column14}</p:column>
+            createCell(row, 15, rowDataTableList.get(i).getColumn11());//"TELEFONO");//100">#{rowX.column11}</p:column>
 
-            createCell(row, 15, rowDataTableList.get(i).getColumn36());//"BARRIO EVENTO");//250">#{rowX.column36}</p:column>
-            createCell(row, 16, rowDataTableList.get(i).getColumn35());//"DIRECCION EVENTO");//400">#{rowX.column35}</p:column>
+            createCell(row, 16, rowDataTableList.get(i).getColumn36());//"BARRIO EVENTO");//250">#{rowX.column36}</p:column>
+            createCell(row, 17, rowDataTableList.get(i).getColumn35());//"DIRECCION EVENTO");//400">#{rowX.column35}</p:column>
 
 
             //------------------------------------------------------------
             //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
             //------------------------------------------------------------        
-            createCell(row, 17, rowDataTableList.get(i).getColumn33());//"FECHA EVENTO");//100">#{rowX.column33}</p:column>
-            createCell(row, 18, rowDataTableList.get(i).getColumn48());//"HORA EVENTO");//100">#{rowX.column48}</p:column>
-            createCell(row, 19, rowDataTableList.get(i).getColumn57());//"DIA SEMANA EVENTO");//100">#{rowX.column57}</p:column>
-            createCell(row, 20, rowDataTableList.get(i).getColumn31());//"FECHA CONSULTA");//100">#{rowX.column31}</p:column>
-            createCell(row, 21, rowDataTableList.get(i).getColumn32());//"HORA CONSULTA");//100">#{rowX.column32}</p:column>
-            createCell(row, 22, rowDataTableList.get(i).getColumn43());//"REMITIDO");//100">#{rowX.column43}</p:column>
-            createCell(row, 23, rowDataTableList.get(i).getColumn44());//"REMITIDO DE DONDE");//250">#{rowX.column44}</p:column>
+            if (rowDataTableList.get(i).getColumn33() != null) {
+            splitDate = rowDataTableList.get(i).getColumn33().split("/");
+            if (splitDate.length == 3) {
+                createCell(row, 18, splitDate[0]);//"DIA EVENTO");
+                createCell(row, 19, splitDate[1]);//"MES EVENTO");
+                createCell(row, 20, splitDate[2]);//"AÑO EVENTO");
+            }
+            }
+            createCell(row, 21, rowDataTableList.get(i).getColumn33());//"FECHA EVENTO");//100">#{rowX.column33}</p:column>
+            createCell(row, 22, rowDataTableList.get(i).getColumn34());//"HORA EVENTO");//100">#{rowX.column48}</p:column>
+            createCell(row, 23, rowDataTableList.get(i).getColumn48());//"DIA SEMANA EVENTO");//100">#{rowX.column57}</p:column>
+            if (rowDataTableList.get(i).getColumn31() != null) {
+            splitDate = rowDataTableList.get(i).getColumn31().split("/");
+            if (splitDate.length == 3) {
+                createCell(row, 24, splitDate[0]);//"DIA CONSULTA");
+                createCell(row, 25, splitDate[1]);//"MES CONSULTA");
+                createCell(row, 26, splitDate[2]);//"AÑO CONSULTA");
+            }
+            }
+            createCell(row, 27, rowDataTableList.get(i).getColumn31());//"FECHA CONSULTA");//100">#{rowX.column31}</p:column>
+            createCell(row, 28, rowDataTableList.get(i).getColumn32());//"HORA CONSULTA");//100">#{rowX.column32}</p:column>
+            createCell(row, 29, rowDataTableList.get(i).getColumn43());//"REMITIDO");//100">#{rowX.column43}</p:column>
+            createCell(row, 30, rowDataTableList.get(i).getColumn44());//"REMITIDO DE DONDE");//250">#{rowX.column44}</p:column>
 
-            createCell(row, 24, rowDataTableList.get(i).getColumn37());//"LUGAR DEL HECHO");//200">#{rowX.column37}</p:column>
-            createCell(row, 25, rowDataTableList.get(i).getColumn19());//"OTRO LUGAR DEL HECHO");//200">#{rowX.column19}</p:column>
-            createCell(row, 26, rowDataTableList.get(i).getColumn38());//"ACTIVIDAD");//250">#{rowX.column38}</p:column>
-            createCell(row, 27, rowDataTableList.get(i).getColumn20());//"OTRA ACTIVIDAD");//250">#{rowX.column20}</p:column>
-            createCell(row, 28, rowDataTableList.get(i).getColumn46());//"MECANISMO / OBJETO DE LA LESION");//200">#{rowX.column46}</p:column>
-            createCell(row, 29, rowDataTableList.get(i).getColumn21());//"CUAL ALTURA");//100">#{rowX.column21}</p:column>
-            createCell(row, 30, rowDataTableList.get(i).getColumn22());//"CUAL POLVORA");//100">#{rowX.column22}</p:column>                                
-            createCell(row, 31, rowDataTableList.get(i).getColumn24());//"CUAL OTRO MECANISMO / OBJETO");//100">#{rowX.column24}</p:column>                                
-            createCell(row, 32, rowDataTableList.get(i).getColumn39());//"USO DE ALCOHOL");//150">#{rowX.column39}</p:column>
-            createCell(row, 33, rowDataTableList.get(i).getColumn40());//"USO DE DROGAS");//150">#{rowX.column40}</p:column>
+            createCell(row, 31, rowDataTableList.get(i).getColumn37());//"LUGAR DEL HECHO");//200">#{rowX.column37}</p:column>
+            createCell(row, 32, rowDataTableList.get(i).getColumn19());//"OTRO LUGAR DEL HECHO");//200">#{rowX.column19}</p:column>
+            createCell(row, 33, rowDataTableList.get(i).getColumn38());//"ACTIVIDAD");//250">#{rowX.column38}</p:column>
+            createCell(row, 34, rowDataTableList.get(i).getColumn20());//"OTRA ACTIVIDAD");//250">#{rowX.column20}</p:column>
+            createCell(row, 35, rowDataTableList.get(i).getColumn46());//"MECANISMO / OBJETO DE LA LESION");//200">#{rowX.column46}</p:column>
+            createCell(row, 36, rowDataTableList.get(i).getColumn21());//"CUAL ALTURA");//100">#{rowX.column21}</p:column>
+            createCell(row, 37, rowDataTableList.get(i).getColumn22());//"CUAL POLVORA");//100">#{rowX.column22}</p:column>                                
+            createCell(row, 38, rowDataTableList.get(i).getColumn24());//"CUAL OTRO MECANISMO / OBJETO");//100">#{rowX.column24}</p:column>                                
+            createCell(row, 39, rowDataTableList.get(i).getColumn39());//"USO DE ALCOHOL");//150">#{rowX.column39}</p:column>
+            createCell(row, 40, rowDataTableList.get(i).getColumn40());//"USO DE DROGAS");//150">#{rowX.column40}</p:column>
 
-            createCell(row, 34, rowDataTableList.get(i).getColumn41());//"GRADO (QUEMADOS)");//100">#{rowX.column41}</p:column>
-            createCell(row, 35, rowDataTableList.get(i).getColumn42());//"PORCENTAJE(QUEMADOS)");//100">#{rowX.column42}</p:column>
+            createCell(row, 41, rowDataTableList.get(i).getColumn41());//"GRADO (QUEMADOS)");//100">#{rowX.column41}</p:column>
+            createCell(row, 42, rowDataTableList.get(i).getColumn42());//"PORCENTAJE(QUEMADOS)");//100">#{rowX.column42}</p:column>
 
 
-            createCell(row, 36, rowDataTableList.get(i).getColumn10());//"GRUPO ETNICO");//100">#{rowX.column10}</p:column>
-            createCell(row, 37, rowDataTableList.get(i).getColumn26());//"OTRO GRUPO ETNICO");//100">#{rowX.column26}</p:column>
-            createCell(row, 38, rowDataTableList.get(i).getColumn16());//"GRUPO VULNERABLE");//100">#{rowX.column16}</p:column>
-            createCell(row, 39, rowDataTableList.get(i).getColumn27());//"OTRO GRUPO VULNERABLE");//100">#{rowX.column27}</p:column>
+            createCell(row, 43, rowDataTableList.get(i).getColumn10());//"GRUPO ETNICO");//100">#{rowX.column10}</p:column>
+            createCell(row, 44, rowDataTableList.get(i).getColumn26());//"OTRO GRUPO ETNICO");//100">#{rowX.column26}</p:column>
+            createCell(row, 45, rowDataTableList.get(i).getColumn16());//"GRUPO VULNERABLE");//100">#{rowX.column16}</p:column>
+            createCell(row, 46, rowDataTableList.get(i).getColumn27());//"OTRO GRUPO VULNERABLE");//100">#{rowX.column27}</p:column>
 
 
             //tipo de agresor
-            createCell(row, 40, rowDataTableList.get(i).getColumn49());//"AG1 PADRE(VIF)");//100">#{rowX.column49}</p:column>
-            createCell(row, 41, rowDataTableList.get(i).getColumn50());//"AG2 MADRE(VIF)");//100">#{rowX.column50}</p:column>
-            createCell(row, 42, rowDataTableList.get(i).getColumn51());//"AG3 PADRASTRO(VIF)");//100">#{rowX.column51}</p:column>
-            createCell(row, 43, rowDataTableList.get(i).getColumn52());//"AG4 MADRASTRA(VIF)");//100">#{rowX.column52}</p:column>
-            createCell(row, 44, rowDataTableList.get(i).getColumn53());//"AG5 CONYUGE(VIF)");//100">#{rowX.column53}</p:column>
-            createCell(row, 45, rowDataTableList.get(i).getColumn54());//"AG6 HERMANO(VIF)");//100">#{rowX.column54}</p:column>
-            createCell(row, 46, rowDataTableList.get(i).getColumn55());//"AG7 HIJO(VIF)");//100">#{rowX.column55}</p:column>
-            createCell(row, 47, rowDataTableList.get(i).getColumn56());//"AG8 OTRO(VIF)");//100">#{rowX.column56}</p:column>
-            createCell(row, 48, rowDataTableList.get(i).getColumn28());//"CUAL OTRO AGRESOR(VIF)");//100">#{rowX.column28}</p:column>
-            createCell(row, 49, rowDataTableList.get(i).getColumn57());//"AG9 SIN DATO(VIF)");//100">#{rowX.column57}</p:column>
-            createCell(row, 50, rowDataTableList.get(i).getColumn58());//"AG10 NOVIO(VIF)");//100">#{rowX.column58}</p:column>                                
+            createCell(row, 47, rowDataTableList.get(i).getColumn49());//"AG1 PADRE(VIF)");//100">#{rowX.column49}</p:column>
+            createCell(row, 48, rowDataTableList.get(i).getColumn50());//"AG2 MADRE(VIF)");//100">#{rowX.column50}</p:column>
+            createCell(row, 49, rowDataTableList.get(i).getColumn51());//"AG3 PADRASTRO(VIF)");//100">#{rowX.column51}</p:column>
+            createCell(row, 50, rowDataTableList.get(i).getColumn52());//"AG4 MADRASTRA(VIF)");//100">#{rowX.column52}</p:column>
+            createCell(row, 51, rowDataTableList.get(i).getColumn53());//"AG5 CONYUGE(VIF)");//100">#{rowX.column53}</p:column>
+            createCell(row, 52, rowDataTableList.get(i).getColumn54());//"AG6 HERMANO(VIF)");//100">#{rowX.column54}</p:column>
+            createCell(row, 53, rowDataTableList.get(i).getColumn55());//"AG7 HIJO(VIF)");//100">#{rowX.column55}</p:column>
+            createCell(row, 54, rowDataTableList.get(i).getColumn56());//"AG8 OTRO(VIF)");//100">#{rowX.column56}</p:column>
+            createCell(row, 55, rowDataTableList.get(i).getColumn28());//"CUAL OTRO AGRESOR(VIF)");//100">#{rowX.column28}</p:column>
+            createCell(row, 56, rowDataTableList.get(i).getColumn57());//"AG9 SIN DATO(VIF)");//100">#{rowX.column57}</p:column>
+            createCell(row, 57, rowDataTableList.get(i).getColumn58());//"AG10 NOVIO(VIF)");//100">#{rowX.column58}</p:column>                                
 
             //tipo de maltrato
-            createCell(row, 51, rowDataTableList.get(i).getColumn59());//"MA1 FISICO(VIF)");//100">#{rowX.column59}</p:column>
-            createCell(row, 52, rowDataTableList.get(i).getColumn60());//"MA2 PSICOLOGICO(VIF)");//100">#{rowX.column60}</p:column>
-            createCell(row, 53, rowDataTableList.get(i).getColumn61());//"MA3 VIOLENCIA SEXUAL(VIF)");//100">#{rowX.column61}</p:column>
-            createCell(row, 54, rowDataTableList.get(i).getColumn62());//"MA4 NEGLIGENCIA(VIF)");//100">#{rowX.column62}</p:column>
-            createCell(row, 55, rowDataTableList.get(i).getColumn62());//"MA5 ABANDONO(VIF)");//100">#{rowX.column63}</p:column>
-            createCell(row, 56, rowDataTableList.get(i).getColumn64());//"MA6 INSTITUCIONAL(VIF)");//100">#{rowX.column64}</p:column>
-            createCell(row, 57, rowDataTableList.get(i).getColumn65());//"MA SIN DATO(VIF)");//100">#{rowX.column65}</p:column>
-            createCell(row, 58, rowDataTableList.get(i).getColumn66());//"MA8 OTRO(VIF)");//100">#{rowX.column66}</p:column>
-            createCell(row, 59, rowDataTableList.get(i).getColumn29());//"CUAL OTRO TIPO MALTRATO(VIF)");//100">#{rowX.column29}</p:column>
+            createCell(row, 58, rowDataTableList.get(i).getColumn59());//"MA1 FISICO(VIF)");//100">#{rowX.column59}</p:column>
+            createCell(row, 59, rowDataTableList.get(i).getColumn60());//"MA2 PSICOLOGICO(VIF)");//100">#{rowX.column60}</p:column>
+            createCell(row, 60, rowDataTableList.get(i).getColumn61());//"MA3 VIOLENCIA SEXUAL(VIF)");//100">#{rowX.column61}</p:column>
+            createCell(row, 61, rowDataTableList.get(i).getColumn62());//"MA4 NEGLIGENCIA(VIF)");//100">#{rowX.column62}</p:column>
+            createCell(row, 62, rowDataTableList.get(i).getColumn62());//"MA5 ABANDONO(VIF)");//100">#{rowX.column63}</p:column>
+            createCell(row, 63, rowDataTableList.get(i).getColumn64());//"MA6 INSTITUCIONAL(VIF)");//100">#{rowX.column64}</p:column>
+            createCell(row, 64, rowDataTableList.get(i).getColumn65());//"MA SIN DATO(VIF)");//100">#{rowX.column65}</p:column>
+            createCell(row, 65, rowDataTableList.get(i).getColumn66());//"MA8 OTRO(VIF)");//100">#{rowX.column66}</p:column>
+            createCell(row, 66, rowDataTableList.get(i).getColumn29());//"CUAL OTRO TIPO MALTRATO(VIF)");//100">#{rowX.column29}</p:column>
 
             //acciones a realizar
-            createCell(row, 60, rowDataTableList.get(i).getColumn67());//"AR1 CONCILIACION");//100">#{rowX.column67}</p:column>
-            createCell(row, 61, rowDataTableList.get(i).getColumn68());//"AR2 CAUCION");//100">#{rowX.column68}</p:column>
-            createCell(row, 62, rowDataTableList.get(i).getColumn69());//"AR3 DICTAMEN MEDICINA LEGAL");//100">#{rowX.column69}</p:column>
-            createCell(row, 63, rowDataTableList.get(i).getColumn70());//"AR4 REMISION FISCALIA");//100">#{rowX.column70}</p:column>
-            createCell(row, 64, rowDataTableList.get(i).getColumn71());//"AR5 REMISION MEDICINA LEGAL");//100">#{rowX.column71}</p:column>
-            createCell(row, 65, rowDataTableList.get(i).getColumn72());//"AR6 REMISION COM FAMILIA");//100">#{rowX.column72}</p:column>
-            createCell(row, 66, rowDataTableList.get(i).getColumn73());//"AR7 REMISION ICBF");//100">#{rowX.column73}</p:column>
-            createCell(row, 67, rowDataTableList.get(i).getColumn74());//"AR8 MEDIDAS PROTECCION");//100">#{rowX.column74}</p:column>
-            createCell(row, 68, rowDataTableList.get(i).getColumn75());//"AR9 REMISION A SALUD");//100">#{rowX.column75}</p:column>
-            createCell(row, 69, rowDataTableList.get(i).getColumn76());//"AR10 ATENCION PSICOSOCIAL");//100">#{rowX.column76}</p:column>
-            createCell(row, 70, rowDataTableList.get(i).getColumn77());//"AR11 RESTABLECIMIENTO DERECHOS");//100">#{rowX.column77}</p:column>
-            createCell(row, 71, rowDataTableList.get(i).getColumn78());//"AR12 OTRA?");//100">#{rowX.column78}</p:column>
-            createCell(row, 72, rowDataTableList.get(i).getColumn30());//"AR CUAL OTRA");//100">#{rowX.column30}</p:column>
-            createCell(row, 73, rowDataTableList.get(i).getColumn79());//"AR13 SIN DATO");//100">#{rowX.column79}</p:column>
+            createCell(row, 67, rowDataTableList.get(i).getColumn67());//"AR1 CONCILIACION");//100">#{rowX.column67}</p:column>
+            createCell(row, 68, rowDataTableList.get(i).getColumn68());//"AR2 CAUCION");//100">#{rowX.column68}</p:column>
+            createCell(row, 69, rowDataTableList.get(i).getColumn69());//"AR3 DICTAMEN MEDICINA LEGAL");//100">#{rowX.column69}</p:column>
+            createCell(row, 70, rowDataTableList.get(i).getColumn70());//"AR4 REMISION FISCALIA");//100">#{rowX.column70}</p:column>
+            createCell(row, 71, rowDataTableList.get(i).getColumn71());//"AR5 REMISION MEDICINA LEGAL");//100">#{rowX.column71}</p:column>
+            createCell(row, 72, rowDataTableList.get(i).getColumn72());//"AR6 REMISION COM FAMILIA");//100">#{rowX.column72}</p:column>
+            createCell(row, 73, rowDataTableList.get(i).getColumn73());//"AR7 REMISION ICBF");//100">#{rowX.column73}</p:column>
+            createCell(row, 74, rowDataTableList.get(i).getColumn74());//"AR8 MEDIDAS PROTECCION");//100">#{rowX.column74}</p:column>
+            createCell(row, 75, rowDataTableList.get(i).getColumn75());//"AR9 REMISION A SALUD");//100">#{rowX.column75}</p:column>
+            createCell(row, 76, rowDataTableList.get(i).getColumn76());//"AR10 ATENCION PSICOSOCIAL");//100">#{rowX.column76}</p:column>
+            createCell(row, 77, rowDataTableList.get(i).getColumn77());//"AR11 RESTABLECIMIENTO DERECHOS");//100">#{rowX.column77}</p:column>
+            createCell(row, 78, rowDataTableList.get(i).getColumn78());//"AR12 OTRA?");//100">#{rowX.column78}</p:column>
+            createCell(row, 79, rowDataTableList.get(i).getColumn30());//"AR CUAL OTRA");//100">#{rowX.column30}</p:column>
+            createCell(row, 80, rowDataTableList.get(i).getColumn79());//"AR13 SIN DATO");//100">#{rowX.column79}</p:column>
 
         }
 
@@ -828,12 +846,12 @@ public class RecordSetsVifMB implements Serializable {
         btnEditDisabled = true;
         btnRemoveDisabled = true;
         if (selectedRowsDataTable != null) {
-            
+
             if (selectedRowsDataTable.length == 1) {
                 currentNonFatalDomesticViolence = nonFatalDomesticViolenceFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
             }
             if (selectedRowsDataTable.length > 1) {
-                
+
                 btnEditDisabled = true;
                 btnRemoveDisabled = false;
             } else {

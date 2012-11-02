@@ -21,6 +21,7 @@ import model.dao.MunicipalitiesFacade;
 import model.pojo.Departaments;
 import model.pojo.Municipalities;
 import model.pojo.MunicipalitiesPK;
+import org.apache.poi.hssf.usermodel.*;
 
 /**
  *
@@ -38,11 +39,12 @@ public class MunicipalitiesVariableMB implements Serializable {
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
     @EJB
+    DepartamentsFacade departamentsFacade;
+    private List<Departaments> departamentsList;
+    @EJB
     MunicipalitiesFacade municipalitiesFacade;
     private List<Municipalities> municipalitiesList;
     private Municipalities currentMunicipalities;
-    @EJB
-    DepartamentsFacade departamentsFacade;
     private Short department = 52;
     private Short newDepartment = 52;
     private SelectItem[] departaments;
@@ -50,8 +52,53 @@ public class MunicipalitiesVariableMB implements Serializable {
     private String newName = "";
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
-    
+
     public MunicipalitiesVariableMB() {
+    }
+
+    private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
+        HSSFCell cell;
+        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
+        cell.setCellValue(new HSSFRichTextString(value));
+        cell.setCellStyle(cellStyle);
+    }
+
+    private void createCell(HSSFRow fila, int position, String value) {
+        HSSFCell cell;
+        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
+        cell.setCellValue(new HSSFRichTextString(value));
+    }
+
+    public void postProcessXLS(Object document) {
+        HSSFWorkbook book = (HSSFWorkbook) document;
+        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+        HSSFRow row;
+        HSSFCellStyle cellStyle = book.createCellStyle();
+        HSSFFont font = book.createFont();
+        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        cellStyle.setFont(font);
+
+        row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
+        createCell(cellStyle, row, 0, "CODIGO DEPARTAMENTO");//"100">#{rowX.column1}</p:column>
+        createCell(cellStyle, row, 1, "NOMBRE DEPARTAMENTO");//"100">#{rowX.column23}</p:column>                                
+        createCell(cellStyle, row, 2, "CODIGO MUNICIPIO");//"100">#{rowX.column1}</p:column>
+        createCell(cellStyle, row, 3, "NOMBRE MUNICIPIO");//"100">#{rowX.column23}</p:column>                                
+
+        departamentsList = departamentsFacade.findAll();
+        int pos = 1;
+        for (int i = 0; i < departamentsList.size(); i++) {
+            municipalitiesList = departamentsList.get(i).getMunicipalitiesList();
+            for (int j = 0; j < municipalitiesList.size(); j++) {
+                row = sheet.createRow(pos);
+                createCell(row, 0, departamentsList.get(i).getDepartamentId().toString());//CODIGO
+                createCell(row, 1, departamentsList.get(i).getDepartamentName());//CODIGO            
+                createCell(row, 2, String.valueOf(municipalitiesList.get(j).getMunicipalitiesPK().getMunicipalityId()));//NOMBRE            
+                createCell(row, 3, municipalitiesList.get(j).getMunicipalityName());//NOMBRE            
+                pos++;
+            }
+
+
+        }
     }
 
     public void load() {

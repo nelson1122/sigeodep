@@ -13,9 +13,9 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import managedBeans.forms.*;
 import model.dao.VulnerableGroupsFacade;
 import model.pojo.VulnerableGroups;
+import org.apache.poi.hssf.usermodel.*;
 
 /**
  *
@@ -42,6 +42,39 @@ public class VulnerableGroupVariableMB implements Serializable {
     private boolean btnRemoveDisabled=true;
     
     public VulnerableGroupVariableMB() {
+    }
+    
+    private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
+        HSSFCell cell;
+        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
+        cell.setCellValue(new HSSFRichTextString(value));
+        cell.setCellStyle(cellStyle);
+    }
+
+    private void createCell(HSSFRow fila, int position, String value) {
+        HSSFCell cell;
+        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
+        cell.setCellValue(new HSSFRichTextString(value));
+    }
+
+    public void postProcessXLS(Object document) {
+        HSSFWorkbook book = (HSSFWorkbook) document;
+        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+        HSSFRow row;
+        HSSFCellStyle cellStyle = book.createCellStyle();
+        HSSFFont font = book.createFont();
+        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        cellStyle.setFont(font);
+
+        row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
+        createCell(cellStyle, row, 0, "CODIGO");//"100">#{rowX.column1}</p:column>
+        createCell(cellStyle, row, 1, "NOMBRE");//"100">#{rowX.column23}</p:column>                                
+        vulnerableGroupsList=vulnerableGroupsFacade.findAll();
+        for (int i = 0; i < vulnerableGroupsList.size(); i++) {
+            row = sheet.createRow(i + 1);
+            createCell(row, 0, vulnerableGroupsList.get(i).getVulnerableGroupId().toString());//CODIGO
+            createCell(row, 1, vulnerableGroupsList.get(i).getVulnerableGroupName());//NOMBRE            
+        }
     }
 
     public void load() {

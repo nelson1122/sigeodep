@@ -86,8 +86,8 @@
                                 //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
                                 //------------------------------------------------------------        
                                 <p:column headerText="FECHA EVENTO" width="100">#{rowX.column33}</p:column>
-                                <p:column headerText="HORA EVENTO" width="100">#{rowX.column48}</p:column>
-                                <p:column headerText="DIA SEMANA EVENTO" width="100">#{rowX.column57}</p:column>
+                                <p:column headerText="HORA EVENTO" width="100">#{rowX.column34}</p:column>
+                                <p:column headerText="DIA SEMANA EVENTO" width="100">#{rowX.column48}</p:column>
                                 <p:column headerText="FECHA CONSULTA" width="100">#{rowX.column31}</p:column>
                                 <p:column headerText="HORA CONSULTA" width="100">#{rowX.column32}</p:column>
                                 <p:column headerText="REMITIDO" width="100">#{rowX.column43}</p:column>
@@ -180,7 +180,7 @@
                                         <h:commandLink >  
                                             <!---p:graphicImage style="margin-top: 200px;" value="../../resources/img/excel.png"/-->
                                             <p:button value="Exportar"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{recordSetsVifMB.postProcessXLS}"/>  
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="VIF" postProcessor="#{recordSetsVifMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                     </p:column>                            
                                 </p:row>
