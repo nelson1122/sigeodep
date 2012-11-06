@@ -11,6 +11,7 @@ import beans.relations.RelationValue;
 import beans.relations.RelationVar;
 import beans.relations.RelationsGroup;
 import beans.util.DamerauLevenshtein;
+import beans.util.JaroWinkler;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,8 +35,6 @@ import org.primefaces.event.RowEditEvent;
 public class RelationshipOfValuesMB implements Serializable {
 
     //private ConnectionJDBC conx = null;//conexion sin persistencia a postgres     
-    private String currentCategoricalRelatedVariables = "";//valor esperado
-    private String coincidentNewValue = "";
     private List<String> categoricalRelatedVariables;
     private boolean newValueDisabled = true;
     private boolean btnAssociateRelationValueDisabled = true;
@@ -44,9 +43,6 @@ public class RelationshipOfValuesMB implements Serializable {
     private boolean btnRemoveDiscardedValuesDisabled = true;
     private boolean btnDiscardValueDisabled = true;
     private boolean btnViewValueDisabled = true;
-    private String currentVariableExpected = "";//ariable Esperado
-    private String currentVariableFound = "";//valor Encontrado
-    private String currentValueExpected = "";//valor esperado    
     private List<String> valuesDiscarded;
     private List<String> valuesExpected;
     private List<String> valuesFoundSelectedInRelationValues = new ArrayList<String>();
@@ -55,6 +51,7 @@ public class RelationshipOfValuesMB implements Serializable {
     private List<String> valuesFound;
     private List<String> valuesRelated;
     private DamerauLevenshtein damerauLevenshtein = new DamerauLevenshtein();
+    private JaroWinkler jaroWinkler = new JaroWinkler();
     private int Similarity;
     private String[] splitFilterText;
     private String[] splitFoundText;
@@ -63,6 +60,11 @@ public class RelationshipOfValuesMB implements Serializable {
     private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private RelationsGroup currentRelationsGroup;
     private LoginMB loginMB;
+    private String currentVariableExpected = "";//variable Esperada
+    private String currentVariableFound = "";//valor Encontrado
+    private String currentValueExpected = "";//valor esperado    
+    private String currentCategoricalRelatedVariables = "";//valor esperado
+    private String coincidentNewValue = "";
     private String expectedValuesFilter = "";
     private String foundValuesFilter = "";
     private String filterText;
@@ -71,7 +73,7 @@ public class RelationshipOfValuesMB implements Serializable {
     private DinamicTable dinamicTable = new DinamicTable();
     ConnectionJdbcMB connectionJdbcMB;
     private ArrayList<String> selectedRowDataTable = new ArrayList<String>();
-    private String nameTableTemp="temp";
+    private String nameTableTemp = "temp";
 
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa
@@ -176,12 +178,11 @@ public class RelationshipOfValuesMB implements Serializable {
             loadExpectedValues();
             loadRelatedAndDiscardedValues();
         }
+        activeButtons();
     }
 
     public void loadCategoricalRelatedVariables(RelationsGroup relationsGroup) {
-        expectedValuesFilter = "";
-        foundValuesFilter = "";
-        nameOfValueExpected = "";
+        
         if (relationsGroup != null) {
 
             currentRelationsGroup = relationsGroup;
@@ -207,10 +208,22 @@ public class RelationshipOfValuesMB implements Serializable {
         btnDiscardValueDisabled = true;
         btnRemoveDiscardedValuesDisabled = true;
         btnRemoveRelationValueDisabled = true;
+
         valuesFound = new ArrayList<String>();
+        valuesFoundSelectedInRelationValues=null;  
+        foundValuesFilter = "";
+        
         valuesExpected = new ArrayList<String>();
+        expectedValuesFilter = "";  
+        currentValueExpected = "";//valor esperado        
+        nameOfValueExpected = "";        
+        
         valuesRelated = new ArrayList<String>();
+        valuesRelatedSelectedInRelationValues=null;
+        
         valuesDiscarded = new ArrayList<String>();
+        valuesDiscardedSelectedInRelationValues=null;
+        
         currentCategoricalRelatedVariables = "";
     }
 
@@ -223,9 +236,9 @@ public class RelationshipOfValuesMB implements Serializable {
         /*
          * Constructor de la clase
          */
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        nameTableTemp="temp"+loginMB.getLoginname();
+        nameTableTemp = "temp" + loginMB.getLoginname();
     }
 
     public void reset() {//@PostConstruct ejecutar despues de el constructor
@@ -315,7 +328,7 @@ public class RelationshipOfValuesMB implements Serializable {
         //correspondientes a la variable encontrada y los hubico en DistinctVarsExpectedArrayList        
         ArrayList<String> array = new ArrayList<String>();
         try {
-            ResultSet rs = connectionJdbcMB.consult("SELECT DISTINCT(" + column + ") FROM "+nameTableTemp+" WHERE " + column + " NOT LIKE ''; ");
+            ResultSet rs = connectionJdbcMB.consult("SELECT DISTINCT(" + column + ") FROM " + nameTableTemp + " WHERE " + column + " NOT LIKE ''; ");
             while (rs.next()) {
                 array.add(rs.getString(1));
             }
@@ -333,7 +346,7 @@ public class RelationshipOfValuesMB implements Serializable {
         ArrayList<String> array = new ArrayList<String>();
         try {
             //determino el nombre de la columna
-            ResultSet rs = connectionJdbcMB.consult("SELECT " + column + " FROM "+nameTableTemp+"; ");
+            ResultSet rs = connectionJdbcMB.consult("SELECT " + column + " FROM " + nameTableTemp + "; ");
             while (rs.next()) {
                 array.add(rs.getString(1));
             }
@@ -443,7 +456,7 @@ public class RelationshipOfValuesMB implements Serializable {
             RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
             if (relationVarSelected != null) {
                 if (valuesFoundSelectedInRelationValues.size() == 1) {
-                    ResultSet rs = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+" WHERE " + currentVariableFound + "='" + valuesFoundSelectedInRelationValues.get(0) + "'");
+                    ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " WHERE " + currentVariableFound + "='" + valuesFoundSelectedInRelationValues.get(0) + "'");
                     // determino las cabeceras
                     for (int j = 1; j < rs.getMetaData().getColumnCount(); j++) {
                         titles.add(rs.getMetaData().getColumnName(j));
@@ -684,12 +697,23 @@ public class RelationshipOfValuesMB implements Serializable {
                 }
             }
             //filtro los datos
-            if (foundValuesFilter.trim().length() > 3) {
+            if (foundValuesFilter.trim().length() > 0) {
 
                 filterText = foundValuesFilter.toUpperCase();
                 for (int j = 0; j < valuesFound.size(); j++) {
                     foundText = valuesFound.get(j).toUpperCase();
 
+
+//                    float x=jaroWinkler.getSimilarity(filterText, foundText);
+//                    
+//                    if (x < 0.7) {
+//                        System.out.println("se quita: " +foundText+"    -   "+ String.valueOf(x));
+//                        valuesFound.remove(j);
+//                        j--;
+//                    }
+//                    else{
+//                        System.out.println("acepta:  "+foundText+"    -   "+ String.valueOf(x));
+//                    }
 
                     if (!calculateLevenstein(filterText, foundText)) {
                         if (foundText.indexOf(filterText) == -1) {
@@ -697,24 +721,24 @@ public class RelationshipOfValuesMB implements Serializable {
                             j--;
                         }
                     }
-
                 }
             }
-
-
+            if (!valuesFound.isEmpty()) {
+                btnAutomaticRelationValueDisabled = false;
+            }
         }
         activeButtons();
     }
 
     private boolean calculateLevenstein(String filterText, String foundText) {
-        damerauLevenshtein = new DamerauLevenshtein();
+        //damerauLevenshtein = new DamerauLevenshtein();
         Similarity = 0;
         //creo un arreglo de cadenas con cada palabra
         splitFilterText = filterText.split(" ");
         splitFoundText = foundText.split(" ");
         //elimino las cadenas de cada arreglo que tengan menos de 4s caracteres
         for (int i = 0; i < splitFilterText.length; i++) {
-            if (splitFilterText[i].length() <= 3) {
+            if (splitFilterText[i].length() <= 2) {
                 splitFilterText[i] = "";
             }
         }

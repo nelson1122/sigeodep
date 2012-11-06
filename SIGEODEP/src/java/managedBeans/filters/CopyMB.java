@@ -5,7 +5,7 @@
 package managedBeans.filters;
 
 //import java.io.Serializable;
-import java.io.Serializable;
+import beans.connection.ConnectionJdbcMB;
 import java.util.ArrayList;
 import java.util.List;
 import javax.faces.application.FacesMessage;
@@ -15,6 +15,7 @@ import javax.faces.context.FacesContext;
 import managedBeans.fileProcessing.ErrorsControlMB;
 import managedBeans.fileProcessing.RecordDataMB;
 import managedBeans.fileProcessing.RelationshipOfVariablesMB;
+import managedBeans.login.LoginMB;
 import org.primefaces.model.DualListModel;
 import org.primefaces.model.LazyDataModel;
 
@@ -29,7 +30,7 @@ public class CopyMB{
     RelationshipOfVariablesMB relationshipOfVariablesMB;
     ErrorsControlMB errorsControlMB;
     RecordDataMB recordDataMB;
-    private final FilterConnection connection;
+    private final ConnectionJdbcMB connection;
     //copy
     private String copy_field;
     private List<String> fields;
@@ -84,6 +85,7 @@ public class CopyMB{
     private LazyDataModel<List> replicate_model2;
     private boolean btnReplicateDisable;
     private int undoReplicate;
+    
 
     /**
      * Creates a new instance of CopyMB
@@ -94,8 +96,9 @@ public class CopyMB{
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
         errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
         recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
-        connection = new FilterConnection();
-        connection.connect();
+        connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        //connection = new FilterConnection();
+        
         // copy
         try {
             fields = connection.getTempFields();

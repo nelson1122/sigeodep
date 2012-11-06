@@ -76,13 +76,10 @@ public class FatalInjuryMurderFacade extends AbstractFacade<FatalInjuryMurder> {
             ResultSet rs = connectionJdbcMB.consult(""
                     + "SELECT "
                     + "    count(*) "
-                    + "FROM "
-                    + "    public.fatal_injuries, "
-                    + "    public.victims "
+                    + "FROM "                    
+                    + "    victims "
                     + "WHERE "
-                    + "    fatal_injuries.injury_id = 10 AND "
-                    + "    fatal_injuries.victim_id = victims.victim_id AND "
-                    + "    victims.tag_id = " + String.valueOf(idTag) + "; ");
+                    + "    tag_id = " + String.valueOf(idTag) + "; ");
 
             if (rs.next()) {
                 return rs.getInt(1);

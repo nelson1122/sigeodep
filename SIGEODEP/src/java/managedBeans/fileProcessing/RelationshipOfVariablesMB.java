@@ -481,6 +481,8 @@ public class RelationshipOfVariablesMB implements Serializable {
             currentVarFound = nextVarFoundSelected;
             changeVarExpected();
             changeVarFound();
+            
+            
         }
         if (nextStep) {//no se produjeron errores solo alertas
             if (error.length() == 0) {//no existieron errores            
