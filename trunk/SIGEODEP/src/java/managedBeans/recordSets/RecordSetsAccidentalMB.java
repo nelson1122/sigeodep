@@ -169,28 +169,32 @@ public class RecordSetsAccidentalMB implements Serializable {
         createCell(cellStyle, row, 7, "HORA HECHO");//"100">#{rowX.column14}</p:column>
         createCell(cellStyle, row, 8, "DIRECCION HECHO");//"400">#{rowX.column15}</p:column>
         createCell(cellStyle, row, 9, "BARRIO HECHO");//"250">#{rowX.column16}</p:column>
-        createCell(cellStyle, row, 10, "AREA HECHO");//"100">#{rowX.column24}</p:column>
-        createCell(cellStyle, row, 11, "CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
-        createCell(cellStyle, row, 12, "NUMERO VICTIMAS EN HECHO");//"100">#{rowX.column18}</p:column>
-        createCell(cellStyle, row, 13, "NUMERO LESIONADOS EN ECHO");//"250">#{rowX.column28}</p:column>        
-        createCell(cellStyle, row, 14, "NOMBRES Y APELLIDOS");//"400">#{rowX.column4}</p:column>
-        createCell(cellStyle, row, 15, "SEXO");//"100">#{rowX.column8}</p:column> 
-        createCell(cellStyle, row, 16, "TIPO EDAD");//"100">#{rowX.column6}</p:column>
-        createCell(cellStyle, row, 17, "EDAD");//"100">#{rowX.column7}</p:column> 
-        createCell(cellStyle, row, 18, "OCUPACION");//"100">#{rowX.column9}</p:column> 
-        createCell(cellStyle, row, 19, "TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
-        createCell(cellStyle, row, 20, "IDENTIFICACION");//"100">#{rowX.column3}</p:column>
-        createCell(cellStyle, row, 21, "EXTRANJERO");//"100">#{rowX.column5}</p:column>
-        createCell(cellStyle, row, 22, "DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
-        createCell(cellStyle, row, 23, "MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
-        createCell(cellStyle, row, 24, "BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>                                
-        createCell(cellStyle, row, 25, "PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
-        createCell(cellStyle, row, 26, "DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
-        createCell(cellStyle, row, 27, "MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>        
-        createCell(cellStyle, row, 28, "ARMA O CAUSA DE MUERTE");//"200">#{rowX.column29}</p:column>                                    
-        createCell(cellStyle, row, 29, "NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>                                
-        createCell(cellStyle, row, 30, "NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
-        createCell(cellStyle, row, 31, "TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
+        createCell(cellStyle, row, 10, "COMUNA BARRIO HECHO");//"250">#{rowX.column16}</p:column>
+        
+        createCell(cellStyle, row, 11, "AREA HECHO");//"100">#{rowX.column24}</p:column>
+        createCell(cellStyle, row, 12, "CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
+        createCell(cellStyle, row, 13, "NUMERO VICTIMAS EN HECHO");//"100">#{rowX.column18}</p:column>
+        createCell(cellStyle, row, 14, "NUMERO LESIONADOS EN ECHO");//"250">#{rowX.column28}</p:column>        
+        createCell(cellStyle, row, 15, "NOMBRES Y APELLIDOS");//"400">#{rowX.column4}</p:column>
+        createCell(cellStyle, row, 16, "SEXO");//"100">#{rowX.column8}</p:column> 
+        createCell(cellStyle, row, 17, "TIPO EDAD");//"100">#{rowX.column6}</p:column>
+        createCell(cellStyle, row, 18, "EDAD");//"100">#{rowX.column7}</p:column> 
+        createCell(cellStyle, row, 19, "OCUPACION");//"100">#{rowX.column9}</p:column> 
+        createCell(cellStyle, row, 20, "TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
+        createCell(cellStyle, row, 21, "IDENTIFICACION");//"100">#{rowX.column3}</p:column>
+        createCell(cellStyle, row, 22, "EXTRANJERO");//"100">#{rowX.column5}</p:column>
+        createCell(cellStyle, row, 23, "DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
+        createCell(cellStyle, row, 24, "MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
+        createCell(cellStyle, row, 25, "BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>                                
+        createCell(cellStyle, row, 26, "COMUNA BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>                                
+        
+        createCell(cellStyle, row, 27, "PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
+        createCell(cellStyle, row, 28, "DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
+        createCell(cellStyle, row, 29, "MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>        
+        createCell(cellStyle, row, 30, "ARMA O CAUSA DE MUERTE");//"200">#{rowX.column29}</p:column>                                    
+        createCell(cellStyle, row, 31, "NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>                                
+        createCell(cellStyle, row, 32, "NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
+        createCell(cellStyle, row, 33, "TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
 
         String[] splitDate;
         for (int i = 0; i < rowDataTableList.size(); i++) {
@@ -210,28 +214,32 @@ public class RecordSetsAccidentalMB implements Serializable {
             createCell(row, 7, rowDataTableList.get(i).getColumn14());//HORA HECHO"
             createCell(row, 8, rowDataTableList.get(i).getColumn15());//DIRECCION HECHO"
             createCell(row, 9, rowDataTableList.get(i).getColumn16());//BARRIO HECHO"
-            createCell(row, 10, rowDataTableList.get(i).getColumn24());//AREA HECHO"
-            createCell(row, 11, rowDataTableList.get(i).getColumn17());//CLASE DE LUGAR"
-            createCell(row, 12, rowDataTableList.get(i).getColumn18());//NUMERO VICTIMAS EN HECHO"
-            createCell(row, 13, rowDataTableList.get(i).getColumn28());//NUMERO LESIONADOS EN ECHO"
-            createCell(row, 14, rowDataTableList.get(i).getColumn4());//NOMBRES Y APELLIDOS"
-            createCell(row, 15, rowDataTableList.get(i).getColumn8());//SEXO"
-            createCell(row, 16, rowDataTableList.get(i).getColumn6());//TIPO EDAD"
-            createCell(row, 17, rowDataTableList.get(i).getColumn7());//EDAD"
-            createCell(row, 18, rowDataTableList.get(i).getColumn9());//OCUPACION"
-            createCell(row, 19, rowDataTableList.get(i).getColumn2());//TIPO IDENTIFICACION"
-            createCell(row, 20, rowDataTableList.get(i).getColumn3());//IDENTIFICACION"
-            createCell(row, 21, rowDataTableList.get(i).getColumn5());//EXTRANJERO"
-            createCell(row, 22, rowDataTableList.get(i).getColumn12());//DEPARTAMENTO RESIDENCIA"
-            createCell(row, 23, rowDataTableList.get(i).getColumn11());//MUNICIPIO RESIDENCIA"
-            createCell(row, 24, rowDataTableList.get(i).getColumn10());//BARRIO RESIDENCIA"
-            createCell(row, 25, rowDataTableList.get(i).getColumn25());//PAIS PROCEDENCIA"
-            createCell(row, 26, rowDataTableList.get(i).getColumn26());//DEPARTAMENTO PROCEDENCIA"
-            createCell(row, 27, rowDataTableList.get(i).getColumn27());//MUNICIPIO PROCEDENCIA"
-            createCell(row, 28, rowDataTableList.get(i).getColumn29());//ARMA O CAUSA DE MUERTE"
-            createCell(row, 29, rowDataTableList.get(i).getColumn19());//NARRACION DEL HECHO"
-            createCell(row, 30, rowDataTableList.get(i).getColumn21());//NIVEL DE ALCOHOL"
-            createCell(row, 31, rowDataTableList.get(i).getColumn22());//TIPO NIVEL DE ALCOHOL"
+            createCell(row,10, rowDataTableList.get(i).getColumn30());//COMUNA BARRIO HECHO"
+            
+            createCell(row, 11, rowDataTableList.get(i).getColumn24());//AREA HECHO"
+            createCell(row, 12, rowDataTableList.get(i).getColumn17());//CLASE DE LUGAR"
+            createCell(row, 13, rowDataTableList.get(i).getColumn18());//NUMERO VICTIMAS EN HECHO"
+            createCell(row, 14, rowDataTableList.get(i).getColumn28());//NUMERO LESIONADOS EN ECHO"
+            createCell(row, 15, rowDataTableList.get(i).getColumn4());//NOMBRES Y APELLIDOS"
+            createCell(row, 16, rowDataTableList.get(i).getColumn8());//SEXO"
+            createCell(row, 17, rowDataTableList.get(i).getColumn6());//TIPO EDAD"
+            createCell(row, 18, rowDataTableList.get(i).getColumn7());//EDAD"
+            createCell(row, 19, rowDataTableList.get(i).getColumn9());//OCUPACION"
+            createCell(row, 20, rowDataTableList.get(i).getColumn2());//TIPO IDENTIFICACION"
+            createCell(row, 21, rowDataTableList.get(i).getColumn3());//IDENTIFICACION"
+            createCell(row, 22, rowDataTableList.get(i).getColumn5());//EXTRANJERO"
+            createCell(row, 23, rowDataTableList.get(i).getColumn12());//DEPARTAMENTO RESIDENCIA"
+            createCell(row, 24, rowDataTableList.get(i).getColumn11());//MUNICIPIO RESIDENCIA"
+            createCell(row, 25, rowDataTableList.get(i).getColumn10());//BARRIO RESIDENCIA"
+            createCell(row, 26, rowDataTableList.get(i).getColumn31());//COMUNA BARRIO RESIDENCIA"
+            
+            createCell(row, 27, rowDataTableList.get(i).getColumn25());//PAIS PROCEDENCIA"
+            createCell(row, 28, rowDataTableList.get(i).getColumn26());//DEPARTAMENTO PROCEDENCIA"
+            createCell(row, 29, rowDataTableList.get(i).getColumn27());//MUNICIPIO PROCEDENCIA"
+            createCell(row, 30, rowDataTableList.get(i).getColumn29());//ARMA O CAUSA DE MUERTE"
+            createCell(row, 31, rowDataTableList.get(i).getColumn19());//NARRACION DEL HECHO"
+            createCell(row, 32, rowDataTableList.get(i).getColumn21());//NIVEL DE ALCOHOL"
+            createCell(row, 33, rowDataTableList.get(i).getColumn22());//TIPO NIVEL DE ALCOHOL"
         }
     }
 
@@ -270,8 +278,13 @@ public class RecordSetsAccidentalMB implements Serializable {
         }
         //******stranger
         try {
-            if (currentFatalInjuryA.getFatalInjuries().getVictimId().getStranger() != null) {
-                newRowDataTable.setColumn5(currentFatalInjuryA.getFatalInjuries().getVictimId().getStranger().toString());
+            if (currentFatalInjuryA.getFatalInjuries().getVictimId().getStranger() != null) {                
+                if(currentFatalInjuryA.getFatalInjuries().getVictimId().getStranger()==true){
+                    newRowDataTable.setColumn5("SI");
+                }
+                else{
+                    newRowDataTable.setColumn5("NO");
+                }
             }
         } catch (Exception e) {
         }
@@ -315,6 +328,7 @@ public class RecordSetsAccidentalMB implements Serializable {
         try {
             if (currentFatalInjuryA.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
                 newRowDataTable.setColumn10(currentFatalInjuryA.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
+                newRowDataTable.setColumn31(String.valueOf(currentFatalInjuryA.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getSuburbId()));
             }
         } catch (Exception e) {
         }
@@ -378,6 +392,7 @@ public class RecordSetsAccidentalMB implements Serializable {
         try {
             if (currentFatalInjuryA.getFatalInjuries().getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryA.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
+                newRowDataTable.setColumn30(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryA.getFatalInjuries().getInjuryNeighborhoodId()).getSuburbId()));
             }
         } catch (Exception e) {
         }
@@ -536,14 +551,7 @@ public class RecordSetsAccidentalMB implements Serializable {
     public void setRowDataTableList(List<RowDataTable> rowDataTableList) {
         this.rowDataTableList = rowDataTableList;
     }
-
-//    public RowDataTable getSelectedRowDataTable() {
-//        return selectedRowDataTable;
-//    }
-//
-//    public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
-//        this.selectedRowDataTable = selectedRowDataTable;
-//    }
+    
     public RowDataTable[] getSelectedRowsDataTable() {
         return selectedRowsDataTable;
     }

@@ -4,8 +4,10 @@
  */
 package managedBeans.filters;
 
+import beans.connection.ConnectionJdbcMB;
 import java.util.List;
 import java.util.Map;
+import javax.faces.context.FacesContext;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
@@ -16,11 +18,10 @@ import org.primefaces.model.SortOrder;
 public class LazyQueryDataModel extends LazyDataModel<List> {
 
     private List<List> datasource;
-    private FilterConnection connection;
+    private ConnectionJdbcMB connection;
 
     public LazyQueryDataModel() {
-        connection = new FilterConnection();
-        connection.connect();
+        connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         //datasource = connection.getListFromQuery(0, 10);
     }
 

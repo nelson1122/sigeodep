@@ -257,7 +257,7 @@ public class RecordDataMB implements Serializable {
     private Date currentDate;
     //private int maxTag;
     private Tags newTag;//(maxTag, uploadFileMB.getNameFile(), uploadFileMB.getNameFile());
-    private String nameTableTemp="temp";
+    private String nameTableTemp = "temp";
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //MANEJO E LA BARRA DE PROGRESO DEL ALMACENAMIENTO ---------------------
@@ -313,6 +313,9 @@ public class RecordDataMB implements Serializable {
     }
 
     public RecordDataMB() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        nameTableTemp = "temp" + loginMB.getLoginname();
     }
 
     public void reset() {
@@ -440,13 +443,13 @@ public class RecordDataMB implements Serializable {
 
         if (continueProcces) {
             try {
-                resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM "+nameTableTemp+"; ");
+                resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
                 resultSetFileData.next();
                 tuplesNumber = resultSetFileData.getInt(1);//numero de tuplas a procesar
                 tuplesProcessed = 0;//numero de tuplas procesdas            
                 progressValidate = 0;
 
-                resultSetFileData = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+" ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
+                resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
                 //columnsNumber = resultSetFileData.getMetaData().getColumnCount();
                 errorsNumber = 0;
                 int pos = 0;
@@ -681,10 +684,10 @@ public class RecordDataMB implements Serializable {
         tuplesProcessed = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM "+nameTableTemp+"; ");
+            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
             resultSetFileData.next();
             tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+" ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
+            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
             progress = 0;
             columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
             int pos = 0;
@@ -1127,10 +1130,10 @@ public class RecordDataMB implements Serializable {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM "+nameTableTemp+"; ");
+            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
             resultSetFileData.next();
             tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+" ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
+            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
             progress = 0;
             columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
             int pos = 0;
@@ -1160,7 +1163,7 @@ public class RecordDataMB implements Serializable {
                 newFatalInjuryTraffic.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
 
-                
+
                 serviceTypesList = new ArrayList<CounterpartServiceType>();
                 involvedVehiclesList = new ArrayList<CounterpartInvolvedVehicle>();
                 value = "";
@@ -1587,10 +1590,10 @@ public class RecordDataMB implements Serializable {
         tuplesProcessed = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM "+nameTableTemp+"; ");
+            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
             resultSetFileData.next();
             tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+" ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
+            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
             progress = 0;
             columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
             int pos = 0;
@@ -1612,7 +1615,7 @@ public class RecordDataMB implements Serializable {
                 newVictim.setVictimClass(Short.parseShort("1"));
                 newFatalInjurie = new FatalInjuries();
                 newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
-                newFatalInjurie.setInputTimestamp(new Date());                
+                newFatalInjurie.setInputTimestamp(new Date());
                 newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
                 newFatalInjurie.setVictimId(newVictim);
                 newFatalInjurySuicide = new FatalInjurySuicide();
@@ -2025,10 +2028,10 @@ public class RecordDataMB implements Serializable {
         tuplesProcessed = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM "+nameTableTemp+"; ");
+            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
             resultSetFileData.next();
             tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+" ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
+            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
             progress = 0;
             columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
             int pos = 0;
@@ -2051,7 +2054,7 @@ public class RecordDataMB implements Serializable {
                 newFatalInjurie = new FatalInjuries();
                 newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
                 newFatalInjurie.setInputTimestamp(new Date());
-                
+
                 newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
                 newFatalInjurie.setVictimId(newVictim);
                 newFatalInjuryAccident = new FatalInjuryAccident();
@@ -2457,10 +2460,10 @@ public class RecordDataMB implements Serializable {
         tuplesProcessed = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM "+nameTableTemp+"; ");
+            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
             resultSetFileData.next();
             tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+" ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)
+            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)
             progress = 0;
             columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
             int pos = 0;
@@ -3510,10 +3513,10 @@ public class RecordDataMB implements Serializable {
         tuplesProcessed = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM "+nameTableTemp+"; ");
+            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
             resultSetFileData.next();
             tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+" ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)
+            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)
             progress = 0;
             columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
             int pos = 0;
@@ -3545,7 +3548,7 @@ public class RecordDataMB implements Serializable {
                 othersList = new ArrayList<Others>();
                 diagnosesList = new ArrayList<Diagnoses>();//lista non_fatal_diagnosis
                 vulnerableGroupList = new ArrayList<VulnerableGroups>();// lista vector victim_vulnerable_group
-                
+
                 value = "";
                 name = "";
                 surname = "";
@@ -4195,8 +4198,8 @@ public class RecordDataMB implements Serializable {
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name);
-                }                
-                
+                }
+
                 //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
                 if (newNonFatalInjury.getNonFatalDataSourceId() == null) {
                     if (currentSource.compareTo("OBSERVATORIO DEL DELITO") != 0) {
@@ -4282,13 +4285,13 @@ public class RecordDataMB implements Serializable {
                     newVictim.setVulnerableGroupsList(vulnerableGroupList);
                 }
                 if (!othersList.isEmpty()) {
-                        newVictim.setOthersList(othersList);
-                    }
+                    newVictim.setOthersList(othersList);
+                }
                 newNonFatalInjury.setInjuryId(injuriesFacade.find(Short.parseShort("53")));
 
                 //PERSISTO//////////////////////////////////////////////////////////////////
                 try {
-                    
+
                     newNonFatalInjury.setVictimId(newVictim);
                     victimsFacade.create(newVictim);//PERSISTO LA VICTIMA                
                     nonFatalInjuriesFacade.create(newNonFatalInjury);//PERSISTO LA LESION NO FATAL                    

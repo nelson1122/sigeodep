@@ -41,7 +41,7 @@
                             timeout="2000"
                             onidle="document.getElementById('IdForm0:btnCountLogout').click();"
                             onactive="document.getElementById('IdForm0:btnResetLogout').click();"/ -->
-                        <p:idleMonitor timeout="600000">
+                        <p:idleMonitor timeout="3600000">
                             <p:ajax event="active" listener="#{loginMB.logout1}"/>
                         </p:idleMonitor>
                         <br/><br/>

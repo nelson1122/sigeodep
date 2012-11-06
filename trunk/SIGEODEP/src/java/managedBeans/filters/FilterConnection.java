@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javassist.*;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+import managedBeans.login.LoginMB;
 
 public class FilterConnection implements Serializable {
 
@@ -18,11 +21,32 @@ public class FilterConnection implements Serializable {
     String password;
     String url;
     String table;
+    @Resource(name = "jdbc/od")
+    private DataSource ds;    
     public Connection conn;
     Statement st;
     ResultSet rs;
     String msj;
 
+    public FilterConnection() {
+        if (ds == null) {
+            System.out.println("ERROR: No se obtubo data source");
+        } else {
+            try {                
+                conn = ds.getConnection();
+                if (conn == null) {
+                    System.out.println("Error: No se obtubo conexion");
+                } else {
+                    System.out.println("Conexion por JDBC a base de datos SIGEODEP ... OK");
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(LoginMB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    
+    
     public void conexion() {
         bd = "";
         login = "";
@@ -33,69 +57,69 @@ public class FilterConnection implements Serializable {
         rs = null;
     }
 
-    public void connect() {
-        msj = "";
-        bd = "od";
-        login = "postgres";
-        password = "1234";
-        url = "jdbc:postgresql://" + "localhost" + "/" + bd;// Anadir a la url la bd user y contrasena
-        try {
+//    public void connect() {
+//        msj = "";
+//        bd = "od";
+//        login = "postgres";
+//        password = "1234";
+//        url = "jdbc:postgresql://" + "localhost" + "/" + bd;// Anadir a la url la bd user y contrasena
+//        try {
+//
+//            try {
+//                Class.forName("org.postgresql.Driver").newInstance();
+//            } catch (Exception e) {
+//                System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+//                msj = "ERROR: " + e.getMessage();
+//            }
+//            conn = DriverManager.getConnection(url, login, password);
+//            if (conn != null) {
+//                System.out.println("Conexion a base de datos " + url + " ... OK");
+//            }
+//        } catch (SQLException e) {
+//            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+//            msj = "ERROR: " + e.getMessage();
+//        }
+//    }
 
-            try {
-                Class.forName("org.postgresql.Driver").newInstance();
-            } catch (Exception e) {
-                System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
-                msj = "ERROR: " + e.getMessage();
-            }
-            conn = DriverManager.getConnection(url, login, password);
-            if (conn != null) {
-                System.out.println("Conexion a base de datos " + url + " ... OK");
-            }
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
-            msj = "ERROR: " + e.getMessage();
-        }
-    }
+//    public void conectar(String BD, String Usuario, String Contrasena, String servidor) {
+//        msj = "";
+//        bd = BD;
+//        login = Usuario;
+//        password = Contrasena;
+//        url = "jdbc:postgresql://" + servidor + "/" + bd;
+//        try {
+//
+//            try {
+//                Class.forName("org.postgresql.Driver").newInstance();
+//            } catch (Exception e) {
+//                System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+//                msj = "ERROR: " + e.getMessage();
+//            }
+//            conn = DriverManager.getConnection(url, login, password);
+//            if (conn != null) {
+//                System.out.println("Conexion a base de datos " + url + " ... OK");
+//            }
+//        } catch (SQLException e) {
+//            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+//            msj = "ERROR: " + e.getMessage();
+//        }
+//    }
 
-    public void conectar(String BD, String Usuario, String Contrasena, String servidor) {
-        msj = "";
-        bd = BD;
-        login = Usuario;
-        password = Contrasena;
-        url = "jdbc:postgresql://" + servidor + "/" + bd;
-        try {
-
-            try {
-                Class.forName("org.postgresql.Driver").newInstance();
-            } catch (Exception e) {
-                System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
-                msj = "ERROR: " + e.getMessage();
-            }
-            conn = DriverManager.getConnection(url, login, password);
-            if (conn != null) {
-                System.out.println("Conexion a base de datos " + url + " ... OK");
-            }
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
-            msj = "ERROR: " + e.getMessage();
-        }
-    }
-
-    public void disconnect() {
-        msj = "";
-        if (conn != null) {
-            try {
-                if (!conn.isClosed()) {
-                    conn.close();
-                    System.out.println("Se cerro conexion a: " + url + " ... OK");
-                    msj = "Close conection " + url + " ... OK";
-                }
-            } catch (SQLException e) {
-                System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
-                msj = "ERROR: " + e.getMessage();
-            }
-        }
-    }
+//    public void disconnect() {
+//        msj = "";
+//        if (conn != null) {
+//            try {
+//                if (!conn.isClosed()) {
+//                    conn.close();
+//                    System.out.println("Se cerro conexion a: " + url + " ... OK");
+//                    msj = "Close conection " + url + " ... OK";
+//                }
+//            } catch (SQLException e) {
+//                System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+//                msj = "ERROR: " + e.getMessage();
+//            }
+//        }
+//    }
 
     public ResultSet consult(String query) {
         msj = "";

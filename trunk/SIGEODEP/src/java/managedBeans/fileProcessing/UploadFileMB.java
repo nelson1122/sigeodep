@@ -115,6 +115,7 @@ public class UploadFileMB implements Serializable {
     private LoginMB loginMB;
     private RecordDataMB recordDataMB;
     private StoredRelationsMB storedRelationsMB;
+    private ConnectionJdbcMB connectionJdbcMB;
     private CopyMB copyMB;
     private List<Tags> tagsList;
     private boolean inactiveTabs = true;
@@ -133,7 +134,7 @@ public class UploadFileMB implements Serializable {
     //FUNCIONES DE PROPOSITO GENERAL ---------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    ConnectionJdbcMB connectionJdbcMB;
+    
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa 
      * variables y carga la conexion por jdbc
@@ -154,11 +155,12 @@ public class UploadFileMB implements Serializable {
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
         relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
         errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
-        formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
-        
+        formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);        
         recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
         loginMB = (LoginMB) context.getApplication().evaluateExpressionGet(context, "#{loginMB}", LoginMB.class);
         nameTableTemp="temp"+loginMB.getLoginname();
+        connectionJdbcMB.setTableName(nameTableTemp);
+        
     }
 
     //@PostConstruct //ejecutar despues de el constructor

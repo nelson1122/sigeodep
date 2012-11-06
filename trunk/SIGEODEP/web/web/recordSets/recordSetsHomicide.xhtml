@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets">
 
 
@@ -36,38 +37,42 @@
                             <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
                             <h:outputLabel value="CONJUNTO(s): #{recordSetsHomicideMB.data} "/>  
                             <p:dataTable id="IdOutFile2" style="display: none">
-                                        <p:column>                                                  
-                                        </p:column>
-                                    </p:dataTable>
-                                    <!-- h:commandLink >  
-                                        <p:graphicImage value="../../resources/img/excel.png"/>
-                                        <p:dataExporter type="csv" target="IdOutFile2" fileName="salidaXML" postProcessor="# {uploadFileMB.crearCopia}"/>  
-                                    </h:commandLink -->
+                                <p:column>                                                  
+                                </p:column>
+                            </p:dataTable>
+                            <!-- h:commandLink >  
+                                <p:graphicImage value="../../resources/img/excel.png"/>
+                                <p:dataExporter type="csv" target="IdOutFile2" fileName="salidaXML" postProcessor="# {uploadFileMB.crearCopia}"/>  
+                            </h:commandLink -->
                         </p:column>                                       
                     </p:row>
                     <p:row>  
                         <p:column>
                             <br/>                            
                             <p:dataTable 
-                                id="IdSearchTable" var="rowX" 
-                                value="#{recordSetsHomicideMB.rowDataTableList}" 
-                                rowKey="#{rowX.column1}"  
+                                id="IdSearchTable" 
+                                var="rowX" 
+                                value="#{recordSetsHomicideMB.table_model}" 
                                 selection="#{recordSetsHomicideMB.selectedRowsDataTable}" 
-                                paginator="true"
-                                rows="10"             
-                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="5,10,15,20,25,30"
-                                paginatorPosition="bottom"                                
-                                scrollable="true"
-                                scrollWidth="730"                                    
-                                pageLinks="3"
                                 selectionMode="multiple"
-                                resizableColumns="true">                                
+                                rowKey="#{rowX.column1}"  
+                                scrollWidth="730"                        
+                                lazy="true"
+                                resizableColumns="true"
+                                paginator="true" 
+                                rows="10" 
+                                pageLinks="5"
+                                paginatorPosition="bottom"
+
+                                emptyMessage="No existen resultados."
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                scrollable="true">         
                                 <p:ajax
                                     event="rowSelect"
                                     listener="#{recordSetsHomicideMB.load}"                                    
-                                    update=":IdForm1:IdControls :IdForm1:message" />                                                    
-                                ////////////////////////////////////////////////////////////////////////
+                                    update=":IdForm1:IdControls :IdForm1:message" />
+                                ////////////////////////////////////////////////////////////////////////                              
                                 <p:column headerText="CODIGO INTERNO" width="100">#{rowX.column1}</p:column>
                                 <p:column headerText="CODIGO" width="100">#{rowX.column23}</p:column>
                                 <p:column headerText="FECHA HECHO" width="100">#{rowX.column13}</p:column>
@@ -75,6 +80,7 @@
                                 <p:column headerText="HORA HECHO" width="100">#{rowX.column14}</p:column>
                                 <p:column headerText="DIRECCION HECHO" width="400">#{rowX.column15}</p:column>
                                 <p:column headerText="BARRIO HECHO" width="250">#{rowX.column16}</p:column>
+                                <p:column headerText="COMUNA BARRIO HECHO" width="100">#{rowX.column30}</p:column>
                                 <p:column headerText="AREA DEL HECHO" width="100">#{rowX.column24}</p:column>
                                 <p:column headerText="CLASE DE LUGAR" width="250">#{rowX.column17}</p:column>
                                 <p:column headerText="NUMERO DE VICTIMAS" width="100">#{rowX.column18}</p:column>                                
@@ -89,6 +95,7 @@
                                 <p:column headerText="DEPARTAMENTO RESIDENCIA" width="100">#{rowX.column12}</p:column>
                                 <p:column headerText="MUNICIPIO RESIDENCIA" width="100">#{rowX.column11}</p:column>
                                 <p:column headerText="BARRIO RESIDENCIA" width="250">#{rowX.column10}</p:column>
+                                <p:column headerText="COMUNA BARRIO RESIDENCIA" width="100">#{rowX.column31}</p:column>
                                 <p:column headerText="PAIS PROCEDENCIA" width="100">#{rowX.column25}</p:column>
                                 <p:column headerText="DEPARTAMENTO PROCEDENCIA" width="100">#{rowX.column26}</p:column>
                                 <p:column headerText="MUNICIPIO PROCEDENCIA" width="100">#{rowX.column27}</p:column>                                        
@@ -98,6 +105,19 @@
                                 <p:column headerText="NIVEL DE ALCOHOL" width="100">#{rowX.column21}</p:column>
                                 <p:column headerText="TIPO NIVEL DE ALCOHOL" width="100">#{rowX.column22}</p:column>
                             </p:dataTable>                            
+                            <br/>
+                            <p:progressBar 
+                                id="IdProgresValidate" 
+                                interval="500" 
+                                widgetVar="pbAjaxValidate" 
+                                ajax="true" 
+                                value="#{recordSetsHomicideMB.progress}" 
+                                labelTemplate="{value}%">          
+                                <p:ajax 
+                                    event="complete" 
+                                    listener="#{recordSetsHomicideMB.onCompleteLoad}" 
+                                    update="IdProgresValidate"/>  
+                            </p:progressBar>
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
                                 <p:row>  
