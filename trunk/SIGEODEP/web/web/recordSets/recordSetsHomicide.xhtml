@@ -35,7 +35,7 @@
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
                             <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="CONJUNTO(s): #{recordSetsHomicideMB.data} "/>  
+                            <h:outputLabel value="CONJUNTO: #{recordSetsHomicideMB.data} "/>  
                             <p:dataTable id="IdOutFile2" style="display: none">
                                 <p:column>                                                  
                                 </p:column>
@@ -63,7 +63,6 @@
                                 rows="10" 
                                 pageLinks="5"
                                 paginatorPosition="bottom"
-
                                 emptyMessage="No existen resultados."
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15"
@@ -105,19 +104,6 @@
                                 <p:column headerText="NIVEL DE ALCOHOL" width="100">#{rowX.column21}</p:column>
                                 <p:column headerText="TIPO NIVEL DE ALCOHOL" width="100">#{rowX.column22}</p:column>
                             </p:dataTable>                            
-                            <br/>
-                            <p:progressBar 
-                                id="IdProgresValidate" 
-                                interval="500" 
-                                widgetVar="pbAjaxValidate" 
-                                ajax="true" 
-                                value="#{recordSetsHomicideMB.progress}" 
-                                labelTemplate="{value}%">          
-                                <p:ajax 
-                                    event="complete" 
-                                    listener="#{recordSetsHomicideMB.onCompleteLoad}" 
-                                    update="IdProgresValidate"/>  
-                            </p:progressBar>
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
                                 <p:row>  

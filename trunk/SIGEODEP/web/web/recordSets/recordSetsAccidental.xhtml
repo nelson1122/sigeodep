@@ -34,28 +34,30 @@
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
                             <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="CONJUNTO(s): #{recordSetsAccidentalMB.data} "/>  
+                            <h:outputLabel value="CONJUNTO: #{recordSetsAccidentalMB.data} "/>  
                         </p:column>                                       
                     </p:row>
                     <p:row>  
                         <p:column>
-                            <br/>                            
+                            <br/>  
                             <p:dataTable 
                                 id="IdSearchTable" 
                                 var="rowX" 
-                                value="#{recordSetsAccidentalMB.rowDataTableList}" 
-                                rowKey="#{rowX.column1}"  
+                                value="#{recordSetsAccidentalMB.table_model}" 
                                 selection="#{recordSetsAccidentalMB.selectedRowsDataTable}" 
-                                paginator="true"                                
-                                rows="10"       
-                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="5,10,15,20,25,30"
-                                paginatorPosition="bottom"                                
-                                scrollable="true"
-                                scrollWidth="730"                                    
-                                pageLinks="3"
                                 selectionMode="multiple"
-                                resizableColumns="true">                                
+                                rowKey="#{rowX.column1}"  
+                                scrollWidth="730"                        
+                                lazy="true"
+                                resizableColumns="true"
+                                paginator="true" 
+                                rows="10" 
+                                pageLinks="5"
+                                paginatorPosition="bottom"
+                                emptyMessage="No existen resultados."
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                scrollable="true">         
                                 <p:ajax
                                     event="rowSelect"
                                     listener="#{recordSetsAccidentalMB.load}"                                    

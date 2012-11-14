@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "RelationGroup.findByNameRelationGroup", query = "SELECT r FROM RelationGroup r WHERE r.nameRelationGroup = :nameRelationGroup"),
     @NamedQuery(name = "RelationGroup.findBySourceId", query = "SELECT r FROM RelationGroup r WHERE r.sourceId = :sourceId")})
 public class RelationGroup implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -46,73 +47,116 @@ public class RelationGroup implements Serializable {
     }
 
     public RelationGroup(Integer idRelationGroup) {
-	this.idRelationGroup = idRelationGroup;
+        this.idRelationGroup = idRelationGroup;
     }
 
     public Integer getIdRelationGroup() {
-	return idRelationGroup;
+        return idRelationGroup;
     }
 
     public void setIdRelationGroup(Integer idRelationGroup) {
-	this.idRelationGroup = idRelationGroup;
+        this.idRelationGroup = idRelationGroup;
     }
 
     public String getNameRelationGroup() {
-	return nameRelationGroup;
+        return nameRelationGroup;
     }
 
     public void setNameRelationGroup(String nameRelationGroup) {
-	this.nameRelationGroup = nameRelationGroup;
+        this.nameRelationGroup = nameRelationGroup;
     }
 
     public Integer getSourceId() {
-	return sourceId;
+        return sourceId;
     }
 
     public void setSourceId(Integer sourceId) {
-	this.sourceId = sourceId;
+        this.sourceId = sourceId;
     }
 
     public Forms getFormId() {
-	return formId;
+        return formId;
     }
 
     public void setFormId(Forms formId) {
-	this.formId = formId;
+        this.formId = formId;
     }
 
     @XmlTransient
     public List<RelationVariables> getRelationVariablesList() {
-	return relationVariablesList;
+        return relationVariablesList;
     }
 
     public void setRelationVariablesList(List<RelationVariables> relationVariablesList) {
-	this.relationVariablesList = relationVariablesList;
+        this.relationVariablesList = relationVariablesList;
     }
 
     @Override
     public int hashCode() {
-	int hash = 0;
-	hash += (idRelationGroup != null ? idRelationGroup.hashCode() : 0);
-	return hash;
+        int hash = 0;
+        hash += (idRelationGroup != null ? idRelationGroup.hashCode() : 0);
+        return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-	// TODO: Warning - this method won't work in the case the id fields are not set
-	if (!(object instanceof RelationGroup)) {
-	    return false;
-	}
-	RelationGroup other = (RelationGroup) object;
-	if ((this.idRelationGroup == null && other.idRelationGroup != null) || (this.idRelationGroup != null && !this.idRelationGroup.equals(other.idRelationGroup))) {
-	    return false;
-	}
-	return true;
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof RelationGroup)) {
+            return false;
+        }
+        RelationGroup other = (RelationGroup) object;
+        if ((this.idRelationGroup == null && other.idRelationGroup != null) || (this.idRelationGroup != null && !this.idRelationGroup.equals(other.idRelationGroup))) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public String toString() {
-	return "model.pojo.RelationGroup[ idRelationGroup=" + idRelationGroup + " ]";
+        return "model.pojo.RelationGroup[ idRelationGroup=" + idRelationGroup + " ]";
     }
-    
+
+    public RelationVariables findRelationVar(String currentVariableExpected, String currentVariableFound) {
+        if (relationVariablesList != null) {
+            for (int i = 0; i < relationVariablesList.size(); i++) {
+                if (relationVariablesList.get(i).getNameExpected().compareTo(currentVariableExpected) == 0
+                        && relationVariablesList.get(i).getNameFound().compareTo(currentVariableFound) == 0) {
+                    return relationVariablesList.get(i);
+                }
+            }
+        }
+        return null;
+    }
+
+    public RelationVariables findRelationVarByNameFound(String nameFound) {
+        if (relationVariablesList != null) {
+            for (int i = 0; i < relationVariablesList.size(); i++) {
+                if (relationVariablesList.get(i).getNameFound().compareTo(nameFound) == 0) {
+                    return relationVariablesList.get(i);
+                }
+            }
+        }
+        return null;
+    }
+    public RelationVariables findRelationVarByNameExpected(String nameExpected) {
+        if (relationVariablesList != null) {
+            for (int i = 0; i < relationVariablesList.size(); i++) {
+                if (relationVariablesList.get(i).getNameExpected().compareTo(nameExpected) == 0) {
+                    return relationVariablesList.get(i);
+                }
+            }
+        }
+        return null;
+    }
+
+//    public String findRelationVarDescription(String currentVarFound) {
+//        if (relationVariablesList != null) {
+//            for (int i = 0; i < relationVariablesList.size(); i++) {
+//                if (relationVariablesList.get(i).getNameFound().compareTo(currentVarFound) == 0) {
+//                    return relationVariablesList.get(i);
+//                }
+//            }
+//        }
+//        return null;
+//    }
 }

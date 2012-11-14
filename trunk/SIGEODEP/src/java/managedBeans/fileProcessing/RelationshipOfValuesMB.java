@@ -6,12 +6,7 @@ package managedBeans.fileProcessing;
 
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.DataTypeEnum;
-import beans.lists.Field;
-import beans.relations.RelationValue;
-import beans.relations.RelationVar;
-import beans.relations.RelationsGroup;
 import beans.util.DamerauLevenshtein;
-import beans.util.JaroWinkler;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,7 +18,9 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.login.LoginMB;
-import managedBeans.preload.FormsAndFieldsDataMB;
+import model.pojo.RelationGroup;
+import model.pojo.RelationValues;
+import model.pojo.RelationVariables;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -51,14 +48,14 @@ public class RelationshipOfValuesMB implements Serializable {
     private List<String> valuesFound;
     private List<String> valuesRelated;
     private DamerauLevenshtein damerauLevenshtein = new DamerauLevenshtein();
-    private JaroWinkler jaroWinkler = new JaroWinkler();
-    private int Similarity;
+    //private JaroWinkler jaroWinkler = new JaroWinkler();
+    //private int Similarity;
     private String[] splitFilterText;
     private String[] splitFoundText;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
-    private Field typeVarExepted;
-    private FormsAndFieldsDataMB formsAndFieldsDataMB;
-    private RelationsGroup currentRelationsGroup;
+    //private String typeVarExepted;
+    //private FormsAndFieldsDataMB formsAndFieldsDataMB;
+    private RelationGroup currentRelationsGroup;
     private LoginMB loginMB;
     private String currentVariableExpected = "";//variable Esperada
     private String currentVariableFound = "";//valor Encontrado
@@ -181,28 +178,16 @@ public class RelationshipOfValuesMB implements Serializable {
         activeButtons();
     }
 
-    public void loadCategoricalRelatedVariables(RelationsGroup relationsGroup) {
-        
-        if (relationsGroup != null) {
-
-            currentRelationsGroup = relationsGroup;
-        }
+    public void loadCategoricalRelatedVariables(RelationGroup relationsGroup) {
 
         String type;
         ArrayList<String> variablesRelated = new ArrayList<String>();
-        for (int i = 0; i < currentRelationsGroup.getRelationVarList().size(); i++) {
-            type = currentRelationsGroup.getRelationVarList().get(i).getFieldType();
-            switch (DataTypeEnum.convert(type)) {
-                case NOVALUE://idica que NO es: integer,date,minute,hour,day,month,year,age,military,degree,percentage
-                    type = currentRelationsGroup.getRelationVarList().get(i).getNameExpected();
-                    type = type + "->";
-                    type = type + currentRelationsGroup.getRelationVarList().get(i).getNameFound();
-                    variablesRelated.add(type);
-                    break;
-            }
+        
+        
+        if (relationsGroup != null) {
+            currentRelationsGroup = relationsGroup;
         }
-        setCategoricalRelatedVariables(variablesRelated);
-
+        
         btnAssociateRelationValueDisabled = true;
         btnAutomaticRelationValueDisabled = true;
         btnDiscardValueDisabled = true;
@@ -210,21 +195,39 @@ public class RelationshipOfValuesMB implements Serializable {
         btnRemoveRelationValueDisabled = true;
 
         valuesFound = new ArrayList<String>();
-        valuesFoundSelectedInRelationValues=null;  
+        valuesFoundSelectedInRelationValues = null;
         foundValuesFilter = "";
-        
+
         valuesExpected = new ArrayList<String>();
-        expectedValuesFilter = "";  
+        expectedValuesFilter = "";
         currentValueExpected = "";//valor esperado        
-        nameOfValueExpected = "";        
-        
+        nameOfValueExpected = "";
+
         valuesRelated = new ArrayList<String>();
-        valuesRelatedSelectedInRelationValues=null;
-        
+        valuesRelatedSelectedInRelationValues = null;
+
         valuesDiscarded = new ArrayList<String>();
-        valuesDiscardedSelectedInRelationValues=null;
-        
+        valuesDiscardedSelectedInRelationValues = null;
+
         currentCategoricalRelatedVariables = "";
+
+        
+        if (currentRelationsGroup.getRelationVariablesList() != null) {
+            for (int i = 0; i < currentRelationsGroup.getRelationVariablesList().size(); i++) {
+                type = currentRelationsGroup.getRelationVariablesList().get(i).getFieldType();
+                switch (DataTypeEnum.convert(type)) {
+                    case NOVALUE://idica que NO es: integer,date,minute,hour,day,month,year,age,military,degree,percentage
+                        type = currentRelationsGroup.getRelationVariablesList().get(i).getNameExpected();
+                        type = type + "->";
+                        type = type + currentRelationsGroup.getRelationVariablesList().get(i).getNameFound();
+                        variablesRelated.add(type);
+                        break;
+                }
+            }
+        }
+        setCategoricalRelatedVariables(variablesRelated);
+
+        
     }
 
     //----------------------------------------------------------------------
@@ -241,21 +244,29 @@ public class RelationshipOfValuesMB implements Serializable {
         nameTableTemp = "temp" + loginMB.getLoginname();
     }
 
-    public void reset() {//@PostConstruct ejecutar despues de el constructor
-        categoricalRelatedVariables = new ArrayList<String>();
-        valuesExpected = new ArrayList<String>();
-        valuesRelated = new ArrayList<String>();
-        valuesFound = new ArrayList<String>();
-        valuesDiscarded = new ArrayList<String>();
-        currentVariableFound = "";
+    public void reset() {//@PostConstruct ejecutar despues de el constructor        
+
         currentVariableExpected = "";
-        currentValueExpected = "";
+        currentVariableFound = "";
         nameOfValueExpected = "";
         expectedValuesFilter = "";
         foundValuesFilter = "";
-        valuesFoundSelectedInRelationValues = new ArrayList<String>();
+
+        categoricalRelatedVariables = new ArrayList<String>();
+        currentCategoricalRelatedVariables = null;
+
+        valuesExpected = new ArrayList<String>();
+        currentValueExpected = "";
+
+        valuesRelated = new ArrayList<String>();
         valuesRelatedSelectedInRelationValues = new ArrayList<String>();
+
+        valuesFound = new ArrayList<String>();
+        valuesFoundSelectedInRelationValues = new ArrayList<String>();
+
+        valuesDiscarded = new ArrayList<String>();
         valuesDiscardedSelectedInRelationValues = new ArrayList<String>();
+
         btnAssociateRelationValueDisabled = true;
         btnRemoveRelationValueDisabled = true;
         btnAutomaticRelationValueDisabled = true;
@@ -272,15 +283,17 @@ public class RelationshipOfValuesMB implements Serializable {
          * cargar los valores esperados dependiendo la variable esperada
          */
         if (currentVariableExpected.length() != 0) {
-            typeVarExepted = formsAndFieldsDataMB.searchField(currentVariableExpected);
+            //typeVarExepted = formsAndFieldsDataMB.searchField(currentVariableExpected);
             //fieldsFacade.findByFormField(currentForm, currentVariableExpected).getFieldType();            
             valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
-            if (currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound).getTypeComparisonForCode()) {
-                valuesExpected = formsAndFieldsDataMB.categoricalCodeList(currentVariableExpected, 0);
-            } else {
-                valuesExpected = formsAndFieldsDataMB.categoricalNameList(currentVariableExpected, 0);
+            RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+            if (currentRelationVar != null) {
+                if (currentRelationVar.getComparisonForCode()) {
+                    valuesExpected = connectionJdbcMB.categoricalCodeList(currentRelationVar.getFieldType(), 0);
+                } else {
+                    valuesExpected = connectionJdbcMB.categoricalNameList(currentRelationVar.getFieldType(), 0);
+                }
             }
-
             //filtro los datos
             if (expectedValuesFilter.trim().length() != 0) {
                 filterText = expectedValuesFilter.toUpperCase();
@@ -297,25 +310,30 @@ public class RelationshipOfValuesMB implements Serializable {
 
     private void loadRelatedAndDiscardedValues() {
         valuesRelated = new ArrayList<String>();
+        valuesDiscarded = new ArrayList<String>();
         //busco cual es la relacion de variables actual        
         String relation;
         String[] splitVarRelated = currentCategoricalRelatedVariables.split("->");
         currentVariableExpected = splitVarRelated[0];
         currentVariableFound = splitVarRelated[1];
-        RelationVar currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
-        //teniendo la relacion de variables actual determino la lista de relaciones de variables para esta
-        ArrayList<RelationValue> currentRelationValuesList = currentRelationVar.getRelationValueList();
-        for (int i = 0; i < currentRelationValuesList.size(); i++) {
-            relation = currentRelationValuesList.get(i).getNameExpected();
-            relation = relation + "->";
-            relation = relation + currentRelationValuesList.get(i).getNameFound();
-            valuesRelated.add(relation);
-        }
-        //recargo la lista de valores descartados
-        //ArrayList<RelationValue> currentRelationValuesList = currentRelationVar.getRelationValueList();
-        valuesDiscarded = new ArrayList<String>();
-        for (int i = 0; i < currentRelationVar.getDiscardedValues().size(); i++) {
-            valuesDiscarded.add(currentRelationVar.getDiscardedValues().get(i));
+        //RelationVar currentRelationVar = currentRelationsGroup.findRelationVarByNameFound(currentVariableExpected, currentVariableFound);
+        RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+        if (currentRelationVar != null) {
+            //teniendo la relacion de variables actual determino la lista de relaciones de variables para esta
+            if (currentRelationVar.getRelationValuesList() != null) {
+                for (int i = 0; i < currentRelationVar.getRelationValuesList().size(); i++) {
+                    relation = currentRelationVar.getRelationValuesList().get(i).getNameExpected();
+                    relation = relation + "->";
+                    relation = relation + currentRelationVar.getRelationValuesList().get(i).getNameFound();
+                    valuesRelated.add(relation);
+                }
+            }
+            //recargo la lista de valores descartados
+            if (currentRelationVar.getRelationsDiscardedValuesList() != null) {
+                for (int i = 0; i < currentRelationVar.getRelationsDiscardedValuesList().size(); i++) {
+                    valuesDiscarded.add(currentRelationVar.getRelationsDiscardedValuesList().get(i).getDiscardedValueName());
+                }
+            }
         }
     }
 
@@ -403,14 +421,14 @@ public class RelationshipOfValuesMB implements Serializable {
                 String[] splitVarRelated = currentCategoricalRelatedVariables.split("->");
                 currentVariableExpected = splitVarRelated[0];
                 currentVariableFound = splitVarRelated[1];
-                RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
-                if (relationVarSelected != null) {
+                RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+                if (currentRelationVar != null) {
                     if (currentVariableExpected.length() != 0) {
-                        typeVarExepted = formsAndFieldsDataMB.searchField(currentVariableExpected);
+                        //typeVarExepted = formsAndFieldsDataMB.searchField(currentVariableExpected);
                         ArrayList<String> valuesExpectedAux;
                         ArrayList<String> valuesExpectedAux2;
-                        valuesExpectedAux = formsAndFieldsDataMB.categoricalCodeList(currentVariableExpected, 0);
-                        valuesExpectedAux2 = formsAndFieldsDataMB.categoricalNameList(currentVariableExpected, 0);
+                        valuesExpectedAux = connectionJdbcMB.categoricalCodeList(currentRelationVar.getFieldType(), 0);
+                        valuesExpectedAux2 = connectionJdbcMB.categoricalNameList(currentRelationVar.getFieldType(), 0);
                         for (int i = 0; i < valuesExpectedAux.size(); i++) {
                             if (valuesExpectedAux.get(i).compareTo(currentValueExpected) == 0) {
                                 nameOfValueExpected = valuesExpectedAux2.get(i);
@@ -453,8 +471,8 @@ public class RelationshipOfValuesMB implements Serializable {
             String[] splitVarRelated = currentCategoricalRelatedVariables.split("->");
             currentVariableExpected = splitVarRelated[0];
             currentVariableFound = splitVarRelated[1];
-            RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
-            if (relationVarSelected != null) {
+            RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+            if (currentRelationVar != null) {
                 if (valuesFoundSelectedInRelationValues.size() == 1) {
                     ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " WHERE " + currentVariableFound + "='" + valuesFoundSelectedInRelationValues.get(0) + "'");
                     // determino las cabeceras
@@ -462,7 +480,6 @@ public class RelationshipOfValuesMB implements Serializable {
                         titles.add(rs.getMetaData().getColumnName(j));
                     }
                     // determino los datos                
-
                     while (rs.next()) {
                         ArrayList<String> newRow = new ArrayList<String>();
                         for (int k = 1; k < rs.getMetaData().getColumnCount(); k++) {
@@ -516,13 +533,13 @@ public class RelationshipOfValuesMB implements Serializable {
         String[] splitVarRelated = currentCategoricalRelatedVariables.split("->");
         currentVariableExpected = splitVarRelated[0];
         currentVariableFound = splitVarRelated[1];
-        RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
-        if (relationVarSelected != null) {
+        RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+        if (currentRelationVar != null) {
             for (int i = 0; i < valuesDiscardedSelectedInRelationValues.size(); i++) {
-                relationVarSelected.removeDiscartedValue(valuesDiscardedSelectedInRelationValues.get(i));
+                currentRelationVar.removeDiscartedValue(valuesDiscardedSelectedInRelationValues.get(i));
             }
             loadFoundValues();
-            loadExpectedValues();
+            //loadExpectedValues();
             loadRelatedAndDiscardedValues();
         }
 
@@ -564,10 +581,10 @@ public class RelationshipOfValuesMB implements Serializable {
         String[] splitVarRelated = currentCategoricalRelatedVariables.split("->");
         currentVariableExpected = splitVarRelated[0];
         currentVariableFound = splitVarRelated[1];
-        RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
-        if (relationVarSelected != null) {
+        RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+        if (currentRelationVar != null) {
             for (int i = 0; i < valuesFoundSelectedInRelationValues.size(); i++) {
-                relationVarSelected.addDiscartedValue(valuesFoundSelectedInRelationValues.get(i));
+                currentRelationVar.addDiscartedValue(valuesFoundSelectedInRelationValues.get(i));
             }
             loadFoundValues();
             loadExpectedValues();
@@ -615,10 +632,10 @@ public class RelationshipOfValuesMB implements Serializable {
         String[] splitVarRelated = currentCategoricalRelatedVariables.split("->");
         currentVariableExpected = splitVarRelated[0];
         currentVariableFound = splitVarRelated[1];
-        RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
-        if (relationVarSelected != null) {
+        RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+        if (currentRelationVar != null) {
             for (int i = 0; i < valuesFoundSelectedInRelationValues.size(); i++) {
-                relationVarSelected.addRelationValue(currentValueExpected, valuesFoundSelectedInRelationValues.get(i));
+                currentRelationVar.addRelationValue(currentValueExpected, valuesFoundSelectedInRelationValues.get(i));
             }
             loadFoundValues();
             loadExpectedValues();
@@ -633,22 +650,31 @@ public class RelationshipOfValuesMB implements Serializable {
 
     private void activeButtons() {
         btnRemoveRelationValueDisabled = true;
-        if (!valuesRelatedSelectedInRelationValues.isEmpty()) {
-            btnRemoveRelationValueDisabled = false;
+        if (valuesRelatedSelectedInRelationValues != null) {
+            if (!valuesRelatedSelectedInRelationValues.isEmpty()) {
+                btnRemoveRelationValueDisabled = false;
+            }
         }
         btnRemoveDiscardedValuesDisabled = true;
-        if (!valuesDiscardedSelectedInRelationValues.isEmpty()) {
-            btnRemoveDiscardedValuesDisabled = false;
+        if (valuesDiscardedSelectedInRelationValues != null) {
+            if (!valuesDiscardedSelectedInRelationValues.isEmpty()) {
+                btnRemoveDiscardedValuesDisabled = false;
+            }
         }
         btnDiscardValueDisabled = true;
         btnViewValueDisabled = true;
-        if (!valuesFoundSelectedInRelationValues.isEmpty()) {
-            btnDiscardValueDisabled = false;
-            btnViewValueDisabled = false;
+        if (valuesFoundSelectedInRelationValues != null) {
+            if (!valuesFoundSelectedInRelationValues.isEmpty()) {
+                btnDiscardValueDisabled = false;
+                btnViewValueDisabled = false;
+            }
         }
+
         btnAutomaticRelationValueDisabled = true;
-        if (!valuesFound.isEmpty() && !valuesExpected.isEmpty()) {
-            btnAutomaticRelationValueDisabled = false;
+        if (valuesFound != null && valuesExpected != null) {
+            if (!valuesFound.isEmpty() && !valuesExpected.isEmpty()) {
+                btnAutomaticRelationValueDisabled = false;
+            }
         }
         btnAssociateRelationValueDisabled = true;
         if (currentValueExpected != null) {
@@ -667,45 +693,46 @@ public class RelationshipOfValuesMB implements Serializable {
          */
 
         //selecciono cual es la relacion de variables actual
-        RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
-        if (relationVarSelected != null) {
+        RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+        if (currentRelationVar != null) {
             //cargo todos los valores esperados y encontrados(en encontrados se aplica DISCTINCT)            
             //loadExpectedValues();
             valuesFound = createListOfDistinctValuesFromFile(currentVariableFound);
             //saco la lista de valores realcionados
-            ArrayList<RelationValue> relationValueList = relationVarSelected.getRelationValueList();
-            //elimino los capos que ya esten relacionados de las listas de 
-            //valores encontrados no se elimina de la lista de valore esperados
-            //por que la relacion entre esperados y encontrados es de uno a muchos
-            for (int i = 0; i < relationValueList.size(); i++) {
-                for (int j = 0; j < valuesFound.size(); j++) {
-                    if (relationValueList.get(i).getNameFound().compareTo(valuesFound.get(j)) == 0) {
-                        valuesFound.remove(j);
-                        break;
+            if (currentRelationVar.getRelationValuesList() != null) {
+                //elimino los valores que ya esten relacionados de las listas de valores encontrados                 
+                for (int i = 0; i < currentRelationVar.getRelationValuesList().size(); i++) {
+                    for (int j = 0; j < valuesFound.size(); j++) {
+                        if (currentRelationVar.getRelationValuesList().get(i).getNameFound().compareTo(valuesFound.get(j)) == 0) {
+                            valuesFound.remove(j);
+                            break;
+                        }
                     }
                 }
             }
-            //saco la lista de valores descartados
-            valuesDiscarded = relationVarSelected.getDiscardedValues();
-            //elimino los campos que ya esten dentro de la lista de valores descartados
-            for (int i = 0; i < valuesDiscarded.size(); i++) {
-                for (int j = 0; j < valuesFound.size(); j++) {
-                    if (valuesDiscarded.get(i).compareTo(valuesFound.get(j)) == 0) {
-                        valuesFound.remove(j);
-                        break;
+            //saco la lista de valores descartados            
+            if (currentRelationVar.getRelationsDiscardedValuesList() != null) {
+                valuesDiscarded = new ArrayList<String>();
+                for (int i = 0; i < currentRelationVar.getRelationsDiscardedValuesList().size(); i++) {
+                    valuesDiscarded.add(currentRelationVar.getRelationsDiscardedValuesList().get(i).getDiscardedValueName());
+                }
+                //elimino los campos que ya esten dentro de la lista de valores descartados
+                for (int i = 0; i < valuesDiscarded.size(); i++) {
+                    for (int j = 0; j < valuesFound.size(); j++) {
+                        if (valuesDiscarded.get(i).compareTo(valuesFound.get(j)) == 0) {
+                            valuesFound.remove(j);
+                            break;
+                        }
                     }
                 }
+
             }
             //filtro los datos
             if (foundValuesFilter.trim().length() > 0) {
-
                 filterText = foundValuesFilter.toUpperCase();
                 for (int j = 0; j < valuesFound.size(); j++) {
                     foundText = valuesFound.get(j).toUpperCase();
-
-
 //                    float x=jaroWinkler.getSimilarity(filterText, foundText);
-//                    
 //                    if (x < 0.7) {
 //                        System.out.println("se quita: " +foundText+"    -   "+ String.valueOf(x));
 //                        valuesFound.remove(j);
@@ -732,7 +759,7 @@ public class RelationshipOfValuesMB implements Serializable {
 
     private boolean calculateLevenstein(String filterText, String foundText) {
         //damerauLevenshtein = new DamerauLevenshtein();
-        Similarity = 0;
+        //Similarity = 0;
         //creo un arreglo de cadenas con cada palabra
         splitFilterText = filterText.split(" ");
         splitFoundText = foundText.split(" ");
@@ -751,7 +778,7 @@ public class RelationshipOfValuesMB implements Serializable {
         for (int i = 0; i < splitFilterText.length; i++) {
             for (int j = 0; j < splitFoundText.length; j++) {
                 if (splitFilterText[i].length() != 0 && splitFoundText[j].length() != 0) {
-                    if (damerauLevenshtein.getSimilarity(splitFilterText[i], splitFoundText[j]) < 4) {
+                    if (damerauLevenshtein.getSimilarity(splitFilterText[i], splitFoundText[j]) < 3) {
                         return true;
                     }
                 }
@@ -770,8 +797,8 @@ public class RelationshipOfValuesMB implements Serializable {
         currentVariableExpected = splitVarRelated[0];
         currentVariableFound = splitVarRelated[1];
 
-        RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
-        if (relationVarSelected != null) {
+        RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+        if (currentRelationVar != null) {
             for (int i = 0; i < valuesFound.size(); i++) {
                 for (int j = 0; j < valuesExpected.size(); j++) {
                     String valueFoundNoAccent = valuesFound.get(i).trim().toUpperCase().replace(".", "").replace(";", "");
@@ -790,7 +817,7 @@ public class RelationshipOfValuesMB implements Serializable {
                     valueExpectedNoAccent = valueExpectedNoAccent.replace("Ú", "U");
 
                     if (valueFoundNoAccent.compareTo(valueExpectedNoAccent) == 0) {
-                        relationVarSelected.addRelationValue(valuesExpected.get(j), valuesFound.get(i));
+                        currentRelationVar.addRelationValue(valuesExpected.get(j), valuesFound.get(i));
                         numberOfCreate++;
                     }
                 }
@@ -847,14 +874,14 @@ public class RelationshipOfValuesMB implements Serializable {
         String[] splitVarRelated = currentCategoricalRelatedVariables.split("->");
         currentVariableExpected = splitVarRelated[0];
         currentVariableFound = splitVarRelated[1];
-        RelationVar relationVarSelected = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+        RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
         //teniendo la relacion de variables encuentro la relacion de valores
         for (int i = 0; i < valuesRelatedSelectedInRelationValues.size(); i++) {
             String[] splitValuedRelated = valuesRelatedSelectedInRelationValues.get(i).split("->");
             currentValueExpected = splitValuedRelated[0];
             String currentValueFound = splitValuedRelated[1];
             //remuevo la relacion de valores 
-            relationVarSelected.removeRelationValue(currentValueExpected, currentValueFound);
+            currentRelationVar.removeRelationValue(currentValueExpected, currentValueFound);
         }
         loadFoundValues();
         loadExpectedValues();
@@ -909,18 +936,17 @@ public class RelationshipOfValuesMB implements Serializable {
         this.valuesFound = valuesFound;
     }
 
-    public void setCurrentRelationsGroup(RelationsGroup currentRelationsGroup) {
-        this.currentRelationsGroup = currentRelationsGroup;
-    }
-
-    public RelationsGroup getCurrentRelationsGroup() {
+    public RelationGroup getCurrentRelationsGroup() {
         return currentRelationsGroup;
     }
 
-    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
-        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
+    public void setCurrentRelationsGroup(RelationGroup currentRelationsGroup) {
+        this.currentRelationsGroup = currentRelationsGroup;
     }
 
+//    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
+//        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
+//    }
     public boolean isBtnAssociateRelationValueDisabled() {
         return btnAssociateRelationValueDisabled;
     }
@@ -968,14 +994,13 @@ public class RelationshipOfValuesMB implements Serializable {
 //    public void setCurrentValuesRelated(String currentValuesRelated) {
 //        this.currentValuesRelated = currentValuesRelated;
 //    }
-    public Field getTypeVarExepted() {
-        return typeVarExepted;
-    }
-
-    public void setTypeVarExepted(Field typeVarExepted) {
-        this.typeVarExepted = typeVarExepted;
-    }
-
+//    public Field getTypeVarExepted() {
+//        return typeVarExepted;
+//    }
+//
+//    public void setTypeVarExepted(Field typeVarExepted) {
+//        this.typeVarExepted = typeVarExepted;
+//    }
     public List<String> getValuesRelated() {
         return valuesRelated;
     }

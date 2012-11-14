@@ -7,9 +7,6 @@ package managedBeans.fileProcessing;
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.DataTypeEnum;
 import beans.errorsControl.ErrorControl;
-import beans.relations.RelationValue;
-import beans.relations.RelationVar;
-import beans.relations.RelationsGroup;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -24,7 +22,9 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import managedBeans.login.LoginMB;
-import managedBeans.preload.FormsAndFieldsDataMB;
+import model.pojo.RelationGroup;
+import model.pojo.RelationValues;
+import model.pojo.RelationVariables;
 
 /**
  *
@@ -57,32 +57,31 @@ public class ErrorsControlMB implements Serializable {
     private String description = "";
     private String valueFound = "";
     private RecordDataMB recordDataMB;
-    private FormsAndFieldsDataMB formsAndFieldsDataMB;
-    private RelationVar relationVar;
-    private RelationsGroup currentRelationsGroup;
+    //private FormsAndFieldsDataMB formsAndFieldsDataMB;
+    private RelationVariables relationVar;
+    private RelationGroup currentRelationsGroup;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
-    
     DinamicTable dinamicTable = new DinamicTable();
     ConnectionJdbcMB connectionJdbcMB;
     private LoginMB loginMB;
-    private String nameTableTemp="temp";
+    private String nameTableTemp = "temp";
 
     /*
-     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
      */
     @PostConstruct
     private void initialize() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
     public ErrorsControlMB() {
         correctionList = new SelectItem[0];
         errorControlArrayList = new ArrayList<ErrorControl>();
         errorCorrectionArrayList = new ArrayList<ErrorControl>();
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        nameTableTemp="temp"+loginMB.getLoginname();
+        nameTableTemp = "temp" + loginMB.getLoginname();
     }
 
     public final void createDynamicTable() {
@@ -97,8 +96,8 @@ public class ErrorsControlMB implements Serializable {
                     break;
                 }
             }
-            if (currentE != null) {                
-                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM "+nameTableTemp+" WHERE id='" + currentE.getRowId() + "'");
+            if (currentE != null) {
+                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " WHERE id='" + currentE.getRowId() + "'");
                 // determino las cabeceras
                 for (int j = 1; j < rs.getMetaData().getColumnCount(); j++) {
                     titles.add(rs.getMetaData().getColumnName(j));
@@ -125,7 +124,7 @@ public class ErrorsControlMB implements Serializable {
         errors = new SelectItem[0];
         btnSolveDisabled = true;
         btnSeeRecordDisabled = true;
-        sizeErrorsList = 0;        
+        sizeErrorsList = 0;
     }
 
     private void updateErrors() {
@@ -161,7 +160,7 @@ public class ErrorsControlMB implements Serializable {
 //        for (int i = 0; i < errorControlArrayList.size(); i++) {
 //            if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
 //                currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();
-//                relationVar = currentRelationsGroup.findRelationVar(errorControlArrayList.get(i).getRelationVar().getNameFound());
+//                relationVar = currentRelationsGroup.findRelationVarByNameFound(errorControlArrayList.get(i).getRelationVar().getNameFound());
 //                //////////////////////////////
 //                //creo la instruccion que revertira la eliminacion
 //                //String sql="";
@@ -201,13 +200,26 @@ public class ErrorsControlMB implements Serializable {
         for (int i = 0; i < errorControlArrayList.size(); i++) {
             if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
                 currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();
-                relationVar = currentRelationsGroup.findRelationVar(errorControlArrayList.get(i).getRelationVar().getNameFound());
+                relationVar = currentRelationsGroup.findRelationVarByNameFound(errorControlArrayList.get(i).getRelationVar().getNameFound());
                 //////////////////////////////
 
                 //verifico que la columna a descartar no sea la de intencionalidad
-                switch (DataTypeEnum.convert(errorControlArrayList.get(i).getRelationVar().getFieldType())) {//tipo de relacion                    
+                switch (DataTypeEnum.convert(errorControlArrayList.get(i).getRelationVar().getFieldType())) {//tipo de relacion 
+                    case integer:
+                    case text:
+                    case date:
+                    case age:
+                    case military:
+                    case minute:
+                    case hour:
+                    case day:
+                    case month:
+                    case year:
+                    case percentage:
+                        correction = true;
+                        break;
                     case NOVALUE://categorical
-                        if (errorControlArrayList.get(i).getRelationVar().getNameExpected().compareTo("intenci") == 0) {
+                        if (errorControlArrayList.get(i).getRelationVar().getNameExpected().compareTo("intencionalidad") == 0) {
                             correction = false;
                         } else {
                             correction = true;
@@ -248,7 +260,7 @@ public class ErrorsControlMB implements Serializable {
         for (int i = 0; i < errorControlArrayList.size(); i++) {
             if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
                 currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();
-                relationVar = currentRelationsGroup.findRelationVar(errorControlArrayList.get(i).getRelationVar().getNameFound());
+                relationVar = currentRelationsGroup.findRelationVarByNameFound(errorControlArrayList.get(i).getRelationVar().getNameFound());
                 //////////////////////////////
                 switch (DataTypeEnum.convert(errorControlArrayList.get(i).getRelationVar().getFieldType())) {//tipo de relacion
                     case text:
@@ -325,8 +337,8 @@ public class ErrorsControlMB implements Serializable {
                         break;
                     case NOVALUE://categorical
                         if (isCategorical(
-                                currentNewValue, errorControlArrayList.get(i).getRelationVar().getNameExpected(),
-                                errorControlArrayList.get(i).getRelationVar().getTypeComparisonForCode(), relationVar.getRelationValueList())) {
+                                currentNewValue, errorControlArrayList.get(i).getRelationVar().getFieldType(),
+                                errorControlArrayList.get(i).getRelationVar().getComparisonForCode(), relationVar.getRelationValuesList())) {
                             correction = true;
                         } else {
                             correction = false;
@@ -675,6 +687,9 @@ public class ErrorsControlMB implements Serializable {
         }
         try {//intento convertirlo en entero
             int a = Integer.parseInt(str);
+            if (a > 150 || a < 0) {
+                return false;
+            }
             return true;
         } catch (Exception ex) {
         }
@@ -691,7 +706,7 @@ public class ErrorsControlMB implements Serializable {
         }
     }
 
-    private boolean isCategorical(String str, String category, boolean compareForCode, ArrayList<RelationValue> relationValueList) {
+    private boolean isCategorical(String str, String category, boolean compareForCode, List<RelationValues> relationValueList) {
         /*
          * validacion de si un string esta dentro de una categoria
          */
@@ -710,9 +725,9 @@ public class ErrorsControlMB implements Serializable {
         }
         //se valida con respecto a los valores esperados
         if (compareForCode == true) {
-            categoryList = formsAndFieldsDataMB.categoricalCodeList(category, 0);
+            categoryList = connectionJdbcMB.categoricalCodeList(category, 0);
         } else {
-            categoryList = formsAndFieldsDataMB.categoricalNameList(category, 0);
+            categoryList = connectionJdbcMB.categoricalNameList(category, 0);
         }
         for (int i = 0; i < categoryList.size(); i++) {
             if (categoryList.get(i).compareTo(str) == 0) {
@@ -816,12 +831,12 @@ public class ErrorsControlMB implements Serializable {
                         selectDateFormatDisabled = true;
                         //btnSolveDisabled = false;
                         ArrayList<String> categoricalList;
-                        if (errorControlArrayList.get(i).getRelationVar().getTypeComparisonForCode()) {
-                            categoricalList = formsAndFieldsDataMB.categoricalCodeList(
-                                    errorControlArrayList.get(i).getRelationVar().getNameExpected(), 0);
+                        if (errorControlArrayList.get(i).getRelationVar().getComparisonForCode()) {
+                            categoricalList = connectionJdbcMB.categoricalCodeList(
+                                    errorControlArrayList.get(i).getRelationVar().getFieldType(), 0);
                         } else {
-                            categoricalList = formsAndFieldsDataMB.categoricalNameList(
-                                    errorControlArrayList.get(i).getRelationVar().getNameExpected(), 0);
+                            categoricalList = connectionJdbcMB.categoricalNameList(
+                                    errorControlArrayList.get(i).getRelationVar().getFieldType(), 0);
                         }
                         aceptedValues = new SelectItem[categoricalList.size()];
                         for (int j = 0; j < categoricalList.size(); j++) {
@@ -960,14 +975,13 @@ public class ErrorsControlMB implements Serializable {
         this.valueFound = valueFound;
     }
 
-    public FormsAndFieldsDataMB getFormsAndFieldsDataMB() {
-        return formsAndFieldsDataMB;
-    }
-
-    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
-        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
-    }
-
+//    public FormsAndFieldsDataMB getFormsAndFieldsDataMB() {
+//        return formsAndFieldsDataMB;
+//    }
+//
+//    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
+//        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
+//    }
     public String getCurrentDateFormat() {
         return currentDateFormat;
     }
@@ -1005,11 +1019,11 @@ public class ErrorsControlMB implements Serializable {
         this.errorControlArrayList = errorControlArrayList;
     }
 
-    public RelationsGroup getCurrentRelationsGroup() {
+    public RelationGroup getCurrentRelationsGroup() {
         return currentRelationsGroup;
     }
 
-    public void setCurrentRelationsGroup(RelationsGroup currentRelationsGroup) {
+    public void setCurrentRelationsGroup(RelationGroup currentRelationsGroup) {
         this.currentRelationsGroup = currentRelationsGroup;
     }
 

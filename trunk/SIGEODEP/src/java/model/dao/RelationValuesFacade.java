@@ -34,7 +34,7 @@ public class RelationValuesFacade extends AbstractFacade<RelationValues> {
 	    String hql = "Select MAX(x.idRelationValues) from RelationValues x";
 	    return em.createQuery(hql, Integer.class).getSingleResult();
 	} catch (Exception e) {
-	    return 1;
+	    return 0;
 	}
     }
 

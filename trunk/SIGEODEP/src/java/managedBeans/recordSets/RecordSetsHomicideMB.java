@@ -10,7 +10,6 @@ import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -20,10 +19,15 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import managedBeans.filters.LazyQueryDataModel;
 import managedBeans.forms.HomicideMB;
-import model.dao.*;
-import model.pojo.*;
+import model.dao.FatalInjuriesFacade;
+import model.dao.FatalInjuryMurderFacade;
+import model.dao.TagsFacade;
+import model.dao.VictimsFacade;
+import model.pojo.FatalInjuries;
+import model.pojo.FatalInjuryMurder;
+import model.pojo.Tags;
+import model.pojo.Victims;
 import org.apache.poi.hssf.usermodel.*;
 import org.primefaces.model.LazyDataModel;
 
@@ -39,32 +43,11 @@ public class RecordSetsHomicideMB implements Serializable {
     @EJB
     TagsFacade tagsFacade;
     @EJB
-    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
-    @EJB
-    CountriesFacade countriesFacade;
-    @EJB
-    NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
-    @EJB
-    NonFatalSelfInflictedFacade nonFatalSelfInflictedFacade;
-    @EJB
-    NonFatalTransportFacade nonFatalTransportFacade;
-    @EJB
-    AgeTypesFacade ageTypesFacade;
-    @EJB
-    MunicipalitiesFacade municipalitiesFacade;
-    @EJB
-    DepartamentsFacade departamentsFacade;
-    @EJB
     VictimsFacade victimsFacade;
     @EJB
     FatalInjuryMurderFacade fatalInjuryMurderFacade;
     @EJB
-    InjuriesFacade injuriesFacade;
-    @EJB
-    NeighborhoodsFacade neighborhoodsFacade;
-    @EJB
     FatalInjuriesFacade fatalInjuriesFacade;
-    //private List<RowDataTable> rowDataTableList;
     private List<Tags> tagsList;
     private FatalInjuryMurder currentFatalInjuryMurder;
     private RowDataTable[] selectedRowsDataTable;
@@ -77,22 +60,14 @@ public class RecordSetsHomicideMB implements Serializable {
     private String data = "-";
     private HomicideMB homicideMB;
     private String openForm = "";
-    private LazyDataModel<RowDataTable> table_model;
     String sqlTags = "";
+    private LazyDataModel<RowDataTable> table_model;
     private ConnectionJdbcMB connection;
     private int progress = 0;//PROGRESO AL CREAR XLS
 
-    public LazyDataModel<RowDataTable> getTable_model() {
-        return table_model;
-    }
-
-    public void setTable_model(LazyDataModel<RowDataTable> table_model) {
-        this.table_model = table_model;
-    }
-
     public RecordSetsHomicideMB() {
         tagsList = new ArrayList<Tags>();
-        table_model = new LazyHomicideDataModel(0, "", FormsEnum.SCC_F_028);
+        table_model = new LazyRecordSetsDataModel(0, "", FormsEnum.SCC_F_028);
         connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
@@ -113,10 +88,15 @@ public class RecordSetsHomicideMB implements Serializable {
     }
 
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
-        //CREO LA LISTA DE TAGS SELECCIONADOS        
+        //CREO LA LISTA DE TAGS SELECCIONADOS                
         tagsList = new ArrayList<Tags>();
+        data="";
         for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
-            data = data + selectedRowsDataTableTags[i].getColumn2() + " -";
+            if (i == 0) {
+                data = data + " " + selectedRowsDataTableTags[i].getColumn2() + "  ";
+            } else {
+                data = data + " || " + selectedRowsDataTableTags[i].getColumn2();
+            }
             tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
         }
         //DETERMINO TOTAL DE REGISTROS
@@ -131,7 +111,7 @@ public class RecordSetsHomicideMB implements Serializable {
             }
         }
         System.out.println("Total de registros = " + String.valueOf(rowCountAux));
-        table_model = new LazyHomicideDataModel(rowCountAux, sqlTags, FormsEnum.SCC_F_028);
+        table_model = new LazyRecordSetsDataModel(rowCountAux, sqlTags, FormsEnum.SCC_F_028);
     }
 
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
@@ -149,6 +129,7 @@ public class RecordSetsHomicideMB implements Serializable {
 
     public void postProcessXLS(Object document) {
         try {
+            int rowPosition = 0;
             HSSFWorkbook book = (HSSFWorkbook) document;
             HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
             HSSFRow row;
@@ -156,9 +137,9 @@ public class RecordSetsHomicideMB implements Serializable {
             HSSFFont font = book.createFont();
             font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
             cellStyle.setFont(font);
-            int rowPosition=0;
+
             row = sheet.createRow(rowPosition);// Se crea una fila dentro de la hoja        
-            
+
             createCell(cellStyle, row, 0, "CODIGO INTERNO");
             createCell(cellStyle, row, 1, "CODIGO");
             createCell(cellStyle, row, 2, "DIA HECHO");
@@ -202,12 +183,12 @@ public class RecordSetsHomicideMB implements Serializable {
                     + " WHERE "
                     + sqlTags);
             String[] splitDate;
-            
+
             while (resultSet.next()) {
-                
-                RowDataTable rowDataTableList=connection.loadFatalInjuryMurderRecord(resultSet.getString(1));
+
+                RowDataTable rowDataTableList = connection.loadFatalInjuryMurderRecord(resultSet.getString(1));
                 rowPosition++;
-                row = sheet.createRow(rowPosition);                
+                row = sheet.createRow(rowPosition);
                 createCell(row, 0, rowDataTableList.getColumn1());//"CODIGO INTERNO");//"100">#{rowX.column1}</p:column>
                 createCell(row, 1, rowDataTableList.getColumn23());//"CODIGO");//"100">#{rowX.column23}</p:column>
                 if (rowDataTableList.getColumn13() != null) {
@@ -285,7 +266,7 @@ public class RecordSetsHomicideMB implements Serializable {
                     fatalInjuriesFacade.remove(auxFatalInjuries);
                     victimsFacade.remove(auxVictims);
                 }
-            }            
+            }
             //deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
@@ -356,5 +337,13 @@ public class RecordSetsHomicideMB implements Serializable {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public LazyDataModel<RowDataTable> getTable_model() {
+        return table_model;
+    }
+
+    public void setTable_model(LazyDataModel<RowDataTable> table_model) {
+        this.table_model = table_model;
     }
 }
