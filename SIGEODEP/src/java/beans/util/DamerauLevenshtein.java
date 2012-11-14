@@ -4,11 +4,13 @@
  */
 package beans.util;
 
+import java.io.Serializable;
+
 /**
  *
  * @author SANTOS
  */
-public class DamerauLevenshtein {
+public class DamerauLevenshtein implements Serializable{
 
     private String compOne;
     private String compTwo;

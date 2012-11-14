@@ -32,7 +32,7 @@ public class RelationsDiscardedValuesFacade extends AbstractFacade<RelationsDisc
 	    String hql = "Select MAX(x.idDiscardedValue) from RelationsDiscardedValues x";
 	    return em.createQuery(hql, Integer.class).getSingleResult();
 	} catch (Exception e) {
-	    return 1;
+	    return 0;
 	}
     }
     

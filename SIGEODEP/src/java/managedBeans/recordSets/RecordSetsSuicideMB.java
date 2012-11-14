@@ -4,11 +4,17 @@
  */
 package managedBeans.recordSets;
 
+import beans.connection.ConnectionJdbcMB;
+import beans.enumerators.FormsEnum;
 import beans.util.RowDataTable;
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -18,6 +24,7 @@ import managedBeans.forms.SuicideMB;
 import model.dao.*;
 import model.pojo.*;
 import org.apache.poi.hssf.usermodel.*;
+import org.primefaces.model.LazyDataModel;
 
 /**
  *
@@ -59,7 +66,6 @@ public class RecordSetsSuicideMB implements Serializable {
     InjuriesFacade injuriesFacade;
     @EJB
     FatalInjuriesFacade fatalInjuriesFacade;
-    private List<RowDataTable> rowDataTableList;
     //private RowDataTable selectedRowDataTable;
     private RowDataTable[] selectedRowsDataTable;
     private int currentSearchCriteria = 0;
@@ -76,17 +82,24 @@ public class RecordSetsSuicideMB implements Serializable {
     private SuicideMB suicideMB;
     private String openForm = "";
     private RecordSetsMB recordSetsMB;
+    private LazyDataModel<RowDataTable> table_model;
+    private ConnectionJdbcMB connection;
+    private int progress = 0;//PROGRESO AL CREAR XLS
+    String sqlTags = "";
 
     public RecordSetsSuicideMB() {
-    }
-
-    public String openForm() {
-        return openForm;
+        tagsList = new ArrayList<Tags>();
+        table_model = new LazyRecordSetsDataModel(0, "", FormsEnum.SCC_F_030);
+        connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
     public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
         FacesMessage msg = new FacesMessage(s, title, messageStr);
         FacesContext.getCurrentInstance().addMessage(null, msg);
+    }
+
+    public String openForm() {
+        return openForm;
     }
 
     public void openInForm() {
@@ -97,40 +110,30 @@ public class RecordSetsSuicideMB implements Serializable {
     }
 
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
-
-        FacesContext context = FacesContext.getCurrentInstance();
-        recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
-        recordSetsMB.setProgress(0);
-        int totalRegisters = 0;
-        int totalProcess = 0;
-
-        selectedRowsDataTable = null;
-        rowDataTableList = new ArrayList<RowDataTable>();
-        data = "- ";
-        //CREO LA LISTA DE TAGS SELECCIONADOS
+        //CREO LA LISTA DE TAGS SELECCIONADOS        
         tagsList = new ArrayList<Tags>();
+        data="";
         for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
-            data = data + selectedRowsDataTableTags[i].getColumn2() + " -";
+            if (i == 0) {
+                data = data + " " + selectedRowsDataTableTags[i].getColumn2() + "  ";
+            } else {
+                data = data + " || " + selectedRowsDataTableTags[i].getColumn2();
+            }
             tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
         }
-        //DETERMINO EL NUMERO DE REGISTROS 
+        //DETERMINO TOTAL DE REGISTROS
+        int rowCountAux = 0;
+        sqlTags = "";
         for (int i = 0; i < tagsList.size(); i++) {
-            totalRegisters = totalRegisters + fatalInjurySuicideFacade.countFromTag(tagsList.get(i).getTagId());
-        }
-        //RECORRO CADA TAG Y CARGO UN LISTADO DE SUS REGISTROS
-        List<FatalInjurySuicide> fatalInjurySuicideList;
-        for (int i = 0; i < tagsList.size(); i++) {
-            fatalInjurySuicideList = fatalInjurySuicideFacade.findFromTag(tagsList.get(i).getTagId());
-            if (fatalInjurySuicideList != null) {
-                for (int j = 0; j < fatalInjurySuicideList.size(); j++) {
-                    rowDataTableList.add(loadValues(fatalInjurySuicideList.get(j)));
-                    totalProcess++;
-                    if (totalRegisters != 0) {
-                        recordSetsMB.setProgress((int) (totalProcess * 100) / totalRegisters);
-                    }
-                }
+            rowCountAux = rowCountAux + fatalInjurySuicideFacade.countSuicide(tagsList.get(i).getTagId());
+            if (i != tagsList.size() - 1) {
+                sqlTags = sqlTags + " tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
+            } else {
+                sqlTags = sqlTags + " tag_id = " + String.valueOf(tagsList.get(i).getTagId());
             }
         }
+        System.out.println("Total de registros = " + String.valueOf(rowCountAux));
+        table_model = new LazyRecordSetsDataModel(rowCountAux, sqlTags, FormsEnum.SCC_F_030);
     }
 
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
@@ -147,368 +150,117 @@ public class RecordSetsSuicideMB implements Serializable {
     }
 
     public void postProcessXLS(Object document) {
-        HSSFWorkbook book = (HSSFWorkbook) document;
-        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
-        HSSFRow row;
-        HSSFCellStyle cellStyle = book.createCellStyle();
-        HSSFFont font = book.createFont();
-        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-        cellStyle.setFont(font);
+        try {
+            int rowPosition = 0;
+            HSSFWorkbook book = (HSSFWorkbook) document;
+            HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+            HSSFRow row;
+            HSSFCellStyle cellStyle = book.createCellStyle();
+            HSSFFont font = book.createFont();
+            font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+            cellStyle.setFont(font);
 
 
 
-        row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
+            row = sheet.createRow(rowPosition);// Se crea una fila dentro de la hoja        
 
 
-        createCell(cellStyle, row, 0, "CODIGO INTERNO");//"100">#{rowX.column1}</p:column>
-        createCell(cellStyle, row, 1, "CODIGO");//"100">#{rowX.column23}</p:column>
-        createCell(cellStyle, row, 2, "DIA HECHO");//100">#{rowX.column37}</p:column>
-        createCell(cellStyle, row, 3, "MES HECHO");//100">#{rowX.column37}</p:column>
-        createCell(cellStyle, row, 4, "AÑO HECHO");//100">#{rowX.column37}</p:column>
-        createCell(cellStyle, row, 5, "FECHA HECHO");//"100">#{rowX.column13}</p:column>
-        createCell(cellStyle, row, 6, "DIA EN SEMANA");//"100">#{rowX.column20}</p:column>
-        createCell(cellStyle, row, 7, "HORA HECHO");//"100">#{rowX.column14}</p:column>
-        createCell(cellStyle, row, 8, "DIRECCION HECHO");//"400">#{rowX.column15}</p:column>
-        createCell(cellStyle, row, 9, "BARRIO HECHO");//"250">#{rowX.column16}</p:column>
-        createCell(cellStyle, row, 10, "COMUNA BARRIO HECHO");//"250">#{rowX.column16}</p:column>        
-        createCell(cellStyle, row, 11, "AREA HECHO");//"100">#{rowX.column24}</p:column>
-        createCell(cellStyle, row, 12, "CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
-        createCell(cellStyle, row, 13, "NUMERO VICTIMAS EN HECHO");//"100">#{rowX.column18}</p:column>
-        createCell(cellStyle, row, 14, "NOMBRES Y APELLIDOS");//"400">#{rowX.column4}</p:column>
-        createCell(cellStyle, row, 15, "SEXO");//"100">#{rowX.column8}</p:column>
-        createCell(cellStyle, row, 16, "TIPO EDAD");//"100">#{rowX.column6}</p:column>
-        createCell(cellStyle, row, 17, "EDAD");//"100">#{rowX.column7}</p:column>
-        createCell(cellStyle, row, 18, "OCUPACION");//"100">#{rowX.column9}</p:column>
-        createCell(cellStyle, row, 19, "TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
-        createCell(cellStyle, row, 20, "IDENTIFICACION");//"100">#{rowX.column3}</p:column>
-        createCell(cellStyle, row, 21, "EXTRANJERO");//"100">#{rowX.column5}</p:column>
-        createCell(cellStyle, row, 22, "DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
-        createCell(cellStyle, row, 23, "MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
-        createCell(cellStyle, row, 24, "BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
-        createCell(cellStyle, row, 25, "COMUNA BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
-        createCell(cellStyle, row, 26, "PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
-        createCell(cellStyle, row, 27, "DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
-        createCell(cellStyle, row, 28, "MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>        
-        createCell(cellStyle, row, 29, "ARMA O CAUSA DE MUERTE");//"200">#{rowX.column31}</p:column>         
-        createCell(cellStyle, row, 30, "EVENTOS RELACIONADOS");//"200">#{rowX.column30}</p:column>      
-        createCell(cellStyle, row, 31, "INTENTO PREVIO SUICIDIO");//"250">#{rowX.column28}</p:column>        
-        createCell(cellStyle, row, 32, "ANTECEDENTES DE SALUD MENTAL");//"200">#{rowX.column29}</p:column>        
-        createCell(cellStyle, row, 33, "NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>
-        createCell(cellStyle, row, 34, "NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
-        createCell(cellStyle, row, 35, "TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
+            createCell(cellStyle, row, 0, "CODIGO INTERNO");//"100">#{rowX.column1}</p:column>
+            createCell(cellStyle, row, 1, "CODIGO");//"100">#{rowX.column23}</p:column>
+            createCell(cellStyle, row, 2, "DIA HECHO");//100">#{rowX.column37}</p:column>
+            createCell(cellStyle, row, 3, "MES HECHO");//100">#{rowX.column37}</p:column>
+            createCell(cellStyle, row, 4, "AÑO HECHO");//100">#{rowX.column37}</p:column>
+            createCell(cellStyle, row, 5, "FECHA HECHO");//"100">#{rowX.column13}</p:column>
+            createCell(cellStyle, row, 6, "DIA EN SEMANA");//"100">#{rowX.column20}</p:column>
+            createCell(cellStyle, row, 7, "HORA HECHO");//"100">#{rowX.column14}</p:column>
+            createCell(cellStyle, row, 8, "DIRECCION HECHO");//"400">#{rowX.column15}</p:column>
+            createCell(cellStyle, row, 9, "BARRIO HECHO");//"250">#{rowX.column16}</p:column>
+            createCell(cellStyle, row, 10, "COMUNA BARRIO HECHO");//"250">#{rowX.column16}</p:column>        
+            createCell(cellStyle, row, 11, "AREA HECHO");//"100">#{rowX.column24}</p:column>
+            createCell(cellStyle, row, 12, "CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
+            createCell(cellStyle, row, 13, "NUMERO VICTIMAS EN HECHO");//"100">#{rowX.column18}</p:column>
+            createCell(cellStyle, row, 14, "NOMBRES Y APELLIDOS");//"400">#{rowX.column4}</p:column>
+            createCell(cellStyle, row, 15, "SEXO");//"100">#{rowX.column8}</p:column>
+            createCell(cellStyle, row, 16, "TIPO EDAD");//"100">#{rowX.column6}</p:column>
+            createCell(cellStyle, row, 17, "EDAD");//"100">#{rowX.column7}</p:column>
+            createCell(cellStyle, row, 18, "OCUPACION");//"100">#{rowX.column9}</p:column>
+            createCell(cellStyle, row, 19, "TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
+            createCell(cellStyle, row, 20, "IDENTIFICACION");//"100">#{rowX.column3}</p:column>
+            createCell(cellStyle, row, 21, "EXTRANJERO");//"100">#{rowX.column5}</p:column>
+            createCell(cellStyle, row, 22, "DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
+            createCell(cellStyle, row, 23, "MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
+            createCell(cellStyle, row, 24, "BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
+            createCell(cellStyle, row, 25, "COMUNA BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
+            createCell(cellStyle, row, 26, "PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
+            createCell(cellStyle, row, 27, "DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
+            createCell(cellStyle, row, 28, "MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>        
+            createCell(cellStyle, row, 29, "ARMA O CAUSA DE MUERTE");//"200">#{rowX.column31}</p:column>         
+            createCell(cellStyle, row, 30, "EVENTOS RELACIONADOS");//"200">#{rowX.column30}</p:column>      
+            createCell(cellStyle, row, 31, "INTENTO PREVIO SUICIDIO");//"250">#{rowX.column28}</p:column>        
+            createCell(cellStyle, row, 32, "ANTECEDENTES DE SALUD MENTAL");//"200">#{rowX.column29}</p:column>        
+            createCell(cellStyle, row, 33, "NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>
+            createCell(cellStyle, row, 34, "NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
+            createCell(cellStyle, row, 35, "TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
 
-        String[] splitDate;
-        for (int i = 0; i < rowDataTableList.size(); i++) {
-            row = sheet.createRow(i + 1);
-            createCell(row, 0, rowDataTableList.get(i).getColumn1());//"CODIGO INTERNO");//"100">#{rowX.column1}</p:column>
-            createCell(row, 1, rowDataTableList.get(i).getColumn23());//"CODIGO");//"100">#{rowX.column23}</p:column>
-            if (rowDataTableList.get(i).getColumn13() != null) {
-                splitDate = rowDataTableList.get(i).getColumn13().split("/");
-                if (splitDate.length == 3) {
-                    createCell(row, 2, splitDate[0]);//"DIA HECHO");
-                    createCell(row, 3, splitDate[1]);//"MES HECHO");
-                    createCell(row, 4, splitDate[2]);//"AÑO HECHO");
+            ResultSet resultSet = connection.consult(""
+                    + " SELECT "
+                    + "    victim_id"
+                    + " FROM "
+                    + "    victims "
+                    + " WHERE "
+                    + sqlTags);
+            String[] splitDate;
+            while (resultSet.next()) {
+
+                RowDataTable rowDataTableList = connection.loadFatalInjurySuicideRecord(resultSet.getString(1));
+                rowPosition++;
+                row = sheet.createRow(rowPosition);
+
+                createCell(row, 0, rowDataTableList.getColumn1());//"CODIGO INTERNO");//"100">#{rowX.column1}</p:column>
+                createCell(row, 1, rowDataTableList.getColumn23());//"CODIGO");//"100">#{rowX.column23}</p:column>
+                if (rowDataTableList.getColumn13() != null) {
+                    splitDate = rowDataTableList.getColumn13().split("/");
+                    if (splitDate.length == 3) {
+                        createCell(row, 2, splitDate[0]);//"DIA HECHO");
+                        createCell(row, 3, splitDate[1]);//"MES HECHO");
+                        createCell(row, 4, splitDate[2]);//"AÑO HECHO");
+                    }
                 }
+                createCell(row, 5, rowDataTableList.getColumn13());//"FECHA HECHO");//"100">#{rowX.column13}</p:column>
+                createCell(row, 6, rowDataTableList.getColumn20());//"DIA EN SEMANA");//"100">#{rowX.column20}</p:column>
+                createCell(row, 7, rowDataTableList.getColumn14());//"HORA HECHO");//"100">#{rowX.column14}</p:column>
+                createCell(row, 8, rowDataTableList.getColumn15());//"DIRECCION HECHO");//"400">#{rowX.column15}</p:column>
+                createCell(row, 9, rowDataTableList.getColumn16());//"BARRIO HECHO");//"250">#{rowX.column16}</p:column>
+                createCell(row, 10, rowDataTableList.getColumn33());//"COMUNA BARRIO HECHO");//"250">#{rowX.column16}</p:column>
+                createCell(row, 11, rowDataTableList.getColumn24());//"AREA HECHO");//"100">#{rowX.column24}</p:column>
+                createCell(row, 12, rowDataTableList.getColumn17());//"CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
+                createCell(row, 13, rowDataTableList.getColumn18());//"NUMERO VICTIMAS EN HECHO");//"100">#{rowX.column18}</p:column>
+                createCell(row, 14, rowDataTableList.getColumn4());//"NOMBRES Y APELLIDOS");//"400">#{rowX.column4}</p:column>
+                createCell(row, 15, rowDataTableList.getColumn8());//"SEXO");//"100">#{rowX.column8}</p:column>
+                createCell(row, 16, rowDataTableList.getColumn6());//"TIPO EDAD");//"100">#{rowX.column6}</p:column>
+                createCell(row, 17, rowDataTableList.getColumn7());//"EDAD");//"100">#{rowX.column7}</p:column>
+                createCell(row, 18, rowDataTableList.getColumn9());//"OCUPACION");//"100">#{rowX.column9}</p:column>
+                createCell(row, 19, rowDataTableList.getColumn2());//"TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
+                createCell(row, 20, rowDataTableList.getColumn3());//"IDENTIFICACION");//"100">#{rowX.column3}</p:column>
+                createCell(row, 21, rowDataTableList.getColumn5());//"EXTRANJERO");//"100">#{rowX.column5}</p:column>
+                createCell(row, 22, rowDataTableList.getColumn12());//"DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
+                createCell(row, 23, rowDataTableList.getColumn11());//"MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
+                createCell(row, 24, rowDataTableList.getColumn10());//"BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
+                createCell(row, 25, rowDataTableList.getColumn32());//"COMUNA BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
+                createCell(row, 26, rowDataTableList.getColumn25());//"PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
+                createCell(row, 27, rowDataTableList.getColumn26());//"DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
+                createCell(row, 28, rowDataTableList.getColumn27());//"MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>        
+                createCell(row, 29, rowDataTableList.getColumn31());//"ARMA O CAUSA DE MUERTE");//"200">#{rowX.column31}</p:column>         
+                createCell(row, 30, rowDataTableList.getColumn30());//"EVENTOS RELACIONADOS");//"200">#{rowX.column30}</p:column>      
+                createCell(row, 31, rowDataTableList.getColumn28());//"INTENTO PREVIO SUICIDIO");//"250">#{rowX.column28}</p:column>        
+                createCell(row, 32, rowDataTableList.getColumn29());//"ANTECEDENTES DE SALUD MENTAL");//"200">#{rowX.column29}</p:column>        
+                createCell(row, 33, rowDataTableList.getColumn19());//"NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>
+                createCell(row, 34, rowDataTableList.getColumn21());//"NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
+                createCell(row, 35, rowDataTableList.getColumn22());//"TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
             }
-            createCell(row, 5, rowDataTableList.get(i).getColumn13());//"FECHA HECHO");//"100">#{rowX.column13}</p:column>
-            createCell(row, 6, rowDataTableList.get(i).getColumn20());//"DIA EN SEMANA");//"100">#{rowX.column20}</p:column>
-            createCell(row, 7, rowDataTableList.get(i).getColumn14());//"HORA HECHO");//"100">#{rowX.column14}</p:column>
-            createCell(row, 8, rowDataTableList.get(i).getColumn15());//"DIRECCION HECHO");//"400">#{rowX.column15}</p:column>
-            createCell(row, 9, rowDataTableList.get(i).getColumn16());//"BARRIO HECHO");//"250">#{rowX.column16}</p:column>
-            createCell(row, 10, rowDataTableList.get(i).getColumn33());//"COMUNA BARRIO HECHO");//"250">#{rowX.column16}</p:column>
-            createCell(row, 11, rowDataTableList.get(i).getColumn24());//"AREA HECHO");//"100">#{rowX.column24}</p:column>
-            createCell(row, 12, rowDataTableList.get(i).getColumn17());//"CLASE DE LUGAR");//"250">#{rowX.column17}</p:column>
-            createCell(row, 13, rowDataTableList.get(i).getColumn18());//"NUMERO VICTIMAS EN HECHO");//"100">#{rowX.column18}</p:column>
-            createCell(row, 14, rowDataTableList.get(i).getColumn4());//"NOMBRES Y APELLIDOS");//"400">#{rowX.column4}</p:column>
-            createCell(row, 15, rowDataTableList.get(i).getColumn8());//"SEXO");//"100">#{rowX.column8}</p:column>
-            createCell(row, 16, rowDataTableList.get(i).getColumn6());//"TIPO EDAD");//"100">#{rowX.column6}</p:column>
-            createCell(row, 17, rowDataTableList.get(i).getColumn7());//"EDAD");//"100">#{rowX.column7}</p:column>
-            createCell(row, 18, rowDataTableList.get(i).getColumn9());//"OCUPACION");//"100">#{rowX.column9}</p:column>
-            createCell(row, 19, rowDataTableList.get(i).getColumn2());//"TIPO IDENTIFICACION");//"200">#{rowX.column2}</p:column>
-            createCell(row, 20, rowDataTableList.get(i).getColumn3());//"IDENTIFICACION");//"100">#{rowX.column3}</p:column>
-            createCell(row, 21, rowDataTableList.get(i).getColumn5());//"EXTRANJERO");//"100">#{rowX.column5}</p:column>
-            createCell(row, 22, rowDataTableList.get(i).getColumn12());//"DEPARTAMENTO RESIDENCIA");//"100">#{rowX.column12}</p:column>
-            createCell(row, 23, rowDataTableList.get(i).getColumn11());//"MUNICIPIO RESIDENCIA");//"100">#{rowX.column11}</p:column>
-            createCell(row, 24, rowDataTableList.get(i).getColumn10());//"BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
-            createCell(row, 25, rowDataTableList.get(i).getColumn32());//"COMUNA BARRIO RESIDENCIA");//"250">#{rowX.column10}</p:column>
-            createCell(row, 26, rowDataTableList.get(i).getColumn25());//"PAIS PROCEDENCIA");//"100">#{rowX.column25}</p:column>
-            createCell(row, 27, rowDataTableList.get(i).getColumn26());//"DEPARTAMENTO PROCEDENCIA");//"100">#{rowX.column26}</p:column>
-            createCell(row, 28, rowDataTableList.get(i).getColumn27());//"MUNICIPIO PROCEDENCIA");//"100">#{rowX.column27}</p:column>        
-            createCell(row, 29, rowDataTableList.get(i).getColumn31());//"ARMA O CAUSA DE MUERTE");//"200">#{rowX.column31}</p:column>         
-            createCell(row, 30, rowDataTableList.get(i).getColumn30());//"EVENTOS RELACIONADOS");//"200">#{rowX.column30}</p:column>      
-            createCell(row, 31, rowDataTableList.get(i).getColumn28());//"INTENTO PREVIO SUICIDIO");//"250">#{rowX.column28}</p:column>        
-            createCell(row, 32, rowDataTableList.get(i).getColumn29());//"ANTECEDENTES DE SALUD MENTAL");//"200">#{rowX.column29}</p:column>        
-            createCell(row, 33, rowDataTableList.get(i).getColumn19());//"NARRACION DEL HECHO");//"700">#{rowX.column19}</p:column>
-            createCell(row, 34, rowDataTableList.get(i).getColumn21());//"NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
-            createCell(row, 35, rowDataTableList.get(i).getColumn22());//"TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
-
+        } catch (SQLException ex) {
+            Logger.getLogger(RecordSetsHomicideMB.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-    }
-
-    private RowDataTable loadValues(FatalInjurySuicide currentFatalInjuryS) {
-        //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
-        btnEditDisabled = true;
-        btnRemoveDisabled = true;
-        RowDataTable newRowDataTable = new RowDataTable();
-        //------------------------------------------------------------
-        //SE CARGAN VALORES PARA LA NUEVA VICTIMA
-        //------------------------------------------------------------
-
-        //******non_fatal_injury_id
-        newRowDataTable.setColumn1(currentFatalInjuryS.getFatalInjuries().getFatalInjuryId().toString());
-
-        //******type_id
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getTypeId() != null) {
-                newRowDataTable.setColumn2(currentFatalInjuryS.getFatalInjuries().getVictimId().getTypeId().getTypeName());
-            }
-        } catch (Exception e) {
-        }
-        //******victim_nid
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimNid() != null) {
-                newRowDataTable.setColumn3(currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimNid());
-            }
-        } catch (Exception e) {
-        }
-        //******victim_name
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimName() != null) {
-                newRowDataTable.setColumn4(currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimName());
-            }
-        } catch (Exception e) {
-        }
-        //******stranger
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getStranger() != null) {
-                if(currentFatalInjuryS.getFatalInjuries().getVictimId().getStranger()==true){
-                    newRowDataTable.setColumn5("SI");
-                }
-                else{
-                    newRowDataTable.setColumn5("NO");
-                }
-            }
-        } catch (Exception e) {
-        }
-        //******age_type_id
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getAgeTypeId() != null) {
-                newRowDataTable.setColumn6(ageTypesFacade.find(currentFatalInjuryS.getFatalInjuries().getVictimId().getAgeTypeId()).getAgeTypeName());
-            }
-        } catch (Exception e) {
-        }
-        //******victim_age
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimAge() != null) {
-                newRowDataTable.setColumn7(currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimAge().toString());
-            }
-        } catch (Exception e) {
-        }
-        //******gender_id
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getGenderId() != null) {
-                newRowDataTable.setColumn8(currentFatalInjuryS.getFatalInjuries().getVictimId().getGenderId().getGenderName());
-            }
-        } catch (Exception e) {
-        }
-        //******job_id
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getJobId() != null) {
-                newRowDataTable.setColumn9(currentFatalInjuryS.getFatalInjuries().getVictimId().getJobId().getJobName());
-            }
-        } catch (Exception e) {
-        }
-
-
-        //******vulnerable_group_id
-        //******ethnic_group_id        
-        //******victim_telephone
-        //******victim_address
-
-
-        //******victim_neighborhood_id
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
-                newRowDataTable.setColumn10(currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
-                newRowDataTable.setColumn32(String.valueOf(currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getSuburbId()));
-            }
-        } catch (Exception e) {
-        }
-
-        //******victim_date_of_birth
-        //******eps_id
-        //******victim_class
-        //******victim_id       
-
-        //******residence_municipality
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getResidenceDepartment() != null && (currentFatalInjuryS.getFatalInjuries().getVictimId().getResidenceMunicipality() != null)) {
-                short departamentId = currentFatalInjuryS.getFatalInjuries().getVictimId().getResidenceDepartment();
-                short municipalityId = currentFatalInjuryS.getFatalInjuries().getVictimId().getResidenceMunicipality();
-                MunicipalitiesPK mPk = new MunicipalitiesPK(departamentId, municipalityId);
-                newRowDataTable.setColumn11(municipalitiesFacade.find(mPk).getMunicipalityName());
-            }
-        } catch (Exception e) {
-        }
-        //******residence_department
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimId().getResidenceDepartment() != null) {
-                newRowDataTable.setColumn12(departamentsFacade.find(currentFatalInjuryS.getFatalInjuries().getVictimId().getResidenceDepartment()).getDepartamentName());
-            }
-        } catch (Exception e) {
-        }
-
-        //******insurance_id
-
-        //------------------------------------------------------------
-        //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
-        //------------------------------------------------------------
-        //******injury_id
-        //******injury_date
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getInjuryDate() != null) {
-                newRowDataTable.setColumn13(sdf.format(currentFatalInjuryS.getFatalInjuries().getInjuryDate()));
-            }
-        } catch (Exception e) {
-        }
-        //******injury_time
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getInjuryTime() != null) {
-                hours = String.valueOf(currentFatalInjuryS.getFatalInjuries().getInjuryTime().getHours());
-                minutes = String.valueOf(currentFatalInjuryS.getFatalInjuries().getInjuryTime().getMinutes());
-                if (hours.length() != 2) {
-                    hours = "0" + hours;
-                }
-                if (minutes.length() != 2) {
-                    minutes = "0" + minutes;
-                }
-                newRowDataTable.setColumn14(hours + minutes);
-            }
-        } catch (Exception e) {
-        }
-        //******injury_address
-        if (currentFatalInjuryS.getFatalInjuries().getInjuryAddress() != null) {
-            newRowDataTable.setColumn15(currentFatalInjuryS.getFatalInjuries().getInjuryAddress());
-        }
-        //******injury_neighborhood_id
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId() != null) {
-                newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
-                newRowDataTable.setColumn32(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId()).getSuburbId()));
-            }
-        } catch (Exception e) {
-        }
-        //******injury_place_id
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getInjuryPlaceId() != null) {
-                newRowDataTable.setColumn17(currentFatalInjuryS.getFatalInjuries().getInjuryPlaceId().getPlaceName());
-            }
-        } catch (Exception e) {
-        }
-
-        //******victim_number
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimNumber() != null) {
-                newRowDataTable.setColumn18(currentFatalInjuryS.getFatalInjuries().getVictimNumber().toString());
-
-            }
-        } catch (Exception e) {
-        }
-        //******injury_description
-        if (currentFatalInjuryS.getFatalInjuries().getInjuryDescription() != null) {
-            newRowDataTable.setColumn19(currentFatalInjuryS.getFatalInjuries().getInjuryDescription());
-        }
-        //******user_id	
-        //******input_timestamp	
-        //******injury_day_of_week
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getInjuryDayOfWeek() != null) {
-                newRowDataTable.setColumn20(currentFatalInjuryS.getFatalInjuries().getInjuryDayOfWeek());
-            }
-        } catch (Exception e) {
-        }
-
-        //******victim_id
-        //******fatal_injury_id
-        //******alcohol_level_victim
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getAlcoholLevelVictim() != null) {
-                newRowDataTable.setColumn21(currentFatalInjuryS.getFatalInjuries().getAlcoholLevelVictim().toString());
-            }
-        } catch (Exception e) {
-        }
-        //******alcohol_level_victimId
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getAlcoholLevelVictimId() != null) {
-                newRowDataTable.setColumn22(currentFatalInjuryS.getFatalInjuries().getAlcoholLevelVictimId().getAlcoholLevelName());
-            }
-        } catch (Exception e) {
-        }
-        //******code
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getCode() != null) {
-                newRowDataTable.setColumn23(currentFatalInjuryS.getFatalInjuries().getCode());
-            }
-        } catch (Exception e) {
-        }
-        //******area_id
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getAreaId() != null) {
-                newRowDataTable.setColumn24(currentFatalInjuryS.getFatalInjuries().getAreaId().getAreaName());
-            }
-        } catch (Exception e) {
-        }
-        //******victim_place_of_origin
-        try {
-            if (currentFatalInjuryS.getFatalInjuries().getVictimPlaceOfOrigin() != null) {
-                String source = currentFatalInjuryS.getFatalInjuries().getVictimPlaceOfOrigin();
-                String[] sourceSplit = source.split("-");
-                //determino pais
-                newRowDataTable.setColumn25(countriesFacade.find(Short.parseShort(sourceSplit[0])).getName());
-                if (Short.parseShort(sourceSplit[0]) == 52) {//colombia
-                    newRowDataTable.setColumn26(departamentsFacade.find(Short.parseShort(sourceSplit[1])).getDepartamentName());
-                    MunicipalitiesPK municipalitiesPK = new MunicipalitiesPK(Short.parseShort(sourceSplit[1]), Short.parseShort(sourceSplit[2]));
-                    newRowDataTable.setColumn27(municipalitiesFacade.find(municipalitiesPK).getMunicipalityName());
-                }
-            }
-        } catch (Exception e) {
-        }
-        //------------------------------------------------------------
-        //SE CARGA DATOS PARA LA NUEVA LESION FATAL POR SUICIDIO
-        //------------------------------------------------------------
-
-        //******previous_attempt
-        try {
-            if (currentFatalInjuryS.getPreviousAttempt() != null) {
-                newRowDataTable.setColumn28(currentFatalInjuryS.getPreviousAttempt().getBooleanName());
-            }
-        } catch (Exception e) {
-        }
-        //******mental_antecedent
-        try {
-            if (currentFatalInjuryS.getMentalAntecedent() != null) {
-                newRowDataTable.setColumn29(currentFatalInjuryS.getMentalAntecedent().getBooleanName());
-            }
-        } catch (Exception e) {
-        }
-        //******related_event_id
-        try {
-            if (currentFatalInjuryS.getRelatedEventId() != null) {
-                newRowDataTable.setColumn30(currentFatalInjuryS.getRelatedEventId().getRelatedEventName());
-            }
-        } catch (Exception e) {
-        }
-        //******suicide_death_mechanism_id
-        try {
-            if (currentFatalInjuryS.getSuicideDeathMechanismId() != null) {
-                newRowDataTable.setColumn31(currentFatalInjuryS.getSuicideDeathMechanismId().getSuicideMechanismName());
-            }
-        } catch (Exception e) {
-        }
-        //******fatal_injury_id
-
-        return newRowDataTable;
     }
 
     public void load() {
@@ -546,14 +298,14 @@ public class RecordSetsSuicideMB implements Serializable {
                 }
             }
             //quito los elementos seleccionados de rowsDataTableList seleccion de 
-            for (int j = 0; j < selectedRowsDataTable.length; j++) {
-                for (int i = 0; i < rowDataTableList.size(); i++) {
-                    if (selectedRowsDataTable[j].getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
-                        rowDataTableList.remove(i);
-                        break;
-                    }
-                }
-            }
+//            for (int j = 0; j < selectedRowsDataTable.length; j++) {
+//                for (int i = 0; i < rowDataTableList.size(); i++) {
+//                    if (selectedRowsDataTable[j].getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
+//                        rowDataTableList.remove(i);
+//                        break;
+//                    }
+//                }
+//            }
             //deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
@@ -562,14 +314,13 @@ public class RecordSetsSuicideMB implements Serializable {
         }
     }
 
-    public List<RowDataTable> getRowDataTableList() {
-        return rowDataTableList;
-    }
-
-    public void setRowDataTableList(List<RowDataTable> rowDataTableList) {
-        this.rowDataTableList = rowDataTableList;
-    }
-
+//    public List<RowDataTable> getRowDataTableList() {
+//        return rowDataTableList;
+//    }
+//
+//    public void setRowDataTableList(List<RowDataTable> rowDataTableList) {
+//        this.rowDataTableList = rowDataTableList;
+//    }
     public RowDataTable[] getSelectedRowsDataTable() {
         return selectedRowsDataTable;
     }
@@ -632,5 +383,13 @@ public class RecordSetsSuicideMB implements Serializable {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public LazyDataModel<RowDataTable> getTable_model() {
+        return table_model;
+    }
+
+    public void setTable_model(LazyDataModel<RowDataTable> table_model) {
+        this.table_model = table_model;
     }
 }

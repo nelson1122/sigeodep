@@ -7,8 +7,6 @@ package managedBeans.fileProcessing;
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.*;
 import beans.errorsControl.ErrorControl;
-import beans.relations.RelationVar;
-import beans.relations.RelationsGroup;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +26,6 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.forms.HomicideMB;
 import managedBeans.login.LoginMB;
-import managedBeans.preload.FormsAndFieldsDataMB;
 import model.dao.*;
 import model.pojo.*;
 
@@ -185,8 +182,8 @@ public class RecordDataMB implements Serializable {
     @EJB
     GenNnFacade genNnFacade;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
-    private RelationsGroup currentRelationsGroup;
-    private FormsAndFieldsDataMB formsAndFieldsDataMB;
+    private RelationGroup currentRelationsGroup;
+    //private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private StoredRelationsMB storedRelationsMB;
     private UploadFileMB uploadFileMB;
     private LoginMB loginMB;
@@ -194,7 +191,7 @@ public class RecordDataMB implements Serializable {
     private String[] columnsNames;
     private String nameForm = "";
     //private ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
-    private RelationVar relationVar;
+    private RelationVariables relationVar;
     private int tuplesNumber;
     private int tuplesProcessed;
     private boolean btnRegisterDataDisabled = true;
@@ -266,7 +263,7 @@ public class RecordDataMB implements Serializable {
     private Integer progress;
     private Integer progressValidate;
     private int errorsNumber = 0;
-    private String currentSource = "";
+    private int currentSource = 0;
     boolean continueProcces = false;
 
     public Integer getProgress() {
@@ -283,6 +280,7 @@ public class RecordDataMB implements Serializable {
     }
 
     public void onCompleteValidate() {
+        progressValidate = 100;
         if (errorsNumber != 0) {
             btnRegisterDataDisabled = true;
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Errores", "Existen: " + String.valueOf(errorsNumber) + " valores que no superaron el proceso de validación, dirijase a la sección de errores para su corrección"));
@@ -331,30 +329,30 @@ public class RecordDataMB implements Serializable {
         boolean noErrors = true;
         currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();//tomo el grupos_vulnerables de relaciones de valores y de variables
         errorsControlMB.setErrorControlArrayList(new ArrayList<ErrorControl>());//arreglo de errores            
-        RelationVar newRelationVar = new RelationVar("", "", "error", false, "");
+        RelationVariables newRelationVar = new RelationVariables();//"", "", "error", false, ""
         switch (FormsEnum.convert(nameForm.replace("-", "_"))) {//tipo de relacion
             case SCC_F_028:
             case SCC_F_029:
             case SCC_F_030:
             case SCC_F_031:
                 //RELACION PARA FECHA DE EVENTO
-                if (currentRelationsGroup.findRelationVar2("fecha_evento") == null) {
-                    if (currentRelationsGroup.findRelationVar2("dia_evento") == null) {
+                if (currentRelationsGroup.findRelationVarByNameExpected("fecha_evento") == null) {
+                    if (currentRelationsGroup.findRelationVarByNameExpected("dia_evento") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar2("mes_evento") == null) {
+                    if (currentRelationsGroup.findRelationVarByNameExpected("mes_evento") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar2("año_evento") == null) {
+                    if (currentRelationsGroup.findRelationVarByNameExpected("año_evento") == null) {
                         noErrors = false;
                     }
                 }
                 if (noErrors == false) {//no se puede determinar la dia_evento
-                    errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la fecha del evento", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (fechah) o las variables esperadas (dia,mes,ao)"));
+                    errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la fecha del evento", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (fecha_evento) o las variables esperadas (dia,mes,ao)"));
                     errorsNumber++;
                 }
                 //RELACION PARA TIPO DE IDENTIFICACION                
-                if (currentRelationsGroup.findRelationVar2("numero_identificacion_victima") == null) {
+                if (currentRelationsGroup.findRelationVarByNameExpected("numero_identificacion_victima") == null) {
                     noErrors = false;
                     errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la identificacion de la víctima", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (nid)"));
                     errorsNumber++;
@@ -362,14 +360,14 @@ public class RecordDataMB implements Serializable {
                 break;
             case SCC_F_033:
                 //RELACION PARA FECHA DE EVENTO
-                if (currentRelationsGroup.findRelationVar2("fecha_evento") == null) {
-                    if (currentRelationsGroup.findRelationVar2("dia_evento") == null) {
+                if (currentRelationsGroup.findRelationVarByNameExpected("fecha_evento") == null) {
+                    if (currentRelationsGroup.findRelationVarByNameExpected("dia_evento") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar2("mes_evento") == null) {
+                    if (currentRelationsGroup.findRelationVarByNameExpected("mes_evento") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar2("año_evento") == null) {
+                    if (currentRelationsGroup.findRelationVarByNameExpected("año_evento") == null) {
                         noErrors = false;
                     }
                 }
@@ -379,7 +377,7 @@ public class RecordDataMB implements Serializable {
                 }
 
                 //RELACION PARA NUMERO DE IDENTIFICACION                
-                if (currentRelationsGroup.findRelationVar2("numero_identificacion_victima") == null) {
+                if (currentRelationsGroup.findRelationVarByNameExpected("numero_identificacion_victima") == null) {
                     noErrors = false;
                     errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la identificacion de la víctima", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (numero)"));
                     errorsNumber++;
@@ -388,14 +386,14 @@ public class RecordDataMB implements Serializable {
 
             case SCC_F_032:
                 //RELACION PARA FECHA DE EVENTO
-                if (currentRelationsGroup.findRelationVar2("fecha_evento") == null) {
-                    if (currentRelationsGroup.findRelationVar2("dia_evento") == null) {
+                if (currentRelationsGroup.findRelationVarByNameExpected("fecha_evento") == null) {
+                    if (currentRelationsGroup.findRelationVarByNameExpected("dia_evento") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar2("mes_evento") == null) {
+                    if (currentRelationsGroup.findRelationVarByNameExpected("mes_evento") == null) {
                         noErrors = false;
                     }
-                    if (currentRelationsGroup.findRelationVar2("año_evento") == null) {
+                    if (currentRelationsGroup.findRelationVarByNameExpected("año_evento") == null) {
                         noErrors = false;
                     }
                 }
@@ -404,14 +402,14 @@ public class RecordDataMB implements Serializable {
                     errorsNumber++;
                 }
                 //RELACION PARA LA INTENCIONALIDAD
-                if (currentRelationsGroup.findRelationVar2("intencionalidad") == null) {
+                if (currentRelationsGroup.findRelationVarByNameExpected("intencionalidad") == null) {
                     noErrors = false;
                     errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la intencionalidad", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (intenci)"));
                     errorsNumber++;
                 }
 
                 //RELACION PARA NUMERO DE IDENTIFICACION                
-                if (currentRelationsGroup.findRelationVar2("numero_identificacion_victima") == null) {
+                if (currentRelationsGroup.findRelationVarByNameExpected("numero_identificacion_victima") == null) {
                     noErrors = false;
                     errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la identificacion de la víctima", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (nid)"));
                     errorsNumber++;
@@ -476,7 +474,7 @@ public class RecordDataMB implements Serializable {
 //                    }
 
                     for (int i = 0; i < columnsNames.length; i++) {//recorro cada una de las columnas de cada registro                    
-                        relationVar = currentRelationsGroup.findRelationVar(columnsNames[i]);//determino la relacion de variables
+                        relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[i]);//determino la relacion de variables
                         if (relationVar != null && resultSetFileData.getString(columnsNames[i]) != null) {
                             value = "";
                             switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
@@ -500,13 +498,10 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case date:
                                     value = isDate(resultSetFileData.getString(columnsNames[i]), relationVar.getDateFormat());
-                                    if (relationVar.getNameExpected().compareTo("fechah") == 0
-                                            || relationVar.getNameExpected().compareTo("fechaev") == 0
-                                            || relationVar.getNameExpected().compareTo("fecha1") == 0) {
+                                    if (relationVar.getNameExpected().compareTo("fecha_evento") == 0) {
                                         fechaev = value;
                                     }
-                                    if (relationVar.getNameExpected().compareTo("fechacon") == 0
-                                            || relationVar.getNameExpected().compareTo("fecha3") == 0) {
+                                    if (relationVar.getNameExpected().compareTo("fecha_consulta") == 0) {
                                         fechacon = value;
                                     }
                                     if (value == null) {
@@ -591,14 +586,18 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case NOVALUE:
                                     value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
-                                    //System.out.println("Validando Categoria: " + resultSetFileData.getString(relationVar.getNameFound()) + "   Resultado: " + value);
+                                    System.out.println("Validando Categoria: " + resultSetFileData.getString(relationVar.getNameFound()) + "   Resultado: " + value);
                                     if (relationVar.getNameExpected().compareTo("intencionalidad") == 0) {
-                                        intencionality = value;
+                                        intencionality = resultSetFileData.getString(relationVar.getNameFound());
                                     }
-
                                     if (value == null) {
                                         errorsNumber++;//error = "no esta en la categoria ni es un valor descartado";
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), formsAndFieldsDataMB.variableDescription(relationVar.getNameExpected())));
+                                        String description = fieldsFacade.findFieldTypeByFieldNameAndFormId(relationVar.getNameExpected(), currentRelationsGroup.getFormId().getFormId()).getFieldDescription();
+                                        errorsControlMB.addError(new ErrorControl(
+                                                relationVar,
+                                                resultSetFileData.getString(relationVar.getNameFound()),
+                                                resultSetFileData.getString("id"),
+                                                description));
                                     }
                                     break;
                             }
@@ -606,9 +605,10 @@ public class RecordDataMB implements Serializable {
                     }
 
                     //..........................................................
-                    //verifico que pueda ser determinada la dia_evento e intencionalidad
+                    //verifico que pueda ser determinada la fecha_evento e intencionalidad
                     boolean existDateEvent = true;
                     fechaev = haveData(fechaev);
+                    fechacon = haveData(fechacon);
                     dia = haveData(dia);
                     mes = haveData(mes);
                     ao = haveData(ao);
@@ -630,7 +630,7 @@ public class RecordDataMB implements Serializable {
                         case SCC_F_032:
                             //RELACION PARA LA INTENCIONALIDAD
                             if (intencionality == null) {
-                                relationVar = currentRelationsGroup.findRelationVar2("intencionalidad");//determino la relacion de variables
+                                relationVar = currentRelationsGroup.findRelationVarByNameExpected("intencionalidad");//determino la relacion de variables
                                 errorsControlMB.addError(new ErrorControl(relationVar, " ", resultSetFileData.getString("id"), "intencionalidad"));
                                 errorsNumber++;
                             }
@@ -640,9 +640,9 @@ public class RecordDataMB implements Serializable {
                         case SCC_F_031:
                         case SCC_F_033:
                             //DETERMINAR FECHA DE EVENTO                                
-                            if (existDateEvent == false) {//no se puede determinar la dia_evento
-                                relationVar = currentRelationsGroup.findRelationVar2("fecha_evento");//determino la relacion de variables
-                                errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "fechah"));
+                            if (existDateEvent == false) {//no se puede determinar la fecha_evento
+                                relationVar = currentRelationsGroup.findRelationVarByNameExpected("fecha_evento");//determino la relacion de variables
+                                errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "fecha_evento"));
                                 errorsNumber++;
                             }
                             break;
@@ -738,7 +738,7 @@ public class RecordDataMB implements Serializable {
                 for (int posCol = 0; posCol < columnsNames.length; posCol++) {
                     value = null;
                     //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVar(columnsNames[posCol]);//determino la relacion de variables
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
                     //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
@@ -1068,14 +1068,14 @@ public class RecordDataMB implements Serializable {
                                     ageYears = 1;
                                 }
                                 newVictim.setVictimAge((short) ageYears);
-                                newVictim.setAgeTypeId((short) 1);
-                                if (newVictim.getTypeId() == null) {
-                                    if (ageYears >= 18) {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-                                    } else {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-                                    }
-                                }
+                                newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
+//                                if (newVictim.getTypeId() == null) {
+//                                    if (ageYears >= 18) {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+//                                    } else {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
+//                                    }
+//                                }
                             }
                         } catch (Exception ex) {
                             Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
@@ -1095,7 +1095,16 @@ public class RecordDataMB implements Serializable {
                 //DETERMINAR TIPO DE IDENTIFICACION
                 if (newVictim.getVictimNid() != null) {
                     if (newVictim.getTypeId() == null) {
-                        newVictim.setTypeId(idTypesFacade.find((short) 1));//SI NI HAY EDAD DEJAR POR DEFECTO CEDULA
+                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
+                        if (newVictim.getVictimAge() != null) {
+                            if (newVictim.getVictimAge() >= 18) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
+                            }
+                        } else {
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
+                        }
                     }
                 }
                 //PERSISTO
@@ -1188,7 +1197,7 @@ public class RecordDataMB implements Serializable {
                 for (int posCol = 0; posCol < columnsNames.length; posCol++) {
                     value = null;
                     //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVar(columnsNames[posCol]);//determino la relacion de variables
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
                     //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
@@ -1518,14 +1527,14 @@ public class RecordDataMB implements Serializable {
                                     ageYears = 1;
                                 }
                                 newVictim.setVictimAge((short) ageYears);
-                                newVictim.setAgeTypeId((short) 1);
-                                if (newVictim.getTypeId() == null) {
-                                    if (ageYears >= 18) {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-                                    } else {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-                                    }
-                                }
+                                newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
+//                                if (newVictim.getTypeId() == null) {
+//                                    if (ageYears >= 18) {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+//                                    } else {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
+//                                    }
+//                                }
                             }
                         } catch (Exception ex) {
                             Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
@@ -1546,7 +1555,16 @@ public class RecordDataMB implements Serializable {
                 //DETERMINAR TIPO DE IDENTIFICACION
                 if (newVictim.getVictimNid() != null) {
                     if (newVictim.getTypeId() == null) {
-                        newVictim.setTypeId(idTypesFacade.find((short) 1));//SI NI HAY EDAD DEJAR POR DEFECTO CEDULA
+                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
+                        if (newVictim.getVictimAge() != null) {
+                            if (newVictim.getVictimAge() >= 18) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
+                            }
+                        } else {
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
+                        }
                     }
                 }
 
@@ -1644,7 +1662,7 @@ public class RecordDataMB implements Serializable {
                 for (int posCol = 0; posCol < columnsNames.length; posCol++) {
                     value = null;
                     //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVar(columnsNames[posCol]);//determino la relacion de variables
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
                     //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
@@ -1964,14 +1982,14 @@ public class RecordDataMB implements Serializable {
                                     ageYears = 1;
                                 }
                                 newVictim.setVictimAge((short) ageYears);
-                                newVictim.setAgeTypeId((short) 1);
-                                if (newVictim.getTypeId() == null) {
-                                    if (ageYears >= 18) {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-                                    } else {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-                                    }
-                                }
+                                newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
+//                                if (newVictim.getTypeId() == null) {
+//                                    if (ageYears >= 18) {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+//                                    } else {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
+//                                    }
+//                                }
                             }
                         } catch (Exception ex) {
                             Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
@@ -1992,7 +2010,16 @@ public class RecordDataMB implements Serializable {
                 //DETERMINAR TIPO DE IDENTIFICACION
                 if (newVictim.getVictimNid() != null) {
                     if (newVictim.getTypeId() == null) {
-                        newVictim.setTypeId(idTypesFacade.find((short) 1));//SI NI HAY EDAD DEJAR POR DEFECTO CEDULA
+                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
+                        if (newVictim.getVictimAge() != null) {
+                            if (newVictim.getVictimAge() >= 18) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
+                            }
+                        } else {
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
+                        }
                     }
                 }
 
@@ -2083,7 +2110,7 @@ public class RecordDataMB implements Serializable {
                 for (int posCol = 0; posCol < columnsNames.length; posCol++) {
                     value = null;
                     //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVar(columnsNames[posCol]);//determino la relacion de variables
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
                     //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
@@ -2397,14 +2424,14 @@ public class RecordDataMB implements Serializable {
                                     ageYears = 1;
                                 }
                                 newVictim.setVictimAge((short) ageYears);
-                                newVictim.setAgeTypeId((short) 1);
-                                if (newVictim.getTypeId() == null) {
-                                    if (ageYears >= 18) {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-                                    } else {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-                                    }
-                                }
+                                newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
+//                                if (newVictim.getTypeId() == null) {
+//                                    if (ageYears >= 18) {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+//                                    } else {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
+//                                    }
+//                                }
                             }
                         } catch (Exception ex) {
                             Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
@@ -2425,7 +2452,16 @@ public class RecordDataMB implements Serializable {
                 //DETERMINAR TIPO DE IDENTIFICACION
                 if (newVictim.getVictimNid() != null) {
                     if (newVictim.getTypeId() == null) {
-                        newVictim.setTypeId(idTypesFacade.find((short) 1));//SI NI HAY EDAD DEJAR POR DEFECTO CEDULA
+                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
+                        if (newVictim.getVictimAge() != null) {
+                            if (newVictim.getVictimAge() >= 18) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
+                            }
+                        } else {
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
+                        }
                     }
                 }
                 //PERSISTO
@@ -2526,7 +2562,7 @@ public class RecordDataMB implements Serializable {
                 for (int posCol = 0; posCol < columnsNames.length; posCol++) {
                     value = null;
                     //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVar(columnsNames[posCol]);//determino la relacion de variables
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
                     //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
@@ -3354,8 +3390,8 @@ public class RecordDataMB implements Serializable {
 
                 //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
                 if (newNonFatalInjury.getNonFatalDataSourceId() == null) {
-                    if (currentSource.compareTo("OBSERVATORIO DEL DELITO") != 0) {
-                        newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.findByName(currentSource));
+                    if (currentSource != 21) {//"OBSERVATORIO DEL DELITO")
+                        newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find((short) currentSource));
                     }
                 }
 
@@ -3389,14 +3425,14 @@ public class RecordDataMB implements Serializable {
                                     ageYears = 1;
                                 }
                                 newVictim.setVictimAge((short) ageYears);
-                                newVictim.setAgeTypeId((short) 1);
-                                if (newVictim.getTypeId() == null) {
-                                    if (ageYears >= 18) {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-                                    } else {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-                                    }
-                                }
+                                newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
+//                                if (newVictim.getTypeId() == null) {
+//                                    if (ageYears >= 18) {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+//                                    } else {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
+//                                    }
+//                                }
                             }
                         } catch (Exception ex) {
                             Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
@@ -3419,8 +3455,16 @@ public class RecordDataMB implements Serializable {
                 //DETERMINAR TIPO DE IDENTIFICACION
                 if (newVictim.getVictimNid() != null) {
                     if (newVictim.getTypeId() == null) {
-                        //DETERMINAR SEGUN EDAD SI ES POSIBLE
-                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
+                        if (newVictim.getVictimAge() != null) {
+                            if (newVictim.getVictimAge() >= 18) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
+                            }
+                        } else {
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
+                        }
                     }
                 }
                 //AGREGO LAS LISTAS NO VACIAS///////////////////////////////////
@@ -3570,7 +3614,7 @@ public class RecordDataMB implements Serializable {
                 for (int posCol = 0; posCol < columnsNames.length; posCol++) {
                     value = null;
                     //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVar(columnsNames[posCol]);//determino la relacion de variables
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
                     //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
@@ -4202,8 +4246,8 @@ public class RecordDataMB implements Serializable {
 
                 //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
                 if (newNonFatalInjury.getNonFatalDataSourceId() == null) {
-                    if (currentSource.compareTo("OBSERVATORIO DEL DELITO") != 0) {
-                        newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.findByName(currentSource));
+                    if (currentSource != 21) {//1=compareTo("OBSERVATORIO DEL DELITO")
+                        newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find((short) currentSource));
                     }
                 }
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
@@ -4236,14 +4280,14 @@ public class RecordDataMB implements Serializable {
                                     ageYears = 1;
                                 }
                                 newVictim.setVictimAge((short) ageYears);
-                                newVictim.setAgeTypeId((short) 1);
-                                if (newVictim.getTypeId() == null) {
-                                    if (ageYears >= 18) {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-                                    } else {
-                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-                                    }
-                                }
+                                newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
+//                                if (newVictim.getTypeId() == null) {
+//                                    if (ageYears >= 18) {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+//                                    } else {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
+//                                    }
+//                                }
                             }
                         } catch (Exception ex) {
                             Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
@@ -4262,8 +4306,16 @@ public class RecordDataMB implements Serializable {
                 //QUEDA TIPO DE IDENTIFICACION POR DEFECTO CEDULA SI NO HAY
                 if (newVictim.getVictimNid() != null) {
                     if (newVictim.getTypeId() == null) {
-                        //DETERMINAR SEGUN EDAD SI ES POSIBLE
-                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
+                        if (newVictim.getVictimAge() != null) {
+                            if (newVictim.getVictimAge() >= 18) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
+                            }
+                        } else {
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
+                        }
                     }
                 }
 
@@ -4724,7 +4776,7 @@ public class RecordDataMB implements Serializable {
         }
         try {//intento convertirlo en entero
             int a = Integer.parseInt(str);
-            if (a > 199 || a < 0) {
+            if (a > 150 || a < 0) {
                 return null;
             }
             if (a == 0) {
@@ -4741,7 +4793,7 @@ public class RecordDataMB implements Serializable {
             if (splitAge.length == 4) {
                 int m = Integer.parseInt(splitAge[0]);
                 int y = Integer.parseInt(splitAge[2]);
-                if (y > 199) {
+                if (y > 150) {
                     return null;
                 }
                 if (y == 0) {
@@ -4756,7 +4808,7 @@ public class RecordDataMB implements Serializable {
         }
     }
 
-    private String isCategorical(String valueFound, RelationVar relationVar) {
+    private String isCategorical(String valueFound, RelationVariables relationVar) {
         /*
          * validacion de si un valor esta dentro de una categoria, o es
          * descartado, retorna el id respectivo a la tabla categorica
@@ -4766,31 +4818,31 @@ public class RecordDataMB implements Serializable {
         }
 
         //se valida con respecto a las relaciones de valores
-        if (relationVar.getTypeComparisonForCode() == true) {
-            for (int i = 0; i < relationVar.getRelationValueList().size(); i++) {
-                if (relationVar.getRelationValueList().get(i).getNameFound().compareTo(valueFound) == 0) {
-                    return formsAndFieldsDataMB.findIdByCategoricalCode(relationVar.getNameExpected(), relationVar.getRelationValueList().get(i).getNameExpected());
+        if (relationVar.getComparisonForCode() == true) {
+            for (int i = 0; i < relationVar.getRelationValuesList().size(); i++) {
+                if (relationVar.getRelationValuesList().get(i).getNameFound().compareTo(valueFound) == 0) {
+                    return connectionJdbcMB.findIdByCategoricalCode(relationVar.getFieldType(), relationVar.getRelationValuesList().get(i).getNameExpected());
                 }
             }
         } else {
-            for (int i = 0; i < relationVar.getRelationValueList().size(); i++) {
-                if (relationVar.getRelationValueList().get(i).getNameFound().compareTo(valueFound) == 0) {
-                    return formsAndFieldsDataMB.findIdByCategoricalName(relationVar.getNameExpected(), relationVar.getRelationValueList().get(i).getNameExpected());
+            for (int i = 0; i < relationVar.getRelationValuesList().size(); i++) {
+                if (relationVar.getRelationValuesList().get(i).getNameFound().compareTo(valueFound) == 0) {
+                    return connectionJdbcMB.findIdByCategoricalName(relationVar.getFieldType(), relationVar.getRelationValuesList().get(i).getNameExpected());
                 }
             }
         }
 
         //verificar si es descartado
-        for (int i = 0; i < relationVar.getDiscardedValues().size(); i++) {
-            if (valueFound.compareTo(relationVar.getDiscardedValues().get(i)) == 0) {
+        for (int i = 0; i < relationVar.getRelationsDiscardedValuesList().size(); i++) {
+            if (valueFound.compareTo(relationVar.getRelationsDiscardedValuesList().get(i).getDiscardedValueName()) == 0) {
                 return "";
             }
         }
         //se valida con respecto a los valores esperados
-        if (relationVar.getTypeComparisonForCode() == true) {
-            return formsAndFieldsDataMB.findIdByCategoricalCode(relationVar.getNameExpected(), valueFound);
+        if (relationVar.getComparisonForCode() == true) {
+            return connectionJdbcMB.findIdByCategoricalCode(relationVar.getFieldType(), valueFound);
         } else {
-            return formsAndFieldsDataMB.findIdByCategoricalName(relationVar.getNameExpected(), valueFound);
+            return connectionJdbcMB.findIdByCategoricalName(relationVar.getFieldType(), valueFound);
         }
     }
 
@@ -4799,10 +4851,9 @@ public class RecordDataMB implements Serializable {
     //FUNCIONES GET Y SET DE LAS VARIABLES ---------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
-        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
-    }
-
+//    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
+//        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
+//    }
     public void setRelationshipOfVariablesMB(RelationshipOfVariablesMB relationshipOfVariablesMB) {
         this.relationshipOfVariablesMB = relationshipOfVariablesMB;
     }
@@ -4871,11 +4922,11 @@ public class RecordDataMB implements Serializable {
         this.uploadFileMB = uploadFileMB;
     }
 
-    public String getCurrentSource() {
+    public int getCurrentSource() {
         return currentSource;
     }
 
-    public void setCurrentSource(String currentSource) {
+    public void setCurrentSource(int currentSource) {
         this.currentSource = currentSource;
     }
 }

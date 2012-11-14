@@ -15,7 +15,6 @@ import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import managedBeans.fileProcessing.*;
-import managedBeans.preload.FormsAndFieldsDataMB;
 import model.dao.UsersFacade;
 import model.pojo.Users;
 import org.jfree.data.general.DefaultPieDataset;
@@ -28,7 +27,7 @@ import org.primefaces.model.StreamedContent;
  */
 @ManagedBean(name = "loginMB")
 @SessionScoped
-public class LoginMB implements Serializable {
+public class LoginMB {
 
     private String loginname = "admin";
     private String password = "123";
@@ -60,7 +59,7 @@ public class LoginMB implements Serializable {
     //---------------------------------------------------------
     private int countLogout = 0;//si este valor llega a 10 se finaliza la sesion
     FacesContext context;
-    FormsAndFieldsDataMB formsAndFieldsDataMB;
+    //FormsAndFieldsDataMB formsAndFieldsDataMB;
     ConnectionJdbcMB connectionJdbcMB;
     UploadFileMB uploadFileMB;
     RelationshipOfVariablesMB relationshipOfVariablesMB;
@@ -142,37 +141,15 @@ public class LoginMB implements Serializable {
 
     public void reset() {
         uploadFileMB.reset();
-        formsAndFieldsDataMB.reset();
         relationshipOfVariablesMB.reset();
         relationshipOfValuesMB.reset();
         storedRelationsMB.reset();
         recordDataMB.reset();
         errorsControlMB.reset();
     }
-//    public void btnRegisterDataClick() {
-//        progress = 0;
-//        for (int i = 0; i < 100; i++) {
-//            progress++;
-//            for (int j = 0; j < 10000; j++) {
-//                for (int k = 0; k < 100; k++) {
-//                    if (progress > 100) {
-//                        progress = 0;
-//                    }
-//                }
-//            }
-//        }
-//        progress = 100;
-//    }
-    ///public void closeSession() {
-    //}
 
     public String CheckValidUser() {
-
-        //get database connection
-        
-
         currentUser = usersFacade.findUser(loginname, password);
-
         if (currentUser != null) {
             userLogin = currentUser.getUserLogin();
             userName = currentUser.getUserName();
@@ -185,7 +162,7 @@ public class LoginMB implements Serializable {
             connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
             connectionJdbcMB.connectToDb();
             
-            formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
+            //formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
             uploadFileMB = (UploadFileMB) context.getApplication().evaluateExpressionGet(context, "#{uploadFileMB}", UploadFileMB.class);
             relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
             relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
@@ -200,22 +177,22 @@ public class LoginMB implements Serializable {
 
             System.out.println("INICIA... carga de valores iniciales");
             recordDataMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-            recordDataMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
+            //recordDataMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
             recordDataMB.setErrorsControlMB(errorsControlMB);
             recordDataMB.setLoginMB(this);
             recordDataMB.setUploadFileMB(uploadFileMB);
 
-            formsAndFieldsDataMB.loadFormsData();
-            formsAndFieldsDataMB.setNameForm("SCC-F-032");
+            //formsAndFieldsDataMB.loadFormsData();
+            //formsAndFieldsDataMB.setNameForm("SCC-F-032");
 
-            relationshipOfValuesMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
+            //relationshipOfValuesMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
             relationshipOfValuesMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
 
             relationshipOfVariablesMB.setRelationshipOfValuesMB(relationshipOfValuesMB);
-            relationshipOfVariablesMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
+            //relationshipOfVariablesMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
             relationshipOfVariablesMB.setUploadFileMB(uploadFileMB);
 
-            errorsControlMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
+            //errorsControlMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
             errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
 
             storedRelationsMB.setUploadFileMB(uploadFileMB);
@@ -224,7 +201,7 @@ public class LoginMB implements Serializable {
             storedRelationsMB.loadRelatedGroups();
 
             uploadFileMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-            uploadFileMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
+            //uploadFileMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
 
 
 

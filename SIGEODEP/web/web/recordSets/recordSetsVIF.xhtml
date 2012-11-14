@@ -34,33 +34,34 @@
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
                             <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="CONJUNTO(s): #{recordSetsVifMB.data} "/>  
+                            <h:outputLabel value="CONJUNTO: #{recordSetsVifMB.data} "/>  
                         </p:column>                                       
                     </p:row>
                     <p:row>  
                         <p:column>
                             <br/>                            
                             <p:dataTable 
-                                id="IdSearchTable" var="rowX" 
-                                value="#{recordSetsVifMB.rowDataTableList}" 
-                                rowKey="#{rowX.column1}"  
-                                selection="#{recordSetsVifMB.selectedRowsDataTable}" 
-                                paginator="true"
-                                rows="10"   
-                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="5,10,15,20,25,30"
-                                paginatorPosition="bottom"                                
-                                scrollable="true"
-                                scrollWidth="730"                                    
-                                pageLinks="3"
+                                id="IdSearchTable" 
+                                var="rowX" 
+                                value="#{recordSetsVifMB.table_model}" 
+                                selection="#{recordSetsSuicideMB.selectedRowsDataTable}" 
                                 selectionMode="multiple"
-                                resizableColumns="true">                                
+                                rowKey="#{rowX.column1}"  
+                                scrollWidth="730"                        
+                                lazy="true"
+                                resizableColumns="true"
+                                paginator="true" 
+                                rows="10" 
+                                pageLinks="5"
+                                paginatorPosition="bottom"
+                                emptyMessage="No existen resultados."
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                scrollable="true">                     
                                 <p:ajax
                                     event="rowSelect"
                                     listener="#{recordSetsVifMB.load}"                                    
-                                    update=":IdForm1:IdControls :IdForm1:message" />                    
-
-
+                                    update=":IdForm1:IdControls :IdForm1:message" />
                                 <p:column headerText="CODIGO INTERNO" width="50">#{rowX.column1}</p:column>
                                 <p:column headerText="INSTITUCION RECEPTORA" width="200">#{rowX.column80}</p:column>
                                 <p:column headerText="NOMBRES Y APELLIDOS" width="400">#{rowX.column4}</p:column>                                                

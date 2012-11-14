@@ -2456,40 +2456,6 @@ public class LcenfMB implements Serializable {
                     }
                 }
 
-                //SI NO HAY FECHA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
-//                if (newNonFatalInjuries.getCheckupDate() == null) {
-//                    dia1 = haveData(dia1);
-//                    mes1 = haveData(mes1);
-//                    ao1 = haveData(ao1);
-//                    if (dia1 != null && mes1 != null && ao1 != null) {
-//                        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
-//                        Date fechaI;
-//                        fechaI = formato.parse(dia1 + "/" + mes1 + "/" + ao1);
-//                        newNonFatalInjuries.setCheckupDate(fechaI);
-//                    }
-//                }
-                //SI NO HAY HORA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
-//                if (newNonFatalInjuries.getCheckupTime() == null) {
-//                    horas1 = haveData(horas1);
-//                    minutos1 = haveData(minutos1);
-//                    ampm1 = haveData(ampm1);
-//                    if (horas1 != null && minutos1 != null && ampm1 != null) {
-//                        hourInt = Integer.parseInt(horas1);
-//                        minuteInt = Integer.parseInt(minutos1);
-//                        if (ampm1.compareTo("2") == 0) {
-//                            hourInt = hourInt + 12;
-//                            if (hourInt == 24) {
-//                                hourInt = 0;
-//                            }
-//                        }
-//                        currentDate = new Date();
-//                        currentDate.setHours(hourInt);
-//                        currentDate.setMinutes(minuteInt);
-//                        currentDate.setSeconds(0);
-//                        newNonFatalInjuries.setCheckupTime(currentDate);
-//                    }
-//                }
-
                 //DATOS PARA EL EVENTO..........................................
                 //SI NO HAY FECHA DE EVENTO PASAR LA DE CONSULTA
                 if (newNonFatalInjuries.getInjuryDate() == null) {
@@ -2505,41 +2471,6 @@ public class LcenfMB implements Serializable {
                     }
                 }
 
-
-                //SI NO HAY FECHA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
-//                if (newNonFatalInjuries.getInjuryDate() == null) {
-//                    dia = haveData(dia);
-//                    mes = haveData(mes);
-//                    ao = haveData(ao);
-//                    if (dia != null && mes != null && ao != null) {
-//                        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
-//                        Date fechaI;
-//                        fechaI = formato.parse(dia + "/" + mes + "/" + ao);
-//                        newNonFatalInjuries.setInjuryDate(fechaI);
-//                    }
-//                }
-
-                //SI NO HAY HORA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
-//                if (newNonFatalInjuries.getInjuryTime() == null) {
-//                    horas = haveData(horas);
-//                    minutos = haveData(minutos);
-//                    ampm = haveData(ampm);
-//                    if (horas != null && minutos != null && ampm != null) {
-//                        hourInt = Integer.parseInt(horas);
-//                        minuteInt = Integer.parseInt(minutos);
-//                        if (ampm.compareTo("2") == 0) {
-//                            hourInt = hourInt + 12;
-//                            if (hourInt == 24) {
-//                                hourInt = 0;
-//                            }
-//                        }
-//                        currentDate = new Date();
-//                        currentDate.setHours(hourInt);
-//                        currentDate.setMinutes(minuteInt);
-//                        currentDate.setSeconds(0);
-//                        newNonFatalInjuries.setInjuryTime(currentDate);
-//                    }
-//                }
 
 
                 //SI LA HORA DE LA CONSULTA ES 0000 PASAR LA HORA DEL EVENTO A LA DE LA CONSULTA
@@ -2563,18 +2494,6 @@ public class LcenfMB implements Serializable {
                     }
                 }
 
-                //UNION DE NOMBRES Y APELLIOS
-//                name = name + " " + surname;
-//                if (name.trim().length() > 1) {
-//                    newVictim.setVictimName(name);
-//                }
-
-                //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
-//                if (newNonFatalInjuries.getNonFatalDataSourceId() == null) {
-//                    if (currentSource.compareTo("OBSERVATORIO DEL DELITO") != 0) {
-//                        newNonFatalInjuries.setNonFatalDataSourceId(nonFatalDataSourcesFacade.findByName(currentSource));
-//                    }
-//                }
 
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
@@ -2636,8 +2555,16 @@ public class LcenfMB implements Serializable {
                 //DETERMINAR TIPO DE IDENTIFICACION
                 if (newVictim.getVictimNid() != null) {
                     if (newVictim.getTypeId() == null) {
-                        //DETERMINAR SEGUN EDAD SI ES POSIBLE
-                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
+                        if (newVictim.getVictimAge() != null) {
+                            if (newVictim.getVictimAge() >= 18) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
+                            }
+                        } else {
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
+                        }
                     }
                 }
                 

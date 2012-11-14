@@ -100,7 +100,6 @@
                                             render="IdSelectOneMenuSource IdDelimiter IdAccordionPanel:IdSelectOneListVarExpected IdCurrentForm"/>
                                     </h:selectOneMenu>  
                                 </p:column>
-
                             </p:row>
                             <p:row>
                                 <p:column colspan="1">
@@ -145,9 +144,16 @@
                                         label="Archivo"
                                         sizeLimit="50000000"
                                         update=":IdForm:message IdBtnProcessFile"
-                                        allowTypes="/(\.|\/)(xlsx)$/">                                        
+                                        allowTypes="/(\.|\/)(xlsx|csv|txt)$/">                                        
                                     </p:fileUpload>                                      
-                                    <p:progressBar id="IdProgresUpload" interval="2000" widgetVar="pbAjaxUpload" ajax="true"  value="#{uploadFileMB.progressUpload}" labelTemplate="{value}%" />                                    
+                                    <p:progressBar 
+                                        id="IdProgresUpload" 
+                                        interval="2000" 
+                                        widgetVar="pbAjaxUpload" 
+                                        ajax="true"  
+                                        value="#{uploadFileMB.progressUpload}" 
+                                        labelTemplate="{value}%" />                                    
+
                                     <p:commandButton                                   
                                         id="IdBtnProcessFile"
                                         disabled="#{uploadFileMB.btnProcessFileDisabled}"
@@ -686,13 +692,13 @@
                                                     </p:column>
                                                     <p:column>
                                                         <!--MUESTRA VALORES ESPERADOS-->
-                                                        <h:selectOneListbox 
+                                                        <h:selectManyMenu 
                                                             disabled="true"
                                                             id="IdSelectOneListValuesExpected"                                                             
                                                             style="height:100px; width: 380px; ">
                                                             <f:selectItems value="#{relationshipOfVariablesMB.valuesExpected}"/>							    
-                                                            <f:selectItem itemLabel=" " itemValue=" " />
-                                                        </h:selectOneListbox> 
+                                                            
+                                                        </h:selectManyMenu> 
                                                     </p:column>                                                                                    
                                                 </p:row>                                                                               
                                             </p:panelGrid> 
@@ -755,13 +761,13 @@
                                                     </p:column>
                                                     <p:column>
                                                         <!--MUESTRA DE VALORES ENCONTRADOS EN RELACION DE VARIABLES-->
-                                                        <h:selectOneListbox 
+                                                        <h:selectManyMenu
                                                             id="IdSelectOneListValuesFound" 
                                                             style="height:100px; width: 380px; "
                                                             disabled="true">
                                                             <f:selectItems value="#{relationshipOfVariablesMB.valuesFound}"/>							    
-                                                            <f:selectItem itemLabel=" " itemValue=" " />
-                                                        </h:selectOneListbox>
+                                                            
+                                                        </h:selectManyMenu>
                                                     </p:column>                                        
                                                 </p:row>
                                             </p:panelGrid> 
@@ -775,11 +781,14 @@
                                                         <p:commandButton 
                                                             id="IdBtnAssociateRelationVar"                                                             
                                                             actionListener="#{relationshipOfVariablesMB.btnAssociateVarClick}"
+                                                            
+                                                            icon="ui-icon-arrowthick-1-s"
                                                             value="ASOCIAR" 
                                                             style="size: 10px;"
                                                             update="IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListVarRelated IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdExpectedValuesFilter IdFoundValuesFilter"/>
                                                         <p:commandButton 
                                                             id="IdBtnRemoveRelationVar" 
+                                                            icon="ui-icon-arrowthick-1-n"
                                                             disabled="#{relationshipOfVariablesMB.btnRemoveRelationVarDisabled}" 
                                                             actionListener="#{relationshipOfVariablesMB.btnRemoveRelationVarClick}"
                                                             value="QUITAR RELACION"                                             
@@ -973,7 +982,7 @@
                                                             id="IdBtnView" 
                                                             disabled="#{relationshipOfValuesMB.btnViewValueDisabled}"            
                                                             oncomplete="seeCoincidentsDialog.hide(); seeCoincidentsDialog.show();"
-                                                            
+
                                                             actionListener="#{relationshipOfValuesMB.createDynamicTable}"
                                                             value="Ver" 
                                                             style="size: 10px;"
@@ -1032,7 +1041,7 @@
                                             <p:panelGrid >
                                                 <p:row>
                                                     <p:column colspan="2" styleClass="ui-widget-header">
-                                                        <h:outputText value="CONJUNTOS DE RELACIONES GUARDADOS"/>
+                                                        <h:outputText value="LISTA DE RELACIONES ALMACENADAS"/>
                                                     </p:column>                                        
                                                 </p:row>
                                                 <p:row>
@@ -1054,14 +1063,14 @@
                                                     <p:column styleClass="ui-widget-header">
                                                         <p:commandButton  
                                                             id="IdBtnLoadConfiguration"
-                                                            value="CARGAR CONJUNTO"                                         
+                                                            value="CARGAR"                                         
                                                             style="margin:0;"
                                                             disabled="#{storedRelationsMB.btnLoadConfigurationDisabled}"
                                                             onclick="openDialog.show()"    
                                                             update=":IdForm:message"/>                                                        
                                                         <p:commandButton
                                                             id="IdBtnRemoveConfiguration"
-                                                            value="ELIMINAR CONJUNTO"
+                                                            value="ELIMINAR"
                                                             disabled="#{storedRelationsMB.btnRemoveConfigurationDisabled}"                                                            
                                                             style="margin:0;"
                                                             onclick="removeDialog.show()"/>                                                         
@@ -1069,6 +1078,7 @@
                                                             id="IdBtnNewConfiguration"
                                                             value="GUARDAR RELACIONES ACTUALES"
                                                             style="margin:0;"
+                                                            update=":IdForm2:IdrelationGroupName"
                                                             onclick="newDialog.show()"/>
                                                     </p:column>                                                                                            
                                                 </p:row>
@@ -1321,7 +1331,7 @@
         </ui:define>
         <!--=================================================================-->
         <!--==================== CUADROS DE DIALOGOS ========================-->
-        
+
         <ui:define name="dialogs">
             <h:form id="IdForm2">
                 <p:dialog 
@@ -1486,46 +1496,41 @@
                         onclick="removeDialog.hide()"
                         type="button"/>   
                 </p:dialog>
-                <p:dialog
+                <p:dialog 
                     id="IdNewDialog"  
                     modal="true"
-                    header="NUEVA CONFIGURACION"         
+                    header="GUARDAR RELACIONES"         
                     resizable="false"                    
                     widgetVar="newDialog">  
-                    <p:panelGrid>
-                        <p:row>
-                            <p:column>
-                                Nombre:
-                            </p:column>
-                            <p:column>
-                                <p:inputText
-                                    id="IdrelationGroupName"
-                                    style="width: 200px;" 
-                                    value="#{storedRelationsMB.newConfigurationName}">
-                                    <f:ajax 
-                                        event="keyup"                                                                                                            
-                                        render=":IdForm:message IdBtnSaveConfiguration"/>
-                                </p:inputText>
-                            </p:column>
-                        </p:row>
-                        <p:row>
-                            <p:column colspan="2">
-                                <p:commandButton
-                                    id="IdBtnSaveConfiguration"
-                                    disabled="#{storedRelationsMB.btnSaveConfigurationDisabled}"
-                                    value="CONTINUAR"
-                                    style="margin:0;"
-                                    actionListener="#{storedRelationsMB.btnSaveConfiguration}"
-                                    onclick="newDialog.hide()"
-                                    update=":IdForm:IdTabView:IdAccordionPanel:IdSelectOneListRelationGroups :IdForm:message"/>  
-                                <p:commandButton 
-                                    id="declineNew"
-                                    value="CANCELAR" 
-                                    onclick="newDialog.hide()"
-                                    type="button"/>   
-                            </p:column>
-                        </p:row>
-                    </p:panelGrid>                    
+                    <br/>
+                    <p:inputTextarea 
+                        value="Al digitar un nombre existente, las relaciones se sobreescriben." 
+                        readonly="true" 
+                        style="text-align: match-parent; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 40px; width: 220px;"/>
+                    <br/><br/>
+                    <h:outputText value="Nombre para las relaciones:"/>
+                    <br/>
+                    <p:inputText
+                        id="IdrelationGroupName"
+                        style="width: 220px;" 
+                        value="#{storedRelationsMB.newConfigurationName}">
+                        <f:ajax 
+                            event="keyup"                                                                                                            
+                            render=":IdForm:message IdBtnSaveConfiguration"/>
+                    </p:inputText>
+                    <br/><br/>
+                    <p:commandButton
+                        id="IdBtnSaveConfiguration"
+                        value="CONTINUAR"
+                        style="margin:0;"
+                        actionListener="#{storedRelationsMB.btnSaveConfiguration}"
+                        onclick="newDialog.hide()"
+                        update=":IdForm:IdTabView:IdAccordionPanel:IdSelectOneListRelationGroups :IdForm:message"/>  
+                    <p:commandButton 
+                        id="declineNew"
+                        value="CANCELAR" 
+                        onclick="newDialog.hide()"
+                        type="button"/>   
                 </p:dialog>
             </h:form>
         </ui:define>

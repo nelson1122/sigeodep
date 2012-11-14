@@ -1,11 +1,11 @@
-/*
+    /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 package beans.errorsControl;
 
 import beans.enumerators.DataTypeEnum;
-import beans.relations.RelationVar;
+import model.pojo.RelationVariables;
 
 /**
  *
@@ -22,9 +22,9 @@ public class ErrorControl {
     private String errorSubject = "";//me describe el error probocado(largo)
     private String errorSolution = "";//me describe la solucion al error
     private String relationDescription = "";//me describe la solucion al error
-    RelationVar relationVar;
+    RelationVariables relationVar;
 
-    public ErrorControl(RelationVar relationVar, String value, String rowId, String relationDescription) {
+    public ErrorControl(RelationVariables relationVar, String value, String rowId, String relationDescription) {
         this.relationVar = relationVar;
         this.value = value;
         this.rowId = rowId;
@@ -46,7 +46,7 @@ public class ErrorControl {
                         + ", Columna (" + relationVar.getNameFound() + ")"
                         + " el valor (" + value + ")"
                         + " No es de tipo: " + relationVar.getNameExpected();
-                errorSubject = "Este error fue provocado por que se esperaba encontrar un valor de tipo " + relationVar.getTypeComparisonForCode();
+                errorSubject = "Este error fue provocado por que se esperaba encontrar un valor de tipo " + relationVar.getComparisonForCode();
                 switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
                     case text:
                         break;
@@ -91,7 +91,7 @@ public class ErrorControl {
         }
     }
 
-    public RelationVar getRelationVar() {
+    public RelationVariables getRelationVar() {
         return relationVar;
     }
 

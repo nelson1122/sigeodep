@@ -32,7 +32,7 @@ public class RelationGroupFacade extends AbstractFacade<RelationGroup> {
             String hql = "Select MAX(x.idRelationGroup) from RelationGroup x";
             return em.createQuery(hql, Integer.class).getSingleResult();
         } catch (Exception e) {
-            return 1;
+            return 0;
         }
     }
     
