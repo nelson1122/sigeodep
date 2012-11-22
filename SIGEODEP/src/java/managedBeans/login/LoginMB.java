@@ -37,26 +37,7 @@ public class LoginMB {
     private Users currentUser;
     private String activeIndexAcoordion1="-1";
     private String activeIndexAcoordion2="-1";
-    //funciones para crear un chart--------------------------
-    private StreamedContent chartImage;
-
-    private PieDataset createDataset() {
-        DefaultPieDataset dataset = new DefaultPieDataset();
-        dataset.setValue("Dato A", new Double(45.0));
-        dataset.setValue("Dato B", new Double(15.0));
-        dataset.setValue("Dato C", new Double(25.2));
-        dataset.setValue("Daro E", new Double(14.8));
-        return dataset;
-    }
-
-    public StreamedContent getChartImage() {
-        return chartImage;
-    }
-
-    public void setChartImage(StreamedContent chartImage) {
-        this.chartImage = chartImage;
-    }
-    //---------------------------------------------------------
+    
     private int countLogout = 0;//si este valor llega a 10 se finaliza la sesion
     FacesContext context;
     //FormsAndFieldsDataMB formsAndFieldsDataMB;
@@ -162,7 +143,6 @@ public class LoginMB {
             connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
             connectionJdbcMB.connectToDb();
             
-            //formsAndFieldsDataMB = (FormsAndFieldsDataMB) context.getApplication().evaluateExpressionGet(context, "#{formsAndFieldsDataMB}", FormsAndFieldsDataMB.class);
             uploadFileMB = (UploadFileMB) context.getApplication().evaluateExpressionGet(context, "#{uploadFileMB}", UploadFileMB.class);
             relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
             relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
@@ -177,51 +157,24 @@ public class LoginMB {
 
             System.out.println("INICIA... carga de valores iniciales");
             recordDataMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-            //recordDataMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
             recordDataMB.setErrorsControlMB(errorsControlMB);
             recordDataMB.setLoginMB(this);
             recordDataMB.setUploadFileMB(uploadFileMB);
-
-            //formsAndFieldsDataMB.loadFormsData();
-            //formsAndFieldsDataMB.setNameForm("SCC-F-032");
-
-            //relationshipOfValuesMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
+            
             relationshipOfValuesMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-
             relationshipOfVariablesMB.setRelationshipOfValuesMB(relationshipOfValuesMB);
-            //relationshipOfVariablesMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
             relationshipOfVariablesMB.setUploadFileMB(uploadFileMB);
-
-            //errorsControlMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
+            
             errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-
             storedRelationsMB.setUploadFileMB(uploadFileMB);
             storedRelationsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
             storedRelationsMB.setCurrentRelationsGroup(relationshipOfVariablesMB.getCurrentRelationsGroup());
             storedRelationsMB.loadRelatedGroups();
 
             uploadFileMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-            //uploadFileMB.setFormsAndFieldsDataMB(formsAndFieldsDataMB);
-
-
-
+            
             uploadFileMB.setStoredRelationsMB(storedRelationsMB);
-
             reset();
-
-            //-------------------------------------------------
-//            try {
-//                JFreeChart jfreechart = ChartFactory.createPieChart("Prueba de CHART", createDataset(), true, true, false);
-//                File chartFile = new File("dynamichart");
-//                ChartUtilities.saveChartAsPNG(chartFile, jfreechart, 375, 300);
-//                chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
-//            } catch (Exception e) {
-//            }
-
-
-            //-------------------------------------------------
-
-
             return "homePage";
         } else {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Incorrecto Usuario o Clave");

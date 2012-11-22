@@ -12,6 +12,10 @@
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
             <script type="text/javascript">                  
+                function startA() {                                          
+                    document.getElementById('IdForm1:IdBtnExport').click();                    
+                    //$('#IdPaint').click();
+                } 
             </script> 
         </ui:define>
         <!--=================================================================-->
@@ -30,15 +34,50 @@
                 <!--===================================================================================-->
 
                 <br/>
+                
                 <p:panelGrid id="IdPanel1" style="position: absolute;  width: 750px;  margin-left: -375px; left: 50%;" >                            
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
-                            <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="CONJUNTO: #{recordSetsLcenfMB.data} "/>  
+                            <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/>
                         </p:column>                                       
                     </p:row>
                     <p:row>  
                         <p:column>
+                            <br/>
+                            <p:panelGrid>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        <h:outputLabel value="Total de registros:"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsLcenfMB.totalRecords}"/>                                        
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        <h:outputLabel value="Fecha Inicial:"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsLcenfMB.initialDateStr}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">                                                                    
+                                        <h:outputLabel value="Fecha Final:"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsLcenfMB.endDateStr}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">                                                                    
+                                        <h:outputLabel value="Conjunto(s):"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsLcenfMB.data}"/>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
                             <br/>                            
                             <p:dataTable 
                                 id="IdSearchTable" 
@@ -61,9 +100,7 @@
                                 <p:ajax
                                     event="rowSelect"
                                     listener="#{recordSetsLcenfMB.load}"                                    
-                                    update=":IdForm1:IdControls :IdForm1:message" />                    
-
-
+                                    update=":IdForm1:IdControls :IdForm1:message" />
                                 <p:column headerText="CODIGO" width="50">#{rowX.column1}</p:column>
                                 <p:column headerText="INSTITUCION DE SALUD" width="250">#{rowX.column58}</p:column>
                                 <p:column headerText="NOMBRES Y APELLIDOS" width="400">#{rowX.column4}</p:column>
@@ -150,10 +187,14 @@
                                 <p:column headerText="CUAL OTRO DESTINO" width="100">#{rowX.column36}</p:column>
 
                                 //cargo los diagnosticos
-                                <p:column headerText="CIE-10 1" width="500">#{rowX.column105}</p:column>
-                                <p:column headerText="CIE-10 2" width="500">#{rowX.column106}</p:column>
-                                <p:column headerText="CIE-10 3" width="500">#{rowX.column107}</p:column>
-                                <p:column headerText="CIE-10 4" width="500">#{rowX.column108}</p:column>
+                                <p:column headerText="CIE10_1 CODIGO" width="80">#{rowX.column122}</p:column>
+                                <p:column headerText="CIE10_1 DESCRIPCION" width="500">#{rowX.column105}</p:column>
+                                <p:column headerText="CIE10_2 CODIGO" width="80">#{rowX.column123}</p:column>
+                                <p:column headerText="CIE10_2 DESCRIPCION" width="500">#{rowX.column106}</p:column>
+                                <p:column headerText="CIE10_3 CODIGO" width="80">#{rowX.column124}</p:column>
+                                <p:column headerText="CIE10_3 DESCRIPCION" width="500">#{rowX.column107}</p:column>
+                                <p:column headerText="CIE10_4 CODIGO" width="80">#{rowX.column125}</p:column>
+                                <p:column headerText="CIE10_4 DESCRIPCION" width="500">#{rowX.column108}</p:column>
 
                                 <p:column headerText="MEDICO" width="300">#{rowX.column54}</p:column>
                                 <p:column headerText="DIGITADOR" width="250">#{rowX.column56}</p:column>
@@ -218,8 +259,20 @@
                                 <p:column headerText="CASCO BICICLETA" width="100">#{rowX.column117}</p:column>
                                 <p:column headerText="CHALECO" width="100">#{rowX.column118}</p:column>
                                 <p:column headerText="OTRO ELEMENTO" width="100">#{rowX.column119}</p:column>
-
                             </p:dataTable>                            
+                            <br/>
+                            <p:progressBar 
+                                id="IdProgresValidate" 
+                                interval="500" 
+                                widgetVar="pbAjaxValidate" 
+                                ajax="true" 
+                                value="#{recordSetsLcenfMB.progress}" 
+                                labelTemplate="{value}%">          
+                                <p:ajax 
+                                    event="complete" 
+                                    listener="#{recordSetsLcenfMB.onCompleteLoad}" 
+                                    update="IdProgresValidate"/>  
+                            </p:progressBar>
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
                                 <p:row>  
@@ -239,10 +292,15 @@
                                             icon="ui-icon-close"
                                             oncomplete="dialogDelete.show()"                                            
                                             update=":IdForm2:IdDialogDelete :IdForm1:message"/>                                        
-                                        <h:commandLink >  
-                                            <!---p:graphicImage style="margin-top: 200px;" value="../../resources/img/excel.png"/-->
-                                            <p:button value="Exportar"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="LCENF" postProcessor="#{recordSetsLcenfMB.postProcessXLS}"/>  
+                                        <p:commandButton 
+                                            id="IdR" 
+                                            value="Exportar" 
+                                            onclick="pbAjaxValidate.start();"
+                                            oncomplete="startA();"
+                                            actionListener="#{recordSetsLcenfMB.postProcessXLS1}"/>                                                                                
+                                        <h:commandLink id="IdComandLink" style="display: none" >
+                                            <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="LCENF"  preProcessor="#{recordSetsLcenfMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                         <p:dataTable id="IdOutFile" style="display: none">
                                             <p:column>                                                  

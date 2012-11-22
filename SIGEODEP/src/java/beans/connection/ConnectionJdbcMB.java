@@ -1362,15 +1362,19 @@ public class ConnectionJdbcMB implements Serializable {
                     switch (i) {
                         case 0:
                             newRowDataTable.setColumn105(diagnosesList.get(i).getDiagnosisName());
+                            newRowDataTable.setColumn122(diagnosesList.get(i).getDiagnosisId());
                             break;
                         case 1:
                             newRowDataTable.setColumn106(diagnosesList.get(i).getDiagnosisName());
+                            newRowDataTable.setColumn123(diagnosesList.get(i).getDiagnosisId());
                             break;
                         case 2:
                             newRowDataTable.setColumn107(diagnosesList.get(i).getDiagnosisName());
+                            newRowDataTable.setColumn124(diagnosesList.get(i).getDiagnosisId());
                             break;
                         case 3:
                             newRowDataTable.setColumn108(diagnosesList.get(i).getDiagnosisName());
+                            newRowDataTable.setColumn125(diagnosesList.get(i).getDiagnosisId());
                             break;
                     }
                 }

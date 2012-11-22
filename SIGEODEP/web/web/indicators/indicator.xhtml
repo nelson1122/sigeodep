@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <ui:composition template="../templates/layoutTemplate.xhtml">
+        <!--==================================================================-->
+        <!--========================CABECERA SCRIPTS==========================-->                    
+        <ui:define name="head">
+            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
+            <script type="text/javascript">  
+                
+            </script> 
+        </ui:define>
+        <!--=================================================================-->
+        <!--================================TITULOS==========================-->
+        <ui:define name="titlePage">
+            #{indicatorsMB.titlePage}
+        </ui:define>
+        <ui:define name="title">
+            #{indicatorsMB.titleIndicator}
+        </ui:define>
+        <!--=================================================================-->
+        <!--==============================CONTENIDO==========================-->
+        <ui:define name="content">
+            <h:form enctype="multipart/form-data" id="IdForm2"> 
+                <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
+                <!--===================================================================================-->
+                <br/>
+                <p:tabView id="IdTabView"  style=" width: 750px;  margin-left: -375px; left: 50%;" > 
+                    <p:tab id="tab1" title="#{indicatorsMB.subTitleIndicator}">  
+                        <p:accordionPanel id="IdAccordionPanel" activeIndex="-1" multiple="true">
+                            <p:tab title="RANGO DE FECHAS">
+                                <p:panelGrid>                    
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Fecha Inicial:" />                                                                            
+                                        </p:column>
+                                        <p:column>
+                                            <p:calendar 
+                                                value="#{recordSetsMB.initialDate}" 
+                                                converterMessage="La fecha inicial no es válida, por favor corríjala." 
+                                                showOn="button" 
+                                                pattern="dd/MM/yyyy"/> 
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="Fecha Final:" />
+                                        </p:column>
+                                        <p:column>                                
+                                            <p:calendar 
+                                                value="#{recordSetsMB.endDate}" 
+                                                converterMessage="La fecha final no es válida, por favor corríjala." 
+                                                showOn="button" 
+                                                pattern="dd/MM/yyyy"/> 
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="VARIABLES A CRUZAR">
+                                <p:panelGrid>                    
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectOneListbox 
+                                                id="IdSelectOneListVariables" 
+                                                value="#{relationshipOfValuesMB.currentValueExpected}"
+                                                style="height:110px; width: 200px;"
+                                                converterMessage="Fallo de comunicación, por favor intente nuevamente.">
+                                                <f:selectItems value="#{relationshipOfValuesMB.valuesExpected}"/>                                                            
+                                                <f:selectItem itemLabel=" " itemValue=" " />
+                                                <f:ajax 
+                                                    event="change"                                                                                                           
+                                                    listener="#{relationshipOfValuesMB.changeValuesExpected}" 
+                                                    render="IdSelectOneListVariables"/>
+                                            </h:selectOneListbox> 
+                                        </p:column>
+                                        <p:column>
+                                            <p:commandButton 
+                                                value="Agregar" 
+                                                style="width: 100px;"
+                                                id="IdBtnAdd" 
+                                                actionListener="#{indicatorsMB.modifyImage}"  
+                                                update="IdImageChart"/> 
+                                            <br/>
+                                            <p:commandButton 
+                                                value="Quitar" 
+                                                style="width: 100px;"
+                                                id="IdBtnRemove" 
+                                                actionListener="#{crossMB.setRowAndColumns}"  
+                                                update="IdSelectOneListVariables"/> 
+                                        </p:column>
+                                        <p:column>
+                                            <h:selectOneListbox 
+                                                id="IdSelectOneListVariables2" 
+                                                value="#{relationshipOfValuesMB.currentValueExpected}"
+                                                style="height:110px; width: 200px;"
+                                                converterMessage="Fallo de comunicación, por favor intente nuevamente.">
+                                                <f:selectItems value="#{relationshipOfValuesMB.valuesExpected}"/>                                                            
+                                                <f:selectItem itemLabel=" " itemValue=" " />
+                                                <f:ajax 
+                                                    event="change"                                                                                                           
+                                                    listener="#{relationshipOfValuesMB.changeValuesExpected}" 
+                                                    render="IdSelectOneListVariables2"/>
+                                            </h:selectOneListbox> 
+                                        </p:column>
+                                    </p:row>
+                                    <p:row >
+                                        <p:column colspan="3">
+                                            <p:commandButton 
+                                                value="Generar" 
+                                                style="width: 100px;"
+                                                id="IdBtnGenerate" 
+                                                actionListener="#{crossMB.setRowAndColumns}"  
+                                                update="IdSelectOneListVariables"/> 
+                                            <p:commandButton 
+                                                value="Reiniciar" 
+                                                style="width: 100px;"
+                                                id="IdBtnReset" 
+                                                actionListener="#{crossMB.setRowAndColumns}"  
+                                                update="IdSelectOneListVariables"/> 
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="TABLA DE RESULTADOS">
+
+                            </p:tab>
+                            <p:tab title="GRAFICOS">
+                                <p:graphicImage id="IdImageChart" value="#{indicatorsMB.chartImage}"/>
+                            </p:tab>
+                        </p:accordionPanel>
+                    </p:tab>
+                </p:tabView>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>

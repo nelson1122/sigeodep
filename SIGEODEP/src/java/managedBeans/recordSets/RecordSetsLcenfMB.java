@@ -10,7 +10,6 @@ import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -22,7 +21,8 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.forms.LcenfMB;
 import model.dao.*;
-import model.pojo.*;
+import model.pojo.NonFatalInjuries;
+import model.pojo.Tags;
 import org.apache.poi.hssf.usermodel.*;
 import org.primefaces.model.LazyDataModel;
 
@@ -37,8 +37,7 @@ public class RecordSetsLcenfMB implements Serializable {
     //--------------------
     @EJB
     TagsFacade tagsFacade;
-    private List<Tags> tagsList;
-    private Tags currentTag;
+    private List<Tags> tagsList;        
     private NonFatalInjuries currentNonFatalInjury;
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
@@ -62,6 +61,7 @@ public class RecordSetsLcenfMB implements Serializable {
     InjuriesFacade injuriesFacade;
     private LazyDataModel<RowDataTable> table_model;
     //private RowDataTable selectedRowDataTable;
+    private ArrayList<RowDataTable> rowsDataTableArrayList;
     private RowDataTable[] selectedRowsDataTable;
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
@@ -70,16 +70,21 @@ public class RecordSetsLcenfMB implements Serializable {
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
     private String data = "-";
-    private String hours = "";
-    private String minutes = "";
-    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-    private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     private LcenfMB lcenfMB;
     private String openForm = "";
-    private RecordSetsMB recordSetsMB;
     private ConnectionJdbcMB connection;
+    private String totalRecords = "0";
+    private String initialDateStr = "";
+    private String endDateStr = "";
+    private int tuplesNumber;
+    private Integer tuplesProcessed;
     private int progress = 0;//PROGRESO AL CREAR XLS
-    String sqlTags = "";
+    private String sql = "";
+
+    public void onCompleteLoad() {
+        //progress = 0;
+        System.out.println("Termino generacion de XLSX");
+    }
 
     public RecordSetsLcenfMB() {
         tagsList = new ArrayList<Tags>();
@@ -104,31 +109,59 @@ public class RecordSetsLcenfMB implements Serializable {
     }
 
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
+        try {
+            //CREO LA LISTA DE TAGS SELECCIONADOS        
+            tagsList = new ArrayList<Tags>();
+            data = "";
+            for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
+                if (i == 0) {
+                    data = data + " " + selectedRowsDataTableTags[i].getColumn2() + "  ";
+                } else {
+                    data = data + " || " + selectedRowsDataTableTags[i].getColumn2();
+                }
+                tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
+            }
+            //DETERMINO TOTAL DE REGISTROS
+            sql = "";
+            sql = sql + " SELECT ";
+            sql = sql + " count(*)";
+            sql = sql + " FROM ";
+            sql = sql + " public.victims, ";
+            sql = sql + " public.non_fatal_injuries";
+            sql = sql + " WHERE ";
+            sql = sql + " non_fatal_injuries.victim_id = victims.victim_id AND";
+            for (int i = 0; i < tagsList.size(); i++) {
+                sql = sql + " tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
+            }
+            sql = sql + " non_fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND";
+            sql = sql + " non_fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+            ResultSet resultSet = connection.consult(sql);
+            totalRecords = "0";
+            if (resultSet.next()) {
+                totalRecords = String.valueOf(resultSet.getInt(1));
+            }
+            System.out.println("Total de registros = " + totalRecords);
+            //DETERMINO EL ID DE CADA REGISTRO            
+            sql = "";
+            sql = sql + " SELECT ";
+            sql = sql + " non_fatal_injuries.victim_id";
+            sql = sql + " FROM ";
+            sql = sql + " public.victims, ";
+            sql = sql + " public.non_fatal_injuries";
+            sql = sql + " WHERE ";
+            sql = sql + " non_fatal_injuries.victim_id = victims.victim_id AND";
+            for (int i = 0; i < tagsList.size(); i++) {
+                sql = sql + " tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
+            }
+            sql = sql + " non_fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND";
+            sql = sql + " non_fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
 
-        //CREO LA LISTA DE TAGS SELECCIONADOS        
-        tagsList = new ArrayList<Tags>();
-        data = "";
-        for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
-            if (i == 0) {
-                data = data + " " + selectedRowsDataTableTags[i].getColumn2() + "  ";
-            } else {
-                data = data + " || " + selectedRowsDataTableTags[i].getColumn2();
-            }
-            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
+            //CONSTRUYO EL TABLE_MODEL
+            table_model = new LazyRecordSetsDataModel(Integer.parseInt(totalRecords), sql, FormsEnum.SCC_F_032);
+
+        } catch (SQLException ex) {
+            Logger.getLogger(RecordSetsLcenfMB.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //DETERMINO TOTAL DE REGISTROS
-        int rowCountAux = 0;
-        sqlTags = "";
-        for (int i = 0; i < tagsList.size(); i++) {
-            rowCountAux = rowCountAux + nonFatalInjuriesFacade.countLCENF(tagsList.get(i).getTagId());
-            if (i != tagsList.size() - 1) {
-                sqlTags = sqlTags + " tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
-            } else {
-                sqlTags = sqlTags + " tag_id = " + String.valueOf(tagsList.get(i).getTagId());
-            }
-        }
-        System.out.println("Total de registros = " + String.valueOf(rowCountAux));
-        table_model = new LazyRecordSetsDataModel(rowCountAux, sqlTags, FormsEnum.SCC_F_032);
     }
 
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
@@ -144,8 +177,32 @@ public class RecordSetsLcenfMB implements Serializable {
         cell.setCellValue(new HSSFRichTextString(value));
     }
 
+    public void postProcessXLS1() {
+        try {
+            progress = 0;
+            tuplesNumber = Integer.parseInt(totalRecords);
+            tuplesProcessed = 0;
+            rowsDataTableArrayList = new ArrayList<RowDataTable>();
+            ResultSet resultSet = connection.consult(sql);
+            while (resultSet.next()) {
+                rowsDataTableArrayList.add(connection.loadNonFatalInjuryRecord(resultSet.getString(1)));
+                tuplesProcessed++;
+                progress = (int) (tuplesProcessed * 100) / tuplesNumber;
+                System.out.println(progress);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(RecordSetsHomicideMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        progress = 100;
+    }
+
+    
     public void postProcessXLS(Object document) {
         try {
+            progress = 0;
+            tuplesNumber = Integer.parseInt(totalRecords);
+            tuplesProcessed = 0;
+
             int rowPosition = 0;
             HSSFWorkbook book = (HSSFWorkbook) document;
             HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
@@ -154,8 +211,6 @@ public class RecordSetsLcenfMB implements Serializable {
             HSSFFont font = book.createFont();
             font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
             cellStyle.setFont(font);
-
-
 
             row = sheet.createRow(rowPosition);// Se crea una fila dentro de la hoja        
 
@@ -252,86 +307,84 @@ public class RecordSetsLcenfMB implements Serializable {
             createCell(cellStyle, row, 78, "CUAL OTRO DESTINO");//100">#{rowX.column36}</p:column>
 
             //cargo los diagnosticos
-            createCell(cellStyle, row, 79, "CIE-10 1");//500">#{rowX.column105}</p:column>
-            createCell(cellStyle, row, 80, "CIE-10 2");//500">#{rowX.column106}</p:column>
-            createCell(cellStyle, row, 81, "CIE-10 3");//500">#{rowX.column107}</p:column>
-            createCell(cellStyle, row, 82, "CIE-10 4");//500">#{rowX.column108}</p:column>
 
-            createCell(cellStyle, row, 83, "MEDICO");//300">#{rowX.column54}</p:column>
-            createCell(cellStyle, row, 84, "DIGITADOR");//100">#{rowX.column56}</p:column>
+            createCell(cellStyle, row, 79, "CIE10_1 CODIGO");//500">#{rowX.column105}</p:column>
+            createCell(cellStyle, row, 80, "CIE10_1 DESCRIPCION");//500">#{rowX.column105}</p:column>
+            createCell(cellStyle, row, 81, "CIE10_2 CODIGO");//500">#{rowX.column105}</p:column>
+            createCell(cellStyle, row, 82, "CIE10_2 DESCRIPCION");//500">#{rowX.column106}</p:column>
+            createCell(cellStyle, row, 83, "CIE10_3 CODIGO");//500">#{rowX.column105}</p:column>
+            createCell(cellStyle, row, 84, "CIE10_3 DESCRIPCION");//500">#{rowX.column107}</p:column>
+            createCell(cellStyle, row, 85, "CIE10_4 CODIGO");//500">#{rowX.column105}</p:column>
+            createCell(cellStyle, row, 86, "CIE10_4 DESCRIPCION");//500">#{rowX.column108}</p:column>
+
+            createCell(cellStyle, row, 87, "MEDICO");//300">#{rowX.column54}</p:column>
+            createCell(cellStyle, row, 88, "DIGITADOR");//100">#{rowX.column56}</p:column>
 
             //------------------------------------------------------------
             //AUTOINFLINGIDA INTENCIONAL
             //------------------------------------------------------------
-            createCell(cellStyle, row, 85, "INTENTO PREVIO (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column109}</p:column>
-            createCell(cellStyle, row, 86, "ANTECEDENTES MENTALES (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column110}</p:column>
-            createCell(cellStyle, row, 87, "FACTOR PRECIPITANTE (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column111}</p:column>
-            createCell(cellStyle, row, 88, "CUAL OTRO FACTOR (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column27}</p:column>                                
+            createCell(cellStyle, row, 89, "INTENTO PREVIO (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column109}</p:column>
+            createCell(cellStyle, row, 90, "ANTECEDENTES MENTALES (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column110}</p:column>
+            createCell(cellStyle, row, 91, "FACTOR PRECIPITANTE (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column111}</p:column>
+            createCell(cellStyle, row, 92, "CUAL OTRO FACTOR (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column27}</p:column>                                
 
             //------------------------------------------------------------
             //SE CARGA VARIABLE PARA VIOLENCIA INTERPERSONAL
             //-----------------------------------------------------------
-            createCell(cellStyle, row, 89, "ANTECEDENTES AGRESION (INTERPERSONAL)");//100">#{rowX.column60}</p:column>
-            createCell(cellStyle, row, 90, "RELACION AGRESOR-VICTIMA (INTERPERSONAL)");//150">#{rowX.column61}</p:column>
-            createCell(cellStyle, row, 91, "CUAL OTRA RELACION (INTERPERSONAL)");//100">#{rowX.column30}</p:column>
-            createCell(cellStyle, row, 92, "CONTEXTO (INTERPERSONAL)");//200">#{rowX.column62}</p:column>
-            createCell(cellStyle, row, 93, "SEXO AGRESORES (INTERPERSONAL)");//100">#{rowX.column63}</p:column>
+            createCell(cellStyle, row, 93, "ANTECEDENTES AGRESION (INTERPERSONAL)");//100">#{rowX.column60}</p:column>
+            createCell(cellStyle, row, 94, "RELACION AGRESOR-VICTIMA (INTERPERSONAL)");//150">#{rowX.column61}</p:column>
+            createCell(cellStyle, row, 95, "CUAL OTRA RELACION (INTERPERSONAL)");//100">#{rowX.column30}</p:column>
+            createCell(cellStyle, row, 96, "CONTEXTO (INTERPERSONAL)");//200">#{rowX.column62}</p:column>
+            createCell(cellStyle, row, 97, "SEXO AGRESORES (INTERPERSONAL)");//100">#{rowX.column63}</p:column>
 
             //------------------------------------------------------------
             //SE CARGA DATOS PARA VIOLENCIA INTRAFAMILIAR
             //------------------------------------------------------------        
             //tipo de agresor
-            createCell(cellStyle, row, 94, "AG1 PADRE(VIF)");//100">#{rowX.column64}</p:column>
-            createCell(cellStyle, row, 95, "AG2 MADRE(VIF)");//100">#{rowX.column65}</p:column>
-            createCell(cellStyle, row, 96, "AG3 PADRASTRO(VIF)");//100">#{rowX.column67}</p:column>
-            createCell(cellStyle, row, 97, "AG4 MADRASTRA(VIF)");//100">#{rowX.column67}</p:column>
-            createCell(cellStyle, row, 98, "AG5 CONYUGE(VIF)");//100">#{rowX.column68}</p:column>
-            createCell(cellStyle, row, 99, "AG6 HERMANO(VIF)");//100">#{rowX.column69}</p:column>
-            createCell(cellStyle, row, 100, "AG7 HIJO(VIF)");//100">#{rowX.column70}</p:column>
-            createCell(cellStyle, row, 101, "AG8 OTRO(VIF)");//100">#{rowX.column71}</p:column>
-            createCell(cellStyle, row, 102, "CUAL OTRO AGRESOR(VIF)");//100">#{rowX.column28}</p:column>
-            createCell(cellStyle, row, 103, "AG9 SIN DATO(VIF)");//100">#{rowX.column72}</p:column>
-            createCell(cellStyle, row, 104, "AG10 NOVIO(VIF)");//100">#{rowX.column73}</p:column>                                
+            createCell(cellStyle, row, 98, "AG1 PADRE(VIF)");//100">#{rowX.column64}</p:column>
+            createCell(cellStyle, row, 99, "AG2 MADRE(VIF)");//100">#{rowX.column65}</p:column>
+            createCell(cellStyle, row, 100, "AG3 PADRASTRO(VIF)");//100">#{rowX.column67}</p:column>
+            createCell(cellStyle, row, 101, "AG4 MADRASTRA(VIF)");//100">#{rowX.column67}</p:column>
+            createCell(cellStyle, row, 102, "AG5 CONYUGE(VIF)");//100">#{rowX.column68}</p:column>
+            createCell(cellStyle, row, 103, "AG6 HERMANO(VIF)");//100">#{rowX.column69}</p:column>
+            createCell(cellStyle, row, 104, "AG7 HIJO(VIF)");//100">#{rowX.column70}</p:column>
+            createCell(cellStyle, row, 105, "AG8 OTRO(VIF)");//100">#{rowX.column71}</p:column>
+            createCell(cellStyle, row, 106, "CUAL OTRO AGRESOR(VIF)");//100">#{rowX.column28}</p:column>
+            createCell(cellStyle, row, 107, "AG9 SIN DATO(VIF)");//100">#{rowX.column72}</p:column>
+            createCell(cellStyle, row, 108, "AG10 NOVIO(VIF)");//100">#{rowX.column73}</p:column>                                
 
             //tipo de maltrato
-            createCell(cellStyle, row, 105, "MA1 FISICO(VIF)");//100">#{rowX.column74}</p:column>
-            createCell(cellStyle, row, 106, "MA2 PSICOLOGICO(VIF)");//100">#{rowX.column75}</p:column>
-            createCell(cellStyle, row, 107, "MA3 VIOLENCIA SEXUAL(VIF)");//100">#{rowX.column76}</p:column>
-            createCell(cellStyle, row, 108, "MA4 NEGLIGENCIA(VIF)");//100">#{rowX.column77}</p:column>
-            createCell(cellStyle, row, 109, "MA5 ABANDONO(VIF)");//100">#{rowX.column78}</p:column>
-            createCell(cellStyle, row, 110, "MA6 INSTITUCIONAL(VIF)");//100">#{rowX.column79}</p:column>
-            createCell(cellStyle, row, 111, "MA SIN DATO(VIF)");//100">#{rowX.column80}</p:column>
-            createCell(cellStyle, row, 112, "MA8 OTRO(VIF)");//100">#{rowX.column81}</p:column>
-            createCell(cellStyle, row, 113, "CUAL OTRO TIPO MALTRATO(VIF)");//100">#{rowX.column29}</p:column>
+            createCell(cellStyle, row, 109, "MA1 FISICO(VIF)");//100">#{rowX.column74}</p:column>
+            createCell(cellStyle, row, 110, "MA2 PSICOLOGICO(VIF)");//100">#{rowX.column75}</p:column>
+            createCell(cellStyle, row, 111, "MA3 VIOLENCIA SEXUAL(VIF)");//100">#{rowX.column76}</p:column>
+            createCell(cellStyle, row, 112, "MA4 NEGLIGENCIA(VIF)");//100">#{rowX.column77}</p:column>
+            createCell(cellStyle, row, 113, "MA5 ABANDONO(VIF)");//100">#{rowX.column78}</p:column>
+            createCell(cellStyle, row, 114, "MA6 INSTITUCIONAL(VIF)");//100">#{rowX.column79}</p:column>
+            createCell(cellStyle, row, 115, "MA SIN DATO(VIF)");//100">#{rowX.column80}</p:column>
+            createCell(cellStyle, row, 116, "MA8 OTRO(VIF)");//100">#{rowX.column81}</p:column>
+            createCell(cellStyle, row, 117, "CUAL OTRO TIPO MALTRATO(VIF)");//100">#{rowX.column29}</p:column>
 
 
             //------------------------------------------------------------
             //SE CARGA DATOS PARA TRANSITO
             //------------------------------------------------------------
-            createCell(cellStyle, row, 114, "TIPO DE TRANSPORTE");//100">#{rowX.column112}</p:column>
-            createCell(cellStyle, row, 115, "CUAL OTRO TIPO DE TRANSPORTE");//100">#{rowX.column31}</p:column>                                
-            createCell(cellStyle, row, 116, "TIPO TRANSPORTE CONTRAPARTE");//100">#{rowX.column113}</p:column>
-            createCell(cellStyle, row, 117, "CUAL OTRO TIPO TRANSPORTE CONTRAPARTE");//100">#{rowX.column32}</p:column>                                
-            createCell(cellStyle, row, 118, "TIPO DE TRANSPORTE DEL USUARIO");//100">#{rowX.column114}</p:column>
-            createCell(cellStyle, row, 119, "CUAL OTRO TIPO DE TRANSPORTE DEL USUARIO");//100">#{rowX.column33}</p:column>
+            createCell(cellStyle, row, 118, "TIPO DE TRANSPORTE");//100">#{rowX.column112}</p:column>
+            createCell(cellStyle, row, 119, "CUAL OTRO TIPO DE TRANSPORTE");//100">#{rowX.column31}</p:column>                                
+            createCell(cellStyle, row, 120, "TIPO TRANSPORTE CONTRAPARTE");//100">#{rowX.column113}</p:column>
+            createCell(cellStyle, row, 121, "CUAL OTRO TIPO TRANSPORTE CONTRAPARTE");//100">#{rowX.column32}</p:column>                                
+            createCell(cellStyle, row, 122, "TIPO DE TRANSPORTE DEL USUARIO");//100">#{rowX.column114}</p:column>
+            createCell(cellStyle, row, 123, "CUAL OTRO TIPO DE TRANSPORTE DEL USUARIO");//100">#{rowX.column33}</p:column>
 
-            createCell(cellStyle, row, 120, "CINTURON");//100">#{rowX.column115}</p:column>
-            createCell(cellStyle, row, 121, "CASCO MOTO");//100">#{rowX.column116}</p:column>
-            createCell(cellStyle, row, 122, "CASCO BICICLETA");//100">#{rowX.column117}</p:column>
-            createCell(cellStyle, row, 123, "CHALECO");//100">#{rowX.column118}</p:column>
-            createCell(cellStyle, row, 124, "OTRO ELEMENTO");//100">#{rowX.column119}</p:column>
+            createCell(cellStyle, row, 124, "CINTURON");//100">#{rowX.column115}</p:column>
+            createCell(cellStyle, row, 125, "CASCO MOTO");//100">#{rowX.column116}</p:column>
+            createCell(cellStyle, row, 126, "CASCO BICICLETA");//100">#{rowX.column117}</p:column>
+            createCell(cellStyle, row, 127, "CHALECO");//100">#{rowX.column118}</p:column>
+            createCell(cellStyle, row, 128, "OTRO ELEMENTO");//100">#{rowX.column119}</p:column>
 
-            ResultSet resultSet = connection.consult(""
-                    + " SELECT "
-                    + "    victim_id"
-                    + " FROM "
-                    + "    victims "
-                    + " WHERE "
-                    + sqlTags);
             String[] splitDate;
-            while (resultSet.next()) {
+            for (int i = 0; i < rowsDataTableArrayList.size(); i++) {
 
-                RowDataTable rowDataTableList = connection.loadNonFatalInjuryRecord(resultSet.getString(1));
+                RowDataTable rowDataTableList = rowsDataTableArrayList.get(i);
                 rowPosition++;
                 row = sheet.createRow(rowPosition);
                 createCell(row, 0, rowDataTableList.getColumn1());//"CODIGO");
@@ -431,70 +484,84 @@ public class RecordSetsLcenfMB implements Serializable {
                 createCell(row, 77, rowDataTableList.getColumn52());//"DESTINO DEL PACIENTE");
                 createCell(row, 78, rowDataTableList.getColumn36());//"CUAL OTRO DESTINO");
                 //cargo los diagnosticos
-                createCell(row, 79, rowDataTableList.getColumn105());//"CIE-10 1");
-                createCell(row, 80, rowDataTableList.getColumn106());//"CIE-10 2");
-                createCell(row, 81, rowDataTableList.getColumn107());//"CIE-10 3");
-                createCell(row, 82, rowDataTableList.getColumn108());//"CIE-10 4");
-                createCell(row, 83, rowDataTableList.getColumn54());//"MEDICO");
-                createCell(row, 84, rowDataTableList.getColumn56());//"DIGITADOR");
+                createCell(row, 79, rowDataTableList.getColumn122());//"CIE-10 1");
+                createCell(row, 80, rowDataTableList.getColumn105());//"CIE-10 1");
+
+                createCell(row, 81, rowDataTableList.getColumn123());//"CIE-10 1");
+                createCell(row, 82, rowDataTableList.getColumn106());//"CIE-10 2");
+
+                createCell(row, 83, rowDataTableList.getColumn124());//"CIE-10 1");
+                createCell(row, 84, rowDataTableList.getColumn107());//"CIE-10 3");
+
+                createCell(row, 85, rowDataTableList.getColumn125());//"CIE-10 1");
+                createCell(row, 86, rowDataTableList.getColumn108());//"CIE-10 4");
+
+
+
+                createCell(row, 87, rowDataTableList.getColumn54());//"MEDICO");
+                createCell(row, 88, rowDataTableList.getColumn56());//"DIGITADOR");
                 //------------------------------------------------------------
                 //AUTOINFLINGIDA INTENCIONAL
                 //------------------------------------------------------------
-                createCell(row, 85, rowDataTableList.getColumn109());//"INTENTO PREVIO (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column109}</p:column>
-                createCell(row, 86, rowDataTableList.getColumn110());//"ANTECEDENTES MENTALES (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column110}</p:column>
-                createCell(row, 87, rowDataTableList.getColumn111());//"FACTOR PRECIPITANTE (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column111}</p:column>
-                createCell(row, 88, rowDataTableList.getColumn27());//"CUAL OTRO FACTOR (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column27}</p:column>                                
+                createCell(row, 89, rowDataTableList.getColumn109());//"INTENTO PREVIO (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column109}</p:column>
+                createCell(row, 90, rowDataTableList.getColumn110());//"ANTECEDENTES MENTALES (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column110}</p:column>
+                createCell(row, 91, rowDataTableList.getColumn111());//"FACTOR PRECIPITANTE (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column111}</p:column>
+                createCell(row, 92, rowDataTableList.getColumn27());//"CUAL OTRO FACTOR (INTENCIONAL AUTOINFLIGIDA)");//100">#{rowX.column27}</p:column>                                
                 //------------------------------------------------------------
                 //SE CARGA VARIABLE PARA VIOLENCIA INTERPERSONAL
                 //-----------------------------------------------------------
-                createCell(row, 89, rowDataTableList.getColumn60());//"ANTECEDENTES AGRESION (INTERPERSONAL)");//100">#{rowX.column60}</p:column>
-                createCell(row, 90, rowDataTableList.getColumn61());//"RELACION AGRESOR-VICTIMA (INTERPERSONAL)");//150">#{rowX.column61}</p:column>
-                createCell(row, 91, rowDataTableList.getColumn30());//"CUAL OTRA RELACION (INTERPERSONAL)");//100">#{rowX.column30}</p:column>
-                createCell(row, 92, rowDataTableList.getColumn62());//"CONTEXTO (INTERPERSONAL)");//200">#{rowX.column62}</p:column>
-                createCell(row, 93, rowDataTableList.getColumn63());//"SEXO AGRESORES (INTERPERSONAL)");//100">#{rowX.column63}</p:c
+                createCell(row, 93, rowDataTableList.getColumn60());//"ANTECEDENTES AGRESION (INTERPERSONAL)");//100">#{rowX.column60}</p:column>
+                createCell(row, 94, rowDataTableList.getColumn61());//"RELACION AGRESOR-VICTIMA (INTERPERSONAL)");//150">#{rowX.column61}</p:column>
+                createCell(row, 95, rowDataTableList.getColumn30());//"CUAL OTRA RELACION (INTERPERSONAL)");//100">#{rowX.column30}</p:column>
+                createCell(row, 96, rowDataTableList.getColumn62());//"CONTEXTO (INTERPERSONAL)");//200">#{rowX.column62}</p:column>
+                createCell(row, 97, rowDataTableList.getColumn63());//"SEXO AGRESORES (INTERPERSONAL)");//100">#{rowX.column63}</p:c
                 //------------------------------------------------------------
                 //SE CARGA DATOS PARA VIOLENCIA INTRAFAMILIAR
                 //------------------------------------------------------------        
                 //tipo de agresor
-                createCell(row, 94, rowDataTableList.getColumn64());//"AG1 PADRE(VIF)");//100">#{rowX.column64}</p:column>
-                createCell(row, 95, rowDataTableList.getColumn65());//"AG2 MADRE(VIF)");//100">#{rowX.column65}</p:column>
-                createCell(row, 96, rowDataTableList.getColumn66());//"AG3 PADRASTRO(VIF)");//100">#{rowX.column67}</p:column>
-                createCell(row, 97, rowDataTableList.getColumn67());//"AG4 MADRASTRA(VIF)");//100">#{rowX.column67}</p:column>
-                createCell(row, 98, rowDataTableList.getColumn68());//"AG5 CONYUGE(VIF)");//100">#{rowX.column68}</p:column>
-                createCell(row, 99, rowDataTableList.getColumn69());//"AG6 HERMANO(VIF)");//100">#{rowX.column69}</p:column>
-                createCell(row, 100, rowDataTableList.getColumn70());//"AG7 HIJO(VIF)");//100">#{rowX.column70}</p:column>
-                createCell(row, 101, rowDataTableList.getColumn71());//"AG8 OTRO(VIF)");//100">#{rowX.column71}</p:column>
-                createCell(row, 102, rowDataTableList.getColumn28());//"CUAL OTRO AGRESOR(VIF)");//100">#{rowX.column28}</p:column>
-                createCell(row, 103, rowDataTableList.getColumn72());//"AG9 SIN DATO(VIF)");//100">#{rowX.column72}</p:column>
-                createCell(row, 104, rowDataTableList.getColumn73());//"AG10 NOVIO(VIF)");//100">#{rowX.column73}</p:column>                                
+                createCell(row, 98, rowDataTableList.getColumn64());//"AG1 PADRE(VIF)");//100">#{rowX.column64}</p:column>
+                createCell(row, 99, rowDataTableList.getColumn65());//"AG2 MADRE(VIF)");//100">#{rowX.column65}</p:column>
+                createCell(row, 100, rowDataTableList.getColumn66());//"AG3 PADRASTRO(VIF)");//100">#{rowX.column67}</p:column>
+                createCell(row, 101, rowDataTableList.getColumn67());//"AG4 MADRASTRA(VIF)");//100">#{rowX.column67}</p:column>
+                createCell(row, 102, rowDataTableList.getColumn68());//"AG5 CONYUGE(VIF)");//100">#{rowX.column68}</p:column>
+                createCell(row, 103, rowDataTableList.getColumn69());//"AG6 HERMANO(VIF)");//100">#{rowX.column69}</p:column>
+                createCell(row, 104, rowDataTableList.getColumn70());//"AG7 HIJO(VIF)");//100">#{rowX.column70}</p:column>
+                createCell(row, 105, rowDataTableList.getColumn71());//"AG8 OTRO(VIF)");//100">#{rowX.column71}</p:column>
+                createCell(row, 106, rowDataTableList.getColumn28());//"CUAL OTRO AGRESOR(VIF)");//100">#{rowX.column28}</p:column>
+                createCell(row, 107, rowDataTableList.getColumn72());//"AG9 SIN DATO(VIF)");//100">#{rowX.column72}</p:column>
+                createCell(row, 108, rowDataTableList.getColumn73());//"AG10 NOVIO(VIF)");//100">#{rowX.column73}</p:column>                                
                 //tipo de maltrato
-                createCell(row, 105, rowDataTableList.getColumn74());//"MA1 FISICO(VIF)");//100">#{rowX.column74}</p:column>
-                createCell(row, 106, rowDataTableList.getColumn75());//"MA2 PSICOLOGICO(VIF)");//100">#{rowX.column75}</p:column>
-                createCell(row, 107, rowDataTableList.getColumn76());//"MA3 VIOLENCIA SEXUAL(VIF)");//100">#{rowX.column76}</p:column>
-                createCell(row, 108, rowDataTableList.getColumn77());//"MA4 NEGLIGENCIA(VIF)");//100">#{rowX.column77}</p:column>
-                createCell(row, 109, rowDataTableList.getColumn78());//"MA5 ABANDONO(VIF)");//100">#{rowX.column78}</p:column>
-                createCell(row, 110, rowDataTableList.getColumn79());//"MA6 INSTITUCIONAL(VIF)");//100">#{rowX.column79}</p:column>
-                createCell(row, 111, rowDataTableList.getColumn80());//"MA SIN DATO(VIF)");//100">#{rowX.column80}</p:column>
-                createCell(row, 112, rowDataTableList.getColumn81());//"MA8 OTRO(VIF)");//100">#{rowX.column81}</p:column>
-                createCell(row, 113, rowDataTableList.getColumn29());//"CUAL OTRO TIPO MALTRATO(VIF)");//100">#{rowX.column29}</p:column>
+                createCell(row, 109, rowDataTableList.getColumn74());//"MA1 FISICO(VIF)");//100">#{rowX.column74}</p:column>
+                createCell(row, 110, rowDataTableList.getColumn75());//"MA2 PSICOLOGICO(VIF)");//100">#{rowX.column75}</p:column>
+                createCell(row, 111, rowDataTableList.getColumn76());//"MA3 VIOLENCIA SEXUAL(VIF)");//100">#{rowX.column76}</p:column>
+                createCell(row, 112, rowDataTableList.getColumn77());//"MA4 NEGLIGENCIA(VIF)");//100">#{rowX.column77}</p:column>
+                createCell(row, 113, rowDataTableList.getColumn78());//"MA5 ABANDONO(VIF)");//100">#{rowX.column78}</p:column>
+                createCell(row, 114, rowDataTableList.getColumn79());//"MA6 INSTITUCIONAL(VIF)");//100">#{rowX.column79}</p:column>
+                createCell(row, 115, rowDataTableList.getColumn80());//"MA SIN DATO(VIF)");//100">#{rowX.column80}</p:column>
+                createCell(row, 116, rowDataTableList.getColumn81());//"MA8 OTRO(VIF)");//100">#{rowX.column81}</p:column>
+                createCell(row, 117, rowDataTableList.getColumn29());//"CUAL OTRO TIPO MALTRATO(VIF)");//100">#{rowX.column29}</p:column>
                 //------------------------------------------------------------
                 //SE CARGA DATOS PARA TRANSITO
                 //------------------------------------------------------------
-                createCell(row, 114, rowDataTableList.getColumn112());//"TIPO DE TRANSPORTE");//100">#{rowX.column112}</p:column>
-                createCell(row, 115, rowDataTableList.getColumn31());//"CUAL OTRO TIPO DE TRANSPORTE");//100">#{rowX.column31}</p:column>                                
-                createCell(row, 116, rowDataTableList.getColumn113());//"TIPO TRANSPORTE CONTRAPARTE");//100">#{rowX.column113}</p:column>
-                createCell(row, 117, rowDataTableList.getColumn32());//"CUAL OTRO TIPO TRANSPORTE CONTRAPARTE");//100">#{rowX.column32}</p:column>                                
-                createCell(row, 118, rowDataTableList.getColumn114());//"TIPO DE TRANSPORTE DEL USUARIO");//100">#{rowX.column114}</p:column>
-                createCell(row, 119, rowDataTableList.getColumn33());//"CUAL OTRO TIPO DE TRANSPORTE DEL USUARIO");//100">#{rowX.column33}</p:column>
-                createCell(row, 120, rowDataTableList.getColumn115());//"CINTURON");//100">#{rowX.column115}</p:column>
-                createCell(row, 121, rowDataTableList.getColumn116());//"CASCO MOTO");//100">#{rowX.column116}</p:column>
-                createCell(row, 122, rowDataTableList.getColumn117());//"CASCO BICICLETA");//100">#{rowX.column117}</p:column>
-                createCell(row, 123, rowDataTableList.getColumn118());//"CHALECO");//100">#{rowX.column118}</p:column>
-                createCell(row, 124, rowDataTableList.getColumn119());//"OTRO ELEMENTO");//100">#{rowX.column119}</p:column>
+                createCell(row, 118, rowDataTableList.getColumn112());//"TIPO DE TRANSPORTE");//100">#{rowX.column112}</p:column>
+                createCell(row, 119, rowDataTableList.getColumn31());//"CUAL OTRO TIPO DE TRANSPORTE");//100">#{rowX.column31}</p:column>                                
+                createCell(row, 120, rowDataTableList.getColumn113());//"TIPO TRANSPORTE CONTRAPARTE");//100">#{rowX.column113}</p:column>
+                createCell(row, 121, rowDataTableList.getColumn32());//"CUAL OTRO TIPO TRANSPORTE CONTRAPARTE");//100">#{rowX.column32}</p:column>                                
+                createCell(row, 122, rowDataTableList.getColumn114());//"TIPO DE TRANSPORTE DEL USUARIO");//100">#{rowX.column114}</p:column>
+                createCell(row, 123, rowDataTableList.getColumn33());//"CUAL OTRO TIPO DE TRANSPORTE DEL USUARIO");//100">#{rowX.column33}</p:column>
+                createCell(row, 124, rowDataTableList.getColumn115());//"CINTURON");//100">#{rowX.column115}</p:column>
+                createCell(row, 125, rowDataTableList.getColumn116());//"CASCO MOTO");//100">#{rowX.column116}</p:column>
+                createCell(row, 126, rowDataTableList.getColumn117());//"CASCO BICICLETA");//100">#{rowX.column117}</p:column>
+                createCell(row, 127, rowDataTableList.getColumn118());//"CHALECO");//100">#{rowX.column118}</p:column>
+                createCell(row, 128, rowDataTableList.getColumn119());//"OTRO ELEMENTO");//100">#{rowX.column119}</p:column>
+                tuplesProcessed++;
+                progress = (int) (tuplesProcessed * 100) / tuplesNumber;
+                System.out.println(progress);
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(RecordSetsHomicideMB.class.getName()).log(Level.SEVERE, null, ex);
         }
+        progress = 100;
     }
 
     public void load() {
@@ -524,8 +591,6 @@ public class RecordSetsLcenfMB implements Serializable {
             }
             if (nonFatalInjuriesList != null) {
                 for (int j = 0; j < nonFatalInjuriesList.size(); j++) {
-
-
                     if (nonFatalInjuriesList.get(j).getNonFatalDomesticViolence() != null) {
                         nonFatalDomesticViolenceFacade.remove(nonFatalInjuriesList.get(j).getNonFatalDomesticViolence());
                     }
@@ -543,15 +608,6 @@ public class RecordSetsLcenfMB implements Serializable {
                     //----------------------------------------------------------
                 }
             }
-//            //quito los elementos seleccionados de rowsDataTableList seleccion de 
-//            for (int j = 0; j < selectedRowsDataTable.length; j++) {
-//                for (int i = 0; i < rowDataTableList.size(); i++) {
-//                    if (selectedRowsDataTable[j].getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
-//                        rowDataTableList.remove(i);
-//                        break;
-//                    }
-//                }
-//            }
             //deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
@@ -637,5 +693,37 @@ public class RecordSetsLcenfMB implements Serializable {
 
     public void setTable_model(LazyDataModel<RowDataTable> table_model) {
         this.table_model = table_model;
+    }
+
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
+    public String getTotalRecords() {
+        return totalRecords;
+    }
+
+    public void setTotalRecords(String totalRecords) {
+        this.totalRecords = totalRecords;
+    }
+
+    public String getEndDateStr() {
+        return endDateStr;
+    }
+
+    public void setEndDateStr(String endDateStr) {
+        this.endDateStr = endDateStr;
+    }
+
+    public String getInitialDateStr() {
+        return initialDateStr;
+    }
+
+    public void setInitialDateStr(String initialDateStr) {
+        this.initialDateStr = initialDateStr;
     }
 }

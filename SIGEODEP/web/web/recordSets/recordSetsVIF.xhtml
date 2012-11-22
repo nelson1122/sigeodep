@@ -11,7 +11,11 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
-            <script type="text/javascript">                  
+            <script type="text/javascript">
+                function startA() {                                          
+                    document.getElementById('IdForm1:IdBtnExport').click();                    
+                    //$('#IdPaint').click();
+                }
             </script> 
         </ui:define>
         <!--=================================================================-->
@@ -33,18 +37,52 @@
                 <p:panelGrid id="IdPanel1" style="position: absolute;  width: 750px;  margin-left: -375px; left: 50%;" >                            
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
-                            <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="CONJUNTO: #{recordSetsVifMB.data} "/>  
+                            <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/>
                         </p:column>                                       
                     </p:row>
                     <p:row>  
                         <p:column>
-                            <br/>                            
+                            <br/>
+                            <p:panelGrid>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        <h:outputLabel value="Total de registros:"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsVifMB.totalRecords}"/>                                        
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        <h:outputLabel value="Fecha Inicial:"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsVifMB.initialDateStr}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">                                                                    
+                                        <h:outputLabel value="Fecha Final:"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsVifMB.endDateStr}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">                                                                    
+                                        <h:outputLabel value="Conjunto(s):"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsVifMB.data}"/>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
                             <p:dataTable 
                                 id="IdSearchTable" 
                                 var="rowX" 
                                 value="#{recordSetsVifMB.table_model}" 
-                                selection="#{recordSetsSuicideMB.selectedRowsDataTable}" 
+                                selection="#{recordSetsVifMB.selectedRowsDataTable}" 
                                 selectionMode="multiple"
                                 rowKey="#{rowX.column1}"  
                                 scrollWidth="730"                        
@@ -156,7 +194,20 @@
                                 <p:column headerText="AR12 OTRA?" width="100">#{rowX.column78}</p:column>
                                 <p:column headerText="AR CUAL OTRA" width="100">#{rowX.column30}</p:column>
                                 <p:column headerText="AR13 SIN DATO" width="100">#{rowX.column79}</p:column>
-                            </p:dataTable>                            
+                            </p:dataTable> 
+                            <br/>
+                            <p:progressBar 
+                                id="IdProgresValidate" 
+                                interval="500" 
+                                widgetVar="pbAjaxValidate" 
+                                ajax="true" 
+                                value="#{recordSetsVifMB.progress}" 
+                                labelTemplate="{value}%">          
+                                <p:ajax 
+                                    event="complete" 
+                                    listener="#{recordSetsVifMB.onCompleteLoad}" 
+                                    update="IdProgresValidate"/>  
+                            </p:progressBar>
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
                                 <p:row>  
@@ -176,15 +227,20 @@
                                             icon="ui-icon-close"
                                             oncomplete="dialogDelete.show()"                                            
                                             update=":IdForm2:IdDialogDelete :IdForm1:message"/>                                        
+                                        <p:commandButton 
+                                            id="IdR" 
+                                            value="Exportar" 
+                                            onclick="pbAjaxValidate.start();"
+                                            oncomplete="startA();"
+                                            actionListener="#{recordSetsVifMB.postProcessXLS1}"/>                                                                                
+                                        <h:commandLink id="IdComandLink" style="display: none" >
+                                            <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="LCENF"  preProcessor="#{recordSetsVifMB.postProcessXLS}"/>  
+                                        </h:commandLink>
                                         <p:dataTable id="IdOutFile" style="display: none">
                                             <p:column>                                                  
                                             </p:column>
                                         </p:dataTable>
-                                        <h:commandLink >  
-                                            <!---p:graphicImage style="margin-top: 200px;" value="../../resources/img/excel.png"/-->
-                                            <p:button value="Exportar"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="VIF" postProcessor="#{recordSetsVifMB.postProcessXLS}"/>  
-                                        </h:commandLink>
                                     </p:column>                            
                                 </p:row>
                             </p:panelGrid>

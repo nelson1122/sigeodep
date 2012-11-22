@@ -32,40 +32,33 @@
             <p:layout fullPage="true" >  
                 <!-- ****************************** MENU LATERAL (PARTE IZQUIERDA) ************************ -->
                 <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
-                    <h:form id="IdForm0">
-                        <!-- 
-                        timeout="600000" 
-                        document.getElementById('IdForm0:btnLogout').click();
-                        -->
-                        <!--p:idleMonitor 
-                            timeout="2000"
-                            onidle="document.getElementById('IdForm0:btnCountLogout').click();"
-                            onactive="document.getElementById('IdForm0:btnResetLogout').click();"/ -->
+                    <h:form id="IdForm0">                        
                         <p:idleMonitor timeout="3600000">
                             <p:ajax event="active" listener="#{loginMB.logout1}"/>
                         </p:idleMonitor>
                         <br/><br/>
                         <p:graphicImage value="../../resources/img/logo2.png"/>
                         <br/><br/>
-                        <!--p:graphicImage value="# {loginMB.chartImage}" /-->
+                        
                         <p:accordionPanel  activeIndex="#{loginMB.activeIndexAcoordion1}" >                            
                             <p:tab title="REGISTRO DE DATOS">
                                 <p:menu style="width: 200px; z-index:23; overflow: no-display;">
                                     <p:menuitem 
                                         icon="ui-icon-document"
-                                        value="Conjuntos desde Archivo"                                        
-                                        action="proccesFile" 
-                                        ajax="false"/>  
+                                        value="Conjuntos desde Archivo"
+                                        actionListener="#{recordSetsMB.reset}"
+                                        action="proccesFile"
+                                        ajax="false"/>
                                     <p:menuitem 
                                         icon="ui-icon-clipboard"
-                                        value="Registro desde Formularios" 
-                                        action="forms" 
+                                        value="Registro desde Formularios"
+                                        action="forms"
                                         ajax="false"/>  
                                     <p:menuitem 
                                         icon="ui-icon-newwin" 
                                         value="Gestion de Conjuntos" 
-                                        actionListener="#{recordSetsMB.reset}"                                            
-                                        action="recordSets"  
+                                        actionListener="#{recordSetsMB.reset}"
+                                        action="recordSets"
                                         ajax="false"/>
                                 </p:menu> 
                             </p:tab>

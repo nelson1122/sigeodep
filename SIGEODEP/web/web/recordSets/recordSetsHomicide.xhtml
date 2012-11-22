@@ -12,7 +12,11 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
-            <script type="text/javascript">                  
+            <script type="text/javascript">   
+                function startA() {                                          
+                    document.getElementById('IdForm1:IdBtnExport').click();                    
+                    //$('#IdPaint').click();
+                }
             </script> 
         </ui:define>
         <!--=================================================================-->
@@ -34,21 +38,47 @@
                 <p:panelGrid id="IdPanel1" style="position: absolute;  width: 750px;  margin-left: -375px; left: 50%;" >                            
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
-                            <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="CONJUNTO: #{recordSetsHomicideMB.data} "/>  
-                            <p:dataTable id="IdOutFile2" style="display: none">
-                                <p:column>                                                  
-                                </p:column>
-                            </p:dataTable>
-                            <!-- h:commandLink >  
-                                <p:graphicImage value="../../resources/img/excel.png"/>
-                                <p:dataExporter type="csv" target="IdOutFile2" fileName="salidaXML" postProcessor="# {uploadFileMB.crearCopia}"/>  
-                            </h:commandLink -->
+                            <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/>
                         </p:column>                                       
                     </p:row>
                     <p:row>  
                         <p:column>
-                            <br/>                            
+                            <br/>
+                            <p:panelGrid>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        <h:outputLabel value="Total de registros:"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsHomicideMB.totalRecords}"/>                                        
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        <h:outputLabel value="Fecha Inicial:"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsHomicideMB.initialDateStr}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">                                                                    
+                                        <h:outputLabel value="Fecha Final:"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsHomicideMB.endDateStr}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">                                                                    
+                                        <h:outputLabel value="Conjunto(s):"/>
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputLabel value="#{recordSetsHomicideMB.data}"/>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
                             <p:dataTable 
                                 id="IdSearchTable" 
                                 var="rowX" 
@@ -103,7 +133,20 @@
                                 <p:column headerText="NARRACION DEL HECHO" width="700">#{rowX.column19}</p:column>
                                 <p:column headerText="NIVEL DE ALCOHOL" width="100">#{rowX.column21}</p:column>
                                 <p:column headerText="TIPO NIVEL DE ALCOHOL" width="100">#{rowX.column22}</p:column>
-                            </p:dataTable>                            
+                            </p:dataTable>        
+                            <br/>
+                            <p:progressBar 
+                                id="IdProgresValidate" 
+                                interval="500" 
+                                widgetVar="pbAjaxValidate" 
+                                ajax="true" 
+                                value="#{recordSetsHomicideMB.progress}" 
+                                labelTemplate="{value}%">          
+                                <p:ajax 
+                                    event="complete" 
+                                    listener="#{recordSetsHomicideMB.onCompleteLoad}" 
+                                    update="IdProgresValidate"/>  
+                            </p:progressBar>
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
                                 <p:row>  
@@ -123,15 +166,20 @@
                                             icon="ui-icon-close"
                                             oncomplete="dialogDelete.show()"                                            
                                             update=":IdForm2:IdDialogDelete :IdForm1:message"/>                                        
+                                        <p:commandButton 
+                                            id="IdR" 
+                                            value="Exportar" 
+                                            onclick="pbAjaxValidate.start();"
+                                            oncomplete="startA();"
+                                            actionListener="#{recordSetsHomicideMB.postProcessXLS1}"/>                                                                                
+                                        <h:commandLink id="IdComandLink" style="display: none" >
+                                            <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="Homicidios"  preProcessor="#{recordSetsHomicideMB.postProcessXLS}"/>  
+                                        </h:commandLink>
                                         <p:dataTable id="IdOutFile" style="display: none">
                                             <p:column>                                                  
                                             </p:column>
                                         </p:dataTable>
-                                        <h:commandLink >  
-                                            <!---p:graphicImage style="margin-top: 200px;" value="../../resources/img/excel.png"/-->
-                                            <p:button value="Exportar"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="HOMICIDIOS" postProcessor="#{recordSetsHomicideMB.postProcessXLS}"/>  
-                                        </h:commandLink>
                                     </p:column>                            
                                 </p:row>
                             </p:panelGrid>

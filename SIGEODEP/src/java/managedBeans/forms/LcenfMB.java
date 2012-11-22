@@ -4,7 +4,6 @@
  */
 package managedBeans.forms;
 
-
 import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
@@ -41,7 +40,6 @@ public class LcenfMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
 
-    
     //------------------------
     @EJB
     InsuranceFacade insuranceFacade;
@@ -419,12 +417,13 @@ public class LcenfMB implements Serializable {
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
     /*
-     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
      */
+
     @PostConstruct
     private void initialize() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
     //----------------------------------------------------------------------
@@ -433,8 +432,6 @@ public class LcenfMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public LcenfMB() {
-
-        
         idElements1 = "IdHealthInstitution IdName IdIdentificationType IdIdentificationNumber IdMeasureOfAge "
                 + "IdValueAge IdGender IdJob IdDisplaced IdHandicapped IdEthnicGroup IdOtherEthnicGroup "
                 + "IdTelephoneHome IdNeighborhoodEvent IdNeighborhoodsEventCode IdDirectionEvent "
@@ -504,12 +501,12 @@ public class LcenfMB implements Serializable {
     }
 
     public void reset() {
-        
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         //determino el usuario
         LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        currentUser=loginMB.getCurrentUser();
-        
+        currentUser = loginMB.getCurrentUser();
+
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         loading = true;
@@ -2376,7 +2373,7 @@ public class LcenfMB implements Serializable {
                     othersList.add(newOther);
                 }
                 if (otherFactor.trim().length() != 0) {//9.	Cual otro factor precipitante(Autoinflingida intencional)
-                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 9));                    
+                    newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 9));
                     newOther.setValueText(otherFactor);
                     othersList.add(newOther);
                 }
@@ -2428,9 +2425,9 @@ public class LcenfMB implements Serializable {
 
                 newVictim.setOthersList(othersList);
 
-                
-                
-                
+
+
+
                 //--------------------------------------------------------------
                 //--------------AUTOCOMPLETAR LOS FORMULARIOS-------------------
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
@@ -2567,7 +2564,7 @@ public class LcenfMB implements Serializable {
                         }
                     }
                 }
-                
+
                 //--------------------------------------------------------------
                 //-------------------GUARDAR------------------------------------
                 //if (validationsErrors.isEmpty()) {
@@ -2577,9 +2574,9 @@ public class LcenfMB implements Serializable {
                 openDialogPrevious = "";
                 openDialogNew = "";
                 openDialogDelete = "";
-                
-                
-                
+
+
+
                 if (currentNonFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     System.out.println("guardando nuevo registro");
 
@@ -3247,7 +3244,7 @@ public class LcenfMB implements Serializable {
         }
         if (s) {
             try {
-                rowDataTableList = new ArrayList<RowDataTable>();                
+                rowDataTableList = new ArrayList<RowDataTable>();
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "non_fatal_injuries.non_fatal_injury_id, ";
@@ -3611,6 +3608,8 @@ public class LcenfMB implements Serializable {
     public void changeMonthEvent() {
         try {
             int monthInt = Integer.parseInt(currentMonthEvent);
+
+
             if (monthInt < 1 || monthInt > 12) {
                 currentMonthEvent = "";
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El mes del evento debe ser un número del 1 al 12");
@@ -3627,18 +3626,20 @@ public class LcenfMB implements Serializable {
     }
 
     public void changeYearEvent() {
+        Calendar cal = Calendar.getInstance();
+        int yearSystem = cal.get(Calendar.YEAR);
         try {
             int yearInt = Integer.parseInt(currentYearEvent);
-            if (yearInt < 0) {
+            if (yearInt < 2003 || yearInt < yearSystem) {
                 currentYearEvent = "";
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número, y mayor que cero");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número del 2003 hasta " + String.valueOf(yearSystem));
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
             if (currentYearEvent.length() != 0) {
                 currentYearEvent = "";
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número del 2003 hasta " + String.valueOf(yearSystem));
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
@@ -3766,18 +3767,20 @@ public class LcenfMB implements Serializable {
     }
 
     public void changeYearConsult() {
+        Calendar cal = Calendar.getInstance();
+        int yearSystem = cal.get(Calendar.YEAR);
         try {
             int yearInt = Integer.parseInt(currentYearConsult);
-            if (yearInt < 0) {
+            if (yearInt < 2003 || yearInt < yearSystem) {
                 currentYearConsult = "";
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año de la consulta debe ser un número, y mayor que cero");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año de la consulta debe ser un número del 2003 hasta " + String.valueOf(yearSystem));
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
             if (currentYearConsult.length() != 0) {
                 currentYearConsult = "";
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número, y mayor que cero");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año de la consulta debe ser un número del 2003 hasta " + String.valueOf(yearSystem));
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }

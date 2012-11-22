@@ -10,7 +10,6 @@ import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -22,7 +21,10 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.forms.VIFMB;
 import model.dao.*;
-import model.pojo.*;
+import model.pojo.NonFatalDomesticViolence;
+import model.pojo.NonFatalInjuries;
+import model.pojo.Tags;
+import model.pojo.Victims;
 import org.apache.poi.hssf.usermodel.*;
 import org.primefaces.model.LazyDataModel;
 
@@ -36,12 +38,7 @@ public class RecordSetsVifMB implements Serializable {
 
     //--------------------
     @EJB
-    TagsFacade tagsFacade;
-    private List<Tags> tagsList;
-    private Tags currentTag;
-    private NonFatalDomesticViolence currentNonFatalDomesticViolence;
-//    @EJB
-//    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
+    TagsFacade tagsFacade;    
     @EJB
     NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
     @EJB
@@ -62,7 +59,9 @@ public class RecordSetsVifMB implements Serializable {
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
     @EJB
     InjuriesFacade injuriesFacade;
-    //private RowDataTable selectedRowDataTable;
+    private List<Tags> tagsList;
+    private Tags currentTag;
+    private NonFatalDomesticViolence currentNonFatalDomesticViolence;
     private RowDataTable[] selectedRowsDataTable;
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
@@ -71,17 +70,24 @@ public class RecordSetsVifMB implements Serializable {
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
     private String data = "-";
-    private String hours = "";
-    private String minutes = "";
-    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-    private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     private VIFMB vifMB;
     private String openForm = "";
-    private RecordSetsMB recordSetsMB;
     private LazyDataModel<RowDataTable> table_model;
+    private ArrayList<RowDataTable> rowsDataTableArrayList;
     private ConnectionJdbcMB connection;
+    private String sqlTags = "";
+    private String totalRecords = "0";
+    private String initialDateStr = "";
+    private String endDateStr = "";
+    private int tuplesNumber;
+    private Integer tuplesProcessed;
     private int progress = 0;//PROGRESO AL CREAR XLS
-    String sqlTags = "";
+    private String sql = "";
+
+    public void onCompleteLoad() {
+        //progress = 0;
+        System.out.println("Termino generacion de XLSX");
+    }
 
     public RecordSetsVifMB() {
         tagsList = new ArrayList<Tags>();
@@ -106,30 +112,59 @@ public class RecordSetsVifMB implements Serializable {
     }
 
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
-        //CREO LA LISTA DE TAGS SELECCIONADOS        
-        tagsList = new ArrayList<Tags>();
-        data="";
-        for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
-            if (i == 0) {
-                data = data + " " + selectedRowsDataTableTags[i].getColumn2() + "  ";
-            } else {
-                data = data + " || " + selectedRowsDataTableTags[i].getColumn2();
+        try {
+            //CREO LA LISTA DE TAGS SELECCIONADOS        
+            tagsList = new ArrayList<Tags>();
+            data = "";
+            for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
+                if (i == 0) {
+                    data = data + " " + selectedRowsDataTableTags[i].getColumn2() + "  ";
+                } else {
+                    data = data + " || " + selectedRowsDataTableTags[i].getColumn2();
+                }
+                tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
             }
-            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
-        }
-        //DETERMINO TOTAL DE REGISTROS
-        int rowCountAux = 0;
-        sqlTags = "";
-        for (int i = 0; i < tagsList.size(); i++) {
-            rowCountAux = rowCountAux + nonFatalDomesticViolenceFacade.countVIF(tagsList.get(i).getTagId());
-            if (i != tagsList.size() - 1) {
-                sqlTags = sqlTags + " tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
-            } else {
-                sqlTags = sqlTags + " tag_id = " + String.valueOf(tagsList.get(i).getTagId());
+            //DETERMINO TOTAL DE REGISTROS
+            sql = "";
+            sql = sql + " SELECT ";
+            sql = sql + " count(*)";
+            sql = sql + " FROM ";
+            sql = sql + " public.victims, ";
+            sql = sql + " public.non_fatal_injuries";
+            sql = sql + " WHERE ";
+            sql = sql + " non_fatal_injuries.victim_id = victims.victim_id AND";
+            for (int i = 0; i < tagsList.size(); i++) {
+                sql = sql + " tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
             }
+            sql = sql + " non_fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND";
+            sql = sql + " non_fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+            ResultSet resultSet = connection.consult(sql);
+            totalRecords = "0";
+            if (resultSet.next()) {
+                totalRecords = String.valueOf(resultSet.getInt(1));
+            }
+            System.out.println("Total de registros = " + totalRecords);
+            //DETERMINO EL ID DE CADA REGISTRO            
+            sql = "";
+            sql = sql + " SELECT ";
+            sql = sql + " non_fatal_injuries.victim_id";
+            sql = sql + " FROM ";
+            sql = sql + " public.victims, ";
+            sql = sql + " public.non_fatal_injuries";
+            sql = sql + " WHERE ";
+            sql = sql + " non_fatal_injuries.victim_id = victims.victim_id AND";
+            for (int i = 0; i < tagsList.size(); i++) {
+                sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
+            }
+            sql = sql + " non_fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND";
+            sql = sql + " non_fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+
+            //CONSTRUYO EL TABLE_MODEL
+            table_model = new LazyRecordSetsDataModel(Integer.parseInt(totalRecords), sql, FormsEnum.SCC_F_033);
+
+        } catch (SQLException ex) {
+            Logger.getLogger(RecordSetsLcenfMB.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("Total de registros = " + String.valueOf(rowCountAux));
-        table_model = new LazyRecordSetsDataModel(rowCountAux, sqlTags, FormsEnum.SCC_F_033);
     }
 
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
@@ -145,8 +180,31 @@ public class RecordSetsVifMB implements Serializable {
         cell.setCellValue(new HSSFRichTextString(value));
     }
 
+    public void postProcessXLS1() {
+        try {
+            progress = 0;
+            tuplesNumber = Integer.parseInt(totalRecords);
+            tuplesProcessed = 0;
+            rowsDataTableArrayList = new ArrayList<RowDataTable>();
+            ResultSet resultSet = connection.consult(sql);
+            while (resultSet.next()) {
+                rowsDataTableArrayList.add(connection.loadNonFatalDomesticViolenceRecord(resultSet.getString(1)));
+                tuplesProcessed++;
+                progress = (int) (tuplesProcessed * 100) / tuplesNumber;
+                System.out.println(progress);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(RecordSetsHomicideMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        progress = 100;
+    }
+    
     public void postProcessXLS(Object document) {
         try {
+            progress = 0;
+            tuplesNumber = Integer.parseInt(totalRecords);
+            tuplesProcessed = 0;
+
             int rowPosition = 0;
             HSSFWorkbook book = (HSSFWorkbook) document;
             HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
@@ -156,7 +214,8 @@ public class RecordSetsVifMB implements Serializable {
             font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
             cellStyle.setFont(font);
 
-            row = sheet.createRow(rowPosition);// Se crea una fila dentro de la hoja        
+            row = sheet.createRow(rowPosition);// Se crea una fila dentro de la hoja
+            
             createCell(cellStyle, row, 0, "CODIGO INTERNO");
             createCell(cellStyle, row, 1, "INSTITUCION RECEPTORA");
             createCell(cellStyle, row, 2, "NOMBRES Y APELLIDOS");
@@ -216,7 +275,6 @@ public class RecordSetsVifMB implements Serializable {
             createCell(cellStyle, row, 47, "GRUPO VULNERABLE");//100
             createCell(cellStyle, row, 48, "OTRO GRUPO VULNERABLE");
 
-
             //tipo de agresor
             createCell(cellStyle, row, 49, "AG1 PADRE(VIF)");
             createCell(cellStyle, row, 50, "AG2 MADRE(VIF)");
@@ -257,17 +315,10 @@ public class RecordSetsVifMB implements Serializable {
             createCell(cellStyle, row, 81, "AR CUAL OTRA");
             createCell(cellStyle, row, 82, "AR13 SIN DATO");
 
-            ResultSet resultSet = connection.consult(""
-                    + " SELECT "
-                    + "    victim_id"
-                    + " FROM "
-                    + "    victims "
-                    + " WHERE "
-                    + sqlTags);
             String[] splitDate;
-            while (resultSet.next()) {
+            for (int i = 0; i < rowsDataTableArrayList.size(); i++) {
 
-                RowDataTable rowDataTableList = connection.loadNonFatalDomesticViolenceRecord(resultSet.getString(1));
+                RowDataTable rowDataTableList = rowsDataTableArrayList.get(i);
                 rowPosition++;
                 row = sheet.createRow(rowPosition);
 
@@ -336,12 +387,10 @@ public class RecordSetsVifMB implements Serializable {
                 createCell(row, 43, rowDataTableList.getColumn41());//"GRADO (QUEMADOS)");//100">#{rowX.column41}</p:column>
                 createCell(row, 44, rowDataTableList.getColumn42());//"PORCENTAJE(QUEMADOS)");//100">#{rowX.column42}</p:column>
 
-
                 createCell(row, 45, rowDataTableList.getColumn10());//"GRUPO ETNICO");//100">#{rowX.column10}</p:column>
                 createCell(row, 46, rowDataTableList.getColumn26());//"OTRO GRUPO ETNICO");//100">#{rowX.column26}</p:column>
                 createCell(row, 47, rowDataTableList.getColumn16());//"GRUPO VULNERABLE");//100">#{rowX.column16}</p:column>
                 createCell(row, 48, rowDataTableList.getColumn27());//"OTRO GRUPO VULNERABLE");//100">#{rowX.column27}</p:column>
-
 
                 //tipo de agresor
                 createCell(row, 49, rowDataTableList.getColumn49());//"AG1 PADRE(VIF)");//100">#{rowX.column49}</p:column>
@@ -383,7 +432,7 @@ public class RecordSetsVifMB implements Serializable {
                 createCell(row, 81, rowDataTableList.getColumn30());//"AR CUAL OTRA");//100">#{rowX.column30}</p:column>
                 createCell(row, 82, rowDataTableList.getColumn79());//"AR13 SIN DATO");//100">#{rowX.column79}</p:column>
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(RecordSetsHomicideMB.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -517,5 +566,37 @@ public class RecordSetsVifMB implements Serializable {
 
     public void setTable_model(LazyDataModel<RowDataTable> table_model) {
         this.table_model = table_model;
+    }
+    
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
+    public String getTotalRecords() {
+        return totalRecords;
+    }
+
+    public void setTotalRecords(String totalRecords) {
+        this.totalRecords = totalRecords;
+    }
+
+    public String getEndDateStr() {
+        return endDateStr;
+    }
+
+    public void setEndDateStr(String endDateStr) {
+        this.endDateStr = endDateStr;
+    }
+
+    public String getInitialDateStr() {
+        return initialDateStr;
+    }
+
+    public void setInitialDateStr(String initialDateStr) {
+        this.initialDateStr = initialDateStr;
     }
 }
