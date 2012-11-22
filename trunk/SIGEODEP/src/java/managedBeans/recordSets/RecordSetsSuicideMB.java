@@ -10,7 +10,6 @@ import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -22,7 +21,10 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.forms.SuicideMB;
 import model.dao.*;
-import model.pojo.*;
+import model.pojo.FatalInjuries;
+import model.pojo.FatalInjurySuicide;
+import model.pojo.Tags;
+import model.pojo.Victims;
 import org.apache.poi.hssf.usermodel.*;
 import org.primefaces.model.LazyDataModel;
 
@@ -75,17 +77,25 @@ public class RecordSetsSuicideMB implements Serializable {
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
     private String data = "-";
-    private String hours = "";
-    private String minutes = "";
-    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-    private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     private SuicideMB suicideMB;
     private String openForm = "";
-    private RecordSetsMB recordSetsMB;
     private LazyDataModel<RowDataTable> table_model;
+    private ArrayList<RowDataTable> rowsDataTableArrayList;
     private ConnectionJdbcMB connection;
+    private String totalRecords = "0";
+    private String initialDateStr = "";
+    private String endDateStr = "";
+    private int tuplesNumber;
+    private Integer tuplesProcessed;
     private int progress = 0;//PROGRESO AL CREAR XLS
-    String sqlTags = "";
+    private String sql = "";
+    private String sqlTags = "";
+
+    public void onCompleteLoad() {
+        //progress = 0;
+        System.out.println("Termino generacion de XLSX");
+    }
+    
 
     public RecordSetsSuicideMB() {
         tagsList = new ArrayList<Tags>();
@@ -110,30 +120,59 @@ public class RecordSetsSuicideMB implements Serializable {
     }
 
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
-        //CREO LA LISTA DE TAGS SELECCIONADOS        
-        tagsList = new ArrayList<Tags>();
-        data="";
-        for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
-            if (i == 0) {
-                data = data + " " + selectedRowsDataTableTags[i].getColumn2() + "  ";
-            } else {
-                data = data + " || " + selectedRowsDataTableTags[i].getColumn2();
+        try {
+            //CREO LA LISTA DE TAGS SELECCIONADOS        
+            tagsList = new ArrayList<Tags>();
+            data = "";
+            for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
+                if (i == 0) {
+                    data = data + " " + selectedRowsDataTableTags[i].getColumn2() + "  ";
+                } else {
+                    data = data + " || " + selectedRowsDataTableTags[i].getColumn2();
+                }
+                tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
             }
-            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
-        }
-        //DETERMINO TOTAL DE REGISTROS
-        int rowCountAux = 0;
-        sqlTags = "";
-        for (int i = 0; i < tagsList.size(); i++) {
-            rowCountAux = rowCountAux + fatalInjurySuicideFacade.countSuicide(tagsList.get(i).getTagId());
-            if (i != tagsList.size() - 1) {
-                sqlTags = sqlTags + " tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
-            } else {
-                sqlTags = sqlTags + " tag_id = " + String.valueOf(tagsList.get(i).getTagId());
+            //DETERMINO TOTAL DE REGISTROS
+            sql = "";
+            sql = sql + " SELECT ";
+            sql = sql + " count(*)";
+            sql = sql + " FROM ";
+            sql = sql + " public.victims, ";
+            sql = sql + " public.fatal_injuries";
+            sql = sql + " WHERE ";
+            sql = sql + " fatal_injuries.victim_id = victims.victim_id AND";
+            for (int i = 0; i < tagsList.size(); i++) {
+                sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
             }
+            sql = sql + " fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND";
+            sql = sql + " fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+            ResultSet resultSet = connection.consult(sql);
+            totalRecords = "0";
+            if (resultSet.next()) {
+                totalRecords = String.valueOf(resultSet.getInt(1));
+            }
+            System.out.println("Total de registros = " + totalRecords);
+            //DETERMINO EL ID DE CADA REGISTRO            
+            sql = "";
+            sql = sql + " SELECT ";
+            sql = sql + " fatal_injuries.victim_id";
+            sql = sql + " FROM ";
+            sql = sql + " public.victims, ";
+            sql = sql + " public.fatal_injuries";
+            sql = sql + " WHERE ";
+            sql = sql + " fatal_injuries.victim_id = victims.victim_id AND";
+            for (int i = 0; i < tagsList.size(); i++) {
+                sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
+            }
+            sql = sql + " fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND";
+            sql = sql + " fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+
+            //CONSTRUYO EL TABLE_MODEL
+            table_model = new LazyRecordSetsDataModel(Integer.parseInt(totalRecords), sql, FormsEnum.SCC_F_030);
+
+        } catch (SQLException ex) {
+            Logger.getLogger(RecordSetsLcenfMB.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("Total de registros = " + String.valueOf(rowCountAux));
-        table_model = new LazyRecordSetsDataModel(rowCountAux, sqlTags, FormsEnum.SCC_F_030);
     }
 
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
@@ -149,8 +188,31 @@ public class RecordSetsSuicideMB implements Serializable {
         cell.setCellValue(new HSSFRichTextString(value));
     }
 
+    public void postProcessXLS1() {
+        try {
+            progress = 0;
+            tuplesNumber = Integer.parseInt(totalRecords);
+            tuplesProcessed = 0;
+            rowsDataTableArrayList = new ArrayList<RowDataTable>();
+            ResultSet resultSet = connection.consult(sql);
+            while (resultSet.next()) {
+                rowsDataTableArrayList.add(connection.loadFatalInjurySuicideRecord(resultSet.getString(1)));
+                tuplesProcessed++;
+                progress = (int) (tuplesProcessed * 100) / tuplesNumber;
+                System.out.println(progress);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(RecordSetsHomicideMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        progress = 100;
+    }
+    
     public void postProcessXLS(Object document) {
         try {
+            progress = 0;
+            tuplesNumber = Integer.parseInt(totalRecords);
+            tuplesProcessed = 0;
+
             int rowPosition = 0;
             HSSFWorkbook book = (HSSFWorkbook) document;
             HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
@@ -160,11 +222,8 @@ public class RecordSetsSuicideMB implements Serializable {
             font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
             cellStyle.setFont(font);
 
-
-
-            row = sheet.createRow(rowPosition);// Se crea una fila dentro de la hoja        
-
-
+            row = sheet.createRow(rowPosition);// Se crea una fila dentro de la hoja
+            
             createCell(cellStyle, row, 0, "CODIGO INTERNO");//"100">#{rowX.column1}</p:column>
             createCell(cellStyle, row, 1, "CODIGO");//"100">#{rowX.column23}</p:column>
             createCell(cellStyle, row, 2, "DIA HECHO");//100">#{rowX.column37}</p:column>
@@ -202,17 +261,10 @@ public class RecordSetsSuicideMB implements Serializable {
             createCell(cellStyle, row, 34, "NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
             createCell(cellStyle, row, 35, "TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
 
-            ResultSet resultSet = connection.consult(""
-                    + " SELECT "
-                    + "    victim_id"
-                    + " FROM "
-                    + "    victims "
-                    + " WHERE "
-                    + sqlTags);
             String[] splitDate;
-            while (resultSet.next()) {
+            for (int i = 0; i < rowsDataTableArrayList.size(); i++) {
 
-                RowDataTable rowDataTableList = connection.loadFatalInjurySuicideRecord(resultSet.getString(1));
+                RowDataTable rowDataTableList = rowsDataTableArrayList.get(i);
                 rowPosition++;
                 row = sheet.createRow(rowPosition);
 
@@ -258,7 +310,7 @@ public class RecordSetsSuicideMB implements Serializable {
                 createCell(row, 34, rowDataTableList.getColumn21());//"NIVEL DE ALCOHOL");//"100">#{rowX.column21}</p:column>
                 createCell(row, 35, rowDataTableList.getColumn22());//"TIPO NIVEL DE ALCOHOL");//"100">#{rowX.column22}</p:column>
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(RecordSetsHomicideMB.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -297,15 +349,6 @@ public class RecordSetsSuicideMB implements Serializable {
                     victimsFacade.remove(auxVictims);
                 }
             }
-            //quito los elementos seleccionados de rowsDataTableList seleccion de 
-//            for (int j = 0; j < selectedRowsDataTable.length; j++) {
-//                for (int i = 0; i < rowDataTableList.size(); i++) {
-//                    if (selectedRowsDataTable[j].getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
-//                        rowDataTableList.remove(i);
-//                        break;
-//                    }
-//                }
-//            }
             //deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
@@ -391,5 +434,37 @@ public class RecordSetsSuicideMB implements Serializable {
 
     public void setTable_model(LazyDataModel<RowDataTable> table_model) {
         this.table_model = table_model;
+    }
+    
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
+    public String getTotalRecords() {
+        return totalRecords;
+    }
+
+    public void setTotalRecords(String totalRecords) {
+        this.totalRecords = totalRecords;
+    }
+
+    public String getEndDateStr() {
+        return endDateStr;
+    }
+
+    public void setEndDateStr(String endDateStr) {
+        this.endDateStr = endDateStr;
+    }
+
+    public String getInitialDateStr() {
+        return initialDateStr;
+    }
+
+    public void setInitialDateStr(String initialDateStr) {
+        this.initialDateStr = initialDateStr;
     }
 }

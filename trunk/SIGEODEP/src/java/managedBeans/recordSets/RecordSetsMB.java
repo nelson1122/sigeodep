@@ -4,9 +4,13 @@
  */
 package managedBeans.recordSets;
 
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -68,16 +72,12 @@ public class RecordSetsMB implements Serializable {
     private RecordSetsSuicideMB recordSetsSuicideMB;
     private RecordSetsTransitMB recordSetsTransitMB;
     private RecordSetsVifMB recordSetsVifMB;
-    
     private DuplicateSetsLcenfMB duplicateSetsLcenfMB;
     private DuplicateSetsAccidentalMB duplicateSetsAccidentalMB;
     private DuplicateSetsHomicideMB duplicateSetsHomicideMB;
     private DuplicateSetsSuicideMB duplicateSetsSuicideMB;
     private DuplicateSetsTransitMB duplicateSetsTransitMB;
     private DuplicateSetsVifMB duplicateSetsVifMB;
-    
-    
-    
     private String openRecordSets;
     private String openDuplicateSets;
     @EJB
@@ -90,11 +90,25 @@ public class RecordSetsMB implements Serializable {
     private String editFormName = "";
     private int progress = 0;//PROGRESO AL ABRIR CONJUNTOS
     private int progressDelete = 0;//PROGRESO AL ELIMINAR CONJUNTOS
+    private int progressSplit = 0;//PROGRESO AL ELIMINAR CONJUNTOS
+    private ConnectionJdbcMB connection;
     private int totalRegisters = 0;
     private int totalProcess = 0;
+    private Date initialDate = new Date();
+    private Date endDate = new Date();
+    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
     FacesMessage msg;
 
     public RecordSetsMB() {
+        Calendar c = Calendar.getInstance();
+        Calendar c2 = Calendar.getInstance();
+        initialDate.setDate(1);
+        initialDate.setMonth(0);
+        initialDate.setYear(2003 - 1900);
+        endDate.setDate(c.get(Calendar.DATE));
+        endDate.setMonth(c.get(Calendar.MONTH));
+        endDate.setYear(c.get(Calendar.YEAR) - 1900);
+        connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
     public void onCompleteLoad() {
@@ -106,6 +120,11 @@ public class RecordSetsMB implements Serializable {
         FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
+    public void onCompleteSplit() {
+        progressSplit = 0;
+        FacesContext.getCurrentInstance().addMessage(null, msg);
+    }
+
     public String openRecordSets() {
         return openRecordSets;
     }
@@ -113,15 +132,27 @@ public class RecordSetsMB implements Serializable {
     public String openDuplicateSets() {
         return openDuplicateSets;
     }
-    
+
+    public void resetDates() {
+//        Calendar c = Calendar.getInstance();
+//        Calendar c2 = Calendar.getInstance();
+//        
+//        initialDate.setDate(1);
+//        initialDate.setMonth(0);
+//        initialDate.setYear(2003-1900);
+//        endDate.setDate(c.get(Calendar.DATE));
+//        endDate.setMonth(c.get(Calendar.MONTH));
+//        endDate.setYear(c.get(Calendar.YEAR)-1900);
+    }
+
     public void duplicateTagClick() {
         FacesContext context = FacesContext.getCurrentInstance();
-        if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {                                    
+        if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {
             duplicateSetsHomicideMB = (DuplicateSetsHomicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsHomicideMB}", DuplicateSetsHomicideMB.class);
             duplicateSetsHomicideMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsHomicide";
             openDuplicateSets = "duplicateSetsHomicide";
-        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {            
+        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {
             duplicateSetsTransitMB = (DuplicateSetsTransitMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsTransitMB}", DuplicateSetsTransitMB.class);
             duplicateSetsTransitMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsTransit";
@@ -155,46 +186,59 @@ public class RecordSetsMB implements Serializable {
     }
 
     public void selectTagClick() {
+
         if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsHomicideMB = (RecordSetsHomicideMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsHomicideMB}", RecordSetsHomicideMB.class);
+            recordSetsHomicideMB.setInitialDateStr(formato.format(initialDate));
+            recordSetsHomicideMB.setEndDateStr(formato.format(endDate));
             recordSetsHomicideMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsHomicide";
             openDuplicateSets = "duplicateSetsHomicide";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsTransitMB = (RecordSetsTransitMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsTransitMB}", RecordSetsTransitMB.class);
+            recordSetsTransitMB.setInitialDateStr(formato.format(initialDate));
+            recordSetsTransitMB.setEndDateStr(formato.format(endDate));
             recordSetsTransitMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsTransit";
             openDuplicateSets = "duplicateSetsTransit";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsSuicideMB = (RecordSetsSuicideMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsSuicideMB}", RecordSetsSuicideMB.class);
+            recordSetsSuicideMB.setInitialDateStr(formato.format(initialDate));
+            recordSetsSuicideMB.setEndDateStr(formato.format(endDate));
             recordSetsSuicideMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsSuicide";
             openDuplicateSets = "duplicateSetsSuicide";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsAccidentalMB = (RecordSetsAccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsAccidentalMB}", RecordSetsAccidentalMB.class);
+            recordSetsAccidentalMB.setInitialDateStr(formato.format(initialDate));
+            recordSetsAccidentalMB.setEndDateStr(formato.format(endDate));
             recordSetsAccidentalMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsAccidental";
             openDuplicateSets = "duplicateSetsAccidental";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsLcenfMB = (RecordSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsLcenfMB}", RecordSetsLcenfMB.class);
+            recordSetsLcenfMB.setInitialDateStr(formato.format(initialDate));
+            recordSetsLcenfMB.setEndDateStr(formato.format(endDate));
             recordSetsLcenfMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsLCENF";
             openDuplicateSets = "duplicateSetsLCENF";
         } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0) {
             FacesContext context = FacesContext.getCurrentInstance();
             recordSetsVifMB = (RecordSetsVifMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsVifMB}", RecordSetsVifMB.class);
+            recordSetsVifMB.setInitialDateStr(formato.format(initialDate));
+            recordSetsVifMB.setEndDateStr(formato.format(endDate));
             recordSetsVifMB.loadValues(selectedRowsDataTable);
             openRecordSets = "recordSetsVIF";
             openDuplicateSets = "duplicateSetsVIF";
         } else {
             openRecordSets = null;
             openDuplicateSets = null;
-            printMessage(FacesMessage.SEVERITY_ERROR, "Nada", "nada");
+            printMessage(FacesMessage.SEVERITY_WARN, "CONSULTA SIN DATOS", "CONSULTA SIN DATOS");
         }
         progress = 0;
     }
@@ -363,6 +407,49 @@ public class RecordSetsMB implements Serializable {
         //tagsFacade.remove(currentTag);
     }
 
+    public void splitTags() {
+        System.out.print("ENTRANDO EN UNION DE CONJUNTOS");
+        currentTag = null;
+        List<Tags> tagsListAux = new ArrayList<Tags>();
+        if (selectedRowsDataTable != null) {
+            //CREO LA LISTA DE TAGS SELECCIONADOS
+            tagsList = new ArrayList<Tags>();
+            for (int i = 0; i < selectedRowsDataTable.length; i++) {
+                if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 7) {
+                    tagsListAux.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
+                    for (int j = 0; j < tagsList.size(); j++) {
+                        tagsListAux.add(tagsList.get(j));
+                    }
+                    tagsList = tagsListAux;
+                } else {
+                    tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
+                }
+            }
+            //current tag sera la que permanezca, las otras se unen a current tag
+            currentTag = tagsList.get(0);
+            tagsList.remove(0);
+
+            for (int i = 0; i < tagsList.size(); i++) {
+                //Modifico el tag
+                connection.update(
+                        "victims",
+                        "tag_id = " + String.valueOf(currentTag.getTagId()) + "",
+                        "tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + "");
+                //elimino de la tabla tags
+                connection.remove("tags", "tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + "");
+            }            
+            printMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Los conjuntos seleccionados fueron agrupados en uno solo");
+            totalProcess = 100;
+            btnEditDisabled = false;
+            btnRemoveDisabled = false;
+            selectedRowsDataTable = null;
+            currentTag = null;
+        }
+        createDynamicTable();
+        btnEditDisabled = true;
+        btnRemoveDisabled = true;
+    }
+
     public void deleteTag() {
         currentTag = null;
         System.out.print("ENTRANDO EN ELIMINAR CONJUNTO");
@@ -402,7 +489,7 @@ public class RecordSetsMB implements Serializable {
                 }
                 System.out.println("Total de registros = " + String.valueOf(totalRegisters));
                 //RECORRO CADA TAG Y REALIZO LA ELIMINACION
-                //if(totalRegisters!=0)
+                //if(tuplesNumber!=0)
                 for (int i = 0; i < tagsList.size(); i++) {
                     if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-028") == 0) {
                         removeMurder(tagsList.get(i));
@@ -667,11 +754,35 @@ public class RecordSetsMB implements Serializable {
         this.progress = progress;
     }
 
+    public int getProgressSplit() {
+        return progressSplit;
+    }
+
+    public void setProgressSplit(int progressSplit) {
+        this.progressSplit = progressSplit;
+    }
+
     public int getProgressDelete() {
         return progressDelete;
     }
 
     public void setProgressDelete(int progressDelete) {
         this.progressDelete = progressDelete;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public Date getInitialDate() {
+        return initialDate;
+    }
+
+    public void setInitialDate(Date initialDate) {
+        this.initialDate = initialDate;
     }
 }

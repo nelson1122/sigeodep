@@ -7,6 +7,7 @@ package managedBeans.fileProcessing;
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.DataTypeEnum;
 import beans.util.DamerauLevenshtein;
+import beans.util.JaroWinkler;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -48,7 +49,7 @@ public class RelationshipOfValuesMB implements Serializable {
     private List<String> valuesFound;
     private List<String> valuesRelated;
     private DamerauLevenshtein damerauLevenshtein = new DamerauLevenshtein();
-    //private JaroWinkler jaroWinkler = new JaroWinkler();
+    private JaroWinkler jaroWinkler = new JaroWinkler();
     //private int Similarity;
     private String[] splitFilterText;
     private String[] splitFoundText;
@@ -182,12 +183,12 @@ public class RelationshipOfValuesMB implements Serializable {
 
         String type;
         ArrayList<String> variablesRelated = new ArrayList<String>();
-        
-        
+
+
         if (relationsGroup != null) {
             currentRelationsGroup = relationsGroup;
         }
-        
+
         btnAssociateRelationValueDisabled = true;
         btnAutomaticRelationValueDisabled = true;
         btnDiscardValueDisabled = true;
@@ -211,7 +212,7 @@ public class RelationshipOfValuesMB implements Serializable {
 
         currentCategoricalRelatedVariables = "";
 
-        
+
         if (currentRelationsGroup.getRelationVariablesList() != null) {
             for (int i = 0; i < currentRelationsGroup.getRelationVariablesList().size(); i++) {
                 type = currentRelationsGroup.getRelationVariablesList().get(i).getFieldType();
@@ -227,7 +228,7 @@ public class RelationshipOfValuesMB implements Serializable {
         }
         setCategoricalRelatedVariables(variablesRelated);
 
-        
+
     }
 
     //----------------------------------------------------------------------
@@ -742,8 +743,9 @@ public class RelationshipOfValuesMB implements Serializable {
 //                        System.out.println("acepta:  "+foundText+"    -   "+ String.valueOf(x));
 //                    }
 
-                    if (!calculateLevenstein(filterText, foundText)) {
-                        if (foundText.indexOf(filterText) == -1) {
+
+                    if (foundText.indexOf(filterText) == -1) {
+                        if (!calculateLevenstein(filterText, foundText)) {
                             valuesFound.remove(j);
                             j--;
                         }
@@ -765,7 +767,7 @@ public class RelationshipOfValuesMB implements Serializable {
         splitFoundText = foundText.split(" ");
         //elimino las cadenas de cada arreglo que tengan menos de 4s caracteres
         for (int i = 0; i < splitFilterText.length; i++) {
-            if (splitFilterText[i].length() <= 2) {
+            if (splitFilterText[i].length() <= 3) {
                 splitFilterText[i] = "";
             }
         }
@@ -778,9 +780,18 @@ public class RelationshipOfValuesMB implements Serializable {
         for (int i = 0; i < splitFilterText.length; i++) {
             for (int j = 0; j < splitFoundText.length; j++) {
                 if (splitFilterText[i].length() != 0 && splitFoundText[j].length() != 0) {
-                    if (damerauLevenshtein.getSimilarity(splitFilterText[i], splitFoundText[j]) < 3) {
+                    if (damerauLevenshtein.getSimilarity(splitFilterText[i], splitFoundText[j]) < 2) {
                         return true;
                     }
+
+//                    System.out.println(
+//                            "COMPARACION: " + String.valueOf(jaroWinkler.getSimilarity(splitFilterText[i], splitFoundText[j]))
+//                            + " CADENA1: " + splitFilterText[i]
+//                            + " CADENA2: " + splitFoundText[j]);//jaroWinkler.getSimilarity(splitFilterText[i], splitFoundText[j]);
+//
+//                    if (jaroWinkler.getSimilarity(splitFilterText[i], splitFoundText[j]) > 0.8) {
+//                        return true;
+//                    }
                 }
             }
         }

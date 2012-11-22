@@ -681,6 +681,7 @@
                                                         <h:selectOneListbox 
                                                             id="IdSelectOneListVarExpected" 
                                                             value="#{relationshipOfVariablesMB.currentVarExpected}"
+                                                            converterMessage="Fallo de comunicación, por favor intente nuevamente."
                                                             style="height:100px; width: 280px; ">
                                                             <f:selectItems value="#{relationshipOfVariablesMB.variablesExpected}"/>
                                                             <f:selectItem itemLabel=" " itemValue=" " />
@@ -750,6 +751,7 @@
                                                         <h:selectOneListbox 
                                                             id="IdSelectOneListVarFound"
                                                             value="#{relationshipOfVariablesMB.currentVarFound}" 
+                                                            converterMessage="Fallo de comunicación, por favor intente nuevamente."
                                                             style="height:100px; width: 280px; ">
                                                             <f:selectItems value="#{relationshipOfVariablesMB.varsFound}" />                                        
                                                             <f:selectItem itemLabel=" " itemValue=" " />
@@ -801,6 +803,7 @@
                                                         <!--LISTA DE VARIABLES RELACIONADAS ACTUALMENTE-->
                                                         <h:selectOneListbox  
                                                             value="#{relationshipOfVariablesMB.currentRelatedVars}" 
+                                                            converterMessage="Fallo de comunicación, por favor intente nuevamente."
                                                             style="height:90px; width: 680px; "
                                                             id="IdSelectOneListVarRelated" >
                                                             <f:selectItems value="#{relationshipOfVariablesMB.relatedVars}"/>
@@ -834,6 +837,7 @@
                                                         <h:selectOneListbox 
                                                             id="IdSelectOneListCategoricalVarsRelated" 
                                                             value="#{relationshipOfValuesMB.currentCategoricalRelatedVariables}"
+                                                            converterMessage="Fallo de comunicación, por favor intente nuevamente."
                                                             style="height:135px; width: 300px; ">
                                                             <f:selectItems value="#{relationshipOfValuesMB.categoricalRelatedVariables}"/>
                                                             <f:selectItem itemLabel=" " itemValue=" " />
@@ -922,7 +926,8 @@
                                                         <h:selectOneListbox 
                                                             id="IdSelectOneListValuesExpected2" 
                                                             value="#{relationshipOfValuesMB.currentValueExpected}"
-                                                            style="height:110px; width: 300px; ">
+                                                            style="height:110px; width: 300px;"
+                                                            converterMessage="Fallo de comunicación, por favor intente nuevamente.">
                                                             <f:selectItems value="#{relationshipOfValuesMB.valuesExpected}"/>                                                            
                                                             <f:selectItem itemLabel=" " itemValue=" " />
                                                             <f:ajax 

@@ -75,12 +75,7 @@ public class LazyRecordSetsDataModel extends LazyDataModel<RowDataTable> {
         try {
             this.setRowCount(rowCountAux);
             if (this.getRowCount() != 0) {
-                ResultSet resultSet = connection.consult(""
-                        + " SELECT "
-                        + "    victim_id"
-                        + " FROM "
-                        + "    victims "
-                        + " WHERE "
+                ResultSet resultSet = connection.consult(" "
                         + sqlTags
                         + " LIMIT " + String.valueOf(pageSize)
                         + " OFFSET " + String.valueOf(first));
@@ -116,13 +111,11 @@ public class LazyRecordSetsDataModel extends LazyDataModel<RowDataTable> {
                         }
                         break;
                 }
-
             }
         } catch (SQLException ex) {
             Logger.getLogger(LazyRecordSetsDataModel.class.getName()).log(Level.SEVERE, null, ex);
         }
         return datasource;
-
     }
 
     public List<RowDataTable> getDatasource() {

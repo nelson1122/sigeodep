@@ -22,6 +22,13 @@ public class JaroWinkler {
         final int halflen = ((Math.min(string1.length(), string2.length())) / 2) + ((Math.min(string1.length(), string2.length())) % 2);
 
         //get common characters
+        
+        if(string1.compareTo("DOLORE")==0&&string2.compareTo("DOLRES")==0){
+            int a=2;
+            a=a*2;
+             System.out.println(a);
+        }
+        
         final StringBuffer common1 = getCommonCharacters(string1, string2, halflen);
         final StringBuffer common2 = getCommonCharacters(string2, string1, halflen);
 

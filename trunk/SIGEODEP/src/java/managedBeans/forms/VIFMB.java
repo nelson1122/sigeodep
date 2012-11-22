@@ -4,7 +4,6 @@
  */
 package managedBeans.forms;
 
-
 import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
@@ -288,18 +287,20 @@ public class VIFMB implements Serializable {
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
     /*
-     * primer funcion que se ejecuta despues del constructor que inicializa 
+     * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
      */
+
     @PostConstruct
     private void initialize() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+
     public VIFMB() {
     }
 
@@ -321,10 +322,10 @@ public class VIFMB implements Serializable {
     }
 
     public void reset() {
-        
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        currentUser=loginMB.getCurrentUser();
+        currentUser = loginMB.getCurrentUser();
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         loading = true;
@@ -1202,8 +1203,8 @@ public class VIFMB implements Serializable {
                     String hEvent, hConsult;
                     hEvent = currentMilitaryHourEvent.trim();
                     hConsult = currentMilitaryHourConsult.trim();
-                    if(hConsult.compareTo("0000")==0){
-                        hConsult="2400";
+                    if (hConsult.compareTo("0000") == 0) {
+                        hConsult = "2400";
                     }
                     if (hEvent.length() != 0 && hConsult.length() != 0) {
                         if (Integer.parseInt(hEvent) > Integer.parseInt(hConsult)) {
@@ -1625,12 +1626,12 @@ public class VIFMB implements Serializable {
                 openDialogNew = "";
                 openDialogDelete = "";
                 if (currentNonFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR  //System.out.println("guardando nuevo registro");
-                    
+
                     newVictim.setTagId(tagsFacade.find(currentTag));
                     victimsFacade.create(newVictim);
                     nonFatalInjuriesFacade.create(newNonFatalInjuries);
                     nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
-                    
+
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
@@ -1667,7 +1668,7 @@ public class VIFMB implements Serializable {
             //------------------------------------------------------------
             //SE CREA VARIABLE PARA LA NUEVA VICTIMA
             //------------------------------------------------------------
-            
+
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setTypeId(victim.getTypeId());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimNid(victim.getVictimNid());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimName(victim.getVictimName());
@@ -1718,7 +1719,7 @@ public class VIFMB implements Serializable {
             //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA NO FATAL
             //------------------------------------------------------------
             //
-            
+
             currentNonFatalDomesticViolence.getNonFatalInjuries().setCheckupDate(nonFatalInjurie.getCheckupDate());
             currentNonFatalDomesticViolence.getNonFatalInjuries().setCheckupTime(nonFatalInjurie.getCheckupTime());
             currentNonFatalDomesticViolence.getNonFatalInjuries().setInjuryDate(nonFatalInjurie.getInjuryDate());
@@ -2147,7 +2148,6 @@ public class VIFMB implements Serializable {
     private int currentSearchCriteria = 0;
     private SelectItem[] searchCriteriaList;
     private String currentSearchValue = "";
-    
 
     public List<RowDataTable> getRowDataTableList() {
         return rowDataTableList;
@@ -2197,7 +2197,7 @@ public class VIFMB implements Serializable {
         if (s) {
             try {
                 rowDataTableList = new ArrayList<RowDataTable>();
-                
+
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "non_fatal_injuries.non_fatal_injury_id, ";
@@ -2466,18 +2466,20 @@ public class VIFMB implements Serializable {
     }
 
     public void changeYearEvent() {
+        Calendar cal = Calendar.getInstance();
+        int yearSystem = cal.get(Calendar.YEAR);
         try {
             int yearInt = Integer.parseInt(currentYearEvent);
-            if (yearInt < 0) {
+            if (yearInt < 2003 || yearInt < yearSystem) {
                 currentYearEvent = "";
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número, y mayor que cero");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número del 2003 hasta " + String.valueOf(yearSystem));
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
             if (currentYearEvent.length() != 0) {
                 currentYearEvent = "";
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número del 2003 hasta " + String.valueOf(yearSystem));
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
@@ -2605,18 +2607,20 @@ public class VIFMB implements Serializable {
     }
 
     public void changeYearConsult() {
+        Calendar cal = Calendar.getInstance();
+        int yearSystem = cal.get(Calendar.YEAR);
         try {
             int yearInt = Integer.parseInt(currentYearConsult);
-            if (yearInt < 0) {
+            if (yearInt < 2003 || yearInt < yearSystem) {
                 currentYearConsult = "";
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año de la consulta debe ser un número, y mayor que cero");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año de la consulta debe ser un número del 2003 hasta " + String.valueOf(yearSystem));
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
 
         } catch (Exception e) {
             if (currentYearConsult.length() != 0) {
                 currentYearConsult = "";
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número, y mayor que cero");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año de la consulta debe ser un número del 2003 hasta " + String.valueOf(yearSystem));
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }

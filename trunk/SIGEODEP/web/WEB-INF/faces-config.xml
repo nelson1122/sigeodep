@@ -331,5 +331,10 @@
             <to-view-id>/web/indicators/nonFatalSelfInflictedIndicators.xhtml</to-view-id>
             <redirect/>
         </navigation-case>        
+        <navigation-case>
+            <from-outcome>indicator</from-outcome>
+            <to-view-id>/web/indicators/indicator.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
     </navigation-rule>
 </faces-config>

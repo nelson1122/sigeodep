@@ -5,7 +5,6 @@
 package managedBeans.duplicateSets;
 
 import beans.connection.ConnectionJdbcMB;
-import managedBeans.recordSets.*;
 import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -19,10 +18,11 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import managedBeans.forms.HomicideMB;
+import managedBeans.recordSets.RecordSetsMB;
 import model.dao.*;
-import model.pojo.*;
-import org.apache.poi.hssf.usermodel.*;
+import model.pojo.FatalInjuryMurder;
+import model.pojo.MunicipalitiesPK;
+import model.pojo.Tags;
 
 /**
  *
@@ -58,10 +58,9 @@ public class DuplicateSetsHomicideMB implements Serializable {
     @EJB
     InjuriesFacade injuriesFacade;
     @EJB
-    NeighborhoodsFacade neighborhoodsFacade;    
+    NeighborhoodsFacade neighborhoodsFacade;
     @EJB
     CountriesFacade countriesFacade;
-    
     private List<RowDataTable> rowDataTableList;
     private List<RowDataTable> rowDuplicatedTableList;
     private RowDataTable selectedRowDataTable;
@@ -79,7 +78,9 @@ public class DuplicateSetsHomicideMB implements Serializable {
     private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     private String openForm = "";
     private RecordSetsMB recordSetsMB;
-    ConnectionJdbcMB connectionJdbcMB;
+    private ConnectionJdbcMB connectionJdbcMB;
+    private int tuplesNumber = 0;
+    private int tuplesProcessed = 0;
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
@@ -132,8 +133,8 @@ public class DuplicateSetsHomicideMB implements Serializable {
                 sql = sql + "WHERE ";
                 sql = sql + "t2.victim_id = " + selectedRowDuplicatedTable.getColumn1() + " ";
                 sql = sql + "AND t1.victim_id != t2.victim_id ";
-                sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 6 ";
-                sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 6 ";
+                sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 4 ";
+                sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 4 ";
                 ResultSet resultSetCount = connectionJdbcMB.consult(sql);
 
 
@@ -169,7 +170,29 @@ public class DuplicateSetsHomicideMB implements Serializable {
 
     }
 
-    public void loadDuplicatedList() {
+    public void loadValues(RowDataTable[] selectedRowsDataTableTags) {
+        /*
+         * se llama a esta funcion desde record sets cuando se presiona el boton
+         * "registros duplicados"
+         */
+        FacesContext context = FacesContext.getCurrentInstance();
+        recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
+        recordSetsMB.setProgress(0);
+
+        tuplesNumber = 0;
+        tuplesProcessed = 0;
+
+        selectedRowDataTable = null;
+        rowDataTableList = new ArrayList<RowDataTable>();
+        data = "- ";
+        //CREO LA LISTA DE TAGS SELECCIONADOS, Y NUMERO DE REGISTROS
+        tagsList = new ArrayList<Tags>();
+        for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
+            data = data + selectedRowsDataTableTags[i].getColumn2() + " -";
+            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
+            tuplesNumber = tuplesNumber + fatalInjuryMurderFacade.countFromTag(tagsList.get(i).getTagId());
+        }
+
         selectedRowDuplicatedTable = null;
         selectedRowDataTable = null;
         rowDataTableList = new ArrayList<RowDataTable>();
@@ -182,9 +205,9 @@ public class DuplicateSetsHomicideMB implements Serializable {
          * posiblemente son duplicados
          */
         try {
-            String sql = "DROP VIEW IF EXISTS duplicate";
-            connectionJdbcMB.non_query(sql);
-            sql = "create view duplicate as "
+
+            connectionJdbcMB.non_query("DROP VIEW IF EXISTS duplicate");
+            String sql = "create view duplicate as "
                     + "SELECT "
                     + "   * "
                     + "FROM "
@@ -199,8 +222,8 @@ public class DuplicateSetsHomicideMB implements Serializable {
             }
             connectionJdbcMB.non_query(sql);
             rowDuplicatedTableList = new ArrayList<RowDataTable>();
-            sql = "Select * from duplicate";
-            ResultSet resultSetFileData = connectionJdbcMB.consult(sql);
+
+            ResultSet resultSetFileData = connectionJdbcMB.consult("Select * from duplicate");
             ArrayList<String> addedRecords = new ArrayList<String>();;
             boolean first;
             boolean found;
@@ -223,8 +246,8 @@ public class DuplicateSetsHomicideMB implements Serializable {
                     sql = sql + "WHERE ";
                     sql = sql + "t2.victim_id = " + resultSetFileData.getString("victim_id") + " ";
                     sql = sql + "AND t1.victim_id != t2.victim_id ";
-                    sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 6 ";
-                    sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 6 ";
+                    sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 4 ";
+                    sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 4 ";
                     ResultSet resultSetCount = connectionJdbcMB.consult(sql);
                     first = true;
                     countRegisters = 0;
@@ -244,38 +267,16 @@ public class DuplicateSetsHomicideMB implements Serializable {
                                 String.valueOf(countRegisters)));
                     }
                 }
+                tuplesProcessed++;
+                recordSetsMB.setProgress((int) (tuplesProcessed * 100) / tuplesNumber);
+                System.out.println(recordSetsMB.getProgress());
             }
+            recordSetsMB.setProgress(100);
             selectedRowDataTable = null;
         } catch (SQLException ex) {
-            //Logger.getLogger(DuplicateRecordsMB.class.getName()).log(Level.SEVERE, null, ex);
+            recordSetsMB.setProgress(100);
+            System.out.println("Error: " + ex.toString());
         }
-    }
-
-    public void loadValues(RowDataTable[] selectedRowsDataTableTags) {
-        /*
-         * se llama a esta funcion desde record sets cuando se presiona el boton
-         * "registros duplicados"
-         */
-        FacesContext context = FacesContext.getCurrentInstance();
-        recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
-        recordSetsMB.setProgress(0);
-        int totalRegisters = 0;
-        int totalProcess = 0;
-
-        selectedRowDataTable = null;
-        rowDataTableList = new ArrayList<RowDataTable>();
-        data = "- ";
-        //CREO LA LISTA DE TAGS SELECCIONADOS
-        tagsList = new ArrayList<Tags>();
-        for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
-            data = data + selectedRowsDataTableTags[i].getColumn2() + " -";
-            tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
-        }
-        //DETERMINO EL NUMERO DE REGISTROS 
-        for (int i = 0; i < tagsList.size(); i++) {
-            totalRegisters = totalRegisters + fatalInjuryMurderFacade.countFromTag(tagsList.get(i).getTagId());
-        }
-        loadDuplicatedList();
     }
 
     private RowDataTable loadValues(String c, FatalInjuryMurder currentFatalInjuryMurder) {

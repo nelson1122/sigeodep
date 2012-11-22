@@ -45,12 +45,14 @@
                             <p:panelGrid style=" margin-left: 130px; " columns="1">
                                 <p:commandButton 
                                     style="width: 450px;" 
-                                    value="NUMERO DE CASOS POR LESION" 
-                                    action="insurances"/>
+                                    value="NUMERO DE CASOS POR LESION NO FATAL" 
+                                    actionListener="#{indicatorsMB.loadIndicator3}"
+                                    action="indicator"/>
                                 <p:commandButton 
                                     style="width: 450px;" 
-                                    value="PORCENTAJE DE CASOS POR LESION" 
-                                    action="activities"/>                                
+                                    value="PORCENTAJE DE CASOS POR LESION NO FATAL" 
+                                    actionListener="#{indicatorsMB.loadIndicator4}"
+                                    action="indicator"/>         
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       
