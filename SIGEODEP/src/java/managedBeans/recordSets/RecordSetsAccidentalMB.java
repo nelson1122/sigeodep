@@ -209,7 +209,7 @@ public class RecordSetsAccidentalMB implements Serializable {
             tuplesNumber = Integer.parseInt(totalRecords);
             tuplesProcessed = 0;
 
-            int rowPosition = 1;
+            int rowPosition = 0;
             HSSFWorkbook book = (HSSFWorkbook) document;
             HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
             HSSFRow row;

@@ -205,7 +205,7 @@ public class RecordSetsVifMB implements Serializable {
             tuplesNumber = Integer.parseInt(totalRecords);
             tuplesProcessed = 0;
 
-            int rowPosition = 1;
+            int rowPosition = 0;
             HSSFWorkbook book = (HSSFWorkbook) document;
             HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
             HSSFRow row;
@@ -599,4 +599,81 @@ public class RecordSetsVifMB implements Serializable {
     public void setInitialDateStr(String initialDateStr) {
         this.initialDateStr = initialDateStr;
     }
+    /*
+     public void exportarExcel() {
+        if (movimientos == null) {// Cargamos el ArrayList si esta nulo
+            cargaTablaDinamica();
+        }
+        HSSFWorkbook workbook = new HSSFWorkbook();//Creamos el libro excel
+ 
+        //Creamos la hoja de Excel llamada "Movimientos"
+        HSSFSheet sheet = workbook.createSheet("Movimientos");
+ 
+        //* Creamos la primera fila para colocar los titulos correspondientes a 
+         * cada columna
+ 
+        HSSFRow header = sheet.createRow(0);
+        HSSFRow fila = null;
+ 
+        for (int i = 0; i < movimientos.size(); i++) {
+            //* Creamos las filas segun la cantidad de datos que contiene 
+             * el arraylist
+             
+            fila = sheet.createRow(i + 1);
+ 
+            /* Creamos las celdas, se sabe que son 5
+            for (int j = 0; j < 5; j++) {
+ 
+                fila.createCell(j);
+ 
+            }
+            //* Asignamos los titulos a la primera fila, 
+             * en cada celda correspondiente 
+ 
+            header.createCell(0).setCellValue(new HSSFRichTextString("Fecha"));
+            header.createCell(1).setCellValue(new HSSFRichTextString("Descripcion"));
+            header.createCell(2).setCellValue(new HSSFRichTextString("Serie"));
+            header.createCell(3).setCellValue(new HSSFRichTextString("Monto"));
+            header.createCell(4).setCellValue(new HSSFRichTextString("Saldo"));
+ 
+            //* Seteamos los valores a cada celda correspondiente 
+            fila.getCell(0).setCellValue("" + movimientos.get(i).getFecha().toLocaleString());
+            fila.getCell(1).setCellValue(new HSSFRichTextString(movimientos.get(i).getDescripcion()));
+            fila.getCell(2).setCellValue(new HSSFRichTextString(movimientos.get(i).getSerie()));
+            fila.getCell(3).setCellValue(Integer.parseInt(String.valueOf(movimientos.get(i).getMonto()).replace(".0", "")));
+            fila.getCell(4).setCellValue(Integer.parseInt(String.valueOf(movimientos.get(i).getSaldo()).replace(".0", "")));
+ 
+            //*Modificamos el tamaño de las celdas segun el contenido de las celdas
+ 
+            sheet.autoSizeColumn((short) (i));
+ 
+        }
+ 
+        sheet.autoSizeColumn((short) (0));//Arreglamos el tamaño al header
+ 
+        try {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+ 
+            // Le asignamos el tipo de fichero que abrirá
+            response.setContentType("application/vnd.ms-excel");
+            // El nombre que recibira el archivo a descargar 
+            response.setHeader("Content-disposition", "attachment; filename=movimientos.xls");
+ 
+            ServletOutputStream out = response.getOutputStream();
+            //Escribimos el fichero al out 
+            workbook.write(out);
+            out.close(); // Cerramos el streaming
+ 
+        } catch (Exception e) {
+            e.printStackTrace();
+ 
+ 
+        }
+ 
+ 
+ 
+    }
+     */
 }
+
