@@ -185,7 +185,7 @@
                                             actionListener="#{recordSetsTransitMB.postProcessXLS1}"/>                                                                                
                                         <h:commandLink id="IdComandLink" style="display: none" >
                                             <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="Transito"  preProcessor="#{recordSetsTransitMB.postProcessXLS}"/>  
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="Transito"  postProcessor="#{recordSetsTransitMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                         <p:dataTable id="IdOutFile" style="display: none">
                                             <p:column>                                                  

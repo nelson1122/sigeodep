@@ -300,7 +300,7 @@
                                             actionListener="#{recordSetsLcenfMB.postProcessXLS1}"/>                                                                                
                                         <h:commandLink id="IdComandLink" style="display: none" >
                                             <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="LCENF"  preProcessor="#{recordSetsLcenfMB.postProcessXLS}"/>  
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="LCENF"  postProcessor="#{recordSetsLcenfMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                         <p:dataTable id="IdOutFile" style="display: none">
                                             <p:column>                                                  
