@@ -29,11 +29,11 @@ public class RelationValues implements Serializable {
     @NotNull
     @Column(name = "id_relation_values", nullable = false)
     private Integer idRelationValues;
-    @Size(max = 200)
-    @Column(name = "name_expected", length = 200)
+    @Size(max = 2147483647)
+    @Column(name = "name_expected", length = 2147483647)
     private String nameExpected;
-    @Size(max = 200)
-    @Column(name = "name_found", length = 200)
+    @Size(max = 2147483647)
+    @Column(name = "name_found", length = 2147483647)
     private String nameFound;
     @JoinColumn(name = "id_relation_variables", referencedColumnName = "id_relation_variables")
     @ManyToOne
