@@ -41,11 +41,8 @@ public class Indicators implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "graph_type", length = 2147483647)
     private String graphType;
-    @JoinTable(name = "indicators_variables", joinColumns = {
-        @JoinColumn(name = "indicator_id", referencedColumnName = "indicator_id", nullable = false)}, inverseJoinColumns = {
-        @JoinColumn(name = "variable_id", referencedColumnName = "variable_id", nullable = false)})
-    @ManyToMany
-    private List<Variables> variablesList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "indicators")
+    private List<IndicatorsVariables> indicatorsVariablesList;
 
     public Indicators() {
     }
@@ -87,12 +84,12 @@ public class Indicators implements Serializable {
     }
 
     @XmlTransient
-    public List<Variables> getVariablesList() {
-        return variablesList;
+    public List<IndicatorsVariables> getIndicatorsVariablesList() {
+        return indicatorsVariablesList;
     }
 
-    public void setVariablesList(List<Variables> variablesList) {
-        this.variablesList = variablesList;
+    public void setIndicatorsVariablesList(List<IndicatorsVariables> indicatorsVariablesList) {
+        this.indicatorsVariablesList = indicatorsVariablesList;
     }
 
     @Override
@@ -117,7 +114,7 @@ public class Indicators implements Serializable {
 
     @Override
     public String toString() {
-        return "pojos.Indicators[ indicatorId=" + indicatorId + " ]";
+        return "model.pojo.Indicators[ indicatorId=" + indicatorId + " ]";
     }
     
 }

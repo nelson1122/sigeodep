@@ -3630,7 +3630,7 @@ public class LcenfMB implements Serializable {
         int yearSystem = cal.get(Calendar.YEAR);
         try {
             int yearInt = Integer.parseInt(currentYearEvent);
-            if (yearInt < 2003 || yearInt < yearSystem) {
+            if (yearInt < 2003 || yearInt > yearSystem) {
                 currentYearEvent = "";
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año del evento debe ser un número del 2003 hasta " + String.valueOf(yearSystem));
                 FacesContext.getCurrentInstance().addMessage(null, msg);
@@ -3771,7 +3771,7 @@ public class LcenfMB implements Serializable {
         int yearSystem = cal.get(Calendar.YEAR);
         try {
             int yearInt = Integer.parseInt(currentYearConsult);
-            if (yearInt < 2003 || yearInt < yearSystem) {
+            if (yearInt < 2003 || yearInt > yearSystem) {
                 currentYearConsult = "";
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El año de la consulta debe ser un número del 2003 hasta " + String.valueOf(yearSystem));
                 FacesContext.getCurrentInstance().addMessage(null, msg);

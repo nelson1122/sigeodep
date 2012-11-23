@@ -1082,31 +1082,30 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                //DETERMINAR EL NUMERO DE IDENTIFICACION
-                if (newVictim.getVictimNid() == null) {
-                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
+                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-                    newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion
+                    
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
                     GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
                     currentGenNn.setCodNn(genNnFacade.findMax() + 1);
                     genNnFacade.edit(currentGenNn);
-                }
-
-                //DETERMINAR TIPO DE IDENTIFICACION
-                if (newVictim.getVictimNid() != null) {
-                    if (newVictim.getTypeId() == null) {
-                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
-                        if (newVictim.getVictimAge() != null) {
-                            if (newVictim.getVictimAge() >= 18) {
-                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
-                            } else {
-                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
-                            }
-                        } else {
-                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
-                        }
+                } else {//HAY NUMERO DE IDENTIFICACION
+                    if(newVictim.getTypeId()==null){//NO HAY TIPO DE IDENTIFICACION
+                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
                     }
                 }
+                
                 //PERSISTO
                 try {
                     victimsFacade.create(newVictim);
@@ -1542,29 +1541,27 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                //DETERMINAR EL NUMERO DE IDENTIFICACION
-                if (newVictim.getVictimNid() == null) {
-                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
+                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-                    newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion
+                    
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
                     GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
                     currentGenNn.setCodNn(genNnFacade.findMax() + 1);
                     genNnFacade.edit(currentGenNn);
-                }
-
-                //DETERMINAR TIPO DE IDENTIFICACION
-                if (newVictim.getVictimNid() != null) {
-                    if (newVictim.getTypeId() == null) {
-                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
-                        if (newVictim.getVictimAge() != null) {
-                            if (newVictim.getVictimAge() >= 18) {
-                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
-                            } else {
-                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
-                            }
-                        } else {
-                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
-                        }
+                } else {//HAY NUMERO DE IDENTIFICACION
+                    if(newVictim.getTypeId()==null){//NO HAY TIPO DE IDENTIFICACION
+                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
                     }
                 }
 
@@ -1997,29 +1994,27 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                //DETERMINAR EL NUMERO DE IDENTIFICACION
-                if (newVictim.getVictimNid() == null) {
-                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
+                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-                    newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion
+                    
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
                     GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
                     currentGenNn.setCodNn(genNnFacade.findMax() + 1);
                     genNnFacade.edit(currentGenNn);
-                }
-
-                //DETERMINAR TIPO DE IDENTIFICACION
-                if (newVictim.getVictimNid() != null) {
-                    if (newVictim.getTypeId() == null) {
-                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
-                        if (newVictim.getVictimAge() != null) {
-                            if (newVictim.getVictimAge() >= 18) {
-                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
-                            } else {
-                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
-                            }
-                        } else {
-                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
-                        }
+                } else {//HAY NUMERO DE IDENTIFICACION
+                    if(newVictim.getTypeId()==null){//NO HAY TIPO DE IDENTIFICACION
+                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
                     }
                 }
 
@@ -2439,29 +2434,27 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                //DETERMINAR EL NUMERO DE IDENTIFICACION
-                if (newVictim.getVictimNid() == null) {
-                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
+                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-                    newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion
+                    
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
                     GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
                     currentGenNn.setCodNn(genNnFacade.findMax() + 1);
                     genNnFacade.edit(currentGenNn);
-                }
-
-                //DETERMINAR TIPO DE IDENTIFICACION
-                if (newVictim.getVictimNid() != null) {
-                    if (newVictim.getTypeId() == null) {
-                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
-                        if (newVictim.getVictimAge() != null) {
-                            if (newVictim.getVictimAge() >= 18) {
-                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
-                            } else {
-                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
-                            }
-                        } else {
-                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
-                        }
+                } else {//HAY NUMERO DE IDENTIFICACION
+                    if(newVictim.getTypeId()==null){//NO HAY TIPO DE IDENTIFICACION
+                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
                     }
                 }
                 //PERSISTO
@@ -3439,34 +3432,32 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                //SI EXISTE EDAD Y NO HAY TIPO DE EDAD DETERMINARLA EN AÑOS
-
-                //DETERMINAR EL NUMERO DE IDENTIFICACION
-                if (newVictim.getVictimNid() == null) {
-                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
+                
+               
+                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-                    newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion
+                    
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
                     GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
                     currentGenNn.setCodNn(genNnFacade.findMax() + 1);
                     genNnFacade.edit(currentGenNn);
-                }
-
-
-                //DETERMINAR TIPO DE IDENTIFICACION
-                if (newVictim.getVictimNid() != null) {
-                    if (newVictim.getTypeId() == null) {
-                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
-                        if (newVictim.getVictimAge() != null) {
-                            if (newVictim.getVictimAge() >= 18) {
-                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
-                            } else {
-                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
-                            }
-                        } else {
-                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
-                        }
+                } else {//HAY NUMERO DE IDENTIFICACION
+                    if(newVictim.getTypeId()==null){//NO HAY TIPO DE IDENTIFICACION
+                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
                     }
                 }
+                
                 //AGREGO LAS LISTAS NO VACIAS///////////////////////////////////
                 if (!anatomicalLocationsList.isEmpty()) {
                     newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
@@ -4294,28 +4285,29 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                //DETERMINAR EL NUMERO DE IDENTIFICACION
-                if (newVictim.getVictimNid() == null) {
-                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
+                
+                
+                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-                    newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion
+                    
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
                     GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
                     currentGenNn.setCodNn(genNnFacade.findMax() + 1);
                     genNnFacade.edit(currentGenNn);
-                }
-                //QUEDA TIPO DE IDENTIFICACION POR DEFECTO CEDULA SI NO HAY
-                if (newVictim.getVictimNid() != null) {
-                    if (newVictim.getTypeId() == null) {
-                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
-                        if (newVictim.getVictimAge() != null) {
-                            if (newVictim.getVictimAge() >= 18) {
-                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
-                            } else {
-                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
-                            }
-                        } else {
-                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
-                        }
+                } else {//HAY NUMERO DE IDENTIFICACION
+                    if(newVictim.getTypeId()==null){//NO HAY TIPO DE IDENTIFICACION
+                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
                     }
                 }
 

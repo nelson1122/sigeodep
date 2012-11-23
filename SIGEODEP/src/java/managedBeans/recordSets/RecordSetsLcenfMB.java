@@ -37,7 +37,7 @@ public class RecordSetsLcenfMB implements Serializable {
     //--------------------
     @EJB
     TagsFacade tagsFacade;
-    private List<Tags> tagsList;        
+    private List<Tags> tagsList;
     private NonFatalInjuries currentNonFatalInjury;
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
@@ -196,14 +196,13 @@ public class RecordSetsLcenfMB implements Serializable {
         progress = 100;
     }
 
-    
     public void postProcessXLS(Object document) {
         try {
             progress = 0;
             tuplesNumber = Integer.parseInt(totalRecords);
             tuplesProcessed = 0;
 
-            int rowPosition = 0;
+            int rowPosition = 1;
             HSSFWorkbook book = (HSSFWorkbook) document;
             HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
             HSSFRow row;
@@ -212,7 +211,9 @@ public class RecordSetsLcenfMB implements Serializable {
             font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
             cellStyle.setFont(font);
 
+            
             row = sheet.createRow(rowPosition);// Se crea una fila dentro de la hoja        
+
 
             createCell(cellStyle, row, 0, "CODIGO");//width="50">#{rowX.column1}</p:column>
             createCell(cellStyle, row, 1, "INSTITUCION DE SALUD");//250">#{rowX.column58}</p:column>
