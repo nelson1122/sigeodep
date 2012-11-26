@@ -74,7 +74,7 @@ public class IndicatorsMB {
         }
         size = size + 10;
     }
-
+       
     private void loadIndicator(int n) {
         currentIndicator=indicatorsFacade.find(n);
         titlePage = currentIndicator.getIndicatorGroup();
