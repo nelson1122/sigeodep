@@ -445,6 +445,14 @@ public class UploadFileMB implements Serializable {
                 rowFile.set(i, "_" + rowFile.get(i));
             }
         }
+        
+        for (int i = 0; i < rowFile.size(); i++) {//si la cadena inicia con un numero, le antepongo una raya baja
+            if (rowFile.get(i).compareTo("id")==0) {
+                rowFile.set(i, rowFile.get(i)+"_"+String.valueOf(i));
+            }
+        }
+        
+        
         variablesFound = rowFile;
         return rowFile;
     }
