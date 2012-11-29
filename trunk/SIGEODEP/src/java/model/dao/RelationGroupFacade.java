@@ -15,18 +15,19 @@ import model.pojo.RelationGroup;
  */
 @Stateless
 public class RelationGroupFacade extends AbstractFacade<RelationGroup> {
+
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
     @Override
     protected EntityManager getEntityManager() {
-	return em;
+        return em;
     }
 
     public RelationGroupFacade() {
-	super(RelationGroup.class);
+        super(RelationGroup.class);
     }
-    
+
     public int findMaxId() {
         try {
             String hql = "Select MAX(x.idRelationGroup) from RelationGroup x";
@@ -35,10 +36,13 @@ public class RelationGroupFacade extends AbstractFacade<RelationGroup> {
             return 0;
         }
     }
-    
+
     public RelationGroup findByName(String name) {
-        String hql = "Select x from RelationGroup x where x.nameRelationGroup=:name";
-        return (RelationGroup)em.createQuery(hql).setParameter("name", name).getSingleResult();
+        try {
+            String hql = "Select x from RelationGroup x where x.nameRelationGroup=:name";
+            return (RelationGroup) em.createQuery(hql).setParameter("name", name).getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
     }
-    
 }

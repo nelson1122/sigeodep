@@ -56,6 +56,8 @@ public class UploadFileMB implements Serializable {
     TagsFacade tagsFacade;
     @EJB
     RelationGroupFacade relationGroupFacade;
+    @EJB
+    UsersFacade usersFacade;
     private boolean tagNameDisabled = false;
     private boolean btnResetDisabled = true;
     private String tagName = "";
@@ -89,6 +91,7 @@ public class UploadFileMB implements Serializable {
     private Integer tuplesProcessed;
     private String nameTableTemp = "temp";
     private String currentDelimiter = "";
+    private boolean configurationLoaded = false;//determinar si la configuracion ya se cargo
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -146,6 +149,7 @@ public class UploadFileMB implements Serializable {
         tagNameDisabled = false;
         btnResetDisabled = true;
         progressUpload = 0;
+
     }
     @EJB
     FatalInjuriesFacade fatalInjuriesFacade;
@@ -193,7 +197,7 @@ public class UploadFileMB implements Serializable {
         sources = new SelectItem[sourcesList.size()];
 
         for (int i = 0; i < sourcesList.size(); i++) {
-            sources[i] = new SelectItem(sourcesList.get(i).getSourceId().toString(),sourcesList.get(i).getSourceName());
+            sources[i] = new SelectItem(sourcesList.get(i).getSourceId().toString(), sourcesList.get(i).getSourceName());
             currentSource = Integer.parseInt(sources[0].getValue().toString());
         }
     }
@@ -445,14 +449,14 @@ public class UploadFileMB implements Serializable {
                 rowFile.set(i, "_" + rowFile.get(i));
             }
         }
-        
+
         for (int i = 0; i < rowFile.size(); i++) {//si la cadena inicia con un numero, le antepongo una raya baja
-            if (rowFile.get(i).compareTo("id")==0) {
-                rowFile.set(i, rowFile.get(i)+"_"+String.valueOf(i));
+            if (rowFile.get(i).compareTo("id") == 0) {
+                rowFile.set(i, rowFile.get(i) + "_" + String.valueOf(i));
             }
         }
-        
-        
+
+
         variablesFound = rowFile;
         return rowFile;
     }
@@ -497,6 +501,7 @@ public class UploadFileMB implements Serializable {
             if (errorTagName.length() == 0) {
                 btnProcessFileDisabled = false;
             }
+
             FacesMessage msg = new FacesMessage("Archivo cargado", "Archivo cargado correctamente, presione procesar para que sea procesado");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         } catch (IOException ex) {
@@ -520,37 +525,40 @@ public class UploadFileMB implements Serializable {
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
                 if (continueProcess) {
-
                     if (file.getFileName().endsWith("xlsx")) {
                         uploadXls();
                     } else {
                         uploadFileDelimiter();
                     }
-
                     progressUpload = 100;
                     btnProcessFileDisabled = true;
                     selectFormDisabled = true;
                     selectSourceDisabled = true;
-                    //selectFileUploadDisabled = true;
                     tagNameDisabled = true;
                     nameFile = "Archivo cargado: " + file.getFileName();
-
-                    RelationGroup newRelationsGroup = new RelationGroup();//("TEMP", currentForm, currentSource);
+                    RelationGroup newRelationsGroup = new RelationGroup();
                     newRelationsGroup.setIdRelationGroup(0);
                     newRelationsGroup.setFormId(formsFacade.findByFormId(currentForm));
                     newRelationsGroup.setSourceId(currentSource);
                     newRelationsGroup.setNameRelationGroup("TEMP");
                     newRelationsGroup.setRelationVariablesList(new ArrayList<RelationVariables>());
-
                     relationshipOfVariablesMB.setVarsFound(variablesFound);
                     relationshipOfVariablesMB.setCurrentRelationsGroup(newRelationsGroup);
                     relationshipOfValuesMB.setCurrentRelationsGroup(newRelationsGroup);
-
-                    //formsAndFieldsDataMB.setNameForm(currentForm);//relationshipOfVariablesMB.set(variablesFound);
                     recordDataMB.setNameForm(currentForm);
                     recordDataMB.setCurrentSource(currentSource);
-                    //recordDataMB.setBtnValidateDisabled(false);
                     storedRelationsMB.setCurrentRelationsGroup(newRelationsGroup);
+                    //ALMACENO LOS DATOS DE ESTA CONFIGURACION
+                    Users currentUser = loginMB.getCurrentUser();
+                    UsersConfiguration usersConfiguration = new UsersConfiguration(currentUser.getUserId());
+                    currentUser.setUsersConfiguration(usersConfiguration);
+                    usersConfiguration.setTagName(tagName);
+                    usersConfiguration.setFormId(currentForm);
+                    usersConfiguration.setSourceId(currentSource);
+                    usersConfiguration.setDelimiterFile(currentDelimiter);
+                    usersConfiguration.setFileName(file.getFileName());
+                    usersFacade.edit(currentUser);
+
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Archivo procesado correctamente."));
                     inactiveTabs = false;
                     btnResetDisabled = false;
@@ -635,21 +643,110 @@ public class UploadFileMB implements Serializable {
         }
     }
 
+    public void loadConfigurationUser() {
+        boolean continueProcess = true;
+        if (configurationLoaded) {//la configuracion ya se cargo una vez, no hacer nada            
+        } else {// es la primera vez que entra al sistema se debe cargar configuracion
+            progressUpload = 0;
+            relationshipOfVariablesMB.reset();
+            relationshipOfValuesMB.reset();
+            storedRelationsMB.reset();
+            recordDataMB.reset();
+            errorsControlMB.reset();
+            this.reset();
+            inactiveTabs = true;
+            //VERIFICO SI EXISTE LA TABLA TEMP
+            try {
+                ResultSet rs = connectionJdbcMB.consult("Select * from " + nameTableTemp);
+                if (rs.next()) {
+                    //CARGO LOS NOMBRES DE LAS COLUMNAS(variables esperadas)
+                    variablesFound = new ArrayList<String>();
+                    int columnsNumber = rs.getMetaData().getColumnCount();
+                    for (int i = 1; i < columnsNumber; i++) {
+                        variablesFound.add(rs.getMetaData().getColumnName(i));
+                    }
+                    System.out.println("Existe la tabla");
+                }
+            } catch (Exception e) {
+                System.out.println("No existe la tabla");
+                continueProcess = false;
+            }
+            //VERIFICO SI SE PUEDE CARGAR LOS DATOS DE LA CONFIGURACION
+            if (continueProcess) {
+                UsersConfiguration usersConfiguration = loginMB.getCurrentUser().getUsersConfiguration();
+                if (usersConfiguration.getTagName() != null) {
+                    if (usersConfiguration.getTagName().trim().length() != 0) {
+                        //cargar los datos de la configuracion
+                        currentDelimiter = usersConfiguration.getDelimiterFile();
+                        currentForm = usersConfiguration.getFormId();
+                        currentSource = usersConfiguration.getSourceId();
+                        nameFile = usersConfiguration.getFileName();
+                        tagName = usersConfiguration.getTagName();
+                        System.out.println("Se cargo la configuracion");
+                        errorTagName = " ";
+                        inactiveTabs = false;
+                        btnResetDisabled = false;
+                        copyMB.refresh();
+                        copyMB.cleanBackupTables();
+                        btnProcessFileDisabled = true;
+                        selectFormDisabled = true;
+                        selectSourceDisabled = true;
+                        tagNameDisabled = true;
+                        //cargar grupo de relaciones de ser posible
+                        boolean relationLoaded = false;
+                        if (usersConfiguration.getRelationGroupName() != null) {
+                            if (usersConfiguration.getRelationGroupName().trim().length() != 0) {
+                                //busco si existe este grupo de relaciones                            
+                                if (relationGroupFacade.findByName(usersConfiguration.getRelationGroupName()) != null) {
+                                    storedRelationsMB.setCurrentRelationGroupName(usersConfiguration.getRelationGroupName());
+                                    storedRelationsMB.btnLoadConfigurationClick();
+                                    relationLoaded = true;
+                                    System.out.println("Se cargaron las relaciones");
+                                }
+                            }
+                        }
+                        if (!relationLoaded) {//no se pudieron cargar relaciones
+                            //se crea una por defecto
+                            RelationGroup newRelationsGroup = new RelationGroup();
+                            newRelationsGroup.setIdRelationGroup(0);
+                            newRelationsGroup.setFormId(formsFacade.findByFormId(currentForm));
+                            newRelationsGroup.setSourceId(currentSource);
+                            newRelationsGroup.setNameRelationGroup("TEMP");
+                            newRelationsGroup.setRelationVariablesList(new ArrayList<RelationVariables>());
+                            relationshipOfVariablesMB.setVarsFound(variablesFound);
+                            relationshipOfVariablesMB.setCurrentRelationsGroup(newRelationsGroup);
+                            relationshipOfValuesMB.setCurrentRelationsGroup(newRelationsGroup);
+                            recordDataMB.setNameForm(currentForm);
+                            recordDataMB.setCurrentSource(currentSource);
+                            storedRelationsMB.setCurrentRelationsGroup(newRelationsGroup);
+                            System.out.println("No se pudieron cargar la relaciones");
+                        }
+                    }
+                }
+                else{
+                    System.out.println("No se pudo cargar la configuracion");
+                }
+            }
+            configurationLoaded = true;//la carga solo realizarla la primera vez
+        }
+    }
+
     public void btnResetClick() {
         /*
          * click sobre el boton reset
          */
-        //progress = 0;
-        //progressValidate = 0;
-        //loginMB.reset();
-
         progressUpload = 0;
-        //formsAndFieldsDataMB.reset();
         relationshipOfVariablesMB.reset();
         relationshipOfValuesMB.reset();
         storedRelationsMB.reset();
         recordDataMB.reset();
         errorsControlMB.reset();
+        //RESETEO LA CONFIGURACION DEL USUARIO
+        UsersConfiguration usersConfiguration = new UsersConfiguration(loginMB.getCurrentUser().getUserId());
+        loginMB.getCurrentUser().setUsersConfiguration(usersConfiguration);
+        usersFacade.edit(loginMB.getCurrentUser());
+
+
         this.reset();
         inactiveTabs = true;
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Se han reinicidado los controles"));
@@ -798,7 +895,6 @@ public class UploadFileMB implements Serializable {
 //    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
 //        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
 //    }
-
     public void setRelationshipOfVariablesMB(RelationshipOfVariablesMB relationshipOfVariablesMB) {
         this.relationshipOfVariablesMB = relationshipOfVariablesMB;
     }

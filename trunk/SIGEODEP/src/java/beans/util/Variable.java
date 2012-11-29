@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package managedBeans.reports;
+package beans.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +13,11 @@ import java.util.List;
  */
 public class Variable {
     private int id;
-    private String name;
-    private String table;
-    private String field;
-    private String generic_table;
-    private List<String> values;
+    private String name;//Nombre para la variable
+    private String table;//tabla donde estan los datos
+    private String field;//columna de la tabla donde estan los datos
+    private String generic_table;//tabla donde se encuentra la categoria
+    private List<String> values;//valores que puede tomar en la categoria
 
     public Variable(String name, String table, String field, String generic_table) {
         this.name = name;

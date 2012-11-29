@@ -210,4 +210,22 @@ public class RelationVariables implements Serializable {
         }
 
     }
+    
+    //determina sii existe una relacion de valores determinada
+    public boolean findRelationValues(String currentValueExpected, String currentValueFound) {
+        boolean returnValue=false;
+        
+        
+        
+        if (relationValuesList != null) {
+            for (int i = 0; i < relationValuesList.size(); i++) {
+                if (relationValuesList.get(i).getNameExpected().compareTo(currentValueExpected) == 0
+                        && relationValuesList.get(i).getNameFound().compareTo(currentValueFound) == 0) {
+                    return true;
+                }
+            }
+        }
+        return returnValue;
+
+    }
 }

@@ -14,11 +14,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.login.LoginMB;
+import model.dao.RelationGroupFacade;
+import model.dao.RelationVariablesFacade;
 import model.pojo.RelationGroup;
 import model.pojo.RelationValues;
 import model.pojo.RelationVariables;
@@ -32,6 +35,10 @@ import org.primefaces.event.RowEditEvent;
 @SessionScoped
 public class RelationshipOfValuesMB implements Serializable {
 
+    @EJB
+    RelationGroupFacade relationGroupFacade;
+    @EJB
+    RelationVariablesFacade relationVariablesFacade;
     //private ConnectionJDBC conx = null;//conexion sin persistencia a postgres     
     private List<String> categoricalRelatedVariables;
     private boolean newValueDisabled = true;
@@ -39,6 +46,8 @@ public class RelationshipOfValuesMB implements Serializable {
     private boolean btnAutomaticRelationValueDisabled = true;
     private boolean btnRemoveRelationValueDisabled = true;
     private boolean btnRemoveDiscardedValuesDisabled = true;
+    private boolean btnCopyFromDisabled = true;//ABRE EL DIALOGO PARA COPIAR DE OTRAS RELACIONES
+    private boolean btnCopyFrom2Disabled = true;// EJECUTA LA COPIA DE RELACIONES
     private boolean btnDiscardValueDisabled = true;
     private boolean btnViewValueDisabled = true;
     private List<String> valuesDiscarded;
@@ -60,7 +69,7 @@ public class RelationshipOfValuesMB implements Serializable {
     private LoginMB loginMB;
     private String currentVariableExpected = "";//variable Esperada
     private String currentVariableFound = "";//valor Encontrado
-    private String currentValueExpected = "";//valor esperado    
+    private String currentValueExpected = null;//valor esperado    
     private String currentCategoricalRelatedVariables = "";//valor esperado
     private String coincidentNewValue = "";
     private String expectedValuesFilter = "";
@@ -72,6 +81,11 @@ public class RelationshipOfValuesMB implements Serializable {
     ConnectionJdbcMB connectionJdbcMB;
     private ArrayList<String> selectedRowDataTable = new ArrayList<String>();
     private String nameTableTemp = "temp";
+    private List<String> relationGroups;
+    private String currentRelationGroup;
+    private List<String> relationsVariables;
+    private String currentRelationVariables;
+
 
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa
@@ -90,7 +104,7 @@ public class RelationshipOfValuesMB implements Serializable {
     }
 
     public void changeExpectedValuesFilter() {
-        currentValueExpected = "";
+        currentValueExpected = null;
         nameOfValueExpected = "";
         loadFoundValues();
         loadExpectedValues();
@@ -153,7 +167,7 @@ public class RelationshipOfValuesMB implements Serializable {
         foundValuesFilter = "";
         nameOfValueExpected = "";
         String[] splitValuesRelated;
-        currentValueExpected = "";
+        currentValueExpected = null;
         valuesFound = new ArrayList<String>();
         valuesExpected = new ArrayList<String>();
         valuesRelated = new ArrayList<String>();
@@ -164,6 +178,8 @@ public class RelationshipOfValuesMB implements Serializable {
         btnRemoveRelationValueDisabled = true;
         btnDiscardValueDisabled = true;
         btnRemoveDiscardedValuesDisabled = true;
+        btnCopyFromDisabled = false;
+
         if (currentCategoricalRelatedVariables.trim().length() != 0) {
             splitValuesRelated = currentCategoricalRelatedVariables.split("->");
             currentVariableExpected = splitValuesRelated[0];
@@ -194,14 +210,15 @@ public class RelationshipOfValuesMB implements Serializable {
         btnDiscardValueDisabled = true;
         btnRemoveDiscardedValuesDisabled = true;
         btnRemoveRelationValueDisabled = true;
-
+        btnCopyFromDisabled = true;
+        //System.out.println("Aqui desabilito");
         valuesFound = new ArrayList<String>();
         valuesFoundSelectedInRelationValues = null;
         foundValuesFilter = "";
 
         valuesExpected = new ArrayList<String>();
         expectedValuesFilter = "";
-        currentValueExpected = "";//valor esperado        
+        currentValueExpected = null;//valor esperado        
         nameOfValueExpected = "";
 
         valuesRelated = new ArrayList<String>();
@@ -257,7 +274,7 @@ public class RelationshipOfValuesMB implements Serializable {
         currentCategoricalRelatedVariables = null;
 
         valuesExpected = new ArrayList<String>();
-        currentValueExpected = "";
+        currentValueExpected = null;
 
         valuesRelated = new ArrayList<String>();
         valuesRelatedSelectedInRelationValues = new ArrayList<String>();
@@ -283,6 +300,7 @@ public class RelationshipOfValuesMB implements Serializable {
         /*
          * cargar los valores esperados dependiendo la variable esperada
          */
+        currentValueExpected = null;
         if (currentVariableExpected.length() != 0) {
             //typeVarExepted = formsAndFieldsDataMB.searchField(currentVariableExpected);
             //fieldsFacade.findByFormField(currentForm, currentVariableExpected).getFieldType();            
@@ -497,6 +515,112 @@ public class RelationshipOfValuesMB implements Serializable {
         }
     }
 
+    public void changeRelationGroup() {
+        //SE CARGAN LAS RELACIONES DE VARIABLES PERTENECIENTES A ESTE CONJUNTO
+        relationsVariables = new ArrayList<String>();
+        currentRelationVariables = null;
+        btnCopyFrom2Disabled = true;
+        List<RelationGroup> relationGroupList = relationGroupFacade.findAll();//buscar si ya existe el nombre
+        for (int i = 0; i < relationGroupList.size(); i++) {
+            if (relationGroupList.get(i).getNameRelationGroup().compareTo(currentRelationGroup) == 0) {
+                List<RelationVariables> relationVariablesList = relationGroupList.get(i).getRelationVariablesList();
+                for (int j = 0; j < relationVariablesList.size(); j++) {
+                    relationsVariables.add(relationVariablesList.get(j).getNameExpected() + "->" + relationVariablesList.get(j).getNameFound());
+                }
+                break;
+            }
+        }
+    }
+
+    public void changeRelationVariables() {
+
+        if (currentRelationVariables == null) {
+            btnCopyFrom2Disabled = true;
+        } else {
+            if (currentRelationVariables.trim().length() == 0) {
+                btnCopyFrom2Disabled = true;
+            } else {
+                btnCopyFrom2Disabled = false;
+            }
+        }
+    }
+
+    public void loadRelationsGroups() {
+
+        //CARGAR GRUPO DE RELACIONES EXISTENTES
+        List<RelationGroup> relationGroupList = relationGroupFacade.findAll();
+        relationGroups = new ArrayList<String>();
+        for (int i = 0; i < relationGroupList.size(); i++) {
+            relationGroups.add(relationGroupList.get(i).getNameRelationGroup());
+        }
+        relationsVariables = new ArrayList<String>();
+        currentRelationVariables = null;
+        currentRelationGroup = null;
+        btnCopyFrom2Disabled = true;
+    }
+
+    public void btnCopyFromClick() {
+        int numberCopy = 0;
+        if (currentRelationVariables != null && currentRelationGroup != null) {
+            if (currentRelationVariables.trim().length() != 0 && currentRelationGroup.trim().length() != 0) {
+                //busco el grupo de relaciones seleccionado                
+
+                RelationGroup relationGroupSelected = null;
+                RelationVariables relationVariablesSelected = null;
+                List<RelationValues> relationValuesListToCopy = null;
+
+                //busco el conjunto de relaciones almacenado que esta seleccionado
+                List<RelationGroup> relationGroupList = relationGroupFacade.findAll();//buscar si ya existe el nombre
+                for (int i = 0; i < relationGroupList.size(); i++) {
+                    if (relationGroupList.get(i).getNameRelationGroup().compareTo(currentRelationGroup) == 0) {
+                        relationGroupSelected = relationGroupList.get(i);
+                        break;
+                    }
+                }
+                //dentro del grupo busco el grupo de relaciones de variables
+                if (relationGroupSelected != null) {
+                    List<RelationVariables> relationVariablesList = relationGroupSelected.getRelationVariablesList();
+                    for (int i = 0; i < relationVariablesList.size(); i++) {
+                        String relationVars = relationVariablesList.get(i).getNameExpected() + "->" + relationVariablesList.get(i).getNameFound();
+                        if (relationVars.compareTo(currentRelationVariables) == 0) {
+                            relationValuesListToCopy = relationVariablesList.get(i).getRelationValuesList();
+                        }
+                    }
+                }
+                //si existen valores realizo la copia
+                if (relationValuesListToCopy != null) {
+                    //busco cual es la relacion de variables actual        
+                    String[] splitVarRelated = currentCategoricalRelatedVariables.split("->");
+                    currentVariableExpected = splitVarRelated[0];
+                    currentVariableFound = splitVarRelated[1];
+                    RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
+                    if (currentRelationVar != null) {
+                        //le transfiero la relacion de valores del uno al otro                        
+                        for (int i = 0; i < relationValuesListToCopy.size(); i++) {
+                            //si no esta en a lista lo agrego
+                            if (!currentRelationVar.findRelationValues(relationValuesListToCopy.get(i).getNameExpected(), relationValuesListToCopy.get(i).getNameFound())) {
+                                //se determina si el valor encontrado encontrado de las que se
+                                //van a copiar esta dentro de los valores encontrados del archivo
+                                List<String> valuesFound2 = createListOfDistinctValuesFromFile(currentVariableFound);
+                                for (int j = 0; j < valuesFound2.size(); j++) {
+                                    if (relationValuesListToCopy.get(i).getNameFound().compareTo(valuesFound2.get(j)) == 0) {
+                                        //se puede agragar la relacion por que el valor encontrado 
+                                        //en la relacion de valores a copiar si esta en el archivo
+                                        currentRelationVar.addRelationValue(relationValuesListToCopy.get(i).getNameExpected(), relationValuesListToCopy.get(i).getNameFound());
+                                        numberCopy++;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                changeCategoricalRelatedVariables();
+            }
+        }
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Finalizado", "Se copiaron: (" + String.valueOf(numberCopy) + ") relaciones de valores "));
+    }
+
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //CLIK SOBRE BOTONOES --------------------------------------------------
@@ -601,12 +725,7 @@ public class RelationshipOfValuesMB implements Serializable {
     public void btnAssociateRelationValueClick() {
         //---------------------------------------------------------------------------
         //como se quita de la lista un item se determina que item quedara seleccionado
-        //---------------------------------------------------------------------------        
-        //currentCategoricalRelatedVariables = "";
-        //currentValueExpected = "";
-        //valuesDiscardedSelectedInRelationValues = null;
-        //valuesFoundSelectedInRelationValues = null;
-        //valuesRelatedSelectedInRelationValues = null;
+        //---------------------------------------------------------------------------            
         String nextValuesFoundSelected = "";
         String firstValuesFoundSelected;//primer relacion de valores a eliminar
         String lastValuesFoundSelected;//ultima relacion de valores a eliminar
@@ -845,6 +964,11 @@ public class RelationshipOfValuesMB implements Serializable {
         //}
         activeButtons();
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Finalizado", "El proceso automático realizó: (" + String.valueOf(numberOfCreate) + ") relaciones de valores"));
+    }
+
+    public void btnRemoveUnnecessaryClick() {
+        //quitar de la lista las relaciones repetidas(no debe haber) y las que no se nececitan por que 
+        //en los valores encontrados no existen los que estan en las relaciones
     }
 
     public void btnRemoveRelationValueClick() {
@@ -1146,5 +1270,53 @@ public class RelationshipOfValuesMB implements Serializable {
 
     public void setNewValueDisabled(boolean newValueDisabled) {
         this.newValueDisabled = newValueDisabled;
+    }
+
+    public boolean isBtnCopyFromDisabled() {
+        return btnCopyFromDisabled;
+    }
+
+    public void setBtnCopyFromDisabled(boolean btnCopyFromDisabled) {
+        this.btnCopyFromDisabled = btnCopyFromDisabled;
+    }
+
+    public List<String> getRelationGroups() {
+        return relationGroups;
+    }
+
+    public void setRelationGroups(List<String> relationGroups) {
+        this.relationGroups = relationGroups;
+    }
+
+    public String getCurrentRelationGroup() {
+        return currentRelationGroup;
+    }
+
+    public void setCurrentRelationGroup(String currentRelationGroup) {
+        this.currentRelationGroup = currentRelationGroup;
+    }
+
+    public String getCurrentRelationVariables() {
+        return currentRelationVariables;
+    }
+
+    public void setCurrentRelationVariables(String currentRelationVariables) {
+        this.currentRelationVariables = currentRelationVariables;
+    }
+
+    public List<String> getRelationsVariables() {
+        return relationsVariables;
+    }
+
+    public void setRelationsVariables(List<String> relationsVariables) {
+        this.relationsVariables = relationsVariables;
+    }
+
+    public boolean isBtnCopyFrom2Disabled() {
+        return btnCopyFrom2Disabled;
+    }
+
+    public void setBtnCopyFrom2Disabled(boolean btnCopyFrom2Disabled) {
+        this.btnCopyFrom2Disabled = btnCopyFrom2Disabled;
     }
 }

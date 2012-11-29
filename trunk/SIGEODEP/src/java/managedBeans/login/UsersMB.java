@@ -13,9 +13,11 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import model.dao.ActivitiesFacade;
+import model.dao.UsersConfigurationFacade;
 import model.dao.UsersFacade;
 import model.pojo.Activities;
 import model.pojo.Users;
+import model.pojo.UsersConfiguration;
 
 /**
  *
@@ -34,6 +36,8 @@ public class UsersMB {
     private String currentSearchValue = "";
     @EJB
     UsersFacade usersFacade;
+    @EJB
+    UsersConfigurationFacade usersConfigurationFacade;
     private List<Users> usersList;
     private Users currentUser;
     private String name = "";
@@ -119,11 +123,17 @@ public class UsersMB {
 
     public void deleteRegistry() {
         if (currentUser != null) {
-            usersFacade.remove(currentUser);
-            currentUser = null;
-            selectedRowDataTable = null;
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
+            try {
+                usersFacade.remove(currentUser);
+                currentUser = null;
+                selectedRowDataTable = null;
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            } catch (Exception e) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "NO REALIZADO", "El registro no puede ser eliminado por que su informacion esta siendo utilizada");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
+
         }
         createDynamicTable();
         btnEditDisabled = true;
@@ -138,7 +148,7 @@ public class UsersMB {
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             } else {
                 Users u = usersFacade.findByLogin(login);
-                if (currentUser.getUserLogin().compareTo(u.getUserLogin())==0) {                    
+                if (currentUser.getUserLogin().compareTo(u.getUserLogin()) == 0) {
                     currentUser.setUserName(name);
                     currentUser.setUserLogin(login);
                     currentUser.setUserName(name);
@@ -183,6 +193,9 @@ public class UsersMB {
                 newRegistry.setUserEmail(newEmail);
                 newRegistry.setUserAddress(newAddress);
                 newRegistry.setUserPassword(newPasword);
+                UsersConfiguration usersConfiguration = new UsersConfiguration(newRegistry.getUserId());
+                newRegistry.setUsersConfiguration(usersConfiguration);                
+                //usersFacade.edit(currentUser);
                 usersFacade.create(newRegistry);
                 newRegistry();
                 currentUser = null;
@@ -214,8 +227,8 @@ public class UsersMB {
         newPasword = "";
         address = "";
         newAddress = "";
-        login="";
-        newLogin="";
+        login = "";
+        newLogin = "";
     }
 
     public void createDynamicTable() {

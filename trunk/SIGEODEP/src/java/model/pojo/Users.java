@@ -61,9 +61,13 @@ public class Users implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "user_address", length = 2147483647)
     private String userAddress;
-    @Size(max = 2147483647)
-    @Column(name = "user_login", length = 2147483647)
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 2147483647)
+    @Column(name = "user_login", nullable = false, length = 2147483647)
     private String userLogin;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "users")
+    private UsersConfiguration usersConfiguration;
 
     public Users() {
     }
@@ -72,10 +76,11 @@ public class Users implements Serializable {
         this.userId = userId;
     }
 
-    public Users(Integer userId, String userName, String userPassword) {
+    public Users(Integer userId, String userName, String userPassword, String userLogin) {
         this.userId = userId;
         this.userName = userName;
         this.userPassword = userPassword;
+        this.userLogin = userLogin;
     }
 
     public Integer getUserId() {
@@ -148,6 +153,14 @@ public class Users implements Serializable {
 
     public void setUserLogin(String userLogin) {
         this.userLogin = userLogin;
+    }
+    
+    public UsersConfiguration getUsersConfiguration() {
+        return usersConfiguration;
+    }
+
+    public void setUsersConfiguration(UsersConfiguration usersConfiguration) {
+        this.usersConfiguration = usersConfiguration;
     }
 
     @Override

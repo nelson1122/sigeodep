@@ -16,7 +16,6 @@ import model.pojo.Users;
  */
 @Stateless
 public class UsersFacade extends AbstractFacade<Users> {
-
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
@@ -28,7 +27,7 @@ public class UsersFacade extends AbstractFacade<Users> {
     public UsersFacade() {
         super(Users.class);
     }
-
+    
     public int findMax() {
         try {
             String hql = "Select MAX(x.userId) from Users x";
@@ -81,4 +80,5 @@ public class UsersFacade extends AbstractFacade<Users> {
         return null;
 
     }
+    
 }
