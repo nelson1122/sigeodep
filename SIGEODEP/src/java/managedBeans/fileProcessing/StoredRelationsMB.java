@@ -15,6 +15,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
 
@@ -26,15 +27,6 @@ import model.pojo.*;
 @SessionScoped
 public class StoredRelationsMB implements Serializable {
 
-    private String currentRelationGroupName;
-    private List<String> relationGroups;
-    private String txtOpenDialog;
-    private String newConfigurationName = "";
-    private boolean btnLoadConfigurationDisabled = true;
-    //private boolean btnSaveConfigurationDisabled = true;
-    private boolean btnRemoveConfigurationDisabled = true;
-    private String txtSaveDialog;
-    private String saveClick = "";
     @EJB
     FormsFacade formsFacade;
     @EJB
@@ -47,42 +39,79 @@ public class StoredRelationsMB implements Serializable {
     RelationValuesFacade relationValuesFacade;
     @EJB
     RelationsDiscardedValuesFacade relationDiscardedValuesFacade;
+    @EJB
+    UsersFacade usersFacade;
     private UploadFileMB uploadFileMB;
+    private LoginMB loginMB;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private RelationGroup currentRelationsGroup;//grupo de relaciones actual
-    ErrorsControlMB errorsControlMB;
-    RecordDataMB recordDataMB;
+    private ErrorsControlMB errorsControlMB;
+    private RecordDataMB recordDataMB;
+    private int tuplesNumber;
+    private int tuplesSaved;
+    private String currentRelationGroupName;
+    private List<String> relationGroups;
+    private String txtOpenDialog;
+    private String newConfigurationName = "";
+    private boolean btnLoadConfigurationDisabled = true;
+    private Integer progressSave = 0;//progreso cuando se guardan relaciones
+    private boolean btnRemoveConfigurationDisabled = true;
+    private String txtSaveDialog;
+    private String saveClick = "";
 
     public StoredRelationsMB() {
         /**
          * Creates a new instance of StoredRelationsMB
          */
+        FacesContext context = FacesContext.getCurrentInstance();
+        loginMB = (LoginMB) context.getApplication().evaluateExpressionGet(context, "#{loginMB}", LoginMB.class);
+    }
+
+    public void onCompleteSave() {
+        if (messaje.indexOf("almacenada") != -1) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto", messaje));
+            
+        } else {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", messaje);
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+        }
+        //if (progressSave==100) {            
+        //    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Relaciones almacenadas correctamente"));
+
+        //}
     }
 
     public void reset() {
         currentRelationGroupName = "";
         newConfigurationName = "";
-//        btnSaveConfigurationDisabled = true;
         btnLoadConfigurationDisabled = true;
         btnRemoveConfigurationDisabled = true;
     }
+    String messaje = "";
 
     public String btnSaveConfiguration() {
+        progressSave = 0;
         if (newConfigurationName.trim().length() == 0) {
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe digitar un nombre para el grupo de relaciones");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
+            messaje = "Debe digitar un nombre para el grupo de relaciones";
+            //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe digitar un nombre para el grupo de relaciones");
+            //FacesContext.getCurrentInstance().addMessage(null, msg);
+            progressSave = 100;
             return "";
         }
         if (currentRelationsGroup != null) {
             List<RelationVariables> relationVarList = currentRelationsGroup.getRelationVariablesList();
             if (relationVarList.isEmpty()) {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "No existen relaciones creadas");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
+                messaje = "No existen relaciones creadas";
+                //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "No existen relaciones creadas");
+                //FacesContext.getCurrentInstance().addMessage(null, msg);
+                progressSave = 100;
                 return "";
             }
         } else {
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "No existen relaciones creadas.");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
+            messaje = "No existen relaciones creadas";
+            //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "No existen relaciones creadas.");
+            //FacesContext.getCurrentInstance().addMessage(null, msg);
+            progressSave = 100;
             return "";
         }
 
@@ -95,6 +124,7 @@ public class StoredRelationsMB implements Serializable {
                 break;
             }
         }
+        String nameTmp=newConfigurationName;
         if (exist) {
             currentRelationGroupName = newConfigurationName;
             removeConfiguration();
@@ -102,11 +132,12 @@ public class StoredRelationsMB implements Serializable {
         } else {
             saveConfiguration();
         }
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Guardado", "La configuración ha sido almacenada"));
+        progressSave = 100;
+        messaje = "Las relaciones: ("+nameTmp+") han sido almacenadas";
         return "";
     }
 
-    public void btnLoadConfigurationClick() {        
+    public void btnLoadConfigurationClick() {
         if (currentRelationGroupName.trim().length() != 0) {
             RelationGroup selectRelationGroup = relationGroupFacade.findByName(currentRelationGroupName);
             List<RelationVariables> relationVariablesList = relationVariablesFacade.findByRelationGroup(selectRelationGroup.getIdRelationGroup());
@@ -183,6 +214,12 @@ public class StoredRelationsMB implements Serializable {
             relationshipOfVariablesMB.loadVarsExpectedAndFound();
             relationshipOfVariablesMB.setValuesExpected(new ArrayList<String>());
             relationshipOfVariablesMB.setValuesFound(new ArrayList<String>());
+
+            //ASIGNO A LA CONFIGURACION DEL USUARIO EL NOMBRE DE LA RELACION
+            Users currentUser = loginMB.getCurrentUser();
+            currentUser.getUsersConfiguration().setRelationGroupName(currentRelationGroupName);
+            usersFacade.edit(currentUser);
+
             if (countNotFound == 0) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "El grupo de relaciones (" + currentRelationGroupName + ") se ha cargado satisfactoriamente"));
             } else {
@@ -221,6 +258,8 @@ public class StoredRelationsMB implements Serializable {
         relationGroupFacade.create(newRelationGroup);//persistir en la tabla relation_group
 
         List<RelationVariables> relationVarList = currentRelationsGroup.getRelationVariablesList();
+        tuplesNumber = relationVarList.size();
+        tuplesSaved = 0;
         for (int i = 0; i < relationVarList.size(); i++) {//recorrer lista de relaciones            
             idRelationVariables++;
             RelationVariables newRelationVariables = new RelationVariables();
@@ -255,7 +294,14 @@ public class StoredRelationsMB implements Serializable {
                     relationDiscardedValuesFacade.create(newRelationDiscardedValues);//persisto el objeto
                 }
             }
+            tuplesSaved++;
+            progressSave = (int) (tuplesSaved * 100) / tuplesNumber;
+            System.out.println("PROGRESO ALMACENANDO: " + String.valueOf(progressSave));
         }
+        //ASIGNO A LA CONFIGURACION DEL USUARIO EL NOMBRE DE LA RELACION
+        Users currentUser = loginMB.getCurrentUser();
+        currentUser.getUsersConfiguration().setRelationGroupName(newConfigurationName);
+        usersFacade.edit(currentUser);
         newConfigurationName = "";
         //cargo los grupos de relaciones existentes
         loadRelatedGroups();
@@ -263,9 +309,12 @@ public class StoredRelationsMB implements Serializable {
     }
 
     public void removeConfiguration() {
+        progressSave = 0;
         try {
             RelationGroup selectRelationGroup = relationGroupFacade.findByName(currentRelationGroupName);
             List<RelationVariables> relationVariablesList = selectRelationGroup.getRelationVariablesList();
+            tuplesSaved = 0;
+            tuplesNumber = relationVariablesList.size();
             for (int i = 0; i < relationVariablesList.size(); i++) {
                 List<RelationsDiscardedValues> relationDiscardedValuesList = relationVariablesList.get(i).getRelationsDiscardedValuesList();
                 for (int j = 0; j < relationDiscardedValuesList.size(); j++) {
@@ -280,6 +329,12 @@ public class StoredRelationsMB implements Serializable {
                 //relationVariablesFacade.findAll();
                 relationVariablesList.get(i).setRelationValuesList(null);
                 relationVariablesFacade.remove(relationVariablesList.get(i));
+                tuplesSaved++;
+                progressSave = (int) (tuplesSaved * 100) / tuplesNumber;
+                System.out.println("PROGRESO ELIMINANDO: " + String.valueOf(progressSave));
+                if (progressSave > 90) {//no permitir que pase de 90
+                    tuplesSaved--;
+                }
             }
             //relationGroupFacade.findAll();
             selectRelationGroup.setRelationVariablesList(null);
@@ -360,11 +415,6 @@ public class StoredRelationsMB implements Serializable {
     }
 
     public void setNewConfigurationName(String newConfigurationName) {
-//        if (newConfigurationName.trim().length() == 0) {
-//            btnSaveConfigurationDisabled = true;
-//        } else {
-//            btnSaveConfigurationDisabled = false;
-//        }
         this.newConfigurationName = newConfigurationName;
     }
 
@@ -408,11 +458,12 @@ public class StoredRelationsMB implements Serializable {
     public void setSaveClick(String saveClick) {
         this.saveClick = saveClick;
     }
-//    public boolean isBtnSaveConfigurationDisabled() {
-//        return btnSaveConfigurationDisabled;
-//    }
-//
-//    public void setBtnSaveConfigurationDisabled(boolean btnSaveConfigurationDisabled) {
-//        this.btnSaveConfigurationDisabled = btnSaveConfigurationDisabled;
-//    }
+
+    public Integer getProgressSave() {
+        return progressSave;
+    }
+
+    public void setProgressSave(Integer progressSave) {
+        this.progressSave = progressSave;
+    }
 }

@@ -46,7 +46,7 @@
                                     <p:menuitem 
                                         icon="ui-icon-document"
                                         value="Conjuntos desde Archivo"
-                                        actionListener="#{recordSetsMB.reset}"
+                                        actionListener="#{uploadFileMB.loadConfigurationUser}"
                                         action="proccesFile"
                                         ajax="false"/>
                                     <p:menuitem 
@@ -164,6 +164,7 @@
                                     <p:menuitem 
                                         icon="ui-icon-person"
                                         value="Gestión de Usuarios" 
+                                        actionListener="#{usersMB.reset}"
                                         action="users" 
                                         ajax="false"/>  
                                 </p:menu> 

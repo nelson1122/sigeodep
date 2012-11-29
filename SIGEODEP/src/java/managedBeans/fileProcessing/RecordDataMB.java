@@ -261,7 +261,8 @@ public class RecordDataMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     private Integer progress;
-    private Integer progressValidate;
+    private Integer progressValidate;//
+    
     private int errorsNumber = 0;
     private int currentSource = 0;
     boolean continueProcces = false;
@@ -4889,15 +4890,7 @@ public class RecordDataMB implements Serializable {
     public void setBtnRegisterDataDisabled(boolean btnRegisterDataDisabled) {
         this.btnRegisterDataDisabled = btnRegisterDataDisabled;
     }
-//
-//    public boolean isBtnValidateDisabled() {
-//        return btnValidateDisabled;
-//    }
-//
-//    public void setBtnValidateDisabled(boolean btnValidateDisabled) {
-//        this.btnValidateDisabled = btnValidateDisabled;
-//    }
-
+    
     public Integer getProgressValidate() {
         return progressValidate;
     }

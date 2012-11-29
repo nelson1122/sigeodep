@@ -698,7 +698,7 @@
                                                             id="IdSelectOneListValuesExpected"                                                             
                                                             style="height:100px; width: 380px; ">
                                                             <f:selectItems value="#{relationshipOfVariablesMB.valuesExpected}"/>							    
-                                                            
+
                                                         </h:selectManyMenu> 
                                                     </p:column>                                                                                    
                                                 </p:row>                                                                               
@@ -768,7 +768,7 @@
                                                             style="height:100px; width: 380px; "
                                                             disabled="true">
                                                             <f:selectItems value="#{relationshipOfVariablesMB.valuesFound}"/>							    
-                                                            
+
                                                         </h:selectManyMenu>
                                                     </p:column>                                        
                                                 </p:row>
@@ -783,11 +783,10 @@
                                                         <p:commandButton 
                                                             id="IdBtnAssociateRelationVar"                                                             
                                                             actionListener="#{relationshipOfVariablesMB.btnAssociateVarClick}"
-                                                            
                                                             icon="ui-icon-arrowthick-1-s"
                                                             value="ASOCIAR" 
                                                             style="size: 10px;"
-                                                            update="IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListVarRelated IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdExpectedValuesFilter IdFoundValuesFilter"/>
+                                                            update="IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListVarRelated IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdExpectedValuesFilter IdFoundValuesFilter IdBtnCopyFrom"/>
                                                         <p:commandButton 
                                                             id="IdBtnRemoveRelationVar" 
                                                             icon="ui-icon-arrowthick-1-n"
@@ -795,7 +794,7 @@
                                                             actionListener="#{relationshipOfVariablesMB.btnRemoveRelationVarClick}"
                                                             value="QUITAR RELACION"                                             
                                                             style="size: 10px;"                                            
-                                                            update="IdSelectOneListValuesDiscarded IdSelectOneListValuesRelated IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdSelectOneListVarRelated"/>
+                                                            update="IdSelectOneListValuesDiscarded IdSelectOneListValuesRelated IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdSelectOneListVarRelated IdBtnCopyFrom"/>
                                                     </p:column>                                         
                                                 </p:row>  
                                                 <p:row>  
@@ -828,11 +827,20 @@
                                             <p:panelGrid >                            
                                                 <p:row>  
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="VARIABLES CATEGORICAS RELACIONADAS"/>  
+                                                        <h:outputLabel value="Relaciones categóricas"/>  
+                                                    </p:column>                                       
+                                                    <p:column styleClass="ui-widget-header">                                       
+                                                        <p:commandButton 
+                                                            id="IdBtnCopyFrom" 
+                                                            disabled="#{relationshipOfValuesMB.btnCopyFromDisabled}"                                                             
+                                                            oncomplete="copyFromDialog.show();"
+                                                            value="Copiar de" 
+                                                            actionListener="#{relationshipOfValuesMB.loadRelationsGroups}"
+                                                            update=":IdForm2:IdCopyFromDialog"/>
                                                     </p:column>                                       
                                                 </p:row>  
                                                 <p:row>  
-                                                    <p:column>
+                                                    <p:column colspan="2">
                                                         <!--LISTA DE VARIABLES CATEGORICAS RELACIONADAS EN RELACION DE VALORES-->
                                                         <h:selectOneListbox 
                                                             id="IdSelectOneListCategoricalVarsRelated" 
@@ -844,7 +852,7 @@
                                                             <f:ajax 
                                                                 event="change"                                            
                                                                 listener="#{relationshipOfValuesMB.changeCategoricalRelatedVariables}" 
-                                                                render="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdExpectedValuesFilter IdFoundValuesFilter IdBtnView IdNameOfValueExpected"/>
+                                                                render="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdExpectedValuesFilter IdFoundValuesFilter IdBtnView IdNameOfValueExpected IdBtnCopyFrom"/>
                                                         </h:selectOneListbox> 
                                                     </p:column>                                                                        
                                                 </p:row>
@@ -854,16 +862,25 @@
                                             <p:panelGrid>                            
                                                 <p:row>                                                      
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="VALORES DESCARTADOS"/>  
+                                                        <h:outputLabel value="Valores descartados"/>  
                                                     </p:column>                                         
+                                                    <p:column styleClass="ui-widget-header">
+                                                        <p:commandButton 
+                                                            id="IdBtnRemoveDiscardedValues" 
+                                                            disabled="#{relationshipOfValuesMB.btnRemoveDiscardedValuesDisabled}" 
+                                                            actionListener="#{relationshipOfValuesMB.btnRemoveDiscardedValuesClick}"
+                                                            value="Quitar descartado" 
+                                                            style="size: 10px;"
+                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/>
+                                                    </p:column>
                                                 </p:row>  
                                                 <p:row>  
-                                                    <p:column>
+                                                    <p:column colspan="2">
                                                         <!--LISTA DE VALORES DESCARTADOS EN RELACION DE VALORES-->
                                                         <h:selectManyMenu                                                             
                                                             id="IdSelectOneListValuesDiscarded" 
                                                             value="#{relationshipOfValuesMB.valuesDiscardedSelectedInRelationValues}"
-                                                            style="height:95px; width: 355px;">
+                                                            style="height:135px; width: 355px;">
                                                             <f:selectItems value="#{relationshipOfValuesMB.valuesDiscarded}"/>							    
                                                             <f:ajax 
                                                                 event="change"                                            
@@ -872,17 +889,9 @@
                                                         </h:selectManyMenu> 
                                                     </p:column> 
                                                 </p:row>
-                                                <p:row>  
-                                                    <p:column colspan="2" styleClass="ui-widget-header">
-                                                        <p:commandButton 
-                                                            id="IdBtnRemoveDiscardedValues" 
-                                                            disabled="#{relationshipOfValuesMB.btnRemoveDiscardedValuesDisabled}" 
-                                                            actionListener="#{relationshipOfValuesMB.btnRemoveDiscardedValuesClick}"
-                                                            value="QUITAR DE VALORES DESCARTADOS" 
-                                                            style="size: 10px;"
-                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/>
-                                                    </p:column>
-                                                </p:row>
+
+
+
                                             </p:panelGrid>
                                         </td>
                                     </tr>
@@ -892,7 +901,7 @@
                                             <p:panelGrid>                            
                                                 <p:row>  
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="VALORES ESPERADOS   "/>  
+                                                        <h:outputLabel value="Valores esperados   "/>  
                                                     </p:column>                                       
                                                     <p:column styleClass="ui-widget-header">
                                                         <h:inputText 
@@ -906,7 +915,7 @@
                                                         </h:inputText>
                                                     </p:column>                                       
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="VALORES ENCONTRADOS   "/>  
+                                                        <h:outputLabel value="Valores encontrados   "/>  
                                                     </p:column>                                       
                                                     <p:column styleClass="ui-widget-header">
                                                         <h:inputText 
@@ -1000,13 +1009,28 @@
                                     <tr>
                                         <td colspan="3">
                                             <p:panelGrid>                            
-                                                <p:row>  
+                                                <p:row>                                                                           
                                                     <p:column styleClass="ui-widget-header">
-                                                        <h:outputLabel value="VALORES RELACIONADOS"/>  
-                                                    </p:column>                                                                                                                                
+                                                        <p:commandButton 
+                                                            id="IdBtnRemoveRelationValues" 
+                                                            disabled="#{relationshipOfValuesMB.btnRemoveRelationValueDisabled}" 
+                                                            actionListener="#{relationshipOfValuesMB.btnRemoveRelationValueClick}"
+                                                            value="Quitar relaciones seleccionadas"
+                                                            style="size: 10px;"
+                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues"/>
+                                                        <p:commandButton 
+                                                            id="IdBtnRemoveUnnecessary"                                                             
+                                                            actionListener="#{relationshipOfValuesMB.btnRemoveUnnecessaryClick}"
+                                                            value="Quitar relaciones innecesarias"
+                                                            style="size: 10px;"
+                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues"/>
+                                                    </p:column>                     
+                                                    <p:column styleClass="ui-widget-header">
+                                                        <h:outputLabel value="Valores relacionados"/>  
+                                                    </p:column>
                                                 </p:row>  
                                                 <p:row>  
-                                                    <p:column>
+                                                    <p:column colspan="2">
                                                         <!--LISTA DE VALORES RELACIONADOS-->
                                                         <h:selectManyMenu  
                                                             id="IdSelectOneListValuesRelated" 
@@ -1020,17 +1044,6 @@
                                                         </h:selectManyMenu> 
                                                     </p:column>                                
                                                 </p:row>
-                                                <p:row>  
-                                                    <p:column styleClass="ui-widget-header">
-                                                        <p:commandButton 
-                                                            id="IdBtnRemoveRelationValues" 
-                                                            disabled="#{relationshipOfValuesMB.btnRemoveRelationValueDisabled}" 
-                                                            actionListener="#{relationshipOfValuesMB.btnRemoveRelationValueClick}"
-                                                            value="ELIMINAR RELACION"
-                                                            style="size: 10px;"
-                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues"/>
-                                                    </p:column>                                                                                                                                
-                                                </p:row>  
                                             </p:panelGrid>
                                         </td>
                                     </tr>
@@ -1084,7 +1097,7 @@
                                                             value="GUARDAR RELACIONES ACTUALES"
                                                             style="margin:0;"
                                                             update=":IdForm2:IdrelationGroupName"
-                                                            onclick="newDialog.show()"/>
+                                                            onclick="newDialog.show()"/>                                                        
                                                     </p:column>                                                                                            
                                                 </p:row>
                                             </p:panelGrid>
@@ -1340,6 +1353,68 @@
         <ui:define name="dialogs">
             <h:form id="IdForm2">
                 <p:dialog 
+                    id="IdCopyFromDialog"  
+                    modal="true"
+                    header="COPIAR RELACIONES DE"         
+                    resizable="false"                    
+                    widgetVar="copyFromDialog">  
+                    <br/>
+                    <p:panelGrid>
+                        <p:row>
+                            <p:column styleClass="ui-widget-header">
+                                Relaciones Almacenadas
+                            </p:column>    
+                            <p:column styleClass="ui-widget-header">
+                                Relaciones de variables
+                            </p:column>    
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:selectOneListbox 
+                                    id="IdRelationsGroupsList" 
+                                    value="#{relationshipOfValuesMB.currentRelationGroup}"
+                                    style="height:100px; width: 280px; ">
+                                    <f:selectItems value="#{relationshipOfValuesMB.relationGroups}"/>
+                                    <f:selectItem itemLabel=" " itemValue=" " />
+                                    <f:ajax 
+                                        event="change"                                            
+                                        listener="#{relationshipOfValuesMB.changeRelationGroup}" 
+                                        render="IdRelationsVariablesList IdBtnCopyFrom2"/>
+                                </h:selectOneListbox> 
+                            </p:column>    
+                            <p:column>
+                                <h:selectOneListbox 
+                                    id="IdRelationsVariablesList" 
+                                    value="#{relationshipOfValuesMB.currentRelationVariables}"
+                                    style="height:100px; width: 280px; ">
+                                    <f:selectItems value="#{relationshipOfValuesMB.relationsVariables}"/>
+                                    <f:selectItem itemLabel=" " itemValue=" " />
+                                    <f:ajax 
+                                        event="change"                                            
+                                        listener="#{relationshipOfValuesMB.changeRelationVariables}" 
+                                        render="IdBtnCopyFrom2"/>
+                                </h:selectOneListbox> 
+                            </p:column>    
+                        </p:row>
+                        <p:row>
+                            <p:column colspan="2">
+                                <p:commandButton                        
+                                    id="IdBtnCopyFrom2"
+                                    value="Copiar"
+                                    style="margin:0;"
+                                    disabled="#{relationshipOfValuesMB.btnCopyFrom2Disabled}"
+                                    actionListener="#{relationshipOfValuesMB.btnCopyFromClick}"
+                                    oncomplete="copyFromDialog.hide()"                                     
+                                    update=":IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesExpected2 :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesFound2 :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesRelated :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesDiscarded :IdForm:IdTabView:IdAccordionPanel:IdBtnAssociateValues :IdForm:IdTabView:IdAccordionPanel:IdBtnAutomaticRelationValues :IdForm:IdTabView:IdAccordionPanel:IdBtnRemoveRelationValues :IdForm:IdTabView:IdAccordionPanel:IdBtnDiscardValue :IdForm:IdTabView:IdAccordionPanel:IdBtnRemoveDiscardedValues :IdForm:IdTabView:IdAccordionPanel:IdBtnView :IdForm:message"/>  
+                                <p:commandButton                         
+                                    value="Cancelar" 
+                                    onclick="copyFromDialog.hide()"
+                                    type="button"/>   
+                            </p:column>    
+                        </p:row>
+                    </p:panelGrid>               
+                </p:dialog>
+                <p:dialog 
                     id="IdSeeRecordDialog" 
                     header="Datos del registro que presenta Errores" 
                     widgetVar="seeRecordDialog" 
@@ -1371,8 +1446,7 @@
                     header="Registros coincidentes con el valor encontrado seleccionado"
                     widgetVar="seeCoincidentsDialog"                     
                     resizable="false"                    
-                    modal="true" 
-                    >
+                    modal="true">
                     <p:panelGrid>
                         <p:row>
                             <p:column colspan="3" >
@@ -1512,9 +1586,15 @@
                         value="Al digitar un nombre existente, las relaciones se sobreescriben." 
                         readonly="true" 
                         style="text-align: match-parent; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 40px; width: 220px;"/>
-                    <br/><br/>
-                    <h:outputText value="Nombre para las relaciones:"/>
                     <br/>
+                    <p:progressBar 
+                        id="IdProgresSave" 
+                        interval="500" widgetVar="pbAjaxSave" ajax="true" value="#{storedRelationsMB.progressSave}" labelTemplate="{value}%" styleClass="animated">                                                  
+                        <p:ajax 
+                            event="complete" 
+                            listener="#{storedRelationsMB.onCompleteSave}" 
+                            update=":IdForm:message"/>  
+                    </p:progressBar>
                     <p:inputText
                         id="IdrelationGroupName"
                         style="width: 220px;" 
@@ -1523,13 +1603,14 @@
                             event="keyup"                                                                                                            
                             render=":IdForm:message IdBtnSaveConfiguration"/>
                     </p:inputText>
-                    <br/><br/>
+                    <br/>                    
                     <p:commandButton
                         id="IdBtnSaveConfiguration"
                         value="CONTINUAR"
                         style="margin:0;"
                         actionListener="#{storedRelationsMB.btnSaveConfiguration}"
-                        onclick="newDialog.hide()"
+                        onclick="pbAjaxSave.start()"
+                        oncomplete="newDialog.hide()"
                         update=":IdForm:IdTabView:IdAccordionPanel:IdSelectOneListRelationGroups :IdForm:message"/>  
                     <p:commandButton 
                         id="declineNew"

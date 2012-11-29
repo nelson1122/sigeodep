@@ -4,6 +4,7 @@
  */
 package managedBeans.reports;
 
+import beans.util.Variable;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfCell;
 import com.lowagie.text.pdf.PdfPCell;

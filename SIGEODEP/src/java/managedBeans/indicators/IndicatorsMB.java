@@ -4,12 +4,17 @@
  */
 package managedBeans.indicators;
 
+import beans.connection.ConnectionJdbcMB;
+import beans.util.Variable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 import model.dao.IndicatorsFacade;
 import model.pojo.Indicators;
 import org.jfree.chart.ChartFactory;
@@ -34,13 +39,22 @@ public class IndicatorsMB {
     @EJB
     IndicatorsFacade indicatorsFacade;
     Indicators currentIndicator;
+    IndicatorsDataMB indicatorsDataMB;
     
     private String titlePage = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
     private String titleIndicator = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
     private String subTitleIndicator = "NUMERO DE CASOS POR LESION";
     private Date initialDate = new Date();
-    private Date endDate = new Date();
+    private Date endDate = new Date();    
     private StreamedContent chartImage;
+    
+    private SelectItem[] variablesList;//lista de variables que sepueden cruzar(se visualizan en pagina)
+    private SelectItem[] variablesCrossList;//ista de variables que se van a cruzar(se visualizan en pagina)
+    private Short currentVariableSelected; 
+    private Short currentVariableCrossSelected;
+    private ArrayList<Variable> variablesListData;
+    
+    
     int size = 10;
 
     public IndicatorsMB() {
@@ -53,6 +67,7 @@ public class IndicatorsMB {
         } catch (Exception e) {
         }
         //-------------------------------------------------
+        indicatorsDataMB = (IndicatorsDataMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{indicatorsDataMB}", IndicatorsDataMB.class);
     }
 
     private PieDataset createDataset() {
@@ -79,12 +94,14 @@ public class IndicatorsMB {
         currentIndicator=indicatorsFacade.find(n);
         titlePage = currentIndicator.getIndicatorGroup();
         titleIndicator = currentIndicator.getIndicatorGroup();
-        subTitleIndicator = currentIndicator.getIndicatorName();        
+        subTitleIndicator = currentIndicator.getIndicatorName();                        
+        variablesListData=indicatorsDataMB.getVariablesIndicator(n, 1);
+        
     }
 
     //FUNCIONES GET AND SET
     public void loadIndicator1() {
-        loadIndicator(1);
+        loadIndicator(1);        
     }
 
     public void loadIndicator2() {
@@ -371,3 +388,4 @@ public class IndicatorsMB {
         this.initialDate = initialDate;
     }
 }
+

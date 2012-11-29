@@ -43,7 +43,6 @@ public class RelationshipOfVariablesMB implements Serializable {
     private boolean btnDivideColumnsDisabled;
     private boolean selectDateFormatDisabled = true;
     private boolean compareForCode = false;
-    //private boolean compareForCodeDisabled = true;
     private List<String> variablesExpected;
     private String currentVarFound = "";
     private List<String> varsFound;
@@ -52,7 +51,7 @@ public class RelationshipOfVariablesMB implements Serializable {
     private List<String> valuesFound;
     private String currentRelatedVars = "";//actual relacion de variables
     private List<String> relatedVars;
-    private List<String> relationGroups;
+    //
     private String currentRelationGroupName = "";
     private String currentDateFormat = "dd/MM/yyyy";//tipo de formato de fecha actual
     private String currentVarExpected = "";//variable esperda para relacionar variables
@@ -348,7 +347,7 @@ public class RelationshipOfVariablesMB implements Serializable {
                     if (rs.getString(1) != null) {
                         array.add(rs.getString(1));
                         currentAmount++;
-                    }                    
+                    }
                 } else {
                     break;
                 }
@@ -356,7 +355,7 @@ public class RelationshipOfVariablesMB implements Serializable {
         } catch (SQLException ex) {
             System.out.println("Error: rovaMB_2 > " + ex.toString());
         }
-        
+
         valuesFound = array;
     }
 
@@ -500,7 +499,7 @@ public class RelationshipOfVariablesMB implements Serializable {
             //currentRelationGroup.addRelationVar(relVar);//agrego la relacion a el grupo de relaciones actual 
             relatedVars.add(currentVarExpected + "->" + currentVarFound);//agrego la relacion a la lista de relaciones de variables 
             loadVarsExpectedAndFound();//recargo listas de variables esperadas y encontradas   
-            
+
             //---------------------------------------------------------------------------
             //selecciono los items de la lista que quedan seleccionados
             //---------------------------------------------------------------------------
@@ -539,56 +538,64 @@ public class RelationshipOfVariablesMB implements Serializable {
         /*
          * click sobre boton remover relacion de variables
          */
-        //como se elimina un item de la lista busco cual es el siguinte item seleccionado
-        String nextRelatedVarsSelected = "";
-        for (int i = 0; i < relatedVars.size(); i++) {
-            if (relatedVars.get(i).compareTo(currentRelatedVars) == 0) {//esta es la variable encontrada que saldra de la lista
-                if (i + 1 <= relatedVars.size() - 1) {//determino si tiene siguiente
-                    nextRelatedVarsSelected = relatedVars.get(i + 1);//asigno el siguiente
-                    break;
-                }
-                if (i - 1 >= 0) {//determino si tiene anterior
-                    nextRelatedVarsSelected = relatedVars.get(i - 1);//asigno el anterior
-                    break;
-                }
+        boolean continueProcess = true;
+
+        if (currentRelatedVars == null) {
+            continueProcess = false;
+        } else {
+            if (currentRelatedVars.trim().length() == 0) {
+                continueProcess = false;
             }
         }
-        //elimino el item de la lista de variables relacionadas
-        if (currentRelatedVars.trim().length() != 0) {
-            //String[] splitVarRelated = currentRelatedVars.split("->");
-            List<RelationVariables> relationVarList = currentRelationGroup.getRelationVariablesList();
-            if (relationVarList != null) {
-                String a;
-                for (int i = 0; i < relationVarList.size(); i++) {
-                    a = relationVarList.get(i).getNameExpected() + "->" + relationVarList.get(i).getNameFound();
-                    if (currentRelatedVars.compareTo(a) == 0) {
-                        currentRelationGroup.getRelationVariablesList().remove(i);
+
+        if (continueProcess) {
+            //como se elimina un item de la lista busco cual es el siguinte item seleccionado
+            String nextRelatedVarsSelected = "";
+            for (int i = 0; i < relatedVars.size(); i++) {
+                if (relatedVars.get(i).compareTo(currentRelatedVars) == 0) {//esta es la variable encontrada que saldra de la lista
+                    if (i + 1 <= relatedVars.size() - 1) {//determino si tiene siguiente
+                        nextRelatedVarsSelected = relatedVars.get(i + 1);//asigno el siguiente
+                        break;
+                    }
+                    if (i - 1 >= 0) {//determino si tiene anterior
+                        nextRelatedVarsSelected = relatedVars.get(i - 1);//asigno el anterior
                         break;
                     }
                 }
             }
-            //currentRelationGroup.removeRelationVar(splitVarRelated[0], splitVarRelated[1]);//elimino la relacion de el grupo de relaciones actual
-            for (int i = 0; i < relatedVars.size(); i++) {//remuevo de la lista de relaciones de variables        
-                if (relatedVars.get(i).compareTo(currentRelatedVars) == 0) {
-                    relatedVars.remove(i);
-                    break;
+            //elimino el item de la lista de variables relacionadas
+            if (currentRelatedVars.trim().length() != 0) {
+                //String[] splitVarRelated = currentRelatedVars.split("->");
+                List<RelationVariables> relationVarList = currentRelationGroup.getRelationVariablesList();
+                if (relationVarList != null) {
+                    String a;
+                    for (int i = 0; i < relationVarList.size(); i++) {
+                        a = relationVarList.get(i).getNameExpected() + "->" + relationVarList.get(i).getNameFound();
+                        if (currentRelatedVars.compareTo(a) == 0) {
+                            currentRelationGroup.getRelationVariablesList().remove(i);
+                            break;
+                        }
+                    }
                 }
+                //currentRelationGroup.removeRelationVar(splitVarRelated[0], splitVarRelated[1]);//elimino la relacion de el grupo de relaciones actual
+                for (int i = 0; i < relatedVars.size(); i++) {//remuevo de la lista de relaciones de variables        
+                    if (relatedVars.get(i).compareTo(currentRelatedVars) == 0) {
+                        relatedVars.remove(i);
+                        break;
+                    }
+                }
+
+                loadVarsExpectedAndFound();//recargo lista de variables esperadas y encontradas
+                valuesExpected = new ArrayList<String>();
+                valuesFound = new ArrayList<String>();
+                currentRelatedVars = nextRelatedVarsSelected;//asigno el item que queda seleccionado
+                if (currentRelatedVars.trim().length() == 0) {
+                    btnRemoveRelationVarDisabled = true;
+                }
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "La relación ha sido eliminada."));
             }
-
-            loadVarsExpectedAndFound();//recargo lista de variables esperadas y encontradas
-            valuesExpected = new ArrayList<String>();
-            valuesFound = new ArrayList<String>();
-            //valuesDiscarded=new ArrayList<String>();
-            //valuesRela
-
-
-            currentRelatedVars = nextRelatedVarsSelected;//asigno el item que queda seleccionado
-            if (currentRelatedVars.trim().length() == 0) {
-                btnRemoveRelationVarDisabled = true;
-            }
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "La relación ha sido eliminada."));
         } else {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", "Seleccione una relación a eliminar."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", "Seleccione la relación a eliminar."));
         }
     }
 
@@ -706,13 +713,7 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.currentRelationGroupName = currentRelationGroupName;
     }
 
-    public List<String> getRelationGroups() {
-        return relationGroups;
-    }
-
-    public void setRelationGroups(List<String> relationGroups) {
-        this.relationGroups = relationGroups;
-    }
+    
 
     public boolean isBtnLoadConfigurationDisabled() {
         return btnLoadConfigurationDisabled;

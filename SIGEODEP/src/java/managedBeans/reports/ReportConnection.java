@@ -1,5 +1,6 @@
 package managedBeans.reports;
 
+import beans.util.Variable;
 import java.io.Serializable;
 import java.sql.*;
 import java.util.ArrayList;
