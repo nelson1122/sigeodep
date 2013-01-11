@@ -261,12 +261,141 @@ public class UploadFileMB implements Serializable {
         }
     }
 
+    private void uploadFileDelimiter() {
+        /*
+         * CARGA DE UN ARCHIVO CON DELIMITADOR
+         */
+
+        try {
+            Long fileSize = file.getSize();
+            tuplesNumber = Integer.parseInt(String.valueOf(fileSize / 1000));
+            tuplesProcessed = 0;
+            String line;
+            InputStreamReader isr;
+            BufferedReader buffer;
+            String salida = "";
+            boolean continueProcess = true;
+
+            headerFile = null;
+            String[] tupla;
+            String[] tupla2;
+            isr = new InputStreamReader(file.getInputstream());
+            buffer = new BufferedReader(isr);
+            //Leer el la informacion del archivo linea por linea                       
+            ArrayList<String> rowFileData;
+
+            while ((line = buffer.readLine()) != null) {
+                if (currentDelimiter.compareTo("TAB") == 0) {
+                    tupla = line.split("\t");
+                } else if (currentDelimiter.compareTo(",") == 0) {
+                    tupla = line.split(",");
+                } else {
+                    tupla = line.split(";");
+                }
+                if (tuplesProcessed == 0) {
+                    headerFile = tupla;
+                    rowFileData = new ArrayList<String>();
+                    rowFileData.addAll(Arrays.asList(headerFile));
+                    createTableTemp(prepareArray(rowFileData));
+                } else {
+                    rowFileData = new ArrayList<String>();
+                    if (headerFile.length == tupla.length) {//igual numero de columnas en cabecera y tupla
+                        rowFileData.addAll(Arrays.asList(tupla));
+                    } else {
+                        if (headerFile.length > tupla.length) {//numero de columnas menor que cabecera
+                            //rowFileData.addAll(Arrays.asList(tupla));
+                            rowFileData.addAll(Arrays.asList(tupla));
+                        } else {//numero de columnas mayor que cabecera
+                            for (int i = 0; i < headerFile.length; i++) {
+                                rowFileData.add(tupla[i]);
+                            }
+                        }
+                    }
+                    addTableTemp(rowFileData, tuplesProcessed);
+                }
+                tuplesProcessed++;
+                progressUpload = (int) (tuplesProcessed * 100) / tuplesNumber;
+                if(progressUpload==0)progressUpload=1;
+                System.out.println(progressUpload);
+            }
+            try {
+                connectionJdbcMB.non_query("update " + connectionJdbcMB.getTableName() + " set dirres = baveres where dirres like '';");
+                connectionJdbcMB.non_query("update " + connectionJdbcMB.getTableName() + " set baveres = dirres where baveres like  '';");
+            } catch (Exception e) {
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error: ufMB_5 > " + e.toString());
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", e.toString()));
+        } catch (Exception ex) {
+            System.out.println("Error: ufMB_6 > " + ex.toString());
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", ex.toString()));
+        }
+    }
+    
     private void uploadXls() throws IOException {
         try {
             File file2 = new File(file.getFileName());
-            Long fileSize = file2.length();
-            tuplesNumber = Integer.parseInt(String.valueOf(fileSize / 500));
+            //Long fileSize = file2.length();
+            tuplesNumber = 0;//Integer.parseInt(String.valueOf(fileSize / 400));
             tuplesProcessed = 0;
+
+            //determinar numero de filas
+            progressUpload=1;
+            try {
+                OPCPackage container;
+                container = OPCPackage.open(file2.getAbsolutePath());
+                ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(container);
+                XSSFReader xssfReader = new XSSFReader(container);
+                StylesTable styles = xssfReader.getStylesTable();
+                XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
+                while (iter.hasNext()) {
+                    InputStream stream = iter.next();
+                    InputSource sheetSource = new InputSource(stream);
+                    SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+                    try {
+                        SAXParser saxParser = saxFactory.newSAXParser();
+                        XMLReader sheetParser = saxParser.getXMLReader();
+                        ContentHandler handler = new XSSFSheetXMLHandler(styles, strings, new SheetContentsHandler() {
+                            //ArrayList<String> rowFileData;
+
+                            @Override
+                            public void startRow(int rowNum) {
+                                tuplesNumber++;
+                            }
+
+                            @Override
+                            public void endRow() {
+                            }
+
+                            @Override
+                            public void cell(String cellReference, String formattedValue) {
+                            }
+
+                            @Override
+                            public void headerFooter(String text, boolean isHeader, String tagName) {
+                            }
+                        },
+                                false//means result instead of formula
+                                );
+                        sheetParser.setContentHandler(handler);
+                        sheetParser.parse(sheetSource);
+                    } catch (ParserConfigurationException e) {
+                        throw new RuntimeException("SAX parser appears to be broken - " + e.getMessage());
+                    }
+                    stream.close();
+                    break;
+                }
+            } catch (InvalidFormatException e) {
+                System.out.println(e.toString());
+            } catch (SAXException e) {
+                System.out.println(e.toString());
+            } catch (OpenXML4JException e) {
+                System.out.println(e.toString());
+            }
+
+            System.out.println("TOTAL DE FILAS DEL ARCHIVO ES: "+String.valueOf(tuplesNumber));
+            //procesar el archivo
             try {
                 OPCPackage container;
                 container = OPCPackage.open(file2.getAbsolutePath());
@@ -301,6 +430,7 @@ public class UploadFileMB implements Serializable {
                                 }
                                 tuplesProcessed++;
                                 progressUpload = (int) (tuplesProcessed * 100) / tuplesNumber;
+                                if(progressUpload==0)progressUpload=1;
                                 System.out.println(progressUpload);
                             }
 
@@ -572,76 +702,7 @@ public class UploadFileMB implements Serializable {
         }
     }
 
-    private void uploadFileDelimiter() {
-        /*
-         * CARGA DE UN ARCHIVO CON DELIMITADOR
-         */
-
-        try {
-            Long fileSize = file.getSize();
-            tuplesNumber = Integer.parseInt(String.valueOf(fileSize / 500));
-            tuplesProcessed = 0;
-            String line;
-            InputStreamReader isr;
-            BufferedReader buffer;
-            String salida = "";
-            boolean continueProcess = true;
-
-            headerFile = null;
-            String[] tupla;
-            String[] tupla2;
-            isr = new InputStreamReader(file.getInputstream());
-            buffer = new BufferedReader(isr);
-            //Leer el la informacion del archivo linea por linea                       
-            ArrayList<String> rowFileData;
-
-            while ((line = buffer.readLine()) != null) {
-                if (currentDelimiter.compareTo("TAB") == 0) {
-                    tupla = line.split("\t");
-                } else if (currentDelimiter.compareTo(",") == 0) {
-                    tupla = line.split(",");
-                } else {
-                    tupla = line.split(";");
-                }
-                if (tuplesProcessed == 0) {
-                    headerFile = tupla;
-                    rowFileData = new ArrayList<String>();
-                    rowFileData.addAll(Arrays.asList(headerFile));
-                    createTableTemp(prepareArray(rowFileData));
-                } else {
-                    rowFileData = new ArrayList<String>();
-                    if (headerFile.length == tupla.length) {//igual numero de columnas en cabecera y tupla
-                        rowFileData.addAll(Arrays.asList(tupla));
-                    } else {
-                        if (headerFile.length > tupla.length) {//numero de columnas menor que cabecera
-                            //rowFileData.addAll(Arrays.asList(tupla));
-                            rowFileData.addAll(Arrays.asList(tupla));
-                        } else {//numero de columnas mayor que cabecera
-                            for (int i = 0; i < headerFile.length; i++) {
-                                rowFileData.add(tupla[i]);
-                            }
-                        }
-                    }
-                    addTableTemp(rowFileData, tuplesProcessed);
-                }
-                tuplesProcessed++;
-                progressUpload = (int) (tuplesProcessed * 100) / tuplesNumber;
-                System.out.println(progressUpload);
-            }
-            try {
-                connectionJdbcMB.non_query("update " + connectionJdbcMB.getTableName() + " set dirres = baveres where dirres like '';");
-                connectionJdbcMB.non_query("update " + connectionJdbcMB.getTableName() + " set baveres = dirres where baveres like  '';");
-            } catch (Exception e) {
-            }
-
-        } catch (IOException e) {
-            System.out.println("Error: ufMB_5 > " + e.toString());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", e.toString()));
-        } catch (Exception ex) {
-            System.out.println("Error: ufMB_6 > " + ex.toString());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", ex.toString()));
-        }
-    }
+    
 
     public void loadConfigurationUser() {
         boolean continueProcess = true;
@@ -722,8 +783,7 @@ public class UploadFileMB implements Serializable {
                             System.out.println("No se pudieron cargar la relaciones");
                         }
                     }
-                }
-                else{
+                } else {
                     System.out.println("No se pudo cargar la configuracion");
                 }
             }

@@ -12,6 +12,9 @@
             <var>bundle</var>
         </resource-bundle>
     </application>
+    <!--lifecycle>
+       <phase-listener>beans.util.DefaultPhaseListener</phase-listener>
+        </lifecycle-->
     
     <navigation-rule>
         <from-view-id>*</from-view-id>

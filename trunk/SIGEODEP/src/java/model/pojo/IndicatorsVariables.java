@@ -19,23 +19,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 @NamedQueries({
     @NamedQuery(name = "IndicatorsVariables.findAll", query = "SELECT i FROM IndicatorsVariables i"),
     @NamedQuery(name = "IndicatorsVariables.findByVariableName", query = "SELECT i FROM IndicatorsVariables i WHERE i.indicatorsVariablesPK.variableName = :variableName"),
-    @NamedQuery(name = "IndicatorsVariables.findByDisaggregation", query = "SELECT i FROM IndicatorsVariables i WHERE i.disaggregation = :disaggregation"),
-    @NamedQuery(name = "IndicatorsVariables.findByTableName", query = "SELECT i FROM IndicatorsVariables i WHERE i.tableName = :tableName"),
-    @NamedQuery(name = "IndicatorsVariables.findByField", query = "SELECT i FROM IndicatorsVariables i WHERE i.field = :field"),
+    @NamedQuery(name = "IndicatorsVariables.findByAddValues", query = "SELECT i FROM IndicatorsVariables i WHERE i.addValues = :addValues"),
     @NamedQuery(name = "IndicatorsVariables.findByCategory", query = "SELECT i FROM IndicatorsVariables i WHERE i.category = :category"),
     @NamedQuery(name = "IndicatorsVariables.findByIndicatorId", query = "SELECT i FROM IndicatorsVariables i WHERE i.indicatorsVariablesPK.indicatorId = :indicatorId")})
 public class IndicatorsVariables implements Serializable {
     private static final long serialVersionUID = 1L;
     @EmbeddedId
     protected IndicatorsVariablesPK indicatorsVariablesPK;
-    @Column(name = "disaggregation")
-    private Boolean disaggregation;
-    @Size(max = 2147483647)
-    @Column(name = "table_name", length = 2147483647)
-    private String tableName;
-    @Size(max = 2147483647)
-    @Column(name = "field", length = 2147483647)
-    private String field;
+    @Column(name = "add_values")
+    private Boolean addValues;
     @Size(max = 2147483647)
     @Column(name = "category", length = 2147483647)
     private String category;
@@ -62,28 +54,12 @@ public class IndicatorsVariables implements Serializable {
         this.indicatorsVariablesPK = indicatorsVariablesPK;
     }
 
-    public Boolean getDisaggregation() {
-        return disaggregation;
+    public Boolean getAddValues() {
+        return addValues;
     }
 
-    public void setDisaggregation(Boolean disaggregation) {
-        this.disaggregation = disaggregation;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
-
-    public String getField() {
-        return field;
-    }
-
-    public void setField(String field) {
-        this.field = field;
+    public void setAddValues(Boolean addValues) {
+        this.addValues = addValues;
     }
 
     public String getCategory() {
@@ -124,7 +100,7 @@ public class IndicatorsVariables implements Serializable {
 
     @Override
     public String toString() {
-        return "model.pojo.IndicatorsVariables[ indicatorsVariablesPK=" + indicatorsVariablesPK + " ]";
+        return "newpackage.IndicatorsVariables[ indicatorsVariablesPK=" + indicatorsVariablesPK + " ]";
     }
     
 }

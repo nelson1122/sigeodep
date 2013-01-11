@@ -58,6 +58,16 @@ public class UsersMB {
     private String newLogin = "";
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
+    private boolean permission1 = true;
+    private boolean permission2 = true;
+    private boolean permission3 = true;
+    private boolean permission4 = true;
+    private boolean permission5 = true;
+    private boolean newPermission1 = true;
+    private boolean newPermission2 = true;
+    private boolean newPermission3 = true;
+    private boolean newPermission4 = true;
+    private boolean newPermission5 = true;
 
     /**
      * Creates a new instance of UsersMB
@@ -455,5 +465,85 @@ public class UsersMB {
 
     public void setNewLogin(String newLogin) {
         this.newLogin = newLogin;
+    }
+
+    public boolean isPermission1() {
+        return permission1;
+    }
+
+    public void setPermission1(boolean permission1) {
+        this.permission1 = permission1;
+    }
+
+    public boolean isPermission2() {
+        return permission2;
+    }
+
+    public void setPermission2(boolean permission2) {
+        this.permission2 = permission2;
+    }
+
+    public boolean isPermission3() {
+        return permission3;
+    }
+
+    public void setPermission3(boolean permission3) {
+        this.permission3 = permission3;
+    }
+
+    public boolean isPermission4() {
+        return permission4;
+    }
+
+    public void setPermission4(boolean permission4) {
+        this.permission4 = permission4;
+    }
+
+    public boolean isPermission5() {
+        return permission5;
+    }
+
+    public void setPermission5(boolean permission5) {
+        this.permission5 = permission5;
+    }
+
+    public boolean isNewPermission1() {
+        return newPermission1;
+    }
+
+    public void setNewPermission1(boolean newPermission1) {
+        this.newPermission1 = newPermission1;
+    }
+
+    public boolean isNewPermission2() {
+        return newPermission2;
+    }
+
+    public void setNewPermission2(boolean newPermission2) {
+        this.newPermission2 = newPermission2;
+    }
+
+    public boolean isNewPermission3() {
+        return newPermission3;
+    }
+
+    public void setNewPermission3(boolean newPermission3) {
+        this.newPermission3 = newPermission3;
+    }
+
+    public boolean isNewPermission4() {
+        return newPermission4;
+    }
+
+    public void setNewPermission4(boolean newPermission4) {
+        this.newPermission4 = newPermission4;
+    }
+
+    public boolean isNewPermission5() {
+        return newPermission5;
+    }
+
+    public void setNewPermission5(boolean newPermission5) {
+        this.newPermission5 = newPermission5;
     }
 }

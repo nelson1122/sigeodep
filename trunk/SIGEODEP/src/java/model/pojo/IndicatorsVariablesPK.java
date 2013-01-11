@@ -77,7 +77,7 @@ public class IndicatorsVariablesPK implements Serializable {
 
     @Override
     public String toString() {
-        return "model.pojo.IndicatorsVariablesPK[ variableName=" + variableName + ", indicatorId=" + indicatorId + " ]";
+        return "newpackage.IndicatorsVariablesPK[ variableName=" + variableName + ", indicatorId=" + indicatorId + " ]";
     }
     
 }

@@ -78,7 +78,7 @@ public class RelationshipOfValuesMB implements Serializable {
     private String foundText;
     private String nameOfValueExpected = "";
     private DinamicTable dinamicTable = new DinamicTable();
-    ConnectionJdbcMB connectionJdbcMB;
+    private ConnectionJdbcMB connectionJdbcMB;
     private ArrayList<String> selectedRowDataTable = new ArrayList<String>();
     private String nameTableTemp = "temp";
     private List<String> relationGroups;
@@ -495,13 +495,13 @@ public class RelationshipOfValuesMB implements Serializable {
                 if (valuesFoundSelectedInRelationValues.size() == 1) {
                     ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " WHERE " + currentVariableFound + "='" + valuesFoundSelectedInRelationValues.get(0) + "'");
                     // determino las cabeceras
-                    for (int j = 1; j < rs.getMetaData().getColumnCount(); j++) {
+                    for (int j = 1; j <= rs.getMetaData().getColumnCount(); j++) {
                         titles.add(rs.getMetaData().getColumnName(j));
                     }
                     // determino los datos                
                     while (rs.next()) {
                         ArrayList<String> newRow = new ArrayList<String>();
-                        for (int k = 1; k < rs.getMetaData().getColumnCount(); k++) {
+                        for (int k = 1; k <= rs.getMetaData().getColumnCount(); k++) {
                             newRow.add(rs.getString(k));
                         }
                         listOfRecords.add(newRow);
@@ -662,6 +662,7 @@ public class RelationshipOfValuesMB implements Serializable {
         if (currentRelationVar != null) {
             for (int i = 0; i < valuesDiscardedSelectedInRelationValues.size(); i++) {
                 currentRelationVar.removeDiscartedValue(valuesDiscardedSelectedInRelationValues.get(i));
+                System.out.println("(((((((((((((((Se elimino el valor: "+valuesDiscardedSelectedInRelationValues.get(i));
             }
             loadFoundValues();
             //loadExpectedValues();
@@ -818,12 +819,20 @@ public class RelationshipOfValuesMB implements Serializable {
             //cargo todos los valores esperados y encontrados(en encontrados se aplica DISCTINCT)            
             //loadExpectedValues();
             valuesFound = createListOfDistinctValuesFromFile(currentVariableFound);
+            System.out.println("(((((((((((((((Los distintos valores en la columna desde el archivo es: ");
+            for (int i = 0; i < valuesFound.size(); i++) {
+                System.out.print(" "+valuesFound.get(i)+" ");
+            }
             //saco la lista de valores realcionados
             if (currentRelationVar.getRelationValuesList() != null) {
                 //elimino los valores que ya esten relacionados de las listas de valores encontrados                 
                 for (int i = 0; i < currentRelationVar.getRelationValuesList().size(); i++) {
                     for (int j = 0; j < valuesFound.size(); j++) {
                         if (currentRelationVar.getRelationValuesList().get(i).getNameFound().compareTo(valuesFound.get(j)) == 0) {
+                            System.out.println("Se removio "+valuesFound.get(j)+" por estar en relacion de valores");
+                            if(valuesFound.get(j).compareTo("None")==0){
+                            System.out.println("#########################"+currentRelationVar.getRelationValuesList().get(i).getNameFound()+"##################");
+                            }
                             valuesFound.remove(j);
                             break;
                         }
@@ -834,12 +843,13 @@ public class RelationshipOfValuesMB implements Serializable {
             if (currentRelationVar.getRelationsDiscardedValuesList() != null) {
                 valuesDiscarded = new ArrayList<String>();
                 for (int i = 0; i < currentRelationVar.getRelationsDiscardedValuesList().size(); i++) {
-                    valuesDiscarded.add(currentRelationVar.getRelationsDiscardedValuesList().get(i).getDiscardedValueName());
+                    valuesDiscarded.add(currentRelationVar.getRelationsDiscardedValuesList().get(i).getDiscardedValueName());                    
                 }
                 //elimino los campos que ya esten dentro de la lista de valores descartados
                 for (int i = 0; i < valuesDiscarded.size(); i++) {
                     for (int j = 0; j < valuesFound.size(); j++) {
                         if (valuesDiscarded.get(i).compareTo(valuesFound.get(j)) == 0) {
+                            System.out.println("Se removio "+valuesFound.get(j)+" por estar en lista de valores descartados");
                             valuesFound.remove(j);
                             break;
                         }
@@ -864,7 +874,8 @@ public class RelationshipOfValuesMB implements Serializable {
 
 
                     if (foundText.indexOf(filterText) == -1) {
-                        if (!calculateLevenstein(filterText, foundText)) {
+                        if (!calculateLevenstein(filterText, foundText)) {                            
+                            System.out.println("Se removio "+valuesFound.get(j)+" por estar no superar levenstein");
                             valuesFound.remove(j);
                             j--;
                         }
@@ -966,10 +977,7 @@ public class RelationshipOfValuesMB implements Serializable {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Finalizado", "El proceso automático realizó: (" + String.valueOf(numberOfCreate) + ") relaciones de valores"));
     }
 
-    public void btnRemoveUnnecessaryClick() {
-        //quitar de la lista las relaciones repetidas(no debe haber) y las que no se nececitan por que 
-        //en los valores encontrados no existen los que estan en las relaciones
-    }
+    
 
     public void btnRemoveRelationValueClick() {
         //---------------------------------------------------------------------------

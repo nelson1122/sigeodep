@@ -175,23 +175,31 @@
                         </p:row>                        
                         <p:row>
                             <p:column>
+                                <h:outputText value="CONFIRMACION PASSWORD" />  
+                            </p:column>
+                            <p:column>
+                                <p:password value="#{usersMB.newPasword}" /> 
+                            </p:column>
+                        </p:row>       
+                        <p:row>
+                            <p:column>
                                 <h:outputText value="NOMBRES" />  
                             </p:column>
                             <p:column>
                                 <p:inputText size="40" value="#{usersMB.name}" /> 
                             </p:column>
                         </p:row>                        
-                        <p:row>
+                        <!-- p:row>
                             <p:column>
                                 <h:outputText value="CARGO" />  
                             </p:column>
                             <p:column>
-                                <p:selectOneMenu id="IdJob" value="#{usersMB.job}" > 
+                                <p:selectOneMenu id="IdJob" value="# {usersMB.job}" > 
                                     <f:selectItem itemLabel="ADMINISTRADOR" itemValue="ADMINISTRADOR" />                                            
                                     <f:selectItem itemLabel="DIGITADOR" itemValue="DIGITADOR" />                                    
                                 </p:selectOneMenu>
                             </p:column>
-                        </p:row>                        
+                        </p:row -->                        
                         <p:row>
                             <p:column>
                                 <h:outputText value="INSTITUCION" />  
@@ -222,6 +230,63 @@
                             </p:column>
                             <p:column>
                                 <p:inputText size="40" value="#{usersMB.address}" /> 
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column colspan="2" >
+                                <p:panelGrid style="width: 410px;">                          
+                                    <p:row>
+                                        <p:column colspan="2" styleClass="ui-widget-header">
+                                            PERMISOS
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectBooleanCheckbox value="#{usersMB.permission1}">                                            
+                                            </h:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            Gestionar formularios de lesiones fatales
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectBooleanCheckbox value="#{usersMB.permission2}">                                            
+                                            </h:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            Gestionar formularios de lesiones no fatales
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectBooleanCheckbox value="#{usersMB.permission3}">                                            
+                                            </h:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            Gestionar formularios VIF
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectBooleanCheckbox value="#{usersMB.permission4}">                                            
+                                            </h:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            Analizar datos
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectBooleanCheckbox value="#{usersMB.permission5}">                                            
+                                            </h:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            Administrador
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+
                             </p:column>
                         </p:row>
                         <p:row>
@@ -261,23 +326,31 @@
                         </p:row>                        
                         <p:row>
                             <p:column>
+                                <h:outputText value="CONFIRMACION PASSWORD" />  
+                            </p:column>
+                            <p:column>
+                                <p:password value="#{usersMB.newPasword}" /> 
+                            </p:column>
+                        </p:row>                        
+                        <p:row>
+                            <p:column>
                                 <h:outputText value="NOMBRES" />  
                             </p:column>
                             <p:column>
                                 <p:inputText size="40" value="#{usersMB.newName}" /> 
                             </p:column>
                         </p:row>                        
-                        <p:row>
+                        <!--p:row>
                             <p:column>
                                 <h:outputText value="CARGO" />  
                             </p:column>
                             <p:column>
-                                <p:selectOneMenu id="IdNewJob" value="#{usersMB.newJob}" > 
+                                <p:selectOneMenu id="IdNewJob" value="# {usersMB.newJob}" > 
                                     <f:selectItem itemLabel="ADMINISTRADOR" itemValue="ADMINISTRADOR" />                                            
                                     <f:selectItem itemLabel="DIGITADOR" itemValue="DIGITADOR" />                                    
                                 </p:selectOneMenu>
                             </p:column>
-                        </p:row>                        
+                        </p:row-->                        
                         <p:row>
                             <p:column>
                                 <h:outputText value="INSTITUCION" />  
@@ -308,6 +381,63 @@
                             </p:column>
                             <p:column>
                                 <p:inputText size="40" value="#{usersMB.newAddress}" /> 
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column colspan="2" >
+                                <p:panelGrid style="width: 410px;">                          
+                                    <p:row>
+                                        <p:column colspan="2" styleClass="ui-widget-header">
+                                            PERMISOS
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectBooleanCheckbox value="#{usersMB.permission1}">                                            
+                                            </h:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            Gestionar formularios de lesiones fatales
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectBooleanCheckbox value="#{usersMB.permission2}">                                            
+                                            </h:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            Gestionar formularios de lesiones no fatales
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectBooleanCheckbox value="#{usersMB.permission3}">                                            
+                                            </h:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            Gestionar formularios VIF
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectBooleanCheckbox value="#{usersMB.permission4}">                                            
+                                            </h:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            Analizar datos
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:selectBooleanCheckbox value="#{usersMB.permission5}">                                            
+                                            </h:selectBooleanCheckbox>
+                                        </p:column>
+                                        <p:column>
+                                            Administrador
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+
                             </p:column>
                         </p:row>
                         <p:row>

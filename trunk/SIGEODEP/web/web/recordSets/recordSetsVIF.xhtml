@@ -231,7 +231,7 @@
                                             id="IdR" 
                                             value="Exportar" 
                                             onclick="pbAjaxValidate.start();"
-                                            oncomplete="startA();"
+                                            oncomplete="startA(); pbAjaxValidate.stop();"
                                             actionListener="#{recordSetsVifMB.postProcessXLS1}"/>                                                                                
                                         <h:commandLink id="IdComandLink" style="display: none" >
                                             <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>

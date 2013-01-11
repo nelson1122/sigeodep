@@ -193,6 +193,7 @@ public class RecordSetsVifMB implements Serializable {
                 progress = (int) (tuplesProcessed * 100) / tuplesNumber;
                 System.out.println(progress);
             }
+            progress = 100;
         } catch (SQLException ex) {
             Logger.getLogger(RecordSetsHomicideMB.class.getName()).log(Level.SEVERE, null, ex);
         }
