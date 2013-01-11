@@ -29,11 +29,12 @@
         <!-- h:body onload="setInterval('contador()',2000);" -->
         <h:body>
 
-            <p:layout fullPage="true" >  
+            <p:layout fullPage="true" rendered="#{loginMB.autenticado}" >  
                 <!-- ****************************** MENU LATERAL (PARTE IZQUIERDA) ************************ -->
                 <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
                     <h:form id="IdForm0">                        
                         <p:idleMonitor timeout="3600000">
+                        
                             <p:ajax event="active" listener="#{loginMB.logout1}"/>
                         </p:idleMonitor>
                         <br/><br/>

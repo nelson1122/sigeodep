@@ -233,6 +233,7 @@ public class StoredRelationsMB implements Serializable {
     public void btnRemoveConfigurationConfirmationClick() {
         if (currentRelationGroupName.trim().length() != 0) {
             removeConfiguration();
+            progressSave=100;
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "grupo de relaciones eliminado"));
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Advertencia!!", "Debe seleccionar un grupo de relaciones de la lista"));
@@ -258,10 +259,34 @@ public class StoredRelationsMB implements Serializable {
         relationGroupFacade.create(newRelationGroup);//persistir en la tabla relation_group
 
         List<RelationVariables> relationVarList = currentRelationsGroup.getRelationVariablesList();
-        tuplesNumber = relationVarList.size();
+        
+        tuplesNumber = 0;//relationVarList.size();
         tuplesSaved = 0;
+        
+        //DETERMINO EL NUMERO DE TUPLAS A REALIZAR
+        for (int i = 0; i < relationVarList.size(); i++) {//recorrer lista de relaciones            
+            tuplesNumber++;
+            if (relationVarList.get(i).getRelationValuesList() != null) {
+                for (int j = 0; j < relationVarList.get(i).getRelationValuesList().size(); j++) {//recorrer lista de valores
+                    tuplesNumber++;
+                }
+            }
+            if (relationVarList.get(i).getRelationsDiscardedValuesList() != null) {
+                for (int j = 0; j < relationVarList.get(i).getRelationsDiscardedValuesList().size(); j++) {//recorrer lista de valores
+                    tuplesNumber++;
+                }
+            }
+            
+        }
+        System.out.println("numero de tuplas A ALMACENAR: " + String.valueOf(tuplesNumber));
+        
+        //REALIZO EL ALMACENAMIENTO
+        
+        
         for (int i = 0; i < relationVarList.size(); i++) {//recorrer lista de relaciones            
             idRelationVariables++;
+            tuplesSaved++;
+            progressSave = (int) (tuplesSaved * 100) / tuplesNumber;
             RelationVariables newRelationVariables = new RelationVariables();
             newRelationVariables.setIdRelationVariables(idRelationVariables);
             newRelationVariables.setIdRelationGroup(newRelationGroup);
@@ -275,6 +300,8 @@ public class StoredRelationsMB implements Serializable {
             if (relationVarList.get(i).getRelationValuesList() != null) {
                 for (int j = 0; j < relationVarList.get(i).getRelationValuesList().size(); j++) {//recorrer lista de valores
                     idRelationValues++;//por prueba
+                    tuplesSaved++;
+                    progressSave = (int) (tuplesSaved * 100) / tuplesNumber;
                     RelationValues newRelationValues = new RelationValues();
                     newRelationValues.setIdRelationValues(idRelationValues);
                     newRelationValues.setIdRelationVariables(newRelationVariables);
@@ -287,54 +314,92 @@ public class StoredRelationsMB implements Serializable {
             if (relationVarList.get(i).getRelationsDiscardedValuesList() != null) {
                 for (int j = 0; j < relationVarList.get(i).getRelationsDiscardedValuesList().size(); j++) {//recorrer lista de valores
                     idRelationDiscarded++;//por prueba
+                    tuplesSaved++;
+                    progressSave = (int) (tuplesSaved * 100) / tuplesNumber;
                     RelationsDiscardedValues newRelationDiscardedValues = new RelationsDiscardedValues();
                     newRelationDiscardedValues.setDiscardedValueName(relationVarList.get(i).getRelationsDiscardedValuesList().get(j).getDiscardedValueName());
                     newRelationDiscardedValues.setIdRelationVariables(newRelationVariables);
                     newRelationDiscardedValues.setIdDiscardedValue(idRelationDiscarded);
                     relationDiscardedValuesFacade.create(newRelationDiscardedValues);//persisto el objeto
                 }
+            }            
+            
+            if(progressSave>98){
+                progressSave=98;
             }
-            tuplesSaved++;
-            progressSave = (int) (tuplesSaved * 100) / tuplesNumber;
             System.out.println("PROGRESO ALMACENANDO: " + String.valueOf(progressSave));
         }
         //ASIGNO A LA CONFIGURACION DEL USUARIO EL NOMBRE DE LA RELACION
         Users currentUser = loginMB.getCurrentUser();
         currentUser.getUsersConfiguration().setRelationGroupName(newConfigurationName);
         usersFacade.edit(currentUser);
-        newConfigurationName = "";
-        //cargo los grupos de relaciones existentes
+        newConfigurationName = "";        
+        
+        //MODIFICO LA TABA DE RELACION DE VALORES PARA QUE EL ID SEA CONSECUTIVO
+        
+        //tiene que estar ordenada para que funcione
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         loadRelatedGroups();
 
     }
 
     public void removeConfiguration() {
         progressSave = 0;
+        tuplesSaved = 0;            
+        tuplesNumber = 0;//relationVariablesList.size();
         try {
             RelationGroup selectRelationGroup = relationGroupFacade.findByName(currentRelationGroupName);
             List<RelationVariables> relationVariablesList = selectRelationGroup.getRelationVariablesList();
-            tuplesSaved = 0;
-            tuplesNumber = relationVariablesList.size();
+            //DETERMINO EL NUMERO DE ELIMINACIONES QUE SE REALIZARAN
+            for (int i = 0; i < relationVariablesList.size(); i++) {
+                List<RelationsDiscardedValues> relationDiscardedValuesList = relationVariablesList.get(i).getRelationsDiscardedValuesList();
+                for (int j = 0; j < relationDiscardedValuesList.size(); j++) {//descartados                    
+                    tuplesNumber++;
+                }
+                List<RelationValues> relationValuesList = relationVariablesList.get(i).getRelationValuesList();
+                for (int j = 0; j < relationValuesList.size(); j++) {//relaciones de valores
+                    tuplesNumber++;
+                }
+            }            
+            System.out.println("numero de relaciones a eliminar: " + String.valueOf(tuplesNumber));
+            //REALIZO LAS ELIMINACIONES
             for (int i = 0; i < relationVariablesList.size(); i++) {
                 List<RelationsDiscardedValues> relationDiscardedValuesList = relationVariablesList.get(i).getRelationsDiscardedValuesList();
                 for (int j = 0; j < relationDiscardedValuesList.size(); j++) {
                     relationDiscardedValuesFacade.remove(relationDiscardedValuesList.get(j));
+                    tuplesSaved++;
+                    progressSave = (int) (tuplesSaved * 100) / tuplesNumber;
                 }
                 relationVariablesList.get(i).setRelationsDiscardedValuesList(null);
 
                 List<RelationValues> relationValuesList = relationVariablesList.get(i).getRelationValuesList();
                 for (int j = 0; j < relationValuesList.size(); j++) {
                     relationValuesFacade.remove(relationValuesList.get(j));
+                    tuplesSaved++;
+                    progressSave = (int) (tuplesSaved * 100) / tuplesNumber;
                 }
                 //relationVariablesFacade.findAll();
                 relationVariablesList.get(i).setRelationValuesList(null);
                 relationVariablesFacade.remove(relationVariablesList.get(i));
-                tuplesSaved++;
-                progressSave = (int) (tuplesSaved * 100) / tuplesNumber;
-                System.out.println("PROGRESO ELIMINANDO: " + String.valueOf(progressSave));
-                if (progressSave > 90) {//no permitir que pase de 90
-                    tuplesSaved--;
+                
+                if (progressSave > 98) {//no permitir que pase de 98
+                    progressSave=98;                    
                 }
+                System.out.println("PROGRESO ELIMINANDO: " + String.valueOf(progressSave));
             }
             //relationGroupFacade.findAll();
             selectRelationGroup.setRelationVariablesList(null);
@@ -466,4 +531,9 @@ public class StoredRelationsMB implements Serializable {
     public void setProgressSave(Integer progressSave) {
         this.progressSave = progressSave;
     }
+    
+    public void resetProgressSave(){
+        progressSave=0;
+    }
+    
 }

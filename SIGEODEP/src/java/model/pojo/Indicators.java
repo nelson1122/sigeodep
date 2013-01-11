@@ -24,7 +24,9 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Indicators.findByIndicatorId", query = "SELECT i FROM Indicators i WHERE i.indicatorId = :indicatorId"),
     @NamedQuery(name = "Indicators.findByIndicatorName", query = "SELECT i FROM Indicators i WHERE i.indicatorName = :indicatorName"),
     @NamedQuery(name = "Indicators.findByIndicatorGroup", query = "SELECT i FROM Indicators i WHERE i.indicatorGroup = :indicatorGroup"),
-    @NamedQuery(name = "Indicators.findByGraphType", query = "SELECT i FROM Indicators i WHERE i.graphType = :graphType")})
+    @NamedQuery(name = "Indicators.findByGraphType", query = "SELECT i FROM Indicators i WHERE i.graphType = :graphType"),
+    @NamedQuery(name = "Indicators.findByNumberCross", query = "SELECT i FROM Indicators i WHERE i.numberCross = :numberCross"),
+    @NamedQuery(name = "Indicators.findByInjuryType", query = "SELECT i FROM Indicators i WHERE i.injuryType = :injuryType")})
 public class Indicators implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -41,6 +43,11 @@ public class Indicators implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "graph_type", length = 2147483647)
     private String graphType;
+    @Column(name = "number_cross")
+    private Integer numberCross;
+    @Size(max = 2147483647)
+    @Column(name = "injury_type", length = 2147483647)
+    private String injuryType;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "indicators")
     private List<IndicatorsVariables> indicatorsVariablesList;
 
@@ -83,6 +90,22 @@ public class Indicators implements Serializable {
         this.graphType = graphType;
     }
 
+    public Integer getNumberCross() {
+        return numberCross;
+    }
+
+    public void setNumberCross(Integer numberCross) {
+        this.numberCross = numberCross;
+    }
+
+    public String getInjuryType() {
+        return injuryType;
+    }
+
+    public void setInjuryType(String injuryType) {
+        this.injuryType = injuryType;
+    }
+
     @XmlTransient
     public List<IndicatorsVariables> getIndicatorsVariablesList() {
         return indicatorsVariablesList;
@@ -114,7 +137,7 @@ public class Indicators implements Serializable {
 
     @Override
     public String toString() {
-        return "model.pojo.Indicators[ indicatorId=" + indicatorId + " ]";
+        return "newpackage.Indicators[ indicatorId=" + indicatorId + " ]";
     }
     
 }

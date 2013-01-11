@@ -28,9 +28,12 @@ public class RelationsDiscardedValues implements Serializable {
     @NotNull
     @Column(name = "id_discarded_value", nullable = false)
     private Integer idDiscardedValue;
-    @Size(max = 200)
-    @Column(name = "discarded_value_name", length = 200)
+    @Size(max = 2147483647)
+    @Column(name = "discarded_value_name", length = 2147483647)
     private String discardedValueName;
+    //private String fieldType;
+    //@Column(name = "discarded_value_name", length = 200)
+    
     @JoinColumn(name = "id_relation_variables", referencedColumnName = "id_relation_variables")
     @ManyToOne
     private RelationVariables idRelationVariables;

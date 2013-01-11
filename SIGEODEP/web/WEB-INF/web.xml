@@ -12,7 +12,6 @@
         <param-name>primefaces.THEME</param-name>
         <param-value>redmond</param-value>
     </context-param>
-    
     <filter>
         <filter-name>PrimeFaces FileUpload Filter</filter-name>
         <filter-class>org.primefaces.webapp.filter.FileUploadFilter</filter-class>
@@ -31,12 +30,11 @@
         <url-pattern>/faces/*</url-pattern>
     </servlet-mapping>
     <session-config>
-        <session-timeout>120</session-timeout>
+        <session-timeout>60</session-timeout>
     </session-config>
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
-    
     <resource-ref>
         <description>jdbc:postgresql://localhost:5432/od</description>
         <res-ref-name>conexionJDBC1</res-ref-name>

@@ -6,7 +6,13 @@ package managedBeans.login;
 
 import beans.connection.ConnectionJdbcMB;
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
+import javax.faces.FacesException;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -35,9 +41,8 @@ public class LoginMB {
     private String userName = "";
     private String userJob = "";
     private Users currentUser;
-    private String activeIndexAcoordion1="-1";
-    private String activeIndexAcoordion2="-1";
-    
+    private String activeIndexAcoordion1 = "-1";
+    private String activeIndexAcoordion2 = "-1";
     private int countLogout = 0;//si este valor llega a 10 se finaliza la sesion
     FacesContext context;
     //FormsAndFieldsDataMB formsAndFieldsDataMB;
@@ -71,22 +76,65 @@ public class LoginMB {
     }
     //progreso de carga de la aplicacion***********************************    
 
+    @PreDestroy
+    private void destruir() {
+        logout1();
+    }
+
+    public void eliminarDatos() {
+        try {
+            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM relation_values");
+            while (rs.next()) {
+                ResultSet rs2 = connectionJdbcMB.consult("SELECT * FROM relation_values");
+                while (rs2.next()) {
+                    if (rs.getString("name_expected").compareTo(rs2.getString("name_expected")) == 0
+                            && rs.getString("name_found").compareTo(rs2.getString("name_found")) == 0) {
+                        if (rs.getInt("id_relation_values") != rs2.getInt("id_relation_values")) {
+                            connectionJdbcMB.remove("relation_values", "id_relation_values="+String.valueOf(rs2.getInt("id_relation_values")));
+                            System.out.println("son los mismos en: " + String.valueOf(rs.getInt("id_relation_values")) + " Y " + String.valueOf(rs2.getInt("id_relation_values")));
+                        }
+                    }
+                }
+            }
+
+
+        } catch (SQLException ex) {
+            Logger.getLogger(LoginMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     public void logout1() {
+
+        ResultSet rs = connectionJdbcMB.consult("SELECT * FROM users");
+        System.out.println("connectionJdbcMB----" + connectionJdbcMB.toString());
+        System.out.println("rs" + rs.toString());
+        try {
+            if (rs.next()) {
+                System.out.println("AQUI SE MODIFICA DB POR SALIDA DE SESION");
+            } else {
+                System.out.println("NO SE PUDO RESTAURAR LA BANDERA DE SESION");
+            }
+
+        } catch (Throwable t) {
+            throw new FacesException("Sesión ha expirado!!!", t);
+        }
+
+
         /*
          * incrementa un contador antes de salir
          */
         //countLogout = countLogout + 1;
         //System.out.println("Contador Logout: " + String.valueOf(countLogout));
         //if (countLogout > 10) {
-        ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
-        String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
-        try {
-            ((HttpSession) ctx.getSession(false)).invalidate();
-            ctx.redirect(ctxPath + "/index.html?v=XX");
-            System.out.println("FINALIZA LA SESION");
-        } catch (Exception ex) {
-            System.out.println("Excepcion cerrando sesion: " + ex.toString());
-        }
+//        ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+//        String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
+//        try {
+//            ((HttpSession) ctx.getSession(false)).invalidate();
+//            ctx.redirect(ctxPath + "/index.html?v=XX");
+//            System.out.println("FINALIZA LA SESION");
+//        } catch (Exception ex) {
+//            System.out.println("Excepcion cerrando sesion: " + ex.toString());
+//        }
         //}
     }
 
@@ -128,6 +176,15 @@ public class LoginMB {
         recordDataMB.reset();
         errorsControlMB.reset();
     }
+    private boolean autenticado = false;
+
+    public boolean isAutenticado() {
+        return autenticado;
+    }
+
+    public void setAutenticado(boolean autenticado) {
+        this.autenticado = autenticado;
+    }
 
     public String CheckValidUser() {
         currentUser = usersFacade.findUser(loginname, password);
@@ -142,7 +199,7 @@ public class LoginMB {
             System.out.println("INICIA... carga de ManagedBeans");
             connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
             connectionJdbcMB.connectToDb();
-            
+
             uploadFileMB = (UploadFileMB) context.getApplication().evaluateExpressionGet(context, "#{uploadFileMB}", UploadFileMB.class);
             relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
             relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
@@ -160,11 +217,11 @@ public class LoginMB {
             recordDataMB.setErrorsControlMB(errorsControlMB);
             recordDataMB.setLoginMB(this);
             recordDataMB.setUploadFileMB(uploadFileMB);
-            
+
             relationshipOfValuesMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
             relationshipOfVariablesMB.setRelationshipOfValuesMB(relationshipOfValuesMB);
             relationshipOfVariablesMB.setUploadFileMB(uploadFileMB);
-            
+
             errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
             storedRelationsMB.setUploadFileMB(uploadFileMB);
             storedRelationsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
@@ -172,9 +229,10 @@ public class LoginMB {
             storedRelationsMB.loadRelatedGroups();
 
             uploadFileMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-            
+
             uploadFileMB.setStoredRelationsMB(storedRelationsMB);
             reset();
+            autenticado = true;
             return "homePage";
         } else {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Incorrecto Usuario o Clave");
@@ -247,7 +305,4 @@ public class LoginMB {
     public void setActiveIndexAcoordion2(String activeIndexAcoordion2) {
         this.activeIndexAcoordion2 = activeIndexAcoordion2;
     }
-
-    
-    
 }

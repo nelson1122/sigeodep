@@ -136,6 +136,7 @@
                                 </p:column>
                                 <p:column colspan="3">
                                     <p:fileUpload 
+                                        style="width: 420px;"                                        
                                         id="IdBtnFileSelect"                                        
                                         fileUploadListener="#{uploadFileMB.handleFileUpload}"                                          
                                         mode="advanced"                                           
@@ -152,8 +153,7 @@
                                         widgetVar="pbAjaxUpload" 
                                         ajax="true"  
                                         value="#{uploadFileMB.progressUpload}" 
-                                        labelTemplate="{value}%" />                                    
-
+                                        labelTemplate="{value}%" />
                                     <p:commandButton                                   
                                         id="IdBtnProcessFile"
                                         disabled="#{uploadFileMB.btnProcessFileDisabled}"
@@ -1017,13 +1017,7 @@
                                                             actionListener="#{relationshipOfValuesMB.btnRemoveRelationValueClick}"
                                                             value="Quitar relaciones seleccionadas"
                                                             style="size: 10px;"
-                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues"/>
-                                                        <p:commandButton 
-                                                            id="IdBtnRemoveUnnecessary"                                                             
-                                                            actionListener="#{relationshipOfValuesMB.btnRemoveUnnecessaryClick}"
-                                                            value="Quitar relaciones innecesarias"
-                                                            style="size: 10px;"
-                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues"/>
+                                                            update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues"/>                                                        
                                                     </p:column>                     
                                                     <p:column styleClass="ui-widget-header">
                                                         <h:outputLabel value="Valores relacionados"/>  
@@ -1096,7 +1090,8 @@
                                                             id="IdBtnNewConfiguration"
                                                             value="GUARDAR RELACIONES ACTUALES"
                                                             style="margin:0;"
-                                                            update=":IdForm2:IdrelationGroupName"
+                                                            actionListener="#{storedRelationsMB.resetProgressSave}"
+                                                            update=":IdForm2:IdrelationGroupName :IdForm2:IdProgresSave"
                                                             onclick="newDialog.show()"/>                                                        
                                                     </p:column>                                                                                            
                                                 </p:row>
@@ -1564,13 +1559,16 @@
                     <br/>
                     <br/>
                     <p:commandButton  
-                        id="confirm"
-                        oncomplete="removeDialog.hide()"
+                        id="confirm"                        
+                        widgetVar="btnContinue2"
+                        onclick="btnCancel2.disable(); btnContinue2.disable();"
+                        oncomplete="btnCancel2.enable(); btnContinue2.enable(); removeDialog.hide();"                        
                         actionListener="#{storedRelationsMB.btnRemoveConfigurationConfirmationClick}"
                         value="CONTINUAR"
                         update=":IdForm:message :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListRelationGroups :IdForm:IdTabView:IdAccordionPanel:IdBtnRemoveConfiguration :IdForm:IdTabView:IdAccordionPanel:IdBtnLoadConfiguration"/>   
                     <p:commandButton 
                         id="decline"
+                        widgetVar="btnCancel2"
                         value="CANCELAR" 
                         onclick="removeDialog.hide()"
                         type="button"/>   
@@ -1609,11 +1607,13 @@
                         value="CONTINUAR"
                         style="margin:0;"
                         actionListener="#{storedRelationsMB.btnSaveConfiguration}"
-                        onclick="pbAjaxSave.start()"
-                        oncomplete="newDialog.hide()"
+                        widgetVar="btnContinue1"
+                        onclick="btnCancel1.disable(); btnContinue1.disable(); pbAjaxSave.start()"
+                        oncomplete="btnCancel1.enable(); btnContinue1.enable(); newDialog.hide()"
                         update=":IdForm:IdTabView:IdAccordionPanel:IdSelectOneListRelationGroups :IdForm:message"/>  
                     <p:commandButton 
                         id="declineNew"
+                        widgetVar="btnCancel1"
                         value="CANCELAR" 
                         onclick="newDialog.hide()"
                         type="button"/>   
