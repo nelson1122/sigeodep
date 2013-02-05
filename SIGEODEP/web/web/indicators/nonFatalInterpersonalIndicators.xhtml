@@ -19,10 +19,10 @@
         <!--=================================================================-->
         <!--================================TITULOS==========================-->
         <ui:define name="titlePage">
-            SIGEODEP -  INDICADORES PARA LESIONES DE CAUSA EXTERNA NO FATALES
+            SIGEODEP -  INDICADORES PARA VIOLENCIA INTERPERSONAL EN COMUNIDAD
         </ui:define>
         <ui:define name="title">
-            SIGEODEP -  INDICADORES PARA LESIONES DE CAUSA EXTERNA NO FATALES
+            SIGEODEP -  INDICADORES PARA VIOLENCIA INTERPERSONAL EN COMUNIDAD
         </ui:define>
         <!--=================================================================-->
         <!--==============================CONTENIDO==========================-->
@@ -35,49 +35,49 @@
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
                             <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="INDICADORES PARA LESIONES DE CAUSA EXTERNA NO FATALES"/>  
+                            <h:outputLabel value="INDICADORES PARA VIOLENCIA INTERPERSONAL EN COMUNIDAD"/>  
                         </p:column>                                       
                     </p:row>
                     <p:row>  
                         <p:column>
                             <!--=====================================DATOS DEL REGISTO==============================================-->
-<br/>  
+                            <br/>  
                             <p:panelGrid style=" margin-left: 150px;" columns="1">                                
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="NUMERO DE CASOS DE LESIONES DE CAUSA EXTERNA NO FATALES" 
-                                    actionListener="#{indicatorsMB.loadIndicator40}"
-                                    action="indicator"/>
+                                    value="NUMERO DE CASOS DE VIOLENCIA INTERPERSONAL EN COMUNIDAD" 
+                                    actionListener="#{indicatorsCountMB.loadIndicator61}"
+                                    action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="VARIACION DE CASOS DE LESIONES DE CAUSA EXTERNA NO FATALES" 
-                                    actionListener="#{indicatorsMB.loadIndicator41}"
-                                    action="indicator"/>       
+                                    value="VARIACION DE CASOS DE VIOLENCIA INTERPERSONAL EN COMUNIDAD" 
+                                    actionListener="#{indicatorsVariationMB.loadIndicator62}"
+                                    action="variationIndicator"/>       
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="VARIACION PORCENTUAL DE LESIONES DE CAUSA EXTERNA NO FATALES" 
-                                    actionListener="#{indicatorsMB.loadIndicator42}"
-                                    action="indicator"/>         
+                                    value="VARIACION PORCENTUAL DE VIOLENCIA INTERPERSONAL EN COMUNIDAD" 
+                                    actionListener="#{indicatorsPercentageVariationMB.loadIndicator63}"
+                                    action="percentageVariationIndicator"/>       
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="PROMEDIO DE CASOS DE LESIONES DE CAUSA EXTERNA NO FATALES" 
-                                    actionListener="#{indicatorsMB.loadIndicator43}"
-                                    action="indicator"/>       
+                                    value="PROMEDIO DE CASOS DE VIOLENCIA INTERPERSONAL EN COMUNIDAD" 
+                                    actionListener="#{indicatorsAverageMB.loadIndicator64}"
+                                    action="averageIndicator"/>       
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="TASA DE LESIONES DE CAUSA EXTERNA NO FATALES" 
-                                    actionListener="#{indicatorsMB.loadIndicator44}"
-                                    action="indicator"/>
+                                    value="TASA DE VIOLENCIA INTERPERSONAL EN COMUNIDAD" 
+                                    actionListener="#{indicatorsRateMB.loadIndicator65}"
+                                    action="rateIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="TASA ESPECIFICA DE LESIONES DE CAUSA EXTERNA NO FATALES SEGUN VARIABLE DE CONFUSION" 
-                                    actionListener="#{indicatorsMB.loadIndicator45}"
-                                    action="indicator"/>
+                                    value="TASA ESPECIFICA DE VIOLENCIA INTERPERSONAL EN COMUNIDAD SEGUN VARIABLE DE CONFUSION" 
+                                    actionListener="#{indicatorsSpecifiedRateMB.loadIndicator66}"
+                                    action="specifiedRateIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE LESIONES DE CAUSA EXTERNA NO FATALES SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsMB.loadIndicator46}"
-                                    action="indicator"/>
+                                    value="PORCENTAJE DE CASOS DE VIOLENCIA INTERPERSONAL EN FAMILIA SEGUN VARIABLE DE INTERES" 
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator67}"
+                                    action="percentageIndicator"/>
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       

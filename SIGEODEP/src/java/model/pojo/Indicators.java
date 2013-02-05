@@ -48,6 +48,11 @@ public class Indicators implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "injury_type", length = 2147483647)
     private String injuryType;
+    @Size(max = 30)
+    @Column(name = "indicator_type", length = 30)
+    private String indicatorType;
+    @Column(name = "injury_id")
+    private Short injuryId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "indicators")
     private List<IndicatorsVariables> indicatorsVariablesList;
 
@@ -104,6 +109,22 @@ public class Indicators implements Serializable {
 
     public void setInjuryType(String injuryType) {
         this.injuryType = injuryType;
+    }
+    
+    public String getIndicatorType() {
+        return indicatorType;
+    }
+
+    public void setIndicatorType(String indicatorType) {
+        this.indicatorType = indicatorType;
+    }
+    
+    public Short getInjuryId() {
+        return injuryId;
+    }
+
+    public void setInjuryId(Short injuryId) {
+        this.injuryId = injuryId;
     }
 
     @XmlTransient
