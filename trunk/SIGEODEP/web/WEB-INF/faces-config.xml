@@ -315,8 +315,8 @@
             <redirect/>
         </navigation-case>
         <navigation-case>
-            <from-outcome>nonFatalExternalCauseIndicators</from-outcome>
-            <to-view-id>/web/indicators/nonFatalExternalCauseIndicators.xhtml</to-view-id>
+            <from-outcome>nonFatalTrafficAccidentIndicators</from-outcome>
+            <to-view-id>/web/indicators/nonFatalTrafficAccidentIndicators.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
         <navigation-case>
@@ -335,9 +335,44 @@
             <redirect/>
         </navigation-case>        
         <navigation-case>
-            <from-outcome>indicator</from-outcome>
-            <to-view-id>/web/indicators/indicator.xhtml</to-view-id>
+            <from-outcome>nonFatalInterpersonalIndicators</from-outcome>
+            <to-view-id>/web/indicators/nonFatalInterpersonalIndicators.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case> 
+        <navigation-case>
+            <from-outcome>percentageIndicator</from-outcome>
+            <to-view-id>/web/indicators/percentageIndicator.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
+        <navigation-case>
+            <from-outcome>countIndicator</from-outcome>
+            <to-view-id>/web/indicators/countIndicator.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>        
+        <navigation-case>
+            <from-outcome>variationIndicator</from-outcome>
+            <to-view-id>/web/indicators/variationIndicator.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>specifiedRateIndicator</from-outcome>
+            <to-view-id>/web/indicators/specifiedRateIndicator.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>        
+        <navigation-case>
+            <from-outcome>rateIndicator</from-outcome>
+            <to-view-id>/web/indicators/rateIndicator.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>percentageVariationIndicator</from-outcome>
+            <to-view-id>/web/indicators/percentageVariationIndicator.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>averageIndicator</from-outcome>
+            <to-view-id>/web/indicators/averageIndicator.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>        
     </navigation-rule>
 </faces-config>

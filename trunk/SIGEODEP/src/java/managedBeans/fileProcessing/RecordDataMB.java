@@ -680,6 +680,10 @@ public class RecordDataMB implements Serializable {
          * CARGA DE REGISTROS DE LA FICHA HOMICIDIOS
          * ********************************************************************
          */
+        int contadorMasculino = 0;
+        int contadorFemenino = 0;
+        int contadorOtro = 0;
+
         tuplesNumber = 0;
         tuplesProcessed = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -735,6 +739,7 @@ public class RecordDataMB implements Serializable {
                 hourInt = 0;
                 minuteInt = 0;
                 narrative = "";
+
                 for (int posCol = 0; posCol < columnsNames.length; posCol++) {
                     value = null;
                     //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
@@ -886,9 +891,18 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case sexo_victima:
                                 newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
+                                
+//                                if (value.compareTo("1") == 0) {
+//                                    contadorMasculino++;
+//                                } else if (value.compareTo("2") == 0) {
+//                                    contadorFemenino++;
+//                                } else {
+//                                    System.out.print("QUE SERA:("+value+")");
+//                                    contadorOtro++;
+//                                }                                
                                 break;
                             case tipo_edad_victima:
-                                newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
+                                newVictim.setAgeTypeId(Short.parseShort(value));
                                 break;
                             case edad_victima:
                                 newVictim.setVictimAge(Short.parseShort(value));
@@ -1117,9 +1131,9 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         } else {//mayor de edad
-                            if (newVictim.getTypeId().getTypeId() == (short) 5||//tarjeta de identidad
-                                     newVictim.getTypeId().getTypeId() == (short) 4||//registro civil
-                                     newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
+                            if (newVictim.getTypeId().getTypeId() == (short) 5 ||//tarjeta de identidad
+                                    newVictim.getTypeId().getTypeId() == (short) 4 ||//registro civil
+                                    newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
@@ -1145,6 +1159,10 @@ public class RecordDataMB implements Serializable {
         } catch (Exception ex) {
             System.out.println("EXCEPTION INGRESANDO HOMICIDIO: " + ex.toString() + "  " + relationVar.getNameExpected() + " " + String.valueOf(tuplesProcessed));
         }
+//        System.out.println("#############LOS CONTADORES DETERMINARON QUE#############");
+//        System.out.println("CASOS PARA MASCULINO: " + String.valueOf(contadorMasculino));
+//        System.out.println("CASOS PARA FEMENINO: " + String.valueOf(contadorFemenino));
+//        System.out.println("CASOS PARA OTRO: " + String.valueOf(contadorOtro));
     }
 
     public void registerSCC_F_029() {
@@ -1366,7 +1384,8 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
                                 break;
                             case tipo_edad_victima:
-                                newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
+                                //newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
+                                newVictim.setAgeTypeId(Short.parseShort(value));
                                 break;
                             case edad_victima:
                                 newVictim.setVictimAge(Short.parseShort(value));
@@ -1584,7 +1603,7 @@ public class RecordDataMB implements Serializable {
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
                     }
                 }
-                
+
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
                 if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
                     if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad
@@ -1596,9 +1615,9 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         } else {//mayor de edad
-                            if (newVictim.getTypeId().getTypeId() == (short) 5||//tarjeta de identidad
-                                     newVictim.getTypeId().getTypeId() == (short) 4||//registro civil
-                                     newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
+                            if (newVictim.getTypeId().getTypeId() == (short) 5 ||//tarjeta de identidad
+                                    newVictim.getTypeId().getTypeId() == (short) 4 ||//registro civil
+                                    newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
@@ -1847,7 +1866,7 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
                                 break;
                             case tipo_edad_victima:
-                                newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
+                                newVictim.setAgeTypeId(Short.parseShort(value));
                                 break;
                             case edad_victima:
                                 newVictim.setVictimAge(Short.parseShort(value));
@@ -2058,7 +2077,7 @@ public class RecordDataMB implements Serializable {
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
                     }
                 }
-                
+
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
                 if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
                     if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad
@@ -2070,9 +2089,9 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         } else {//mayor de edad
-                            if (newVictim.getTypeId().getTypeId() == (short) 5||//tarjeta de identidad
-                                     newVictim.getTypeId().getTypeId() == (short) 4||//registro civil
-                                     newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
+                            if (newVictim.getTypeId().getTypeId() == (short) 5 ||//tarjeta de identidad
+                                    newVictim.getTypeId().getTypeId() == (short) 4 ||//registro civil
+                                    newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
@@ -2317,7 +2336,7 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
                                 break;
                             case tipo_edad_victima:
-                                newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
+                                newVictim.setAgeTypeId(Short.parseShort(value));
                                 break;
                             case edad_victima:
                                 newVictim.setVictimAge(Short.parseShort(value));
@@ -2519,7 +2538,7 @@ public class RecordDataMB implements Serializable {
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
                     }
                 }
-                
+
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
                 if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
                     if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad
@@ -2531,16 +2550,16 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         } else {//mayor de edad
-                            if (newVictim.getTypeId().getTypeId() == (short) 5||//tarjeta de identidad
-                                     newVictim.getTypeId().getTypeId() == (short) 4||//registro civil
-                                     newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
+                            if (newVictim.getTypeId().getTypeId() == (short) 5 ||//tarjeta de identidad
+                                    newVictim.getTypeId().getTypeId() == (short) 4 ||//registro civil
+                                    newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
 
                     }
                 }
-                
+
                 //PERSISTO
                 try {
                     //newVictim.setTagId(tagsFacade.find(newTag));
@@ -3579,7 +3598,7 @@ public class RecordDataMB implements Serializable {
                 if (newNonFatalInjury.getInjuryId().getInjuryId() == (short) 53) {//53 ES POR QUE ES VIF 
                     newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 55));//CAMBIA A 55 PARA SER VIF INGRESADA DESDE LCENF
                 }
-                
+
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
                 if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
                     if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad
@@ -3591,16 +3610,16 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         } else {//mayor de edad
-                            if (newVictim.getTypeId().getTypeId() == (short) 5||//tarjeta de identidad
-                                     newVictim.getTypeId().getTypeId() == (short) 4||//registro civil
-                                     newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
+                            if (newVictim.getTypeId().getTypeId() == (short) 5 ||//tarjeta de identidad
+                                    newVictim.getTypeId().getTypeId() == (short) 4 ||//registro civil
+                                    newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
 
                     }
                 }
-                
+
                 //PERSISTO//////////////////////////////////////////////////////
                 try {
 
@@ -4438,7 +4457,7 @@ public class RecordDataMB implements Serializable {
                     newVictim.setOthersList(othersList);
                 }
                 newNonFatalInjury.setInjuryId(injuriesFacade.find(Short.parseShort("53")));
-                
+
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
                 if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
                     if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad
@@ -4450,9 +4469,9 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         } else {//mayor de edad
-                            if (newVictim.getTypeId().getTypeId() == (short) 5||//tarjeta de identidad
-                                     newVictim.getTypeId().getTypeId() == (short) 4||//registro civil
-                                     newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
+                            if (newVictim.getTypeId().getTypeId() == (short) 5 ||//tarjeta de identidad
+                                    newVictim.getTypeId().getTypeId() == (short) 4 ||//registro civil
+                                    newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }

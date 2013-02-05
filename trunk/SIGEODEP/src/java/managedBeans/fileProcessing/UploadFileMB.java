@@ -315,7 +315,9 @@ public class UploadFileMB implements Serializable {
                 }
                 tuplesProcessed++;
                 progressUpload = (int) (tuplesProcessed * 100) / tuplesNumber;
-                if(progressUpload==0)progressUpload=1;
+                if (progressUpload == 0) {
+                    progressUpload = 1;
+                }
                 System.out.println(progressUpload);
             }
             try {
@@ -332,7 +334,7 @@ public class UploadFileMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", ex.toString()));
         }
     }
-    
+
     private void uploadXls() throws IOException {
         try {
             File file2 = new File(file.getFileName());
@@ -341,7 +343,7 @@ public class UploadFileMB implements Serializable {
             tuplesProcessed = 0;
 
             //determinar numero de filas
-            progressUpload=1;
+            progressUpload = 1;
             try {
                 OPCPackage container;
                 container = OPCPackage.open(file2.getAbsolutePath());
@@ -358,7 +360,6 @@ public class UploadFileMB implements Serializable {
                         XMLReader sheetParser = saxParser.getXMLReader();
                         ContentHandler handler = new XSSFSheetXMLHandler(styles, strings, new SheetContentsHandler() {
                             //ArrayList<String> rowFileData;
-
                             @Override
                             public void startRow(int rowNum) {
                                 tuplesNumber++;
@@ -394,7 +395,7 @@ public class UploadFileMB implements Serializable {
                 System.out.println(e.toString());
             }
 
-            System.out.println("TOTAL DE FILAS DEL ARCHIVO ES: "+String.valueOf(tuplesNumber));
+            System.out.println("TOTAL DE FILAS DEL ARCHIVO ES: " + String.valueOf(tuplesNumber));
             //procesar el archivo
             try {
                 OPCPackage container;
@@ -411,7 +412,6 @@ public class UploadFileMB implements Serializable {
                         SAXParser saxParser = saxFactory.newSAXParser();
                         XMLReader sheetParser = saxParser.getXMLReader();
                         ContentHandler handler = new XSSFSheetXMLHandler(styles, strings, new SheetContentsHandler() {
-
                             ArrayList<String> rowFileData;
 
                             @Override
@@ -430,7 +430,9 @@ public class UploadFileMB implements Serializable {
                                 }
                                 tuplesProcessed++;
                                 progressUpload = (int) (tuplesProcessed * 100) / tuplesNumber;
-                                if(progressUpload==0)progressUpload=1;
+                                if (progressUpload == 0) {
+                                    progressUpload = 1;
+                                }
                                 System.out.println(progressUpload);
                             }
 
@@ -702,8 +704,6 @@ public class UploadFileMB implements Serializable {
         }
     }
 
-    
-
     public void loadConfigurationUser() {
         boolean continueProcess = true;
         if (configurationLoaded) {//la configuracion ya se cargo una vez, no hacer nada            
@@ -753,6 +753,8 @@ public class UploadFileMB implements Serializable {
                         selectFormDisabled = true;
                         selectSourceDisabled = true;
                         tagNameDisabled = true;
+                        recordDataMB.setNameForm(currentForm);
+                        recordDataMB.setCurrentSource(currentSource);
                         //cargar grupo de relaciones de ser posible
                         boolean relationLoaded = false;
                         if (usersConfiguration.getRelationGroupName() != null) {
@@ -777,8 +779,7 @@ public class UploadFileMB implements Serializable {
                             relationshipOfVariablesMB.setVarsFound(variablesFound);
                             relationshipOfVariablesMB.setCurrentRelationsGroup(newRelationsGroup);
                             relationshipOfValuesMB.setCurrentRelationsGroup(newRelationsGroup);
-                            recordDataMB.setNameForm(currentForm);
-                            recordDataMB.setCurrentSource(currentSource);
+
                             storedRelationsMB.setCurrentRelationsGroup(newRelationsGroup);
                             System.out.println("No se pudieron cargar la relaciones");
                         }

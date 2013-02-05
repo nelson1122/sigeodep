@@ -5,8 +5,6 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="http://java.sun.com/jsf/facelets">
-
-
     <ui:composition template="../templates/layoutTemplate.xhtml">
         <!--==================================================================-->
         <!--========================CABECERA SCRIPTS==========================-->                    
@@ -46,13 +44,13 @@
                                 <p:commandButton 
                                     style="width: 450px;" 
                                     value="NUMERO DE CASOS POR LESION FATAL" 
-                                    actionListener="#{indicatorsMB.loadIndicator1}"
-                                    action="indicator"/>
+                                    actionListener="#{indicatorsCountMB.loadIndicator1}"
+                                    action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 450px;" 
                                     value="PORCENTAJE DE CASOS POR LESION FATAL" 
-                                    actionListener="#{indicatorsMB.loadIndicator2}"
-                                    action="indicator"/>
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator2}"
+                                    action="percentageIndicator"/>
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       

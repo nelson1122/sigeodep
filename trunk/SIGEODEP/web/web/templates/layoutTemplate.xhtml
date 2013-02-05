@@ -64,7 +64,7 @@
                                 </p:menu> 
                             </p:tab>
                             <p:tab title="INDICADORES">
-                                <p:accordionPanel activeIndex="#{loginMB.activeIndexAcoordion2}" > 
+                                <p:accordionPanel activeIndex="#{loginMB.activeIndexAcoordion2}" style="width: 250px;" > 
                                     <p:tab title="FATALES">
                                         <p:menu >                               
                                             <p:menuitem 
@@ -84,7 +84,7 @@
                                                 ajax="false"/>
                                             <p:menuitem 
                                                 icon="ui-icon-copy"
-                                                value="Accidentes" 
+                                                value="No Intencionales" 
                                                 action="fatalAccidentalIndicators" 
                                                 ajax="false"/>
                                             <p:menuitem 
@@ -95,11 +95,16 @@
                                         </p:menu> 
                                     </p:tab>
                                     <p:tab title="NO FATALES">
-                                        <p:menu >                               
+                                        <p:menu style="width: 200px;">                               
                                             <p:menuitem 
                                                 icon="ui-icon-copy"
                                                 value="General" 
                                                 action="nonFatalIndicators" 
+                                                ajax="false"/>
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="Interpersonal en Comunidad" 
+                                                action="nonFatalInterpersonalIndicators" 
                                                 ajax="false"/>
                                             <p:menuitem 
                                                 icon="ui-icon-copy"
@@ -108,18 +113,18 @@
                                                 ajax="false"/>
                                             <p:menuitem 
                                                 icon="ui-icon-copy"
-                                                value="Causa externa" 
-                                                action="nonFatalExternalCauseIndicators" 
-                                                ajax="false"/>
-                                            <p:menuitem 
-                                                icon="ui-icon-copy"
-                                                value="Intrafamiliar" 
-                                                action="nonFatalDomesticViolenceIndicators" 
+                                                value="Accidente de Transito" 
+                                                action="nonFatalTrafficAccidentIndicators" 
                                                 ajax="false"/>
                                             <p:menuitem 
                                                 icon="ui-icon-copy"
                                                 value="No intencional" 
                                                 action="nonFatalNonIntentionalIndicators" 
+                                                ajax="false"/>
+                                            <p:menuitem 
+                                                icon="ui-icon-copy"
+                                                value="Interpersonal en Familia" 
+                                                action="nonFatalDomesticViolenceIndicators" 
                                                 ajax="false"/>
                                         </p:menu> 
                                     </p:tab>

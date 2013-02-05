@@ -46,38 +46,39 @@
                                 <p:commandButton 
                                     style="width: 400px;" 
                                     value="NUMERO DE CASOS DE HOMICIDIOS" 
-                                    actionListener="#{indicatorsMB.loadIndicator12}"
-                                    action="indicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="VARIACION DE CASOS DE HOMICIDIOS" 
-                                    actionListener="#{indicatorsMB.loadIndicator13}"
-                                    action="indicator"/>        
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="VARIACION PORCENTUAL DE HOMICIDIOS" 
-                                    actionListener="#{indicatorsMB.loadIndicator14}"
-                                    action="indicator"/>       
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PROMEDIO DE CASOS DE HOMICIDIOS" 
-                                    actionListener="#{indicatorsMB.loadIndicator15}"
-                                    action="indicator"/>       
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="TASA DE HOMICIDIOS" 
-                                    actionListener="#{indicatorsMB.loadIndicator16}"
-                                    action="indicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="TASA ESPECIFICA DE HOMICIDIOS SEGUN VARIABLE DE CONFUSION" 
-                                    actionListener="#{indicatorsMB.loadIndicator17}"
-                                    action="indicator"/>
+                                    actionListener="#{indicatorsCountMB.loadIndicator12}"
+                                    action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
                                     value="PORCENTAJE DE CASOS DE HOMICIDIOS SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsMB.loadIndicator18}"
-                                    action="indicator"/>
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator18}"
+                                    action="percentageIndicator"/>
+                                <p:commandButton 
+                                    style="width: 400px;" 
+                                    value="VARIACION DE CASOS DE HOMICIDIOS" 
+                                    actionListener="#{indicatorsVariationMB.loadIndicator13}"
+                                    action="variationIndicator"/>        
+                                <p:commandButton 
+                                    style="width: 400px;" 
+                                    value="VARIACION PORCENTUAL DE HOMICIDIOS" 
+                                    actionListener="#{indicatorsPercentageVariationMB.loadIndicator14}"
+                                    action="percentageVariationIndicator"/>       
+                                <p:commandButton 
+                                    style="width: 400px;" 
+                                    value="PROMEDIO DE CASOS DE HOMICIDIOS" 
+                                    actionListener="#{indicatorsAverageMB.loadIndicator15}"
+                                    action="averageIndicator"/>       
+                                <p:commandButton 
+                                    style="width: 400px;" 
+                                    value="TASA DE HOMICIDIOS" 
+                                    actionListener="#{indicatorsRateMB.loadIndicator16}"
+                                    action="rateIndicator"/>
+                                <p:commandButton 
+                                    style="width: 400px;" 
+                                    value="TASA ESPECIFICA DE HOMICIDIOS SEGUN VARIABLE DE CONFUSION" 
+                                    actionListener="#{indicatorsSpecifiedRateMB.loadIndicator17}"
+                                    action="specifiedRateIndicator"/>
+                                
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       

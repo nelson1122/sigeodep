@@ -19,10 +19,10 @@
         <!--=================================================================-->
         <!--================================TITULOS==========================-->
         <ui:define name="titlePage">
-            SIGEODEP -  INDICADORES PARA MUERTES ACCIDENTALES
+            SIGEODEP -  INDICADORES PARA LESIONES FATALES NO INTENCIONALES
         </ui:define>
         <ui:define name="title">
-            SIGEODEP -  INDICADORES PARA MUERTES ACCIDENTALES
+            SIGEODEP -  INDICADORES PARA LESIONES FATALES NO INTENCIONALES
         </ui:define>
         <!--=================================================================-->
         <!--==============================CONTENIDO==========================-->
@@ -35,7 +35,7 @@
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
                             <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="INDICADORES PARA MUERTES ACCIDENTALES"/>  
+                            <h:outputLabel value="INDICADORES PARA LESIONES FATALES NO INTENCIONALES"/>  
                         </p:column>                                       
                     </p:row>
                     <p:row>  
@@ -45,39 +45,39 @@
                             <p:panelGrid style=" margin-left: 150px;" columns="1">                                
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="NUMERO DE CASOS DE MUERTES ACCIDENTALES" 
-                                    actionListener="#{indicatorsMB.loadIndicator5}"
-                                    action="indicator"/>
+                                    value="NUMERO DE CASOS DE LESIONES FATALES NO INTENCIONALES" 
+                                    actionListener="#{indicatorsCountMB.loadIndicator5}"
+                                    action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="VARIACION DE CASOS DE MUERTES ACCIDENTALES" 
-                                    actionListener="#{indicatorsMB.loadIndicator6}"
-                                    action="indicator"/>
+                                    value="VARIACION DE CASOS DE LESIONES FATALES NO INTENCIONALES" 
+                                    actionListener="#{indicatorsVariationMB.loadIndicator6}"
+                                    action="variationIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="VARIACION PORCENTUAL DE MUERTES ACCIDENTALES" 
-                                    actionListener="#{indicatorsMB.loadIndicator7}"
-                                    action="indicator"/>
+                                    value="VARIACION PORCENTUAL DE LESIONES FATALES NO INTENCIONALES" 
+                                    actionListener="#{indicatorsPercentageVariationMB.loadIndicator7}"
+                                    action="percentageVariationIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="PROMEDIO DE CASOS DE MUERTES ACCIDENTALES" 
-                                    actionListener="#{indicatorsMB.loadIndicator8}"
-                                    action="indicator"/>
+                                    value="PROMEDIO DE CASOS DE LESIONES FATALES NO INTENCIONALES" 
+                                    actionListener="#{indicatorsAverageMB.loadIndicator8}"
+                                    action="averageIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="TASA DE MUERTES ACCIDENTALES" 
-                                    actionListener="#{indicatorsMB.loadIndicator9}"
-                                    action="indicator"/>
+                                    value="TASA DE LESIONES FATALES NO INTENCIONALES" 
+                                    actionListener="#{indicatorsRateMB.loadIndicator9}"
+                                    action="rateIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="TASA ESPECIFICA DE MUERTES ACCIDENTALES SEGUN VARIABLE DE CONFUSION" 
-                                    actionListener="#{indicatorsMB.loadIndicator10}"
-                                    action="indicator"/>
+                                    value="TASA ESPECIFICA DE LESIONES FATALES NO INTENCIONALES SEGUN VARIABLE DE CONFUSION" 
+                                    actionListener="#{indicatorsSpecifiedRateMB.loadIndicator10}"
+                                    action="specifiedRateIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE MUERTES ACCIDENTALES SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsMB.loadIndicator11}"
-                                    action="indicator"/>
+                                    value="PORCENTAJE DE CASOS DE LESIONES FATALES NO INTENCIONALES SEGUN VARIABLE DE INTERES" 
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator11}"
+                                    action="percentageIndicator"/>
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       

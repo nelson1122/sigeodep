@@ -20,6 +20,10 @@ public enum VariablesEnum {
     year,//año
     month,//mes
     hour,//hora
+    daily,//diario
+    monthly,//mensual
+    annual,//anual
+    temporalDisaggregation,//Desagrega en un periodo de tiempo
     injuries_fatal,
     injuries_non_fatal,
     NOVALUE;
