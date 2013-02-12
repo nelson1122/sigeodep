@@ -543,7 +543,7 @@ public class GeoDBConnection implements Serializable {
                         + "     comunas_900913.*, value "
                         + "FROM "
                         + "     (SELECT "
-                        + "	  " + variable + "  AS name_value, suburb_id, count(*) AS value "
+                        + "	  " + variable + "  AS name_value, neighborhood_suburb, count(*) AS value "
                         + "     FROM "
                         + "	 dataset "
                         + "     JOIN "
@@ -559,7 +559,7 @@ public class GeoDBConnection implements Serializable {
                         + "JOIN "
                         + "    comunas_900913 "
                         + "ON "
-                        + "     (comuna_id = suburb_id) "
+                        + "     (comuna_id = neighborhood_suburb) "
                         + "WHERE "
                         + "     name_value = '" + value + "'";
                 Map<String, Object> minMaxValues = this.getMinMaxValues(query);

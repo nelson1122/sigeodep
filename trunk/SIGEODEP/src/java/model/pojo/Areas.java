@@ -36,6 +36,11 @@ public class Areas implements Serializable {
     @Size(min = 1, max = 15)
     @Column(name = "area_name", nullable = false, length = 15)
     private String areaName;
+    @Column(name = "population")
+    private Integer population;
+    @Size(max = 2147483647)
+    @Column(name = "geom", length = 2147483647)
+    private String geom;
     @OneToMany(mappedBy = "areaId")
     private List<FatalInjuries> fatalInjuriesList;
 
@@ -65,6 +70,22 @@ public class Areas implements Serializable {
 
     public void setAreaName(String areaName) {
 	this.areaName = areaName;
+    }
+    
+    public Integer getPopulation() {
+        return population;
+    }
+
+    public void setPopulation(Integer population) {
+        this.population = population;
+    }
+
+    public String getGeom() {
+        return geom;
+    }
+
+    public void setGeom(String geom) {
+        this.geom = geom;
     }
 
     @XmlTransient

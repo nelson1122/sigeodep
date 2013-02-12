@@ -1961,7 +1961,7 @@ public class SuicideMB implements Serializable {
                 Neighborhoods n = neighborhoodsFacade.findByName(currentNeighborhoodEvent);
                 if (n != null) {
                     currentNeighborhoodEventCode = String.valueOf(n.getNeighborhoodId());
-                    currentArea = Short.parseShort(n.getNeighborhoodType().toString());
+                    currentArea = Short.parseShort(n.getNeighborhoodArea().toString());
                 } else {
                     currentNeighborhoodEvent = "";
                     currentNeighborhoodEventCode = "";

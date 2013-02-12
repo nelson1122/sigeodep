@@ -12,6 +12,7 @@
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
             <script>
+                
                 fnAdjustTable = function(){
                     var colCount = $('#firstTr>td').length; //get total number of column
                     var m = 0;
@@ -61,6 +62,8 @@
                     document.getElementById('IdForm:IdTabView:IdAccordionPanel:IdPaint').click();
                     fnAdjustTable();
                 } 
+                
+                window.onload = fnAdjustTable();
             </script> 
         </ui:define>
         <!--=================================================================-->

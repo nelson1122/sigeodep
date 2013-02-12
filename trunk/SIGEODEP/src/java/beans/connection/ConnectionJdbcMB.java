@@ -315,7 +315,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
                 newRowDataTable.setColumn10(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
-                newRowDataTable.setColumn31(String.valueOf(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getSuburbId()));
+                newRowDataTable.setColumn31(String.valueOf(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -379,7 +379,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentFatalInjuryMurder.getFatalInjuries().getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryMurder.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
-                newRowDataTable.setColumn30(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryMurder.getFatalInjuries().getInjuryNeighborhoodId()).getSuburbId()));
+                newRowDataTable.setColumn30(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryMurder.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -566,7 +566,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentFatalInjuryA.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
                 newRowDataTable.setColumn10(currentFatalInjuryA.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
-                newRowDataTable.setColumn31(String.valueOf(currentFatalInjuryA.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getSuburbId()));
+                newRowDataTable.setColumn31(String.valueOf(currentFatalInjuryA.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -630,7 +630,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentFatalInjuryA.getFatalInjuries().getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryA.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
-                newRowDataTable.setColumn30(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryA.getFatalInjuries().getInjuryNeighborhoodId()).getSuburbId()));
+                newRowDataTable.setColumn30(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryA.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -853,7 +853,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentNonFatalI.getVictimId().getVictimNeighborhoodId() != null) {
                 newRowDataTable.setColumn15(currentNonFatalI.getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
-                newRowDataTable.setColumn121(String.valueOf(currentNonFatalI.getVictimId().getVictimNeighborhoodId().getSuburbId()));
+                newRowDataTable.setColumn121(String.valueOf(currentNonFatalI.getVictimId().getVictimNeighborhoodId().getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -998,7 +998,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentNonFatalI.getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn42(currentNonFatalI.getInjuryNeighborhoodId().getNeighborhoodName());
-                newRowDataTable.setColumn120(String.valueOf(currentNonFatalI.getInjuryNeighborhoodId().getSuburbId()));
+                newRowDataTable.setColumn120(String.valueOf(currentNonFatalI.getInjuryNeighborhoodId().getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -1569,7 +1569,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
                 newRowDataTable.setColumn10(currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
-                newRowDataTable.setColumn32(String.valueOf(currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getSuburbId()));
+                newRowDataTable.setColumn32(String.valueOf(currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -1633,7 +1633,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
-                newRowDataTable.setColumn32(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId()).getSuburbId()));
+                newRowDataTable.setColumn32(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -1834,7 +1834,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentFatalInjuryT.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
                 newRowDataTable.setColumn10(currentFatalInjuryT.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
-                newRowDataTable.setColumn43(String.valueOf(currentFatalInjuryT.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getSuburbId()));
+                newRowDataTable.setColumn43(String.valueOf(currentFatalInjuryT.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -1898,7 +1898,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentFatalInjuryT.getFatalInjuries().getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryT.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
-                newRowDataTable.setColumn44(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryT.getFatalInjuries().getInjuryNeighborhoodId()).getSuburbId()));
+                newRowDataTable.setColumn44(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryT.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -2182,7 +2182,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
                 newRowDataTable.setColumn15(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
-                newRowDataTable.setColumn81(String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimNeighborhoodId().getSuburbId()));
+                newRowDataTable.setColumn81(String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -2301,7 +2301,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn36(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId().getNeighborhoodName());
-                newRowDataTable.setColumn82(String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId().getSuburbId()));
+                newRowDataTable.setColumn82(String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId().getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }
@@ -3421,3 +3421,4 @@ public class ConnectionJdbcMB implements Serializable {
         this.tableName = tableName;
     }
 }
+

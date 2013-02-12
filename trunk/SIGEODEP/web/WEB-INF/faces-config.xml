@@ -373,6 +373,12 @@
             <from-outcome>averageIndicator</from-outcome>
             <to-view-id>/web/indicators/averageIndicator.xhtml</to-view-id>
             <redirect/>
-        </navigation-case>        
+        </navigation-case>      
+        <navigation-case>
+            <from-outcome>populations</from-outcome>
+            <to-view-id>/web/configurations/populations.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>      
+            
     </navigation-rule>
 </faces-config>
