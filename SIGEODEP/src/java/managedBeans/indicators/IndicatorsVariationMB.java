@@ -122,7 +122,6 @@ public class IndicatorsVariationMB {
     //private boolean showAll = false;//mostrar filas y columnas vacias
     //private boolean showTotals = false;//mostrar totales  
     private boolean showCalculation = false;//mostrar la resta
-    
     private boolean colorType = true;
 
     public IndicatorsVariationMB() {
@@ -638,7 +637,7 @@ public class IndicatorsVariationMB {
         Variable newVariable = new Variable("Desagregación temporal", "temporalDisaggregation", false);
         int diferenceRank;
         int daysMax;
-        Calendar cal1 = Calendar.getInstance();        
+        Calendar cal1 = Calendar.getInstance();
         String initialDateStr;
         String endDateStr;
         ArrayList<String> valuesName = new ArrayList<String>();//NOMBRE DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(NOMBRE EN LA CATEGORIA)
@@ -837,9 +836,10 @@ public class IndicatorsVariationMB {
             case areas://zona,
             case genders://genero,
             case days://dia semana
+            case quadrants://cuadrante
             case NOVALUE://es una tabla categorica
                 try {
-                    ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
+                    ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table + " order by 1");
                     while (rs.next()) {
                         valuesName.add(rs.getString(2));
                         valuesConf.add(rs.getString(2));
@@ -919,11 +919,11 @@ public class IndicatorsVariationMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNamesFinal.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\">" + columNamesFinal.get(i) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + columNamesFinal.get(i) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td>\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\">Total</div>\r\n";
+            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -962,11 +962,11 @@ public class IndicatorsVariationMB {
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\">" + headers2[i] + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + headers2[i] + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\">Total</div>\r\n";
+            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -1001,10 +1001,11 @@ public class IndicatorsVariationMB {
         //-------------------------------------------------------------------
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
         //-------------------------------------------------------------------      
-        int sizeTableMatrix = columNamesFinal.size() * 150;//que cada columna tenga 100px
-        sizeTableMatrix = sizeTableMatrix + 100;//de los totales
+        //int sizeTableMatrix = columNamesFinal.size() * 150;//que cada columna tenga 100px
+        //sizeTableMatrix = sizeTableMatrix + 100;//de los totales
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
-        strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        //strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
         //----------------------------------------------------------------------
         //AGREGO LOS REGISTROS DE LA MATRIZ        
         rowNames.remove(rowNames.size() - 1);//le quitamos "totales" a rownames
@@ -1023,9 +1024,12 @@ public class IndicatorsVariationMB {
                     String[] splitColumn = matrixResult[i][j].split("<br/>");
                     value = splitColumn[0];
                 }
-                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+                strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
+                strReturn = strReturn + "                                <div style=\"width:150px;\">" + value + "</div>\r\n";
+                strReturn = strReturn + "                                </td > \r\n";
+                //strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
             }
-            strReturn = strReturn + "                                <td>" + totalsVertical.get(j) + "</td>\r\n";
+            strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + totalsVertical.get(j) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
             changeColorType();//cambiar de color las filas de blanco a azul
         }
@@ -1084,16 +1088,16 @@ public class IndicatorsVariationMB {
             int value1;
             int value2;
             String[] splitColumn = matrixResult[i][0].split("<br/>");
-            value=splitColumn[1];
-            value=value.replaceAll("\\(", "");
-            value=value.replaceAll("\\)", "");
+            value = splitColumn[1];
+            value = value.replaceAll("\\(", "");
+            value = value.replaceAll("\\)", "");
             splitColumn = value.split("-");
-            value1=Integer.parseInt(splitColumn[0]);
-            value2=Integer.parseInt(splitColumn[1]);
-            
-            dataset.setValue(value2 ,"Rango A" ,columNamesFinal.get(i).replace("<br/>", "-"));
-            dataset.setValue(value1 ,"Rango B",columNamesFinal.get(i).replace("<br/>", "-"));
-            
+            value1 = Integer.parseInt(splitColumn[0]);
+            value2 = Integer.parseInt(splitColumn[1]);
+
+            dataset.setValue(value2, "Rango A", columNamesFinal.get(i).replace("<br/>", "-"));
+            dataset.setValue(value1, "Rango B", columNamesFinal.get(i).replace("<br/>", "-"));
+
         }
 
         final JFreeChart chart = ChartFactory.createAreaChart(
@@ -1116,8 +1120,8 @@ public class IndicatorsVariationMB {
         chart.setBackgroundPaint(Color.white);
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
         final TextTitle subtitle = new TextTitle(
-                "Rango A: ("+sdf.format(initialDateA)+" - " +sdf.format(endDateA)+")\t\n" +
-                "Rango B: ("+sdf.format(initialDateB)+" - " +sdf.format(endDateB)+")");
+                "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\t\n"
+                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")");
         subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
         subtitle.setPosition(RectangleEdge.TOP);
         //subtitle.setSpacer(new Spacer(Spacer.RELATIVE, 0.05, 0.05, 0.05, 0.05));
@@ -1149,8 +1153,8 @@ public class IndicatorsVariationMB {
 
         return chart;
 
-        
-        
+
+
 //        //grafico de diferencia
 //        JFreeChart chart;
 //        chart = ChartFactory.createTimeSeriesChart(
@@ -1173,7 +1177,7 @@ public class IndicatorsVariationMB {
 //        plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
 //        return chart;
     }
-    
+
     private JFreeChart createLineChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (int i = 0; i < columNamesFinal.size(); i++) {
@@ -1181,16 +1185,16 @@ public class IndicatorsVariationMB {
             int value1;
             int value2;
             String[] splitColumn = matrixResult[i][0].split("<br/>");
-            value=splitColumn[1];
-            value=value.replaceAll("\\(", "");
-            value=value.replaceAll("\\)", "");
+            value = splitColumn[1];
+            value = value.replaceAll("\\(", "");
+            value = value.replaceAll("\\)", "");
             splitColumn = value.split("-");
-            value1=Integer.parseInt(splitColumn[0]);
-            value2=Integer.parseInt(splitColumn[1]);
-            
-            
-            dataset.setValue(value2 ,"Rango A" ,columNamesFinal.get(i).replace("<br/>", "-"));
-            dataset.setValue(value1 ,"Rango B",columNamesFinal.get(i).replace("<br/>", "-"));
+            value1 = Integer.parseInt(splitColumn[0]);
+            value2 = Integer.parseInt(splitColumn[1]);
+
+
+            dataset.setValue(value2, "Rango A", columNamesFinal.get(i).replace("<br/>", "-"));
+            dataset.setValue(value1, "Rango B", columNamesFinal.get(i).replace("<br/>", "-"));
         }
 
         final JFreeChart chart = ChartFactory.createLineChart(
@@ -1213,8 +1217,8 @@ public class IndicatorsVariationMB {
         chart.setBackgroundPaint(Color.white);
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
         final TextTitle subtitle = new TextTitle(
-                "Rango A: ("+sdf.format(initialDateA)+" - " +sdf.format(endDateA)+")\t\n" +
-                "Rango B: ("+sdf.format(initialDateB)+" - " +sdf.format(endDateB)+")");
+                "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\t\n"
+                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")");
         subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
         subtitle.setPosition(RectangleEdge.TOP);
         //subtitle.setSpacer(new Spacer(Spacer.RELATIVE, 0.05, 0.05, 0.05, 0.05));
@@ -1246,8 +1250,8 @@ public class IndicatorsVariationMB {
 
         return chart;
 
-        
-        
+
+
 //        //grafico de diferencia
 //        JFreeChart chart;
 //        chart = ChartFactory.createTimeSeriesChart(
@@ -1671,10 +1675,10 @@ public class IndicatorsVariationMB {
                     break;
                 case age://DETERMINAR EDAD -----------------------                   
                     sql = sql + "   CASE \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {                        
+                    for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
                         String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
-                        if(splitAge[1].compareTo("n")==0){
-                            splitAge[1]="200";
+                        if (splitAge[1].compareTo("n") == 0) {
+                            splitAge[1] = "200";
                         }
                         sql = sql + "       WHEN (( \n\r";
                         sql = sql + "           CASE \n\r";
@@ -1704,7 +1708,10 @@ public class IndicatorsVariationMB {
                     sql = sql + "   (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as barrio";
                     break;
                 case communes://COMUNA -----------------------
-                    sql = sql + "   CAST((SELECT suburb_id FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna";
+                    sql = sql + "   CAST((SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna";
+                    break;
+                case quadrants://CUADRANTE -----------------------
+                    sql = sql + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
                     break;
                 case corridors://CORREDOR -----------------------
                     sql = sql + "   CASE (SELECT neighborhood_corridor FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r";
@@ -1715,7 +1722,7 @@ public class IndicatorsVariationMB {
                     sql = sql + "   END AS corredor";
                     break;
                 case areas://ZONA -----------------------        
-                    sql = sql + "   CASE (SELECT neighborhood_type FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)  \n\r";
+                    sql = sql + "   CASE (SELECT neighborhood_area FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)  \n\r";
                     sql = sql + "       WHEN '1' THEN 'ZONA URBANA'  \n\r";
                     sql = sql + "       WHEN '2' THEN 'ZONA RURAL' \n\r";
                     sql = sql + "   END AS zona";
@@ -1938,6 +1945,7 @@ public class IndicatorsVariationMB {
     public void loadIndicator55() {
         loadIndicator(55);
     }
+
     public void loadIndicator62() {
         loadIndicator(62);
     }

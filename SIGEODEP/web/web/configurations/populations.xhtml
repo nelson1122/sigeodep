@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+
+    <ui:composition template="../templates/layoutTemplate.xhtml">
+        <!--==================================================================-->
+        <!--========================CABECERA SCRIPTS==========================-->                    
+        <ui:define name="head">
+            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
+            <script type="text/javascript">                  
+            </script> 
+        </ui:define>
+        <!--=================================================================-->
+        <!--================================TITULOS==========================-->
+        <ui:define name="titlePage">
+            SIGEODEP -  CONFIGURACION DE POBLACIONES
+        </ui:define>
+        <ui:define name="title">
+            SIGEODEP -  CONFIGURACION DE POBLACIONES
+        </ui:define>
+        <!--=================================================================-->
+        <!--==============================CONTENIDO==========================-->
+        <ui:define name="content">
+            <h:form enctype="multipart/form-data" id="IdForm1"> 
+                <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
+                <!--===================================================================================-->
+
+                <br/>
+                <p:panelGrid id="IdPanel1" style="position: absolute;  width: 750px;  margin-left: -375px; left: 50%;" >                            
+                    <p:row>  
+                        <p:column styleClass="ui-widget-header" style="text-align: center;">
+                            <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
+                            <h:outputLabel value="POBLACIONES"/>  
+                        </p:column>                                       
+                    </p:row>
+                    <p:row>  
+                        <p:column>
+                            <br/>
+                            <p:panelGrid style="width: 730px;">
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" colspan="5">
+                                        <h:outputLabel value="Carga de poblaciones desde archivo"/>
+                                    </p:column>                            
+                                </p:row>
+                                <p:row>  
+                                    <p:column colspan="1">
+                                        <p:fileUpload 
+                                            style="width: 420px;"                                        
+                                            id="IdBtnFileSelect"                                        
+                                            fileUploadListener="#{uploadFileMB.handleFileUpload}"                                                                                  
+                                            mode="advanced"                                           
+                                            cancelLabel="Cancelar"
+                                            uploadLabel="Subir"                                        
+                                            label="Archivo"
+                                            sizeLimit="50000000"
+                                            update=":IdForm1:message"
+                                            allowTypes="/(\.|\/)(xlsx|csv|txt)$/">                                        
+                                        </p:fileUpload>
+                                    </p:column>
+                                </p:row>                        
+                            </p:panelGrid>
+                            <br/>
+                            <p:dataTable 
+                                id="IdSearchTable" var="rowX" 
+                                value="#{populationsMB.rowDataTableList}" 
+                                rowKey="#{rowX.column1}"  
+                                selection="#{populationsMB.selectedRowDataTable}" 
+                                paginator="true"
+                                rows="10"                                    
+                                paginatorPosition="bottom"                                
+                                scrollable="true"
+                                scrollWidth="730"                                    
+                                pageLinks="3"
+                                selectionMode="single"
+                                resizableColumns="true">                                                                
+                                <p:column headerText="EDAD" width="150">  
+                                    #{rowX.column1}  
+                                </p:column>  
+                                <p:column headerText="SEXO" width="150">  
+                                    #{rowX.column2}  
+                                </p:column>                                  
+                                <p:column headerText="ZONA" width="195">  
+                                    #{rowX.column3}  
+                                </p:column>              
+                                <p:column headerText="POBLACION" width="150">  
+                                    #{rowX.column4}  
+                                </p:column>                                  
+                            </p:dataTable>                            
+                            <br/>
+                            <p:panelGrid id="IdControls" style="width: 730px;">
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header" colspan="5">                                        
+                                        <h:commandLink >                                              
+                                            <p:button value="Exportar"/>
+                                            <p:dataExporter type="xls" target="IdSearchTable" fileName="poblaciones" postProcessor="#{populationsMB.postProcessXLS}"/>  
+                                        </h:commandLink>
+                                    </p:column>                            
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                        </p:column>                                       
+                    </p:row>
+                </p:panelGrid>
+            </h:form>
+        </ui:define>
+        <ui:define name="dialogs">
+            <h:form id="IdForm2">
+                <!-- DIALOGO NUEVO -->
+                <p:dialog id="IdDialogNew" header="NUEVA ACTIVIDAD" widgetVar="dialogNew" resizable="false" modal="true">  
+                    <p:panelGrid id="displayNew">                          
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="NOMBRE" />  
+                            </p:column>
+                            <p:column>
+                            </p:column>
+                        </p:row>                        
+                        <p:row>
+                            <p:column colspan="2" styleClass="ui-widget-header">
+                                <p:commandButton 
+                                    value="Guardar" 
+                                    icon="ui-icon-disk"                                   
+                                    oncomplete="dialogNew.hide()"
+                                    update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>
+                                <p:commandButton 
+                                    value="Cancelar" 
+                                    icon="ui-icon-close"
+                                    oncomplete="dialogNew.hide()"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>  
+                </p:dialog>                 
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>

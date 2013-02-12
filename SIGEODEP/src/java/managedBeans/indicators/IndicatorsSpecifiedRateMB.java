@@ -106,7 +106,7 @@ public class IndicatorsSpecifiedRateMB {
     private boolean btnRemoveCategoricalValueDisabled = true;
     private boolean btnRemoveVariableDisabled = true;
     private boolean renderedDynamicDataTable = true;
-    private boolean showAll = false;//mostrar filas y columnas vacias
+    //private boolean showAll = false;//mostrar filas y columnas vacias
     private boolean colorType = true;
 
     public IndicatorsSpecifiedRateMB() {
@@ -525,7 +525,7 @@ public class IndicatorsSpecifiedRateMB {
             case age:
                 infInt = 0;
                 supInt = 4;
-                for (int i = 0; i < 23; i++) {
+                for (int i = 0; i < 16; i++) {
                     infStr = String.valueOf(infInt);
                     supStr = String.valueOf(supInt);
                     if (infStr.length() == 1) {
@@ -540,6 +540,9 @@ public class IndicatorsSpecifiedRateMB {
                     infInt = infInt + 5;
                     supInt = supInt + 5;
                 }
+                valuesName.add("80/n");
+                valuesConf.add("80/n");
+                valuesId.add("80/n");
                 break;
             case injuries_fatal:
                 valuesId.add("10");
@@ -640,9 +643,11 @@ public class IndicatorsSpecifiedRateMB {
             case areas://zona,
             case genders://genero,
             case days://dia semana
+            case quadrants://cuadrante
             case NOVALUE://es una tabla categorica
                 try {
-                    ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
+                    //ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
+                    ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table + " order by 1");
                     while (rs.next()) {
                         valuesName.add(rs.getString(2));
                         valuesConf.add(rs.getString(2));
@@ -722,11 +727,11 @@ public class IndicatorsSpecifiedRateMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNames.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\">" + columNames.get(i) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + columNames.get(i) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td>\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\">Total</div>\r\n";
+            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -765,11 +770,11 @@ public class IndicatorsSpecifiedRateMB {
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\">" + headers2[i] + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + headers2[i] + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\">Total</div>\r\n";
+            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -804,13 +809,13 @@ public class IndicatorsSpecifiedRateMB {
         //-------------------------------------------------------------------
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
         //-------------------------------------------------------------------      
-        int sizeTableMatrix = columNames.size() * 100;//que cada columna tenga 100px
-        sizeTableMatrix = sizeTableMatrix + 100;//de los totales
+        //int sizeTableMatrix = columNames.size() * 150;//que cada columna tenga 100px
+        //sizeTableMatrix = sizeTableMatrix + 100;//de los totales
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
-        strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        //strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
         //----------------------------------------------------------------------
         //AGREGO LOS REGISTROS DE LA MATRIZ        
-
         for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
             if (j == 0) {
                 strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
@@ -818,9 +823,12 @@ public class IndicatorsSpecifiedRateMB {
                 strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             }
             for (int i = 0; i < columNames.size(); i++) {
-                strReturn = strReturn + "                                <td>" + matrixResult[i][j] + "</td>\r\n";
+                //strReturn = strReturn + "                                <td>" + matrixResult[i][j] + "</td>\r\n";
+                strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
+                strReturn = strReturn + "                                <div style=\"width:150px;\">" + matrixResult[i][j] + "</div>\r\n";
+                strReturn = strReturn + "                                </td> \r\n";
             }
-            strReturn = strReturn + "                                <td>" + totalsVertical.get(j) + "</td>\r\n";
+            strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + totalsVertical.get(j) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
             changeColorType();//cambiar de color las filas de blanco a azul
         }
@@ -841,7 +849,7 @@ public class IndicatorsSpecifiedRateMB {
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "            </tr>\r\n";
         strReturn = strReturn + "        </table>\r\n";
-        System.out.println(strReturn);
+        //System.out.println(strReturn);
         return strReturn;
     }
 
@@ -948,21 +956,25 @@ public class IndicatorsSpecifiedRateMB {
             //---------------------------------------------------------            
             if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
                 rs = connectionJdbcMB.consult(
-                        "SELECT DISTINCT " + columnNamesPivot.get(0)
+                        "SELECT " + columnNamesPivot.get(0)
                         + " FROM " + pivotTableName
-                        + " ORDER BY " + columnNamesPivot.get(0));
+                        + " GROUP BY " + columnNamesPivot.get(0)
+                        + " order by MIN(id);");
             }
             if (variablesCrossData.size() == 3) {
-                rs = connectionJdbcMB.consult(
-                        "SELECT DISTINCT ("
+                String sql =
+                        "SELECT "
                         + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
-                        + ") " + columnNamesPivot.get(0) + " , " + columnNamesPivot.get(1)
                         + " FROM " + pivotTableName
-                        + " ORDER BY " + columnNamesPivot.get(0) + " , " + columnNamesPivot.get(1));
+                        + " group by "
+                        + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
+                        + " order by "
+                        + " MIN(id); ";
+                rs = connectionJdbcMB.consult(sql);
             }
             while (rs.next()) {
-
                 columNames.add(rs.getString(1));
+                //System.out.println("orden:"+rs.getString(1));
             }
             //---------------------------------------------------------            
             //DETERMINO NOMBRES DE FILAS PARA MATIRZ SALIDA
@@ -972,18 +984,21 @@ public class IndicatorsSpecifiedRateMB {
             }
             if (variablesCrossData.size() == 2) {
                 rs = connectionJdbcMB.consult(
-                        "SELECT DISTINCT " + columnNamesPivot.get(1)
+                        "SELECT " + columnNamesPivot.get(1)
                         + " FROM " + pivotTableName
-                        + " ORDER BY " + columnNamesPivot.get(1));
+                        + " GROUP BY " + columnNamesPivot.get(1)
+                        + " order by MIN(id);");
             }
             if (variablesCrossData.size() == 3) {
                 rs = connectionJdbcMB.consult(
-                        "SELECT DISTINCT " + columnNamesPivot.get(2)
+                        "SELECT " + columnNamesPivot.get(2)
                         + " FROM " + pivotTableName
-                        + " ORDER BY " + columnNamesPivot.get(2));
+                        + " GROUP BY " + columnNamesPivot.get(2)
+                        + " order by MIN(id);");
             }
             while (rs.next()) {
                 rowNames.add(rs.getString(1));
+                //System.out.println("orden:" + rs.getString(1));
             }
 
             //---------------------------------------------------------            
@@ -1069,7 +1084,8 @@ public class IndicatorsSpecifiedRateMB {
         sql = sql + " AS  \n\r";
         sql = sql + " SELECT * from " + prepivotTableName + " \n\r";
         connectionJdbcMB.non_query(sql);
-        connectionJdbcMB.non_query("DELETE FROM " + pivotTableName);//elimino registros                 
+        connectionJdbcMB.non_query("DELETE FROM " + pivotTableName);//elimino registros     
+        connectionJdbcMB.non_query("ALTER TABLE " + pivotTableName + " ADD COLUMN id integer;");
         //---------------------------------------------------------
         //HAY QUE ARMAR LAS POSIBLES COMBINACIONES PARA QUE LOS DATOS QUEDEN ORDENADOS SEGUN COMO SE ENCUENTRE LA CONFIGURACION
         //---------------------------------------------------------
@@ -1117,19 +1133,40 @@ public class IndicatorsSpecifiedRateMB {
                 }
             }
 
+
             //---------------------------------------------------------
             //REALIZO LAS POSIBLES COMBINACIONES
             //---------------------------------------------------------            
+            int id = 0;
             if (variablesCrossData.size() == 1) {
                 for (int i = 0; i < values1.size(); i++) {
+//                    columNames.add(values1.get(i));
+//                    sql = "INSERT INTO " + pivotTableName + " VALUES (";
+//                    sql = sql + "'" + values1.get(i) + "',";
+//                    sql = sql + "'0')";
+//                    connectionJdbcMB.non_query(sql);
                     columNames.add(values1.get(i));
                     sql = "INSERT INTO " + pivotTableName + " VALUES (";
                     sql = sql + "'" + values1.get(i) + "',";
-                    sql = sql + "'0')";
+                    sql = sql + "'0'," + String.valueOf(id) + ")";
+                    id++;
                     connectionJdbcMB.non_query(sql);
                 }
                 rowNames.add("Cantidad");
             } else if (variablesCrossData.size() == 2) {
+//                for (int i = 0; i < values1.size(); i++) {
+//                    columNames.add(values1.get(i));
+//                    for (int j = 0; j < values2.size(); j++) {
+//                        if (i == 0) {
+//                            rowNames.add(values2.get(j));
+//                        }
+//                        sql = "INSERT INTO " + pivotTableName + " VALUES (";
+//                        sql = sql + "'" + values1.get(i) + "',";
+//                        sql = sql + "'" + values2.get(j) + "',";
+//                        sql = sql + "'0')";
+//                        connectionJdbcMB.non_query(sql);
+//                    }
+//                }
                 for (int i = 0; i < values1.size(); i++) {
                     columNames.add(values1.get(i));
                     for (int j = 0; j < values2.size(); j++) {
@@ -1139,11 +1176,28 @@ public class IndicatorsSpecifiedRateMB {
                         sql = "INSERT INTO " + pivotTableName + " VALUES (";
                         sql = sql + "'" + values1.get(i) + "',";
                         sql = sql + "'" + values2.get(j) + "',";
-                        sql = sql + "'0')";
+                        sql = sql + "'0'," + String.valueOf(id) + ")";
                         connectionJdbcMB.non_query(sql);
+                        id++;
                     }
                 }
             } else if (variablesCrossData.size() == 3) {
+//                for (int i = 0; i < values1.size(); i++) {
+//                    for (int j = 0; j < values2.size(); j++) {
+//                        columNames.add(values1.get(i) + "}" + values2.get(j));
+//                        for (int k = 0; k < values3.size(); k++) {
+//                            if (i == 0 && j == 0) {
+//                                rowNames.add(values3.get(k));
+//                            }
+//                            sql = "INSERT INTO " + pivotTableName + " VALUES (";
+//                            sql = sql + "'" + values1.get(i) + "',";
+//                            sql = sql + "'" + values2.get(j) + "',";
+//                            sql = sql + "'" + values3.get(k) + "',";
+//                            sql = sql + "'0')";
+//                            connectionJdbcMB.non_query(sql);
+//                        }
+//                    }
+//                }
                 for (int i = 0; i < values1.size(); i++) {
                     for (int j = 0; j < values2.size(); j++) {
                         columNames.add(values1.get(i) + "}" + values2.get(j));
@@ -1155,8 +1209,9 @@ public class IndicatorsSpecifiedRateMB {
                             sql = sql + "'" + values1.get(i) + "',";
                             sql = sql + "'" + values2.get(j) + "',";
                             sql = sql + "'" + values3.get(k) + "',";
-                            sql = sql + "'0')";
+                            sql = sql + "'0'," + String.valueOf(id) + ")";
                             connectionJdbcMB.non_query(sql);
+                            id++;
                         }
                     }
                 }
@@ -1177,9 +1232,9 @@ public class IndicatorsSpecifiedRateMB {
             //---------------------------------------------------------            
             //SI NO TOCA MOSTRAR TODOS LOS DATOS SE ELIMINA LOS QUE TENGAN CERO
             //---------------------------------------------------------
-            if (!showAll) {
-                connectionJdbcMB.non_query("DELETE FROM " + pivotTableName + " WHERE count = 0");//elimino los que tengan resultado=0
-            }
+//            if (!showAll) {
+//                connectionJdbcMB.non_query("DELETE FROM " + pivotTableName + " WHERE count = 0");//elimino los que tengan resultado=0
+//            }
         } catch (Exception e) {
             System.out.println("EXCEPTION--------------------------" + e.toString());
         }
@@ -1206,6 +1261,9 @@ public class IndicatorsSpecifiedRateMB {
                     sql = sql + "   CASE \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
                         String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
+                        if (splitAge[1].compareTo("n") == 0) {
+                            splitAge[1] = "200";
+                        }
                         sql = sql + "       WHEN (( \n\r";
                         sql = sql + "           CASE \n\r";
                         sql = sql + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r";
@@ -1230,7 +1288,10 @@ public class IndicatorsSpecifiedRateMB {
                     sql = sql + "   (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as barrio";
                     break;
                 case communes://COMUNA -----------------------
-                    sql = sql + "   CAST((SELECT suburb_id FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna";
+                    sql = sql + "   CAST((SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna";
+                    break;
+                case quadrants://CUADRANTE -----------------------
+                    sql = sql + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
                     break;
                 case corridors://CORREDOR -----------------------
                     sql = sql + "   CASE (SELECT neighborhood_corridor FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r";
@@ -1241,7 +1302,7 @@ public class IndicatorsSpecifiedRateMB {
                     sql = sql + "   END AS corredor";
                     break;
                 case areas://ZONA -----------------------        
-                    sql = sql + "   CASE (SELECT neighborhood_type FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)  \n\r";
+                    sql = sql + "   CASE (SELECT neighborhood_area FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)  \n\r";
                     sql = sql + "       WHEN '1' THEN 'ZONA URBANA'  \n\r";
                     sql = sql + "       WHEN '2' THEN 'ZONA RURAL' \n\r";
                     sql = sql + "   END AS zona";
@@ -1284,7 +1345,14 @@ public class IndicatorsSpecifiedRateMB {
         sql = sql + "   FROM  \n\r";
         sql = sql + "       " + currentIndicator.getInjuryType() + ", victims \n\r";
         sql = sql + "   WHERE  \n\r";
+
+
         sql = sql + "       " + currentIndicator.getInjuryType() + ".victim_id = victims.victim_id AND \n\r";
+        if (currentIndicator.getIndicatorId() != 1 && currentIndicator.getIndicatorId() != 2
+                && currentIndicator.getIndicatorId() != 3 && currentIndicator.getIndicatorId() != 4) {
+            //si no es general se filtra por tipo de lesion
+            sql = sql + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
+        }
         sql = sql + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r";
         sql = sql + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy'); ";
         connectionJdbcMB.non_query(sql);//CREO LA TABLA PREPIVOT
@@ -1432,7 +1500,7 @@ public class IndicatorsSpecifiedRateMB {
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
-    //FUNCIOES PARA REALIZAR LA CARGA DE UN INDICADOR
+    //FUNCIONES PARA REALIZAR LA CARGA DE UN INDICADOR
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
@@ -1662,14 +1730,13 @@ public class IndicatorsSpecifiedRateMB {
 //    public void setShowTotals(boolean showTotals) {
 //        this.showTotals = showTotals;
 //    }
-    public boolean isShowAll() {
-        return showAll;
-    }
-
-    public void setShowAll(boolean showAll) {
-        this.showAll = showAll;
-    }
-
+//    public boolean isShowAll() {
+//        return showAll;
+//    }
+//
+//    public void setShowAll(boolean showAll) {
+//        this.showAll = showAll;
+//    }
     public OutputPanel getDynamicDataTableGroup() {
         return dynamicDataTableGroup;
     }

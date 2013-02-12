@@ -982,7 +982,7 @@ public class RecordDataMB implements Serializable {
                 if (newFatalInjurie.getAreaId() == null) {
                     if (newFatalInjurie.getInjuryNeighborhoodId() != null) {
                         Neighborhoods ne = neighborhoodsFacade.find(newFatalInjurie.getInjuryNeighborhoodId());
-                        short neType = Short.parseShort(ne.getNeighborhoodType().toString());
+                        short neType = Short.parseShort(ne.getNeighborhoodArea().toString());
                         newFatalInjurie.setAreaId(areasFacade.find(neType));
                     }
                 }

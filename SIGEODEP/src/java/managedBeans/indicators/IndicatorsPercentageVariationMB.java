@@ -844,9 +844,11 @@ public class IndicatorsPercentageVariationMB {
             case areas://zona,
             case genders://genero,
             case days://dia semana
+            case quadrants://cuadrante
             case NOVALUE://es una tabla categorica
                 try {
-                    ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
+                    //ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
+                    ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table + " order by 1");
                     while (rs.next()) {
                         valuesName.add(rs.getString(2));
                         valuesConf.add(rs.getString(2));
@@ -1094,11 +1096,11 @@ public class IndicatorsPercentageVariationMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNamesFinal.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\">" + columNamesFinal.get(i) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + columNamesFinal.get(i) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td>\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\">Total</div>\r\n";
+            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -1137,11 +1139,11 @@ public class IndicatorsPercentageVariationMB {
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\">" + headers2[i] + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + headers2[i] + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\">Total</div>\r\n";
+            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -1230,10 +1232,11 @@ public class IndicatorsPercentageVariationMB {
         //-------------------------------------------------------------------
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
         //-------------------------------------------------------------------      
-        int sizeTableMatrix = columNamesFinal.size() * 150;//que cada columna tenga 100px
-        sizeTableMatrix = sizeTableMatrix + 100;//de los totales
+        //int sizeTableMatrix = columNamesFinal.size() * 150;//que cada columna tenga 100px
+        //sizeTableMatrix = sizeTableMatrix + 100;//de los totales
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
-        strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        //strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
         //----------------------------------------------------------------------
         String value;
         double totalA;
@@ -1257,7 +1260,7 @@ public class IndicatorsPercentageVariationMB {
                     } else {
                         value = formateador.format(totalA - totalB);
                     }
-                    strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 }
                 totalA = Double.parseDouble(getMatrixValueA("rowTotal", -1, j));
                 totalB = Double.parseDouble(getMatrixValueB("rowTotal", -1, j));
@@ -1266,7 +1269,7 @@ public class IndicatorsPercentageVariationMB {
                 } else {
                     value = formateador.format(totalA - totalB);
                 }
-                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             if (showRowPercentage) {
@@ -1285,7 +1288,7 @@ public class IndicatorsPercentageVariationMB {
                     } else {
                         value = formateador.format(totalA - totalB);
                     }
-                    strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 }
                 totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingTotalRow", -1, j));
                 totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingTotalRow", -1, j));
@@ -1294,7 +1297,7 @@ public class IndicatorsPercentageVariationMB {
                 } else {
                     value = formateador.format(totalA - totalB);
                 }
-                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             //total = 0;
@@ -1314,7 +1317,7 @@ public class IndicatorsPercentageVariationMB {
                     } else {
                         value = formateador.format(totalA - totalB);
                     }
-                    strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 }
                 totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingGrandTotal", -1, j));
                 totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingGrandTotal", -1, j));
@@ -1323,7 +1326,7 @@ public class IndicatorsPercentageVariationMB {
                 } else {
                     value = formateador.format(totalA - totalB);
                 }
-                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             //total = 0;
@@ -1343,7 +1346,7 @@ public class IndicatorsPercentageVariationMB {
                     } else {
                         value = formateador.format(totalA - totalB);
                     }
-                    strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 }
                 totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingGrandTotal", -1, j));
                 totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingGrandTotal", -1, j));
@@ -1352,7 +1355,7 @@ public class IndicatorsPercentageVariationMB {
                 } else {
                     value = formateador.format(totalA - totalB);
                 }
-                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             changeColorType();//cambiar de color las filas de blanco a azul
@@ -2164,7 +2167,10 @@ public class IndicatorsPercentageVariationMB {
                     sql = sql + "   (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as barrio";
                     break;
                 case communes://COMUNA -----------------------
-                    sql = sql + "   CAST((SELECT suburb_id FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna";
+                    sql = sql + "   CAST((SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna";
+                    break;
+                case quadrants://CUADRANTE -----------------------
+                    sql = sql + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
                     break;
                 case corridors://CORREDOR -----------------------
                     sql = sql + "   CASE (SELECT neighborhood_corridor FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r";
@@ -2175,7 +2181,7 @@ public class IndicatorsPercentageVariationMB {
                     sql = sql + "   END AS corredor";
                     break;
                 case areas://ZONA -----------------------        
-                    sql = sql + "   CASE (SELECT neighborhood_type FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)  \n\r";
+                    sql = sql + "   CASE (SELECT neighborhood_area FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)  \n\r";
                     sql = sql + "       WHEN '1' THEN 'ZONA URBANA'  \n\r";
                     sql = sql + "       WHEN '2' THEN 'ZONA RURAL' \n\r";
                     sql = sql + "   END AS zona";

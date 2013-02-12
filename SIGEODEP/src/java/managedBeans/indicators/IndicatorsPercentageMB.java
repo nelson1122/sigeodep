@@ -667,9 +667,11 @@ public class IndicatorsPercentageMB {
             case areas://zona,
             case genders://genero,
             case days://dia semana
+            case quadrants://cuadrante
             case NOVALUE://es una tabla categorica
                 try {
-                    ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
+                    //ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
+                    ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table + " order by 1");
                     while (rs.next()) {
                         valuesName.add(rs.getString(2));
                         valuesConf.add(rs.getString(2));
@@ -833,11 +835,11 @@ public class IndicatorsPercentageMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNames.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\">" + columNames.get(i) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + columNames.get(i) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td>\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\">Total</div>\r\n";
+            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -876,11 +878,11 @@ public class IndicatorsPercentageMB {
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\">" + headers2[i] + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + headers2[i] + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\">Total</div>\r\n";
+            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -964,66 +966,67 @@ public class IndicatorsPercentageMB {
         strReturn = strReturn + "                    </div>\r\n";
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td valign=\"top\">\r\n";
-        
-        
+
+
         //-------------------------------------------------------------------
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
         //-------------------------------------------------------------------      
-        int sizeTableMatrix = columNames.size() * 150;//que cada columna tenga 100px
-        sizeTableMatrix = sizeTableMatrix + 100;//de los totales
+        //int sizeTableMatrix = columNames.size() * 150;//que cada columna tenga 100px
+        //sizeTableMatrix = sizeTableMatrix + 100;//de los totales
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
-        strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        //strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
         //----------------------------------------------------------------------
         //AGREGO LOS REGISTROS DE LA MATRIZ        
         for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
             if (showCount) {
                 if (j == 0) {
-                    strReturn = strReturn + "                            <tr "+ getColorType() + " id='firstTr'>\r\n";
+                    strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
                 } else {
-                    strReturn = strReturn + "                            <tr "+ getColorType() + " >\r\n";
+                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
                 }
                 for (int i = 0; i < columNames.size(); i++) {
-                    strReturn = strReturn + "                                <td>" + getMatrixValue("countXY", i, j) + "</td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + getMatrixValue("countXY", i, j) + "</div></td>\r\n";
                 }
-                strReturn = strReturn + "                                <td>" + getMatrixValue("rowTotal", -1, j) + "</td>\r\n";
+                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + getMatrixValue("rowTotal", -1, j) + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             if (showRowPercentage) {
                 if (j == 0) {//si es la primera fila tiene elidentificador 'firstTr'
-                    strReturn = strReturn + "                            <tr "+ getColorType() + "  id='firstTr'>\r\n";
+                    strReturn = strReturn + "                            <tr " + getColorType() + "  id='firstTr'>\r\n";
                 } else {
-                    strReturn = strReturn + "                            <tr "+ getColorType() + " >\r\n";
+                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
                 }
                 for (int i = 0; i < columNames.size(); i++) {
-                    strReturn = strReturn + "                                <td>" + getMatrixValue("rowPercentageXY", i, j) + "</td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + getMatrixValue("rowPercentageXY", i, j) + "</div></td>\r\n";
                 }
-                strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfTotalRowAccordingTotalRow", -1, j) + "</td>\r\n";                
+                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + getMatrixValue("percentageOfTotalRowAccordingTotalRow", -1, j) + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             //total = 0;
             if (showColumnPercentage) {
                 if (j == 0) {
-                    strReturn = strReturn + "                            <tr "+ getColorType() + "  id='firstTr'>\r\n";
+                    strReturn = strReturn + "                            <tr " + getColorType() + "  id='firstTr'>\r\n";
                 } else {
-                    strReturn = strReturn + "                            <tr "+ getColorType() + " >\r\n";
+                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
                 }
                 for (int i = 0; i < columNames.size(); i++) {
-                    strReturn = strReturn + "                                <td>" + getMatrixValue("columnPercentageXY", i, j) + "</td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + getMatrixValue("columnPercentageXY", i, j) + "</div></td>\r\n";
                 }
-                strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfTotalRowAccordingGrandTotal", -1, j) + "</td>\r\n";
+                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + getMatrixValue("percentageOfTotalRowAccordingGrandTotal", -1, j) + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             //total = 0;
             if (showTotalPercentage) {
                 if (j == 0) {
-                    strReturn = strReturn + "                            <tr "+ getColorType() + "  id='firstTr'>\r\n";
+                    strReturn = strReturn + "                            <tr " + getColorType() + "  id='firstTr'>\r\n";
                 } else {
-                    strReturn = strReturn + "                            <tr "+ getColorType() + " >\r\n";
+                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
                 }
                 for (int i = 0; i < columNames.size(); i++) {
-                    strReturn = strReturn + "                                <td>" + getMatrixValue("totalPercentageXY", i, j) + "</td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + getMatrixValue("totalPercentageXY", i, j) + "</div></td>\r\n";
                 }
-                strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfTotalRowAccordingGrandTotal", 0, j) + "</td>\r\n";
+                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + getMatrixValue("percentageOfTotalRowAccordingGrandTotal", 0, j) + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             changeColorType();//cambiar de color las filas de blanco a azul
@@ -1034,7 +1037,7 @@ public class IndicatorsPercentageMB {
         //----------------------------------------------------------------------
 
         if (showCount) {
-            strReturn = strReturn + "                            <tr "+ getColorType() + " >\r\n";
+            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             for (int i = 0; i < totalsHorizontal.size(); i++) {
                 strReturn = strReturn + "                                <td>" + getMatrixValue("columnTotal", i, 0) + "</td>\r\n";
             }
@@ -1043,7 +1046,7 @@ public class IndicatorsPercentageMB {
         }
 
         if (showRowPercentage) {
-            strReturn = strReturn + "                            <tr "+ getColorType() + " >\r\n";
+            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             for (int i = 0; i < totalsHorizontal.size(); i++) {
                 strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0) + "</td>\r\n";
             }
@@ -1051,7 +1054,7 @@ public class IndicatorsPercentageMB {
             strReturn = strReturn + "                            </tr>\r\n";
         }
         if (showColumnPercentage) {
-            strReturn = strReturn + "                            <tr "+ getColorType() + " >\r\n";
+            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             for (int i = 0; i < totalsHorizontal.size(); i++) {
                 strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfTotalColumnAccordingTotalColumn", i, 0) + "</td>\r\n";
             }
@@ -1059,7 +1062,7 @@ public class IndicatorsPercentageMB {
             strReturn = strReturn + "                            </tr>\r\n";
         }
         if (showTotalPercentage) {
-            strReturn = strReturn + "                            <tr "+ getColorType() + " >\r\n";
+            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             for (int i = 0; i < totalsHorizontal.size(); i++) {
                 //strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0) + "</td>\r\n";
                 strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0) + "</td>\r\n";
@@ -1393,7 +1396,7 @@ public class IndicatorsPercentageMB {
                     values3.add("SIN DATO");
                 }
             }
-            
+
             //---------------------------------------------------------
             //REALIZO LAS POSIBLES COMBINACIONES
             //---------------------------------------------------------            
@@ -1517,8 +1520,8 @@ public class IndicatorsPercentageMB {
                     sql = sql + "   CASE \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
                         String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
-                        if(splitAge[1].compareTo("n")==0){
-                            splitAge[1]="200";
+                        if (splitAge[1].compareTo("n") == 0) {
+                            splitAge[1] = "200";
                         }
                         sql = sql + "       WHEN (( \n\r";
                         sql = sql + "           CASE \n\r";
@@ -1544,7 +1547,10 @@ public class IndicatorsPercentageMB {
                     sql = sql + "   (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as barrio";
                     break;
                 case communes://COMUNA -----------------------
-                    sql = sql + "   CAST((SELECT suburb_id FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna";
+                    sql = sql + "   CAST((SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna";
+                    break;
+                case quadrants://CUADRANTE -----------------------
+                    sql = sql + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
                     break;
                 case corridors://CORREDOR -----------------------
                     sql = sql + "   CASE (SELECT neighborhood_corridor FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r";
@@ -1555,7 +1561,7 @@ public class IndicatorsPercentageMB {
                     sql = sql + "   END AS corredor";
                     break;
                 case areas://ZONA -----------------------        
-                    sql = sql + "   CASE (SELECT neighborhood_type FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)  \n\r";
+                    sql = sql + "   CASE (SELECT neighborhood_area FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)  \n\r";
                     sql = sql + "       WHEN '1' THEN 'ZONA URBANA'  \n\r";
                     sql = sql + "       WHEN '2' THEN 'ZONA RURAL' \n\r";
                     sql = sql + "   END AS zona";
@@ -1798,6 +1804,7 @@ public class IndicatorsPercentageMB {
     public void loadIndicator60() {
         loadIndicator(60);
     }
+
     public void loadIndicator67() {
         loadIndicator(67);
     }
@@ -1984,7 +1991,6 @@ public class IndicatorsPercentageMB {
 //    public void setShowAll(boolean showAll) {
 //        this.showAll = showAll;
 //    }
-
 //    public OutputPanel getDynamicDataTableGroup() {
 //        return dynamicDataTableGroup;
 //    }
@@ -1992,7 +1998,6 @@ public class IndicatorsPercentageMB {
 //    public void setDynamicDataTableGroup(OutputPanel dynamicDataTableGroup) {
 //        this.dynamicDataTableGroup = dynamicDataTableGroup;
 //    }
-
 //    public boolean isRenderedDynamicDataTable() {
 //        return renderedDynamicDataTable;
 //    }
@@ -2000,7 +2005,6 @@ public class IndicatorsPercentageMB {
 //    public void setRenderedDynamicDataTable(boolean renderedDynamicDataTable) {
 //        this.renderedDynamicDataTable = renderedDynamicDataTable;
 //    }
-
     public String getCurrentValueGraph() {
         return currentValueGraph;
     }

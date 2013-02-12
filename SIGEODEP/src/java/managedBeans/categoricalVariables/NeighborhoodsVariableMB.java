@@ -86,9 +86,9 @@ public class NeighborhoodsVariableMB implements Serializable {
             row = sheet.createRow(i + 1);
             createCell(row, 0, neighborhoodsList.get(i).getNeighborhoodId().toString());//CODIGO
             createCell(row, 1, neighborhoodsList.get(i).getNeighborhoodName());//NOMBRE            
-            if (neighborhoodsList.get(i).getNeighborhoodType() != null) {
-                neighborhoodType = String.valueOf(currentNeighborhood.getNeighborhoodType());// character(1), -- Tipo de barrio.
-                if (neighborhoodsList.get(i).getNeighborhoodType().toString().compareTo("1") == 0) {//ZONA URBANA
+            if (neighborhoodsList.get(i).getNeighborhoodArea() != null) {
+                neighborhoodType = String.valueOf(currentNeighborhood.getNeighborhoodArea());// character(1), -- Tipo de barrio.
+                if (neighborhoodsList.get(i).getNeighborhoodArea().toString().compareTo("1") == 0) {//ZONA URBANA
                     createCell(row, 2, "ZONA URBANA");//NOMBRE            
                 } else {//ZONA RURAL
                     createCell(row, 2, "ZONA RURAL");//NOMBRE            
@@ -115,8 +115,8 @@ public class NeighborhoodsVariableMB implements Serializable {
             } else {
                 neighborhoodId = "";
             }
-            if (currentNeighborhood.getNeighborhoodType() != null) {
-                neighborhoodType = String.valueOf(currentNeighborhood.getNeighborhoodType());// character(1), -- Tipo de barrio.
+            if (currentNeighborhood.getNeighborhoodArea() != null) {
+                neighborhoodType = String.valueOf(currentNeighborhood.getNeighborhoodArea());// character(1), -- Tipo de barrio.
                 if (neighborhoodType.compareTo("1") == 0) {//ZONA URBANA
                     neighborhoodSuburbIdDisabled = false;
                 } else {//ZONA RURAL
@@ -132,8 +132,8 @@ public class NeighborhoodsVariableMB implements Serializable {
             } else {
                 neighborhoodLevel = "";
             }
-            if (currentNeighborhood.getSuburbId() != -1) {
-                neighborhoodSuburbId = String.valueOf(currentNeighborhood.getSuburbId());// character(1), -- Tipo de barrio.
+            if (currentNeighborhood.getNeighborhoodSuburb()!= -1) {
+                neighborhoodSuburbId = String.valueOf(currentNeighborhood.getNeighborhoodSuburb());// character(1), -- Tipo de barrio.
             } else {
                 neighborhoodSuburbId = "";
             }
@@ -162,9 +162,9 @@ public class NeighborhoodsVariableMB implements Serializable {
                 neighborhoodName = neighborhoodName.toUpperCase();
                 currentNeighborhood.setNeighborhoodName(neighborhoodName);
                 //currentNeighborhood.setNeighborhoodId(Integer.parseInt(neighborhoodId));
-                currentNeighborhood.setNeighborhoodType(neighborhoodType.charAt(0));
-                currentNeighborhood.setSuburbId(Integer.parseInt(neighborhoodSuburbId));
-                currentNeighborhood.setNeighborhoodLevel(neighborhoodLevel.charAt(0));
+                currentNeighborhood.setNeighborhoodArea(Short.parseShort(neighborhoodType));
+                currentNeighborhood.setNeighborhoodSuburb(Short.parseShort(neighborhoodSuburbId));
+                currentNeighborhood.setNeighborhoodLevel(Short.parseShort(neighborhoodLevel));
 
                 neighborhoodsFacade.edit(currentNeighborhood);
                 neighborhoodName = "";
@@ -192,9 +192,9 @@ public class NeighborhoodsVariableMB implements Serializable {
                 Neighborhoods newRegistry = new Neighborhoods();
                 newRegistry.setNeighborhoodId(Integer.parseInt(newNeighborhoodId));
                 newRegistry.setNeighborhoodName(newNeighborhoodName);
-                newRegistry.setNeighborhoodType(newNeighborhoodType.charAt(0));
-                newRegistry.setSuburbId(Integer.parseInt(newNeighborhoodSuburbId));
-                newRegistry.setNeighborhoodLevel(newNeighborhoodLevel.charAt(0));
+                newRegistry.setNeighborhoodArea(Short.parseShort(newNeighborhoodType));
+                newRegistry.setNeighborhoodSuburb(Short.parseShort(newNeighborhoodSuburbId));
+                newRegistry.setNeighborhoodLevel(Short.parseShort(newNeighborhoodLevel));
                 neighborhoodsFacade.create(newRegistry);
                 currentNeighborhood = null;
                 selectedRowDataTable = null;
@@ -296,8 +296,8 @@ public class NeighborhoodsVariableMB implements Serializable {
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
             for (int i = 0; i < neighborhoodsList.size(); i++) {
-                if (neighborhoodsList.get(i).getNeighborhoodType() != null) {
-                    if (neighborhoodsList.get(i).getNeighborhoodType() == '1') {
+                if (neighborhoodsList.get(i).getNeighborhoodArea() != null) {
+                    if (neighborhoodsList.get(i).getNeighborhoodArea() == '1') {
                         type = "ZONA URBANA";
                     } else {
                         type = "ZONA RURAL";
@@ -314,7 +314,7 @@ public class NeighborhoodsVariableMB implements Serializable {
         rowDataTableList = new ArrayList<RowDataTable>();
         neighborhoodsList = neighborhoodsFacade.findAll();
         for (int i = 0; i < neighborhoodsList.size(); i++) {
-            if (neighborhoodsList.get(i).getNeighborhoodType() == '1') {
+            if (neighborhoodsList.get(i).getNeighborhoodArea() == '1') {
                 type = "ZONA URBANA";
             } else {
                 type = "ZONA RURAL";
@@ -400,7 +400,7 @@ public class NeighborhoodsVariableMB implements Serializable {
         this.neighborhoodSuburbId = neighborhoodSuburbId;
     }
 
-    public String getNeighborhoodType() {
+    public String getNeighborhoodArea() {
         return neighborhoodType;
     }
 

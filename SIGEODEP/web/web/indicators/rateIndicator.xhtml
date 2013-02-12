@@ -261,7 +261,11 @@
                                                     <!--p:column styleClass="ui-widget-header">
                                                         Ver Vacios
                                                         <h:selectBooleanCheckbox id="IdEmpty" value="# {indicatorsRateMB.showAll}" />
-                                                    </p:column-->                                                    
+                                                    </p:column-->           
+                                                    <p:column styleClass="ui-widget-header">
+                                                        Ver Cálculo
+                                                        <h:selectBooleanCheckbox id="IdTotals" value="#{indicatorsRateMB.showCalculation}" />
+                                                    </p:column>
                                                 </p:row>
                                             </p:panelGrid>
                                         </p:column>

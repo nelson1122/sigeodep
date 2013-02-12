@@ -24,6 +24,7 @@ public enum VariablesEnum {
     monthly,//mensual
     annual,//anual
     temporalDisaggregation,//Desagrega en un periodo de tiempo
+    quadrants,//cuadrante
     injuries_fatal,
     injuries_non_fatal,
     NOVALUE;
