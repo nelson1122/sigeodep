@@ -96,6 +96,7 @@ public class ConnectionJdbcMB implements Serializable {
         } else {
             try {
                 conn = ds.getConnection();
+                
                 if (conn == null) {
                     System.out.println("Error: No se obtubo conexion");
                 } else {
@@ -2616,7 +2617,7 @@ public class ConnectionJdbcMB implements Serializable {
             ResultSet resultSetCategory = consult("SELECT * FROM " + category);
             while (resultSetCategory.next()) {
                 if (resultSetCategory.getString(1).compareTo(value) == 0) {
-                    return resultSetCategory.getString(2);
+                    return resultSetCategory.getString(1);
                 }
             }
         } catch (SQLException ex) {
