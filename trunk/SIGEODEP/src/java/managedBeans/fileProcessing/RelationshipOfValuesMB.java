@@ -662,7 +662,7 @@ public class RelationshipOfValuesMB implements Serializable {
         if (currentRelationVar != null) {
             for (int i = 0; i < valuesDiscardedSelectedInRelationValues.size(); i++) {
                 currentRelationVar.removeDiscartedValue(valuesDiscardedSelectedInRelationValues.get(i));
-                System.out.println("(((((((((((((((Se elimino el valor: "+valuesDiscardedSelectedInRelationValues.get(i));
+                System.out.println("(((((((((((((((Se elimino el valor: " + valuesDiscardedSelectedInRelationValues.get(i));
             }
             loadFoundValues();
             //loadExpectedValues();
@@ -756,7 +756,11 @@ public class RelationshipOfValuesMB implements Serializable {
         RelationVariables currentRelationVar = currentRelationsGroup.findRelationVar(currentVariableExpected, currentVariableFound);
         if (currentRelationVar != null) {
             for (int i = 0; i < valuesFoundSelectedInRelationValues.size(); i++) {
-                currentRelationVar.addRelationValue(currentValueExpected, valuesFoundSelectedInRelationValues.get(i));
+                if (currentValueExpected != null && valuesFoundSelectedInRelationValues.get(i) != null) {
+                    if (currentValueExpected.length() != 0 && valuesFoundSelectedInRelationValues.get(i).length() != 0) {
+                        currentRelationVar.addRelationValue(currentValueExpected, valuesFoundSelectedInRelationValues.get(i));
+                    }
+                }
             }
             loadFoundValues();
             loadExpectedValues();
@@ -821,7 +825,7 @@ public class RelationshipOfValuesMB implements Serializable {
             valuesFound = createListOfDistinctValuesFromFile(currentVariableFound);
             System.out.println("(((((((((((((((Los distintos valores en la columna desde el archivo es: ");
             for (int i = 0; i < valuesFound.size(); i++) {
-                System.out.print(" "+valuesFound.get(i)+" ");
+                System.out.print(" " + valuesFound.get(i) + " ");
             }
             //saco la lista de valores realcionados
             if (currentRelationVar.getRelationValuesList() != null) {
@@ -829,9 +833,9 @@ public class RelationshipOfValuesMB implements Serializable {
                 for (int i = 0; i < currentRelationVar.getRelationValuesList().size(); i++) {
                     for (int j = 0; j < valuesFound.size(); j++) {
                         if (currentRelationVar.getRelationValuesList().get(i).getNameFound().compareTo(valuesFound.get(j)) == 0) {
-                            System.out.println("Se removio "+valuesFound.get(j)+" por estar en relacion de valores");
-                            if(valuesFound.get(j).compareTo("None")==0){
-                            System.out.println("#########################"+currentRelationVar.getRelationValuesList().get(i).getNameFound()+"##################");
+                            System.out.println("Se removio " + valuesFound.get(j) + " por estar en relacion de valores");
+                            if (valuesFound.get(j).compareTo("None") == 0) {
+                                System.out.println("#########################" + currentRelationVar.getRelationValuesList().get(i).getNameFound() + "##################");
                             }
                             valuesFound.remove(j);
                             break;
@@ -843,13 +847,13 @@ public class RelationshipOfValuesMB implements Serializable {
             if (currentRelationVar.getRelationsDiscardedValuesList() != null) {
                 valuesDiscarded = new ArrayList<String>();
                 for (int i = 0; i < currentRelationVar.getRelationsDiscardedValuesList().size(); i++) {
-                    valuesDiscarded.add(currentRelationVar.getRelationsDiscardedValuesList().get(i).getDiscardedValueName());                    
+                    valuesDiscarded.add(currentRelationVar.getRelationsDiscardedValuesList().get(i).getDiscardedValueName());
                 }
                 //elimino los campos que ya esten dentro de la lista de valores descartados
                 for (int i = 0; i < valuesDiscarded.size(); i++) {
                     for (int j = 0; j < valuesFound.size(); j++) {
                         if (valuesDiscarded.get(i).compareTo(valuesFound.get(j)) == 0) {
-                            System.out.println("Se removio "+valuesFound.get(j)+" por estar en lista de valores descartados");
+                            System.out.println("Se removio " + valuesFound.get(j) + " por estar en lista de valores descartados");
                             valuesFound.remove(j);
                             break;
                         }
@@ -874,8 +878,8 @@ public class RelationshipOfValuesMB implements Serializable {
 
 
                     if (foundText.indexOf(filterText) == -1) {
-                        if (!calculateLevenstein(filterText, foundText)) {                            
-                            System.out.println("Se removio "+valuesFound.get(j)+" por estar no superar levenstein");
+                        if (!calculateLevenstein(filterText, foundText)) {
+                            System.out.println("Se removio " + valuesFound.get(j) + " por estar no superar levenstein");
                             valuesFound.remove(j);
                             j--;
                         }
@@ -976,8 +980,6 @@ public class RelationshipOfValuesMB implements Serializable {
         activeButtons();
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Finalizado", "El proceso automático realizó: (" + String.valueOf(numberOfCreate) + ") relaciones de valores"));
     }
-
-    
 
     public void btnRemoveRelationValueClick() {
         //---------------------------------------------------------------------------

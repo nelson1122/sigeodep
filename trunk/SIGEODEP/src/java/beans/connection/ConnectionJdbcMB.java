@@ -18,14 +18,15 @@ import java.util.logging.Logger;
 import javassist.*;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.sql.DataSource;
 import managedBeans.filters.FieldCount;
 import managedBeans.filters.FilterConnection;
 import managedBeans.filters.SqlTable;
 import managedBeans.filters.ValueNewValue;
-import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
 
@@ -39,7 +40,6 @@ public class ConnectionJdbcMB implements Serializable {
 
     @Resource(name = "jdbc/od")
     private DataSource ds;
-    
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     @EJB
@@ -80,32 +80,114 @@ public class ConnectionJdbcMB implements Serializable {
     private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy hh:mm");
     public Connection conn;
     private String tableName = "temp";//nombre de la tabla temp para carga masiva
-    Statement st;
-    ResultSet rs;
-    String msj;
+    private Statement st;
+    private ResultSet rs;
+    private String msj;
+    private String user;
+    private String db;
+    private String password;
+    private String server;
+    private String url = "";
+    private boolean connectionIsConfigured = true;
+    private boolean connectionNotConfigured = false;
 
     /**
      * Creates a new instance of ConnectionJdbcMB
      */
     public ConnectionJdbcMB() {
+//        if (connectToDb()) {
+//            connectionIsConfigured = true;
+//            connectionNotConfigured = false;
+//        } else {
+//            connectionIsConfigured = false;
+//            connectionNotConfigured = true;
+//        }
     }
 
-    public void connectToDb() {
-        if (ds == null) {
-            System.out.println("ERROR: No se obtubo data source");
-        } else {
-            try {
+    public String checkConnection() {
+        String returnValue = "";
+        try {
+            if (ds == null) {
+                System.out.println("ERROR: No se obtubo data source");
+            } else {
                 conn = ds.getConnection();
-                
                 if (conn == null) {
                     System.out.println("Error: No se obtubo conexion");
                 } else {
-                    System.out.println("Conexion por JDBC a base de datos SIGEODEP ... OK");
+                    url = "jdbc:postgresql://" + server + "/" + db;
+                    try {
+                        Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
+                    } catch (Exception e) {
+                        System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
+                        msj = "ERROR: " + e.getMessage();
+                    }
+                    conn.close();
+                    conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
+                    if (conn != null) {
+                        System.out.println("Conexion a base de datos " + url + " ... OK");
+                        //returnValue = "index";//regrece a index mediante reglas de navegacion
+                        non_query("delete from configurations");
+                        insert(
+                                "configurations",
+                                "user_db,password_db,name_db,server_db",
+                                "'" + user + "','" + password + "','" + db + "','" + server + "'");
+                        return "index";
+                    } else {
+                        System.out.println("2. No se pudo conectar a base de datos " + url + " ... FAIL");
+                    }
                 }
-            } catch (SQLException ex) {
-                Logger.getLogger(LoginMB.class.getName()).log(Level.SEVERE, null, ex);
             }
+
+        } catch (Exception e) {
+            System.out.println("Error2: " + e.toString() + " --- Clase: " + this.getClass().getName());
         }
+        FacesMessage msg2 = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "La conexion no pudo ser creada con los datos suministrados");
+        FacesContext.getCurrentInstance().addMessage(null, msg2);
+
+        return returnValue;
+    }
+
+    public final boolean connectToDb() {
+        boolean returnValue = false;
+        try {
+            if (ds == null) {
+                System.out.println("ERROR: No se obtubo data source");
+            } else {
+                conn = ds.getConnection();
+
+                if (conn == null) {
+                    System.out.println("Error: No se obtubo conexion");
+                } else {
+                    ResultSet rs1 = consult("Select * from configurations");
+                    if (rs1.next()) {
+                        user = rs1.getString("user_db");
+                        db = rs1.getString("name_db");
+                        password = rs1.getString("password_db");
+                        server = rs1.getString("server_db");
+                        url = "jdbc:postgresql://" + server + "/" + db;
+                        try {
+                            Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
+                        } catch (Exception e) {
+                            System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
+                            msj = "ERROR: " + e.getMessage();
+                        }
+                        conn.close();
+                        conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
+                        if (conn != null) {
+                            System.out.println("Conexion a base de datos " + url + " ... OK");
+                            returnValue = true;
+                        } else {
+                            System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
+                        }
+                    } else {
+                        System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error2: " + e.toString() + " --- Clase: " + this.getClass().getName());
+        }
+        return returnValue;
     }
 
     public Connection getConn() {
@@ -136,7 +218,7 @@ public class ConnectionJdbcMB implements Serializable {
     }
 
     public int non_query(String query) {
-        msj = "";        
+        msj = "";
         int reg;
         reg = 0;
         try {
@@ -182,7 +264,7 @@ public class ConnectionJdbcMB implements Serializable {
 
     public void remove(String Tabla, String condicion) {
         msj = "";
-        
+
         int reg;
         try {
             if (conn != null) {
@@ -202,7 +284,7 @@ public class ConnectionJdbcMB implements Serializable {
     }
 
     public void update(String Tabla, String campos, String donde) {
-        msj = "";        
+        msj = "";
         int reg;
         try {
             if (conn != null) {
@@ -3421,5 +3503,52 @@ public class ConnectionJdbcMB implements Serializable {
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
-}
 
+    public boolean isConnectionIsConfigured() {
+        return connectionIsConfigured;
+    }
+
+    public void setConnectionIsConfigured(boolean connectionIsConfigured) {
+        this.connectionIsConfigured = connectionIsConfigured;
+    }
+
+    public boolean isConnectionNotConfigured() {
+        return connectionNotConfigured;
+    }
+
+    public void setConnectionNotConfigured(boolean connectionNotConfigured) {
+        this.connectionNotConfigured = connectionNotConfigured;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getDb() {
+        return db;
+    }
+
+    public void setDb(String db) {
+        this.db = db;
+    }
+
+    public String getServer() {
+        return server;
+    }
+
+    public void setServer(String server) {
+        this.server = server;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}

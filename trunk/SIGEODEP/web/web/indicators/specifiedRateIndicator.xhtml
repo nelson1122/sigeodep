@@ -244,10 +244,10 @@
                                                                 render="IdImageChart"/>
                                                         </p:commandButton>
                                                     </p:column>
-                                                    <!-- p:column styleClass="ui-widget-header">
-                                                        Ver Vacios
-                                                        <h:selectBooleanCheckbox id="IdEmpty" value="# {indicatorsSpecifiedRateMB.showAll}" />
-                                                    </p:column -->                                                    
+                                                    <p:column styleClass="ui-widget-header">
+                                                        Ver Cálculo
+                                                        <h:selectBooleanCheckbox id="IdTotals" value="#{indicatorsSpecifiedRateMB.showCalculation}" />
+                                                    </p:column>
                                                 </p:row>
                                             </p:panelGrid>
                                         </p:column>

@@ -29,17 +29,15 @@
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
     </servlet-mapping>
+    <error-page>
+        <exception-type>javax.faces.application.ViewExpiredException</exception-type>
+        <location>/index.html</location>
+    </error-page>
     <session-config>
-        <session-timeout>60</session-timeout>
+        <session-timeout>20</session-timeout>
     </session-config>
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
-    <resource-ref>
-        <description>jdbc:postgresql://localhost:5432/od</description>
-        <res-ref-name>conexionJDBC1</res-ref-name>
-        <res-type>javax.sql.DataSource</res-type>
-        <res-auth>Container</res-auth>
-        <res-sharing-scope>Shareable</res-sharing-scope>
-    </resource-ref>
+    
 </web-app>
