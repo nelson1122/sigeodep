@@ -37,38 +37,56 @@
              margin-top: -190px;
              background-image:url(resources/img/entrada.png);">
             <h:form id="IdForm3">
-                <!--p:idleMonitor 
+                <p:idleMonitor 
                     timeout="600000"
                     onidle="document.getElementById('IdForm3:btnLogout').click();"/>
                 <p:commandButton 
                     id="btnLogout"
                     value="A"  
                     style="display: none;"                            
-                    actionListener="# {loginMB.logout}"/-->
+                    actionListener="#{loginMB.logout}"/>
                 <p:growl id="message"  showDetail="true" sticky="true" />
                 <h:graphicImage id="IdImgCarga" value="resources/img/ajaxloading.gif"  style="display: none" />
-
+                
                 <p:panelGrid style="margin-top: 160px; margin-left: 210px; "> 
                     <p:row>  
-                        <p:column styleClass="ui-widget-header" ><h:outputText value="USUARIO: " /></p:column>
-                        <p:column ><h:inputText id="loginname" value="#{loginMB.loginname}" />
-                        </p:column>
+                        <p:column styleClass="ui-widget-header" colspan="2">
+                            <h:outputText value="CONFIGURAR CONEXION " />
+                        </p:column>                        
+                    </p:row>  
+                    <p:row>  
+                        <p:column colspan="2">
+                            Se debe configurar una conexion para poder acceder a la apliacación
+                        </p:column>                        
                     </p:row>  
                     <p:row>
-                        <p:column styleClass="ui-widget-header" ><h:outputText value="CLAVE: " /></p:column>
-                        <p:column ><h:inputSecret id="password" value="#{loginMB.password}" /></p:column>
+                        <p:column styleClass="ui-widget-header" ><h:outputText value="Usuario: " /></p:column>
+                        <p:column ><h:inputText value="#{connectionJdbcMB.user}" /></p:column>
+                    </p:row>  
+                    <p:row>
+                        <p:column styleClass="ui-widget-header" ><h:outputText value="Base de Datos: " /></p:column>
+                        <p:column ><h:inputText value="#{connectionJdbcMB.db}" /></p:column>
+                    </p:row>  
+                    <p:row>
+                        <p:column styleClass="ui-widget-header" ><h:outputText value="Contraseña: " /></p:column>
+                        <p:column ><h:inputSecret value="#{connectionJdbcMB.password}" /></p:column>
+                    </p:row>  
+                    <p:row>
+                        <p:column styleClass="ui-widget-header" ><h:outputText value="Servidor: " /></p:column>
+                        <p:column ><h:inputText value="#{connectionJdbcMB.server}" /></p:column>
                     </p:row>  
                     <p:row>
                         <p:column colspan="2" style="text-align: center;" >
                             <p:commandButton 
                                 value="INGRESAR" 												
-                                action="#{loginMB.CheckValidUser}" 
+                                action="#{connectionJdbcMB.checkConnection}" 
                                 onclick="show();"
                                 oncomplete="hide();"
                                 update="message" />
                         </p:column>
                     </p:row>  
                 </p:panelGrid>
+                
             </h:form>  
         </div>
     </h:body>

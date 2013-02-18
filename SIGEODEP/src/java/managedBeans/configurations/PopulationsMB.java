@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -26,6 +27,8 @@ import javax.faces.context.FacesContext;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import model.dao.AreasFacade;
+import model.dao.GendersFacade;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -59,8 +62,10 @@ public class PopulationsMB implements Serializable {
     private RowDataTable selectedRowDataTable;
     //private int currentSearchCriteria = 0;
     //private String currentSearchValue = "";
-    //@EJB
-    //AccidentClassesFacade accidentClassesFacade;
+    @EJB
+    GendersFacade gendersFacade;
+    @EJB
+    AreasFacade areasFacade;
     //private List<AccidentClasses> accidentClassesList;
     //private AccidentClasses accidentClass;
     //private String name = "";//Nombre del barrio.
@@ -229,16 +234,16 @@ public class PopulationsMB implements Serializable {
             } catch (OpenXML4JException e) {
                 System.out.println(e.toString());
             }
-            //imprimo vectores
-            for (int i = 0; i < capitalMunicipality.size(); i++) {
-                System.out.println("CABECERA: POSICION" + String.valueOf(i) + " :" + capitalMunicipality.get(i));
-            }
-            for (int i = 0; i < dispersedRural.size(); i++) {
-                System.out.println("RURAL DIS: POSICION" + String.valueOf(i) + " :" + dispersedRural.get(i));
-            }
-            for (int i = 0; i < townCenter.size(); i++) {
-                System.out.println("CENTRO PO: POSICION" + String.valueOf(i) + " :" + townCenter.get(i));
-            }
+//            //imprimo vectores
+//            for (int i = 0; i < capitalMunicipality.size(); i++) {
+//                System.out.println("CABECERA: POSICION" + String.valueOf(i) + " :" + capitalMunicipality.get(i));
+//            }
+//            for (int i = 0; i < dispersedRural.size(); i++) {
+//                System.out.println("RURAL DIS: POSICION" + String.valueOf(i) + " :" + dispersedRural.get(i));
+//            }
+//            for (int i = 0; i < townCenter.size(); i++) {
+//                System.out.println("CENTRO PO: POSICION" + String.valueOf(i) + " :" + townCenter.get(i));
+//            }
 
 
             //uno los vectores centro poblado y rural disperso en centro poblado
@@ -271,61 +276,84 @@ public class PopulationsMB implements Serializable {
                     townCenter.set(i, String.valueOf(a1 + a2) + "," + String.valueOf(b1 + b2));
                 }
             }
-            for (int i = 0; i < townCenter.size(); i++) {
-                System.out.println("FINAL: POSICION" + String.valueOf(i) + " :" + townCenter.get(i));
-            }
-
-
-
+//            for (int i = 0; i < townCenter.size(); i++) {
+//                System.out.println("FINAL: POSICION" + String.valueOf(i) + " :" + townCenter.get(i));
+//            }
             StringBuilder sb = new StringBuilder();
             CopyManager cpManager;
-            try {               
-                connectionJdbcMB.non_query("delete from populations");                
-                cpManager =new CopyManager((BaseConnection) connectionJdbcMB.getConn()); 
-                //cpManager = connectionJdbcMB.getConn().get.getCopyAPI(); 
+            boolean insertedData = false;
+            boolean populationsTableClear = false;
+            try {
+                cpManager = new CopyManager((BaseConnection) connectionJdbcMB.getConn());
                 int batchSize = 200;//numero de insert por copy realizado
                 PushbackReader reader = new PushbackReader(new StringReader(""), 10000);
+                //REGISTRO DE POBLACIONES ZONA URBANA---------------------------
                 for (int i = 0; i < capitalMunicipality.size(); i++) {
                     if (capitalMunicipality.get(i).length() != 0) {
                         //id           genero,area         
                         sb.append(i).append(",1,1,").append(capitalMunicipality.get(i).split(",")[0]).append("\n");
                         sb.append(i).append(",2,1,").append(capitalMunicipality.get(i).split(",")[1]).append("\n");
+                        insertedData = true;
                     }
                     if (i % batchSize == 0) {
+                        if (!populationsTableClear) {//no se eliminado los datos de populations
+                            connectionJdbcMB.non_query("delete from populations");
+                            populationsTableClear = true;
+                        }
                         reader.unread(sb.toString().toCharArray());
                         cpManager.copyIn("COPY populations FROM STDIN WITH CSV", reader);
+                        //System.out.println("####### \n\r " + sb);
                         sb.delete(0, sb.length());
                     }
                 }
+                if (!populationsTableClear && insertedData) {//no se eliminado los datos de populations y hay que registrar datos
+                    connectionJdbcMB.non_query("delete from populations");
+                    populationsTableClear = true;
+                }
                 reader.unread(sb.toString().toCharArray());
-                cpManager.copyIn("COPY measurement FROM STDIN WITH CSV", reader);
+                cpManager.copyIn("COPY populations FROM STDIN WITH CSV", reader);
+                //System.out.println("####### \n\r " + sb);
+                sb.delete(0, sb.length());
+                //REGISTRO DE POBLACIONES ZONA RURAL---------------------------
+                for (int i = 0; i < townCenter.size(); i++) {
+                    if (townCenter.get(i).length() != 0) {
+                        //id           genero,area         
+                        sb.append(i).append(",1,2,").append(townCenter.get(i).split(",")[0]).append("\n");
+                        sb.append(i).append(",2,2,").append(townCenter.get(i).split(",")[1]).append("\n");
+                        insertedData = true;
+                    }
+                    if (i % batchSize == 0) {
+                        if (!populationsTableClear) {//no se eliminado los datos de populations
+                            connectionJdbcMB.non_query("delete from populations");
+                            populationsTableClear = true;
+                        }
+                        reader.unread(sb.toString().toCharArray());
+                        cpManager.copyIn("COPY populations FROM STDIN WITH CSV", reader);
+                        //System.out.println("####### \n\r " + sb);
+                        sb.delete(0, sb.length());
+                    }
+                }
+                if (!populationsTableClear && insertedData) {//no se eliminado los datos de populations y hay que registrar datos
+                    connectionJdbcMB.non_query("delete from populations");
+                }
+                reader.unread(sb.toString().toCharArray());
+                cpManager.copyIn("COPY populations FROM STDIN WITH CSV", reader);
+                //System.out.println("####### \n\r " + sb);
+
             } catch (SQLException ex) {
                 System.out.println("Error: populationsMB_2 > " + ex.toString());
             }
-            FacesMessage msg = new FacesMessage("Archivo procesado", "Las poblaciones han sido cargadas");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
+            FacesMessage msg;
+            if (insertedData) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Archivo procesado", "Las poblaciones han sido cargadas"));
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Archivo procesado", "No se obtuvo ninguna informacion sobre poblaciones de este archivo, o no tiene el formato necesario"));
+            }
         } catch (IOException ex) {
             System.out.println("Error: populationsMB_1 > " + ex.toString());
         }
     }
 
-//    public void copyFile(String fileName, InputStream in) {
-//        try {
-//            OutputStream out = new FileOutputStream(new File(fileName));
-//            int read = 0;
-//            byte[] bytes = new byte[1024];
-//
-//            while ((read = in.read(bytes)) != -1) {
-//                out.write(bytes, 0, read);
-//            }
-//            in.close();
-//            out.flush();
-//            out.close();
-//            System.out.println("El nuevo fichero fue creado con éxito!");
-//        } catch (IOException e) {
-//            System.out.println(e.getMessage());
-//        }
-//    }
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
@@ -361,11 +389,14 @@ public class PopulationsMB implements Serializable {
         try {
             ResultSet rs = connectionJdbcMB.consult("Select * from populations order by 3,2,1");
             rowDataTableList = new ArrayList<RowDataTable>();
+            String gender;
             while (rs.next()) {
+
+
                 rowDataTableList.add(new RowDataTable(
                         rs.getString(1),
-                        rs.getString(2),
-                        rs.getString(3),
+                        gendersFacade.find(Short.parseShort(rs.getString(2))).getGenderName(),
+                        areasFacade.find(Short.parseShort(rs.getString(3))).getAreaName(),
                         rs.getString(4)));
             }
         } catch (Exception e) {

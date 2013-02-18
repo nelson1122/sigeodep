@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -81,6 +83,7 @@ public class IndicatorsSpecifiedRateMB {
     private String endDateStr;
     private String pivotTableName;
     private String prepivotTableName;
+    private int multiplierK = 0;
     private List<String> variablesGraph = new ArrayList<String>();
     private List<String> valuesGraph = new ArrayList<String>();
     private List<String> variablesList = new ArrayList<String>();//lista de nombres de variables disponibles que sepueden cruzar(se visualizan en pagina)
@@ -95,18 +98,18 @@ public class IndicatorsSpecifiedRateMB {
     private ArrayList<String> valuesCategoryList;//lista de valores para una categoria
     private ArrayList<String> columNames;//NOMBRES DE LAS COLUMNAS, (SI EL CRUCE ES DE TRES VARIABLES ESTA SEPARADO POR EL CARACTER: }  )
     private ArrayList<String> rowNames;//NOMBRES DE LAS FILAS    
-    private ArrayList<String> totalsHorizontal = new ArrayList<String>();
-    private ArrayList<String> totalsVertical = new ArrayList<String>();
+    //private ArrayList<String> totalsHorizontal = new ArrayList<String>();
+    //private ArrayList<String> totalsVertical = new ArrayList<String>();
     private Variable currentVariableConfiguring;
     private int numberCross = 2;//maximo numero de variables a cruzar
-    private int grandTotal = 0;//total general de la matriz
+    DecimalFormat formateador = new DecimalFormat("0.00");
     private int currentYear = 0;
     private boolean btnAddVariableDisabled = true;
     private boolean btnAddCategoricalValueDisabled = true;
     private boolean btnRemoveCategoricalValueDisabled = true;
     private boolean btnRemoveVariableDisabled = true;
     private boolean renderedDynamicDataTable = true;
-    //private boolean showAll = false;//mostrar filas y columnas vacias
+    private boolean showCalculation = false;//mostrar la resta
     private boolean colorType = true;
 
     public IndicatorsSpecifiedRateMB() {
@@ -251,6 +254,7 @@ public class IndicatorsSpecifiedRateMB {
             endDateStr = formato.format(endDate);
             createPrepivotTable();//creo la tabla prepivot
             createPivotTable();//creo la tabla pivot
+            createColumnPopulation();//creo la tabla pivot
             createMatrixResult();//matriz de resultados
         }
         //----------------------------------------------------------------------
@@ -730,9 +734,9 @@ public class IndicatorsSpecifiedRateMB {
                 strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + columNames.get(i) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-            strReturn = strReturn + "                                <td>\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
-            strReturn = strReturn + "                                </td>\r\n";
+//            strReturn = strReturn + "                                <td>\r\n";
+//            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
+//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         if (variablesCrossData.size() == 3) {
@@ -761,9 +765,9 @@ public class IndicatorsSpecifiedRateMB {
                 strReturn = strReturn + "                                    <div >" + headers1.get(i).getLabel() + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-            strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div >-</div>\r\n";
-            strReturn = strReturn + "                                </td>\r\n";
+//            strReturn = strReturn + "                                <td >\r\n";
+//            strReturn = strReturn + "                                    <div >-</div>\r\n";
+//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
 
             strReturn = strReturn + "                            <tr>\r\n";
@@ -773,9 +777,9 @@ public class IndicatorsSpecifiedRateMB {
                 strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + headers2[i] + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-            strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
-            strReturn = strReturn + "                                </td>\r\n";
+//            strReturn = strReturn + "                                <td >\r\n";
+//            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
+//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -792,7 +796,7 @@ public class IndicatorsSpecifiedRateMB {
         strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden;height:280px\">\r\n";//tamaño del div izquierdo
         strReturn = strReturn + "                        <table width=\"200px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
 
-        rowNames.add("Totales");
+        //rowNames.add("Totales");
         for (int j = 0; j < rowNames.size(); j++) {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
@@ -816,7 +820,9 @@ public class IndicatorsSpecifiedRateMB {
         strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
         //----------------------------------------------------------------------
         //AGREGO LOS REGISTROS DE LA MATRIZ        
-        for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
+        //for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
+        for (int j = 0; j < rowNames.size(); j++) {
+        
             if (j == 0) {
                 strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
             } else {
@@ -824,23 +830,33 @@ public class IndicatorsSpecifiedRateMB {
             }
             for (int i = 0; i < columNames.size(); i++) {
                 //strReturn = strReturn + "                                <td>" + matrixResult[i][j] + "</td>\r\n";
+//                strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
+//                strReturn = strReturn + "                                <div style=\"width:150px;\">" + matrixResult[i][j] + "</div>\r\n";
+//                strReturn = strReturn + "                                </td> \r\n";
+                String value;
+                if (showCalculation) {
+                    value = matrixResult[i][j];
+                } else {
+                    String[] splitColumn = matrixResult[i][j].split("<br/>");
+                    value = splitColumn[0];
+                }
                 strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
-                strReturn = strReturn + "                                <div style=\"width:150px;\">" + matrixResult[i][j] + "</div>\r\n";
+                strReturn = strReturn + "                                <div style=\"width:150px;\">" + value + "</div>\r\n";
                 strReturn = strReturn + "                                </td> \r\n";
             }
-            strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + totalsVertical.get(j) + "</div></td>\r\n";
+            //strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + totalsVertical.get(j) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
             changeColorType();//cambiar de color las filas de blanco a azul
         }
         //----------------------------------------------------------------------
         //AGREGO LA ULTIMA FILA CORRESPONDIENTE A LOS TOTALES
         //----------------------------------------------------------------------
-        strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-        for (int i = 0; i < totalsHorizontal.size(); i++) {
-            strReturn = strReturn + "                                <td>" + totalsHorizontal.get(i) + "</td>\r\n";
-        }
-        strReturn = strReturn + "                                <td>" + String.valueOf(grandTotal) + "</td>\r\n";
-        strReturn = strReturn + "                            </tr>\r\n";
+//        strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+//        for (int i = 0; i < totalsHorizontal.size(); i++) {
+//            strReturn = strReturn + "                                <td>" + totalsHorizontal.get(i) + "</td>\r\n";
+//        }
+//        strReturn = strReturn + "                                <td>" + String.valueOf(grandTotal) + "</td>\r\n";
+//        strReturn = strReturn + "                            </tr>\r\n";
         //-------------------------------------------------------------------
         //FINALIZA
         //-------------------------------------------------------------------        
@@ -1010,27 +1026,52 @@ public class IndicatorsSpecifiedRateMB {
                     matrixResult[i][j] = "0";
                 }
             }
+            
+            rs = connectionJdbcMB.consult("SELECT MAX(population) FROM " + pivotTableName);
+            rs.next();
+            multiplierK = rs.getString("max").length();
+            multiplierK = multiplierK - 1;
+            double m = Math.pow(10, multiplierK);
+            multiplierK = (int) m;
 
             rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
             while (rs.next()) {
                 boolean find = false;
+                String value;
                 for (int i = 0; i < columNames.size(); i++) {
                     for (int j = 0; j < rowNames.size(); j++) {
                         if (variablesCrossData.size() == 1) {//ES UNA VARIABLE                            
                             if (rs.getString(1).compareTo(columNames.get(i)) == 0) {
-                                matrixResult[i][j] = rs.getString("count");
+                                //matrixResult[i][j] = rs.getString("count");
+                                value = formateador.format(Double.parseDouble("0"));
+                                if (rs.getString("count").compareTo("0") != 0) {
+                                    value = formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("population"))) * m);
+                                }
+                                matrixResult[i][j] = "<b>" + value + "</b><br/>(" + rs.getString("count") + "/" + rs.getString("population") + ")";
                                 find = true;
                             }
                         }
                         if (variablesCrossData.size() == 2) {//SON DOS VARIABLES                            
                             if (rs.getString(1).compareTo(columNames.get(i)) == 0 && rs.getString(2).compareTo(rowNames.get(j)) == 0) {
-                                matrixResult[i][j] = rs.getString("count");
+//                                matrixResult[i][j] = rs.getString("count");
+//                                find = true;
+                                value = formateador.format(Double.parseDouble("0"));
+                                if (rs.getString("count").compareTo("0") != 0) {
+                                    value = formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("population"))) * m);
+                                }
+                                matrixResult[i][j] = "<b>" + value + "</b><br/>(" + rs.getString("count") + "/" + rs.getString("population") + ")";
                                 find = true;
                             }
                         }
                         if (variablesCrossData.size() == 3) {//SON TRES VARIABLES                            
                             if (columNames.get(i).compareTo(rs.getString(1) + "}" + rs.getString(2)) == 0 && rs.getString(3).compareTo(rowNames.get(j)) == 0) {
-                                matrixResult[i][j] = rs.getString("count");
+//                                matrixResult[i][j] = rs.getString("count");
+//                                find = true;
+                                value = formateador.format(Double.parseDouble("0"));
+                                if (rs.getString("count").compareTo("0") != 0) {
+                                    value = formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("population"))) * m);
+                                }
+                                matrixResult[i][j] = "<b>" + value + "</b><br/>(" + rs.getString("count") + "/" + rs.getString("population") + ")";
                                 find = true;
                             }
                         }
@@ -1047,30 +1088,97 @@ public class IndicatorsSpecifiedRateMB {
             //---------------------------------------------------------            
             //DETERMINO LOS VECTORES TOTALES DE FILAS Y TOTALES DE COLUMNAS
             //---------------------------------------------------------            
-            //System.out.println("INICIA DETERMINO LOS VECTORES TOTALES DE FILAS Y TOTALES DE COLUMNAS xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-            totalsHorizontal = new ArrayList<String>();
-            totalsVertical = new ArrayList<String>();
-            for (int i = 0; i < columNames.size(); i++) {
-                totalsHorizontal.add("0");
-            }
-            int total;
-            for (int j = 0; j < rowNames.size(); j++) {
-                //AGREGO LOS DATOS DE LA FILA
-                total = 0;
-                for (int i = 0; i < columNames.size(); i++) {
-                    totalsHorizontal.set(i, String.valueOf(Integer.parseInt(totalsHorizontal.get(i)) + Integer.parseInt(matrixResult[i][j])));
-                    total = total + Integer.parseInt(matrixResult[i][j]);
-                }
-                totalsVertical.add(String.valueOf(total));
-            }
-            //determino general total
-            grandTotal = 0;
-            for (int i = 0; i < totalsVertical.size(); i++) {
-                grandTotal = grandTotal + Integer.parseInt(totalsVertical.get(i));
-            }
+//            //System.out.println("INICIA DETERMINO LOS VECTORES TOTALES DE FILAS Y TOTALES DE COLUMNAS xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+//            totalsHorizontal = new ArrayList<String>();
+//            totalsVertical = new ArrayList<String>();
+//            for (int i = 0; i < columNames.size(); i++) {
+//                totalsHorizontal.add("0");
+//            }
+//            int total;
+//            for (int j = 0; j < rowNames.size(); j++) {
+//                //AGREGO LOS DATOS DE LA FILA
+//                total = 0;
+//                for (int i = 0; i < columNames.size(); i++) {
+//                    totalsHorizontal.set(i, String.valueOf(Integer.parseInt(totalsHorizontal.get(i)) + Integer.parseInt(matrixResult[i][j])));
+//                    total = total + Integer.parseInt(matrixResult[i][j]);
+//                }
+//                totalsVertical.add(String.valueOf(total));
+//            }
+//            //determino general total
+//            grandTotal = 0;
+//            for (int i = 0; i < totalsVertical.size(); i++) {
+//                grandTotal = grandTotal + Integer.parseInt(totalsVertical.get(i));
+//            }
 //            System.out.println("FINALIZA IMPRIMIR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         } catch (Exception e) {
             System.out.println("Error: " + e.toString());
+        }
+    }
+
+    public void createColumnPopulation() {
+        String sql = "";
+        try {
+            //---------------------------------------------------------------
+            //agrego columna poblaciones
+            connectionJdbcMB.non_query("ALTER TABLE " + pivotTableName + " ADD COLUMN population integer;");
+            String totalPopulation;
+            ResultSet rs2;
+            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
+            while (rs.next()) {
+                //---------------------------------------------------------------
+                //determino instruccion para determinar total de poblacion para una fila de la tabla pivot
+                sql = "Select SUM(population) from populations where ";
+                for (int i = 0; i < rs.getMetaData().getColumnCount(); i++) {
+                    if (rs.getMetaData().getColumnName(i + 1).compareTo("genero") == 0) {
+                        if (rs.getString("genero").compareTo("MASCULINO") == 0) {
+                            sql = sql + " gender_id = 1 AND ";
+                        } else {
+                            sql = sql + " gender_id = 2 AND ";//femenino
+                        }
+                    }
+                    if (rs.getMetaData().getColumnName(i + 1).compareTo("zona") == 0) {
+                        if (rs.getString("zona").compareTo("ZONA URBANA") == 0) {
+                            sql = sql + " area_id = 1 AND ";
+                        } else {
+                            sql = sql + " area_id = 2 AND ";//zona rural
+                        }
+                    }
+                    if (rs.getMetaData().getColumnName(i + 1).compareTo("edad") == 0) {
+                        String aux;
+                        aux = rs.getString("edad").replace("n", "300");
+                        String[] splitAge = aux.split("/");
+                        if (splitAge.length == 2) {
+                            sql = sql + " age >= " + splitAge[0] + " AND  age <= " + splitAge[1] + " AND ";
+                        }else{
+                            sql = sql + " age = -1 AND ";//es "SIN DATO"
+                        }
+                    }
+                }
+                sql = sql.substring(0, sql.length() - 4);//eliminar ultimo AND
+                rs2 = connectionJdbcMB.consult(sql);
+                rs2.next();
+                totalPopulation = rs2.getString(1);
+                //---------------------------------------------------------------
+                //actualizamos el total de poblacion en tabla pivot
+                sql = "UPDATE " + pivotTableName + " set population = " + totalPopulation + " where ";
+                for (int i = 0; i < rs.getMetaData().getColumnCount(); i++) {
+                    if (rs.getMetaData().getColumnName(i + 1).compareTo("genero") == 0) {
+                        sql = sql + " genero = '" + rs.getString("genero") + "' AND ";
+                    }
+                    if (rs.getMetaData().getColumnName(i + 1).compareTo("zona") == 0) {
+                        sql = sql + " zona = '" + rs.getString("zona") + "' AND ";
+                    }
+                    if (rs.getMetaData().getColumnName(i + 1).compareTo("edad") == 0) {
+                        sql = sql + " edad like '" + rs.getString("edad") + "' AND ";
+                    }
+                }
+                sql = sql.substring(0, sql.length() - 4);//eliminar ultimo AND
+                connectionJdbcMB.non_query(sql);
+                //colocar en cero las casillas vacias
+                connectionJdbcMB.non_query("UPDATE " + pivotTableName + " set population = 0 where population is null");
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error: " + ex.toString() + "\n " + sql);
         }
     }
 
@@ -1784,4 +1892,14 @@ public class IndicatorsSpecifiedRateMB {
     public void setVariablesGraph(List<String> variablesGraph) {
         this.variablesGraph = variablesGraph;
     }
+
+    public boolean isShowCalculation() {
+        return showCalculation;
+    }
+
+    public void setShowCalculation(boolean showCalculation) {
+        this.showCalculation = showCalculation;
+    }
+    
+    
 }

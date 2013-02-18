@@ -586,7 +586,7 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case NOVALUE:
                                     value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
-                                    System.out.println("Validando Categoria: " + resultSetFileData.getString(relationVar.getNameFound()) + "   Resultado: " + value);
+                                    //System.out.println("Validando Categoria: " + resultSetFileData.getString(relationVar.getNameFound()) + "   Resultado: " + value);
                                     if (relationVar.getNameExpected().compareTo("intencionalidad") == 0) {
                                         intencionality = resultSetFileData.getString(relationVar.getNameFound());
                                     }

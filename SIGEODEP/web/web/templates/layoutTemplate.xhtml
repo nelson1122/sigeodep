@@ -28,15 +28,20 @@
         </h:head>
         <!-- h:body onload="setInterval('contador()',2000);" -->
         <h:body>
-
+            <p:panelGrid rendered="#{!loginMB.autenticado}" style="margin-top: 160px; margin-left: 210px; ">
+                <p:row>
+                    <p:column>
+                        <a href="./index.html">No se ha iniciado sesion</a>
+                    </p:column>
+                </p:row>
+            </p:panelGrid>
             <p:layout fullPage="true" rendered="#{loginMB.autenticado}" >  
                 <!-- ****************************** MENU LATERAL (PARTE IZQUIERDA) ************************ -->
                 <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
                     <h:form id="IdForm0">                        
-                        <p:idleMonitor timeout="3600000">
-                        
-                            <p:ajax event="active" listener="#{loginMB.logout1}"/>
-                        </p:idleMonitor>
+                        <!--p:idleMonitor timeout="3600000">                        
+                            <p:ajax event="active" listener="# {loginMB.logout1}"/>
+                        </p:idleMonitor-->
                         <br/><br/>
                         <p:graphicImage value="../../resources/img/logo2.png"/>
                         <br/><br/>

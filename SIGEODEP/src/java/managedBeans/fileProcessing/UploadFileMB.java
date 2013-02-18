@@ -558,7 +558,7 @@ public class UploadFileMB implements Serializable {
         }
         //SI HAY NOMBRES REPETIDOS SE LES COLOCA _1 _2 _3.....                
         int count;
-        String currentName = "";
+        String currentName;
         for (int i = 0; i < rowFile.size(); i++) {
             currentName = rowFile.get(i);
             count = 1;
@@ -585,9 +585,25 @@ public class UploadFileMB implements Serializable {
         for (int i = 0; i < rowFile.size(); i++) {//si la cadena inicia con un numero, le antepongo una raya baja
             if (rowFile.get(i).compareTo("id") == 0) {
                 rowFile.set(i, rowFile.get(i) + "_" + String.valueOf(i));
+                for (int j = 0; j < rowFile.size(); j++) {
+                }
             }
         }
 
+        //vuelvo a verificar que no haya nombres repetidos        
+        for (int i = 0; i < rowFile.size(); i++) {
+            currentName = rowFile.get(i);
+            count = 1;
+            for (int j = i + 1; j < rowFile.size(); j++) {
+                if (currentName.compareTo(rowFile.get(j)) == 0) {
+                    count++;
+                    rowFile.set(j, rowFile.get(j) + "_" + String.valueOf(count));
+                }
+            }
+            if (count != 1) {//hubo repetidos
+                rowFile.set(i, rowFile.get(i) + "_1");
+            }
+        }
 
         variablesFound = rowFile;
         return rowFile;
@@ -629,14 +645,14 @@ public class UploadFileMB implements Serializable {
     public void handleFileUpload(FileUploadEvent event) {
         try {
             file = event.getFile();
-            copyFile(event.getFile().getFileName(), event.getFile().getInputstream());
+            //copyFile(event.getFile().getFileName(), event.getFile().getInputstream());
             if (errorTagName.length() == 0) {
                 btnProcessFileDisabled = false;
             }
-
             FacesMessage msg = new FacesMessage("Archivo cargado", "Archivo cargado correctamente, presione procesar para que sea procesado");
             FacesContext.getCurrentInstance().addMessage(null, msg);
-        } catch (IOException ex) {
+            //} catch (IOException ex) {
+        } catch (Exception ex) {
             System.out.println("Error: ufMB_7 > " + ex.toString());
         }
     }
@@ -647,8 +663,6 @@ public class UploadFileMB implements Serializable {
          * datos e introducirlos a la DB
          */
         boolean continueProcess = true;
-
-
         if (continueProcess) {
             try {
                 if (file == null) {

@@ -13,8 +13,7 @@ and open the template in the editor.
         <script type="text/javascript"> 
             function leerGET(){ 
                 var cadGET = location.search.substr(1,location.search.length);
-                if(cadGET.indexOf("XX") != -1){
-                    //alert('cerro sesion'); 
+                if(cadGET.indexOf("timeout") != -1){
                     div = document.getElementById('IdEndSession');
                     div.style.display ='block';
                 }else{

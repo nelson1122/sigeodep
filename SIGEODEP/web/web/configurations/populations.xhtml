@@ -49,8 +49,7 @@
                                 </p:row>
                                 <p:row>  
                                     <p:column colspan="1">
-                                        <p:fileUpload 
-                                            
+                                        <p:fileUpload                                             
                                             id="IdBtnFileSelect"                                        
                                             fileUploadListener="#{populationsMB.handleFileUpload}"                                                                                  
                                             mode="advanced"                                           
@@ -58,7 +57,7 @@
                                             uploadLabel="Subir"                                        
                                             label="Archivo"
                                             sizeLimit="50000000"
-                                            update=":IdForm1:message"
+                                            update=":IdForm1:message IdSearchTable"
                                             allowTypes="/(\.|\/)(xlsx|csv|txt)$/">                                        
                                         </p:fileUpload>
                                     </p:column>
@@ -71,7 +70,9 @@
                                 rowKey="#{rowX.column1}"  
                                 selection="#{populationsMB.selectedRowDataTable}" 
                                 paginator="true"
-                                rows="10"                                    
+                                rows="10"  
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15,20,25,30"
                                 paginatorPosition="bottom"                                
                                 scrollable="true"
                                 scrollWidth="730"                                    

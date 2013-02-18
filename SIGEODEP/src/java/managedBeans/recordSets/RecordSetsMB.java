@@ -506,6 +506,7 @@ public class RecordSetsMB implements Serializable {
                     }
                     tagsFacade.remove(tagsList.get(i));
                 }
+                progressDelete=100;
                 msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Los conjuntos seleccionados fueron eliminados");
                 totalProcess = 100;
                 btnEditDisabled = false;
@@ -513,7 +514,6 @@ public class RecordSetsMB implements Serializable {
                 selectedRowsDataTable = null;
                 currentTag = null;
             }
-
         }
         createDynamicTable();
         btnEditDisabled = true;
