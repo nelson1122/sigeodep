@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -104,6 +102,7 @@ public class IndicatorsSpecifiedRateMB {
     private int numberCross = 2;//maximo numero de variables a cruzar
     DecimalFormat formateador = new DecimalFormat("0.00");
     private int currentYear = 0;
+    //private int multiplierK = 0;
     private boolean btnAddVariableDisabled = true;
     private boolean btnAddCategoricalValueDisabled = true;
     private boolean btnRemoveCategoricalValueDisabled = true;
@@ -709,6 +708,16 @@ public class IndicatorsSpecifiedRateMB {
         }
     }
 
+    private String determineHeader(String value) {
+        if (value.indexOf("SIN DATO") == -1) {
+            if (value.indexOf("/") != -1) {
+                String newValue = value.replace("/", " a ");
+                return newValue + " Años";
+            }
+        }
+        return value;
+    }    
+    
     private String createDataTableResult() {
         PanelGrid panelGrid = new PanelGrid();
         headers1 = new ArrayList<SpanColumns>();
@@ -718,6 +727,7 @@ public class IndicatorsSpecifiedRateMB {
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
         strReturn = strReturn + "            <tr>\r\n";
         strReturn = strReturn + "                <td id=\"firstTd\" >\r\n";
+        strReturn = strReturn + "                Cifras por: " + String.valueOf(multiplierK) + " habitantes\r\n";
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td class=\"ui-widget-header\">\r\n";
         //-------------------------------------------------------------------
@@ -731,7 +741,7 @@ public class IndicatorsSpecifiedRateMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNames.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + columNames.get(i) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(columNames.get(i)) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
 //            strReturn = strReturn + "                                <td>\r\n";
@@ -762,7 +772,7 @@ public class IndicatorsSpecifiedRateMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < headers1.size(); i++) {
                 strReturn = strReturn + "                                <td colspan=\"" + headers1.get(i).getColumns() + "\">\r\n";
-                strReturn = strReturn + "                                    <div >" + headers1.get(i).getLabel() + "</div>\r\n";
+                strReturn = strReturn + "                                    <div >" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
 //            strReturn = strReturn + "                                <td >\r\n";
@@ -774,7 +784,7 @@ public class IndicatorsSpecifiedRateMB {
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + headers2[i] + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(headers2[i]) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
 //            strReturn = strReturn + "                                <td >\r\n";
@@ -801,7 +811,7 @@ public class IndicatorsSpecifiedRateMB {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td >" + rowNames.get(j) + "</td>\r\n";
+            strReturn = strReturn + "                                <td class=\"tableFirstCol\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -822,7 +832,7 @@ public class IndicatorsSpecifiedRateMB {
         //AGREGO LOS REGISTROS DE LA MATRIZ        
         //for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
         for (int j = 0; j < rowNames.size(); j++) {
-        
+
             if (j == 0) {
                 strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
             } else {
@@ -1026,7 +1036,7 @@ public class IndicatorsSpecifiedRateMB {
                     matrixResult[i][j] = "0";
                 }
             }
-            
+
             rs = connectionJdbcMB.consult("SELECT MAX(population) FROM " + pivotTableName);
             rs.next();
             multiplierK = rs.getString("max").length();
@@ -1149,7 +1159,7 @@ public class IndicatorsSpecifiedRateMB {
                         String[] splitAge = aux.split("/");
                         if (splitAge.length == 2) {
                             sql = sql + " age >= " + splitAge[0] + " AND  age <= " + splitAge[1] + " AND ";
-                        }else{
+                        } else {
                             sql = sql + " age = -1 AND ";//es "SIN DATO"
                         }
                     }
@@ -1358,13 +1368,20 @@ public class IndicatorsSpecifiedRateMB {
 
         for (int i = 0; i < variablesCrossData.size(); i++) {
             switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable 
-                case injuries_fatal://TIPO DE LESION -----------------------
-                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
-                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-                    }
-                    sql = sql + "   END AS tipo_lesion";
-                    break;
+//                case injuries_fatal://TIPO DE LESION -----------------------
+//                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
+//                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
+//                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+//                    }
+//                    sql = sql + "   END AS tipo_lesion";
+//                    break;
+//                case injuries_non_fatal://TIPO DE LESION -----------------------
+//                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
+//                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
+//                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+//                    }
+//                    sql = sql + "   END AS tipo_lesion";
+//                    break;
                 case age://DETERMINAR EDAD -----------------------                   
                     sql = sql + "   CASE \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
@@ -1900,6 +1917,4 @@ public class IndicatorsSpecifiedRateMB {
     public void setShowCalculation(boolean showCalculation) {
         this.showCalculation = showCalculation;
     }
-    
-    
 }

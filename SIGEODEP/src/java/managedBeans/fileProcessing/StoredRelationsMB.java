@@ -41,7 +41,7 @@ public class StoredRelationsMB implements Serializable {
     RelationsDiscardedValuesFacade relationDiscardedValuesFacade;
     @EJB
     UsersFacade usersFacade;
-    private UploadFileMB uploadFileMB;
+    private ProjectsMB projectsMB;
     private LoginMB loginMB;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private RelationGroup currentRelationsGroup;//grupo de relaciones actual
@@ -50,6 +50,7 @@ public class StoredRelationsMB implements Serializable {
     private int tuplesNumber;
     private int tuplesSaved;
     private String currentRelationGroupName;
+    
     private List<String> relationGroups;
     private String txtOpenDialog;
     private String newConfigurationName = "";
@@ -88,7 +89,7 @@ public class StoredRelationsMB implements Serializable {
         btnRemoveConfigurationDisabled = true;
     }
     String messaje = "";
-
+    //PUEDE QUE SE ELIMIE
     public String btnSaveConfiguration() {
         progressSave = 0;
         if (newConfigurationName.trim().length() == 0) {
@@ -141,8 +142,8 @@ public class StoredRelationsMB implements Serializable {
         if (currentRelationGroupName.trim().length() != 0) {
             RelationGroup selectRelationGroup = relationGroupFacade.findByName(currentRelationGroupName);
             List<RelationVariables> relationVariablesList = relationVariablesFacade.findByRelationGroup(selectRelationGroup.getIdRelationGroup());
-            List<String> varsExpected = uploadFileMB.getVariablesExpected();//variables esperadas
-            List<String> varsFound = uploadFileMB.getVariablesFound();//variables encontradas
+            List<String> varsExpected = projectsMB.getVariablesExpected();//variables esperadas
+            List<String> varsFound = projectsMB.getVariablesFound();//variables encontradas
 
             currentRelationsGroup = new RelationGroup();
             currentRelationsGroup.setIdRelationGroup(selectRelationGroup.getIdRelationGroup());
@@ -210,14 +211,14 @@ public class StoredRelationsMB implements Serializable {
             recordDataMB.reset();
             relationshipOfVariablesMB.reset();
             relationshipOfVariablesMB.setCurrentRelationsGroup(currentRelationsGroup);
-            relationshipOfVariablesMB.loadRelatedVars();
+            //relationshipOfVariablesMB.loadRelatedVars();
             relationshipOfVariablesMB.loadVarsExpectedAndFound();
             relationshipOfVariablesMB.setValuesExpected(new ArrayList<String>());
             relationshipOfVariablesMB.setValuesFound(new ArrayList<String>());
 
             //ASIGNO A LA CONFIGURACION DEL USUARIO EL NOMBRE DE LA RELACION
             Users currentUser = loginMB.getCurrentUser();
-            currentUser.getUsersConfiguration().setRelationGroupName(currentRelationGroupName);
+            //currentUser.getUsersConfiguration().setRelationGroupName(currentRelationGroupName);
             usersFacade.edit(currentUser);
 
             if (countNotFound == 0) {
@@ -242,8 +243,8 @@ public class StoredRelationsMB implements Serializable {
 
     public void saveConfiguration() {
         RelationGroup newRelationGroup = new RelationGroup();
-        Forms selectedForm = formsFacade.findByFormId(uploadFileMB.getCurrentForm());//Formulario seleccionado actualmente
-        Sources selectedSource = sourcesFacade.find(uploadFileMB.getCurrentSource());//Fuente seleccionada actualmente
+        //Forms selectedForm = formsFacade.findByFormId(projectsMB.getCurrentForm());//Formulario seleccionado actualmente
+        //Sources selectedSource = sourcesFacade.find(projectsMB.getCurrentSource());//Fuente seleccionada actualmente
 
         int idRelationVariables;
         int idRelationValues;
@@ -252,10 +253,10 @@ public class StoredRelationsMB implements Serializable {
         idRelationVariables = relationVariablesFacade.findMaxId();
         idRelationValues = relationValuesFacade.findMaxId();
         idRelationDiscarded = relationDiscardedValuesFacade.findMaxId();
-        newRelationGroup.setSourceId(selectedSource.getSourceId());
+        //newRelationGroup.setSourceId(selectedSource.getSourceId());
         newRelationGroup.setNameRelationGroup(newConfigurationName);
         newRelationGroup.setIdRelationGroup(relationGroupFacade.findMaxId() + 1);
-        newRelationGroup.setFormId(selectedForm);
+        //newRelationGroup.setFormId(selectedForm);
         relationGroupFacade.create(newRelationGroup);//persistir en la tabla relation_group
 
         List<RelationVariables> relationVarList = currentRelationsGroup.getRelationVariablesList();
@@ -278,7 +279,7 @@ public class StoredRelationsMB implements Serializable {
             }
             
         }
-        System.out.println("numero de tuplas A ALMACENAR: " + String.valueOf(tuplesNumber));
+        //System.out.println("numero de tuplas A ALMACENAR: " + String.valueOf(tuplesNumber));
         
         //REALIZO EL ALMACENAMIENTO
         
@@ -327,16 +328,17 @@ public class StoredRelationsMB implements Serializable {
             if(progressSave>98){
                 progressSave=98;
             }
-            System.out.println("PROGRESO ALMACENANDO: " + String.valueOf(progressSave));
+            //System.out.println("PROGRESO ALMACENANDO: " + String.valueOf(progressSave));
         }
+        System.out.println("RELACIONES ALMACENADAS");
+        
         //ASIGNO A LA CONFIGURACION DEL USUARIO EL NOMBRE DE LA RELACION
         Users currentUser = loginMB.getCurrentUser();
-        currentUser.getUsersConfiguration().setRelationGroupName(newConfigurationName);
+        //currentUser.getUsersConfiguration().setRelationGroupName(newConfigurationName);
         usersFacade.edit(currentUser);
         newConfigurationName = "";        
         
-        //MODIFICO LA TABA DE RELACION DE VALORES PARA QUE EL ID SEA CONSECUTIVO
-        
+        //MODIFICO LA TABA DE RELACION DE VALORES PARA QUE EL ID SEA CONSECUTIVO        
         //tiene que estar ordenada para que funcione
         
         
@@ -375,7 +377,7 @@ public class StoredRelationsMB implements Serializable {
                     tuplesNumber++;
                 }
             }            
-            System.out.println("numero de relaciones a eliminar: " + String.valueOf(tuplesNumber));
+            //System.out.println("numero de relaciones a eliminar: " + String.valueOf(tuplesNumber));
             //REALIZO LAS ELIMINACIONES
             for (int i = 0; i < relationVariablesList.size(); i++) {
                 List<RelationsDiscardedValues> relationDiscardedValuesList = relationVariablesList.get(i).getRelationsDiscardedValuesList();
@@ -399,8 +401,9 @@ public class StoredRelationsMB implements Serializable {
                 if (progressSave > 98) {//no permitir que pase de 98
                     progressSave=98;                    
                 }
-                System.out.println("PROGRESO ELIMINANDO: " + String.valueOf(progressSave));
+                //System.out.println("PROGRESO ELIMINANDO: " + String.valueOf(progressSave));
             }
+            System.out.println("RELACIONES ELIMINADAS");
             //relationGroupFacade.findAll();
             selectRelationGroup.setRelationVariablesList(null);
             relationGroupFacade.remove(selectRelationGroup);
@@ -491,8 +494,8 @@ public class StoredRelationsMB implements Serializable {
         this.txtSaveDialog = txtSaveDialog;
     }
 
-    public void setUploadFileMB(UploadFileMB uploadFileMB) {
-        this.uploadFileMB = uploadFileMB;
+    public void setProjectsMB(ProjectsMB projectsMB) {
+        this.projectsMB = projectsMB;
     }
 
     public void setRelationshipOfVariablesMB(RelationshipOfVariablesMB relationshipOfVariablesMB) {

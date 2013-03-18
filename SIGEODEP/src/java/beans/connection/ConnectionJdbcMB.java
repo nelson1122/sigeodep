@@ -104,6 +104,15 @@ public class ConnectionJdbcMB implements Serializable {
 //        }
     }
 
+    public void disconnect() {
+        try {
+            conn.close();
+            System.out.println("Cerrada conexion a base de datos " + url + " ... OK");
+        } catch (Exception e) {
+            System.out.println("Error al cerrar conexion a base de datos " + url + " ... " + e.toString());
+        }
+    }
+
     public String checkConnection() {
         String returnValue = "";
         try {
@@ -121,7 +130,7 @@ public class ConnectionJdbcMB implements Serializable {
                         System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
                         msj = "ERROR: " + e.getMessage();
                     }
-                    conn.close();
+                    //conn.close();
                     conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
                     if (conn != null) {
                         System.out.println("Conexion a base de datos " + url + " ... OK");
@@ -2683,7 +2692,7 @@ public class ConnectionJdbcMB implements Serializable {
         return null;
     }
 
-    public String findIdByCategoricalCode(String category, String value) {
+    public String findNameByCategoricalCode(String category, String value) {
         /*
          * busca un codigo dentro de una categoria y me retorna su nombre,
          * cuando retorna null es por que no fue encontrado
@@ -2699,7 +2708,7 @@ public class ConnectionJdbcMB implements Serializable {
             ResultSet resultSetCategory = consult("SELECT * FROM " + category);
             while (resultSetCategory.next()) {
                 if (resultSetCategory.getString(1).compareTo(value) == 0) {
-                    return resultSetCategory.getString(1);
+                    return resultSetCategory.getString(2);
                 }
             }
         } catch (SQLException ex) {
@@ -2708,7 +2717,7 @@ public class ConnectionJdbcMB implements Serializable {
         return null;
     }
 
-    public String findIdByCategoricalName(String category, String value) {
+    public String findCodeByCategoricalName(String category, String value) {
         /*
          * busca un nombre dentro de una categoria y me retorna su id, cuando
          * retorna null es por que no fue encontrado
@@ -2788,7 +2797,6 @@ public class ConnectionJdbcMB implements Serializable {
             }
         } catch (SQLException ex) {
         }
-
         return returnList;
     }
 

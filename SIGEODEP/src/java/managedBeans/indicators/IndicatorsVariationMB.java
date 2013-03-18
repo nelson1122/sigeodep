@@ -896,6 +896,22 @@ public class IndicatorsVariationMB {
             colorType = true;
         }
     }
+    
+    private String determineHeader(String value) {
+        if (value.indexOf("SIN DATO") == -1) {
+            if (value.indexOf("/") != -1) {
+                if (value.indexOf(":") != -1) {
+                    String newValue = value.replace("/", " a ");
+                    return newValue + " Horas";
+                } else {
+                    String newValue = value.replace("/", " a ");
+                    return newValue + " Años";
+                }
+
+            }
+        }
+        return value;
+    }
 
     private String createDataTableResult() {
 
@@ -919,7 +935,7 @@ public class IndicatorsVariationMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNamesFinal.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + columNamesFinal.get(i) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(columNamesFinal.get(i)) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td>\r\n";
@@ -950,7 +966,7 @@ public class IndicatorsVariationMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < headers1.size(); i++) {
                 strReturn = strReturn + "                                <td colspan=\"" + headers1.get(i).getColumns() + "\">\r\n";
-                strReturn = strReturn + "                                    <div >" + headers1.get(i).getLabel() + "</div>\r\n";
+                strReturn = strReturn + "                                    <div >" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td >\r\n";
@@ -962,7 +978,7 @@ public class IndicatorsVariationMB {
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + headers2[i] + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(headers2[i]) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td >\r\n";
@@ -989,7 +1005,7 @@ public class IndicatorsVariationMB {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td class=\"tableFirstCol\">" + rowNames.get(j) + "</td>\r\n";
+            strReturn = strReturn + "                                <td class=\"tableFirstCol\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -1653,15 +1669,21 @@ public class IndicatorsVariationMB {
         for (int i = 0; i < variablesCrossData.size(); i++) {
             //System.out.println("SWITCH CON (generic table) " + variablesCrossData.get(i).getGeneric_table());
             switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable 
-                case injuries_fatal://TIPO DE LESION -----------------------
-                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
-                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-                    }
-                    sql = sql + "   END AS tipo_lesion";
-                    //sql = sql + "   (SELECT injury_name FROM injuries WHERE injury_id = " + currentIndicator.getInjuryType() + ".injury_id) as tipo_lesion, \n\r";
-
-                    break;
+//                case injuries_fatal://TIPO DE LESION -----------------------
+//                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
+//                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
+//                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+//                    }
+//                    sql = sql + "   END AS tipo_lesion";
+//                    //sql = sql + "   (SELECT injury_name FROM injuries WHERE injury_id = " + currentIndicator.getInjuryType() + ".injury_id) as tipo_lesion, \n\r";
+//                    break;
+//                case injuries_non_fatal://TIPO DE LESION -----------------------
+//                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
+//                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
+//                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+//                    }
+//                    sql = sql + "   END AS tipo_lesion";
+//                    break;
                 case temporalDisaggregation://DETERMINAR LA showAllGREGACION TEMPORAL -----------------------                   
                     sql = sql + "   CASE \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValuesId().size(); j++) {

@@ -37,6 +37,8 @@ public class RelationGroup implements Serializable {
     private String nameRelationGroup;
     @Column(name = "source_id")
     private Integer sourceId;
+    @Column(name = "user_id")
+    private Integer userId;
     @JoinColumn(name = "form_id", referencedColumnName = "form_id")
     @ManyToOne
     private Forms formId;
@@ -72,6 +74,14 @@ public class RelationGroup implements Serializable {
 
     public void setSourceId(Integer sourceId) {
         this.sourceId = sourceId;
+    }
+    
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     public Forms getFormId() {

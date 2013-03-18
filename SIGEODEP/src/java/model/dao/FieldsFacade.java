@@ -33,12 +33,12 @@ public class FieldsFacade extends AbstractFacade<Fields> {
         super(Fields.class);
     }
 
-    public Fields findFieldTypeByFieldNameAndFormId(String currentVarExpected, String formId) {
-        try {
-            FieldsPK newFieldPk = new FieldsPK(formId, currentVarExpected);
-            return this.find(newFieldPk);
-        } catch (Exception ex) {
-            return null;
-        }
-    }
+//    public Fields findFieldTypeByFieldNameAndFormId(String currentVarExpected, String formId) {
+//        try {
+//            FieldsPK newFieldPk = new FieldsPK(formId, currentVarExpected);
+//            return this.find(newFieldPk);
+//        } catch (Exception ex) {
+//            return null;
+//        }
+//    }
 }

@@ -66,8 +66,11 @@ public class Users implements Serializable {
     @Size(min = 1, max = 2147483647)
     @Column(name = "user_login", nullable = false, length = 2147483647)
     private String userLogin;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "users")
-    private UsersConfiguration usersConfiguration;
+    @Size(max = 2147483647)
+    @Column(name = "permissions", length = 2147483647)
+    private String permissions;
+    @Column(name = "project_id")
+    private Integer projectId;
 
     public Users() {
     }
@@ -155,12 +158,20 @@ public class Users implements Serializable {
         this.userLogin = userLogin;
     }
     
-    public UsersConfiguration getUsersConfiguration() {
-        return usersConfiguration;
+    public String getPermissions() {
+        return permissions;
     }
 
-    public void setUsersConfiguration(UsersConfiguration usersConfiguration) {
-        this.usersConfiguration = usersConfiguration;
+    public void setPermissions(String permissions) {
+        this.permissions = permissions;
+    }
+
+    public Integer getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Integer projectId) {
+        this.projectId = projectId;
     }
 
     @Override

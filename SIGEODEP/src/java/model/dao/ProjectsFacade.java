@@ -7,14 +7,14 @@ package model.dao;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import model.pojo.UsersConfiguration;
+import model.pojo.Projects;
 
 /**
  *
- * @author SANTOS
+ * @author santos
  */
 @Stateless
-public class UsersConfigurationFacade extends AbstractFacade<UsersConfiguration> {
+public class ProjectsFacade extends AbstractFacade<Projects> {
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
@@ -23,8 +23,16 @@ public class UsersConfigurationFacade extends AbstractFacade<UsersConfiguration>
         return em;
     }
 
-    public UsersConfigurationFacade() {
-        super(UsersConfiguration.class);
+    public ProjectsFacade() {
+        super(Projects.class);
+    }
+    public int findMax() {
+        try {
+            String hql = "Select MAX(x.projectId) from Projects x";
+            return em.createQuery(hql, Integer.class).getSingleResult();
+        } catch (Exception e) {
+            return 0;
+        }
     }
     
 }
