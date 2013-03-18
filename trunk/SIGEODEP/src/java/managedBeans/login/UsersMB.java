@@ -12,12 +12,9 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import model.dao.ActivitiesFacade;
-import model.dao.UsersConfigurationFacade;
 import model.dao.UsersFacade;
-import model.pojo.Activities;
 import model.pojo.Users;
-import model.pojo.UsersConfiguration;
+
 
 /**
  *
@@ -36,8 +33,8 @@ public class UsersMB {
     private String currentSearchValue = "";
     @EJB
     UsersFacade usersFacade;
-    @EJB
-    UsersConfigurationFacade usersConfigurationFacade;
+//    @EJB
+//    UsersConfigurationFacade usersConfigurationFacade;
     private List<Users> usersList;
     private Users currentUser;
     private String name = "";
@@ -203,8 +200,8 @@ public class UsersMB {
                 newRegistry.setUserEmail(newEmail);
                 newRegistry.setUserAddress(newAddress);
                 newRegistry.setUserPassword(newPasword);
-                UsersConfiguration usersConfiguration = new UsersConfiguration(newRegistry.getUserId());
-                newRegistry.setUsersConfiguration(usersConfiguration);                
+//               UsersConfiguration usersConfiguration = new UsersConfiguration(newRegistry.getUserId());
+                //newRegistry.setUsersConfiguration(usersConfiguration);                
                 //usersFacade.edit(currentUser);
                 usersFacade.create(newRegistry);
                 newRegistry();

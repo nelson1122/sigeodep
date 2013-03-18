@@ -27,8 +27,10 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.component.html.HtmlOutputText;
 import javax.faces.context.FacesContext;
 import managedBeans.reports.SpanColumns;
+import model.dao.IndicatorsConfigurationsFacade;
 import model.dao.IndicatorsFacade;
 import model.pojo.Indicators;
+import model.pojo.IndicatorsConfigurations;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -57,6 +59,8 @@ public class IndicatorsCountMB {
 
     @EJB
     IndicatorsFacade indicatorsFacade;
+    @EJB
+    IndicatorsConfigurationsFacade indicatorsConfigurationsFacade;
     private Indicators currentIndicator;
     private StreamedContent chartImage;
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
@@ -72,6 +76,7 @@ public class IndicatorsCountMB {
     private String firstVariablesCrossSelected = null;
     private String initialValue = "";
     private String endValue = "";
+    private String newConfigurationName = "";
     private String dataTableHtml;
     private String[] headers2;//CABECERA 2 CUANDO EL CRUCE SE REALIZA SOBRE 3 VARIABLES
     private String[][] matrixResult;//MATRIZ DE RESULTADOS
@@ -88,12 +93,15 @@ public class IndicatorsCountMB {
     private List<String> currentVariablesSelected = new ArrayList<String>();//lista de nombres seleccionados en la lista de variables disponibles
     private List<String> currentVariablesCrossSelected = new ArrayList<String>();//lista de nombres seleccionados en la lista de variables a cruzar    
     private List<String> currentCategoricalValuesList = new ArrayList<String>();
+    private List<String> configurationsList = new ArrayList<String>();
     private List<String> currentCategoricalValuesSelected;
+    private String currentConfigurationSelected = "";
     private ArrayList<SpanColumns> headers1;//CABECERA 1 CUANDO EL CRUCE SE REALIZA SOBRE 3 VARIABLES
     private ArrayList<Variable> variablesListData;//lista de variables que tiene el indicador
     private ArrayList<Variable> variablesCrossData = new ArrayList<Variable>();//lista de variables a cruzar
     private ArrayList<String> valuesCategoryList;//lista de valores para una categoria
     private ArrayList<String> columNames;//NOMBRES DE LAS COLUMNAS, (SI EL CRUCE ES DE TRES VARIABLES ESTA SEPARADO POR EL CARACTER: }  )
+    ArrayList<String> columnTypeName = new ArrayList<String>();//nombres que se agregan a las cabeceras(no aparcezca "1", sino "comuna 2")
     private ArrayList<String> rowNames;//NOMBRES DE LAS FILAS    
     private ArrayList<String> totalsHorizontal = new ArrayList<String>();
     private ArrayList<String> totalsVertical = new ArrayList<String>();
@@ -103,7 +111,7 @@ public class IndicatorsCountMB {
     private int currentYear = 0;
     private boolean btnAddVariableDisabled = true;
     private boolean btnAddCategoricalValueDisabled = true;
-    private boolean btnRemoveCategoricalValueDisabled = true;
+    //private boolean btnRemoveCategoricalValueDisabled = true;
     private boolean btnRemoveVariableDisabled = true;
     private boolean renderedDynamicDataTable = true;
     //private boolean showAll = false;//mostrar filas y columnas vacias
@@ -265,8 +273,120 @@ public class IndicatorsCountMB {
 
     public void changeCategoticalList() {
         if (!currentCategoricalValuesSelected.isEmpty()) {
-            btnRemoveCategoricalValueDisabled = false;
+            //btnRemoveCategoricalValueDisabled = false;
         }
+    }
+
+    public void loadConfigurations() {
+    }
+
+    public int btnRemoveConfigurationClick() {
+        System.out.println("currentConfigurationSelected es " + currentConfigurationSelected);
+        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
+            return 0;
+        }
+        List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
+        for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
+            if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(currentConfigurationSelected) == 0) {
+                indicatorsConfigurationsFacade.remove(indicatorsConfigurationsList.get(i));
+                btnLoadConfigurationClick();
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La configuración ha sido eliminada"));
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    public int btnOpenConfigurationClick() {
+        //realizar la carga de la configuracion indicada
+        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
+            return 0;
+        }
+        currentCategoricalValuesList = new ArrayList<String>();
+        IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected);
+
+        if (firstVariablesCrossSelected.compareTo(indicatorsConfigurationsSelected.getVariableName()) != 0) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La configuracion corresponde a la variable ("
+                    + indicatorsConfigurationsSelected.getVariableName() + ") se debe abrir una configuracion para"
+                    + " una variable de tipo (" + firstVariablesCrossSelected + ")"));
+            return 0;
+        }
+
+        String[] splitConfiguration = indicatorsConfigurationsSelected.getConfiguredValues().split("\t");
+        currentCategoricalValuesList.addAll(Arrays.asList(splitConfiguration));
+
+        for (int i = 0; i < variablesCrossData.size(); i++) {
+            if (variablesCrossData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
+                variablesCrossData.get(i).setValuesConfigured(Arrays.asList(splitConfiguration));
+                variablesCrossData.get(i).setValuesId(Arrays.asList(splitConfiguration));
+                variablesCrossData.get(i).setValues(Arrays.asList(splitConfiguration));
+                break;
+            }
+        }
+
+//        if (currentVariableConfiguring != null) {
+//            currentVariableConfiguring.setValuesConfigured(Arrays.asList(splitConfiguration));
+//            currentVariableConfiguring.setValuesId(Arrays.asList(splitConfiguration));
+//            currentVariableConfiguring.setValues(Arrays.asList(splitConfiguration));
+//        }
+
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Configuración cargada"));
+        return 0;
+    }
+
+    public void btnLoadConfigurationClick() {
+        //recargar las configuraciones existentes
+        //System.out.println("inicia carga de configuraciones");
+        currentConfigurationSelected = "";
+        configurationsList = new ArrayList<String>();
+        List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
+        for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
+            configurationsList.add(indicatorsConfigurationsList.get(i).getConfigurationName());
+            //System.out.println("inicia carga de configuraciones");
+        }
+    }
+
+    public int btnSaveConfigurationClick() {
+        if (newConfigurationName.trim().length() == 0) {//VALOR INICIAL INGRESADO
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Digite el nombre para la nueva configuración"));
+            return 0;
+        }
+        //determino si el nombre ya esta ingresado
+        boolean founConfiguration = false;
+        List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
+        for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
+            if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(newConfigurationName) == 0) {
+                founConfiguration = true;
+                break;
+            }
+        }
+        if (!founConfiguration) {
+            if (!currentCategoricalValuesList.isEmpty()) {
+                IndicatorsConfigurations newIndicatorsConfigurations = new IndicatorsConfigurations(indicatorsConfigurationsFacade.findMax() + 1);
+                //System.out.println("El valor de id_configuration es : " + newIndicatorsConfigurations.getConfigurationId());
+                newIndicatorsConfigurations.setConfigurationName(newConfigurationName);
+                newIndicatorsConfigurations.setVariableName(firstVariablesCrossSelected);
+                String configuredValues = "";
+                for (int i = 0; i < currentCategoricalValuesList.size(); i++) {
+                    configuredValues = configuredValues + currentCategoricalValuesList.get(i);
+                    if (i != currentCategoricalValuesList.size() - 1) {
+                        configuredValues = configuredValues + "\t";
+                    }
+                }
+                newIndicatorsConfigurations.setConfiguredValues(configuredValues);
+                indicatorsConfigurationsFacade.create(newIndicatorsConfigurations);
+                btnLoadConfigurationClick();
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La cofiguración ha sido almacenada"));
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No existen categorias para almacenar"));
+            }
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El nombre registrado ya fue ingresado, por favor digite uno diferente"));
+        }
+
+        return 0;
     }
 
     public int btnAddCategoricalValueClick() {
@@ -280,34 +400,59 @@ public class IndicatorsCountMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Digite un valor final"));
             return 0;
         }
-        try {//VALOR INICIAL Y FINAL NUMERICOS
-            i = Integer.parseInt(initialValue);
-            e = Integer.parseInt(endValue);
-            if (i < 0 && e < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+        if (endValue.compareToIgnoreCase("n") == 0) {
+            endValue = "n";
+        }
+
+        if (endValue.compareTo("n") == 0) {
+            try {//VALOR INICIAL NUMERICOS
+                i = Integer.parseInt(initialValue);
+                if (i < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+                    return 0;
+                }
+            } catch (Exception ex) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser numéricos"));
                 return 0;
             }
-        } catch (Exception ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser numéricos"));
-            return 0;
+        } else {
+            try {//VALOR INICIAL Y FINAL NUMERICOS
+                i = Integer.parseInt(initialValue);
+                e = Integer.parseInt(endValue);
+
+                if (i < 0 && e < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+                    return 0;
+                }
+                if (i < 0 && e < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+                    return 0;
+                }
+            } catch (Exception ex) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser numéricos"));
+                return 0;
+            }
+            if (i > e) {//VALOR INICIAL MAYOR QUE FINAL
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El valor inicial debe ser menor que el valor final"));
+                return 0;
+            }
         }
-        if (i > e) {//VALOR INICIAL MAYOR QUE FINAL
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El valor inicial debe ser menor que el valor final"));
-            return 0;
-        }
+
         //EL RANGO NO ESTE DENTRO DE OTRO
-        if (currentVariableConfiguring != null) {
-            for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
-                String[] splitValues = currentVariableConfiguring.getValuesConfigured().get(j).split("/");
-                int initialValueFoundInteger = Integer.parseInt(splitValues[0]);
-                int endValueFoundInteger = Integer.parseInt(splitValues[1]);
-                int initialValueAddInteger = Integer.parseInt(initialValue);
-                int endValueAddInteger = Integer.parseInt(endValue);
-                for (int k = initialValueFoundInteger; k < endValueFoundInteger; k++) {
-                    for (int l = initialValueAddInteger; l < endValueAddInteger; l++) {
-                        if (k == l) {
-                            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Dentro del rango ingresado el valor (" + String.valueOf(k) + ") esta contenido en la lista de valores"));
-                            return 0;
+        if (endValue.compareTo("n") != 0) {
+            if (currentVariableConfiguring != null) {
+                for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
+                    String[] splitValues = currentVariableConfiguring.getValuesConfigured().get(j).split("/");
+                    int initialValueFoundInteger = Integer.parseInt(splitValues[0]);
+                    int endValueFoundInteger = Integer.parseInt(splitValues[1]);
+                    int initialValueAddInteger = Integer.parseInt(initialValue);
+                    int endValueAddInteger = Integer.parseInt(endValue);
+                    for (int k = initialValueFoundInteger; k < endValueFoundInteger; k++) {
+                        for (int l = initialValueAddInteger; l < endValueAddInteger; l++) {
+                            if (k == l) {
+                                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Dentro del rango ingresado el valor (" + String.valueOf(k) + ") esta contenido en la lista de valores"));
+                                return 0;
+                            }
                         }
                     }
                 }
@@ -315,10 +460,11 @@ public class IndicatorsCountMB {
         }
         //ingreso el nuevo valor a la categoria
         if (currentVariableConfiguring != null) {
+
             if (initialValue.length() == 1) {
                 initialValue = "0" + initialValue;
             }
-            if (endValue.length() == 1) {
+            if (endValue.length() == 1 && endValue.compareTo("n") != 0) {
                 endValue = "0" + endValue;
             }
             currentVariableConfiguring.getValuesConfigured().add(initialValue + "/" + endValue);
@@ -336,7 +482,7 @@ public class IndicatorsCountMB {
     }
 
     public void btnRemoveCategoryValueClick() {
-        btnRemoveCategoricalValueDisabled = false;
+        //btnRemoveCategoricalValueDisabled = false;
         if (currentVariableConfiguring != null) {
             for (int i = 0; i < currentCategoricalValuesSelected.size(); i++) {
                 for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
@@ -356,7 +502,7 @@ public class IndicatorsCountMB {
 
     public void btnResetCategoryListClick() {
         currentCategoricalValuesSelected = new ArrayList<String>();
-        btnRemoveCategoricalValueDisabled = false;
+        //btnRemoveCategoricalValueDisabled = false;
         if (currentVariableConfiguring != null) {
             //paso los elementos de la lista: values a valuesConfiguration
             currentVariableConfiguring.setValuesConfigured(new ArrayList<String>());
@@ -388,14 +534,14 @@ public class IndicatorsCountMB {
 
     public void changeCrossVariable() {
         btnRemoveVariableDisabled = true;
-        btnRemoveCategoricalValueDisabled = true;
+        //btnRemoveCategoricalValueDisabled = true;
         currentCategoricalValuesSelected = new ArrayList<String>();
         currentVariableConfiguring = null;
         initialValue = "";
         endValue = "";
         //cargo la lista de valores categoricos para la variable
         if (!currentVariablesCrossSelected.isEmpty()) {
-            btnRemoveCategoricalValueDisabled = true;
+            //btnRemoveCategoricalValueDisabled = true;
             btnRemoveVariableDisabled = false;
             firstVariablesCrossSelected = currentVariablesCrossSelected.get(0);
             //filtro los años segun la fecha
@@ -442,30 +588,26 @@ public class IndicatorsCountMB {
         }
     }
 
-    public void removeVariableClick() {
-        String error = "";
-        boolean nextStep = true;
+    public int removeVariableClick() {
+
         if (currentVariablesCrossSelected == null) {
-            error = "Debe seleccionarse una variable";
-            nextStep = false;
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", "Debe seleccionarse una categoria a eliminar"));
+            return 0;
         }
-        if (nextStep) {
-            for (int i = 0; i < variablesCrossList.size(); i++) {
-                for (int j = 0; j < currentVariablesCrossSelected.size(); j++) {
-                    if (variablesCrossList.get(i).compareTo(currentVariablesCrossSelected.get(j)) == 0) {//esta es la variable encontrada que saldra de la lista                    
-                        variablesCrossList.remove(i);//la quito de este listado                    
-                        variablesList.add(currentVariablesCrossSelected.get(j));//la agrego al otro                        
-                        btnRemoveVariableDisabled = true;
-                        i = -1;
-                        break;
-                    }
+
+        for (int i = 0; i < variablesCrossList.size(); i++) {
+            for (int j = 0; j < currentVariablesCrossSelected.size(); j++) {
+                if (variablesCrossList.get(i).compareTo(currentVariablesCrossSelected.get(j)) == 0) {//esta es la variable encontrada que saldra de la lista                    
+                    variablesCrossList.remove(i);//la quito de este listado                    
+                    variablesList.add(currentVariablesCrossSelected.get(j));//la agrego al otro                        
+                    btnRemoveVariableDisabled = true;
+                    i = -1;
+                    break;
                 }
             }
-            currentVariablesCrossSelected = null;
         }
-        if (error.length() != 0) {//hay  errores al relacionar la variables 
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
-        }
+        currentVariablesCrossSelected = null;
+        return 0;
     }
 
     public void createImage() {
@@ -705,6 +847,35 @@ public class IndicatorsCountMB {
         }
     }
 
+    private String determineHeader(String type, String value) {
+
+        if (value.indexOf("SIN DATO") == -1) {
+            if (type.indexOf("años") != -1) {
+                return "Año " + value;
+            }
+            if (type.indexOf("comuna") != -1) {
+                return "Comuna " + value;
+            }
+            if (type.indexOf("corredor") != -1) {
+                return "Corredor " + value;
+            }
+            if (type.indexOf("edad") != -1) {
+                String newValue = value.replace("/", " a ");
+                return newValue + " Años";
+            }
+            if (type.indexOf("hora") != -1) {
+                String newValue = value.replace("/", " a ");
+                return newValue + " Horas";
+            }
+            if (type.indexOf("cuadrante") != -1) {
+                return "Cuadrante " + value;
+            }
+        }
+        return value;
+    }
+    
+    
+
     private String createDataTableResult() {
         PanelGrid panelGrid = new PanelGrid();
         headers1 = new ArrayList<SpanColumns>();
@@ -727,7 +898,7 @@ public class IndicatorsCountMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNames.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + columNames.get(i) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(columnTypeName.get(0), columNames.get(i)) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td>\r\n";
@@ -758,7 +929,7 @@ public class IndicatorsCountMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < headers1.size(); i++) {
                 strReturn = strReturn + "                                <td colspan=\"" + headers1.get(i).getColumns() + "\">\r\n";
-                strReturn = strReturn + "                                    <div >" + headers1.get(i).getLabel() + "</div>\r\n";
+                strReturn = strReturn + "                                    <div >" + determineHeader(columnTypeName.get(0), headers1.get(i).getLabel()) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td >\r\n";
@@ -770,7 +941,7 @@ public class IndicatorsCountMB {
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + headers2[i] + "</div>\r\n";
+                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(columnTypeName.get(1), headers2[i]) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td >\r\n";
@@ -797,7 +968,7 @@ public class IndicatorsCountMB {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td >" + rowNames.get(j) + "</td>\r\n";
+            strReturn = strReturn + "                                <td >" + determineHeader(columnTypeName.get(2) , rowNames.get(j)) + "</td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -937,10 +1108,23 @@ public class IndicatorsCountMB {
         return chartReturn;
     }
 
+    private String searchTypeName(String columnName) {
+        //palabra que se agregara a la cabecera        
+        if (columnName.compareTo("anyo") == 0) {
+            return " años ";
+        } else {
+            return " " + columnName + " ";
+        }
+    }
+
     public void createMatrixResult() {
         //System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         try {
             ArrayList<String> columnNamesPivot = new ArrayList<String>();
+
+            columnTypeName = new ArrayList<String>();
+
+
             columNames = new ArrayList<String>();
             rowNames = new ArrayList<String>();
             //---------------------------------------------------------
@@ -955,6 +1139,8 @@ public class IndicatorsCountMB {
             //DETERMINO NOMBRES DE COLUMNAS PARA MATIRZ SALIDA
             //---------------------------------------------------------            
             if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
+                columnTypeName.add(searchTypeName(columnNamesPivot.get(0)));
+                columnTypeName.add("");
                 rs = connectionJdbcMB.consult(
                         "SELECT " + columnNamesPivot.get(0)
                         + " FROM " + pivotTableName
@@ -962,6 +1148,8 @@ public class IndicatorsCountMB {
                         + " order by MIN(id);");
             }
             if (variablesCrossData.size() == 3) {
+                columnTypeName.add(searchTypeName(columnNamesPivot.get(0)));
+                columnTypeName.add(searchTypeName(columnNamesPivot.get(1)));
                 String sql =
                         "SELECT "
                         + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
@@ -981,8 +1169,10 @@ public class IndicatorsCountMB {
             //---------------------------------------------------------            
             if (variablesCrossData.size() == 1) {
                 rowNames.add("Valor");
+                columnTypeName.add("");
             }
             if (variablesCrossData.size() == 2) {
+                columnTypeName.add(searchTypeName(columnNamesPivot.get(1)));
                 rs = connectionJdbcMB.consult(
                         "SELECT " + columnNamesPivot.get(1)
                         + " FROM " + pivotTableName
@@ -990,6 +1180,7 @@ public class IndicatorsCountMB {
                         + " order by MIN(id);");
             }
             if (variablesCrossData.size() == 3) {
+                columnTypeName.add(searchTypeName(columnNamesPivot.get(2)));
                 rs = connectionJdbcMB.consult(
                         "SELECT " + columnNamesPivot.get(2)
                         + " FROM " + pivotTableName
@@ -1257,6 +1448,13 @@ public class IndicatorsCountMB {
                     }
                     sql = sql + "   END AS tipo_lesion";
                     break;
+                case injuries_non_fatal://TIPO DE LESION -----------------------
+                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
+                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
+                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+                    }
+                    sql = sql + "   END AS tipo_lesion";
+                    break;
                 case age://DETERMINAR EDAD -----------------------                   
                     sql = sql + "   CASE \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
@@ -1355,6 +1553,7 @@ public class IndicatorsCountMB {
         }
         sql = sql + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r";
         sql = sql + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy'); ";
+        //System.out.println(sql);
         connectionJdbcMB.non_query(sql);//CREO LA TABLA PREPIVOT
         //------------------------------------------------------------------
         //QUITAMOS LOS VALORES ELIMINADOS DE CADA CATEGORIA
@@ -1691,14 +1890,13 @@ public class IndicatorsCountMB {
         this.firstVariablesCrossSelected = firstVariablesCrossSelected;
     }
 
-    public boolean isBtnRemoveCategoricalValueDisabled() {
-        return btnRemoveCategoricalValueDisabled;
-    }
-
-    public void setBtnRemoveCategoricalValueDisabled(boolean btnRemoveCategoricalValueDisabled) {
-        this.btnRemoveCategoricalValueDisabled = btnRemoveCategoricalValueDisabled;
-    }
-
+//    public boolean isBtnRemoveCategoricalValueDisabled() {
+//        return btnRemoveCategoricalValueDisabled;
+//    }
+//
+//    public void setBtnRemoveCategoricalValueDisabled(boolean btnRemoveCategoricalValueDisabled) {
+//        this.btnRemoveCategoricalValueDisabled = btnRemoveCategoricalValueDisabled;
+//    }
     public boolean isBtnAddCategoricalValueDisabled() {
         return btnAddCategoricalValueDisabled;
     }
@@ -1791,5 +1989,29 @@ public class IndicatorsCountMB {
 
     public void setVariablesGraph(List<String> variablesGraph) {
         this.variablesGraph = variablesGraph;
+    }
+
+    public String getNewConfigurationName() {
+        return newConfigurationName;
+    }
+
+    public void setNewConfigurationName(String newConfigurationName) {
+        this.newConfigurationName = newConfigurationName;
+    }
+
+    public String getCurrentConfigurationSelected() {
+        return currentConfigurationSelected;
+    }
+
+    public void setCurrentConfigurationSelected(String currentConfigurationSelected) {
+        this.currentConfigurationSelected = currentConfigurationSelected;
+    }
+
+    public List<String> getConfigurationsList() {
+        return configurationsList;
+    }
+
+    public void setConfigurationsList(List<String> configurationsList) {
+        this.configurationsList = configurationsList;
     }
 }

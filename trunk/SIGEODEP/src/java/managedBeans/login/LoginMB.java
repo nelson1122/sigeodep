@@ -5,15 +5,16 @@
 package managedBeans.login;
 
 import beans.connection.ConnectionJdbcMB;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
-import javax.faces.FacesException;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -33,8 +34,7 @@ import model.pojo.Users;
 @SessionScoped
 public class LoginMB {
 
-    
-    private String idSession="";//identificador de la session
+    private String idSession = "";//identificador de la session
     private String loginname = "";
     private String password = "";
     private String userLogin = "";
@@ -42,12 +42,28 @@ public class LoginMB {
     private String userJob = "";
     private Users currentUser;
     private String activeIndexAcoordion1 = "-1";
+//    private String prueba = "17/02/10";
+//    private SimpleDateFormat sdf1 = new SimpleDateFormat("dd/MM/yyyy");
+//    private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yy");
+//    public String getPrueba() {
+//        try {
+//            prueba=sdf1.format(sdf2.parse(prueba));
+//            System.out.println(prueba);
+//        } catch (Exception e) {
+//            System.out.println(e.toString());
+//        }
+//        return prueba;
+//    }
+//
+//    public void setPrueba(String prueba) {
+//        this.prueba = prueba;
+//    }
     private String activeIndexAcoordion2 = "-1";
-    private int countLogout = 0;//si este valor llega a 10 se finaliza la sesion
+    //private int countLogout = 0;//si este valor llega a 10 se finaliza la sesion
     FacesContext context;
     //FormsAndFieldsDataMB formsAndFieldsDataMB;
     ConnectionJdbcMB connectionJdbcMB;
-    UploadFileMB uploadFileMB;
+    ProjectsMB projectsMB;
     RelationshipOfVariablesMB relationshipOfVariablesMB;
     RelationshipOfValuesMB relationshipOfValuesMB;
     StoredRelationsMB storedRelationsMB;
@@ -78,7 +94,22 @@ public class LoginMB {
 
     @PreDestroy
     private void destruir() {
-        logout1();
+        System.out.println("FINALIZA LA SESION: idSession=" + idSession);
+        if (connectionJdbcMB == null) {
+            System.out.println("Sale de la aplicacion, no hay conexion a db");
+        } else {
+            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM users");
+            try {
+                if (rs.next()) {
+                    System.out.println("Termina session por inactividad 001");
+                } else {
+                    System.out.println("Termina session por inactividad 002");
+                }
+                connectionJdbcMB.disconnect();
+            } catch (Throwable t) {
+                System.out.println("Termina session por inactividad 003");
+            }
+        }
     }
 
     public void eliminarDatos() {
@@ -101,33 +132,19 @@ public class LoginMB {
         }
     }
 
-    public void logout1() {//fin de session por inactividad
-        System.out.println("FINALIZA LA SESION: idSession="+idSession);
-        if (connectionJdbcMB == null) {
-            System.out.println("Sale de la aplicacion, no hay conexion a db");
-        } else {
-            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM users");
-            try {
-                if (rs.next()) {
-                    System.out.println("Termina session y se modifica base de datos");
-                } else {
-                    System.out.println("Sale de la aplicacion, hay conexion pero fallo la consulta");
-                }
-            } catch (Throwable t) {
-                System.out.println("Sale de la aplicacion, fallo la consulta "+ t.toString());
-            }
-        }
-    }
-
+    //public void logout1() {//fin de session por inactividad
+    //}
     public void logout2() {//fin de ssesion al terminar session
-        ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
-        String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
-        System.out.println("FINALIZA LA SESION: idSession="+idSession);
+        //ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+        //String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
+        System.out.println("FINALIZA LA SESION: idSession=" + idSession);
         try {
+            ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+            String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
             ((HttpSession) ctx.getSession(false)).invalidate();
             ctx.redirect(ctxPath + "/index.html");
         } catch (Exception ex) {
-            System.out.println("Exepcion cerrando sesion: " + ex.toString());
+            System.out.println("Excepcion cuando usuacio cierra sesion sesion: " + ex.toString());
         }
     }
 
@@ -135,18 +152,19 @@ public class LoginMB {
         /**
          * Creates a new instance of LoginMB
          */
-        try {
-            PrintStream out = new PrintStream(new FileOutputStream("output.txt"));
-            System.setOut(out);
-            PrintStream out2 = new PrintStream(new FileOutputStream("output2.txt"));
-            System.setErr(out2);
-        } catch (Exception booleanValue) {
-            System.out.println("error:    " + booleanValue);
-        }
+//        try {
+//            System.out.println("DIRECTORIO TEMPORALES:    " + System.getProperty("java.io.tmpdir"));
+//            PrintStream out = new PrintStream(new FileOutputStream(System.getProperty("java.io.tmpdir")+"output.txt"));
+//            System.setOut(out);
+//            PrintStream out2 = new PrintStream(new FileOutputStream(System.getProperty("java.io.tmpdir")+"output2.txt"));
+//            System.setErr(out2);
+//        } catch (Exception booleanValue) {
+//            System.out.println("error:    " + booleanValue);
+//        }
     }
 
     public void reset() {
-        uploadFileMB.reset();
+        projectsMB.reset();
         relationshipOfVariablesMB.reset();
         relationshipOfValuesMB.reset();
         storedRelationsMB.reset();
@@ -169,8 +187,8 @@ public class LoginMB {
             FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", loginname);
             //ExternalContext ext = context.getExternalContext();
             HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
-            idSession=session.getId();
-            System.out.println("INICIA sesion: idSession="+idSession);
+            idSession = session.getId();
+            System.out.println("INICIA sesion: idSession=" + idSession);
 
             userLogin = currentUser.getUserLogin();
             userName = currentUser.getUserName();
@@ -179,7 +197,7 @@ public class LoginMB {
             //System.out.println("INICIA... carga de ManagedBeans");
             connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
             if (connectionJdbcMB.connectToDb()) {
-                uploadFileMB = (UploadFileMB) context.getApplication().evaluateExpressionGet(context, "#{uploadFileMB}", UploadFileMB.class);
+                projectsMB = (ProjectsMB) context.getApplication().evaluateExpressionGet(context, "#{projectsMB}", ProjectsMB.class);
                 relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
                 relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
                 storedRelationsMB = (StoredRelationsMB) context.getApplication().evaluateExpressionGet(context, "#{storedRelationsMB}", StoredRelationsMB.class);
@@ -187,30 +205,34 @@ public class LoginMB {
                 errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
 
                 //System.out.println("INICIA... carga de informacion formularios");
-
-                uploadFileMB.reset();
+                projectsMB.reset();
                 relationshipOfVariablesMB.reset();
 
                 //System.out.println("INICIA... carga de valores iniciales");
                 recordDataMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
                 recordDataMB.setErrorsControlMB(errorsControlMB);
                 recordDataMB.setLoginMB(this);
-                recordDataMB.setUploadFileMB(uploadFileMB);
+                recordDataMB.setProjectsMB(projectsMB);
 
-                relationshipOfValuesMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
+                //relationshipOfValuesMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
+                relationshipOfValuesMB.setProjectsMB(projectsMB);
                 relationshipOfVariablesMB.setRelationshipOfValuesMB(relationshipOfValuesMB);
-                relationshipOfVariablesMB.setUploadFileMB(uploadFileMB);
+                relationshipOfVariablesMB.setProjectsMB(projectsMB);
 
                 errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-                storedRelationsMB.setUploadFileMB(uploadFileMB);
+                storedRelationsMB.setProjectsMB(projectsMB);
                 storedRelationsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
                 storedRelationsMB.setCurrentRelationsGroup(relationshipOfVariablesMB.getCurrentRelationsGroup());
                 storedRelationsMB.loadRelatedGroups();
 
-                uploadFileMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
+                projectsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
+                // obtener id de proyecto y llamar a funcion 
+                projectsMB.setStoredRelationsMB(storedRelationsMB);
+                if (currentUser.getProjectId() != null) {
+                    projectsMB.openProject(currentUser.getProjectId());
+                }
 
-                uploadFileMB.setStoredRelationsMB(storedRelationsMB);
-                reset();
+                //reset();
                 autenticado = true;
 
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto!!", "Se ha ingresado al sistema");

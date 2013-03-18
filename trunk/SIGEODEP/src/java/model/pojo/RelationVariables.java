@@ -164,68 +164,65 @@ public class RelationVariables implements Serializable {
         return "model.pojo.RelationVariables[ idRelationVariables=" + idRelationVariables + " ]";
     }
     
-    public void removeDiscartedValue(String get) {
-        if (relationsDiscardedValuesList != null) {
-            for (int i = 0; i < relationsDiscardedValuesList.size(); i++) {
-                if (relationsDiscardedValuesList.get(i).getDiscardedValueName().compareTo(get) == 0) {
-                    relationsDiscardedValuesList.remove(i);
-                    break;
-                }
-            }
-            System.out.println("ELIMINADO DE VALORES DESCARTADOS: " + get);
-        }
-    }
-
-    public void addDiscartedValue(String get) {
-        if (relationsDiscardedValuesList == null) {
-            relationsDiscardedValuesList = new ArrayList<RelationsDiscardedValues>();
-        }
-        RelationsDiscardedValues newDiscarded = new RelationsDiscardedValues();
-        newDiscarded.setDiscardedValueName(get);
-        relationsDiscardedValuesList.add(newDiscarded);
-        System.out.println("AGREGADO VALOR DESCARTADO: " + get);
-    }
-
-    public void addRelationValue(String currentValueExpected, String currentValueFound) {
-        if (relationValuesList == null) {
-            relationValuesList = new ArrayList<RelationValues>();
-        }
-        RelationValues newRelatedValues = new RelationValues();
-        newRelatedValues.setNameExpected(currentValueExpected);
-        newRelatedValues.setNameFound(currentValueFound);
-        relationValuesList.add(newRelatedValues);
-        System.out.println("CREADA RELACION DE VALORES: " + currentValueExpected + "->" + currentValueFound);
-    }
-
-    public void removeRelationValue(String currentValueExpected, String currentValueFound) {
-        if (relationValuesList != null) {
-            for (int i = 0; i < relationValuesList.size(); i++) {
-                if (relationValuesList.get(i).getNameExpected().compareTo(currentValueExpected) == 0
-                        && relationValuesList.get(i).getNameFound().compareTo(currentValueFound) == 0) {
-                    relationValuesList.remove(i);
-                    System.out.println("ELIMINADA RELACION DE VALORES: " + currentValueExpected + "->" + currentValueFound);
-                    break;
-                }
-            }
-        }
-
-    }
-    
-    //determina sii existe una relacion de valores determinada
-    public boolean findRelationValues(String currentValueExpected, String currentValueFound) {
-        boolean returnValue=false;
-        
-        
-        
-        if (relationValuesList != null) {
-            for (int i = 0; i < relationValuesList.size(); i++) {
-                if (relationValuesList.get(i).getNameExpected().compareTo(currentValueExpected) == 0
-                        && relationValuesList.get(i).getNameFound().compareTo(currentValueFound) == 0) {
-                    return true;
-                }
-            }
-        }
-        return returnValue;
-
-    }
+//    public void removeDiscartedValue(String get) {
+//        if (relationsDiscardedValuesList != null) {
+//            for (int i = 0; i < relationsDiscardedValuesList.size(); i++) {
+//                if (relationsDiscardedValuesList.get(i).getDiscardedValueName().compareTo(get) == 0) {
+//                    relationsDiscardedValuesList.remove(i);
+//                    break;
+//                }
+//            }
+//            System.out.println("ELIMINADO DE VALORES DESCARTADOS: " + get);
+//        }
+//    }
+//
+//    public void addDiscartedValue(String get) {
+//        if (relationsDiscardedValuesList == null) {
+//            relationsDiscardedValuesList = new ArrayList<RelationsDiscardedValues>();
+//        }
+//        RelationsDiscardedValues newDiscarded = new RelationsDiscardedValues();
+//        newDiscarded.setDiscardedValueName(get);
+//        relationsDiscardedValuesList.add(newDiscarded);
+//        System.out.println("AGREGADO VALOR DESCARTADO: " + get);
+//    }
+//
+//    public void addRelationValue(String currentValueExpected, String currentValueFound) {
+//        if (relationValuesList == null) {
+//            relationValuesList = new ArrayList<RelationValues>();
+//        }
+//        RelationValues newRelatedValues = new RelationValues();
+//        newRelatedValues.setNameExpected(currentValueExpected);
+//        newRelatedValues.setNameFound(currentValueFound);
+//        relationValuesList.add(newRelatedValues);
+//        System.out.println("CREADA RELACION DE VALORES: " + currentValueExpected + "->" + currentValueFound);
+//    }
+//
+//    public void removeRelationValue(String currentValueExpected, String currentValueFound) {
+//        if (relationValuesList != null) {
+//            for (int i = 0; i < relationValuesList.size(); i++) {
+//                if (relationValuesList.get(i).getNameExpected().compareTo(currentValueExpected) == 0
+//                        && relationValuesList.get(i).getNameFound().compareTo(currentValueFound) == 0) {
+//                    relationValuesList.remove(i);
+//                    System.out.println("ELIMINADA RELACION DE VALORES: " + currentValueExpected + "->" + currentValueFound);
+//                    break;
+//                }
+//            }
+//        }
+//
+//    }
+//    
+//    //determina sii existe una relacion de valores determinada
+//    public boolean findRelationValues(String currentValueExpected, String currentValueFound) {
+//        boolean returnValue=false;
+//        if (relationValuesList != null) {
+//            for (int i = 0; i < relationValuesList.size(); i++) {
+//                if (relationValuesList.get(i).getNameExpected().compareTo(currentValueExpected) == 0
+//                        && relationValuesList.get(i).getNameFound().compareTo(currentValueFound) == 0) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return returnValue;
+//
+//    }
 }

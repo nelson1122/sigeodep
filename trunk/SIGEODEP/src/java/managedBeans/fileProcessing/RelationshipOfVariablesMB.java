@@ -9,10 +9,7 @@ import beans.enumerators.DataTypeEnum;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -22,11 +19,10 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.login.LoginMB;
 import model.dao.FieldsFacade;
-import model.pojo.Fields;
+import model.dao.RelationGroupFacade;
+import model.dao.RelationVariablesFacade;
 import model.pojo.RelationGroup;
-import model.pojo.RelationValues;
 import model.pojo.RelationVariables;
-import model.pojo.RelationsDiscardedValues;
 
 /**
  *
@@ -36,7 +32,7 @@ import model.pojo.RelationsDiscardedValues;
 @SessionScoped
 public class RelationshipOfVariablesMB implements Serializable {
 
-    private boolean btnRemoveRelationVarDisabled = true;
+    //private boolean btnRemoveRelationVarDisabled = true;
     private boolean btnSaveConfigurationDisabled = true;
     private boolean btnLoadConfigurationDisabled = false;
     private boolean btnJoinColumnsDisabled;
@@ -44,70 +40,60 @@ public class RelationshipOfVariablesMB implements Serializable {
     private boolean selectDateFormatDisabled = true;
     private boolean compareForCode = false;
     private List<String> variablesExpected;
-    private String currentVarFound = "";
+    //private String currentVarFound = "";
     private List<String> varsFound;
     private List<String> valuesExpected;
     private List<String> valuesDiscarded;
     private List<String> valuesFound;
-    private String currentRelatedVars = "";//actual relacion de variables
+    //private String currentRelatedVars = "";//actual relacion de variables
     private List<String> relatedVars;
-    //
     private String currentRelationGroupName = "";
     private String currentDateFormat = "dd/MM/yyyy";//tipo de formato de fecha actual
-    private String currentVarExpected = "";//variable esperda para relacionar variables
+    //private String currentVarExpected = "";//variable esperda para relacionar variables
+    private List<String> currentVariableExpected = new ArrayList<String>();
+    private List<String> currentVariableFound = new ArrayList<String>();
+    private List<String> currentRelatedVariables = new ArrayList<String>();
     private String typeVarExepted;
     private String variableDescription = "";
-    //private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private RelationGroup currentRelationGroup;
-    private UploadFileMB uploadFileMB;
+    private ProjectsMB projectsMB;
     private RelationshipOfValuesMB relationshipOfValuesMB;
     private LoginMB loginMB;
-    //-----------------------------
+    private String filterConsult = "";
     private String expectedVariablesFilter = "";
     private String foundVariablesFilter = "";
+    private String relatedVariablesFilter = "";
     private String filterText;
     private String foundText;
     ConnectionJdbcMB connectionJdbcMB;
+    String sql = "";
     private String nameTableTemp = "temp";
     @EJB
     FieldsFacade fieldsFacade;
-
+    @EJB
+    RelationVariablesFacade relationVariablesFacade;
+    @EJB
+    RelationGroupFacade relationGroupFacade;
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
      */
+
     @PostConstruct
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
+    public void changeRelatedVariablesFilter() {
+        loadRelatedVariables();
+    }
+
     public void changeFoundVariablesFilter() {
-//        valuesFoundSelectedInRelationValues = new ArrayList<String>();
-        loadVarsExpectedAndFound();
-//        activeButtons();
+        loadFoundVariables();
     }
 
     public void changeExpectedVariablesFilter() {
-//        currentValueExpected = "";
-//        nameOfValueExpected = "";
-        loadVarsExpectedAndFound();
-//        activeButtons();
-    }
-
-    public String getExpectedVariablesFilter() {
-        return expectedVariablesFilter;
-    }
-
-    public void setExpectedVariablesFilter(String expectedVariablesFilter) {
-        this.expectedVariablesFilter = expectedVariablesFilter;
-    }
-
-    public String getFoundVariablesFilter() {
-        return foundVariablesFilter;
-    }
-
-    public void setFoundVariablesFilter(String foundVariablesFilter) {
-        this.foundVariablesFilter = foundVariablesFilter;
+        loadExpectedVariables();
     }
 
     //----------------------------------------------------------------------
@@ -136,53 +122,9 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.valuesFound = new ArrayList<String>();
         this.varsFound = new ArrayList<String>();
         this.variablesExpected = new ArrayList<String>();
-        this.currentVarFound = "";
-        this.currentVarExpected = "";
-        this.btnRemoveRelationVarDisabled = true;
-    }
-
-    private boolean isNumeric(String str) {
-        /*
-         * validacion de si un string es entero
-         */
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
-    }
-
-    private boolean isDate(String fecha, String format) {
-        /*
-         * validacion de si un string es una fecha de un determinado formto
-         */
-        SimpleDateFormat formato = new SimpleDateFormat(format);
-        Date fechaDate = null;
-        try {
-            fechaDate = formato.parse(fecha);
-            return true;
-        } catch (ParseException ex) {
-            return false;
-        }
-    }
-
-    private boolean isCategorical(String str, String category) {
-        /*
-         * validacion de si un string esta dentro de una categoria
-         */
-        ArrayList<String> categoryList;
-        if (compareForCode == true) {
-            categoryList = connectionJdbcMB.categoricalCodeList(typeVarExepted, 20);
-        } else {
-            categoryList = connectionJdbcMB.categoricalNameList(typeVarExepted, 20);
-        }
-        for (int i = 0; i < categoryList.size(); i++) {
-            if (categoryList.get(i).compareTo(str) == 0) {
-                return true;
-            }
-        }
-        return false;
+        this.currentVariableFound = new ArrayList<String>();
+        this.currentVariableExpected = new ArrayList<String>();
+        //this.btnRemoveRelationVarDisabled = true;
     }
 
     //----------------------------------------------------------------------
@@ -190,77 +132,192 @@ public class RelationshipOfVariablesMB implements Serializable {
     //FUNCIONES QUE CARGAN VALORES -----------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    private void loadExpectedVariables() {
+        try {
+            filterConsult = "";
+            if (expectedVariablesFilter != null && expectedVariablesFilter.trim().length() != 0) {
+                filterConsult = "    fields.field_name ILIKE '%" + expectedVariablesFilter + "%' AND \n";
+            }
+            ResultSet rs;//vaiables esperadas-----------------------------------
+            sql = ""
+                    + " SELECT \n"
+                    + "    fields.field_name \n"
+                    + " FROM \n"
+                    + "    public.fields \n"
+                    + " WHERE \n"
+                    + "    fields.form_id LIKE '" + projectsMB.getCurrentFormId() + "' AND \n"
+                    + filterConsult
+                    + "    fields.field_name NOT IN \n"
+                    + "    (SELECT \n"
+                    + "        relation_variables.name_expected \n"
+                    + "     FROM \n"
+                    + "        public.relation_group, \n"
+                    + "        public.relation_variables \n"
+                    + "     WHERE \n"
+                    + "        relation_variables.id_relation_group = relation_group.id_relation_group AND \n"
+                    + "        relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "' \n"
+                    + "     )\n"
+                    + " ORDER BY \n"
+                    + "    fields.field_order;\n";
+            variablesExpected = new ArrayList<String>();
+            //System.out.println("A001\n" + sql);
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
+                variablesExpected.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            System.out.println("******PRIMER INGRESO******");
+        }
+    }
+
+    private void loadFoundVariables() {
+        try {
+            ResultSet rs;
+            varsFound = new ArrayList<String>();//vaiables encontradas----------            
+            filterConsult = "";
+            if (foundVariablesFilter != null && foundVariablesFilter.trim().length() != 0) {
+                filterConsult = "    project_columns.column_name ILIKE '%" + foundVariablesFilter + "%' AND \n";
+            }
+            sql = ""
+                    + " SELECT     "
+                    + "	   project_columns.column_name"
+                    + " FROM     "
+                    + "	   public.project_records,     "
+                    + "	   public.project_columns "
+                    + " WHERE     "
+                    + "	   project_columns.column_id = project_records.column_id AND    "
+                    + filterConsult
+                    + "	   project_records.project_id = " + projectsMB.getCurrentProjectId() + " AND "
+                    + "	   project_columns.column_name NOT IN "
+                    + "	   (SELECT"
+                    + "		relation_variables.name_found"
+                    + "	   FROM     "
+                    + "		public.relation_group,     "
+                    + "		public.relation_variables "
+                    + "	   WHERE     "
+                    + "		relation_variables.id_relation_group = relation_group.id_relation_group AND    "
+                    + "		relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "'"
+                    + "	   )"
+                    + " GROUP BY"
+                    + "	   project_columns.column_name,"
+                    + "	   project_columns.column_id"
+                    + " ORDER BY "
+                    + "	   project_columns.column_id";
+
+            rs = connectionJdbcMB.consult(sql);
+            //System.out.println("A002\n" + sql);
+            while (rs.next()) {
+                varsFound.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            System.out.println("******PRIMER INGRESO******");
+        }
+    }
+
+    private void loadRelatedVariables() {
+        try {
+            ResultSet rs;
+            relatedVars = new ArrayList<String>();//variables relacionadas------
+            filterConsult = "";
+            if (relatedVariablesFilter != null && relatedVariablesFilter.trim().length() != 0) {
+                filterConsult = " AND \n    (relation_variables.name_expected ILIKE '%" + relatedVariablesFilter + "%' OR \n";
+                filterConsult = filterConsult + "    relation_variables.name_found ILIKE '%" + relatedVariablesFilter + "%' )";
+            }
+            sql = ""
+                    + " SELECT "
+                    + "    relation_variables.name_expected, \n"
+                    + "    relation_variables.name_found \n"
+                    + " FROM \n"
+                    + "    public.relation_group, \n"
+                    + "    public.relation_variables \n"
+                    + " WHERE \n"
+                    + "    relation_variables.id_relation_group = relation_group.id_relation_group AND \n"
+                    + "    relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "' \n"
+                    + filterConsult;
+            //System.out.println("A003\n" + sql);
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
+                relatedVars.add(rs.getString(1) + "->" + rs.getString(2));
+            }
+            relationshipOfValuesMB.setCategoricalRelationsFilter("");
+            relationshipOfValuesMB.loadCategoricalRelatedVariables();
+//            System.out.println("sssssssssssssssssss");
+//            System.out.println("currentValueExpected: " + relationshipOfValuesMB.getCurrentValueExpected().toString());
+//            System.out.println("expectedValuesFilter: " + relationshipOfValuesMB.getExpectedValuesFilter().toString());
+//            System.out.println("valuesExpected: " + relationshipOfValuesMB.getValuesExpected().toString());
+//            System.out.println("sssssssssssssssssss");
+        } catch (Exception e) {
+            System.out.println("******PRIMER INGRESO******");
+        }
+    }
+
     public void loadVarsExpectedAndFound() {
         /*
          * cargar las listas de variables encontradas y esperadas
          */
-        String[] splitVarRelated;
-        List<String> varsExpected = uploadFileMB.getVariablesExpected();//variables esperadas
-        for (int i = 0; i < relatedVars.size(); i++) {//quito las variables esperadas que ya esten relacionadas        
-            splitVarRelated = relatedVars.get(i).split("->");
-            for (int j = 0; j < varsExpected.size(); j++) {
-                if (varsExpected.get(j).compareTo(splitVarRelated[0]) == 0) {
-                    varsExpected.remove(j);
-                    break;
-                }
+        loadExpectedVariables();
+        loadFoundVariables();
+        loadRelatedVariables();
+        valuesExpected = new ArrayList<String>();
+        valuesFound = new ArrayList<String>();
+    }
+
+    private String getTypeVariableExpected() {
+        String strReturn = "";
+        try {
+            //determino el ty            
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + " SELECT "
+                    + "    fields.field_type"
+                    + " FROM "
+                    + "    public.fields, "
+                    + "    public.relation_group"
+                    + " WHERE "
+                    + "    relation_group.form_id = fields.form_id AND"
+                    + "    relation_group.id_relation_group = " + projectsMB.getCurrentRelationsGroupId() + " AND "
+                    + "    fields.form_id LIKE '" + projectsMB.getCurrentFormId() + "' AND "
+                    + "    fields.field_name LIKE '" + currentVariableExpected.get(0) + "';");
+            if (rs.next()) {
+                return rs.getString(1);
             }
+        } catch (SQLException ex) {
+            System.out.println("Error: rovaMB_1 > " + ex.toString());
         }
-        variablesExpected = varsExpected;
+        return strReturn;
+    }
 
-        //filtro los datos
-        if (expectedVariablesFilter.trim().length() != 0) {
-            filterText = expectedVariablesFilter.toUpperCase();
-            for (int j = 0; j < variablesExpected.size(); j++) {
-                foundText = variablesExpected.get(j).toUpperCase();
-                if (foundText.indexOf(filterText) == -1) {
-                    variablesExpected.remove(j);
-                    j--;
-                }
+    private String getDescriptionVariableExpected() {
+        String strReturn = "";
+        try {
+            //determino el ty            
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + " SELECT "
+                    + "    fields.field_description"
+                    + " FROM "
+                    + "    public.fields, "
+                    + "    public.relation_group"
+                    + " WHERE "
+                    + "    relation_group.form_id = fields.form_id AND"
+                    + "    relation_group.id_relation_group = " + projectsMB.getCurrentRelationsGroupId() + " AND "
+                    + "    fields.form_id LIKE '" + projectsMB.getCurrentFormId() + "' AND "
+                    + "    fields.field_name LIKE '" + currentVariableExpected.get(0) + "';");
+            if (rs.next()) {
+                return rs.getString(1);
             }
+        } catch (SQLException ex) {
+            System.out.println("Error: rovaMB_1 > " + ex.toString());
         }
-
-
-
-        //recargo la lista de variables encontradas        
-        List<String> varsFound2 = uploadFileMB.getVariablesFound();
-        varsFound = new ArrayList<String>();
-
-        //quito las variables esperadas que ya esten relacionadas
-        for (int i = 0; i < relatedVars.size(); i++) {
-            splitVarRelated = relatedVars.get(i).split("->");
-            for (int j = 0; j < varsFound2.size(); j++) {
-                if (varsFound2.get(j).compareTo(splitVarRelated[1]) == 0) {
-                    varsFound2.remove(j);
-                    break;
-                }
-            }
-        }
-        varsFound = varsFound2;
-
-        //filtro los datos
-        if (foundVariablesFilter.trim().length() != 0) {
-            filterText = foundVariablesFilter.toUpperCase();
-            for (int j = 0; j < varsFound.size(); j++) {
-                foundText = varsFound.get(j).toUpperCase();
-                if (foundText.indexOf(filterText) == -1) {
-                    varsFound.remove(j);
-                    j--;
-                }
-            }
-        }
-
-        //recargo la lista de variables relacionadas pero para la seccion de relacionar variables        
-        if (currentRelationGroup != null) {
-            relationshipOfValuesMB.loadCategoricalRelatedVariables(currentRelationGroup);
-        }
+        return strReturn;
     }
 
     public void loadValuesExpected() {
         /*
          * cargar los valores esperados dependiendo la variable esperada
          */
-        if (currentVarExpected.trim().length() != 0) {
-            typeVarExepted = fieldsFacade.findFieldTypeByFieldNameAndFormId(currentVarExpected, currentRelationGroup.getFormId().getFormId()).getFieldType();
+        //if (currentVarExpected.trim().length() != 0) {
+        if (currentVariableExpected != null && !currentVariableExpected.isEmpty()) {
+            typeVarExepted = getTypeVariableExpected();
+            //fieldsFacade.findFieldTypeByFieldNameAndFormId(currentVarExpected, currentRelationGroup.getFormId().getFormId()).getFieldType();
             valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
             selectDateFormatDisabled = true;
             switch (DataTypeEnum.convert(typeVarExepted)) {//tipo de relacion
@@ -316,47 +373,51 @@ public class RelationshipOfVariablesMB implements Serializable {
      * crear una lista de valores de una determinada columna proveniente del
      * archivo
      */
-    public ArrayList createListOfValuesFromFile(String column) {
-
-        ArrayList<String> array = new ArrayList<String>();
-        try {
-            //determino el nombre de la columna            
-            ResultSet rs = connectionJdbcMB.consult("SELECT " + column + " FROM " + nameTableTemp + "; ");
-            while (rs.next()) {
-                array.add(rs.getString(1));
-            }
-        } catch (SQLException ex) {
-            System.out.println("Error: rovaMB_1 > " + ex.toString());
-        }
-        return array;
-    }
+//    public ArrayList createListOfValuesFromFile(String column) {
+//
+//        ArrayList<String> array = new ArrayList<String>();
+//        try {
+//            //determino el nombre de la columna            
+//            ResultSet rs = connectionJdbcMB.consult("SELECT " + column + " FROM " + nameTableTemp + "; ");
+//            while (rs.next()) {
+//                array.add(rs.getString(1));
+//            }
+//        } catch (SQLException ex) {
+//            System.out.println("Error: rovaMB_1 > " + ex.toString());
+//        }
+//        return array;
+//    }
 
     /*
      * crear una lista de valores de una determinada columna proveniente del
      * archivo con valores no repetidos
      */
-    public void loadValuesFound(String column, int amount) {
-
-        ArrayList<String> array = new ArrayList<String>();
-        int currentAmount = 0;
+    public void loadValuesFound(String column) {
         try {
-            //determino el nombre de la columna            
-            ResultSet rs = connectionJdbcMB.consult("SELECT DISTINCT(" + column + ") FROM " + nameTableTemp + "; ");
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + " SELECT "
+                    + " 	DISTINCT(project_records.data_value) "
+                    + " FROM "
+                    + " 	project_records"
+                    + " WHERE   "
+                    + " 	project_id=" + projectsMB.getCurrentProjectId() + " AND"
+                    + " 	column_id IN "
+                    + " 		(SELECT "
+                    + " 			column_id "
+                    + " 		FROM "
+                    + " 			project_columns"
+                    + " 		WHERE"
+                    + " 			project_columns.column_name LIKE '" + column + "'"
+                    + " 		)"
+                    + " LIMIT 50;");
+
+            valuesFound = new ArrayList<String>();
             while (rs.next()) {
-                if (currentAmount < amount) {
-                    if (rs.getString(1) != null) {
-                        array.add(rs.getString(1));
-                        currentAmount++;
-                    }
-                } else {
-                    break;
-                }
+                valuesFound.add(rs.getString(1));
             }
         } catch (SQLException ex) {
             System.out.println("Error: rovaMB_2 > " + ex.toString());
         }
-
-        valuesFound = array;
     }
 
     //----------------------------------------------------------------------
@@ -364,56 +425,38 @@ public class RelationshipOfVariablesMB implements Serializable {
     //FUNCIONES CUANDO LISTAS CAMBIAN DE VALOR -----------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    public void changeRelatedVariables() {
+        //la funcion se encargda de limpiar la seccion "RELACION DE VALORES"
+        //System.out.println("SE LIMPIA SECCION DE RELACION DE VALORES");
+        relationshipOfValuesMB.setCategoricalRelationsFilter("");
+        relationshipOfValuesMB.loadCategoricalRelatedVariables();
+    }
+
     public void changeVarExpected() {
         valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
-        if (currentVarExpected != null) {
-            if (currentVarExpected.length() != 0) {
-                Fields a = fieldsFacade.findFieldTypeByFieldNameAndFormId(currentVarExpected, foundText);
-                if (a != null) {
-                    variableDescription = a.getFieldDescription();
-                } else {
-                    variableDescription = "";
-                }
-                loadValuesExpected();
-            }
+        if (currentVariableExpected != null && !currentVariableExpected.isEmpty()) {
+            //if (currentVarExpected != null && currentVarExpected.length() != 0) {
+            //if (currentVarExpected.length() != 0) {
+            variableDescription = getDescriptionVariableExpected();
+            loadValuesExpected();
+            //}
         }
     }
 
     public void changeVarFound() {
         valuesFound = new ArrayList<String>();//borro la lista de valores esperados 
-        if (currentVarFound != null) {
-            if (currentVarFound.trim().length() != 0) {
-                currentRelatedVars = "";
-                loadValuesFound(currentVarFound, 20);
-            }
+        if (currentVariableFound != null && !currentVariableFound.isEmpty()) {
+            //if (currentVarFound.trim().length() != 0) {
+            currentRelatedVariables = new ArrayList<String>();
+            loadValuesFound(currentVariableFound.get(0));
+            //}
         }
     }
-
-    public void changeRelatedVars() {
-        /*
-         * cambia el valor de la lista de variables que esta relacionadas
-         * actualmente
-         */
-        btnRemoveRelationVarDisabled = false;
-    }
-
-    public void btnDivideColumnsClick() {
-    }
-
-    public void btnJoinColumnsClick() {
-    }
-
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //CLIK SOBRE BOTONOES --------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-//    private RelationVar findRelationVarByNameFound(String column) {
-//        /*
-//         * retorna una relacion de variables
-//         */
-//        return null;
-//    }
 
     /*
      * click sobre asociar dos variables
@@ -425,177 +468,87 @@ public class RelationshipOfVariablesMB implements Serializable {
         //--- se detrmina si hat seleccionada una variable encontrada y una variable esperada
         //--------------------------------------------------------------------------------------------
         if (nextStep) {
-            if (currentVarExpected == null) {
+            //if (currentVarExpected == null || currentVarExpected.trim().length() == 0) {
+            if (currentVariableExpected == null || currentVariableExpected.isEmpty()) {
                 error = "Debe seleccionarse una variable esperada";
                 nextStep = false;
-            } else {
-                if (currentVarExpected.trim().length() == 0) {
-                    error = "Debe seleccionarse una variable esperada";
-                    nextStep = false;
-                }
             }
         }
         if (nextStep) {
-            if (currentVarFound == null) {
-                error = "Debe seleccionarse una variable encontrada de la lista";
+            if (currentVariableFound == null || currentVariableFound.isEmpty()) {
+                error = "Debe seleccionarse una variable encontrada";
                 nextStep = false;
-            } else {
-                if (currentVarFound.trim().length() == 0) {
-                    error = "Debe seleccionarse una variable encontrada de la lista";
-                    nextStep = false;
-                }
             }
         }
-
         if (nextStep) {
             selectDateFormatDisabled = true;
-            //---------------------------------------------------------------------------
-            //como se quita de la lista un item se determina que item quedara seleccionado
-            //---------------------------------------------------------------------------
-            String nextVarExpectedSelected = "";
-            String nextVarFoundSelected = "";
-            for (int i = 0; i < varsFound.size(); i++) {
-                if (varsFound.get(i).compareTo(currentVarFound) == 0) {//esta es la variable encontrada que saldra de la lista
-                    if (i + 1 < varsFound.size() - 1) {//determino si tiene siguiente
-                        nextVarFoundSelected = varsFound.get(i + 1);//asigno el siguiente
-                        break;
-                    }
-                    if (i - 1 >= 0) {//determino si tiene anterior
-                        nextVarFoundSelected = varsFound.get(i - 1);//asigno el anterior
-                        break;
-                    }
-                }
-            }
-            for (int i = 0; i < variablesExpected.size(); i++) {
-                if (variablesExpected.get(i).compareTo(currentVarExpected) == 0) {//esta es la variable esperada que saldra de la lista
-                    if (i + 1 < variablesExpected.size() - 1) {//determino si tiene siguiente
-                        nextVarExpectedSelected = variablesExpected.get(i + 1);//asigno el siguiente
-                        break;
-                    }
-                    if (i - 1 >= 0) {//determino si tiene anterior
-                        nextVarExpectedSelected = variablesExpected.get(i - 1);//asigno el anterior
-                        break;
-                    }
-                }
-            }
-            //---------------------------------------------------------------------------
-            //relaizo la relacion de variables
-            //---------------------------------------------------------------------------
-            if (currentRelationGroup.getRelationVariablesList() == null) {
-                currentRelationGroup.setRelationVariablesList(new ArrayList<RelationVariables>());
-            }
             RelationVariables newRelationVariables = new RelationVariables();
-            newRelationVariables.setIdRelationVariables(currentRelationGroup.getRelationVariablesList().size());
-            newRelationVariables.setNameExpected(currentVarExpected);
-            newRelationVariables.setNameFound(currentVarFound);
+            newRelationVariables.setIdRelationVariables(relationVariablesFacade.findMaxId() + 1);
+            newRelationVariables.setNameExpected(currentVariableExpected.get(0));
+            newRelationVariables.setNameFound(currentVariableFound.get(0));
             newRelationVariables.setFieldType(typeVarExepted);
             newRelationVariables.setComparisonForCode(compareForCode);
             newRelationVariables.setDateFormat(currentDateFormat);
-            newRelationVariables.setRelationValuesList(new ArrayList<RelationValues>());
-            newRelationVariables.setRelationsDiscardedValuesList(new ArrayList<RelationsDiscardedValues>());
-
-
-            currentRelationGroup.getRelationVariablesList().add(newRelationVariables);
-            //currentRelationGroup.addRelationVar(relVar);//agrego la relacion a el grupo de relaciones actual 
-            relatedVars.add(currentVarExpected + "->" + currentVarFound);//agrego la relacion a la lista de relaciones de variables 
+            newRelationVariables.setIdRelationGroup(relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId()));
+            relationVariablesFacade.create(newRelationVariables);
             loadVarsExpectedAndFound();//recargo listas de variables esperadas y encontradas   
-
-            //---------------------------------------------------------------------------
-            //selecciono los items de la lista que quedan seleccionados
-            //---------------------------------------------------------------------------
-            currentVarExpected = nextVarExpectedSelected;
-            currentVarFound = nextVarFoundSelected;
-            changeVarExpected();
-            changeVarFound();
-
-
         }
         if (nextStep) {//no se produjeron errores solo alertas
             if (error.length() == 0) {//no existieron errores            
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto!!", "Asociación de variables realizada."));
             } else {//hay  errores al relacionar la variables 
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", error));
             }
         } else {//se produjo un error
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", error));
         }
     }
-    /*
-     * cargar las listas de variables encontradas y esperadas
-     */
 
-    public void loadRelatedVars() {
-        relatedVars = new ArrayList<String>();
-        List<RelationVariables> relationVarList = currentRelationGroup.getRelationVariablesList();
-        if (relationVarList != null) {
-            for (int i = 0; i < relationVarList.size(); i++) {
-                relatedVars.add(relationVarList.get(i).getNameExpected() + "->" + relationVarList.get(i).getNameFound());
+    private int getRelationVariablesId(String name_expected, String name_found) {
+        int intReturn = -1;
+        try {
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + " SELECT "
+                    + " 	id_relation_variables "
+                    + " FROM "
+                    + " 	relation_variables"
+                    + " WHERE   "
+                    + " 	id_relation_group=" + projectsMB.getCurrentRelationsGroupId() + " AND"
+                    + " 	name_expected LIKE '" + name_expected + "' AND "
+                    + " 	name_found LIKE '" + name_found + "'");
+            if (rs.next()) {
+                return rs.getInt(1);
             }
+        } catch (SQLException ex) {
+            System.out.println("Error: rovaMB_2 > " + ex.toString());
         }
+        return intReturn;
     }
 
     public void btnRemoveRelationVarClick() {
         /*
          * click sobre boton remover relacion de variables
          */
-        boolean continueProcess = true;
-
-        if (currentRelatedVars == null) {
-            continueProcess = false;
+        if (currentRelatedVariables == null || currentRelatedVariables.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar la relación a eliminar."));
         } else {
-            if (currentRelatedVars.trim().length() == 0) {
-                continueProcess = false;
+            //elimino los item de la lista de variables relacionadas
+            for (int i = 0; i < currentRelatedVariables.size(); i++) {
+                String[] splitVarRelated = currentRelatedVariables.get(i).split("->");
+                //FALTA ELIMINAR RELACIONES DE VALORES SI ES UNA RELACION CATEGORICA
+                try {
+                    int relationVariablesId = getRelationVariablesId(splitVarRelated[0], splitVarRelated[1]);
+                    connectionJdbcMB.remove("relations_discarded_values", "id_relation_variables = " + relationVariablesId);
+                    connectionJdbcMB.remove("relation_values", "id_relation_variables = " + relationVariablesId);
+                    connectionJdbcMB.remove("relation_variables", "id_relation_variables = " + relationVariablesId);
+                } catch (Exception e) {
+                    System.out.println("Excepcion eliminando relacion de valores: " + e.toString());
+                }
+                //relationVariablesFacade.remove(relationVariablesFacade.find(getRelationVariablesId(splitVarRelated[0], splitVarRelated[1])));
             }
-        }
-
-        if (continueProcess) {
-            //como se elimina un item de la lista busco cual es el siguinte item seleccionado
-            String nextRelatedVarsSelected = "";
-            for (int i = 0; i < relatedVars.size(); i++) {
-                if (relatedVars.get(i).compareTo(currentRelatedVars) == 0) {//esta es la variable encontrada que saldra de la lista
-                    if (i + 1 <= relatedVars.size() - 1) {//determino si tiene siguiente
-                        nextRelatedVarsSelected = relatedVars.get(i + 1);//asigno el siguiente
-                        break;
-                    }
-                    if (i - 1 >= 0) {//determino si tiene anterior
-                        nextRelatedVarsSelected = relatedVars.get(i - 1);//asigno el anterior
-                        break;
-                    }
-                }
-            }
-            //elimino el item de la lista de variables relacionadas
-            if (currentRelatedVars.trim().length() != 0) {
-                //String[] splitVarRelated = currentRelatedVars.split("->");
-                List<RelationVariables> relationVarList = currentRelationGroup.getRelationVariablesList();
-                if (relationVarList != null) {
-                    String a;
-                    for (int i = 0; i < relationVarList.size(); i++) {
-                        a = relationVarList.get(i).getNameExpected() + "->" + relationVarList.get(i).getNameFound();
-                        if (currentRelatedVars.compareTo(a) == 0) {
-                            currentRelationGroup.getRelationVariablesList().remove(i);
-                            break;
-                        }
-                    }
-                }
-                //currentRelationGroup.removeRelationVar(splitVarRelated[0], splitVarRelated[1]);//elimino la relacion de el grupo de relaciones actual
-                for (int i = 0; i < relatedVars.size(); i++) {//remuevo de la lista de relaciones de variables        
-                    if (relatedVars.get(i).compareTo(currentRelatedVars) == 0) {
-                        relatedVars.remove(i);
-                        break;
-                    }
-                }
-
-                loadVarsExpectedAndFound();//recargo lista de variables esperadas y encontradas
-                valuesExpected = new ArrayList<String>();
-                valuesFound = new ArrayList<String>();
-                currentRelatedVars = nextRelatedVarsSelected;//asigno el item que queda seleccionado
-                if (currentRelatedVars.trim().length() == 0) {
-                    btnRemoveRelationVarDisabled = true;
-                }
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "La relación ha sido eliminada."));
-            }
-        } else {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", "Seleccione la relación a eliminar."));
+            currentRelatedVariables = new ArrayList<String>();
+            loadVarsExpectedAndFound();//recargo lista de variables esperadas y encontradas
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Las relaciónes seleccionadas han sido eliminadas."));
         }
     }
 
@@ -604,20 +557,26 @@ public class RelationshipOfVariablesMB implements Serializable {
     //FUNCIONES GET Y SET DE LAS VARIABLES ---------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    public String getCurrentVarExpected() {
-        return currentVarExpected;
+//    public String getCurrentVarExpected() {
+//        return currentVarExpected;
+//    }
+//
+//    public void setCurrentVarExpected(String currentVarExpected) {
+//        this.currentVarExpected = currentVarExpected;
+//    }
+//    public String getCurrentVarFound() {
+//        return currentVarFound;
+//    }
+//
+//    public void setCurrentVarFound(String currentVarFound) {
+//        this.currentVarFound = currentVarFound;
+//    }
+    public List<String> getCurrentVariableFound() {
+        return currentVariableFound;
     }
 
-    public void setCurrentVarExpected(String currentVarExpected) {
-        this.currentVarExpected = currentVarExpected;
-    }
-
-    public String getCurrentVarFound() {
-        return currentVarFound;
-    }
-
-    public void setCurrentVarFound(String currentVarFound) {
-        this.currentVarFound = currentVarFound;
+    public void setCurrentVariableFound(List<String> currentVariableFound) {
+        this.currentVariableFound = currentVariableFound;
     }
 
     public List<String> getValuesExpected() {
@@ -651,14 +610,13 @@ public class RelationshipOfVariablesMB implements Serializable {
 //    public void setBtnAssociateRelationVarDisabled(boolean btnAssociateRelationVarDisabled) {
 //        this.btnAssociateRelationVarDisabled = btnAssociateRelationVarDisabled;
 //    }
-    public boolean isBtnRemoveRelationVarDisabled() {
-        return btnRemoveRelationVarDisabled;
-    }
-
-    public void setBtnRemoveRelationVarDisabled(boolean btnRemoveRelationVarDisabled) {
-        this.btnRemoveRelationVarDisabled = btnRemoveRelationVarDisabled;
-    }
-
+//    public boolean isBtnRemoveRelationVarDisabled() {
+//        return btnRemoveRelationVarDisabled;
+//    }
+//
+//    public void setBtnRemoveRelationVarDisabled(boolean btnRemoveRelationVarDisabled) {
+//        this.btnRemoveRelationVarDisabled = btnRemoveRelationVarDisabled;
+//    }
 //    public boolean isBtnValidateRelationVarDisabled() {
 //        return btnValidateRelationVarDisabled;
 //    }
@@ -674,12 +632,19 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.variablesExpected = variablesExpected;
     }
 
-    public String getCurrentRelatedVars() {
-        return currentRelatedVars;
+//    public String getCurrentRelatedVars() {
+//        return currentRelatedVars;
+//    }
+//
+//    public void setCurrentRelatedVars(String currentRelatedtVars) {
+//        this.currentRelatedVars = currentRelatedtVars;
+//    }
+    public List<String> getCurrentRelatedVariables() {
+        return currentRelatedVariables;
     }
 
-    public void setCurrentRelatedVars(String currentRelatedtVars) {
-        this.currentRelatedVars = currentRelatedtVars;
+    public void setCurrentRelatedVariables(List<String> currentRelatedVariables) {
+        this.currentRelatedVariables = currentRelatedVariables;
     }
 
     public List<String> getRelatedVars() {
@@ -712,8 +677,6 @@ public class RelationshipOfVariablesMB implements Serializable {
     public void setCurrentRelationGroupName(String currentRelationGroupName) {
         this.currentRelationGroupName = currentRelationGroupName;
     }
-
-    
 
     public boolean isBtnLoadConfigurationDisabled() {
         return btnLoadConfigurationDisabled;
@@ -766,8 +729,8 @@ public class RelationshipOfVariablesMB implements Serializable {
 //    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
 //        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
 //    }
-    public void setUploadFileMB(UploadFileMB uploadFileMB) {
-        this.uploadFileMB = uploadFileMB;
+    public void setProjectsMB(ProjectsMB projectsMB) {
+        this.projectsMB = projectsMB;
     }
 
     public RelationshipOfValuesMB getRelationshipOfValuesMB() {
@@ -800,5 +763,37 @@ public class RelationshipOfVariablesMB implements Serializable {
 
     public void setValuesDiscarded(List<String> valuesDiscarded) {
         this.valuesDiscarded = valuesDiscarded;
+    }
+
+    public String getExpectedVariablesFilter() {
+        return expectedVariablesFilter;
+    }
+
+    public void setExpectedVariablesFilter(String expectedVariablesFilter) {
+        this.expectedVariablesFilter = expectedVariablesFilter;
+    }
+
+    public String getFoundVariablesFilter() {
+        return foundVariablesFilter;
+    }
+
+    public void setFoundVariablesFilter(String foundVariablesFilter) {
+        this.foundVariablesFilter = foundVariablesFilter;
+    }
+
+    public String getRelatedVariablesFilter() {
+        return relatedVariablesFilter;
+    }
+
+    public void setRelatedVariablesFilter(String relatedVariablesFilter) {
+        this.relatedVariablesFilter = relatedVariablesFilter;
+    }
+
+    public List<String> getCurrentVariableExpected() {
+        return currentVariableExpected;
+    }
+
+    public void setCurrentVariableExpected(List<String> currentVariableExpected) {
+        this.currentVariableExpected = currentVariableExpected;
     }
 }

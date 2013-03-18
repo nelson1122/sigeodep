@@ -281,11 +281,13 @@ public class PopulationsMB implements Serializable {
 //            }
             StringBuilder sb = new StringBuilder();
             CopyManager cpManager;
+            int batchSize = 200;//numero de insert por copy realizado
+            
             boolean insertedData = false;
             boolean populationsTableClear = false;
             try {
                 cpManager = new CopyManager((BaseConnection) connectionJdbcMB.getConn());
-                int batchSize = 200;//numero de insert por copy realizado
+                
                 PushbackReader reader = new PushbackReader(new StringReader(""), 10000);
                 //REGISTRO DE POBLACIONES ZONA URBANA---------------------------
                 for (int i = 0; i < capitalMunicipality.size(); i++) {

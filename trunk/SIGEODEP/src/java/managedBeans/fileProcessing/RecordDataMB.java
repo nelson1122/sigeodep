@@ -185,7 +185,7 @@ public class RecordDataMB implements Serializable {
     private RelationGroup currentRelationsGroup;
     //private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private StoredRelationsMB storedRelationsMB;
-    private UploadFileMB uploadFileMB;
+    private ProjectsMB projectsMB;
     private LoginMB loginMB;
     private ErrorsControlMB errorsControlMB;
     private String[] columnsNames;
@@ -253,7 +253,7 @@ public class RecordDataMB implements Serializable {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private Date currentDate;
     //private int maxTag;
-    private Tags newTag;//(maxTag, uploadFileMB.getNameFile(), uploadFileMB.getNameFile());
+    private Tags newTag;//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
     private String nameTableTemp = "temp";
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -592,7 +592,8 @@ public class RecordDataMB implements Serializable {
                                     }
                                     if (value == null) {
                                         errorsNumber++;//error = "no esta en la categoria ni es un valor descartado";
-                                        String description = fieldsFacade.findFieldTypeByFieldNameAndFormId(relationVar.getNameExpected(), currentRelationsGroup.getFormId().getFormId()).getFieldDescription();
+                                        //String description = fieldsFacade.findFieldTypeByFieldNameAndFormId(relationVar.getNameExpected(), currentRelationsGroup.getFormId().getFormId()).getFieldDescription();
+                                        String description="se debe corregir esta seccion";
                                         errorsControlMB.addError(new ErrorControl(
                                                 relationVar,
                                                 resultSetFileData.getString(relationVar.getNameFound()),
@@ -702,9 +703,9 @@ public class RecordDataMB implements Serializable {
 
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(tagsFacade.findMax() + 1);
-            newTag.setTagName(uploadFileMB.getTagName());
-            newTag.setTagFileInput(uploadFileMB.getNameFile());
-            newTag.setTagFileStored(uploadFileMB.getNameFile());
+            //newTag.setTagName(projectsMB.getTagName());
+            //newTag.setTagFileInput(projectsMB.getNameFile());
+            //newTag.setTagFileStored(projectsMB.getNameFile());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -891,7 +892,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case sexo_victima:
                                 newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
-                                
+
 //                                if (value.compareTo("1") == 0) {
 //                                    contadorMasculino++;
 //                                } else if (value.compareTo("2") == 0) {
@@ -1190,9 +1191,9 @@ public class RecordDataMB implements Serializable {
 
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(tagsFacade.findMax() + 1);
-            newTag.setTagName(uploadFileMB.getTagName());
-            newTag.setTagFileInput(uploadFileMB.getNameFile());
-            newTag.setTagFileStored(uploadFileMB.getNameFile());
+            //newTag.setTagName(projectsMB.getTagName());
+            //newTag.setTagFileInput(projectsMB.getNameFile());
+            //newTag.setTagFileStored(projectsMB.getNameFile());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -1679,9 +1680,9 @@ public class RecordDataMB implements Serializable {
 
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(tagsFacade.findMax() + 1);
-            newTag.setTagName(uploadFileMB.getTagName());
-            newTag.setTagFileInput(uploadFileMB.getNameFile());
-            newTag.setTagFileStored(uploadFileMB.getNameFile());
+            //newTag.setTagName(projectsMB.getTagName());
+            //newTag.setTagFileInput(projectsMB.getNameFile());
+            //newTag.setTagFileStored(projectsMB.getNameFile());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -2145,9 +2146,9 @@ public class RecordDataMB implements Serializable {
 
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(tagsFacade.findMax() + 1);
-            newTag.setTagName(uploadFileMB.getTagName());
-            newTag.setTagFileInput(uploadFileMB.getNameFile());
-            newTag.setTagFileStored(uploadFileMB.getNameFile());
+            //newTag.setTagName(projectsMB.getTagName());
+            //newTag.setTagFileInput(projectsMB.getNameFile());
+            //newTag.setTagFileStored(projectsMB.getNameFile());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -2605,9 +2606,9 @@ public class RecordDataMB implements Serializable {
             }
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(tagsFacade.findMax() + 1);
-            newTag.setTagName(uploadFileMB.getTagName());
-            newTag.setTagFileInput(uploadFileMB.getNameFile());
-            newTag.setTagFileStored(uploadFileMB.getNameFile());
+            //newTag.setTagName(projectsMB.getTagName());
+            //newTag.setTagFileInput(projectsMB.getNameFile());
+            //newTag.setTagFileStored(projectsMB.getNameFile());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -3685,11 +3686,11 @@ public class RecordDataMB implements Serializable {
                 pos++;
             }
             //maxTag = tagsFacade.findMax() + 1;//VARIABLES PARA CONJUNTOS DE REGISTROS
-            newTag = new Tags();//(maxTag, uploadFileMB.getNameFile(), uploadFileMB.getNameFile());
+            newTag = new Tags();//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
             newTag.setTagId(tagsFacade.findMax() + 1);
-            newTag.setTagName(uploadFileMB.getTagName());
-            newTag.setTagFileInput(uploadFileMB.getNameFile());
-            newTag.setTagFileStored(uploadFileMB.getNameFile());
+            //newTag.setTagName(projectsMB.getTagName());
+            //newTag.setTagFileInput(projectsMB.getNameFile());
+            //newTag.setTagFileStored(projectsMB.getNameFile());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -4708,8 +4709,8 @@ public class RecordDataMB implements Serializable {
             return "";
         }
         try {
-            str.replaceAll(",", "");
-            str.replaceAll(".", "");
+            str = str.replaceAll(",", "");
+            str = str.replaceAll(".", "");
             Integer.parseInt(str);
             return str;
         } catch (NumberFormatException nfe) {
@@ -4959,13 +4960,13 @@ public class RecordDataMB implements Serializable {
         if (relationVar.getComparisonForCode() == true) {
             for (int i = 0; i < relationVar.getRelationValuesList().size(); i++) {
                 if (relationVar.getRelationValuesList().get(i).getNameFound().compareTo(valueFound) == 0) {
-                    return connectionJdbcMB.findIdByCategoricalCode(relationVar.getFieldType(), relationVar.getRelationValuesList().get(i).getNameExpected());
+                    return connectionJdbcMB.findNameByCategoricalCode(relationVar.getFieldType(), relationVar.getRelationValuesList().get(i).getNameExpected());
                 }
             }
         } else {
             for (int i = 0; i < relationVar.getRelationValuesList().size(); i++) {
                 if (relationVar.getRelationValuesList().get(i).getNameFound().compareTo(valueFound) == 0) {
-                    return connectionJdbcMB.findIdByCategoricalName(relationVar.getFieldType(), relationVar.getRelationValuesList().get(i).getNameExpected());
+                    return connectionJdbcMB.findCodeByCategoricalName(relationVar.getFieldType(), relationVar.getRelationValuesList().get(i).getNameExpected());
                 }
             }
         }
@@ -4978,9 +4979,9 @@ public class RecordDataMB implements Serializable {
         }
         //se valida con respecto a los valores esperados
         if (relationVar.getComparisonForCode() == true) {
-            return connectionJdbcMB.findIdByCategoricalCode(relationVar.getFieldType(), valueFound);
+            return connectionJdbcMB.findNameByCategoricalCode(relationVar.getFieldType(), valueFound);
         } else {
-            return connectionJdbcMB.findIdByCategoricalName(relationVar.getFieldType(), valueFound);
+            return connectionJdbcMB.findCodeByCategoricalName(relationVar.getFieldType(), valueFound);
         }
     }
 
@@ -5044,12 +5045,12 @@ public class RecordDataMB implements Serializable {
         this.progressValidate = progressValidate;
     }
 
-    public UploadFileMB getUploadFileMB() {
-        return uploadFileMB;
+    public ProjectsMB getProjectsMB() {
+        return projectsMB;
     }
 
-    public void setUploadFileMB(UploadFileMB uploadFileMB) {
-        this.uploadFileMB = uploadFileMB;
+    public void setProjectsMB(ProjectsMB projectsMB) {
+        this.projectsMB = projectsMB;
     }
 
     public int getCurrentSource() {
