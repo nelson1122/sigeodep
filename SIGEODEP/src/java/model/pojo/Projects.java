@@ -5,6 +5,7 @@
 package model.pojo;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -59,6 +60,10 @@ public class Projects implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "relation_group_name", length = 2147483647)
     private String relationGroupName;
+    @Column(name = "start_column_id")
+    private BigInteger startColumnId;
+    @Column(name = "end_column_id")
+    private BigInteger endColumnId;
 
     public Projects() {
     }
@@ -129,6 +134,22 @@ public class Projects implements Serializable {
 
     public void setRelationGroupName(String relationGroupName) {
         this.relationGroupName = relationGroupName;
+    }
+    
+    public BigInteger getStartColumnId() {
+        return startColumnId;
+    }
+
+    public void setStartColumnId(BigInteger startColumnId) {
+        this.startColumnId = startColumnId;
+    }
+
+    public BigInteger getEndColumnId() {
+        return endColumnId;
+    }
+
+    public void setEndColumnId(BigInteger endColumnId) {
+        this.endColumnId = endColumnId;
     }
 
     @Override
