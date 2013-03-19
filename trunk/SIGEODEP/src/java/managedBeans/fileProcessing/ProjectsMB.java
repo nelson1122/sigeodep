@@ -7,6 +7,7 @@ package managedBeans.fileProcessing;
 import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.*;
+import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -123,7 +124,8 @@ public class ProjectsMB implements Serializable {
     private CopyManager cpManager;
     private int maxNumberInserts = 1000000;//numero de insert por copy realizado
     private int currentNumberInserts = 0;//numero de insert actual
-
+    private long startColumnId = 0;//columna inicial en tabla 'project_columns'
+    private long endColumnId = 0;//columna inicial en tabla 'project_columns'
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES DE PROPOSITO GENERAL ---------------------------------------
@@ -133,6 +135,7 @@ public class ProjectsMB implements Serializable {
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
      */
+
     @PostConstruct
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
@@ -538,13 +541,14 @@ public class ProjectsMB implements Serializable {
             } catch (Exception e) {
                 max = 0;
             }
-
+            startColumnId = max + 1;
             for (int i = 0; i < headerFileNames.size(); i++) {
                 max++;
                 sb2.
                         append(max).append("\t").
                         append(headerFileNames.get(i)).append("\n");
                 headerFileIds.add(max);
+                endColumnId = max;
             }
             //reader2.unread(sb2.toString().toCharArray());
             cpManager.copyIn("COPY project_columns FROM STDIN", new StringReader(sb2.toString()));
@@ -747,7 +751,11 @@ public class ProjectsMB implements Serializable {
                 } else {
                     uploadFileDelimiter();
                 }
-
+                //ACTUALIZO INICIO Y FIN DE LAS COLUMNAS
+                newProject = projectsFacade.find(currentProjectId);
+                newProject.setStartColumnId(BigInteger.valueOf(startColumnId));
+                newProject.setEndColumnId(BigInteger.valueOf(endColumnId));
+                projectsFacade.edit(newProject);
                 //cargo las variables del proyecto actual                
                 currentProjectName = newProjectName;
                 currentDelimiter = newDelimiter;
@@ -875,26 +883,44 @@ public class ProjectsMB implements Serializable {
     }
 
     public void removeProject() {
-        String sql;
+        String sql="";
         if (selectedProjectTable != null) {
             Projects openProject = projectsFacade.find(Integer.parseInt(selectedProjectTable.getColumn1()));
             if (openProject != null) {
                 if (openProject.getUserId() == loginMB.getCurrentUser().getUserId()) {
-                    String nameProjet = openProject.getProjectName();           
-                    sql = " \n"
-                            + " delete from \n"
-                            + "    project_columns \n"
-                            + " where \n"
-                            + "    column_id IN \n"
-                            + "    (select \n"
-                            + "        distinct(column_id) \n"
-                            + "     from \n"
-                            + "        project_records \n"
-                            + "     where \n"
-                            + "        project_id=" + openProject.getProjectId() + " \n"
-                            + "    );";
-                    //System.out.println("Eliminado project_columns" + sql);
-                    connectionJdbcMB.non_query(sql);
+                    String nameProjet = openProject.getProjectName();
+                    //---------------------------------------------------------
+                    try {
+                        //determino e inicio de la columnas
+                        sql = " \n"
+                                + " SELECT \n"
+                                + "    start_column_id, \n"
+                                + "    end_column_id \n"
+                                + " FROM \n"
+                                + "    projects \n"
+                                + " WHERE \n"
+                                + "        project_id=" + openProject.getProjectId() + " \n";
+                        ResultSet rs = connectionJdbcMB.consult(sql);
+                        if (rs.next()) {
+                            sql = " \n"
+                                    + " DELETE from \n"
+                                    + "    project_columns \n"
+                                    + " WHERE \n"
+                                    + "    column_id IN \n"
+                                    + "    (SELECT "
+                                    + "        column_id "
+                                    + "     FROM "
+                                    + "        project_columns "
+                                    + "     WHERE "
+                                    + "        column_id between " + rs.getString(1) + " AND " + rs.getString(2) + " "
+                                    + "    )";
+                            //System.out.println("Eliminado project_columns" + sql);
+                            connectionJdbcMB.non_query(sql);
+                        }
+                    } catch (SQLException ex) {
+                        System.out.println("Exception project_columns \n" + sql + "\n " + ex.toString());
+                    }
+                    //---------------------------------------------------------
                     sql = " \n"
                             + " delete from \n"
                             + "    project_records \n"
@@ -902,7 +928,7 @@ public class ProjectsMB implements Serializable {
                             + "    project_id=" + openProject.getProjectId() + " \n";
                     //System.out.println("Eliminado project_records" + sql);
                     connectionJdbcMB.non_query(sql);
-
+                    //---------------------------------------------------------
                     sql = ""
                             + " delete from \n"
                             + "    projects \n"
@@ -911,7 +937,7 @@ public class ProjectsMB implements Serializable {
                     //System.out.println("Eliminado projects" + sql);
                     connectionJdbcMB.non_query(sql);
 
-                    if (openProject.getProjectId() == currentProjectId) {//EL PROYECTO ACTUAL ES EL ABIERTO 
+                    if (openProject.getProjectId() == currentProjectId) {//proyecto actual es el actual
                         Users currentUser = loginMB.getCurrentUser();
                         currentUser.setProjectId(null);
                         usersFacade.edit(currentUser);
@@ -1159,7 +1185,6 @@ public class ProjectsMB implements Serializable {
 //            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", ex.toString()));
 //        }
 //    }
-
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES GET Y SET DE LAS VARIABLES ---------------------------------
@@ -1304,7 +1329,6 @@ public class ProjectsMB implements Serializable {
 //    public void setStoredRelationsMB(StoredRelationsMB storedRelationsMB) {
 //        this.storedRelationsMB = storedRelationsMB;
 //    }
-
     public boolean isInactiveTabs() {
         return inactiveTabs;
     }

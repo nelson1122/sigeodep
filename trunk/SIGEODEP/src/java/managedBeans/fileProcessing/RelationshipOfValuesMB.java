@@ -447,6 +447,7 @@ public class RelationshipOfValuesMB implements Serializable {
                     sql = sql + " AND ( relation_values.name_expected ILIKE '%" + relatedValuesFilter + "%' \n";
                     sql = sql + " OR relation_values.name_found ILIKE '%" + relatedValuesFilter + "%' ) \n";
                 }
+                sql = sql + " ORDER BY relation_values.id_relation_values DESC \n";
                 sql = sql + " LIMIT 50 \n"; //System.out.println("005 relacionados\n" + sql);
                 rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
