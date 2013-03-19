@@ -128,6 +128,10 @@
                                 <br/>
                                 <br/>
                                 <h:outputLabel value="Archivo: "/>                                      
+                                <!--p:commandButton
+                                    actionListener="# {projectsMB.corregir}"
+                                    value="Corregir"/--> 
+                                
                                 <h:outputLabel id="IdNewNameFile" value="#{projectsMB.newFileName}"/>
                                 <br/>
                                 <br/>
@@ -1866,7 +1870,7 @@
                         style="margin:0;"
                         actionListener="#{projectsMB.removeProject}"
                         oncomplete="removeProjectDialog.hide()"
-                        update=":IdForm"/>  
+                        update=":IdForm :IdForm2"/>  
                     <p:commandButton                        
                         value="Cancelar" 
                         onclick="removeProjectDialog.hide()"

@@ -105,7 +105,7 @@ public class ProjectsMB implements Serializable {
     private ErrorsControlMB errorsControlMB;
     private LoginMB loginMB;
     private RecordDataMB recordDataMB;
-    private StoredRelationsMB storedRelationsMB;
+    //private StoredRelationsMB storedRelationsMB;
     private ConnectionJdbcMB connectionJdbcMB;
     private CopyMB copyMB;
     //private List<Tags> tagsList;
@@ -194,7 +194,8 @@ public class ProjectsMB implements Serializable {
          * Cargar el formulario con los valores iniciales
          */
 
-
+        currentProjectId = -1;
+        inactiveTabs = true;
         newFormId = "SCC-F-032";
         file = null;
         currentProjectName = "";
@@ -236,8 +237,8 @@ public class ProjectsMB implements Serializable {
     public void loadRelatedGroups() {
         //-----------------------------------------------
         List<RelationGroup> relationGroupList = relationGroupFacade.findAll();
-        currentRelationsGroupNameInLoad="";
-        copyRelationsGroupName="";
+        currentRelationsGroupNameInLoad = "";
+        copyRelationsGroupName = "";
         relationGroupsInLoad = new ArrayList<String>();
         relationGroupsInCopy = new ArrayList<String>();
         for (int i = 0; i < relationGroupList.size(); i++) {
@@ -874,43 +875,53 @@ public class ProjectsMB implements Serializable {
     }
 
     public void removeProject() {
+        String sql;
         if (selectedProjectTable != null) {
             Projects openProject = projectsFacade.find(Integer.parseInt(selectedProjectTable.getColumn1()));
             if (openProject != null) {
                 if (openProject.getUserId() == loginMB.getCurrentUser().getUserId()) {
-                    String nameProjet = openProject.getProjectName();
-                    System.out.println("currentProyectId" + currentProjectId);
-                    System.out.println("openProject.getProjectId()" + openProject.getProjectId());
-                    if (openProject.getProjectId() != currentProjectId) {
-                        connectionJdbcMB.non_query(""
-                                + " delete from "
-                                + "    project_columns "
-                                + " where "
-                                + "    column_id IN "
-                                + "    (select"
-                                + "        column_id"
-                                + "     from "
-                                + "        project_records "
-                                + "     where "
-                                + "        project_id=" + openProject.getProjectId()
-                                + "    );");
-                        connectionJdbcMB.non_query(""
-                                + " delete from "
-                                + "    project_records "
-                                + " where "
-                                + "    project_id=" + openProject.getProjectId() + ";");
-                        connectionJdbcMB.non_query(""
-                                + " delete from "
-                                + "    projects "
-                                + " where "
-                                + "    project_id=" + openProject.getProjectId() + ";");
-                        loadProjects();
-                        printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El proyecto " + nameProjet + " se ha eliminado");
+                    String nameProjet = openProject.getProjectName();           
+                    sql = " \n"
+                            + " delete from \n"
+                            + "    project_columns \n"
+                            + " where \n"
+                            + "    column_id IN \n"
+                            + "    (select \n"
+                            + "        distinct(column_id) \n"
+                            + "     from \n"
+                            + "        project_records \n"
+                            + "     where \n"
+                            + "        project_id=" + openProject.getProjectId() + " \n"
+                            + "    );";
+                    //System.out.println("Eliminado project_columns" + sql);
+                    connectionJdbcMB.non_query(sql);
+                    sql = " \n"
+                            + " delete from \n"
+                            + "    project_records \n"
+                            + " where \n"
+                            + "    project_id=" + openProject.getProjectId() + " \n";
+                    //System.out.println("Eliminado project_records" + sql);
+                    connectionJdbcMB.non_query(sql);
+
+                    sql = ""
+                            + " delete from \n"
+                            + "    projects \n"
+                            + " where \n"
+                            + "    project_id=" + openProject.getProjectId() + " \n";
+                    //System.out.println("Eliminado projects" + sql);
+                    connectionJdbcMB.non_query(sql);
+
+                    if (openProject.getProjectId() == currentProjectId) {//EL PROYECTO ACTUAL ES EL ABIERTO 
+                        Users currentUser = loginMB.getCurrentUser();
+                        currentUser.setProjectId(null);
+                        usersFacade.edit(currentUser);
+                        this.reset();
                     } else {
-                        printMessage(FacesMessage.SEVERITY_ERROR, "Error", "El proyecto que desea eliminar es el proyecto que se encuentra abierto en este momento");
+                        loadProjects();
                     }
+                    printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El proyecto " + nameProjet + " se ha eliminado");
                 } else {
-                    printMessage(FacesMessage.SEVERITY_ERROR, "Error", "El proyecto pertenece a otro usuario, para hacer uso de este debe crear una copia y posteriormente abrirla");
+                    printMessage(FacesMessage.SEVERITY_ERROR, "Error", "El proyecto pertenece a otro usuario.");
                 }
             } else {
                 printMessage(FacesMessage.SEVERITY_ERROR, "Error", "El proyecto no pudo ser encontrado");
@@ -935,7 +946,7 @@ public class ProjectsMB implements Serializable {
             configurationLoaded = true;
             relationshipOfVariablesMB.reset();
             relationshipOfValuesMB.reset();
-            storedRelationsMB.reset();
+            //storedRelationsMB.reset();
             recordDataMB.reset();
             errorsControlMB.reset();
             this.reset();
@@ -1101,9 +1112,53 @@ public class ProjectsMB implements Serializable {
 //        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Se han reinicidado los controles"));
 //    }
     public void clearRelationGroup() {
-        newRelationsGroupName="";
+        newRelationsGroupName = "";
     }
-    
+
+//    public void corregir() {
+//        try {
+//            String line;
+//            InputStreamReader isr;
+//            BufferedReader buffer;
+//            headerFileNames = new ArrayList<String>();
+//            String[] tupla;
+//            isr = new InputStreamReader(file.getInputstream());
+//            buffer = new BufferedReader(isr);
+//            //Leer el la informacion del archivo linea por linea                       
+//            ArrayList<String> descartarlos = new ArrayList<String>();
+//            while ((line = buffer.readLine()) != null) {
+//                tupla = line.split("\t");
+//                boolean esta = false;
+//                for (int i = 0; i < descartarlos.size(); i++) {
+//                    if (descartarlos.get(i).compareTo(tupla[0]) == 0) {
+//                        esta = true;
+//                        break;
+//                    }
+//                }
+//                if (!esta) {
+//                    descartarlos.add(tupla[0]);
+//                }
+//                esta = false;
+//                for (int i = 0; i < descartarlos.size(); i++) {
+//                    if (descartarlos.get(i).compareTo(tupla[1]) == 0) {
+//                        esta = true;
+//                        break;
+//                    }
+//                }
+//                if (!esta) {
+//                    System.out.println("\n DELETE FROM relation_values WHERE id_relation_values = " + tupla[1] + ";");
+//                    descartarlos.add(tupla[1]);
+//                }
+//            }
+//            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "correcto", "finalizado"));
+//        } catch (IOException e) {
+//            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
+//            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", e.toString()));
+//        } catch (Exception ex) {
+//            System.out.println("Error 4 en " + this.getClass().getName() + ":" + ex.toString());
+//            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", ex.toString()));
+//        }
+//    }
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -1246,9 +1301,9 @@ public class ProjectsMB implements Serializable {
         this.relationshipOfVariablesMB = relationshipOfVariablesMB;
     }
 
-    public void setStoredRelationsMB(StoredRelationsMB storedRelationsMB) {
-        this.storedRelationsMB = storedRelationsMB;
-    }
+//    public void setStoredRelationsMB(StoredRelationsMB storedRelationsMB) {
+//        this.storedRelationsMB = storedRelationsMB;
+//    }
 
     public boolean isInactiveTabs() {
         return inactiveTabs;

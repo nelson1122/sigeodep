@@ -66,7 +66,7 @@ public class LoginMB {
     ProjectsMB projectsMB;
     RelationshipOfVariablesMB relationshipOfVariablesMB;
     RelationshipOfValuesMB relationshipOfValuesMB;
-    StoredRelationsMB storedRelationsMB;
+    // storedRelationsMB;
     RecordDataMB recordDataMB;
     ErrorsControlMB errorsControlMB;
     @EJB
@@ -167,7 +167,7 @@ public class LoginMB {
         projectsMB.reset();
         relationshipOfVariablesMB.reset();
         relationshipOfValuesMB.reset();
-        storedRelationsMB.reset();
+        //storedRelationsMB.reset();
         recordDataMB.reset();
         errorsControlMB.reset();
     }
@@ -200,7 +200,7 @@ public class LoginMB {
                 projectsMB = (ProjectsMB) context.getApplication().evaluateExpressionGet(context, "#{projectsMB}", ProjectsMB.class);
                 relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
                 relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
-                storedRelationsMB = (StoredRelationsMB) context.getApplication().evaluateExpressionGet(context, "#{storedRelationsMB}", StoredRelationsMB.class);
+                //storedRelationsMB = (StoredRelationsMB) context.getApplication().evaluateExpressionGet(context, "#{storedRelationsMB}", StoredRelationsMB.class);
                 recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
                 errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
 
@@ -220,14 +220,14 @@ public class LoginMB {
                 relationshipOfVariablesMB.setProjectsMB(projectsMB);
 
                 errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-                storedRelationsMB.setProjectsMB(projectsMB);
-                storedRelationsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-                storedRelationsMB.setCurrentRelationsGroup(relationshipOfVariablesMB.getCurrentRelationsGroup());
-                storedRelationsMB.loadRelatedGroups();
+//                storedRelationsMB.setProjectsMB(projectsMB);
+//                storedRelationsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
+//                storedRelationsMB.setCurrentRelationsGroup(relationshipOfVariablesMB.getCurrentRelationsGroup());
+//                storedRelationsMB.loadRelatedGroups();
 
                 projectsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
                 // obtener id de proyecto y llamar a funcion 
-                projectsMB.setStoredRelationsMB(storedRelationsMB);
+//                projectsMB.setStoredRelationsMB(storedRelationsMB);
                 if (currentUser.getProjectId() != null) {
                     projectsMB.openProject(currentUser.getProjectId());
                 }

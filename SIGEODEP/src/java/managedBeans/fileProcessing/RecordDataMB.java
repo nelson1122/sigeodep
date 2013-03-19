@@ -184,7 +184,7 @@ public class RecordDataMB implements Serializable {
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private RelationGroup currentRelationsGroup;
     //private FormsAndFieldsDataMB formsAndFieldsDataMB;
-    private StoredRelationsMB storedRelationsMB;
+    //private StoredRelationsMB storedRelationsMB;
     private ProjectsMB projectsMB;
     private LoginMB loginMB;
     private ErrorsControlMB errorsControlMB;
@@ -4997,13 +4997,13 @@ public class RecordDataMB implements Serializable {
         this.relationshipOfVariablesMB = relationshipOfVariablesMB;
     }
 
-    public void setStoredRelationsMB(StoredRelationsMB storedRelationsMB) {
-        this.storedRelationsMB = storedRelationsMB;
-    }
-
-    public StoredRelationsMB getStoredRelationsMB() {
-        return storedRelationsMB;
-    }
+//    public void setStoredRelationsMB(StoredRelationsMB storedRelationsMB) {
+//        this.storedRelationsMB = storedRelationsMB;
+//    }
+//
+//    public StoredRelationsMB getStoredRelationsMB() {
+//        return storedRelationsMB;
+//    }
 
     public ErrorsControlMB getErrorsControlMB() {
         return errorsControlMB;
