@@ -420,17 +420,34 @@ public class RelationshipOfValuesMB implements Serializable {
             if (currentRelationVariables != null) {
                 sql = ""
                         + " SELECT \n"
-                        + "   relation_values.name_expected, \n"
-                        + "   relation_values.name_found \n"
+                        + "    relation_values.name_expected, \n"
+                        + "    relation_values.name_found \n"
                         + " FROM \n"
-                        + "   public.relation_values \n"
+                        + "    public.relation_values \n"
                         + " WHERE \n"
-                        + "   relation_values.id_relation_variables = " + currentRelationVariables.getIdRelationVariables() + " \n";
+                        + "    relation_values.id_relation_variables = " + currentRelationVariables.getIdRelationVariables() + " AND \n"
+                        + "    --LO QUE SIGUE ES PARA MOSTRAR SOLO LOS USADOS \n"
+                        + "    relation_values.name_found IN \n"
+                        + "    (SELECT \n"
+                        + "        DISTINCT(project_records.data_value) \n"
+                        + "     FROM \n"
+                        + "        project_records \n"
+                        + "     WHERE \n"
+                        + "        project_id = 1 AND \n"
+                        + "        column_id IN \n"
+                        + "        (SELECT \n"
+                        + "            column_id \n"
+                        + "         FROM \n"
+                        + "            project_columns \n"
+                        + "         WHERE \n"
+                        + "            project_columns.column_name LIKE '" + currentRelationVariables.getNameFound() + "' \n"
+                        + "        ) \n"
+                        + "    ) \n";
                 if (relatedValuesFilter != null && relatedValuesFilter.trim().length() != 0) {
                     sql = sql + " AND ( relation_values.name_expected ILIKE '%" + relatedValuesFilter + "%' \n";
                     sql = sql + " OR relation_values.name_found ILIKE '%" + relatedValuesFilter + "%' ) \n";
                 }
-                sql = sql + " LIMIT 50"; //System.out.println("005 relacionados\n" + sql);
+                sql = sql + " LIMIT 50 \n"; //System.out.println("005 relacionados\n" + sql);
                 rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
                     valuesRelated.add(rs.getString(1) + "->" + rs.getString(2));
@@ -817,7 +834,7 @@ public class RelationshipOfValuesMB implements Serializable {
                             + " 		project_records  \n"
                             + " 	 WHERE    \n"
                             + " 		project_id = " + projectsMB.getCurrentProjectId() + " AND  \n"
-                            + " 		column_id=  \n"
+                            + " 		column_id IN  \n"
                             + " 			(SELECT  \n"
                             + " 				column_id  \n"
                             + " 			FROM  \n"
