@@ -28,6 +28,16 @@ public class JobsFacade extends AbstractFacade<Jobs> {
     public JobsFacade() {
         super(Jobs.class);
     }
+    
+    public Jobs findByName(String name) {
+        String hql = "Select x from Jobs x where x.jobName=:name";
+        try {
+            return (Jobs) em.createQuery(hql).setParameter("name", name).getSingleResult();
+        } catch (Exception e) {
+            System.out.println(e.toString() + "----------------------------------------------------");
+            return null;
+        }
+    }
 
     public List<Jobs> findAllOrder() {
         String hql = "Select x from Jobs x ORDER BY x.jobName asc";

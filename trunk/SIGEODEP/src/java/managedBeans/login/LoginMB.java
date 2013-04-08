@@ -6,13 +6,6 @@ package managedBeans.login;
 
 import beans.connection.ConnectionJdbcMB;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -42,109 +35,71 @@ public class LoginMB {
     private String userJob = "";
     private Users currentUser;
     private String activeIndexAcoordion1 = "-1";
-//    private String prueba = "17/02/10";
-//    private SimpleDateFormat sdf1 = new SimpleDateFormat("dd/MM/yyyy");
-//    private SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yy");
-//    public String getPrueba() {
-//        try {
-//            prueba=sdf1.format(sdf2.parse(prueba));
-//            System.out.println(prueba);
-//        } catch (Exception e) {
-//            System.out.println(e.toString());
-//        }
-//        return prueba;
-//    }
-//
-//    public void setPrueba(String prueba) {
-//        this.prueba = prueba;
-//    }
     private String activeIndexAcoordion2 = "-1";
-    //private int countLogout = 0;//si este valor llega a 10 se finaliza la sesion
     FacesContext context;
-    //FormsAndFieldsDataMB formsAndFieldsDataMB;
     ConnectionJdbcMB connectionJdbcMB;
     ProjectsMB projectsMB;
     RelationshipOfVariablesMB relationshipOfVariablesMB;
     RelationshipOfValuesMB relationshipOfValuesMB;
-    // storedRelationsMB;
+    ApplicationControlMB applicationControlMB;
     RecordDataMB recordDataMB;
     ErrorsControlMB errorsControlMB;
     @EJB
     UsersFacade usersFacade;
+    private String closeSessionDialog = "";
+
     //progreso de carga de la aplicacion ***********************************    
-    private Integer progress;
-
-    public Integer getProgress() {
-        return progress;
-    }
-
-    public void setProgress(Integer progress) {
-        this.progress = progress;
-    }
-
-    public void onComplete() {
-        //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la adición de " + String.valueOf(tuplesProcessed)
-        //       + "registros, para filalizar guarde si lo desea la configuración de relaciones actual o reinicie para realizar la carga de registros de otro acrchivo"));
-    }
-
-    public void cancel() {
-        progress = null;
-    }
+//    private Integer progress;   
+//
+//    public Integer getProgress() {
+//        return progress;
+//    }
+//
+//    public void setProgress(Integer progress) {
+//        this.progress = progress;
+//    }
+//
+//    public void onComplete() {
+//        //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la adición de " + String.valueOf(tuplesProcessed)
+//        //       + "registros, para filalizar guarde si lo desea la configuración de relaciones actual o reinicie para realizar la carga de registros de otro acrchivo"));
+//    }
+//
+//    public void cancel() {
+//        progress = null;
+//    }
     //progreso de carga de la aplicacion***********************************    
-
     @PreDestroy
-    private void destruir() {
-        System.out.println("FINALIZA LA SESION: idSession=" + idSession);
-        if (connectionJdbcMB == null) {
-            System.out.println("Sale de la aplicacion, no hay conexion a db");
-        } else {
-            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM users");
-            try {
-                if (rs.next()) {
-                    System.out.println("Termina session por inactividad 001");
-                } else {
-                    System.out.println("Termina session por inactividad 002");
-                }
-                connectionJdbcMB.disconnect();
-            } catch (Throwable t) {
-                System.out.println("Termina session por inactividad 003");
-            }
-        }
-    }
-
-    public void eliminarDatos() {
+    private void destroySession() {
         try {
-            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM relation_values");
-            while (rs.next()) {
-                ResultSet rs2 = connectionJdbcMB.consult("SELECT * FROM relation_values");
-                while (rs2.next()) {
-                    if (rs.getString("name_expected").compareTo(rs2.getString("name_expected")) == 0
-                            && rs.getString("name_found").compareTo(rs2.getString("name_found")) == 0) {
-                        if (rs.getInt("id_relation_values") != rs2.getInt("id_relation_values")) {
-                            connectionJdbcMB.remove("relation_values", "id_relation_values=" + String.valueOf(rs2.getInt("id_relation_values")));
-                            System.out.println("son los mismos en: " + String.valueOf(rs.getInt("id_relation_values")) + " Y " + String.valueOf(rs2.getInt("id_relation_values")));
-                        }
-                    }
-                }
+            applicationControlMB.removeSession(idSession);
+            if (!connectionJdbcMB.conn.isClosed()) {
+                connectionJdbcMB.disconnect();
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(LoginMB.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception e) {
+            //System.out.println("Termina session por inactividad 003 " + e.toString());
         }
     }
-
-    //public void logout1() {//fin de session por inactividad
-    //}
-    public void logout2() {//fin de ssesion al terminar session
-        //ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
-        //String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
-        System.out.println("FINALIZA LA SESION: idSession=" + idSession);
+    
+    public void logout1() {//fin de session por que se inicio una nueva session en otro equipo      
+        applicationControlMB.removeSession(idSession);
         try {
             ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
             String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
-            ((HttpSession) ctx.getSession(false)).invalidate();
+            ((HttpSession) ctx.getSession(false)).invalidate();  //System.out.println("se redirecciona");
+            ctx.redirect(ctxPath + "/index.html?v=close");
+        } catch (Exception ex) { //System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
+        }
+    }
+
+    public void logout2() {//fin de sesion al terminar session dada por el usuario
+        applicationControlMB.removeSession(idSession);//System.out.println("Finaliza session "+loginname+" ID: "+idSession);
+        try {
+            ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+            String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
+            ((HttpSession) ctx.getSession(false)).invalidate();//System.out.println("se redirecciona");
             ctx.redirect(ctxPath + "/index.html");
         } catch (Exception ex) {
-            System.out.println("Excepcion cuando usuacio cierra sesion sesion: " + ex.toString());
+            System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
         }
     }
 
@@ -152,6 +107,8 @@ public class LoginMB {
         /**
          * Creates a new instance of LoginMB
          */
+        //sessionControlMB
+        //System.out.println("ingreso a Login MB");
 //        try {
 //            System.out.println("DIRECTORIO TEMPORALES:    " + System.getProperty("java.io.tmpdir"));
 //            PrintStream out = new PrintStream(new FileOutputStream(System.getProperty("java.io.tmpdir")+"output.txt"));
@@ -167,7 +124,6 @@ public class LoginMB {
         projectsMB.reset();
         relationshipOfVariablesMB.reset();
         relationshipOfValuesMB.reset();
-        //storedRelationsMB.reset();
         recordDataMB.reset();
         errorsControlMB.reset();
     }
@@ -181,70 +137,79 @@ public class LoginMB {
         this.autenticado = autenticado;
     }
 
+    public String closeSessionAndLogin() {
+        /*
+         * cerrar una session abierta y continuar abriendo una nueva
+         */
+        applicationControlMB.removeSession(currentUser.getUserId());
+        return continueLogin();
+    }
+
+    private String continueLogin() {
+        FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", loginname);
+        HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
+        idSession = session.getId();
+        userLogin = currentUser.getUserLogin();
+        userName = currentUser.getUserName();
+        userJob = currentUser.getUserJob();
+        applicationControlMB.addSession(currentUser.getUserId(), idSession);
+        context = FacesContext.getCurrentInstance();
+        //System.out.println("Usuario se logea " + loginname + " ID: " + idSession);
+        connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        if (connectionJdbcMB.connectToDb()) {
+            projectsMB = (ProjectsMB) context.getApplication().evaluateExpressionGet(context, "#{projectsMB}", ProjectsMB.class);
+            relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
+            relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
+            recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
+            errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
+
+            projectsMB.reset();
+            relationshipOfVariablesMB.reset();
+
+            recordDataMB.setErrorsControlMB(errorsControlMB);
+            recordDataMB.setLoginMB(this);
+            recordDataMB.setProjectsMB(projectsMB);
+
+            relationshipOfValuesMB.setProjectsMB(projectsMB);
+            relationshipOfVariablesMB.setRelationshipOfValuesMB(relationshipOfValuesMB);
+            relationshipOfVariablesMB.setProjectsMB(projectsMB);
+
+            errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
+            errorsControlMB.setProjectsMB(projectsMB);
+            projectsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
+
+            if (currentUser.getProjectId() != null) {
+                projectsMB.openProject(currentUser.getProjectId());
+            }
+            autenticado = true;
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto!!", "Se ha ingresado al sistema");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+            return "homePage";
+        } else {
+            FacesMessage msg2 = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Se debe crear una conexión");
+            FacesContext.getCurrentInstance().addMessage(null, msg2);
+            password = "";
+            return "indexConfiguration";
+        }
+    }
+
     public String CheckValidUser() {
+        closeSessionDialog = "";
         currentUser = usersFacade.findUser(loginname, password);
         if (currentUser != null) {
-            FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", loginname);
-            //ExternalContext ext = context.getExternalContext();
-            HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
-            idSession = session.getId();
-            System.out.println("INICIA sesion: idSession=" + idSession);
-
-            userLogin = currentUser.getUserLogin();
-            userName = currentUser.getUserName();
-            userJob = currentUser.getUserJob();
-            context = FacesContext.getCurrentInstance();
-            //System.out.println("INICIA... carga de ManagedBeans");
-            connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-            if (connectionJdbcMB.connectToDb()) {
-                projectsMB = (ProjectsMB) context.getApplication().evaluateExpressionGet(context, "#{projectsMB}", ProjectsMB.class);
-                relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
-                relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
-                //storedRelationsMB = (StoredRelationsMB) context.getApplication().evaluateExpressionGet(context, "#{storedRelationsMB}", StoredRelationsMB.class);
-                recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
-                errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
-
-                //System.out.println("INICIA... carga de informacion formularios");
-                projectsMB.reset();
-                relationshipOfVariablesMB.reset();
-
-                //System.out.println("INICIA... carga de valores iniciales");
-                recordDataMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-                recordDataMB.setErrorsControlMB(errorsControlMB);
-                recordDataMB.setLoginMB(this);
-                recordDataMB.setProjectsMB(projectsMB);
-
-                //relationshipOfValuesMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-                relationshipOfValuesMB.setProjectsMB(projectsMB);
-                relationshipOfVariablesMB.setRelationshipOfValuesMB(relationshipOfValuesMB);
-                relationshipOfVariablesMB.setProjectsMB(projectsMB);
-
-                errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-//                storedRelationsMB.setProjectsMB(projectsMB);
-//                storedRelationsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-//                storedRelationsMB.setCurrentRelationsGroup(relationshipOfVariablesMB.getCurrentRelationsGroup());
-//                storedRelationsMB.loadRelatedGroups();
-
-                projectsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-                // obtener id de proyecto y llamar a funcion 
-//                projectsMB.setStoredRelationsMB(storedRelationsMB);
-                if (currentUser.getProjectId() != null) {
-                    projectsMB.openProject(currentUser.getProjectId());
-                }
-
-                //reset();
-                autenticado = true;
-
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto!!", "Se ha ingresado al sistema");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
-                return "homePage";
+            ExternalContext contexto = FacesContext.getCurrentInstance().getExternalContext();
+            applicationControlMB = (ApplicationControlMB) contexto.getApplicationMap().get("applicationControlMB");
+            //determino si el usuario tiene una session alctiva
+            if (applicationControlMB.hasLogged(currentUser.getUserId())) {//System.out.println("Ingreso rechazado, ya tiene otra session activa");
+                closeSessionDialog = "closeSessionDialog.show()";
+                return "";//no dirigir a ninguna pagina
             } else {
-                FacesMessage msg2 = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Se debe crear una conexión");
-                FacesContext.getCurrentInstance().addMessage(null, msg2);
-                password = "";
-                return "indexConfiguration";
+                return continueLogin();
             }
         } else {
+            //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "SESION FINALIZADA", "La sesión fue finalizada por que se inició una nueva sesión para el mismo usuario");
+            //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "SESION FINALIZADA", "Después de 20 minutos de inactividad el sistema finaliza la sesión automáticamente, por favor presione el botón: ' ingresar a la aplicación ' para acceder nuevamente.");
+            //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "ACCESO DENEGADO", "La sesión ha finalizado por inactividad o no se ha iniciado una sesión.");
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Incorrecto Usuario o Clave");
             FacesContext.getCurrentInstance().addMessage(null, msg);
             password = "";
@@ -314,5 +279,21 @@ public class LoginMB {
 
     public void setActiveIndexAcoordion2(String activeIndexAcoordion2) {
         this.activeIndexAcoordion2 = activeIndexAcoordion2;
+    }
+
+    public String getCloseSessionDialog() {
+        return closeSessionDialog;
+    }
+
+    public void setCloseSessionDialog(String closeSessionDialog) {
+        this.closeSessionDialog = closeSessionDialog;
+    }
+
+    public String getIdSession() {
+        return idSession;
+    }
+
+    public void setIdSession(String idSession) {
+        this.idSession = idSession;
     }
 }

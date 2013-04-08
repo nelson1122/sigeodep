@@ -476,14 +476,27 @@
                                         <h:outputLabel value="OCUPACION:   "/>                                          
                                     </p:column>
                                     <p:column>                                        
-                                        <h:selectOneMenu value="#{suicideMB.currentJob}" > 
-                                            <f:selectItems value="#{suicideMB.jobs}"/>
+                                        <p:autoComplete                                                                                                                 
+                                            id="IdJob"
+                                            value="#{suicideMB.currentJob}"                                                                    
+                                            completeMethod="#{suicideMB.suggestJobs}" 
+                                            size="105" 
+                                            forceSelection="true">  
+                                            <p:ajax 
+                                                event="itemSelect" 
+                                                listener="#{suicideMB.changeForm}" 
+                                                update="IdControls" 
+                                                process="@this"/>
+                                        </p:autoComplete>
+                                        <!--h:selectOneMenu value="# {suicideMB.currentJob}" > 
+                                            <f:selectItems value="#  {suicideMB.jobs}"/>
                                             <f:ajax 
                                                 event="change"                                                                                                            
                                                 render="IdControls message"
-                                                listener="#{suicideMB.changeForm}"/>
-                                        </h:selectOneMenu>
+                                                listener="# {suicideMB.changeForm}"/>
+                                        </h:selectOneMenu-->
                                     </p:column>
+                                    
                                 </p:row>
                                 <p:row>  
                                     <p:column>

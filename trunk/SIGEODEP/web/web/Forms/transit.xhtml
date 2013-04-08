@@ -505,13 +505,25 @@
                                         <h:outputLabel value="OCUPACION:   "/>                                          
                                     </p:column>
                                     <p:column>
-                                        <h:selectOneMenu value="#{transitMB.currentJob}" > 
-                                            <f:selectItems value="#{transitMB.jobs}"/>
+                                        <p:autoComplete                                                                                                                 
+                                            id="IdJob"
+                                            value="#{transitMB.currentJob}"                                                                    
+                                            completeMethod="#{transitMB.suggestJobs}" 
+                                            size="105" 
+                                            forceSelection="true">                                                        
+                                            <p:ajax 
+                                                event="itemSelect" 
+                                                listener="#{transitMB.changeForm}" 
+                                                update="IdControls" 
+                                                process="@this"/>
+                                        </p:autoComplete>
+                                        <!--h:selectOneMenu value="# {transitMB.currentJob}" > 
+                                            <f:selectItems value="# {transitMB.jobs}"/>
                                             <f:ajax 
                                                 event="change"                                                                                                            
                                                 render="IdControls message"
-                                                listener="#{transitMB.changeForm}"/>
-                                        </h:selectOneMenu>
+                                                listener="# {transitMB.changeForm}"/>
+                                        </h:selectOneMenu-->
                                     </p:column>
                                 </p:row>
                                 <p:row>  
@@ -604,7 +616,7 @@
                                 </p:row>
                                 <p:row>  
                                     <p:column>BARRIO RESIDENCIA:&nbsp; </p:column>
-                                    <p:column>
+                                    <p:column>                                        
                                         <p:autoComplete 
                                             id="IdNeighborhoodHomeName"                                                        
                                             value="#{transitMB.currentNeighborhoodHome}"                                                                    
@@ -1298,7 +1310,7 @@
                         value="Si" 
                         actionListener="#{transitMB.saveAndGoNext}"
                         update=":IdForm1"/> 
-                    
+
                     <p:commandButton
                         value="No" 
                         oncomplete="dialogNext.hide(); goFirstFocus();"

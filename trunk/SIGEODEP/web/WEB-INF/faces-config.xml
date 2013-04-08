@@ -383,7 +383,6 @@
             <from-outcome>populations</from-outcome>
             <to-view-id>/web/configurations/populations.xhtml</to-view-id>
             <redirect/>
-        </navigation-case>      
-            
-    </navigation-rule>
+        </navigation-case>                  
+    </navigation-rule>    
 </faces-config>

@@ -7,6 +7,7 @@ package managedBeans.fileProcessing;
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.*;
 import beans.errorsControl.ErrorControl;
+import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -181,15 +182,18 @@ public class RecordDataMB implements Serializable {
     AccidentMechanismsFacade accidentMechanismsFacade;
     @EJB
     GenNnFacade genNnFacade;
-    private RelationshipOfVariablesMB relationshipOfVariablesMB;
+    @EJB
+    ProjectsFacade projectsFacade;
+    //private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private RelationGroup currentRelationsGroup;
     //private FormsAndFieldsDataMB formsAndFieldsDataMB;
     //private StoredRelationsMB storedRelationsMB;
     private ProjectsMB projectsMB;
     private LoginMB loginMB;
     private ErrorsControlMB errorsControlMB;
-    private String[] columnsNames;
+    private ArrayList<String> columnsNames;
     private String nameForm = "";
+    private boolean isValidate = false;//se ha realizado la validacion de los datos
     //private ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
     private RelationVariables relationVar;
     private int tuplesNumber;
@@ -225,6 +229,7 @@ public class RecordDataMB implements Serializable {
     List<CounterpartInvolvedVehicle> involvedVehiclesList;
     private Others newOther;
     private String value = "";
+    private String registryData = "";
     private String name = "";
     private String surname = "";
     private String intencionality = "";
@@ -233,7 +238,8 @@ public class RecordDataMB implements Serializable {
     private String dia = "";//dia evento
     private String mes = "";//mes evento
     private String ao = "";//año del evento
-    private String diacon = "";//dia de la semana cnsulta                                
+    private String diacon = "";//dia de la semana cnsulta
+    private String sql = "";
     private String dia1 = "";//dia de la consulta
     private String mes1 = "";//mes de la consulta
     private String ao1 = "";//año de la consulta
@@ -254,7 +260,11 @@ public class RecordDataMB implements Serializable {
     private Date currentDate;
     //private int maxTag;
     private Tags newTag;//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
-    private String nameTableTemp = "temp";
+    //private String nameTableTemp = "temp";
+    String fieldType = "";
+    
+    
+    private RowDataTable selectedErrorRowTable;
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //MANEJO E LA BARRA DE PROGRESO DEL ALMACENAMIENTO ---------------------
@@ -313,7 +323,7 @@ public class RecordDataMB implements Serializable {
     public RecordDataMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        nameTableTemp = "temp" + loginMB.getLoginname();
+        //nameTableTemp = "temp" + loginMB.getLoginname();
     }
 
     public void reset() {
@@ -327,14 +337,23 @@ public class RecordDataMB implements Serializable {
 
     private boolean relationshipsRequired() {
         boolean noErrors = true;
-        currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();//tomo el grupos_vulnerables de relaciones de valores y de variables
+        currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());//tomo el grupos de relaciones de valores y de variables
         errorsControlMB.setErrorControlArrayList(new ArrayList<ErrorControl>());//arreglo de errores            
         RelationVariables newRelationVar = new RelationVariables();//"", "", "error", false, ""
         switch (FormsEnum.convert(nameForm.replace("-", "_"))) {//tipo de relacion
+            case SCC_F_032:
+                //RELACION PARA LA INTENCIONALIDAD
+                if (currentRelationsGroup.findRelationVarByNameExpected("intencionalidad") == null) {
+                    noErrors = false;
+                    errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la intencionalidad", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (intenci)"));
+                    errorsNumber++;
+                }
             case SCC_F_028:
             case SCC_F_029:
             case SCC_F_030:
             case SCC_F_031:
+            case SCC_F_033:
+            case SIVIGILA_VIF:
                 //RELACION PARA FECHA DE EVENTO
                 if (currentRelationsGroup.findRelationVarByNameExpected("fecha_evento") == null) {
                     if (currentRelationsGroup.findRelationVarByNameExpected("dia_evento") == null) {
@@ -352,64 +371,8 @@ public class RecordDataMB implements Serializable {
                     errorsNumber++;
                 }
                 //RELACION PARA TIPO DE IDENTIFICACION                
-                if (currentRelationsGroup.findRelationVarByNameExpected("numero_identificacion_victima") == null) {
-                    noErrors = false;
-                    errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la identificacion de la víctima", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (nid)"));
-                    errorsNumber++;
-                }
-                break;
-            case SCC_F_033:
-                //RELACION PARA FECHA DE EVENTO
-                if (currentRelationsGroup.findRelationVarByNameExpected("fecha_evento") == null) {
-                    if (currentRelationsGroup.findRelationVarByNameExpected("dia_evento") == null) {
-                        noErrors = false;
-                    }
-                    if (currentRelationsGroup.findRelationVarByNameExpected("mes_evento") == null) {
-                        noErrors = false;
-                    }
-                    if (currentRelationsGroup.findRelationVarByNameExpected("año_evento") == null) {
-                        noErrors = false;
-                    }
-                }
-                if (noErrors == false) {//no se puede determinar la dia_evento
-                    errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la fecha del evento", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (fecha1) o  las variables esperadas (fecha,mes,ao)"));
-                    errorsNumber++;
-                }
-
-                //RELACION PARA NUMERO DE IDENTIFICACION                
-                if (currentRelationsGroup.findRelationVarByNameExpected("numero_identificacion_victima") == null) {
-                    noErrors = false;
-                    errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la identificacion de la víctima", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (numero)"));
-                    errorsNumber++;
-                }
-                break;
-
-            case SCC_F_032:
-                //RELACION PARA FECHA DE EVENTO
-                if (currentRelationsGroup.findRelationVarByNameExpected("fecha_evento") == null) {
-                    if (currentRelationsGroup.findRelationVarByNameExpected("dia_evento") == null) {
-                        noErrors = false;
-                    }
-                    if (currentRelationsGroup.findRelationVarByNameExpected("mes_evento") == null) {
-                        noErrors = false;
-                    }
-                    if (currentRelationsGroup.findRelationVarByNameExpected("año_evento") == null) {
-                        noErrors = false;
-                    }
-                }
-                if (noErrors == false) {//no se puede determinar la dia_evento
-                    errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la fecha del evento", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (fechaev) o las variables esperadas (dia,mes,ao)"));
-                    errorsNumber++;
-                }
-                //RELACION PARA LA INTENCIONALIDAD
-                if (currentRelationsGroup.findRelationVarByNameExpected("intencionalidad") == null) {
-                    noErrors = false;
-                    errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la intencionalidad", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (intenci)"));
-                    errorsNumber++;
-                }
-
-                //RELACION PARA NUMERO DE IDENTIFICACION                
-                if (currentRelationsGroup.findRelationVarByNameExpected("numero_identificacion_victima") == null) {
+                if (currentRelationsGroup.findRelationVarByNameExpected("numero_identificacion_victima") == null
+                        && currentRelationsGroup.findRelationVarByNameExpected("numero_de_identificacion") == null) {
                     noErrors = false;
                     errorsControlMB.addError(new ErrorControl(newRelationVar, "REQUIRED VALIDATION", "No existe manera de determinar la identificacion de la víctima", "Diríjase a la sección relacion de variables y realice la asociacion correspondiente para la variable esperada (nid)"));
                     errorsNumber++;
@@ -419,18 +382,150 @@ public class RecordDataMB implements Serializable {
         return noErrors;
     }
 
+    private String determineTagName(String name) {
+        /*
+         * determina si el nombre ya existe sino aumentarle 1,2,3...
+         * hasta que encuetre uno que no exista
+         */
+        String nameReturn = "";
+        String tagName = name;
+        int count = 0;
+        boolean sameName;
+        List<Tags> tagsList = tagsFacade.findAll();
+        while (true) {
+            sameName = false;
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (tagsList.get(i).getTagName().compareTo(tagName) == 0) {
+                    sameName = true;
+                    break;
+                }
+            }
+            if (!sameName) {//si el nombre no existe salir
+                nameReturn = tagName;
+                break;
+            } else {
+                count++;
+                tagName = name + " " + count;
+            }
+        }
+        return nameReturn;
+    }
+
+    private ResultSet determineRecords() {
+        ResultSet rsReturn = connectionJdbcMB.consult(""
+                + " SELECT "
+                + "    project_records.project_id, "
+                + "    project_records.record_id, "
+                + "    array_agg(project_columns.column_name || '<=>' || project_records.data_value) "
+                + " FROM "
+                + "    project_records,project_columns "
+                + " WHERE "
+                + "    project_records.project_id = " + projectsMB.getCurrentProjectId() + " AND "
+                + "    project_columns.column_id = project_records.column_id "
+                + " GROUP BY "
+                + "    project_records.project_id, "
+                + "    project_records.record_id ");
+        return rsReturn;
+    }
+
+    private ArrayList<String> determineColumnNames() {
+        ArrayList<String> listReturn = new ArrayList<String>();
+        try {
+            sql = ""
+                    + " SELECT     "
+                    + "	   project_columns.column_name"
+                    + " FROM     "
+                    + "	   public.project_records,     "
+                    + "	   public.project_columns "
+                    + " WHERE     "
+                    + "	   project_columns.column_id = project_records.column_id AND "
+                    + "	   project_records.project_id = " + projectsMB.getCurrentProjectId() + " "
+                    + " GROUP BY"
+                    + "	   project_columns.column_name,"
+                    + "	   project_columns.column_id"
+                    + " ORDER BY "
+                    + "	   project_columns.column_id";
+            ResultSet rs = connectionJdbcMB.consult(sql);            //System.out.println("A002\n" + sql);
+            while (rs.next()) {
+                listReturn.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+        }
+        return listReturn;
+
+    }
+
+    private int determineTuplesNumber() {
+        int intReturn = 0;
+        try {
+            sql = ""
+                    + " SELECT "
+                    + "    count (distinct record_id)  "
+                    + " FROM "
+                    + "    public.project_records, "
+                    + "    public.projects "
+                    + " WHERE "
+                    + "    project_records.project_id = projects.project_id AND "
+                    + "    projects.project_id = " + projectsMB.getCurrentProjectId() + "";
+            resultSetFileData = connectionJdbcMB.consult(sql);
+            resultSetFileData.next();
+            intReturn = resultSetFileData.getInt(1);
+        } catch (Exception e) {
+        }
+
+        return intReturn;
+    }
+
+    private String determineRegistryData(Object[] arrayInJava, String columnName) {
+        /*
+         * obtener un valor de una tupla dada una columna
+         */
+        String returnValue = null;
+        try {
+
+
+            for (int i = 0; i < arrayInJava.length; i++) {
+                String splitElement[] = arrayInJava[i].toString().split("<=>");
+                if (columnName.compareTo(splitElement[0]) == 0) {
+                    returnValue = splitElement[1];
+                    break;
+                }
+            }
+        } catch (Exception e) {
+        }
+        return returnValue;
+    }
+
+    private String remove_v(String field_type) {
+        /*
+         * remueve '_v' de un tipo de dato (para que tome la tabla categorica)
+         */
+        String strReturn;
+        strReturn = field_type.substring(field_type.length() - 2, field_type.length());
+        if (strReturn.compareTo("_v") == 0) {
+            strReturn = field_type.substring(0, field_type.length() - 2);
+        } else {
+            strReturn = field_type;
+        }
+        return strReturn;
+    }
+
     public void btnValidateClick() {
         /*
          * click sobre el boton iniciar validacion aqui se generaran los errores
          * que salgan de analizar el archivo
          */
-        errorsNumber = 0;
+        //int pos = 0;
+        isValidate = false;
+        int currentNumberOfRow = 1;
+        columnsNames = new ArrayList<String>();
         progressValidate = 0;
         continueProcces = true;
-
-        currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();//tomo el grupos_vulnerables de relaciones de valores y de variables
-
-        if (!relationshipsRequired()) {
+        nameForm = projectsMB.getCurrentFormId();
+        currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());//tomo el grupos_vulnerables de relaciones de valores y de variables
+        errorsNumber = 0;
+        tuplesProcessed = 0;
+        if (!relationshipsRequired()) {//validar relaciones obligatorias
             continueProcces = false;
             progressValidate = 100;
         }
@@ -438,26 +533,12 @@ public class RecordDataMB implements Serializable {
             continueProcces = false;
             progressValidate = 100;
         }
-
         if (continueProcces) {
             try {
-                resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
-                resultSetFileData.next();
-                tuplesNumber = resultSetFileData.getInt(1);//numero de tuplas a procesar
-                tuplesProcessed = 0;//numero de tuplas procesdas            
-                progressValidate = 0;
-
-                resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
-                //columnsNumber = resultSetFileData.getMetaData().getColumnCount();
-                errorsNumber = 0;
-                int pos = 0;
-                columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//creo un arreglo con los nombres_victima de las columnas
-                for (int i = 1; i <= resultSetFileData.getMetaData().getColumnCount(); i++) {
-                    columnsNames[pos] = resultSetFileData.getMetaData().getColumnName(i);
-                    pos++;
-                }
-                errorsControlMB.setErrorControlArrayList(new ArrayList<ErrorControl>());//arreglo de errores            
-                int currentNumberOfRow = 1;
+                tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
+                columnsNames = determineColumnNames();//determino nombres de columnas
+                resultSetFileData = determineRecords();//resulset con los registros a procesar
+                errorsControlMB.setErrorControlArrayList(new ArrayList<ErrorControl>());//arreglo de errores                
                 while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                                                
                     //VARIABLES PARA SABER SI ES POSIBLE DETERMINAR LA INTENCIONALIDAD, Y FECHA DEL EVENTO
                     fechaev = "";
@@ -469,35 +550,42 @@ public class RecordDataMB implements Serializable {
                     mes1 = "";
                     ao1 = "";
                     intencionality = "";
-//                    if(currentNumberOfRow==27){
-//                        intencionality = "";
-//                    }
 
-                    for (int i = 0; i < columnsNames.length; i++) {//recorro cada una de las columnas de cada registro                    
-                        relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[i]);//determino la relacion de variables
-                        if (relationVar != null && resultSetFileData.getString(columnsNames[i]) != null) {
+                    for (int i = 0; i < columnsNames.size(); i++) {//recorro cada una de las columnas de cada registro                                            
+//                        if (columnsNames.get(i).compareTo("num_id_") == 0) {
+////                                columnsNames.get(i).compareTo("tip_ss_") == 0||
+////                                columnsNames.get(i).compareTo("cod_ase_") == 0||
+////                                columnsNames.get(i).compareTo("fec_hecho") == 0||
+////                                columnsNames.get(i).compareTo("nom_upgd") == 0) 
+//                            intencionality = "";
+//                        }
+                        registryData = determineRegistryData((Object[]) resultSetFileData.getArray(3).getArray(), columnsNames.get(i));
+                        relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames.get(i));//determino la relacion de variables
+
+                        if (relationVar != null && registryData != null) {
                             value = "";
-                            switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
+                            fieldType = remove_v(relationVar.getFieldType());
+                            switch (DataTypeEnum.convert(fieldType)) {//tipo de relacion
                                 case text:
                                     break;
                                 case integer:
-                                    value = isNumeric(resultSetFileData.getString(columnsNames[i]));
-                                    //System.out.println("Validando Entero: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                    value = isNumeric(registryData);
+                                    //System.out.println("Validando Entero: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//error = "No es entero";
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "integer"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, registryData, resultSetFileData.getString("record_id"), "integer"));
                                     }
                                     break;
                                 case age:
-                                    value = isAge(resultSetFileData.getString(columnsNames[i]));
-                                    //System.out.println("Validando Age: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                    value = isAge(registryData);
+                                    //System.out.println("Validando Age: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//error = "dia_evento no corresponde al formato";
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "age"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, registryData, resultSetFileData.getString("record_id"), "age"));
                                     }
                                     break;
                                 case date:
-                                    value = isDate(resultSetFileData.getString(columnsNames[i]), relationVar.getDateFormat());
+                                    value = isDate(registryData, relationVar.getDateFormat());
                                     if (relationVar.getNameExpected().compareTo("fecha_evento") == 0) {
                                         fechaev = value;
                                     }
@@ -506,37 +594,37 @@ public class RecordDataMB implements Serializable {
                                     }
                                     if (value == null) {
                                         errorsNumber++;//error = "dia_evento no corresponde al formato";
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "date"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, registryData, resultSetFileData.getString("record_id"), "date"));
                                     }
 
                                     break;
                                 case military:
-                                    value = isMilitary(resultSetFileData.getString(columnsNames[i]));
-                                    //System.out.println("Validando Militar: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                    value = isMilitary(registryData);
+                                    //System.out.println("Validando Militar: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "military"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, registryData, resultSetFileData.getString("record_id"), "military"));
                                     }
                                     break;
                                 case hour:
-                                    value = isHour(resultSetFileData.getString(columnsNames[i]));
-                                    //System.out.println("Validando Hora: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                    value = isHour(registryData);
+                                    //System.out.println("Validando Hora: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "hour"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, registryData, resultSetFileData.getString("record_id"), "hour"));
                                     }
                                     break;
                                 case minute:
-                                    value = isMinute(resultSetFileData.getString(columnsNames[i]));
-                                    //System.out.println("Validando Minuto: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                    value = isMinute(registryData);
+                                    //System.out.println("Validando Minuto: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "minute"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, registryData, resultSetFileData.getString("record_id"), "minute"));
                                     }
                                     break;
                                 case day:
-                                    value = isDay(resultSetFileData.getString(columnsNames[i]));
-                                    //System.out.println("Validando Dia: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                    value = isDay(registryData);
+                                    //System.out.println("Validando Dia: " + registryData + "   Resultado: " + value);
                                     if (relationVar.getNameExpected().compareTo("dia") == 0 || relationVar.getNameExpected().compareTo("fecha") == 0) {
                                         dia = value;
                                     }
@@ -545,12 +633,12 @@ public class RecordDataMB implements Serializable {
                                     }
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "day"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, registryData, resultSetFileData.getString("record_id"), "day"));
                                     }
                                     break;
                                 case month:
-                                    value = isMonth(resultSetFileData.getString(columnsNames[i]));
-                                    //System.out.println("Validando Mes: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                    value = isMonth(registryData);
+                                    //System.out.println("Validando Mes: " + registryData + "   Resultado: " + value);
                                     if (relationVar.getNameExpected().compareTo("mes") == 0) {
                                         mes = value;
                                     }
@@ -559,7 +647,7 @@ public class RecordDataMB implements Serializable {
                                     }
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "month"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, registryData, resultSetFileData.getString("record_id"), "month"));
                                     }
                                     break;
                                 case year:
@@ -569,35 +657,38 @@ public class RecordDataMB implements Serializable {
                                     if (relationVar.getNameExpected().compareTo("ao1") == 0) {
                                         ao1 = value;
                                     }
-                                    value = isYear(resultSetFileData.getString(columnsNames[i]));
-                                    //System.out.println("Validando Año: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + value);
+                                    value = isYear(registryData);
+                                    //System.out.println("Validando Año: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "year"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, registryData, resultSetFileData.getString("record_id"), "year"));
                                     }
                                     break;
                                 case percentage:
-                                    value = isPercentage(resultSetFileData.getString(columnsNames[i]));
-                                    //System.out.println("Validando porcentaje: " + resultSetFileData.getString(columnsNames[i]) + "   Resultado: " + String.valueOf(value));
+                                    value = isPercentage(registryData);
+                                    //System.out.println("Validando porcentaje: " + registryData + "   Resultado: " + String.valueOf(value));
                                     if (value == null) {
                                         errorsNumber++;//el porcentaje no puede ser determinado
-                                        errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "percentage"));
+                                        errorsControlMB.addError(new ErrorControl(relationVar, registryData, resultSetFileData.getString("record_id"), "percentage"));
                                     }
                                     break;
                                 case NOVALUE:
-                                    value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
-                                    //System.out.println("Validando Categoria: " + resultSetFileData.getString(relationVar.getNameFound()) + "   Resultado: " + value);
+                                    if(relationVar.getNameExpected().compareTo("aseguradora")==0){
+                                        System.out.println("Validando Categoria: " + registryData + "   Resultado: " + value);
+                                    }
+                                    value = isCategorical(registryData, relationVar);
+                                    
                                     if (relationVar.getNameExpected().compareTo("intencionalidad") == 0) {
-                                        intencionality = resultSetFileData.getString(relationVar.getNameFound());
+                                        intencionality = registryData;
                                     }
                                     if (value == null) {
                                         errorsNumber++;//error = "no esta en la categoria ni es un valor descartado";
                                         //String description = fieldsFacade.findFieldTypeByFieldNameAndFormId(relationVar.getNameExpected(), currentRelationsGroup.getFormId().getFormId()).getFieldDescription();
-                                        String description="se debe corregir esta seccion";
+                                        String description = "se debe corregir esta seccion";
                                         errorsControlMB.addError(new ErrorControl(
                                                 relationVar,
-                                                resultSetFileData.getString(relationVar.getNameFound()),
-                                                resultSetFileData.getString("id"),
+                                                registryData,
+                                                resultSetFileData.getString("record_id"),
                                                 description));
                                     }
                                     break;
@@ -632,7 +723,7 @@ public class RecordDataMB implements Serializable {
                             //RELACION PARA LA INTENCIONALIDAD
                             if (intencionality == null) {
                                 relationVar = currentRelationsGroup.findRelationVarByNameExpected("intencionalidad");//determino la relacion de variables
-                                errorsControlMB.addError(new ErrorControl(relationVar, " ", resultSetFileData.getString("id"), "intencionalidad"));
+                                errorsControlMB.addError(new ErrorControl(relationVar, " ", resultSetFileData.getString("record_id"), "intencionalidad"));
                                 errorsNumber++;
                             }
                         case SCC_F_028:
@@ -643,7 +734,7 @@ public class RecordDataMB implements Serializable {
                             //DETERMINAR FECHA DE EVENTO                                
                             if (existDateEvent == false) {//no se puede determinar la fecha_evento
                                 relationVar = currentRelationsGroup.findRelationVarByNameExpected("fecha_evento");//determino la relacion de variables
-                                errorsControlMB.addError(new ErrorControl(relationVar, resultSetFileData.getString(relationVar.getNameFound()), resultSetFileData.getString("id"), "fecha_evento"));
+                                errorsControlMB.addError(new ErrorControl(relationVar, "", resultSetFileData.getString("record_id"), "fecha_evento"));
                                 errorsNumber++;
                             }
                             break;
@@ -663,6 +754,9 @@ public class RecordDataMB implements Serializable {
             } catch (SQLException ex) {
                 System.out.println("error: " + ex.toString());
             }
+//            if(!errorsControlMB.getErrorControlArrayList().isEmpty()){
+//                
+//            }
         }
     }
 
@@ -681,31 +775,22 @@ public class RecordDataMB implements Serializable {
          * CARGA DE REGISTROS DE LA FICHA HOMICIDIOS
          * ********************************************************************
          */
-        int contadorMasculino = 0;
-        int contadorFemenino = 0;
-        int contadorOtro = 0;
-
+        //int contadorMasculino = 0;
+        //int contadorFemenino = 0;
+        //int contadorOtro = 0;
         tuplesNumber = 0;
         tuplesProcessed = 0;
+        progress = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
-            resultSetFileData.next();
-            tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
-            progress = 0;
-            columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
-            int pos = 0;
-            for (int i = 1; i <= resultSetFileData.getMetaData().getColumnCount(); i++) {
-                columnsNames[pos] = resultSetFileData.getMetaData().getColumnName(i);
-                pos++;
-            }
-
+            tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
+            //columnsNames = determineColumnNames();//determino nombres de columnas
+            resultSetFileData = determineRecords();//resulset con los registros a procesar
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(tagsFacade.findMax() + 1);
-            //newTag.setTagName(projectsMB.getTagName());
-            //newTag.setTagFileInput(projectsMB.getNameFile());
-            //newTag.setTagFileStored(projectsMB.getNameFile());
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
+            newTag.setTagFileInput(projectsMB.getCurrentFileName());
+            newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -740,56 +825,55 @@ public class RecordDataMB implements Serializable {
                 hourInt = 0;
                 minuteInt = 0;
                 narrative = "";
-
-                for (int posCol = 0; posCol < columnsNames.length; posCol++) {
+                Object[] arrayInJava = (Object[]) resultSetFileData.getArray(3).getArray();
+                for (int posCol = 0; posCol < arrayInJava.length; posCol++) {
                     value = null;
-                    //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
-                    //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
+                    String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
+                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
-                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
+                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
-                                value = resultSetFileData.getString(columnsNames[posCol]);
+                                value = splitColumnAndValue[1];
                                 break;
                             case integer:
-                                value = isNumeric(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isNumeric(splitColumnAndValue[1]);
                                 break;
                             case age:
-                                value = isAge(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isAge(splitColumnAndValue[1]);
                                 break;
                             case date:
-                                value = isDate(resultSetFileData.getString(columnsNames[posCol]), relationVar.getDateFormat());
+                                value = isDate(splitColumnAndValue[1], relationVar.getDateFormat());
                                 break;
                             case military:
-                                value = isMilitary(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMilitary(splitColumnAndValue[1]);
                                 break;
                             case hour:
-                                value = isHour(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isHour(splitColumnAndValue[1]);
                                 break;
                             case minute:
-                                value = isMinute(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMinute(splitColumnAndValue[1]);
                                 break;
                             case day:
-                                value = isDay(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isDay(splitColumnAndValue[1]);
                                 break;
                             case month:
-                                value = isMonth(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMonth(splitColumnAndValue[1]);
                                 break;
                             case year:
-                                value = isYear(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isYear(splitColumnAndValue[1]);
                                 break;
                             case percentage:
-                                value = isPercentage(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isPercentage(splitColumnAndValue[1]);
                                 break;
                             case level:
-                                value = isLevel(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isLevel(splitColumnAndValue[1]);
                                 break;
                             case NOVALUE:
-                                value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
                                 break;
                         }
                     }
-
                     continueProcces = false;
                     if (value != null) {
                         if (value.trim().length() != 0) {
@@ -909,7 +993,7 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setVictimAge(Short.parseShort(value));
                                 break;
                             case ocupacion_victima:
-                                newVictim.setJobId(jobsFacade.find(Short.parseShort(value)));
+                                newVictim.setJobId(jobsFacade.find(Integer.parseInt(value)));
                                 break;
                             case municipio_residencia:
                                 splitArray = value.split("-");
@@ -938,7 +1022,6 @@ public class RecordDataMB implements Serializable {
                                 if (splitArray.length == 3) {
                                     newFatalInjurie.setVictimPlaceOfOrigin(value);
                                 }
-
                                 break;
                             case arma_o_causa_muerte:
                                 newFatalInjuryMurder.setWeaponTypeId(weaponTypesFacade.find(Short.parseShort(value)));
@@ -978,7 +1061,6 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-
                 //DETERMINAR AREA SI HAY BARRIO
                 if (newFatalInjurie.getAreaId() == null) {
                     if (newFatalInjurie.getInjuryNeighborhoodId() != null) {
@@ -987,12 +1069,10 @@ public class RecordDataMB implements Serializable {
                         newFatalInjurie.setAreaId(areasFacade.find(neType));
                     }
                 }
-
                 //ASIGNO LA NARRACION DE LOS HECHOS
                 if (narrative.trim().length() != 0) {
                     newFatalInjurie.setInjuryDescription(narrative);
                 }
-
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newVictim.getVictimNeighborhoodId() == null) {
                     newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
@@ -1001,7 +1081,6 @@ public class RecordDataMB implements Serializable {
                 if (newFatalInjurie.getInjuryNeighborhoodId() == null) {
                     newFatalInjurie.setInjuryNeighborhoodId((int) 52001);
                 }
-
                 //SI NO HAY FECHA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
                 if (newFatalInjurie.getInjuryDate() == null) {
                     dia = haveData(dia);
@@ -1014,7 +1093,6 @@ public class RecordDataMB implements Serializable {
                         newFatalInjurie.setInjuryDate(fechaI);
                     }
                 }
-
                 //SI NO HAY HORA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
                 if (newFatalInjurie.getInjuryTime() == null) {
                     horas = haveData(horas);
@@ -1036,7 +1114,6 @@ public class RecordDataMB implements Serializable {
                         newFatalInjurie.setInjuryTime(currentDate);
                     }
                 }
-
                 //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
                 if (newFatalInjurie.getInjuryDate() != null) {
                     if (newFatalInjurie.getInjuryDayOfWeek() == null) {
@@ -1045,13 +1122,11 @@ public class RecordDataMB implements Serializable {
                         newFatalInjurie.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
                     }
                 }
-
                 //UNION DE NOMBRES Y APELLIOS
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name);
                 }
-
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
                     if (newVictim.getVictimAge() == null) {
@@ -1120,7 +1195,6 @@ public class RecordDataMB implements Serializable {
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
                     }
                 }
-
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
                 if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
                     if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad
@@ -1174,26 +1248,18 @@ public class RecordDataMB implements Serializable {
          */
         tuplesNumber = 0;
         tuplesProcessed = 0;
+        progress = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
-            resultSetFileData.next();
-            tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
-            progress = 0;
-            columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
-            int pos = 0;
-            for (int i = 1; i <= resultSetFileData.getMetaData().getColumnCount(); i++) {
-                columnsNames[pos] = resultSetFileData.getMetaData().getColumnName(i);
-                pos++;
-            }
-
+            tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
+            //columnsNames = determineColumnNames();//determino nombres de columnas
+            resultSetFileData = determineRecords();//resulset con los registros a procesar
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(tagsFacade.findMax() + 1);
-            //newTag.setTagName(projectsMB.getTagName());
-            //newTag.setTagFileInput(projectsMB.getNameFile());
-            //newTag.setTagFileStored(projectsMB.getNameFile());
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
+            newTag.setTagFileInput(projectsMB.getCurrentFileName());
+            newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -1209,8 +1275,6 @@ public class RecordDataMB implements Serializable {
                 newFatalInjuryTraffic = new FatalInjuryTraffic();
                 newFatalInjuryTraffic.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
-
-
                 serviceTypesList = new ArrayList<CounterpartServiceType>();
                 involvedVehiclesList = new ArrayList<CounterpartInvolvedVehicle>();
                 value = "";
@@ -1232,48 +1296,49 @@ public class RecordDataMB implements Serializable {
                 hourInt = 0;
                 minuteInt = 0;
                 narrative = "";
-                for (int posCol = 0; posCol < columnsNames.length; posCol++) {
+                Object[] arrayInJava = (Object[]) resultSetFileData.getArray(3).getArray();
+                for (int posCol = 0; posCol < arrayInJava.length; posCol++) {
                     value = null;
-                    //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
-                    //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
+                    String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
+                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
-                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
+                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
-                                value = resultSetFileData.getString(columnsNames[posCol]);
+                                value = splitColumnAndValue[1];
                                 break;
                             case integer:
-                                value = isNumeric(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isNumeric(splitColumnAndValue[1]);
                                 break;
                             case age:
-                                value = isAge(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isAge(splitColumnAndValue[1]);
                                 break;
                             case date:
-                                value = isDate(resultSetFileData.getString(columnsNames[posCol]), relationVar.getDateFormat());
+                                value = isDate(splitColumnAndValue[1], relationVar.getDateFormat());
                                 break;
                             case military:
-                                value = isMilitary(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMilitary(splitColumnAndValue[1]);
                                 break;
                             case hour:
-                                value = isHour(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isHour(splitColumnAndValue[1]);
                                 break;
                             case minute:
-                                value = isMinute(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMinute(splitColumnAndValue[1]);
                                 break;
                             case day:
-                                value = isDay(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isDay(splitColumnAndValue[1]);
                                 break;
                             case month:
-                                value = isMonth(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMonth(splitColumnAndValue[1]);
                                 break;
                             case year:
-                                value = isYear(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isYear(splitColumnAndValue[1]);
                                 break;
                             case percentage:
-                                value = isPercentage(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isPercentage(splitColumnAndValue[1]);
                                 break;
                             case NOVALUE:
-                                value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
                                 break;
                         }
                     }
@@ -1392,7 +1457,7 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setVictimAge(Short.parseShort(value));
                                 break;
                             case ocupacion_victima:
-                                newVictim.setJobId(jobsFacade.find(Short.parseShort(value)));
+                                newVictim.setJobId(jobsFacade.find(Integer.parseInt(value)));
                                 break;
                             case municipio_residencia:
                                 splitArray = value.split("-");
@@ -1474,7 +1539,6 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newVictim.getVictimNeighborhoodId() == null) {
                     newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
@@ -1483,7 +1547,6 @@ public class RecordDataMB implements Serializable {
                 if (newFatalInjurie.getInjuryNeighborhoodId() == null) {
                     newFatalInjurie.setInjuryNeighborhoodId((int) 52001);
                 }
-
                 //SI NO HAY FECHA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
                 if (newFatalInjurie.getInjuryDate() == null) {
                     dia = haveData(dia);
@@ -1496,7 +1559,6 @@ public class RecordDataMB implements Serializable {
                         newFatalInjurie.setInjuryDate(fechaI);
                     }
                 }
-
                 //SI NO HAY HORA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
                 if (newFatalInjurie.getInjuryTime() == null) {
                     horas = haveData(horas);
@@ -1518,8 +1580,6 @@ public class RecordDataMB implements Serializable {
                         newFatalInjurie.setInjuryTime(currentDate);
                     }
                 }
-
-
                 //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
                 if (newFatalInjurie.getInjuryDate() != null) {
                     if (newFatalInjurie.getInjuryDayOfWeek() == null) {
@@ -1528,13 +1588,11 @@ public class RecordDataMB implements Serializable {
                         newFatalInjurie.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
                     }
                 }
-
                 //UNION DE NOMBRES Y APELLIOS
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name);
                 }
-
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
                     if (newVictim.getVictimAge() == null) {
@@ -1567,13 +1625,6 @@ public class RecordDataMB implements Serializable {
                                 }
                                 newVictim.setVictimAge((short) ageYears);
                                 newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
-//                                if (newVictim.getTypeId() == null) {
-//                                    if (ageYears >= 18) {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-//                                    } else {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-//                                    }
-//                                }
                             }
                         } catch (Exception ex) {
                             Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
@@ -1650,7 +1701,7 @@ public class RecordDataMB implements Serializable {
             progress = 100;
             System.out.println("PROGRESO INGRESANDO TRANSITO: " + String.valueOf(progress));
         } catch (SQLException ex) {
-            System.out.println("errorSQL INGRESADNDO TRANSITO: " + ex.toString());
+            System.out.println("errorSQL INGRESANDO TRANSITO: " + ex.toString());
         } catch (Exception ex) {
             System.out.println("EXCEPTION INGRESANDO TRANSITO: " + ex.toString() + "  " + relationVar.getNameExpected() + " " + String.valueOf(tuplesProcessed));
         }
@@ -1664,25 +1715,17 @@ public class RecordDataMB implements Serializable {
          */
         tuplesNumber = 0;
         tuplesProcessed = 0;
+        progress = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
-            resultSetFileData.next();
-            tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
-            progress = 0;
-            columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
-            int pos = 0;
-            for (int i = 1; i <= resultSetFileData.getMetaData().getColumnCount(); i++) {
-                columnsNames[pos] = resultSetFileData.getMetaData().getColumnName(i);
-                pos++;
-            }
-
+            tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
+            //columnsNames = determineColumnNames();//determino nombres de columnas
+            resultSetFileData = determineRecords();//resulset con los registros a procesar
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(tagsFacade.findMax() + 1);
-            //newTag.setTagName(projectsMB.getTagName());
-            //newTag.setTagFileInput(projectsMB.getNameFile());
-            //newTag.setTagFileStored(projectsMB.getNameFile());
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
+            newTag.setTagFileInput(projectsMB.getCurrentFileName());
+            newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -1717,48 +1760,49 @@ public class RecordDataMB implements Serializable {
                 hourInt = 0;
                 minuteInt = 0;
                 narrative = "";
-                for (int posCol = 0; posCol < columnsNames.length; posCol++) {
+                Object[] arrayInJava = (Object[]) resultSetFileData.getArray(3).getArray();
+                for (int posCol = 0; posCol < arrayInJava.length; posCol++) {
                     value = null;
-                    //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
-                    //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
+                    String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
+                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
-                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
+                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
-                                value = resultSetFileData.getString(columnsNames[posCol]);
+                                value = splitColumnAndValue[1];
                                 break;
                             case integer:
-                                value = isNumeric(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isNumeric(splitColumnAndValue[1]);
                                 break;
                             case age:
-                                value = isAge(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isAge(splitColumnAndValue[1]);
                                 break;
                             case date:
-                                value = isDate(resultSetFileData.getString(columnsNames[posCol]), relationVar.getDateFormat());
+                                value = isDate(splitColumnAndValue[1], relationVar.getDateFormat());
                                 break;
                             case military:
-                                value = isMilitary(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMilitary(splitColumnAndValue[1]);
                                 break;
                             case hour:
-                                value = isHour(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isHour(splitColumnAndValue[1]);
                                 break;
                             case minute:
-                                value = isMinute(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMinute(splitColumnAndValue[1]);
                                 break;
                             case day:
-                                value = isDay(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isDay(splitColumnAndValue[1]);
                                 break;
                             case month:
-                                value = isMonth(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMonth(splitColumnAndValue[1]);
                                 break;
                             case year:
-                                value = isYear(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isYear(splitColumnAndValue[1]);
                                 break;
                             case percentage:
-                                value = isPercentage(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isPercentage(splitColumnAndValue[1]);
                                 break;
                             case NOVALUE:
-                                value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
                                 break;
                         }
                     }
@@ -1872,8 +1916,8 @@ public class RecordDataMB implements Serializable {
                             case edad_victima:
                                 newVictim.setVictimAge(Short.parseShort(value));
                                 break;
-                            case ocuacion_victima:
-                                newVictim.setJobId(jobsFacade.find(Short.parseShort(value)));
+                            case ocuacion_victima:                                
+                                newVictim.setJobId(jobsFacade.find(Integer.parseInt(value)));
                                 break;
                             case municipio_residencia:
                                 splitArray = value.split("-");
@@ -1902,7 +1946,6 @@ public class RecordDataMB implements Serializable {
                                 if (splitArray.length == 3) {
                                     newFatalInjurie.setVictimPlaceOfOrigin(value);
                                 }
-
                                 break;
                             case arma_o_causa_muerte:
                                 newFatalInjurySuicide.setSuicideDeathMechanismId(suicideMechanismsFacade.find(Short.parseShort(value)));
@@ -2130,25 +2173,17 @@ public class RecordDataMB implements Serializable {
          */
         tuplesNumber = 0;
         tuplesProcessed = 0;
+        progress = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
-            resultSetFileData.next();
-            tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)            
-            progress = 0;
-            columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
-            int pos = 0;
-            for (int i = 1; i <= resultSetFileData.getMetaData().getColumnCount(); i++) {
-                columnsNames[pos] = resultSetFileData.getMetaData().getColumnName(i);
-                pos++;
-            }
-
+            tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
+            //columnsNames = determineColumnNames();//determino nombres de columnas            
+            resultSetFileData = determineRecords();//resulset con los registros a procesar
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(tagsFacade.findMax() + 1);
-            //newTag.setTagName(projectsMB.getTagName());
-            //newTag.setTagFileInput(projectsMB.getNameFile());
-            //newTag.setTagFileStored(projectsMB.getNameFile());
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
+            newTag.setTagFileInput(projectsMB.getCurrentFileName());
+            newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -2184,48 +2219,49 @@ public class RecordDataMB implements Serializable {
                 hourInt = 0;
                 minuteInt = 0;
                 narrative = "";
-                for (int posCol = 0; posCol < columnsNames.length; posCol++) {
+                Object[] arrayInJava = (Object[]) resultSetFileData.getArray(3).getArray();
+                for (int posCol = 0; posCol < arrayInJava.length; posCol++) {
                     value = null;
-                    //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
-                    //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
+                    String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
+                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
-                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
+                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
-                                value = resultSetFileData.getString(columnsNames[posCol]);
+                                value = splitColumnAndValue[1];
                                 break;
                             case integer:
-                                value = isNumeric(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isNumeric(splitColumnAndValue[1]);
                                 break;
                             case age:
-                                value = isAge(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isAge(splitColumnAndValue[1]);
                                 break;
                             case date:
-                                value = isDate(resultSetFileData.getString(columnsNames[posCol]), relationVar.getDateFormat());
+                                value = isDate(splitColumnAndValue[1], relationVar.getDateFormat());
                                 break;
                             case military:
-                                value = isMilitary(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMilitary(splitColumnAndValue[1]);
                                 break;
                             case hour:
-                                value = isHour(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isHour(splitColumnAndValue[1]);
                                 break;
                             case minute:
-                                value = isMinute(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMinute(splitColumnAndValue[1]);
                                 break;
                             case day:
-                                value = isDay(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isDay(splitColumnAndValue[1]);
                                 break;
                             case month:
-                                value = isMonth(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMonth(splitColumnAndValue[1]);
                                 break;
                             case year:
-                                value = isYear(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isYear(splitColumnAndValue[1]);
                                 break;
                             case percentage:
-                                value = isPercentage(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isPercentage(splitColumnAndValue[1]);
                                 break;
                             case NOVALUE:
-                                value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
                                 break;
                         }
                     }
@@ -2342,8 +2378,8 @@ public class RecordDataMB implements Serializable {
                             case edad_victima:
                                 newVictim.setVictimAge(Short.parseShort(value));
                                 break;
-                            case ocupacion_victima:
-                                newVictim.setJobId(jobsFacade.find(Short.parseShort(value)));
+                            case ocupacion_victima:                                
+                                newVictim.setJobId(jobsFacade.find(Integer.parseInt(value)));
                                 break;
                             case municipio_residencia:
                                 splitArray = value.split("-");
@@ -2591,24 +2627,17 @@ public class RecordDataMB implements Serializable {
          */
         tuplesNumber = 0;
         tuplesProcessed = 0;
+        progress = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
-            resultSetFileData.next();
-            tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)
-            progress = 0;
-            columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
-            int pos = 0;
-            for (int i = 1; i <= resultSetFileData.getMetaData().getColumnCount(); i++) {
-                columnsNames[pos] = resultSetFileData.getMetaData().getColumnName(i);
-                pos++;
-            }
+            tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
+            //columnsNames = determineColumnNames();//determino nombres de columnas
+            resultSetFileData = determineRecords();//resulset con los registros a procesar
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(tagsFacade.findMax() + 1);
-            //newTag.setTagName(projectsMB.getTagName());
-            //newTag.setTagFileInput(projectsMB.getNameFile());
-            //newTag.setTagFileStored(projectsMB.getNameFile());
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
+            newTag.setTagFileInput(projectsMB.getCurrentFileName());
+            newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -2656,48 +2685,49 @@ public class RecordDataMB implements Serializable {
                 ampm1 = "";//ampm consulta
                 hourInt = 0;
                 minuteInt = 0;
-                for (int posCol = 0; posCol < columnsNames.length; posCol++) {
+                Object[] arrayInJava = (Object[]) resultSetFileData.getArray(3).getArray();
+                for (int posCol = 0; posCol < arrayInJava.length; posCol++) {
                     value = null;
-                    //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
-                    //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
+                    String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
+                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
-                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
+                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
-                                value = resultSetFileData.getString(columnsNames[posCol]);
+                                value = splitColumnAndValue[1];
                                 break;
                             case integer:
-                                value = isNumeric(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isNumeric(splitColumnAndValue[1]);
                                 break;
                             case age:
-                                value = isAge(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isAge(splitColumnAndValue[1]);
                                 break;
                             case date:
-                                value = isDate(resultSetFileData.getString(columnsNames[posCol]), relationVar.getDateFormat());
+                                value = isDate(splitColumnAndValue[1], relationVar.getDateFormat());
                                 break;
                             case military:
-                                value = isMilitary(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMilitary(splitColumnAndValue[1]);
                                 break;
                             case hour:
-                                value = isHour(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isHour(splitColumnAndValue[1]);
                                 break;
                             case minute:
-                                value = isMinute(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMinute(splitColumnAndValue[1]);
                                 break;
                             case day:
-                                value = isDay(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isDay(splitColumnAndValue[1]);
                                 break;
                             case month:
-                                value = isMonth(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMonth(splitColumnAndValue[1]);
                                 break;
                             case year:
-                                value = isYear(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isYear(splitColumnAndValue[1]);
                                 break;
                             case percentage:
-                                value = isPercentage(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isPercentage(splitColumnAndValue[1]);
                                 break;
                             case NOVALUE:
-                                value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
+                                value = isCategorical(splitColumnAndValue[0], relationVar);
                                 break;
                         }
                     }
@@ -2746,7 +2776,7 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setVictimNid(value);
                                 break;
                             case aseguradora:
-                                newVictim.setInsuranceId(insuranceFacade.find(Short.parseShort(value)));
+                                newVictim.setInsuranceId(insuranceFacade.find(value));
                                 break;
                             case fecha_nacimiento:
                                 try {
@@ -2766,7 +2796,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case ocupacion_paciente:
                                 try {
-                                    newVictim.setJobId(jobsFacade.find(Short.parseShort(value)));
+                                    newVictim.setJobId(jobsFacade.find(Integer.parseInt(value)));
                                 } catch (Exception e) {
                                 }
                                 break;
@@ -3667,30 +3697,22 @@ public class RecordDataMB implements Serializable {
     public void registerSCC_F_033() {
         /**
          * *********************************************************************
-         * CARGA DE REGISTROS DE LA FICHA MUERTES VIF
+         * CARGA DE REGISTROS DE LA FICHA VIF
          * ********************************************************************
          */
         tuplesNumber = 0;
         tuplesProcessed = 0;
+        progress = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            resultSetFileData = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + nameTableTemp + "; ");
-            resultSetFileData.next();
-            tuplesNumber = resultSetFileData.getInt(1);//NUMERO DE TUPLAS
-            resultSetFileData = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " ORDER BY id; ");//resultSetFileData contendra todos los registros de el archivo(tabla temp)
-            progress = 0;
-            columnsNames = new String[resultSetFileData.getMetaData().getColumnCount()];//NOMBRES DE LAS COLUMNAS
-            int pos = 0;
-            for (int i = 1; i <= resultSetFileData.getMetaData().getColumnCount(); i++) {
-                columnsNames[pos] = resultSetFileData.getMetaData().getColumnName(i);
-                pos++;
-            }
-            //maxTag = tagsFacade.findMax() + 1;//VARIABLES PARA CONJUNTOS DE REGISTROS
+            tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
+            //columnsNames = determineColumnNames();//determino nombres de columnas
+            resultSetFileData = determineRecords();//resulset con los registros a procesar
             newTag = new Tags();//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
             newTag.setTagId(tagsFacade.findMax() + 1);
-            //newTag.setTagName(projectsMB.getTagName());
-            //newTag.setTagFileInput(projectsMB.getNameFile());
-            //newTag.setTagFileStored(projectsMB.getNameFile());
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
+            newTag.setTagFileInput(projectsMB.getCurrentFileName());
+            newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
@@ -3728,45 +3750,46 @@ public class RecordDataMB implements Serializable {
                 ampm1 = "";//ampm consulta
                 hourInt = 0;
                 minuteInt = 0;
-                for (int posCol = 0; posCol < columnsNames.length; posCol++) {
+                Object[] arrayInJava = (Object[]) resultSetFileData.getArray(3).getArray();
+                for (int posCol = 0; posCol < arrayInJava.length; posCol++) {
                     value = null;
-                    //DETERMINO QUE VALOR VOY A INGRESAR HACIENDO USO DE LAS FUNCIONES DE VALIDACION isNumeric,isAge... etc
-                    relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames[posCol]);//determino la relacion de variables
-                    //if (columnsNames[posCol].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { columnsNames[posCol] = "edad_paciente"; }
+                    String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
+                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
-                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//tipo de relacion
+                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
-                                value = resultSetFileData.getString(columnsNames[posCol]);
+                                value = splitColumnAndValue[1];
                                 break;
                             case integer:
-                                value = isNumeric(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isNumeric(splitColumnAndValue[1]);
                                 break;
                             case age:
-                                value = isAge(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isAge(splitColumnAndValue[1]);
                                 break;
                             case date:
-                                value = isDate(resultSetFileData.getString(columnsNames[posCol]), relationVar.getDateFormat());
+                                value = isDate(splitColumnAndValue[1], relationVar.getDateFormat());
                                 break;
                             case military:
-                                value = isMilitary(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMilitary(splitColumnAndValue[1]);
                                 break;
                             case hour:
-                                value = isHour(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isHour(splitColumnAndValue[1]);
                                 break;
                             case minute:
-                                value = isMinute(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMinute(splitColumnAndValue[1]);
                                 break;
                             case day:
-                                value = isDay(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isDay(splitColumnAndValue[1]);
                                 break;
                             case month:
-                                value = isMonth(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isMonth(splitColumnAndValue[1]);
                                 break;
                             case year:
-                                value = isYear(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isYear(splitColumnAndValue[1]);
                                 break;
                             case percentage:
-                                value = isPercentage(resultSetFileData.getString(columnsNames[posCol]));
+                                value = isPercentage(splitColumnAndValue[1]);
                                 break;
                             case NOVALUE:
                                 value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
@@ -3835,10 +3858,10 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
                                 break;
                             case ocupacion_victima:
-                                newVictim.setJobId(jobsFacade.find(Short.parseShort(value)));
+                                newVictim.setJobId(jobsFacade.find(Integer.parseInt(value)));
                                 break;
                             case aseguradora:
-                                newVictim.setInsuranceId(insuranceFacade.find(Short.parseShort(value)));
+                                newVictim.setInsuranceId(insuranceFacade.find(value));
                                 break;
                             case departamento_residencia:
                                 newVictim.setResidenceDepartment(Short.parseShort(value));
@@ -3884,7 +3907,11 @@ public class RecordDataMB implements Serializable {
                                 newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(value)));
                                 break;
                             case fecha_nacimiento://fecha nacimiento
-                                newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(value)));
+                                try {
+                                    currentDate = dateFormat.parse(value);
+                                    newVictim.setVictimDateOfBirth(currentDate);
+                                } catch (ParseException ex) {
+                                }
                                 break;
                             case direccion_evento://direccion evento
                                 newNonFatalInjury.setInjuryAddress(value);
@@ -4506,6 +4533,724 @@ public class RecordDataMB implements Serializable {
         }
     }
 
+    public void register_SIVIGILA() {
+        /*
+         * *********************************************************************
+         * CARGA DE REGISTROS DE LA FICHA SIVIGILA-VIF
+         * ********************************************************************
+         */
+        tuplesNumber = 0;
+        tuplesProcessed = 0;
+        progress = 0;
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
+            //columnsNames = determineColumnNames();//determino nombres de columnas
+            resultSetFileData = determineRecords();//resulset con los registros a procesar
+            newTag = new Tags();//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
+            newTag.setTagId(tagsFacade.findMax() + 1);
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
+            newTag.setTagFileInput(projectsMB.getCurrentFileName());
+            newTag.setTagFileStored(projectsMB.getCurrentFileName());
+            newTag.setFormId(formsFacade.find(nameForm));
+            tagsFacade.create(newTag);
+            while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
+                newVictim = new Victims();
+                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimClass(Short.parseShort("1"));
+                newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
+                newNonFatalInjury = new NonFatalInjuries();
+                newNonFatalDomesticViolence = new NonFatalDomesticViolence();
+                newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                newNonFatalInjury.setInputTimestamp(new Date());
+                actionsToTakeList = new ArrayList<ActionsToTake>();
+                anatomicalLocationsList = new ArrayList<AnatomicalLocations>();
+                abuseTypesList = new ArrayList<AbuseTypes>();
+                aggressorTypesList = new ArrayList<AggressorTypes>();
+                othersList = new ArrayList<Others>();
+                diagnosesList = new ArrayList<Diagnoses>();//lista non_fatal_diagnosis
+                vulnerableGroupList = new ArrayList<VulnerableGroups>();// lista vector victim_vulnerable_group
+
+                value = "";
+                name = "";
+                surname = "";
+                dia = "";//dia evento
+                mes = "";//mes evento
+                ao = "";//año del evento
+                diacon = "";//dia de la semana cnsulta                                
+                dia1 = "";//dia de la consulta
+                mes1 = "";//mes de la consulta
+                ao1 = "";//año de la consulta
+                horas = "";//hora evento
+                minutos = "";//minuto evento
+                ampm = "";//ampm evento
+                horas1 = "";//hora consulta
+                minutos1 = "";//minuto consulta
+                ampm1 = "";//ampm consulta
+                hourInt = 0;
+                minuteInt = 0;
+                Object[] arrayInJava = (Object[]) resultSetFileData.getArray(3).getArray();
+                for (int posCol = 0; posCol < arrayInJava.length; posCol++) {
+                    value = null;
+                    String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
+                    relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
+                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
+                    if (relationVar != null) {
+                        switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
+                            case text:
+                                value = splitColumnAndValue[1];
+                                break;
+                            case integer:
+                                value = isNumeric(splitColumnAndValue[1]);
+                                break;
+                            case age:
+                                value = isAge(splitColumnAndValue[1]);
+                                break;
+                            case date:
+                                value = isDate(splitColumnAndValue[1], relationVar.getDateFormat());
+                                break;
+                            case military:
+                                value = isMilitary(splitColumnAndValue[1]);
+                                break;
+                            case hour:
+                                value = isHour(splitColumnAndValue[1]);
+                                break;
+                            case minute:
+                                value = isMinute(splitColumnAndValue[1]);
+                                break;
+                            case day:
+                                value = isDay(splitColumnAndValue[1]);
+                                break;
+                            case month:
+                                value = isMonth(splitColumnAndValue[1]);
+                                break;
+                            case year:
+                                value = isYear(splitColumnAndValue[1]);
+                                break;
+                            case percentage:
+                                value = isPercentage(splitColumnAndValue[1]);
+                                break;
+                            case aggressor_types_v:
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
+                                if (relationVar.getComparisonForCode() && value != null && value.trim().length() != 0) {
+                                    //si se compara por codico se resaliza validacion
+                                    int valueInt = Integer.parseInt(value);
+                                    switch (valueInt) {
+                                        case 1:
+                                            value = "12";
+                                            break;
+                                        case 2:
+                                            value = "5";
+                                            break;
+                                        case 3:
+                                            value = "10";
+                                            break;
+                                        case 4:
+                                            value = "14";
+                                            break;
+                                        case 5:
+                                            value = "15";
+                                            break;
+                                        case 6:
+                                            value = "21";
+                                            break;
+                                        case 7:
+                                            value = "22";
+                                            break;
+                                        case 8:
+                                            value = "1";
+                                            break;
+                                        case 9:
+                                            value = "2";
+                                            break;
+                                        case 10:
+                                            value = "7";
+                                            break;
+                                        case 12:
+                                            value = "6";
+                                            break;
+                                        case 14:
+                                            value = "3";
+                                            break;
+                                        case 15:
+                                            value = "4";
+                                            break;
+                                        case 21:
+                                            value = "9";
+                                            break;
+                                        case 22:
+                                            value = "8";
+                                            break;
+                                    }
+                                }
+                                break;
+                            case ethnic_groups_v:
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
+                                if (relationVar.getComparisonForCode() && value != null && value.trim().length() != 0) {
+                                    //si se compara por codigo se resaliza validacion
+                                    int valueInt = Integer.parseInt(value);
+                                    switch (valueInt) {
+                                        case 1:
+                                            value = "2";
+                                            break;
+                                        case 2:
+                                            value = "6";
+                                            break;
+                                        case 3:
+                                            value = "7";
+                                            break;
+                                        case 4:
+                                            value = "8";
+                                            break;
+                                        case 5:
+                                            value = "1";
+                                            break;
+                                        case 6:
+                                            value = "3";
+                                            break;
+                                    }
+                                }
+                                break;
+                            case abuse_types_v:
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
+                                if (relationVar.getComparisonForCode() && value != null && value.trim().length() != 0) {
+                                    //si se compara por codico se resaliza validacion
+                                    int valueInt = Integer.parseInt(value);
+                                    switch (valueInt) {
+                                        case 3:
+                                            value = "4";
+                                            break;
+                                        case 4:
+                                            value = "11";
+                                            break;
+                                        case 5:
+                                            value = "12";
+                                            break;
+                                        case 6:
+                                            value = "13";
+                                            break;
+                                        case 7:
+                                            value = "14";
+                                            break;
+                                        case 8:
+                                            value = "15";
+                                            break;
+                                    }
+                                }
+                                break;
+                            case vulnerable_groups_v:
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
+                                if (relationVar.getComparisonForCode() && value != null && value.trim().length() != 0) {
+                                    //si se compara por codico se resaliza validacion
+                                    int valueInt = Integer.parseInt(value);
+                                    switch (valueInt) {
+                                        case 5:
+                                            value = "7";
+                                            break;
+                                        case 7:
+                                            value = "1";
+                                            break;
+                                        case 9:
+                                            value = "2";
+                                            break;
+                                    }
+                                }
+                                break;
+                            case places_v:
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
+                                if (relationVar.getComparisonForCode() && value != null && value.trim().length() != 0) {
+                                    //si se compara por codico se resaliza validacion
+                                    int valueInt = Integer.parseInt(value);
+                                    switch (valueInt) {
+                                        case 1:
+                                            value = "2";
+                                            break;
+                                        case 2:
+                                            value = "1";
+                                            break;
+                                        case 3:
+                                            value = "10";
+                                            break;
+                                        case 4:
+                                            value = "7";
+                                            break;
+                                        case 5:
+                                            value = "11";
+                                            break;
+                                        case 6:
+                                            value = "12";
+                                            break;
+                                        case 7:
+                                            value = "8";
+                                            break;
+                                    }
+                                }
+                                break;
+
+                            case NOVALUE:
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
+                                break;
+                        }
+                    }
+
+                    continueProcces = false;
+                    if (value != null) {
+                        if (value.trim().length() != 0) {
+                            continueProcces = true;
+                        }
+                    }
+                    if (continueProcces) {
+                        switch (SIVIGILA_VIF_enum.convert(relationVar.getNameExpected())) {
+                            // ************************************************DATOS PARA LA TABLA victims                                
+                            case primer_apellido:
+                                if (surname.trim().length() != 0) {
+                                    surname = surname + " " + value;
+                                } else {
+                                    surname = value;
+                                }
+                                break;
+                            case segundo_apellido:
+                                if (surname.trim().length() != 0) {
+                                    surname = surname + " " + value;
+                                } else {
+                                    surname = value;
+                                }
+                                break;
+                            case primer_nombre:
+                                if (name.trim().length() != 0) {
+                                    name = name + " " + value;
+                                } else {
+                                    name = value;
+                                }
+                                break;
+                            case segundo_nombre:
+                                if (name.trim().length() != 0) {
+                                    name = name + " " + value;
+                                } else {
+                                    name = value;
+                                }
+                                break;
+                            case tipo_de_identificacion:
+                                newVictim.setTypeId(idTypesFacade.find(Short.parseShort(value)));
+                                break;
+                            case numero_identificacion_victima:
+                                newVictim.setVictimNid(value);
+                                break;
+                            case edad_de_la_victima:
+                                newVictim.setVictimAge(Short.parseShort(value));
+                                break;
+                            case medida_edad:
+                                newVictim.setAgeTypeId(Short.parseShort(value));
+                                break;
+                            case genero_victima:
+                                newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
+                                break;
+                            case area_ocurrencia_de_los_hechos:
+                                //sivigila_event.area   (areas)
+                                break;
+                            case barrio_del_evento:
+                                newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(value)));
+                                break;
+                            case direccion_residencia:
+                                newVictim.setVictimAddress(value);
+                                break;
+                            case ocupacion_victima:
+                                newVictim.setJobId(jobsFacade.find(Integer.parseInt(value)));
+                                break;
+                            case tipo_de_regimen_en_salud:
+                                //sivigila_victim.health_category
+                                break;
+                            case aseguradora:
+                                newVictim.setInsuranceId(insuranceFacade.find(value));
+                                break;
+                            case pertenencia_etnica:
+                                newVictim.setEthnicGroupId(ethnicGroupsFacade.find(Short.parseShort(value)));
+                                break;
+                            case grupo_vulnerable:
+                                VulnerableGroups auxVulnerableGroups = vulnerableGroupsFacade.find(Short.parseShort(value));
+                                vulnerableGroupList.add(auxVulnerableGroups);
+                                newVictim.setVulnerableGroupsList(vulnerableGroupList);
+                                break;
+                            case municipio_de_residencia:
+                                splitArray = value.split("-");
+                                if (splitArray.length == 2) {
+                                    newVictim.setResidenceDepartment(Short.parseShort(splitArray[0]));
+                                    newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
+                                }
+                                break;
+                            case fecha_consulta:
+                                try {
+                                    currentDate = dateFormat.parse(value);
+                                    newNonFatalInjury.setCheckupDate(currentDate);
+                                } catch (ParseException ex) {
+                                }
+                                break;
+                            case telefono_paciente:
+                                newVictim.setVictimTelephone(value);
+                                break;
+                            case fecha_nacimiento:
+                                try {
+                                    currentDate = dateFormat.parse(value);
+                                    newVictim.setVictimDateOfBirth(currentDate);
+                                } catch (ParseException ex) {
+                                }
+                                break;
+                            case nombre_profesional_salud:
+                                newNonFatalInjury.setHealthProfessionalId(healthProfessionalsFacade.find(Integer.parseInt(value)));
+                                break;
+                            case naturaleza_violencia:
+
+                                break;
+                            case escolaridad_victima:
+                                break;
+                            case factor_vulnerabilidad_victima:
+                                break;
+                            case otro_factor_vulnerabilidad:
+                                break;
+                            case antecedentes_hecho_similar:
+                                break;
+                            case presencia_alcohol_victima:
+                                break;
+                            case edad_del_agresor:
+                                break;
+                            case genero_agresor:
+                                break;
+                            case ocupacion_agresor:
+                                break;
+                            case escolaridad_agresor:
+                                break;
+                            case relacion_familiar_victima:
+                                break;
+                            case otra_relacion_familiar:
+                                break;
+                            case convive_con_agresor:
+                                break;
+                            case relacion_no_familiar_victima:
+                                break;
+                            case otra_relacion_no_familiar:
+                                break;
+                            case grupo_agresor:
+                                break;
+                            case otro_grupo_agresor:
+                                break;
+                            case presencia_alcohol_agresor:
+                                break;
+                            case armas_utilizadas:
+                                break;
+                            case sustancia_intoxicacion:
+                                break;
+                            case otra_arma:
+                                break;
+                            case otro_mecanismo:
+                                break;
+                            case cual_otro_mecanismo:
+                                break;
+                            case fecha_evento:
+                                break;
+                            case hora_evento:
+                                break;
+                            case escenario_hechos:
+                                break;
+                            case direccion_evento:
+                                break;
+                            case zona_conflicto:
+                                break;
+                            case accion_salud_atencion:
+                                break;
+                            case accion_salud_profilaxis:
+                                break;
+                            case accion_salud_anticonceptivo:
+                                break;
+                            case accion_salud_orientacion:
+                                break;
+                            case accion_salud_mental:
+                                break;
+                            case accion_salud_autoridad:
+                                break;
+                            case accion_salud_otro:
+                                break;
+                            case recomienda_proteccion:
+                                break;
+                            case trabajo_de_campo:
+                                break;
+                            case institucion_de_salud:
+                                break;
+                            default:
+                        }
+                    }
+                }
+
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newVictim.getVictimNeighborhoodId() == null) {
+                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newNonFatalInjury.getInjuryNeighborhoodId() == null) {
+                    newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+                //DATOS DE LA CONLUSTA..........................................
+                //SI NO HAY FECHA DE CONSULTA PASAR LA DE EVENTO
+                if (newNonFatalInjury.getCheckupDate() == null) {
+                    if (newNonFatalInjury.getInjuryDate() != null) {
+                        newNonFatalInjury.setCheckupDate(newNonFatalInjury.getInjuryDate());
+                    }
+                }
+                //SI NO HAY HORA DE CONSULTA PASAR LA DE EVENTO
+                if (newNonFatalInjury.getCheckupTime() == null) {
+                    if (newNonFatalInjury.getInjuryTime() != null) {
+                        newNonFatalInjury.setCheckupTime(newNonFatalInjury.getInjuryTime());
+                    }
+                }
+                //SI NO HAY FECHA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
+                if (newNonFatalInjury.getCheckupDate() == null) {
+                    dia1 = haveData(dia1);
+                    mes1 = haveData(mes1);
+                    ao1 = haveData(ao1);
+                    if (dia1 != null && mes1 != null && ao1 != null) {
+                        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+                        Date fechaI;
+                        fechaI = formato.parse(dia1 + "/" + mes1 + "/" + ao1);
+                        newNonFatalInjury.setCheckupDate(fechaI);
+                    }
+                }
+                //SI NO HAY HORA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
+                if (newNonFatalInjury.getCheckupTime() == null) {
+                    horas1 = haveData(horas1);
+                    minutos1 = haveData(minutos1);
+                    ampm1 = haveData(ampm1);
+                    if (horas1 != null && minutos1 != null && ampm1 != null) {
+                        hourInt = Integer.parseInt(horas1);
+                        minuteInt = Integer.parseInt(minutos1);
+                        if (ampm1.compareTo("2") == 0) {
+                            hourInt = hourInt + 12;
+                            if (hourInt == 24) {
+                                hourInt = 0;
+                            }
+                        }
+                        currentDate = new Date();
+                        currentDate.setHours(hourInt);
+                        currentDate.setMinutes(minuteInt);
+                        currentDate.setSeconds(0);
+                        newNonFatalInjury.setCheckupTime(currentDate);
+                    }
+                }
+                //DATOS PARA EL EVENTO..........................................
+                //SI NO HAY FECHA DE EVENTO PASAR LA DE CONSULTA
+                if (newNonFatalInjury.getInjuryDate() == null) {
+                    if (newNonFatalInjury.getCheckupDate() != null) {
+                        newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
+                    }
+                }
+                //SI NO HAY HORA DE EVENTO PASAR LA DE CONSULTA
+                if (newNonFatalInjury.getInjuryTime() == null) {
+                    if (newNonFatalInjury.getCheckupTime() != null) {
+                        newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
+                    }
+                }
+                //SI NO HAY FECHA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
+                if (newNonFatalInjury.getInjuryDate() == null) {
+                    dia = haveData(dia);
+                    mes = haveData(mes);
+                    ao = haveData(ao);
+                    if (dia != null && mes != null && ao != null) {
+                        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+                        Date fechaI;
+                        fechaI = formato.parse(dia + "/" + mes + "/" + ao);
+                        newNonFatalInjury.setInjuryDate(fechaI);
+                    }
+                }
+                //SI NO HAY HORA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
+                if (newNonFatalInjury.getInjuryTime() == null) {
+                    horas = haveData(horas);
+                    minutos = haveData(minutos);
+                    ampm = haveData(ampm);
+                    if (horas != null && minutos != null && ampm != null) {
+                        hourInt = Integer.parseInt(horas);
+                        minuteInt = Integer.parseInt(minutos);
+                        if (ampm.compareTo("2") == 0) {
+                            hourInt = hourInt + 12;
+                            if (hourInt == 24) {
+                                hourInt = 0;
+                            }
+                        }
+                        currentDate = new Date();
+                        currentDate.setHours(hourInt);
+                        currentDate.setMinutes(minuteInt);
+                        currentDate.setSeconds(0);
+                        newNonFatalInjury.setInjuryTime(currentDate);
+                    }
+                }
+                //SI LA HORA DE LA CONSULTA ES 0000 PASAR LA HORA DEL EVENTO A LA DE LA CONSULTA
+                if (newNonFatalInjury.getCheckupTime() != null) {
+                    if (newNonFatalInjury.getInjuryTime() != null) {
+                        int hour = newNonFatalInjury.getInjuryTime().getHours();
+                        int minute = newNonFatalInjury.getInjuryTime().getMinutes();
+                        if (hour == 0 && minute == 0) {
+                            newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
+                        }
+                    } else {
+                        newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
+                    }
+                }
+                //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
+                if (newNonFatalInjury.getInjuryDate() != null) {
+                    if (newNonFatalInjury.getInjuryDayOfWeek() == null) {
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(newNonFatalInjury.getInjuryDate());
+                        newNonFatalInjury.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
+                    }
+                }
+                //UNION DE NOMBRES Y APELLIOS
+                name = name + " " + surname;
+                if (name.trim().length() > 1) {
+                    newVictim.setVictimName(name);
+                }
+
+                //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
+                if (newNonFatalInjury.getNonFatalDataSourceId() == null) {
+                    if (currentSource != 21) {//1=compareTo("OBSERVATORIO DEL DELITO")
+                        newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find((short) currentSource));
+                    }
+                }
+                //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
+                if (newVictim.getVictimDateOfBirth() != null) {
+                    if (newVictim.getVictimAge() == null) {
+                        int birthMonths;
+                        int eventMonths;
+
+                        Calendar systemCalendar = Calendar.getInstance();
+                        Calendar birthCalendar = Calendar.getInstance();
+                        birthCalendar.setTime(newVictim.getVictimDateOfBirth());
+
+                        try {//DETERMINO LA EDAD EN MESES
+                            birthMonths = birthCalendar.get(Calendar.YEAR);
+                            birthMonths = birthMonths * 12;
+                            birthMonths = birthMonths + birthCalendar.get(Calendar.MONTH);
+                            if (newNonFatalInjury.getInjuryDate() != null) {//SE CALCULA EDAD SEGUN LA FECHA DE EVENTO
+                                systemCalendar.setTime(newNonFatalInjury.getInjuryDate());
+                            }
+                            eventMonths = systemCalendar.get(Calendar.YEAR);
+                            eventMonths = eventMonths * 12;
+                            eventMonths = eventMonths + systemCalendar.get(Calendar.MONTH);
+
+                            int ageMonths = eventMonths - birthMonths;
+                            if (ageMonths < 0) {
+                                System.out.println("ERROR fecha de nacimiento mayor a la del sistema o evento: ");
+                            } else {
+                                int ageYears = (int) (ageMonths / 12);
+                                if (ageYears == 0) {
+                                    ageYears = 1;
+                                }
+                                newVictim.setVictimAge((short) ageYears);
+                                newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
+//                                if (newVictim.getTypeId() == null) {
+//                                    if (ageYears >= 18) {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
+//                                    } else {
+//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
+//                                    }
+//                                }
+                            }
+                        } catch (Exception ex) {
+                            Logger.getLogger(HomicideMB.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+
+
+                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
+                    newVictim.setVictimClass((short) 2);//nn
+
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
+                    GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
+                    currentGenNn.setCodNn(genNnFacade.findMax() + 1);
+                    genNnFacade.edit(currentGenNn);
+                } else {//HAY NUMERO DE IDENTIFICACION
+                    if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
+                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                    }
+                }
+
+
+                //agrego las listas las listas
+                if (!anatomicalLocationsList.isEmpty()) {
+                    newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
+                }
+                if (!abuseTypesList.isEmpty()) {
+                    newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                }
+                if (!aggressorTypesList.isEmpty()) {
+                    newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+                }
+                if (!actionsToTakeList.isEmpty()) {
+                    newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
+                }
+                if (!vulnerableGroupList.isEmpty()) {
+                    newVictim.setVulnerableGroupsList(vulnerableGroupList);
+                }
+                if (!othersList.isEmpty()) {
+                    newVictim.setOthersList(othersList);
+                }
+                newNonFatalInjury.setInjuryId(injuriesFacade.find(Short.parseShort("53")));
+
+                //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
+                if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
+                    if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad
+                        if (newVictim.getVictimAge() < 18) {//menor de edad
+                            if (newVictim.getTypeId().getTypeId() == (short) 1 ||//cedula de ciudadania
+                                    newVictim.getTypeId().getTypeId() == (short) 2 ||//cedula de extranjeria
+                                    newVictim.getTypeId().getTypeId() == (short) 3 ||//pasaporte
+                                    newVictim.getTypeId().getTypeId() == (short) 6) {//adulto sin identificacion
+                                newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
+                            }
+                        } else {//mayor de edad
+                            if (newVictim.getTypeId().getTypeId() == (short) 5 ||//tarjeta de identidad
+                                    newVictim.getTypeId().getTypeId() == (short) 4 ||//registro civil
+                                    newVictim.getTypeId().getTypeId() == (short) 7) {//menor sin identificacion
+                                newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
+                            }
+                        }
+
+                    }
+                }
+
+                //PERSISTO//////////////////////////////////////////////////////////////////
+                try {
+
+                    newNonFatalInjury.setVictimId(newVictim);
+                    victimsFacade.create(newVictim);//PERSISTO LA VICTIMA                
+                    nonFatalInjuriesFacade.create(newNonFatalInjury);//PERSISTO LA LESION NO FATAL                    
+                    newNonFatalDomesticViolence.setNonFatalInjuryId(newNonFatalInjury.getNonFatalInjuryId());
+                    nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
+
+                } catch (Exception e) {
+                    System.out.println(e.toString());
+                }
+                tuplesProcessed++;
+                progress = (int) (tuplesProcessed * 100) / tuplesNumber;
+                System.out.println("PROGRESO INGRESANDO VIF: " + String.valueOf(progress));
+            }
+            progress = 100;
+            System.out.println("PROGRESO INGRESANDO VIF: " + String.valueOf(progress));
+
+        } catch (SQLException ex) {
+            System.out.println("errorSQL INGRESANDO VIF: " + ex.toString());
+        } catch (Exception ex) {
+            System.out.println("EXCEPTION INGRESANDO VIF: " + ex.toString() + "  " + relationVar.getNameExpected() + " " + String.valueOf(tuplesProcessed));
+        }
+    }
+
     public void btnRegisterDataClick() throws ParseException {
         continueProcces = false;
         if (errorsControlMB.getErrorControlArrayList().isEmpty()) {
@@ -4533,6 +5278,9 @@ public class RecordDataMB implements Serializable {
                     break;
                 case SCC_F_033:
                     registerSCC_F_033();
+                    break;
+                case SIVIGILA_VIF:
+                    register_SIVIGILA();
                     break;
             }
         }
@@ -4727,11 +5475,11 @@ public class RecordDataMB implements Serializable {
         if (f.trim().length() == 0) {
             return "";
         }
-        SimpleDateFormat dateFormat = new SimpleDateFormat(format);
+        SimpleDateFormat df = new SimpleDateFormat(format);
         Date fDate;
         String fStr;
         try {
-            fDate = dateFormat.parse(f);
+            fDate = df.parse(f);
             //obtener año actual
             Calendar systemCalendar = Calendar.getInstance();
             Calendar currentCalendar = Calendar.getInstance();
@@ -4739,8 +5487,8 @@ public class RecordDataMB implements Serializable {
             if (systemCalendar.compareTo(currentCalendar) < 0) {//current date es mayor a la des sistema
                 currentCalendar.add(Calendar.YEAR, -100);
             }
-            dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            fStr = dateFormat.format(currentCalendar.getTime());
+            df = new SimpleDateFormat("yyyy-MM-dd");
+            fStr = df.format(currentCalendar.getTime());
             return fStr;
         } catch (ParseException ex) {
             return null;
@@ -4960,17 +5708,16 @@ public class RecordDataMB implements Serializable {
         if (relationVar.getComparisonForCode() == true) {
             for (int i = 0; i < relationVar.getRelationValuesList().size(); i++) {
                 if (relationVar.getRelationValuesList().get(i).getNameFound().compareTo(valueFound) == 0) {
-                    return connectionJdbcMB.findNameByCategoricalCode(relationVar.getFieldType(), relationVar.getRelationValuesList().get(i).getNameExpected());
+                    return connectionJdbcMB.findNameByCategoricalCode(remove_v(relationVar.getFieldType()), relationVar.getRelationValuesList().get(i).getNameExpected());
                 }
             }
         } else {
             for (int i = 0; i < relationVar.getRelationValuesList().size(); i++) {
                 if (relationVar.getRelationValuesList().get(i).getNameFound().compareTo(valueFound) == 0) {
-                    return connectionJdbcMB.findCodeByCategoricalName(relationVar.getFieldType(), relationVar.getRelationValuesList().get(i).getNameExpected());
+                    return connectionJdbcMB.findCodeByCategoricalName(remove_v(relationVar.getFieldType()), relationVar.getRelationValuesList().get(i).getNameExpected());
                 }
             }
         }
-
         //verificar si es descartado
         for (int i = 0; i < relationVar.getRelationsDiscardedValuesList().size(); i++) {
             if (valueFound.compareTo(relationVar.getRelationsDiscardedValuesList().get(i).getDiscardedValueName()) == 0) {
@@ -4979,9 +5726,9 @@ public class RecordDataMB implements Serializable {
         }
         //se valida con respecto a los valores esperados
         if (relationVar.getComparisonForCode() == true) {
-            return connectionJdbcMB.findNameByCategoricalCode(relationVar.getFieldType(), valueFound);
+            return connectionJdbcMB.findNameByCategoricalCode(remove_v(relationVar.getFieldType()), valueFound);
         } else {
-            return connectionJdbcMB.findCodeByCategoricalName(relationVar.getFieldType(), valueFound);
+            return connectionJdbcMB.findCodeByCategoricalName(remove_v(relationVar.getFieldType()), valueFound);
         }
     }
 
@@ -4990,21 +5737,6 @@ public class RecordDataMB implements Serializable {
     //FUNCIONES GET Y SET DE LAS VARIABLES ---------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-//    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
-//        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
-//    }
-    public void setRelationshipOfVariablesMB(RelationshipOfVariablesMB relationshipOfVariablesMB) {
-        this.relationshipOfVariablesMB = relationshipOfVariablesMB;
-    }
-
-//    public void setStoredRelationsMB(StoredRelationsMB storedRelationsMB) {
-//        this.storedRelationsMB = storedRelationsMB;
-//    }
-//
-//    public StoredRelationsMB getStoredRelationsMB() {
-//        return storedRelationsMB;
-//    }
-
     public ErrorsControlMB getErrorsControlMB() {
         return errorsControlMB;
     }
@@ -5060,4 +5792,14 @@ public class RecordDataMB implements Serializable {
     public void setCurrentSource(int currentSource) {
         this.currentSource = currentSource;
     }
+
+    public RowDataTable getSelectedErrorRowTable() {
+        return selectedErrorRowTable;
+    }
+
+    public void setSelectedErrorRowTable(RowDataTable selectedErrorRowTable) {
+        this.selectedErrorRowTable = selectedErrorRowTable;
+    }
+    
+    
 }

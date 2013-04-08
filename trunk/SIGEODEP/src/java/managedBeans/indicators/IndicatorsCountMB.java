@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.StringReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -20,12 +21,16 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.component.html.HtmlOutputText;
 import javax.faces.context.FacesContext;
+import managedBeans.fileProcessing.ProjectsMB;
+import managedBeans.login.LoginMB;
 import managedBeans.reports.SpanColumns;
 import model.dao.IndicatorsConfigurationsFacade;
 import model.dao.IndicatorsFacade;
@@ -42,6 +47,8 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
 import org.primefaces.component.column.Column;
 import org.primefaces.component.outputpanel.OutputPanel;
 import org.primefaces.component.panelgrid.PanelGrid;
@@ -67,6 +74,7 @@ public class IndicatorsCountMB {
     private OutputPanel dynamicDataTableGroup; // Placeholder.
     private FacesMessage message = null;
     private ConnectionJdbcMB connectionJdbcMB;
+    private LoginMB loginMB;
     private String titlePage = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
     private String titleIndicator = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
     private String subTitleIndicator = "NUMERO DE CASOS POR LESION";
@@ -84,8 +92,8 @@ public class IndicatorsCountMB {
     private Date endDate = new Date();
     private String initialDateStr;
     private String endDateStr;
-    private String pivotTableName;
-    private String prepivotTableName;
+    //private String pivotTableName;
+    //private String prepivotTableName;
     private List<String> variablesGraph = new ArrayList<String>();
     private List<String> valuesGraph = new ArrayList<String>();
     private List<String> variablesList = new ArrayList<String>();//lista de nombres de variables disponibles que sepueden cruzar(se visualizan en pagina)
@@ -111,15 +119,21 @@ public class IndicatorsCountMB {
     private int currentYear = 0;
     private boolean btnAddVariableDisabled = true;
     private boolean btnAddCategoricalValueDisabled = true;
-    //private boolean btnRemoveCategoricalValueDisabled = true;
+    private String sql = "";
     private boolean btnRemoveVariableDisabled = true;
     private boolean renderedDynamicDataTable = true;
-    //private boolean showAll = false;//mostrar filas y columnas vacias
+    //private int maxNumberInserts = 100000;//numero de insert por copy realizado
+    //private int currentNumberInserts = 0;//numero de inserts actual
+    private Integer tuplesProcessed = 0;
     private boolean colorType = true;
+    private StringBuilder sb;
+    private StringBuilder sb2;
+    private CopyManager cpManager;
 
     public IndicatorsCountMB() {
         //-------------------------------------------------
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         Calendar c = Calendar.getInstance();
         currentYear = c.get(Calendar.YEAR);
         initialDate.setDate(1);
@@ -253,20 +267,19 @@ public class IndicatorsCountMB {
         //CREO LAS TABLAS PIVOT Y PREPIVOT
         //----------------------------------------------------------------------
         if (continueProcess) {
-            pivotTableName = "table_pivot";
-            prepivotTableName = "table_prepivot";
+            //pivotTableName = "table_pivot";
+            //prepivotTableName = "table_prepivot";
             initialDateStr = formato.format(initialDate);
             endDateStr = formato.format(endDate);
-            createPrepivotTable();//creo la tabla prepivot
             createPivotTable();//creo la tabla pivot
-            createMatrixResult();//matriz de resultados
+            //createMatrixResult();//matriz de resultados
         }
         //----------------------------------------------------------------------
         //CREO LA TABLA DE RESULTADOS Y EL GRAFICO
         //----------------------------------------------------------------------
         if (continueProcess) {
-            dataTableHtml = createDataTableResult();
-            createImage();//creo el grafico
+            //dataTableHtml = createDataTableResult();
+            //createImage();//creo el grafico
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze de conteo realizado");
         }
     }
@@ -613,10 +626,10 @@ public class IndicatorsCountMB {
     public void createImage() {
         if (currentGraphType.compareTo("barras vertical") == 0) {
             try {
-                JFreeChart chart = createBarChart();
-                File chartFile = new File("dynamichart");
-                ChartUtilities.saveChartAsPNG(chartFile, chart, 650, 500);
-                chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
+                //JFreeChart chart = createBarChart();
+                //File chartFile = new File("dynamichart");
+                //ChartUtilities.saveChartAsPNG(chartFile, chart, 650, 500);
+                //chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
             } catch (Exception e) {
             }
         }
@@ -873,8 +886,6 @@ public class IndicatorsCountMB {
         }
         return value;
     }
-    
-    
 
     private String createDataTableResult() {
         PanelGrid panelGrid = new PanelGrid();
@@ -968,7 +979,7 @@ public class IndicatorsCountMB {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td >" + determineHeader(columnTypeName.get(2) , rowNames.get(j)) + "</td>\r\n";
+            strReturn = strReturn + "                                <td >" + determineHeader(columnTypeName.get(2), rowNames.get(j)) + "</td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -1031,8 +1042,7 @@ public class IndicatorsCountMB {
         try {
 
             int pos = 0;
-            String sql = "";
-            sql = sql + "SELECT * FROM " + pivotTableName;
+            sql = "SELECT * FROM " + "pivotTableName";
             ResultSet rs;
             if (variablesCrossData.size() == 1) {
                 rs = connectionJdbcMB.consult(sql);
@@ -1106,91 +1116,95 @@ public class IndicatorsCountMB {
         xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
 
         return chartReturn;
+
     }
 
-    private String searchTypeName(String columnName) {
-        //palabra que se agregara a la cabecera        
-        if (columnName.compareTo("anyo") == 0) {
-            return " años ";
-        } else {
-            return " " + columnName + " ";
-        }
-    }
+//    private String searchTypeName(String columnName) {
+//        //palabra que se agregara a la cabecera        
+//        if (columnName.compareTo("anyo") == 0) {
+//            return " años ";
+//        } else {
+//            return " " + columnName + " ";
+//        }
+//    }
 
     public void createMatrixResult() {
         //System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         try {
-            ArrayList<String> columnNamesPivot = new ArrayList<String>();
-
-            columnTypeName = new ArrayList<String>();
-
-
-            columNames = new ArrayList<String>();
-            rowNames = new ArrayList<String>();
-            //---------------------------------------------------------
-            //DETEMINO LOS NOMBRES DE LAS COLUMNAS DE TABLA PIVOT()
-            //---------------------------------------------------------
-            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
-            int ncol = rs.getMetaData().getColumnCount();
-            for (int i = 1; i <= ncol; i++) {
-                columnNamesPivot.add(rs.getMetaData().getColumnName(i));
-            }
-            //---------------------------------------------------------            
-            //DETERMINO NOMBRES DE COLUMNAS PARA MATIRZ SALIDA
-            //---------------------------------------------------------            
-            if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
-                columnTypeName.add(searchTypeName(columnNamesPivot.get(0)));
-                columnTypeName.add("");
-                rs = connectionJdbcMB.consult(
-                        "SELECT " + columnNamesPivot.get(0)
-                        + " FROM " + pivotTableName
-                        + " GROUP BY " + columnNamesPivot.get(0)
-                        + " order by MIN(id);");
-            }
-            if (variablesCrossData.size() == 3) {
-                columnTypeName.add(searchTypeName(columnNamesPivot.get(0)));
-                columnTypeName.add(searchTypeName(columnNamesPivot.get(1)));
-                String sql =
-                        "SELECT "
-                        + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
-                        + " FROM " + pivotTableName
-                        + " group by "
-                        + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
-                        + " order by "
-                        + " MIN(id); ";
-                rs = connectionJdbcMB.consult(sql);
-            }
-            while (rs.next()) {
-                columNames.add(rs.getString(1));
-                //System.out.println("orden:"+rs.getString(1));
-            }
-            //---------------------------------------------------------            
-            //DETERMINO NOMBRES DE FILAS PARA MATIRZ SALIDA
-            //---------------------------------------------------------            
-            if (variablesCrossData.size() == 1) {
-                rowNames.add("Valor");
-                columnTypeName.add("");
-            }
-            if (variablesCrossData.size() == 2) {
-                columnTypeName.add(searchTypeName(columnNamesPivot.get(1)));
-                rs = connectionJdbcMB.consult(
-                        "SELECT " + columnNamesPivot.get(1)
-                        + " FROM " + pivotTableName
-                        + " GROUP BY " + columnNamesPivot.get(1)
-                        + " order by MIN(id);");
-            }
-            if (variablesCrossData.size() == 3) {
-                columnTypeName.add(searchTypeName(columnNamesPivot.get(2)));
-                rs = connectionJdbcMB.consult(
-                        "SELECT " + columnNamesPivot.get(2)
-                        + " FROM " + pivotTableName
-                        + " GROUP BY " + columnNamesPivot.get(2)
-                        + " order by MIN(id);");
-            }
-            while (rs.next()) {
-                rowNames.add(rs.getString(1));
-                //System.out.println("orden:" + rs.getString(1));
-            }
+            //ArrayList<String> columnNamesPivot = new ArrayList<String>();
+//            columnTypeName = new ArrayList<String>();
+//            columNames = new ArrayList<String>();
+//            rowNames = new ArrayList<String>();
+            ResultSet rs;
+//            //---------------------------------------------------------
+//            //DETEMINO LOS NOMBRES DE LAS COLUMNAS DE TABLA PIVOT()
+//            //---------------------------------------------------------
+//            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
+//            int ncol = rs.getMetaData().getColumnCount();
+//            for (int i = 1; i <= ncol; i++) {
+//                columnNamesPivot.add(rs.getMetaData().getColumnName(i));
+//            }
+//            //---------------------------------------------------------            
+//            //DETERMINO NOMBRES DE COLUMNAS PARA MATIRZ SALIDA
+//            //---------------------------------------------------------            
+//            if (variablesCrossData.size() < 3) { //una o dos variables
+//                columnTypeName.add(variablesCrossData.get(0).getName());//searchTypeName(columnNamesPivot.get(0)));
+//                columnTypeName.add("");
+//                sql = ""
+//                        + " SELECT "
+//                        + "    column_1 "
+//                        + " FROM "
+//                        + "    indicators_records "
+//                        + " GROUP BY "
+//                        + "    column_1 "
+//                        + " ORDER BY "
+//                        + "    MIN(record_id) ";
+//                rs = connectionJdbcMB.consult(sql);
+//            }
+//            if (variablesCrossData.size() == 3) {
+//                columnTypeName.add(searchTypeName(columnNamesPivot.get(0)));
+//                columnTypeName.add(searchTypeName(columnNamesPivot.get(1)));
+//                sql =
+//                        "SELECT "
+//                        + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
+//                        + " FROM " + pivotTableName
+//                        + " group by "
+//                        + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
+//                        + " order by "
+//                        + " MIN(id); ";
+//                rs = connectionJdbcMB.consult(sql);
+//            }
+//            while (rs.next()) {
+//                columNames.add(rs.getString(1));
+//                //System.out.println("orden:"+rs.getString(1));
+//            }
+//            //---------------------------------------------------------            
+//            //DETERMINO NOMBRES DE FILAS PARA MATIRZ SALIDA
+//            //---------------------------------------------------------            
+//            if (variablesCrossData.size() == 1) {
+//                rowNames.add("Valor");
+//                columnTypeName.add("");
+//            }
+//            if (variablesCrossData.size() == 2) {
+//                columnTypeName.add(searchTypeName(columnNamesPivot.get(1)));
+//                rs = connectionJdbcMB.consult(
+//                        "SELECT " + columnNamesPivot.get(1)
+//                        + " FROM " + pivotTableName
+//                        + " GROUP BY " + columnNamesPivot.get(1)
+//                        + " order by MIN(id);");
+//            }
+//            if (variablesCrossData.size() == 3) {
+//                columnTypeName.add(searchTypeName(columnNamesPivot.get(2)));
+//                rs = connectionJdbcMB.consult(
+//                        "SELECT " + columnNamesPivot.get(2)
+//                        + " FROM " + pivotTableName
+//                        + " GROUP BY " + columnNamesPivot.get(2)
+//                        + " order by MIN(id);");
+//            }
+//            while (rs.next()) {
+//                rowNames.add(rs.getString(1));
+//                //System.out.println("orden:" + rs.getString(1));
+//            }
 
             //---------------------------------------------------------            
             //SE CREA LA MATRIZ DE RESULTADOS (iniciada en 0 )
@@ -1201,8 +1215,12 @@ public class IndicatorsCountMB {
                     matrixResult[i][j] = "0";
                 }
             }
-
-            rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
+            
+            rs = connectionJdbcMB.consult(""
+                    + " SELECT "
+                    + "    * "
+                    + " FROM "
+                    + "    indicators_records ");
             while (rs.next()) {
                 boolean find = false;
                 for (int i = 0; i < columNames.size(); i++) {
@@ -1259,309 +1277,29 @@ public class IndicatorsCountMB {
             for (int i = 0; i < totalsVertical.size(); i++) {
                 grandTotal = grandTotal + Integer.parseInt(totalsVertical.get(i));
             }
-//            System.out.println("FINALIZA IMPRIMIR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+            //            System.out.println("FINALIZA IMPRIMIR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         } catch (Exception e) {
             System.out.println("Error: " + e.toString());
         }
     }
 
-    public void createPivotTable() {
-        columNames = new ArrayList<String>();
-        rowNames = new ArrayList<String>();
-        String sql;
-        sql = "\n\r DROP TABLE IF EXISTS " + pivotTableName + ";\n\r";
-        sql = sql + " CREATE TABLE  \n\r";
-        sql = sql + "	" + pivotTableName + "  \n\r";
-        sql = sql + " AS  \n\r";
-        sql = sql + " SELECT * from " + prepivotTableName + " \n\r";
-        connectionJdbcMB.non_query(sql);
-        connectionJdbcMB.non_query("DELETE FROM " + pivotTableName);//elimino registros     
-        connectionJdbcMB.non_query("ALTER TABLE " + pivotTableName + " ADD COLUMN id integer;");
-        //---------------------------------------------------------
-        //HAY QUE ARMAR LAS POSIBLES COMBINACIONES PARA QUE LOS DATOS QUEDEN ORDENADOS SEGUN COMO SE ENCUENTRE LA CONFIGURACION
-        //---------------------------------------------------------
-        try {
-            ArrayList<String> fieldsNames = new ArrayList<String>();
-            //---------------------------------------------------------
-            //DETEMINO LOS NOMBRES DE LAS COLUMNAS
-            //---------------------------------------------------------
-            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + prepivotTableName);
-            int ncol = rs.getMetaData().getColumnCount();
-            for (int i = 1; i <= ncol; i++) {
-                fieldsNames.add(rs.getMetaData().getColumnName(i));
-            }
-            //---------------------------------------------------------
-            //CREO NUEVOS VECTORES DE VALORES POR QUE PUEDE SER QUE HAYA QUE AGREGAR EL VALOR 'SIN DATO' QUE NO VIENE POR DEFECTO EN LOS VALORES                        
-            //---------------------------------------------------------
-            ArrayList<String> values1 = new ArrayList<String>();
-            if (variablesCrossData.size() > 0) {
-                for (int i = 0; i < variablesCrossData.get(0).getValuesConfigured().size(); i++) {
-                    values1.add(variablesCrossData.get(0).getValuesConfigured().get(i));
-                }
-                rs = connectionJdbcMB.consult("SELECT * FROM " + prepivotTableName + " WHERE " + fieldsNames.get(0) + " like 'SIN DATO'");
-                if (rs.next()) {
-                    values1.add("SIN DATO");
-                }
-            }
-            ArrayList<String> values2 = new ArrayList<String>();
-            if (variablesCrossData.size() > 1) {
-                for (int i = 0; i < variablesCrossData.get(1).getValuesConfigured().size(); i++) {
-                    values2.add(variablesCrossData.get(1).getValuesConfigured().get(i));
-                }
-                rs = connectionJdbcMB.consult("SELECT * FROM " + prepivotTableName + " WHERE " + fieldsNames.get(1) + " like 'SIN DATO'");
-                if (rs.next()) {
-                    values2.add("SIN DATO");
-                }
-            }
-            ArrayList<String> values3 = new ArrayList<String>();
-            if (variablesCrossData.size() > 2) {
-                for (int i = 0; i < variablesCrossData.get(2).getValuesConfigured().size(); i++) {
-                    values3.add(variablesCrossData.get(2).getValuesConfigured().get(i));
-                }
-                rs = connectionJdbcMB.consult("SELECT * FROM " + prepivotTableName + " WHERE " + fieldsNames.get(2) + " like 'SIN DATO'");
-                if (rs.next()) {
-                    values3.add("SIN DATO");
-                }
-            }
-
-
-            //---------------------------------------------------------
-            //REALIZO LAS POSIBLES COMBINACIONES
-            //---------------------------------------------------------            
-            int id = 0;
-            if (variablesCrossData.size() == 1) {
-                for (int i = 0; i < values1.size(); i++) {
-//                    columNames.add(values1.get(i));
-//                    sql = "INSERT INTO " + pivotTableName + " VALUES (";
-//                    sql = sql + "'" + values1.get(i) + "',";
-//                    sql = sql + "'0')";
-//                    connectionJdbcMB.non_query(sql);
-                    columNames.add(values1.get(i));
-                    sql = "INSERT INTO " + pivotTableName + " VALUES (";
-                    sql = sql + "'" + values1.get(i) + "',";
-                    sql = sql + "'0'," + String.valueOf(id) + ")";
-                    id++;
-                    connectionJdbcMB.non_query(sql);
-                }
-                rowNames.add("Cantidad");
-            } else if (variablesCrossData.size() == 2) {
-//                for (int i = 0; i < values1.size(); i++) {
-//                    columNames.add(values1.get(i));
-//                    for (int j = 0; j < values2.size(); j++) {
-//                        if (i == 0) {
-//                            rowNames.add(values2.get(j));
-//                        }
-//                        sql = "INSERT INTO " + pivotTableName + " VALUES (";
-//                        sql = sql + "'" + values1.get(i) + "',";
-//                        sql = sql + "'" + values2.get(j) + "',";
-//                        sql = sql + "'0')";
-//                        connectionJdbcMB.non_query(sql);
-//                    }
-//                }
-                for (int i = 0; i < values1.size(); i++) {
-                    columNames.add(values1.get(i));
-                    for (int j = 0; j < values2.size(); j++) {
-                        if (i == 0) {
-                            rowNames.add(values2.get(j));
-                        }
-                        sql = "INSERT INTO " + pivotTableName + " VALUES (";
-                        sql = sql + "'" + values1.get(i) + "',";
-                        sql = sql + "'" + values2.get(j) + "',";
-                        sql = sql + "'0'," + String.valueOf(id) + ")";
-                        connectionJdbcMB.non_query(sql);
-                        id++;
-                    }
-                }
-            } else if (variablesCrossData.size() == 3) {
-//                for (int i = 0; i < values1.size(); i++) {
-//                    for (int j = 0; j < values2.size(); j++) {
-//                        columNames.add(values1.get(i) + "}" + values2.get(j));
-//                        for (int k = 0; k < values3.size(); k++) {
-//                            if (i == 0 && j == 0) {
-//                                rowNames.add(values3.get(k));
-//                            }
-//                            sql = "INSERT INTO " + pivotTableName + " VALUES (";
-//                            sql = sql + "'" + values1.get(i) + "',";
-//                            sql = sql + "'" + values2.get(j) + "',";
-//                            sql = sql + "'" + values3.get(k) + "',";
-//                            sql = sql + "'0')";
-//                            connectionJdbcMB.non_query(sql);
-//                        }
-//                    }
-//                }
-                for (int i = 0; i < values1.size(); i++) {
-                    for (int j = 0; j < values2.size(); j++) {
-                        columNames.add(values1.get(i) + "}" + values2.get(j));
-                        for (int k = 0; k < values3.size(); k++) {
-                            if (i == 0 && j == 0) {
-                                rowNames.add(values3.get(k));
-                            }
-                            sql = "INSERT INTO " + pivotTableName + " VALUES (";
-                            sql = sql + "'" + values1.get(i) + "',";
-                            sql = sql + "'" + values2.get(j) + "',";
-                            sql = sql + "'" + values3.get(k) + "',";
-                            sql = sql + "'0'," + String.valueOf(id) + ")";
-                            connectionJdbcMB.non_query(sql);
-                            id++;
-                        }
-                    }
-                }
-            }
-            //---------------------------------------------------------            
-            //ACTUALZO EL VALOR COUNT DE TABLA PIVOT CON LOS COUNT DE TABLA PREPIVOT
-            //---------------------------------------------------------
-            sql = " UPDATE " + pivotTableName + " SET count = " + prepivotTableName + ".count \n\r"
-                    + " FROM " + prepivotTableName + " \n\r"
-                    + " WHERE \n\r";
-            for (int i = 0; i < fieldsNames.size() - 1; i++) {//-1 por que la ultima column es count
-                sql = sql + " " + pivotTableName + "." + fieldsNames.get(i) + " like " + prepivotTableName + "." + fieldsNames.get(i);
-                if (i != fieldsNames.size() - 2) {//menos 2 para saber que es el ultima posicion
-                    sql = sql + " AND \n\r";
-                }
-            }
-            connectionJdbcMB.non_query(sql);
-            //---------------------------------------------------------            
-            //SI NO TOCA MOSTRAR TODOS LOS DATOS SE ELIMINA LOS QUE TENGAN CERO
-            //---------------------------------------------------------
-//            if (!showAll) {
-//                connectionJdbcMB.non_query("DELETE FROM " + pivotTableName + " WHERE count = 0");//elimino los que tengan resultado=0
-//            }
-        } catch (Exception e) {
-            System.out.println("EXCEPTION--------------------------" + e.toString());
-        }
+    private void createPivotTable() {
+        removeIndicatorRecords();
+        saveIndicatorRecords(createIndicatorConsult());
+        removeValuesConfigured();
+        createCombinations();
+        groupingOfValues();
     }
 
-    public void createPrepivotTable() {
-        String prepivotTableName_2 = prepivotTableName + "_2";
-        String sql = "\n\r DROP TABLE IF EXISTS " + prepivotTableName_2 + ";\n\r";
-        sql = sql + " CREATE TABLE  \n\r";
-        sql = sql + "	" + prepivotTableName_2 + "  \n\r";
-        sql = sql + " AS  \n\r";
-        sql = sql + " SELECT  \n\r";
-
-        for (int i = 0; i < variablesCrossData.size(); i++) {
-            switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable 
-                case injuries_fatal://TIPO DE LESION -----------------------
-                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
-                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-                    }
-                    sql = sql + "   END AS tipo_lesion";
-                    break;
-                case injuries_non_fatal://TIPO DE LESION -----------------------
-                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
-                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-                    }
-                    sql = sql + "   END AS tipo_lesion";
-                    break;
-                case age://DETERMINAR EDAD -----------------------                   
-                    sql = sql + "   CASE \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
-                        String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
-                        if (splitAge[1].compareTo("n") == 0) {
-                            splitAge[1] = "200";
-                        }
-                        sql = sql + "       WHEN (( \n\r";
-                        sql = sql + "           CASE \n\r";
-                        sql = sql + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r";
-                        sql = sql + "               WHEN (victims.age_type_id = 1) THEN victims.victim_age \n\r";
-                        sql = sql + "           END \n\r";
-                        sql = sql + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
-                    }
-                    sql = sql + "   END AS edad";
-                    break;
-                case hour://HORA -----------------------
-                    sql = sql + "   CASE \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
-                        String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
-                        String[] splitAge2 = splitAge[0].split(":");
-                        String[] splitAge3 = splitAge[1].split(":");
-                        sql = sql + "       WHEN (extract(hour from fatal_injuries.injury_time) \n\r";
-                        sql = sql + "       between " + splitAge2[0] + " and " + splitAge3[0] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
-                    }
-                    sql = sql + "   END AS hora";
-                    break;
-                case neighborhoods://NOMBRE DEL BARRIO -----------------------
-                    sql = sql + "   (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as barrio";
-                    break;
-                case communes://COMUNA -----------------------
-                    sql = sql + "   CAST((SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna";
-                    break;
-                case quadrants://CUADRANTE -----------------------
-                    sql = sql + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
-                    break;
-                case corridors://CORREDOR -----------------------
-                    sql = sql + "   CASE (SELECT neighborhood_corridor FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r";
-                    sql = sql + "       WHEN '1' THEN 'CENTRAL'  \n\r";
-                    sql = sql + "       WHEN '2' THEN 'OCCIDENTAL' \n\r";
-                    sql = sql + "       WHEN '3' THEN 'ORIENTAL' \n\r";
-                    sql = sql + "       WHEN '4' THEN 'SURORIENTAL' \n\r";
-                    sql = sql + "   END AS corredor";
-                    break;
-                case areas://ZONA -----------------------        
-                    sql = sql + "   CASE (SELECT neighborhood_area FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)  \n\r";
-                    sql = sql + "       WHEN '1' THEN 'ZONA URBANA'  \n\r";
-                    sql = sql + "       WHEN '2' THEN 'ZONA RURAL' \n\r";
-                    sql = sql + "   END AS zona";
-                    break;
-                case genders://GENERO  ----------------------
-                    sql = sql + "   CASE (victims.gender_id) \n\r";
-                    sql = sql + "       WHEN 1 THEN 'MASCULINO'  \n\r";
-                    sql = sql + "       WHEN 2 THEN 'FEMENINO' \n\r";
-                    sql = sql + "   END AS genero";
-                    break;
-                case days://DIA SEMANA ----------------------
-                    sql = sql + "   " + currentIndicator.getInjuryType() + ".injury_day_of_week as dia_semana";
-                    break;
-                case year://AÑO -----------------------
-                    sql = sql + "   CAST(extract(year from " + currentIndicator.getInjuryType() + ".injury_date)::int as text) as anyo";
-                    break;
-                case month://MES -----------------------
-                    sql = sql + "   CASE (extract(month from " + currentIndicator.getInjuryType() + ".injury_date)::int) \n\r";
-                    sql = sql + "       WHEN 1  THEN 'ENERO' \n\r";
-                    sql = sql + "       WHEN 2  THEN 'FEBRERO' \n\r";
-                    sql = sql + "       WHEN 3  THEN 'MARZO' \n\r";
-                    sql = sql + "       WHEN 4  THEN 'ABRIL' \n\r";
-                    sql = sql + "       WHEN 5  THEN 'MAYO' \n\r";
-                    sql = sql + "       WHEN 6  THEN 'JUNIO' \n\r";
-                    sql = sql + "       WHEN 7  THEN 'JULIO' \n\r";
-                    sql = sql + "       WHEN 8  THEN 'AGOSTO' \n\r";
-                    sql = sql + "       WHEN 9  THEN 'SEPTIEMBRE' \n\r";
-                    sql = sql + "       WHEN 10 THEN 'OCTUBRE' \n\r";
-                    sql = sql + "       WHEN 11 THEN 'NOVIEMBRE' \n\r";
-                    sql = sql + "       WHEN 12 THEN 'DICIEMBRE' \n\r";
-                    sql = sql + "   END AS mes";
-                    break;
-            }
-            if (i == variablesCrossData.size() - 1) {//si es la ultima instruccion se agrega salto de linea
-                sql = sql + " \n\r";
-            } else {//si no es la ultima instruccion se agrega coma y salto de linea
-                sql = sql + ", \n\r";
-            }
-        }
-        sql = sql + "   FROM  \n\r";
-        sql = sql + "       " + currentIndicator.getInjuryType() + ", victims \n\r";
-        sql = sql + "   WHERE  \n\r";
-
-
-        sql = sql + "       " + currentIndicator.getInjuryType() + ".victim_id = victims.victim_id AND \n\r";
-        if (currentIndicator.getIndicatorId() != 1 && currentIndicator.getIndicatorId() != 2
-                && currentIndicator.getIndicatorId() != 3 && currentIndicator.getIndicatorId() != 4) {
-            //si no es general se filtra por tipo de lesion
-            sql = sql + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
-        }
-        sql = sql + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r";
-        sql = sql + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy'); ";
-        //System.out.println(sql);
-        connectionJdbcMB.non_query(sql);//CREO LA TABLA PREPIVOT
-        //------------------------------------------------------------------
-        //QUITAMOS LOS VALORES ELIMINADOS DE CADA CATEGORIA
-        //------------------------------------------------------------------
-        sql = "";
+    private void removeValuesConfigured() {
+        /*
+         * elimina los registros que no sean necesarios por que se ha configurado una 
+         * variable quitando valores
+         */
+        ArrayList<String> valuesDiscardedList;//valores descartados de la categoria(los valores que el usuario elimino de la categoria)
         List<String> valuesList;//todos los valores (puede y no puede tomar)
         List<String> valuesConfiguredList;//valores configurados (solo los que puede tomar, unos eliminados por el usuario)
-        List<String> valuesDiscardedList;//valores descartados de la categoria(los valores que el usuario elimino de la categoria)
+        sql = "";
         for (int i = 0; i < variablesCrossData.size(); i++) {
             //DETERMINO SI SE HA REALIZADO UNA CONFIGURACION
             valuesDiscardedList = new ArrayList<String>();
@@ -1581,121 +1319,500 @@ public class IndicatorsCountMB {
                     }
                 }
             }
-            if (!valuesDiscardedList.isEmpty()) {
-                switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable                
-                    case age://ELIMINAR SEGUN EDAD -----------------------                                       
-                        break;
-                    case hour://ELIMINAR SEGUN HORA -----------------------                    
-                        break;
-                    case neighborhoods://ELIMINAR SEGUN NOMBRE DEL BARRIO -----------------------
-                        for (int j = 0; j < valuesDiscardedList.size(); j++) {
-                            sql = sql + "OR barrio LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
-                        }
-                        break;
-                    case communes://ELIMINAR SEGUN COMUNA -----------------------
-                        for (int j = 0; j < valuesDiscardedList.size(); j++) {
-                            sql = sql + "OR comuna LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
-                        }
-                        break;
-                    case corridors://ELIMINAR SEGUN CORREDOR --------------------
-                        for (int j = 0; j < valuesDiscardedList.size(); j++) {
-                            sql = sql + "OR corredor LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
-                        }
-                        break;
-                    case areas://ELIMINAR SEGUN ZONA -----------------------     
-                        for (int j = 0; j < valuesDiscardedList.size(); j++) {
-                            sql = sql + "OR zona LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
-                        }
-                        break;
-                    case genders://ELIMINAR SEGUN GENERO  -----------------------
-                        for (int j = 0; j < valuesDiscardedList.size(); j++) {
-                            sql = sql + "OR genero LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
-                        }
-                        break;
-                    case days://ELIMINAR SEGUN DIA SEMANA -----------------------
-                        for (int j = 0; j < valuesDiscardedList.size(); j++) {
-                            sql = sql + "OR dia_semana LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
-                        }
-                        break;
-                    case year://ELIMINAR SEGUN AÑO -----------------------
-                        for (int j = 0; j < valuesDiscardedList.size(); j++) {
-                            sql = sql + "OR anyo LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
-                        }
-                        break;
-                    case month://ELIMINAR SEGUN MES -----------------------
-                        for (int j = 0; j < valuesDiscardedList.size(); j++) {
-                            sql = sql + "OR mes LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
-                        }
-                        break;
+            if (!valuesDiscardedList.isEmpty()) {//adicionamos usuario e indicador                                
+                sql = "";
+                for (int j = 0; j < valuesDiscardedList.size(); j++) {
+                    sql = sql + "OR column_" + (i + 1) + " LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
                 }
             }
         }
         if (sql.trim().length() != 0) {
             sql = sql.substring(2, sql.length());//elimino primer "OR"                    
-            sql = "\n\r DELETE FROM " + prepivotTableName_2 + " WHERE " + sql;
-            connectionJdbcMB.non_query(sql);//REALIZO LAS ElIMINACIONES DE LA TABLA PIVOT
+            sql = ""
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                    + "    indicator_id = " + currentIndicator.getIndicatorId() + " AND \n\r"
+                    + " ( \n\r"
+                    + sql
+                    + " ) \n\r";
+            sql = "\n\r DELETE FROM indicators_records WHERE " + sql;
+            connectionJdbcMB.non_query(sql);//
+            //System.out.println("REALIZO LAS ElIMINACIONES DE LA TABLA PIVOT \n " + sql);
+        } else {
+            //System.out.println("NO HAY ELIMINACIONES DE LA TABLA PIVOT \n " + sql);
         }
+    }
+
+    private void removeIndicatorRecords() {
+        //---------------------------------------------------------        
+        //elimino los datos de este indicador
+        //---------------------------------------------------------
+        sql = ""
+                + " DELETE FROM \n\r"
+                + "    indicators_records \n\r"
+                + " WHERE \n\r"
+                + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                + "    ( \n\r"
+                + "       indicator_id = " + currentIndicator.getIndicatorId() + " OR \n\r" //datos ordenados completos(los que tienen y no tienen conteo )
+                + "       indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r" //ocurrencias
+                + "    ) \n\r";
+        //System.out.println("ELIMINACIONES \n " + sql);
+        connectionJdbcMB.non_query(sql);
+    }
+
+    private String createIndicatorConsult() {
+        String sqlReturn;
+        sqlReturn = " SELECT  \n\r";
+        for (int i = 0; i < variablesCrossData.size(); i++) {
+            switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable 
+                case injuries_fatal://TIPO DE LESION FATAL-----------------------
+
+                    sqlReturn = sqlReturn + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
+                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
+                        sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+                    }
+                    sqlReturn = sqlReturn + "   END AS tipo_lesion";
+                    break;
+                case injuries_non_fatal://TIPO DE LESION NO FATAL-----------------------
+                    sqlReturn = sqlReturn + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
+                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
+                        sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+                    }
+                    sqlReturn = sqlReturn + "   END AS tipo_lesion";
+                    break;
+                case age://DETERMINAR EDAD -----------------------                   
+                    sqlReturn = sqlReturn + "   CASE \n\r";
+                    sqlReturn = sqlReturn + "       WHEN (victims.victim_age is null)  THEN 'SIN DATO' \n\r";
+                    for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
+                        String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
+                        if (splitAge[1].compareTo("n") == 0) {
+                            splitAge[1] = "200";
+                        }
+                        sqlReturn = sqlReturn + ""
+                                + "       WHEN (( \n\r"
+                                + "           CASE \n\r"
+                                + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r"
+                                + "               WHEN (victims.age_type_id = 1) THEN victims.victim_age \n\r"
+                                + "           END \n\r"
+                                + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
+                    }
+                    sqlReturn = sqlReturn + "   END AS edad";
+                    break;
+                case hour://HORA -----------------------
+                    sqlReturn = sqlReturn + ""
+                            + "   CASE \n\r"
+                            + "       WHEN (" + currentIndicator.getInjuryType() + ".injury_time is null)  THEN 'SIN DATO' \n\r";
+                    for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
+                        String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
+                        String[] splitAge2 = splitAge[0].split(":");
+                        String[] splitAge3 = splitAge[1].split(":");
+                        sqlReturn = sqlReturn + ""
+                                + "       WHEN (extract(hour from " + currentIndicator.getInjuryType() + ".injury_time) \n\r"
+                                + "       between " + splitAge2[0] + " and " + splitAge3[0] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
+                    }
+                    sqlReturn = sqlReturn + "   END AS hora";
+                    break;
+                case neighborhoods://NOMBRE DEL BARRIO -----------------------
+                    sqlReturn = sqlReturn + ""
+                            + "   CASE \n\r"
+                            + "      WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "      ELSE (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r"
+                            + "   END AS barrio";
+                    //sqlReturn = sqlReturn + "   (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as barrio";
+                    break;
+                case communes://COMUNA -----------------------
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          communes.commune_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.communes, \n\r"
+                            + "          public.neighborhoods \n\r"
+                            + "       WHERE \n\r"
+                            + "          neighborhoods.neighborhood_suburb = communes.commune_id AND \n\r"
+                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
+                            + "    )"
+                            + " END AS comuna";
+                    break;
+                case quadrants://CUADRANTE -----------------------
+                    //sqlReturn = sqlReturn + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          quadrants.quadrant_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.quadrants, \n\r"
+                            + "          public.neighborhoods \n\r"
+                            + "       WHERE \n\r"
+                            + "          neighborhoods.neighborhood_quadrant = quadrants.quadrant_id AND \n\r"
+                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
+                            + "    )"
+                            + " END AS cuadrante";
+                    break;
+                case corridors://CORREDOR -----------------------
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          corridors.corridor_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.corridors, \n\r"
+                            + "          public.neighborhoods \n\r"
+                            + "       WHERE \n\r"
+                            + "          neighborhoods.neighborhood_corridor = corridors.corridor_id AND \n\r"
+                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
+                            + "    )"
+                            + " END AS corredor";
+                    break;
+                case areas://ZONA -----------------------        
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          areas.area_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.areas, \n\r"
+                            + "          public.neighborhoods \n\r"
+                            + "       WHERE \n\r"
+                            + "          neighborhoods.neighborhood_area = areas.area_id AND \n\r"
+                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
+                            + "    )"
+                            + " END AS zona";
+                    break;
+                case genders://GENERO  ----------------------
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN victims.gender_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          genders.gender_name \n\r"
+                            + "       FROM \n\r"
+                            + "          genders \n\r"
+                            + "       WHERE \n\r"
+                            + "          victims.gender_id = genders.gender_id \n\r"
+                            + "    )"
+                            + " END AS genero";
+                    break;
+                case days://DIA SEMANA ---------------------
+                    //sqlReturn = sqlReturn + "   " + currentIndicator.getInjuryType() + ".injury_day_of_week as dia_semana";
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_day_of_week is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE ( " + currentIndicator.getInjuryType() + ".injury_day_of_week )"
+                            + " END AS dia_semana";
+                    break;
+                case year://AÑO -----------------------
+                    //sqlReturn = sqlReturn + "   CAST(extract(year from " + currentIndicator.getInjuryType() + ".injury_date)::int as text) as anyo";
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_date is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE ( CAST(extract(year from " + currentIndicator.getInjuryType() + ".injury_date)::int as text) )"
+                            + " END AS anyo";
+                    break;
+                case month://MES -----------------------
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_date is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          months.month_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.months \n\r"
+                            + "       WHERE \n\r"
+                            + "          (extract(month from " + currentIndicator.getInjuryType() + ".injury_date)::int) = months.month_id \n\r"
+                            + "    )"
+                            + " END AS mes";
+                    break;
+            }
+            if (i == variablesCrossData.size() - 1) {//si es la ultima instruccion se agrega salto de linea
+                sqlReturn = sqlReturn + " \n\r";
+            } else {//si no es la ultima instruccion se agrega coma y salto de linea
+                sqlReturn = sqlReturn + ", \n\r";
+            }
+        }
+        sqlReturn = sqlReturn + ""
+                + "   FROM  \n\r"
+                + "       " + currentIndicator.getInjuryType() + ", victims \n\r"
+                + "   WHERE  \n\r"
+                + "       " + currentIndicator.getInjuryType() + ".victim_id = victims.victim_id AND \n\r";
+        if (currentIndicator.getIndicatorId() > 4) { //si no es general se filtra por tipo de lesion
+            sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
+        }
+        sqlReturn = sqlReturn + ""
+                + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
+                + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy'); ";
+        System.out.println("TODOS LOS DATOS \n " + sqlReturn);
+
+        return sqlReturn;
+    }
+
+    private void saveIndicatorRecords(String sqlConsult) {
         //------------------------------------------------------------------
-        //REEMPLAZO NULL POR 'SIN DATO'
+        //AGEGAR UNA CONSULTA A LA TABLA indicators_records 
         //------------------------------------------------------------------
-        ArrayList<String> columnNames = new ArrayList<String>();
         try {
-            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + prepivotTableName_2);
+            cpManager = new CopyManager((BaseConnection) connectionJdbcMB.getConn());
+            ResultSet rs = connectionJdbcMB.consult(sqlConsult);
+            sb = new StringBuilder();
+            tuplesProcessed = 0;
             int ncol = rs.getMetaData().getColumnCount();
-            for (int i = 1; i < ncol + 1; i++) {
-                sql = "UPDATE " + prepivotTableName_2 + " SET " + rs.getMetaData().getColumnName(i) + " = 'SIN DATO' "
-                        + " WHERE " + rs.getMetaData().getColumnName(i) + " is null;";
-                columnNames.add(rs.getMetaData().getColumnName(i));
+            boolean haveNulls;
+            while (rs.next()) {
+                haveNulls = false;
+                for (int i = 1; i <= ncol; i++) {//agrego solo los que no tengan valores nulos
+                    if (rs.getString(i) == null || rs.getString(i).length() == 0 || rs.getString(i).compareToIgnoreCase("null") == 0) {
+                        haveNulls = true;
+                    }
+                }
+                if (!haveNulls) {//si no tiene nullos es agregado
+                    tuplesProcessed++;
+                    sb.
+                            append(loginMB.getCurrentUser().getUserId()).append("\t").
+                            append(currentIndicator.getIndicatorId() + 100).append("\t").
+                            append(tuplesProcessed).append("\t");
+
+                    for (int i = 1; i <= ncol; i++) {//datos del cruce
+                        sb.append(rs.getString(i)).append("\t");
+                    }
+                    for (int i = 0; i < 3 - ncol; i++) {//variables no usadas(vacias)
+                        sb.append("-").append("\t");
+                    }
+                    sb.append(0).append("\n");//count queda como cero                    
+                    //if (tuplesProcessed % maxNumberInserts == 0) {//se llego al limite de inserts                    
+                    //    cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
+                    //    sb.delete(0, sb.length()); //System.out.println("Procesando... " + tuplesProcessed + " cargadas");
+                    //}
+                }
+            }
+            //REALIZO LA INSERCION
+            cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
+            sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
+        } catch (Exception e) {
+            System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
+        }
+    }
+
+    private void groupingOfValues() {
+        //------------------------------------------------------------------
+        //SE AGRUPAN LOS VALORES PARA REALIZAR EL CONTEO
+        //------------------------------------------------------------------                
+        sql = ""
+                + " SELECT  \n\r"
+                + "	column_1, \n\r"
+                + "	column_2, \n\r"
+                + "	column_3, \n\r"
+                + "     count(*)  \n\r"
+                + " FROM \n\r"
+                + "	indicators_records \n\r"
+                + " WHERE \n\r"
+                + "     user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                + "     indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r"
+                + " GROUP BY \n\r"
+                + "	column_1, \n\r"
+                + "	column_2, \n\r"
+                + "	column_3 \n\r"
+                + " ORDER BY \n\r"
+                + "	column_1, \n\r"
+                + "	column_2, \n\r"
+                + "	column_3 \n\r";
+        ResultSet rs = connectionJdbcMB.consult(sql);
+        try {
+            while (rs.next()) {
+                sql = " "
+                        + " UPDATE \n\r"
+                        + "    indicators_records \n\r"
+                        + " SET \n\r"
+                        + "    count = " + rs.getString("count") + " \n\r"
+                        + " WHERE \n\r"
+                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                        + "    indicator_id = " + currentIndicator.getIndicatorId() + " AND \n\r"
+                        + "    column_1 like '" + rs.getString("column_1") + "' AND \n\r"
+                        + "    column_2 like '" + rs.getString("column_2") + "' AND \n\r"
+                        + "    column_3 like '" + rs.getString("column_3") + "' \n\r";
                 connectionJdbcMB.non_query(sql);
             }
+            //elimino los valores del indicador 100
+            sql = ""
+                    + " DELETE FROM \n\r"
+                    + "    indicators_records \n\r"
+                    + " WHERE \n\r"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
+            //System.out.println("ELIMINACIONES \n " + sql);
+            connectionJdbcMB.non_query(sql);
+
         } catch (Exception e) {
-            System.out.println("ERROR POR EXCEPTION:---" + e.toString());
         }
-        //------------------------------------------------------------------
-        //CREO LA TABLA PREPIVOT A PARTIR DE LA TABLA PREPIVOT_2(agrupando los valores)
-        //------------------------------------------------------------------        
-        String columns = "";//nombres de las columnas juntos 
-        for (int i = 0; i < columnNames.size(); i++) {
-            if (i == 0) {
-                columns = columnNames.get(i);
-            } else {
-                columns = columns + ", " + columnNames.get(i);
+
+        //            //---------------------------------------------------------            
+//            //ACTUALZO EL VALOR COUNT DE TABLA PIVOT CON LOS COUNT DE TABLA PREPIVOT
+//            //---------------------------------------------------------
+
+    }
+
+    private void createCombinations() {
+        //---------------------------------------------------------
+        //FORMAR POSIBLES COMBINACIONES PARA QUE LOS DATOS QUEDEN ORDENADOS SEGUN COMO SE ENCUENTRE LA CONFIGURACION
+        //---------------------------------------------------------
+        columNames = new ArrayList<String>();
+        rowNames = new ArrayList<String>();
+        columnTypeName = new ArrayList<String>();
+        try {
+            //---------------------------------------------------------
+            //CREO NUEVOS VECTORES DE VALORES POR QUE PUEDE SER QUE HAYA QUE AGREGAR EL VALOR 'SIN DATO' QUE NO VIENE POR DEFECTO EN LOS VALORES                        
+            //---------------------------------------------------------
+            ArrayList<String> values1 = new ArrayList<String>();
+            ResultSet rs;
+            if (variablesCrossData.size() > 0) {
+                for (int i = 0; i < variablesCrossData.get(0).getValuesConfigured().size(); i++) {
+                    values1.add(variablesCrossData.get(0).getValuesConfigured().get(i));
+                }
+                sql = ""
+                        + " SELECT "
+                        + "    * "
+                        + " FROM "
+                        + "    indicators_records "
+                        + " WHERE "
+                        + "    column_1 like 'SIN DATO' AND "
+                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                        + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
+                rs = connectionJdbcMB.consult(sql);
+                if (rs.next()) {
+                    values1.add("SIN DATO");
+                }
             }
+            ArrayList<String> values2 = new ArrayList<String>();
+            if (variablesCrossData.size() > 1) {
+                for (int i = 0; i < variablesCrossData.get(1).getValuesConfigured().size(); i++) {
+                    values2.add(variablesCrossData.get(1).getValuesConfigured().get(i));
+                }
+                sql = ""
+                        + " SELECT "
+                        + "    * "
+                        + " FROM "
+                        + "    indicators_records "
+                        + " WHERE "
+                        + "    column_2 like 'SIN DATO' AND "
+                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                        + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
+                rs = connectionJdbcMB.consult(sql);
+                if (rs.next()) {
+                    values2.add("SIN DATO");
+                }
+            }
+            ArrayList<String> values3 = new ArrayList<String>();
+            if (variablesCrossData.size() > 2) {
+                for (int i = 0; i < variablesCrossData.get(2).getValuesConfigured().size(); i++) {
+                    values3.add(variablesCrossData.get(2).getValuesConfigured().get(i));
+                }
+                sql = ""
+                        + " SELECT "
+                        + "    * "
+                        + " FROM "
+                        + "    indicators_records "
+                        + " WHERE "
+                        + "    column_3 like 'SIN DATO' AND "
+                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                        + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
+                rs = connectionJdbcMB.consult(sql);
+                if (rs.next()) {
+                    values3.add("SIN DATO");
+                }
+            }
+            //---------------------------------------------------------
+            //REALIZO LAS POSIBLES COMBINACIONES
+            //---------------------------------------------------------            
+
+            cpManager = new CopyManager((BaseConnection) connectionJdbcMB.getConn());
+            sb = new StringBuilder();
+            tuplesProcessed = 0;
+            int id = 0;
+            if (variablesCrossData.size() == 1) {
+                columnTypeName.add(variablesCrossData.get(0).getName());//searchTypeName(columnNamesPivot.get(0)));
+                columnTypeName.add("");
+                for (int i = 0; i < values1.size(); i++) {
+                    columNames.add(values1.get(i));
+                    sb.
+                            append(loginMB.getCurrentUser().getUserId()).append("\t").
+                            append(currentIndicator.getIndicatorId()).append("\t").
+                            append(id).append("\t").
+                            append(values1.get(i)).append("\t").
+                            append("-").append("\t").
+                            append("-").append("\t").
+                            append(0).append("\n");
+                    id++;
+
+                }
+                rowNames.add("Cantidad");
+            } else if (variablesCrossData.size() == 2) {
+                for (int i = 0; i < values1.size(); i++) {
+                    columNames.add(values1.get(i));
+                    for (int j = 0; j < values2.size(); j++) {
+                        if (i == 0) {
+                            rowNames.add(values2.get(j));
+                        }
+                        sb.
+                                append(loginMB.getCurrentUser().getUserId()).append("\t").
+                                append(currentIndicator.getIndicatorId()).append("\t").
+                                append(id).append("\t").
+                                append(values1.get(i)).append("\t").
+                                append(values2.get(j)).append("\t").
+                                append("-").append("\t").
+                                append(0).append("\n");
+                        id++;
+                    }
+                }
+            } else if (variablesCrossData.size() == 3) {
+                for (int i = 0; i < values1.size(); i++) {
+                    for (int j = 0; j < values2.size(); j++) {
+                        columNames.add(values1.get(i) + "}" + values2.get(j));
+                        for (int k = 0; k < values3.size(); k++) {
+                            if (i == 0 && j == 0) {
+                                rowNames.add(values3.get(k));
+                            }
+                            sb.
+                                    append(loginMB.getCurrentUser().getUserId()).append("\t").
+                                    append(currentIndicator.getIndicatorId()).append("\t").
+                                    append(id).append("\t").
+                                    append(values1.get(i)).append("\t").
+                                    append(values2.get(j)).append("\t").
+                                    append(values3.get(k)).append("\t").
+                                    append(0).append("\n");
+                            id++;
+                        }
+                    }
+                }
+            }
+            //REALIZO LA INSERCION
+            cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
+            sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
+        } catch (Exception e) {
+            System.out.println("EXCEPTION--------------------------" + e.toString());
         }
-        sql = "\n\r DROP TABLE IF EXISTS " + prepivotTableName + ";\n\r"
-                + " CREATE TABLE  \n\r"
-                + "	" + prepivotTableName + "  \n\r"
-                + " AS  \n\r"
-                + "select  \n\r"
-                + "	" + columns + ",count(*)  \n\r"
-                + "from  \n\r"
-                + "	" + prepivotTableName_2 + "  \n\r"
-                + "group by  \n\r"
-                + "	" + columns + "  \n\r"
-                + "order by  \n\r"
-                + "	" + columns + "; \n\r";
-        connectionJdbcMB.non_query(sql);//CREO LA TABLA PREPIVOT FINAL                
-        sql = "\n\r DROP TABLE IF EXISTS " + prepivotTableName_2 + ";\n\r";
-        connectionJdbcMB.non_query(sql);//ELIMINO TABLA PREPIVOT INICIAL
     }
 
-    private void addColumToRow(Row row1, String get, String style, int colSpan, int rowSpan) {
-        Column column = new Column();
-        HtmlOutputText text = new HtmlOutputText();
-        column.setStyleClass(style);
-        text.setValue(get);
-        column.getChildren().add(text);
-        column.setStyle("width: 200px;");
-        column.setRowspan(rowSpan);
-        column.setColspan(colSpan);
-        row1.getChildren().add(column);
-    }
-
-    private void loadIndicator(int n) {
-        currentIndicator = indicatorsFacade.find(n);
-        reset();
-    }
-
+//    private void addColumToRow(Row row1, String get, String style, int colSpan, int rowSpan) {
+//        Column column = new Column();
+//        HtmlOutputText text = new HtmlOutputText();
+//        column.setStyleClass(style);
+//        text.setValue(get);
+//        column.getChildren().add(text);
+//        column.setStyle("width: 200px;");
+//        column.setRowspan(rowSpan);
+//        column.setColspan(colSpan);
+//        row1.getChildren().add(column);
+//    }
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
@@ -1703,6 +1820,11 @@ public class IndicatorsCountMB {
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
+    private void loadIndicator(int n) {
+        currentIndicator = indicatorsFacade.find(n);
+        reset();
+    }
+
     public void loadIndicator1() {
         loadIndicator(1);
     }
@@ -1943,6 +2065,7 @@ public class IndicatorsCountMB {
 //    public void setShowAll(boolean showAll) {
 //        this.showAll = showAll;
 //    }
+    
     public OutputPanel getDynamicDataTableGroup() {
         return dynamicDataTableGroup;
     }

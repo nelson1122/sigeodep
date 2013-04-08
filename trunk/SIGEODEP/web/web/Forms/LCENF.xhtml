@@ -197,8 +197,6 @@
                                                             listener="#{lcenfMB.changeForm}"/>
                                                     </h:inputText> 
                                                 </p:column>
-                                            </p:row>
-                                            <p:row>
                                                 <p:column>
                                                     <h:outputLabel value="SEXO:   "/>    
                                                 </p:column>
@@ -211,31 +209,57 @@
                                                             listener="#{lcenfMB.changeForm}"/>
                                                     </h:selectOneMenu>
                                                 </p:column>
+                                            </p:row>
+                                            <p:row>                                                
                                                 <p:column>
                                                     <h:outputLabel value="OCUPACION:   "/>                                          
                                                 </p:column>
-                                                <p:column>                                                    
-                                                    <h:selectOneMenu id="IdJob" value="#{lcenfMB.currentJob}" > 
-                                                        <f:selectItems value="#{lcenfMB.jobs}"/>
+                                                <p:column colspan="5">                                                    
+                                                    <p:autoComplete                                                                                                                 
+                                                        id="IdJob"
+                                                        value="#{lcenfMB.currentJob}"                                                                    
+                                                        completeMethod="#{lcenfMB.suggestJobs}" 
+                                                        size="105" 
+                                                        forceSelection="true">                                                        
+                                                        <p:ajax 
+                                                            event="itemSelect" 
+                                                            listener="#{lcenfMB.changeForm}" 
+                                                            update="IdControls" 
+                                                            process="@this"/>                                                        
+                                                    </p:autoComplete>
+                                                    <!--h:selectOneMenu id="IdJob" value="# {lcenfMB.currentJob}" > 
+                                                        <f:selectItems value="# {lcenfMB.jobs}"/>
                                                         <f:ajax 
                                                             event="change"                                                                                                            
                                                             render="IdControls message"
-                                                            listener="#{lcenfMB.changeForm}"/>
-                                                    </h:selectOneMenu>
+                                                            listener="# {lcenfMB.changeForm}"/>
+                                                    </h:selectOneMenu-->
                                                 </p:column>
                                             </p:row>
                                             <p:row>
                                                 <p:column>
                                                     <h:outputLabel value="ASEGURADORA:   "/>                                          
                                                 </p:column>
-                                                <p:column>
-                                                    <h:selectOneMenu  id="IdInsurance"  value="#{lcenfMB.currentInsurance}" > 
-                                                        <f:selectItems value="#{lcenfMB.insurances}"/>
+                                                <p:column colspan="5">
+                                                    <p:autoComplete                                                                                                                 
+                                                        id="IdInsurance"
+                                                        value="#{lcenfMB.currentInsurance}"                                                                    
+                                                        completeMethod="#{lcenfMB.suggestInsurances}" 
+                                                        size="105" 
+                                                        forceSelection="true">                                                        
+                                                        <p:ajax 
+                                                            event="itemSelect" 
+                                                            listener="#{lcenfMB.changeForm}" 
+                                                            update="IdControls" 
+                                                            process="@this"/>
+                                                    </p:autoComplete>
+                                                    <!--h:selectOneMenu  id="IdInsurance"  value="# {lcenfMB.currentInsurance}" > 
+                                                        <f:selectItems value="# {lcenfMB.insurances}"/>
                                                         <f:ajax 
                                                             event="change"                                                                                                            
                                                             render="IdControls message"
-                                                            listener="#{lcenfMB.changeForm}"/>
-                                                    </h:selectOneMenu>
+                                                            listener="# {lcenfMB.changeForm}"/>
+                                                    </h:selectOneMenu-->
                                                 </p:column>
                                             </p:row>
                                         </p:panelGrid>
@@ -2444,7 +2468,7 @@
                                                 event="itemSelect" 
                                                 listener="#{lcenfMB.changeForm}" 
                                                 update="IdControls message" 
-                                                process="@this"/>
+                                                process="@this"/>                                            
                                         </p:autoComplete>
                                     </p:column>						
                                 </p:row>

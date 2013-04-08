@@ -143,6 +143,14 @@
                     <p:panelGrid id="display">                          
                         <p:row>
                             <p:column>
+                                <h:outputText value="CODIGO" />  
+                            </p:column>
+                            <p:column>
+                                <p:inputText size="40" value="#{insurancesVariableMB.code}" /> 
+                            </p:column>
+                        </p:row>                        
+                        <p:row>
+                            <p:column>
                                 <h:outputText value="NOMBRE" />  
                             </p:column>
                             <p:column>
@@ -169,6 +177,14 @@
                 <!--   DIALOGO NUEVO -->
                 <p:dialog id="IdDialogNew" header="NUEVA ASEGURADORA" widgetVar="dialogNew" resizable="false" modal="true">  
                     <p:panelGrid id="displayNew">                          
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="CODIGO" />  
+                            </p:column>
+                            <p:column>
+                                <p:inputText size="40" value="#{insurancesVariableMB.newCode}" /> 
+                            </p:column>
+                        </p:row>                        
                         <p:row>
                             <p:column>
                                 <h:outputText value="NOMBRE" />  

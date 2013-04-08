@@ -39,12 +39,14 @@ public class InsurancesVariableMB implements Serializable {
     private Insurance currentInsurance;
     private String name = "";
     private String newName = "";
-    private boolean btnEditDisabled=true;
-    private boolean btnRemoveDisabled=true;
-    
+    private String code = "";
+    private String newCode = "";
+    private boolean btnEditDisabled = true;
+    private boolean btnRemoveDisabled = true;
+
     public InsurancesVariableMB() {
     }
-    
+
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
@@ -70,7 +72,7 @@ public class InsurancesVariableMB implements Serializable {
         row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
         createCell(cellStyle, row, 0, "CODIGO");//"100">#{rowX.column1}</p:column>
         createCell(cellStyle, row, 1, "NOMBRE");//"100">#{rowX.column23}</p:column>                                
-        insuranceList=insuranceFacade.findAll();
+        insuranceList = insuranceFacade.findAll();
         for (int i = 0; i < insuranceList.size(); i++) {
             row = sheet.createRow(i + 1);
             createCell(row, 0, insuranceList.get(i).getInsuranceId().toString());//CODIGO
@@ -84,12 +86,14 @@ public class InsurancesVariableMB implements Serializable {
             currentInsurance = insuranceFacade.find(Short.parseShort(selectedRowDataTable.getColumn1()));
         }
         if (currentInsurance != null) {
-            btnEditDisabled=false;
-            btnRemoveDisabled=false;
+            btnEditDisabled = false;
+            btnRemoveDisabled = false;
             if (currentInsurance.getInsuranceName() != null) {
                 name = currentInsurance.getInsuranceName();
+                code = currentInsurance.getInsuranceId();
             } else {
                 name = "";
+                code = "";
             }
         }
     }
@@ -97,58 +101,87 @@ public class InsurancesVariableMB implements Serializable {
     public void deleteRegistry() {
         if (currentInsurance != null) {
             insuranceFacade.remove(currentInsurance);
-            currentInsurance=null;            
-            selectedRowDataTable=null;
+            currentInsurance = null;
+            selectedRowDataTable = null;
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
-        createDynamicTable(); btnEditDisabled=true; btnRemoveDisabled=true;
+        createDynamicTable();
+        btnEditDisabled = true;
+        btnRemoveDisabled = true;
     }
 
     public void updateRegistry() {
         //determinar consecutivo
-        if (currentInsurance != null) {
-            if (name.trim().length() != 0) {
-                name=name.toUpperCase();
-                currentInsurance.setInsuranceName(name);
-                insuranceFacade.edit(currentInsurance);
-                name = "";
-                currentInsurance=null;                
-                selectedRowDataTable=null;
-                createDynamicTable(); btnEditDisabled=true; btnRemoveDisabled=true;
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
-            } else {                
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
-            }
-        }
-        
+//        if (currentInsurance != null) {
+//            if (name.trim().length() != 0) {
+//                if (newCode.trim().length() != 0) {
+//                    if (insuranceFacade.find(newCode) == null) {
+//                        name = name.toUpperCase();
+//                        currentInsurance.setInsuranceName(name);
+//                        insuranceFacade.edit(currentInsurance);
+//                        name = "";
+//                        currentInsurance = null;
+//                        selectedRowDataTable = null;
+//                        createDynamicTable();
+//                        btnEditDisabled = true;
+//                        btnRemoveDisabled = true;
+//                        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
+//                        FacesContext.getCurrentInstance().addMessage(null, msg);
+//                    } else {
+//                        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "CODIGO EXISTENTE", "El código digitado ya se encuentra registrado");
+//                        FacesContext.getCurrentInstance().addMessage(null, msg);
+//                    }
+//                } else {
+//                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN CODIGO", "Se debe digitar un código");
+//                    FacesContext.getCurrentInstance().addMessage(null, msg);
+//                }
+//            } else {
+//                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
+//                FacesContext.getCurrentInstance().addMessage(null, msg);
+//            }
+//        }
+
     }
 
     public void saveRegistry() {
         //determinar consecutivo
         if (newName.trim().length() != 0) {
-            int max = insuranceFacade.findMax() + 1;
-            newName=newName.toUpperCase();
-            Insurance newRegistry = new Insurance((short) max);
-            newRegistry.setInsuranceName(newName);
-            insuranceFacade.create(newRegistry);
-            newName = "";
-            currentInsurance=null;
-            selectedRowDataTable=null;
-            createDynamicTable(); btnEditDisabled=true; btnRemoveDisabled=true;
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
+            if (newCode.trim().length() != 0) {
+                if (insuranceFacade.find(newCode) == null) {
+                    //int max = insuranceFacade.findMax() + 1;
+                    newCode = newCode.toUpperCase();
+                    newName = newName.toUpperCase();
+                    Insurance newRegistry = new Insurance();
+                    newRegistry.setInsuranceId(newCode);
+                    newRegistry.setInsuranceName(newName);
+                    insuranceFacade.create(newRegistry);
+                    newName = "";
+                    newCode = "";
+                    currentInsurance = null;
+                    selectedRowDataTable = null;
+                    createDynamicTable();
+                    btnEditDisabled = true;
+                    btnRemoveDisabled = true;
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                } else {
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "CODIGO EXISTENTE", "El código digitado ya se encuentra registrado");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                }
+            } else {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN CODIGO", "Se debe digitar un código");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
         } else {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
             FacesContext.getCurrentInstance().addMessage(null, msg);
-        }        
+        }
     }
 
     public void newRegistry() {
         name = "";
-        newName="";
+        newName = "";
     }
 
     public void createDynamicTable() {
@@ -229,7 +262,7 @@ public class InsurancesVariableMB implements Serializable {
     public void setNewName(String newName) {
         this.newName = newName;
     }
-    
+
     public boolean isBtnEditDisabled() {
         return btnEditDisabled;
     }
@@ -245,5 +278,20 @@ public class InsurancesVariableMB implements Serializable {
     public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
         this.btnRemoveDisabled = btnRemoveDisabled;
     }
-    
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getNewCode() {
+        return newCode;
+    }
+
+    public void setNewCode(String newCode) {
+        this.newCode = newCode;
+    }
 }

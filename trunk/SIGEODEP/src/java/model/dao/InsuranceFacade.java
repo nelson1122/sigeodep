@@ -28,12 +28,22 @@ public class InsuranceFacade extends AbstractFacade<Insurance> {
         super(Insurance.class);
     }
     
-    public int findMax() {
+//    public int findMax() {
+//        try {
+//            String hql = "Select MAX(x.insuranceId) from Insurance x";
+//            return em.createQuery(hql, Short.class).getSingleResult();
+//        } catch (Exception e) {
+//            return 0;
+//        }
+//    }
+    
+    public Insurance findByName(String name) {
+        String hql = "Select x from Insurance x where x.insuranceName=:name";
         try {
-            String hql = "Select MAX(x.insuranceId) from Insurance x";
-            return em.createQuery(hql, Short.class).getSingleResult();
+            return (Insurance) em.createQuery(hql).setParameter("name", name).getSingleResult();
         } catch (Exception e) {
-            return 0;
+            System.out.println(e.toString() + "----------------------------------------------------");
+            return null;
         }
     }
     

@@ -34,11 +34,12 @@ public class ErrorControl {
 
     private void createDescriptions() {
 
-        if (value.compareTo("REQUIRED VALIDATION") == 0) {
+        if (value.compareTo("REQUIRED VALIDATION") == 0) {//error que debe ser corregido por el usuario
             errorSolution = relationDescription;
             errorDescription = rowId;
             errorSubject = "";
         } else {
+            
             if (relationVar == null) {
                 System.out.println("MAS ERRORES");
             } else {

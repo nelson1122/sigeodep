@@ -43,8 +43,8 @@ public class VIFMB implements Serializable {
     //------------------------
     @EJB
     InsuranceFacade insuranceFacade;
-    private Short currentInsurance = 0;
-    private SelectItem[] insurances;
+    private String currentInsurance = null;
+    //private SelectItem[] insurances;
     //------------------------
     @EJB
     DomesticViolenceDataSourcesFacade domesticViolenceDataSourcesFacade;
@@ -111,8 +111,8 @@ public class VIFMB implements Serializable {
     //------------------------
     @EJB
     JobsFacade jobsFacade;
-    private Short currentJob = 0;
-    private SelectItem[] jobs;
+    private String currentJob = "";
+    //private SelectItem[] jobs;
     //------------------------
     @EJB
     NeighborhoodsFacade neighborhoodsFacade;
@@ -353,12 +353,12 @@ public class VIFMB implements Serializable {
                 }
             }
             //cargo las aseguradoras
-            List<Insurance> insuranceList = insuranceFacade.findAll();
-            insurances = new SelectItem[insuranceList.size() + 1];
-            insurances[0] = new SelectItem(0, "");
-            for (int i = 0; i < insuranceList.size(); i++) {
-                insurances[i + 1] = new SelectItem(insuranceList.get(i).getInsuranceId(), insuranceList.get(i).getInsuranceName());
-            }
+//            List<Insurance> insuranceList = insuranceFacade.findAll();
+//            insurances = new SelectItem[insuranceList.size() + 1];
+//            insurances[0] = new SelectItem(0, "");
+//            for (int i = 0; i < insuranceList.size(); i++) {
+//                insurances[i + 1] = new SelectItem(insuranceList.get(i).getInsuranceId(), insuranceList.get(i).getInsuranceName());
+//            }
             //cargo las instituciones receptoras
             List<DomesticViolenceDataSources> violenceDataSourcesList = domesticViolenceDataSourcesFacade.findAll();
             violenceDataSources = new SelectItem[violenceDataSourcesList.size()];
@@ -446,12 +446,12 @@ public class VIFMB implements Serializable {
                 genders[i + 1] = new SelectItem(gendersList.get(i).getGenderId(), gendersList.get(i).getGenderName());
             }
             //trabajos
-            List<Jobs> jobsList = jobsFacade.findAllOrder();
-            jobs = new SelectItem[jobsList.size() + 1];
-            jobs[0] = new SelectItem(0, "");
-            for (int i = 0; i < jobsList.size(); i++) {
-                jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
-            }
+//            List<Jobs> jobsList = jobsFacade.findAllOrder();
+//            jobs = new SelectItem[jobsList.size() + 1];
+//            jobs[0] = new SelectItem(0, "");
+//            for (int i = 0; i < jobsList.size(); i++) {
+//                jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
+//            }
             //Uso de drogas y alcohol
             List<UseAlcoholDrugs> useAlcoholDrugsList = useAlcoholDrugsFacade.findAll();
             useAlcohol = new SelectItem[useAlcoholDrugsList.size() + 1];
@@ -585,12 +585,12 @@ public class VIFMB implements Serializable {
         }
         //******job_id
         try {
-            currentJob = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getJobId().getJobId();
-            if (currentJob == null) {
-                currentJob = 0;
-            }
+            currentJob = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getJobId().getJobName();
+//            if (currentJob == null) {
+//                currentJob = 0;
+//            }
         } catch (Exception e) {
-            currentJob = 0;
+            currentJob = "";
         }
         //******vulnerable_group_id
         try {
@@ -689,11 +689,11 @@ public class VIFMB implements Serializable {
         //******insurance_id
         try {
             currentInsurance = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().getInsuranceId().getInsuranceId();
-            if (currentInsurance == null) {
-                currentInsurance = 0;
-            }
+//            if (currentInsurance == null) {
+//                currentInsurance = 0;
+//            }
         } catch (Exception e) {
-            currentInsurance = 0;
+            currentInsurance = null;
         }
 
         //-----CARGAR CAMPOS OTROS----------------
@@ -1264,8 +1264,8 @@ public class VIFMB implements Serializable {
                 if (currentGender != 0) {
                     newVictim.setGenderId(gendersFacade.find(currentGender));
                 }
-                if (currentJob != 0) {
-                    newVictim.setJobId(jobsFacade.find(currentJob));
+                if (currentJob != null && currentJob.trim().length()!=0) {
+                    newVictim.setJobId(jobsFacade.findByName(currentJob));
                 }
                 if (currentVulnerableGroup != 0) {
                     VulnerableGroups auxVulnerableGroups = vulnerableGroupsFacade.find(currentVulnerableGroup);
@@ -1301,8 +1301,8 @@ public class VIFMB implements Serializable {
                 newVictim.setResidenceDepartment(currentDepartamentHome);
                 //}
 
-                if (currentInsurance != 0) {
-                    newVictim.setInsuranceId(insuranceFacade.find(currentInsurance));
+                if (currentInsurance != null && currentInsurance.trim().length()!=0) {
+                    newVictim.setInsuranceId(insuranceFacade.findByName(currentInsurance));
                 }
 
                 //------------------------------------------------------------
@@ -1958,7 +1958,7 @@ public class VIFMB implements Serializable {
         strangerDisabled = true;
         stranger = false;
 
-        currentInsurance = 0;
+        currentInsurance = null;
         currentDomesticViolenceDataSource = 1;//IMPORTANTE!!!
 
         currentEthnicGroup = 0;
@@ -2014,7 +2014,7 @@ public class VIFMB implements Serializable {
         currentAge = "";
         valueAgeDisabled = true;
         currentGender = 0;
-        currentJob = 0;
+        currentJob = null;
         currentDirectionEvent = "";
 
         currentNeighborhoodEventCode = "";
@@ -2255,18 +2255,64 @@ public class VIFMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public List<String> suggestNeighborhoods(String entered) {
-        List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
         List<String> list = new ArrayList<String>();
-        entered = entered.toUpperCase();
-        int amount = 0;
-        for (int i = 0; i < neighborhoodsList.size(); i++) {
-            if (neighborhoodsList.get(i).getNeighborhoodName().startsWith(entered)) {
-                list.add(neighborhoodsList.get(i).getNeighborhoodName());
-                amount++;
+        try {
+            ResultSet rs;            
+            String sql=""
+                    + " SELECT "
+                    + "    neighborhoods.neighborhood_name"
+                    + " FROM "
+                    + "    public.neighborhoods"
+                    + " WHERE "
+                    + "    neighborhoods.neighborhood_name ILIKE '"+entered+"%'"
+                    + " LIMIT 10;";
+            rs=connectionJdbcMB.consult(sql);            
+            while(rs.next()){
+                list.add(rs.getString(1));
             }
-            if (amount == 10) {
-                break;
+        } catch (Exception e) {
+        }
+        return list;
+    }
+    
+    public List<String> suggestInsurances(String entered) {
+        List<String> list = new ArrayList<String>();
+        try {
+            ResultSet rs;            
+            String sql=""
+                    + " SELECT "
+                    + "    insurance.insurance_name"
+                    + " FROM "
+                    + "    public.insurance"
+                    + " WHERE "
+                    + "    insurance.insurance_name ILIKE '%"+entered+"%'"
+                    + " LIMIT 10;";
+            rs=connectionJdbcMB.consult(sql);            
+            while(rs.next()){
+                list.add(rs.getString(1));
             }
+        } catch (Exception e) {
+        }
+        return list;
+    }
+    
+    public List<String> suggestJobs(String entered) {
+        List<String> list = new ArrayList<String>();
+        try {
+            ResultSet rs;            
+            String sql=""
+                    + " SELECT "
+                    + "    jobs.job_name"
+                    + " FROM "
+                    + "    public.jobs"
+                    + " WHERE "
+                    + "    jobs.job_name ILIKE '%"+entered+"%'"
+                    + " LIMIT 10;";
+            rs=connectionJdbcMB.consult(sql);            
+            while(rs.next()){
+                list.add(rs.getString(1));
+            }
+        } catch (Exception e) {
         }
         return list;
     }
@@ -3521,9 +3567,9 @@ public class VIFMB implements Serializable {
         this.valueAgeDisabled = valueAgeDisabled;
     }
 
-    public SelectItem[] getJobs() {
-        return jobs;
-    }
+//    public SelectItem[] getJobs() {
+//        return jobs;
+//    }
 
     public boolean isNeighborhoodHomeNameDisabled() {
         return neighborhoodHomeNameDisabled;
@@ -3693,11 +3739,11 @@ public class VIFMB implements Serializable {
         this.currentIdentification = currentIdentification;
     }
 
-    public Short getCurrentJob() {
+    public String getCurrentJob() {
         return currentJob;
     }
 
-    public void setCurrentJob(Short currentJob) {
+    public void setCurrentJob(String currentJob) {
         this.currentJob = currentJob;
     }
 
@@ -4395,21 +4441,21 @@ public class VIFMB implements Serializable {
         this.strangerDisabled = strangerDisabled;
     }
 
-    public Short getCurrentInsurance() {
+    public String getCurrentInsurance() {
         return currentInsurance;
     }
 
-    public void setCurrentInsurance(Short currentInsurance) {
+    public void setCurrentInsurance(String currentInsurance) {
         this.currentInsurance = currentInsurance;
     }
 
-    public SelectItem[] getInsurances() {
-        return insurances;
-    }
-
-    public void setInsurances(SelectItem[] insurances) {
-        this.insurances = insurances;
-    }
+//    public SelectItem[] getInsurances() {
+//        return insurances;
+//    }
+//
+//    public void setInsurances(SelectItem[] insurances) {
+//        this.insurances = insurances;
+//    }
 
     public String getCurrentIdForm() {
         return currentIdForm;

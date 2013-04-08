@@ -29,10 +29,11 @@ public class Insurance implements Serializable {
     @Id
     @Basic(optional = false)
     @NotNull
-    @Column(name = "insurance_id", nullable = false)
-    private Short insuranceId;
-    @Size(max = 150)
-    @Column(name = "insurance_name", length = 150)
+    @Size(min = 1, max = 2147483647)
+    @Column(name = "insurance_id", nullable = false, length = 2147483647)
+    private String insuranceId;
+    @Size(max = 2147483647)
+    @Column(name = "insurance_name", length = 2147483647)
     private String insuranceName;
     @OneToMany(mappedBy = "insuranceId")
     private List<Victims> victimsList;
@@ -40,15 +41,15 @@ public class Insurance implements Serializable {
     public Insurance() {
     }
 
-    public Insurance(Short insuranceId) {
+    public Insurance(String insuranceId) {
         this.insuranceId = insuranceId;
     }
 
-    public Short getInsuranceId() {
+    public String getInsuranceId() {
         return insuranceId;
     }
 
-    public void setInsuranceId(Short insuranceId) {
+    public void setInsuranceId(String insuranceId) {
         this.insuranceId = insuranceId;
     }
 

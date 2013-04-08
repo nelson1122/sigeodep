@@ -130,7 +130,7 @@ public class JobsVariableMB implements Serializable {
         if (newName.trim().length() != 0) {
             int max = jobsFacade.findMax() + 1;
             newName=newName.toUpperCase();
-            Jobs newRegistry = new Jobs((short) max, newName);
+            Jobs newRegistry = new Jobs(max, newName);
             jobsFacade.create(newRegistry);
             newName = "";
             currentJob=null;

@@ -315,7 +315,7 @@ public class RecordSetsAccidentalMB implements Serializable {
         btnEditDisabled = true;
         btnRemoveDisabled = true;
         if (selectedRowsDataTable != null) {
-            if (selectedRowsDataTable.length > 1) {
+            if (selectedRowsDataTable.length == 1) {
                 currentFatalInjuryAccident = fatalInjuryAccidentFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
             }
             if (selectedRowsDataTable.length > 1) {
