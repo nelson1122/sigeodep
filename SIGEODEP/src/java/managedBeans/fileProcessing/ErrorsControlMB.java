@@ -16,12 +16,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import managedBeans.login.LoginMB;
+import model.dao.RelationGroupFacade;
 import model.pojo.RelationGroup;
 import model.pojo.RelationValues;
 import model.pojo.RelationVariables;
@@ -34,6 +36,9 @@ import model.pojo.RelationVariables;
 @SessionScoped
 public class ErrorsControlMB implements Serializable {
 
+    @EJB
+    RelationGroupFacade relationGroupFacade;
+    
     //ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
     private String currentError = "";//error actual
     private SelectItem[] errors;
@@ -58,6 +63,7 @@ public class ErrorsControlMB implements Serializable {
     private String valueFound = "";
     private RecordDataMB recordDataMB;
     //private FormsAndFieldsDataMB formsAndFieldsDataMB;
+    private ProjectsMB projectsMB;
     private RelationVariables relationVar;
     private RelationGroup currentRelationsGroup;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
@@ -199,7 +205,8 @@ public class ErrorsControlMB implements Serializable {
         boolean correction = false;
         for (int i = 0; i < errorControlArrayList.size(); i++) {
             if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
-                currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();
+                currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());
+                        //relationshipOfVariablesMB.getCurrentRelationsGroup();
                 relationVar = currentRelationsGroup.findRelationVarByNameFound(errorControlArrayList.get(i).getRelationVar().getNameFound());
                 //////////////////////////////
 
@@ -259,7 +266,7 @@ public class ErrorsControlMB implements Serializable {
         //verifico que el nuevo dato sea un valor esperado
         for (int i = 0; i < errorControlArrayList.size(); i++) {
             if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
-                currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();
+                currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());
                 relationVar = currentRelationsGroup.findRelationVarByNameFound(errorControlArrayList.get(i).getRelationVar().getNameFound());
                 //////////////////////////////
                 switch (DataTypeEnum.convert(errorControlArrayList.get(i).getRelationVar().getFieldType())) {//tipo de relacion
@@ -1081,5 +1088,9 @@ public class ErrorsControlMB implements Serializable {
 
     public void setDinamicTable(DinamicTable dinamicTable) {
         this.dinamicTable = dinamicTable;
+    }
+    
+    public void setProjectsMB(ProjectsMB projectsMB) {
+        this.projectsMB = projectsMB;
     }
 }

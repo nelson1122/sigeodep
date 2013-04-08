@@ -106,8 +106,10 @@ public class ConnectionJdbcMB implements Serializable {
 
     public void disconnect() {
         try {
-            conn.close();
-            System.out.println("Cerrada conexion a base de datos " + url + " ... OK");
+            if (!conn.isClosed()) {
+                conn.close();
+                System.out.println("Cerrada conexion a base de datos " + url + " ... OK");
+            }
         } catch (Exception e) {
             System.out.println("Error al cerrar conexion a base de datos " + url + " ... " + e.toString());
         }
@@ -1725,7 +1727,7 @@ public class ConnectionJdbcMB implements Serializable {
         try {
             if (currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
-                newRowDataTable.setColumn32(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodSuburb()));
+                newRowDataTable.setColumn33(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodSuburb()));
             }
         } catch (Exception e) {
         }

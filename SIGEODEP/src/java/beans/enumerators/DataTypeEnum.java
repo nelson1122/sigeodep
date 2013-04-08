@@ -23,6 +23,11 @@ public enum DataTypeEnum {
     percentage,
     level,
     error,
+    aggressor_types_v,
+    ethnic_groups_v,
+    abuse_types_v,
+    vulnerable_groups_v,
+    places_v,
     NOVALUE;
 
     public static DataTypeEnum convert(String str) {

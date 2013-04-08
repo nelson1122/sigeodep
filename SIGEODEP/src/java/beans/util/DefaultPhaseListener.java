@@ -11,6 +11,8 @@ import javax.faces.event.PhaseId;
 import javax.faces.event.PhaseListener;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+import managedBeans.login.ApplicationControlMB;
+import managedBeans.login.LoginMB;
 
 /**
  *
@@ -21,52 +23,59 @@ import javax.servlet.http.HttpSession;
  * ingresa a esta clase cada que hay un cambio de fase
  * (fase= solicitud al servidor)
  */
-
-
 public class DefaultPhaseListener implements PhaseListener {
+
+    ApplicationControlMB applicationControlMB;
+    private LoginMB loginMB;
 
     @Override
     public void afterPhase(PhaseEvent event) {
-        //System.out.println("-");
         FacesContext facesContext = event.getFacesContext();
         ExternalContext ext = facesContext.getExternalContext();
-        String ctxPath = ((ServletContext) ext.getContext()).getContextPath();
-        String currentPage = facesContext.getViewRoot().getViewId();
-        boolean isLoginPage = (currentPage.lastIndexOf("index.xhtml") > -1);
-        HttpSession session = (HttpSession) facesContext.getExternalContext().getSession(false);        
-        if (!isLoginPage) {
-            if(currentPage.indexOf("html") == -1){
-                isLoginPage=true;
-            }
-        }
-        
-        //System.out.println(currentPage+ " - " + ctxPath+ " - " + session+ " - " + isLoginPage);
-        if (!isLoginPage) {
-            //System.out.println("A");
-            if (session == null) {
-                //System.out.println("B");
-                try {
-                    System.out.println("salida del programa por que sesion es null" + ctxPath);
-                    ext.redirect(ctxPath + "/index.html?v=timeout");
-                    System.out.println("enviado a: " + ctxPath + "/index.html?v=timeout");
-                    //System.out.println("D");
-                } catch (Throwable t) {
-                    //System.out.println("E");
-                    System.out.println("Fallo al expirar sesion " + t.toString());
-                    throw new FacesException("Session timed out", t);
+        boolean continueProcces = true;
+        //---------------------------------------------------------------------------
+        //buscar ID session actual dentro de lista de sesiones en ApplicationControl
+        //---------------------------------------------------------------------------
+        try {
+            applicationControlMB = (ApplicationControlMB) ext.getApplicationMap().get("applicationControlMB");
+            loginMB = (LoginMB) facesContext.getApplication().evaluateExpressionGet(facesContext, "#{loginMB}", LoginMB.class);
+            if (loginMB.isAutenticado()) {
+                if (!applicationControlMB.findIdSession(loginMB.getIdSession())) {//System.out.println("salida del programa por que se inicio nueva sesion en otro equipo");
+                    continueProcces = false;
+                    loginMB.logout1();
                 }
-            } else {
-                //System.out.println("C");
-                Object currentUser = session.getAttribute("username");
-                if (!isLoginPage && (currentUser == null || currentUser == "")) {
-                    try {
-                        //System.out.println("F");
-                        System.out.println("salida del programa por que no hay usuario registrado" + ctxPath);
-                        ext.redirect(ctxPath + "/index.html?v=timeout");
-                    } catch (Throwable t) {
-                        //System.out.println("G");
-                        System.out.println("Fallo al expirar sesion " + t.toString());
+            }
+        } catch (Exception e) {//System.out.println("no se realizo validacion por lista de sessiones" + e.toString());
+        }
+
+        //---------------------------------------------------------------------------
+        //--se determina si hubo inactividad o no se a iniciado session
+        //---------------------------------------------------------------------------        
+        if (continueProcces) {
+            String ctxPath = ((ServletContext) ext.getContext()).getContextPath();
+            String currentPage = facesContext.getViewRoot().getViewId();
+            boolean isLoginPage = (currentPage.lastIndexOf("index.xhtml") > -1);
+            HttpSession session = (HttpSession) facesContext.getExternalContext().getSession(false);
+            if (!isLoginPage) {
+                if (currentPage.indexOf("html") == -1) {
+                    isLoginPage = true;
+                }
+            }
+            if (!isLoginPage) {
+                if (session == null) {
+                    try {//System.out.println("salida del programa por que sesion es null" + ctxPath);
+                        ext.redirect(ctxPath + "/index.html?v=timeout");//System.out.println("enviado a: " + ctxPath + "/index.html?v=timeout");
+                    } catch (Throwable t) {//System.out.println("Fallo al expirar sesion " + t.toString());
                         throw new FacesException("Session timed out", t);
+                    }
+                } else {
+                    Object currentUser = session.getAttribute("username");
+                    if (!isLoginPage && (currentUser == null || currentUser == "")) {
+                        try {//System.out.println("salida del programa por que no hay usuario registrado" + ctxPath);
+                            ext.redirect(ctxPath + "/index.html?v=nosession");
+                        } catch (Exception e) {//System.out.println("Fallo al expirar sesion " + e.toString());
+                            throw new FacesException("Session no login", e);
+                        }
                     }
                 }
             }
@@ -75,7 +84,6 @@ public class DefaultPhaseListener implements PhaseListener {
 
     @Override
     public void beforePhase(PhaseEvent event) {
-        //System.out.println("-");
     }
 
     @Override

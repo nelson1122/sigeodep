@@ -75,6 +75,7 @@ public class RelationshipOfValuesMB implements Serializable {
     private String foundValuesFilter = "";
     private String categoricalRelationsFilter = "";
     private String nameOfValueExpected = "";
+    String fieldType = "";
     private DinamicTable dinamicTable = new DinamicTable();
     private ConnectionJdbcMB connectionJdbcMB;
     private ProjectsMB projectsMB;
@@ -119,6 +120,7 @@ public class RelationshipOfValuesMB implements Serializable {
                     }
                 }
             } catch (Exception e) {
+                System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
             }
             //recargo la tabla de MoreInfo
             moreInfoDataTableList = new ArrayList<RowDataTable>();
@@ -177,7 +179,7 @@ public class RelationshipOfValuesMB implements Serializable {
                     }
                 }
             } catch (SQLException ex) {
-                System.out.println("Error: rovMB_3 > " + ex.toString());
+                System.out.println("Error 2 en " + this.getClass().getName() + ":" + ex.toString());
             }
         }
     }
@@ -214,6 +216,7 @@ public class RelationshipOfValuesMB implements Serializable {
             coincidentNewValue = "";
             newValueDisabled = true;
         } catch (Exception e) {
+            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -260,7 +263,7 @@ public class RelationshipOfValuesMB implements Serializable {
                     currentRelationVariables.setNameFound(rs.getString("name_found"));
                 }
             } catch (SQLException ex) {
-                System.out.println("Error: rovaMB_1 > " + ex.toString());
+                System.out.println("Error 4 en " + this.getClass().getName() + ":" + ex.toString());
             }
             loadFoundValues();
             loadExpectedValues();
@@ -281,11 +284,11 @@ public class RelationshipOfValuesMB implements Serializable {
                     + " SELECT \n"
                     + "    fields.field_type \n"
                     + " FROM \n"
-                    + "    public.fields, \n"
-                    + "    public.relation_group \n"
+                    + "    public.fields "//, \n"
+                    //+ "    public.relation_group \n"
                     + " WHERE \n"
-                    + "    relation_group.form_id = fields.form_id AND \n"
-                    + "    relation_group.id_relation_group = " + projectsMB.getCurrentRelationsGroupId() + " AND \n"
+                    //+ "    relation_group.form_id = fields.form_id AND \n"
+                    //+ "    relation_group.id_relation_group = " + projectsMB.getCurrentRelationsGroupId() + " AND \n"
                     + "    fields.form_id LIKE '" + projectsMB.getCurrentFormId() + "' AND \n"
                     + "    fields.field_name LIKE '" + varExpected + "'; \n";
             ResultSet rs = connectionJdbcMB.consult(sql);//System.out.println("002\n" + sql);
@@ -293,7 +296,7 @@ public class RelationshipOfValuesMB implements Serializable {
                 return rs.getString(1);
             }
         } catch (SQLException ex) {
-            System.out.println("Error: rovaMB_1 > " + ex.toString());
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + ex.toString());
         }
         return strReturn;
     }
@@ -338,15 +341,15 @@ public class RelationshipOfValuesMB implements Serializable {
             }//System.out.println("003\n" + sql);
             rs = connectionJdbcMB.consult(sql);
             while (rs.next()) {
-                String type = getTypeVariableExpected(rs.getString(1));
-                switch (DataTypeEnum.convert(type)) {
-                    case NOVALUE://idica que NO es: integer,date,minute,hour,day,month,year,age,military,degree,percentage
+                fieldType = remove_v(getTypeVariableExpected(rs.getString(1)));
+                switch (DataTypeEnum.convert(fieldType)) {
+                    case NOVALUE://idica que NO es: integer,date,minute,hour,day,month,year,age,military,degree,percentage ni las _v (requieren validacion)
                         categoricalRelatedVariables.add(rs.getString(1) + "->" + rs.getString(2));
                         break;
                 }
             }
         } catch (SQLException ex) {
-            System.out.println("Error: rovaMB_1 > " + ex.toString());
+            System.out.println("Error 6 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
 
@@ -408,7 +411,7 @@ public class RelationshipOfValuesMB implements Serializable {
                 }
             }
         } catch (SQLException ex) {
-            System.out.println("Error: rovaMB_1 > " + ex.toString());
+            System.out.println("Error 7 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
 
@@ -433,7 +436,7 @@ public class RelationshipOfValuesMB implements Serializable {
                         + "     FROM \n"
                         + "        project_records \n"
                         + "     WHERE \n"
-                        + "        project_id = 1 AND \n"
+                        + "        project_id = " + projectsMB.getCurrentProjectId() + " AND \n"
                         + "        column_id IN \n"
                         + "        (SELECT \n"
                         + "            column_id \n"
@@ -448,14 +451,14 @@ public class RelationshipOfValuesMB implements Serializable {
                     sql = sql + " OR relation_values.name_found ILIKE '%" + relatedValuesFilter + "%' ) \n";
                 }
                 sql = sql + " ORDER BY relation_values.id_relation_values DESC \n";
-                sql = sql + " LIMIT 50 \n"; //System.out.println("005 relacionados\n" + sql);
+                sql = sql + " LIMIT 50 \n"; //System.out.println("005 relacion de valores\n" + sql);
                 rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
                     valuesRelated.add(rs.getString(1) + "->" + rs.getString(2));
                 }
             }
         } catch (SQLException ex) {
-            System.out.println("Error: rovaMB_1 > " + ex.toString());
+            System.out.println("Error 8 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
 
@@ -508,7 +511,7 @@ public class RelationshipOfValuesMB implements Serializable {
                     returnList.add(rs.getString(1));
                 }
             } catch (SQLException ex) {
-                System.out.println("Error: rovaMB_2 > " + ex.toString());
+                System.out.println("Error 9 en " + this.getClass().getName() + ":" + ex.toString());
             }
         }
         return returnList;
@@ -535,7 +538,8 @@ public class RelationshipOfValuesMB implements Serializable {
         ArrayList<String> returnList = new ArrayList<String>();
         try {
             ResultSet resultSetCategory;
-            if (currentRelationVariables.getFieldType().compareTo("municipalities") == 0) {
+            fieldType = remove_v(currentRelationVariables.getFieldType());
+            if (fieldType.compareTo("municipalities") == 0) {
                 sql = ""
                         + " SELECT "
                         + "    municipalities.municipality_name, \n"
@@ -563,7 +567,7 @@ public class RelationshipOfValuesMB implements Serializable {
                         + " SELECT \n"
                         + "     * \n"
                         + " FROM \n"
-                        + "     " + currentRelationVariables.getFieldType() + " \n";
+                        + "     " + fieldType + " \n";
                 resultSetCategory = connectionJdbcMB.consult(sql);
                 String columName;
                 if (currentRelationVariables.getComparisonForCode()) {
@@ -575,11 +579,13 @@ public class RelationshipOfValuesMB implements Serializable {
                         + " SELECT \n"
                         + "     * \n"
                         + " FROM \n"
-                        + "     " + currentRelationVariables.getFieldType() + " \n";
+                        + "     " + fieldType + " \n";
                 if (expectedValuesFilter != null && expectedValuesFilter.trim().length() != 0) {
                     sql = sql + "    WHERE CAST(" + columName + " as text) ILIKE '%" + expectedValuesFilter + "%' \n";
                 }
-                sql = sql + " LIMIT 50 \n";
+                if (limit) {
+                    sql = sql + " LIMIT 50 \n";
+                }
                 //System.out.println("012 \n" + sql);
                 resultSetCategory = connectionJdbcMB.consult(sql);
                 while (resultSetCategory.next()) {
@@ -591,8 +597,25 @@ public class RelationshipOfValuesMB implements Serializable {
                 }
             }
         } catch (Exception ex) {
+            System.out.println("Error 10 en " + this.getClass().getName() + ":" + ex.toString());
         }
         return returnList;
+    }
+
+    private String remove_v(String field_type) {
+        /*
+         * remueve '_v' de un tipo de dato (para que tome la tabla categorica)
+         */
+        String strReturn="";
+        if (field_type != null && field_type.trim().length() != 0) {
+            strReturn = field_type.substring(field_type.length() - 2, field_type.length());
+            if (strReturn.compareTo("_v") == 0) {
+                strReturn = field_type.substring(0, field_type.length() - 2);
+            } else {
+                strReturn = field_type;
+            }
+        }
+        return strReturn;
     }
 
     public void loadExpectedValues() {
@@ -603,7 +626,8 @@ public class RelationshipOfValuesMB implements Serializable {
         nameOfValueExpected = "";
         currentValueExpected = new ArrayList<String>();
         if (currentRelationVariables != null) {
-            switch (DataTypeEnum.convert(currentRelationVariables.getFieldType())) {//tipo de relacion
+            fieldType = remove_v(currentRelationVariables.getFieldType());
+            switch (DataTypeEnum.convert(fieldType)) {//tipo de relacion
                 case NOVALUE://se espera un valor categorico compareForCodeDisabled = false;
                     valuesExpected = categoricalList(true);
                     break;
@@ -624,7 +648,7 @@ public class RelationshipOfValuesMB implements Serializable {
                 array.add(rs.getString(1));
             }
         } catch (SQLException ex) {
-            System.out.println("Error: rovMB_2 > " + ex.toString());
+            System.out.println("Error 11 en " + this.getClass().getName() + ":" + ex.toString());
         }
         return array;
     }
@@ -638,10 +662,11 @@ public class RelationshipOfValuesMB implements Serializable {
         nameOfValueExpected = "";
         //busco el nombre o codigo del valor esperado
         if (currentRelationVariables != null) {
+            fieldType = remove_v(currentRelationVariables.getFieldType());
             if (currentRelationVariables.getComparisonForCode()) {
-                nameOfValueExpected = connectionJdbcMB.findNameByCategoricalCode(currentRelationVariables.getFieldType(), currentValueExpected.get(0));
+                nameOfValueExpected = connectionJdbcMB.findNameByCategoricalCode(fieldType, currentValueExpected.get(0));
             } else {
-                nameOfValueExpected = connectionJdbcMB.findCodeByCategoricalName(currentRelationVariables.getFieldType(), currentValueExpected.get(0));
+                nameOfValueExpected = connectionJdbcMB.findCodeByCategoricalName(fieldType, currentValueExpected.get(0));
             }
         }
     }
@@ -749,7 +774,7 @@ public class RelationshipOfValuesMB implements Serializable {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una relacion categórica"));
             }
         } catch (SQLException ex) {
-            System.out.println("Error: rovMB_3 > " + ex.toString());
+            System.out.println("Error 12 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
 
@@ -877,7 +902,7 @@ public class RelationshipOfValuesMB implements Serializable {
                         numberCopy++;
                     }
                 } catch (Exception e) {
-                    System.out.println("Error" + e.toString());
+                    System.out.println("Error 13 en " + this.getClass().getName() + ":" + e.toString());
                 }
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Finalizado", "Se copiaron: (" + String.valueOf(numberCopy) + ") relaciones de valores "));
                 //changeCategoricalRelatedVariables();
@@ -907,7 +932,7 @@ public class RelationshipOfValuesMB implements Serializable {
                             + "' AND id_relation_variables = " + currentRelationVariables.getIdRelationVariables());
                     //System.out.println("(((((((((((((((Se elimino el valor: " + valuesDiscardedSelectedInRelationValues.get(i));
                 } catch (Exception e) {
-                    System.out.println("No se pudo eliminar el valor descartado" + valuesDiscardedSelectedInRelationValues.get(i));
+                    System.out.println("Error 14 en " + this.getClass().getName() + ":" + e.toString());
                 }
             }
             loadFoundValues();
@@ -1062,7 +1087,7 @@ public class RelationshipOfValuesMB implements Serializable {
                             + " name_expected LIKE '" + splitValuedRelated[0] + "' AND "
                             + " name_found LIKE '" + splitValuedRelated[1] + "' ");
                 } catch (Exception e) {
-                    System.out.println("Exception eliminando relacion de valores: " + e.toString());
+                    System.out.println("Error 15 en " + this.getClass().getName() + ":" + e.toString());
                 }
             }
             loadFoundValues();

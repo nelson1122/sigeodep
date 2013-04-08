@@ -30,7 +30,7 @@ public class Jobs implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Column(name = "job_id", nullable = false)
-    private Short jobId;
+    private Integer jobId;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 2147483647)
@@ -42,20 +42,20 @@ public class Jobs implements Serializable {
     public Jobs() {
     }
 
-    public Jobs(Short jobId) {
+    public Jobs(Integer jobId) {
 	this.jobId = jobId;
     }
 
-    public Jobs(Short jobId, String jobName) {
+    public Jobs(Integer jobId, String jobName) {
 	this.jobId = jobId;
 	this.jobName = jobName;
     }
 
-    public Short getJobId() {
+    public Integer getJobId() {
 	return jobId;
     }
 
-    public void setJobId(Short jobId) {
+    public void setJobId(Integer jobId) {
 	this.jobId = jobId;
     }
 

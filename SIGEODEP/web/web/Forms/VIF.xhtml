@@ -195,7 +195,6 @@
                                                     <h:outputLabel value="EDAD CANTIDAD:"/>                                          
                                                 </p:column>
                                                 <p:column>
-
                                                     <h:inputText 
                                                         id="IdValueAge"
                                                         value="#{vifMB.currentAge}" 
@@ -210,9 +209,6 @@
                                                             listener="#{vifMB.changeForm}"/>
                                                     </h:inputText>
                                                 </p:column>                                                                                             
-
-                                            </p:row>
-                                            <p:row>
                                                 <p:column>
                                                     <h:outputLabel value="SEXO:   "/>    
                                                 </p:column>
@@ -225,31 +221,58 @@
                                                             listener="#{vifMB.changeForm}"/>
                                                     </h:selectOneMenu>
                                                 </p:column>
+                                            </p:row>
+                                            <p:row>
                                                 <p:column>
                                                     <h:outputLabel value="OCUPACION:   "/>                                          
                                                 </p:column>
-                                                <p:column>
-                                                    <h:selectOneMenu value="#{vifMB.currentJob}" > 
-                                                        <f:selectItems value="#{vifMB.jobs}"/>
+                                                <p:column colspan="5">
+                                                    <p:autoComplete                                                                                                                 
+                                                        id="IdJob"
+                                                        value="#{vifMB.currentJob}"                                                                    
+                                                        completeMethod="#{vifMB.suggestJobs}" 
+                                                        size="105" 
+                                                        forceSelection="true">                                                        
+                                                        <p:ajax 
+                                                            event="itemSelect" 
+                                                            listener="#{vifMB.changeForm}" 
+                                                            update="IdControls" 
+                                                            process="@this"/>
+                                                    </p:autoComplete>
+                                                    <!--h:selectOneMenu value="# {vifMB.currentJob}" > 
+                                                        <f:selectItems value="# {vifMB.jobs}"/>
                                                         <f:ajax 
                                                             event="change"                                                                                                            
                                                             render="IdControls message"
-                                                            listener="#{vifMB.changeForm}"/>
-                                                    </h:selectOneMenu>
+                                                            listener="# {vifMB.changeForm}"/>
+                                                    </h:selectOneMenu-->
                                                 </p:column>
                                             </p:row>
+
                                             <p:row>
                                                 <p:column>
                                                     <h:outputLabel value="ASEGURADORA:   "/>                                          
                                                 </p:column>
-                                                <p:column>
-                                                    <h:selectOneMenu value="#{vifMB.currentInsurance}" > 
-                                                        <f:selectItems value="#{vifMB.insurances}"/>
+                                                <p:column colspan="5">
+                                                    <p:autoComplete                                                                                                                 
+                                                        id="IdInsurance"
+                                                        value="#{vifMB.currentInsurance}"                                                                    
+                                                        completeMethod="#{vifMB.suggestInsurances}" 
+                                                        size="105" 
+                                                        forceSelection="true">                                                        
+                                                        <p:ajax 
+                                                            event="itemSelect" 
+                                                            listener="#{vifMB.changeForm}" 
+                                                            update="IdControls" 
+                                                            process="@this"/>
+                                                    </p:autoComplete>
+                                                    <!--h:selectOneMenu value="# {vifMB.currentInsurance}" > 
+                                                        <f:selectItems value="# {vifMB.insurances}"/>
                                                         <f:ajax 
                                                             event="change"                                                                                                            
                                                             render="IdControls message"
-                                                            listener="#{vifMB.changeForm}"/>
-                                                    </h:selectOneMenu>
+                                                            listener="# {vifMB.changeForm}"/>
+                                                    </h:selectOneMenu-->
                                                 </p:column>
                                             </p:row>
                                         </p:panelGrid>

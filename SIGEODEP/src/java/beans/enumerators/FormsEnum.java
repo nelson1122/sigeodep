@@ -15,6 +15,7 @@ public enum FormsEnum {
     SCC_F_031,
     SCC_F_032,
     SCC_F_033,
+    SIVIGILA_VIF,
     NOVALUE;
     public static FormsEnum convert(String str) {
         try {

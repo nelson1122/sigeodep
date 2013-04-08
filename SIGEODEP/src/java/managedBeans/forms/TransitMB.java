@@ -122,8 +122,8 @@ public class TransitMB implements Serializable {
     //--------------------
     @EJB
     JobsFacade jobsFacade;
-    private Short currentJob = 0;
-    private SelectItem[] jobs;
+    private String currentJob = null;
+    //private SelectItem[] jobs;
     //--------------------
     @EJB
     NeighborhoodsFacade neighborhoodsFacade;
@@ -343,12 +343,12 @@ public class TransitMB implements Serializable {
                 genders[i + 1] = new SelectItem(gendersList.get(i).getGenderId(), gendersList.get(i).getGenderName());
             }
             //trabajos
-            List<Jobs> jobsList = jobsFacade.findAllOrder();
-            jobs = new SelectItem[jobsList.size() + 1];
-            jobs[0] = new SelectItem(0, "");
-            for (int i = 0; i < jobsList.size(); i++) {
-                jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
-            }
+//            List<Jobs> jobsList = jobsFacade.findAllOrder();
+//            jobs = new SelectItem[jobsList.size() + 1];
+//            jobs[0] = new SelectItem(0, "");
+//            for (int i = 0; i < jobsList.size(); i++) {
+//                jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
+//            }
             //cargo las areas del hecho
             List<Areas> areasList = areasFacade.findAll();
             areas = new SelectItem[areasList.size() + 1];
@@ -521,9 +521,9 @@ public class TransitMB implements Serializable {
         }
         //******job_id
         try {
-            currentJob = currentFatalInjuryTraffic.getFatalInjuries().getVictimId().getJobId().getJobId();
+            currentJob = currentFatalInjuryTraffic.getFatalInjuries().getVictimId().getJobId().getJobName();
         } catch (Exception e) {
-            currentJob = 0;
+            currentJob = null;
         }
         //******vulnerable_group_id
         //******ethnic_group_id
@@ -993,8 +993,8 @@ public class TransitMB implements Serializable {
                 }
 
                 //******job_id
-                if (currentJob != 0) {
-                    newVictim.setJobId(jobsFacade.find(currentJob));
+                if (currentJob != null && currentJob.trim().length()!=0) {
+                    newVictim.setJobId(jobsFacade.findByName(currentJob));
                 }
                 //******vulnerable_group_id
                 //******ethnic_group_id
@@ -1625,7 +1625,7 @@ public class TransitMB implements Serializable {
         identificationNumberDisabled = true;
         currentIdentificationNumber = "";
         currentGender = 0;
-        currentJob = 0;
+        currentJob = null;
         currentDirectionEvent = "";
         currentPlaceOfResidence = "";
         currentNeighborhoodEvent = "";
@@ -1853,38 +1853,67 @@ public class TransitMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public List<String> suggestNeighborhoods(String entered) {
-        List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
         List<String> list = new ArrayList<String>();
-        entered = entered.toUpperCase();
-        int amount = 0;
-        for (int i = 0; i < neighborhoodsList.size(); i++) {
-            if (neighborhoodsList.get(i).getNeighborhoodName().startsWith(entered)) {
-                list.add(neighborhoodsList.get(i).getNeighborhoodName());
-                amount++;
+        try {
+            ResultSet rs;            
+            String sql=""
+                    + " SELECT "
+                    + "    neighborhoods.neighborhood_name"
+                    + " FROM "
+                    + "    public.neighborhoods"
+                    + " WHERE "
+                    + "    neighborhoods.neighborhood_name ILIKE '"+entered+"%'"
+                    + " LIMIT 10;";
+            rs=connectionJdbcMB.consult(sql);            
+            while(rs.next()){
+                list.add(rs.getString(1));
             }
-            if (amount == 10) {
-                break;
+        } catch (Exception e) {
+        }
+        return list;
+    }
+    
+    public List<String> suggestJobs(String entered) {
+        List<String> list = new ArrayList<String>();
+        try {
+            ResultSet rs;            
+            String sql=""
+                    + " SELECT "
+                    + "    jobs.job_name"
+                    + " FROM "
+                    + "    public.jobs"
+                    + " WHERE "
+                    + "    jobs.job_name ILIKE '%"+entered+"%'"
+                    + " LIMIT 10;";
+            rs=connectionJdbcMB.consult(sql);            
+            while(rs.next()){
+                list.add(rs.getString(1));
             }
+        } catch (Exception e) {
         }
         return list;
     }
 
-    public List<String> suggestHealthProfessionals(String entered) {
-        List<HealthProfessionals> professionalsList = healthProfessionalsFacade.findAll();
-        List<String> list = new ArrayList<String>();
-        entered = entered.toUpperCase();
-        int amount = 0;
-        for (int i = 0; i < professionalsList.size(); i++) {
-            if (professionalsList.get(i).getHealthProfessionalName().startsWith(entered)) {
-                list.add(professionalsList.get(i).getHealthProfessionalName());
-                amount++;
-            }
-            if (amount == 10) {
-                break;
-            }
-        }
-        return list;
-    }
+//    public List<String> suggestHealthProfessionals(String entered) {
+//        List<String> list = new ArrayList<String>();
+//        try {
+//            ResultSet rs;            
+//            String sql=""
+//                    + " SELECT "
+//                    + "    health_professionals.health_professional_name"
+//                    + " FROM "
+//                    + "    public.health_professionals"
+//                    + " WHERE "
+//                    + "    health_professionals.health_professional_name ILIKE '%"+entered+"%'"
+//                    + " LIMIT 10;";
+//            rs=connectionJdbcMB.consult(sql);            
+//            while(rs.next()){
+//                list.add(rs.getString(1));
+//            }
+//        } catch (Exception e) {
+//        }
+//        return list;
+//    }
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -2738,21 +2767,21 @@ public class TransitMB implements Serializable {
         this.currentIdentification = currentIdentification;
     }
 
-    public Short getCurrentJob() {
+    public String getCurrentJob() {
         return currentJob;
     }
 
-    public void setCurrentJob(Short currentJob) {
+    public void setCurrentJob(String currentJob) {
         this.currentJob = currentJob;
     }
 
-    public SelectItem[] getJobs() {
-        return jobs;
-    }
+//    public SelectItem[] getJobs() {
+//        return jobs;
+//    }
 
-    public void setJobs(SelectItem[] jobs) {
-        this.jobs = jobs;
-    }
+//    public void setJobs(SelectItem[] jobs) {
+//        this.jobs = jobs;
+//    }
 
     public Short getCurrentMeasureOfAge() {
         return currentMeasureOfAge;

@@ -491,14 +491,27 @@
                                     <p:column>
                                         <h:outputLabel value="OCUPACION:   "/>                                          
                                     </p:column>
-                                    <p:column>                                        
-                                        <h:selectOneMenu value="#{accidentalMB.currentJob}" > 
-                                            <f:selectItems value="#{accidentalMB.jobs}"/>
+                                    <p:column> 
+                                        <p:autoComplete                                                                                                                 
+                                            id="IdJob"
+                                            value="#{accidentalMB.currentJob}"                                                                    
+                                            completeMethod="#{accidentalMB.suggestJobs}" 
+                                            size="105" 
+                                            forceSelection="true">                                                        
+                                            <p:ajax 
+                                                event="itemSelect" 
+                                                listener="#{accidentalMB.changeForm}" 
+                                                update="IdControls" 
+                                                process="@this"/>
+                                        </p:autoComplete>
+
+                                        <!--h:selectOneMenu value="# {accidentalMB.currentJob}" > 
+                                            <f:selectItems value="# {accidentalMB.jobs}"/>
                                             <f:ajax 
                                                 event="change"                                                                                                            
                                                 render="IdControls message"
-                                                listener="#{accidentalMB.changeForm}"/>
-                                        </h:selectOneMenu>
+                                                listener="# {accidentalMB.changeForm}"/>
+                                        </h:selectOneMenu-->
                                     </p:column>
                                 </p:row>
                                 <p:row>  

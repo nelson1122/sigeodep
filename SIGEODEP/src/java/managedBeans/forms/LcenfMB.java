@@ -43,8 +43,8 @@ public class LcenfMB implements Serializable {
     //------------------------
     @EJB
     InsuranceFacade insuranceFacade;
-    private Short currentInsurance = 0;
-    private SelectItem[] insurances;
+    private String currentInsurance = null;
+    //private SelectItem[] insurances;
     //-----------------
     @EJB
     OthersFacade othersFacade;
@@ -155,8 +155,8 @@ public class LcenfMB implements Serializable {
     //--------------------    
     @EJB
     JobsFacade jobsFacade;
-    private Short currentJob = 0;
-    private SelectItem[] jobs;
+    private String currentJob = "";
+    //private SelectItem[] jobs;
     //--------------------
     @EJB
     DestinationsOfPatientFacade destinationsOfPatientFacade;
@@ -533,12 +533,12 @@ public class LcenfMB implements Serializable {
             }
 
             //cargo las aseguradoras
-            List<Insurance> insuranceList = insuranceFacade.findAll();
-            insurances = new SelectItem[insuranceList.size() + 1];
-            insurances[0] = new SelectItem(0, "");
-            for (int i = 0; i < insuranceList.size(); i++) {
-                insurances[i + 1] = new SelectItem(insuranceList.get(i).getInsuranceId(), insuranceList.get(i).getInsuranceName());
-            }
+//            List<Insurance> insuranceList = insuranceFacade.findAll();
+//            insurances = new SelectItem[insuranceList.size() + 1];
+//            insurances[0] = new SelectItem(0, "");
+//            for (int i = 0; i < insuranceList.size(); i++) {
+//                insurances[i + 1] = new SelectItem(insuranceList.get(i).getInsuranceId(), insuranceList.get(i).getInsuranceName());
+//            }
             //cargo las instituciones de salud de donde es remitido
             List<NonFatalDataSources> sourcesList = nonFatalDataSourcesFacade.findAll();
             fromWhereList = new SelectItem[sourcesList.size() + 1];
@@ -692,12 +692,12 @@ public class LcenfMB implements Serializable {
             }
 
             //trabajos
-            List<Jobs> jobsList = jobsFacade.findAllOrder();
-            jobs = new SelectItem[jobsList.size() + 1];
-            jobs[0] = new SelectItem(0, "");
-            for (int i = 0; i < jobsList.size(); i++) {
-                jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
-            }
+//            List<Jobs> jobsList = jobsFacade.findAllOrder();
+//            jobs = new SelectItem[jobsList.size() + 1];
+//            jobs[0] = new SelectItem(0, "");
+//            for (int i = 0; i < jobsList.size(); i++) {
+//                jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
+//            }
 
             //Uso de drogas y alcohol
             List<UseAlcoholDrugs> useAlcoholDrugsList = useAlcoholDrugsFacade.findAll();
@@ -847,9 +847,9 @@ public class LcenfMB implements Serializable {
         }
         //******job_id
         try {
-            currentJob = currentNonFatalInjury.getVictimId().getJobId().getJobId();
+            currentJob = currentNonFatalInjury.getVictimId().getJobId().getJobName();
         } catch (Exception e) {
-            currentJob = 0;
+            currentJob = "";
         }
 
         //******ethnic_group_id
@@ -938,10 +938,10 @@ public class LcenfMB implements Serializable {
         try {
             currentInsurance = currentNonFatalInjury.getVictimId().getInsuranceId().getInsuranceId();
             if (currentInsurance == null) {
-                currentInsurance = 0;
+                currentInsurance = null;
             }
         } catch (Exception e) {
-            currentInsurance = 0;
+            currentInsurance = null;
         }
 
         //-----CARGAR CAMPOS OTROS----------------
@@ -1904,8 +1904,9 @@ public class LcenfMB implements Serializable {
                 if (currentGender != 0) {
                     newVictim.setGenderId(gendersFacade.find(currentGender));
                 }
-                if (currentJob != 0) {
-                    newVictim.setJobId(jobsFacade.find(currentJob));
+                if (currentJob != null && currentJob.trim().length()!=0) {
+                    
+                    newVictim.setJobId(jobsFacade.findByName(currentJob));
                 }
                 //if (currentVulnerableGroup != 0) {
                 //	newVictim.setVulnerableGroupId(vulnerableGroupsFacade.find(currentVulnerableGroup));
@@ -1950,8 +1951,8 @@ public class LcenfMB implements Serializable {
                 } else {
                     newVictim.setVulnerableGroupsList(null);
                 }
-                if (currentInsurance != 0) {
-                    newVictim.setInsuranceId(insuranceFacade.find(currentInsurance));
+                if (currentInsurance != null && currentInsurance.trim().length()!=0) {
+                    newVictim.setInsuranceId(insuranceFacade.findByName(currentInsurance));
                 }
 
 
@@ -2876,7 +2877,7 @@ public class LcenfMB implements Serializable {
         loading = true;
         strangerDisabled = true;
         stranger = false;
-        currentInsurance = 0;
+        currentInsurance = null;
 
         otherTransportTypeDisabled = true;
         otherTransportUserTypeDisabled = true;
@@ -2993,7 +2994,7 @@ public class LcenfMB implements Serializable {
         currentAge = "";
         valueAgeDisabled = true;
         currentGender = 0;
-        currentJob = 0;
+        currentJob = "";
         currentDirectionEvent = "";
 
         currentNeighborhoodEventCode = "";
@@ -3303,53 +3304,107 @@ public class LcenfMB implements Serializable {
     // FUNCIONES PARA AUTOCOMPLETAR ----------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    public List<String> suggestNeighborhoods(String entered) {
-        List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
+    public List<String> suggestInsurances(String entered) {
         List<String> list = new ArrayList<String>();
-        entered = entered.toUpperCase();
-        int amount = 0;
-        for (int i = 0; i < neighborhoodsList.size(); i++) {
-            if (neighborhoodsList.get(i).getNeighborhoodName().startsWith(entered)) {
-                list.add(neighborhoodsList.get(i).getNeighborhoodName());
-                amount++;
+        try {
+            ResultSet rs;            
+            String sql=""
+                    + " SELECT "
+                    + "    insurance.insurance_name"
+                    + " FROM "
+                    + "    public.insurance"
+                    + " WHERE "
+                    + "    insurance.insurance_name ILIKE '%"+entered+"%'"
+                    + " LIMIT 10;";
+            rs=connectionJdbcMB.consult(sql);            
+            while(rs.next()){
+                list.add(rs.getString(1));
             }
-            if (amount == 10) {
-                break;
+        } catch (Exception e) {
+        }
+        return list;
+    }
+    
+    public List<String> suggestJobs(String entered) {
+        List<String> list = new ArrayList<String>();
+        try {
+            ResultSet rs;            
+            String sql=""
+                    + " SELECT "
+                    + "    jobs.job_name"
+                    + " FROM "
+                    + "    public.jobs"
+                    + " WHERE "
+                    + "    jobs.job_name ILIKE '%"+entered+"%'"
+                    + " LIMIT 10;";
+            rs=connectionJdbcMB.consult(sql);            
+            while(rs.next()){
+                list.add(rs.getString(1));
             }
+        } catch (Exception e) {
+        }
+        return list;
+    }
+    
+    public List<String> suggestNeighborhoods(String entered) {
+        List<String> list = new ArrayList<String>();
+        try {
+            ResultSet rs;            
+            String sql=""
+                    + " SELECT "
+                    + "    neighborhoods.neighborhood_name"
+                    + " FROM "
+                    + "    public.neighborhoods"
+                    + " WHERE "
+                    + "    neighborhoods.neighborhood_name ILIKE '"+entered+"%'"
+                    + " LIMIT 10;";
+            rs=connectionJdbcMB.consult(sql);            
+            while(rs.next()){
+                list.add(rs.getString(1));
+            }
+        } catch (Exception e) {
         }
         return list;
     }
 
     public List<String> suggestCIE10(String entered) {
-        List<Diagnoses> diagnosesesList = diagnosesFacade.findAll();
         List<String> list = new ArrayList<String>();
-        entered = entered.toUpperCase();
-        int amount = 0;
-        for (int i = 0; i < diagnosesesList.size(); i++) {
-            if (diagnosesesList.get(i).getDiagnosisId().startsWith(entered)) {
-                list.add(diagnosesesList.get(i).getDiagnosisId());
-                amount++;
+        try {
+            ResultSet rs;            
+            String sql=""
+                    + " SELECT "
+                    + "    diagnoses.diagnosis_id"
+                    + " FROM "
+                    + "    public.diagnoses"
+                    + " WHERE "
+                    + "    diagnoses.diagnosis_id ILIKE '"+entered+"%'"
+                    + " LIMIT 10;";
+            rs=connectionJdbcMB.consult(sql);            
+            while(rs.next()){
+                list.add(rs.getString(1));
             }
-            if (amount == 10) {
-                break;
-            }
+        } catch (Exception e) {
         }
         return list;
     }
 
     public List<String> suggestHealthProfessionals(String entered) {
-        List<HealthProfessionals> professionalsList = healthProfessionalsFacade.findAll();
         List<String> list = new ArrayList<String>();
-        entered = entered.toUpperCase();
-        int amount = 0;
-        for (int i = 0; i < professionalsList.size(); i++) {
-            if (professionalsList.get(i).getHealthProfessionalName().startsWith(entered)) {
-                list.add(professionalsList.get(i).getHealthProfessionalName());
-                amount++;
+        try {
+            ResultSet rs;            
+            String sql=""
+                    + " SELECT "
+                    + "    health_professionals.health_professional_name"
+                    + " FROM "
+                    + "    public.health_professionals"
+                    + " WHERE "
+                    + "    health_professionals.health_professional_name ILIKE '%"+entered+"%'"
+                    + " LIMIT 10;";
+            rs=connectionJdbcMB.consult(sql);            
+            while(rs.next()){
+                list.add(rs.getString(1));
             }
-            if (amount == 10) {
-                break;
-            }
+        } catch (Exception e) {
         }
         return list;
     }
@@ -5026,9 +5081,9 @@ public class LcenfMB implements Serializable {
         this.valueAgeDisabled = valueAgeDisabled;
     }
 
-    public SelectItem[] getJobs() {
-        return jobs;
-    }
+//    public SelectItem[] getJobs() {
+//        return jobs;
+//    }
 
     public boolean isNeighborhoodHomeNameDisabled() {
         return neighborhoodHomeNameDisabled;
@@ -5482,11 +5537,11 @@ public class LcenfMB implements Serializable {
         this.currentIntentionality = currentIntentionality;
     }
 
-    public Short getCurrentJob() {
+    public String getCurrentJob() {
         return currentJob;
     }
 
-    public void setCurrentJob(Short currentJob) {
+    public void setCurrentJob(String currentJob) {
         this.currentJob = currentJob;
     }
 
@@ -6548,19 +6603,19 @@ public class LcenfMB implements Serializable {
         this.strangerDisabled = strangerDisabled;
     }
 
-    public SelectItem[] getInsurances() {
-        return insurances;
-    }
+//    public SelectItem[] getInsurances() {
+//        return insurances;
+//    }
+//
+//    public void setInsurances(SelectItem[] insurances) {
+//        this.insurances = insurances;
+//    }
 
-    public void setInsurances(SelectItem[] insurances) {
-        this.insurances = insurances;
-    }
-
-    public Short getCurrentInsurance() {
+    public String getCurrentInsurance() {
         return currentInsurance;
     }
 
-    public void setCurrentInsurance(Short currentInsurance) {
+    public void setCurrentInsurance(String currentInsurance) {
         this.currentInsurance = currentInsurance;
     }
 

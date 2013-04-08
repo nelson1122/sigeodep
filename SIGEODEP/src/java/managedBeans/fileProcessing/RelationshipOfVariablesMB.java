@@ -17,11 +17,11 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import managedBeans.login.LoginMB;
 import model.dao.FieldsFacade;
+import model.dao.ProjectsFacade;
 import model.dao.RelationGroupFacade;
 import model.dao.RelationVariablesFacade;
-import model.pojo.RelationGroup;
+import model.pojo.Projects;
 import model.pojo.RelationVariables;
 
 /**
@@ -32,7 +32,6 @@ import model.pojo.RelationVariables;
 @SessionScoped
 public class RelationshipOfVariablesMB implements Serializable {
 
-    //private boolean btnRemoveRelationVarDisabled = true;
     private boolean btnSaveConfigurationDisabled = true;
     private boolean btnLoadConfigurationDisabled = false;
     private boolean btnJoinColumnsDisabled;
@@ -40,60 +39,43 @@ public class RelationshipOfVariablesMB implements Serializable {
     private boolean selectDateFormatDisabled = true;
     private boolean compareForCode = false;
     private List<String> variablesExpected;
-    //private String currentVarFound = "";
     private List<String> varsFound;
     private List<String> valuesExpected;
     private List<String> valuesDiscarded;
     private List<String> valuesFound;
-    //private String currentRelatedVars = "";//actual relacion de variables
     private List<String> relatedVars;
     private String currentRelationGroupName = "";
     private String currentDateFormat = "dd/MM/yyyy";//tipo de formato de fecha actual
-    //private String currentVarExpected = "";//variable esperda para relacionar variables
     private List<String> currentVariableExpected = new ArrayList<String>();
     private List<String> currentVariableFound = new ArrayList<String>();
     private List<String> currentRelatedVariables = new ArrayList<String>();
     private String typeVarExepted;
     private String variableDescription = "";
-    private RelationGroup currentRelationGroup;
     private ProjectsMB projectsMB;
     private RelationshipOfValuesMB relationshipOfValuesMB;
-    private LoginMB loginMB;
     private String filterConsult = "";
     private String expectedVariablesFilter = "";
     private String foundVariablesFilter = "";
     private String relatedVariablesFilter = "";
-    private String filterText;
-    private String foundText;
+    String fieldType = "";
     ConnectionJdbcMB connectionJdbcMB;
     String sql = "";
-    private String nameTableTemp = "temp";
     @EJB
     FieldsFacade fieldsFacade;
     @EJB
     RelationVariablesFacade relationVariablesFacade;
     @EJB
     RelationGroupFacade relationGroupFacade;
+    @EJB
+    ProjectsFacade projectsFacade;
+
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
      */
-
     @PostConstruct
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-    }
-
-    public void changeRelatedVariablesFilter() {
-        loadRelatedVariables();
-    }
-
-    public void changeFoundVariablesFilter() {
-        loadFoundVariables();
-    }
-
-    public void changeExpectedVariablesFilter() {
-        loadExpectedVariables();
     }
 
     //----------------------------------------------------------------------
@@ -106,8 +88,6 @@ public class RelationshipOfVariablesMB implements Serializable {
          * Constructor de la clase
          */
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        nameTableTemp = "temp" + loginMB.getLoginname();
     }
 
     public void refresh() {
@@ -124,7 +104,6 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.variablesExpected = new ArrayList<String>();
         this.currentVariableFound = new ArrayList<String>();
         this.currentVariableExpected = new ArrayList<String>();
-        //this.btnRemoveRelationVarDisabled = true;
     }
 
     //----------------------------------------------------------------------
@@ -136,7 +115,7 @@ public class RelationshipOfVariablesMB implements Serializable {
         try {
             filterConsult = "";
             if (expectedVariablesFilter != null && expectedVariablesFilter.trim().length() != 0) {
-                filterConsult = "    fields.field_name ILIKE '%" + expectedVariablesFilter + "%' AND \n";
+                filterConsult = "fields.field_name ILIKE '%" + expectedVariablesFilter + "%' AND \n";
             }
             ResultSet rs;//vaiables esperadas-----------------------------------
             sql = ""
@@ -146,7 +125,7 @@ public class RelationshipOfVariablesMB implements Serializable {
                     + "    public.fields \n"
                     + " WHERE \n"
                     + "    fields.form_id LIKE '" + projectsMB.getCurrentFormId() + "' AND \n"
-                    + filterConsult
+                    + "    " + filterConsult
                     + "    fields.field_name NOT IN \n"
                     + "    (SELECT \n"
                     + "        relation_variables.name_expected \n"
@@ -158,15 +137,14 @@ public class RelationshipOfVariablesMB implements Serializable {
                     + "        relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "' \n"
                     + "     )\n"
                     + " ORDER BY \n"
-                    + "    fields.field_order;\n";
+                    + "    fields.field_order;\n";//System.out.println("A001\n" + sql);
             variablesExpected = new ArrayList<String>();
-            //System.out.println("A001\n" + sql);
             rs = connectionJdbcMB.consult(sql);
             while (rs.next()) {
                 variablesExpected.add(rs.getString(1));
             }
         } catch (Exception e) {
-            System.out.println("******PRIMER INGRESO******");
+            System.out.println("Error 1 " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -179,38 +157,36 @@ public class RelationshipOfVariablesMB implements Serializable {
                 filterConsult = "    project_columns.column_name ILIKE '%" + foundVariablesFilter + "%' AND \n";
             }
             sql = ""
-                    + " SELECT     "
-                    + "	   project_columns.column_name"
-                    + " FROM     "
-                    + "	   public.project_records,     "
-                    + "	   public.project_columns "
-                    + " WHERE     "
-                    + "	   project_columns.column_id = project_records.column_id AND    "
+                    + " SELECT \n"
+                    + "	   project_columns.column_name \n"
+                    + " FROM \n"
+                    + "	   public.project_records, \n"
+                    + "	   public.project_columns \n"
+                    + " WHERE \n"
+                    + "	   project_columns.column_id = project_records.column_id AND \n"
                     + filterConsult
-                    + "	   project_records.project_id = " + projectsMB.getCurrentProjectId() + " AND "
-                    + "	   project_columns.column_name NOT IN "
-                    + "	   (SELECT"
-                    + "		relation_variables.name_found"
-                    + "	   FROM     "
-                    + "		public.relation_group,     "
-                    + "		public.relation_variables "
-                    + "	   WHERE     "
-                    + "		relation_variables.id_relation_group = relation_group.id_relation_group AND    "
-                    + "		relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "'"
-                    + "	   )"
-                    + " GROUP BY"
-                    + "	   project_columns.column_name,"
-                    + "	   project_columns.column_id"
-                    + " ORDER BY "
-                    + "	   project_columns.column_id";
-
-            rs = connectionJdbcMB.consult(sql);
-            //System.out.println("A002\n" + sql);
+                    + "	   project_records.project_id = " + projectsMB.getCurrentProjectId() + " AND \n"
+                    + "	   project_columns.column_name NOT IN \n"
+                    + "	   (SELECT \n"
+                    + "		relation_variables.name_found \n"
+                    + "	   FROM \n"
+                    + "		public.relation_group, \n"
+                    + "		public.relation_variables \n"
+                    + "	   WHERE \n"
+                    + "		relation_variables.id_relation_group = relation_group.id_relation_group AND \n"
+                    + "		relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "' \n"
+                    + "	   ) \n"
+                    + " GROUP BY \n"
+                    + "	   project_columns.column_name, \n"
+                    + "	   project_columns.column_id \n"
+                    + " ORDER BY \n"
+                    + "	   project_columns.column_id \n";
+            rs = connectionJdbcMB.consult(sql);            //System.out.println("A002\n" + sql);
             while (rs.next()) {
                 varsFound.add(rs.getString(1));
             }
         } catch (Exception e) {
-            System.out.println("******PRIMER INGRESO******");
+            System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -224,7 +200,7 @@ public class RelationshipOfVariablesMB implements Serializable {
                 filterConsult = filterConsult + "    relation_variables.name_found ILIKE '%" + relatedVariablesFilter + "%' )";
             }
             sql = ""
-                    + " SELECT "
+                    + " SELECT \n"
                     + "    relation_variables.name_expected, \n"
                     + "    relation_variables.name_found \n"
                     + " FROM \n"
@@ -234,20 +210,14 @@ public class RelationshipOfVariablesMB implements Serializable {
                     + "    relation_variables.id_relation_group = relation_group.id_relation_group AND \n"
                     + "    relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "' \n"
                     + filterConsult;
-            //System.out.println("A003\n" + sql);
             rs = connectionJdbcMB.consult(sql);
             while (rs.next()) {
                 relatedVars.add(rs.getString(1) + "->" + rs.getString(2));
             }
             relationshipOfValuesMB.setCategoricalRelationsFilter("");
             relationshipOfValuesMB.loadCategoricalRelatedVariables();
-//            System.out.println("sssssssssssssssssss");
-//            System.out.println("currentValueExpected: " + relationshipOfValuesMB.getCurrentValueExpected().toString());
-//            System.out.println("expectedValuesFilter: " + relationshipOfValuesMB.getExpectedValuesFilter().toString());
-//            System.out.println("valuesExpected: " + relationshipOfValuesMB.getValuesExpected().toString());
-//            System.out.println("sssssssssssssssssss");
         } catch (Exception e) {
-            System.out.println("******PRIMER INGRESO******");
+            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -267,21 +237,18 @@ public class RelationshipOfVariablesMB implements Serializable {
         try {
             //determino el ty            
             ResultSet rs = connectionJdbcMB.consult(""
-                    + " SELECT "
-                    + "    fields.field_type"
-                    + " FROM "
-                    + "    public.fields, "
-                    + "    public.relation_group"
+                    + " SELECT \n"
+                    + "    fields.field_type \n"
+                    + " FROM \n"
+                    + "    public.fields \n"
                     + " WHERE "
-                    + "    relation_group.form_id = fields.form_id AND"
-                    + "    relation_group.id_relation_group = " + projectsMB.getCurrentRelationsGroupId() + " AND "
-                    + "    fields.form_id LIKE '" + projectsMB.getCurrentFormId() + "' AND "
-                    + "    fields.field_name LIKE '" + currentVariableExpected.get(0) + "';");
+                    + "    fields.form_id LIKE '" + projectsMB.getCurrentFormId() + "' AND \n"
+                    + "    fields.field_name LIKE '" + currentVariableExpected.get(0) + "' \n");
             if (rs.next()) {
                 return rs.getString(1);
             }
         } catch (SQLException ex) {
-            System.out.println("Error: rovaMB_1 > " + ex.toString());
+            System.out.println("Error 4 en " + this.getClass().getName() + ":" + ex.toString());
         }
         return strReturn;
     }
@@ -291,21 +258,35 @@ public class RelationshipOfVariablesMB implements Serializable {
         try {
             //determino el ty            
             ResultSet rs = connectionJdbcMB.consult(""
-                    + " SELECT "
-                    + "    fields.field_description"
-                    + " FROM "
-                    + "    public.fields, "
-                    + "    public.relation_group"
-                    + " WHERE "
-                    + "    relation_group.form_id = fields.form_id AND"
-                    + "    relation_group.id_relation_group = " + projectsMB.getCurrentRelationsGroupId() + " AND "
-                    + "    fields.form_id LIKE '" + projectsMB.getCurrentFormId() + "' AND "
-                    + "    fields.field_name LIKE '" + currentVariableExpected.get(0) + "';");
+                    + " SELECT \n"
+                    + "    fields.field_description \n"
+                    + " FROM \n"
+                    + "    public.fields, \n"
+                    + "    public.relation_group \n"
+                    + " WHERE \n"
+                    + "    relation_group.form_id = fields.form_id AND \n"
+                    + "    relation_group.id_relation_group = " + projectsMB.getCurrentRelationsGroupId() + " AND \n"
+                    + "    fields.form_id LIKE '" + projectsMB.getCurrentFormId() + "' AND \n"
+                    + "    fields.field_name LIKE '" + currentVariableExpected.get(0) + "' \n");
             if (rs.next()) {
                 return rs.getString(1);
             }
         } catch (SQLException ex) {
-            System.out.println("Error: rovaMB_1 > " + ex.toString());
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + ex.toString());
+        }
+        return strReturn;
+    }
+
+    private String remove_v(String field_type) {
+        /*
+         * remueve '_v' de un tipo de dato (para que tome la tabla categorica)
+         */
+        String strReturn;
+        strReturn = field_type.substring(field_type.length() - 2, field_type.length());
+        if (strReturn.compareTo("_v") == 0) {
+            strReturn = field_type.substring(0, field_type.length() - 2);
+        } else {
+            strReturn = field_type;
         }
         return strReturn;
     }
@@ -314,13 +295,12 @@ public class RelationshipOfVariablesMB implements Serializable {
         /*
          * cargar los valores esperados dependiendo la variable esperada
          */
-        //if (currentVarExpected.trim().length() != 0) {
         if (currentVariableExpected != null && !currentVariableExpected.isEmpty()) {
             typeVarExepted = getTypeVariableExpected();
-            //fieldsFacade.findFieldTypeByFieldNameAndFormId(currentVarExpected, currentRelationGroup.getFormId().getFormId()).getFieldType();
             valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
             selectDateFormatDisabled = true;
-            switch (DataTypeEnum.convert(typeVarExepted)) {//tipo de relacion
+            fieldType = remove_v(typeVarExepted);
+            switch (DataTypeEnum.convert(fieldType)) {//tipo de relacion
                 case integer:
                     valuesExpected.add("Cualquier entero");
                     break;
@@ -360,63 +340,44 @@ public class RelationshipOfVariablesMB implements Serializable {
 //                    break;
                 case NOVALUE://se espera un valor categorico compareForCodeDisabled = false;
                     if (compareForCode == true) {
-                        valuesExpected = connectionJdbcMB.categoricalCodeList(typeVarExepted, 20);
+                        valuesExpected = connectionJdbcMB.categoricalCodeList(fieldType, 20);
                     } else {
-                        valuesExpected = connectionJdbcMB.categoricalNameList(typeVarExepted, 20);
+                        valuesExpected = connectionJdbcMB.categoricalNameList(fieldType, 20);
                     }
                     break;
             }
         }
     }
 
-    /*
-     * crear una lista de valores de una determinada columna proveniente del
-     * archivo
-     */
-//    public ArrayList createListOfValuesFromFile(String column) {
-//
-//        ArrayList<String> array = new ArrayList<String>();
-//        try {
-//            //determino el nombre de la columna            
-//            ResultSet rs = connectionJdbcMB.consult("SELECT " + column + " FROM " + nameTableTemp + "; ");
-//            while (rs.next()) {
-//                array.add(rs.getString(1));
-//            }
-//        } catch (SQLException ex) {
-//            System.out.println("Error: rovaMB_1 > " + ex.toString());
-//        }
-//        return array;
-//    }
-
-    /*
-     * crear una lista de valores de una determinada columna proveniente del
-     * archivo con valores no repetidos
-     */
     public void loadValuesFound(String column) {
+        /*
+         * crear una lista de valores de una determinada columna proveniente del
+         * archivo con valores no repetidos
+         */
         try {
             ResultSet rs = connectionJdbcMB.consult(""
-                    + " SELECT "
-                    + " 	DISTINCT(project_records.data_value) "
-                    + " FROM "
-                    + " 	project_records"
-                    + " WHERE   "
-                    + " 	project_id=" + projectsMB.getCurrentProjectId() + " AND"
-                    + " 	column_id IN "
-                    + " 		(SELECT "
-                    + " 			column_id "
-                    + " 		FROM "
-                    + " 			project_columns"
-                    + " 		WHERE"
-                    + " 			project_columns.column_name LIKE '" + column + "'"
-                    + " 		)"
-                    + " LIMIT 50;");
+                    + " SELECT \n"
+                    + " 	DISTINCT(project_records.data_value) \n"
+                    + " FROM \n"
+                    + " 	project_records \n"
+                    + " WHERE \n"
+                    + " 	project_id=" + projectsMB.getCurrentProjectId() + " AND \n"
+                    + " 	column_id IN \n"
+                    + " 		(SELECT \n"
+                    + " 			column_id \n"
+                    + " 		FROM \n"
+                    + " 			project_columns \n"
+                    + " 		WHERE \n"
+                    + " 			project_columns.column_name LIKE '" + column + "' \n"
+                    + " 		) \n"
+                    + " LIMIT 50 \n");
 
             valuesFound = new ArrayList<String>();
             while (rs.next()) {
                 valuesFound.add(rs.getString(1));
             }
         } catch (SQLException ex) {
-            System.out.println("Error: rovaMB_2 > " + ex.toString());
+            System.out.println("Error 6 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
 
@@ -427,7 +388,6 @@ public class RelationshipOfVariablesMB implements Serializable {
     //----------------------------------------------------------------------
     public void changeRelatedVariables() {
         //la funcion se encargda de limpiar la seccion "RELACION DE VALORES"
-        //System.out.println("SE LIMPIA SECCION DE RELACION DE VALORES");
         relationshipOfValuesMB.setCategoricalRelationsFilter("");
         relationshipOfValuesMB.loadCategoricalRelatedVariables();
     }
@@ -435,21 +395,16 @@ public class RelationshipOfVariablesMB implements Serializable {
     public void changeVarExpected() {
         valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
         if (currentVariableExpected != null && !currentVariableExpected.isEmpty()) {
-            //if (currentVarExpected != null && currentVarExpected.length() != 0) {
-            //if (currentVarExpected.length() != 0) {
             variableDescription = getDescriptionVariableExpected();
             loadValuesExpected();
-            //}
         }
     }
 
     public void changeVarFound() {
         valuesFound = new ArrayList<String>();//borro la lista de valores esperados 
         if (currentVariableFound != null && !currentVariableFound.isEmpty()) {
-            //if (currentVarFound.trim().length() != 0) {
             currentRelatedVariables = new ArrayList<String>();
             loadValuesFound(currentVariableFound.get(0));
-            //}
         }
     }
     //----------------------------------------------------------------------
@@ -457,6 +412,235 @@ public class RelationshipOfVariablesMB implements Serializable {
     //CLIK SOBRE BOTONOES --------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+
+    private void convertIdToNameSIVIGILA(String variableExpectedSIVIGILA, String variableFoundSIVIGILA, Projects currentProject) {
+        /*
+         * convertir identificador en nombre para la tabla sivigila
+         */
+        String sql1 = ""
+                + " UPDATE \n"
+                + " project_records \n"
+                + " SET data_value = '";//aqui se adiciona nombre que coresponde a un identificador srgun sivigila
+        String sql2 = ""
+                + "' \n"
+                + " WHERE \n"
+                + "    data_value like '";//codigo se adiciona el identificador segun sivigila
+        String sql3 = ""
+                + "' AND \n"
+                + "    project_id = " + currentProject.getProjectId() + " AND \n"
+                + "    column_id IN ( \n"
+                + "       SELECT \n"
+                + "          project_columns.column_id \n"
+                + "       FROM \n"
+                + "          public.project_records, \n"
+                + "          public.project_columns, \n"
+                + "          public.projects \n"
+                + "       WHERE \n"
+                + "          project_columns.column_id = project_records.column_id AND \n"
+                + "          projects.project_id = project_records.project_id AND \n"
+                + "          project_columns.column_name LIKE '" + variableFoundSIVIGILA + "' AND \n"
+                + "          projects.start_column_id >= " + currentProject.getStartColumnId() + " AND \n"
+                + "          projects.end_column_id <= " + currentProject.getEndColumnId() + " \n"
+                + "       GROUP BY \n"
+                + "          project_columns.column_id) \n";
+
+        if (variableExpectedSIVIGILA.compareTo("relacion_familiar_victima") == 0) {
+            compareForCode = false;
+            connectionJdbcMB.non_query(sql1 + "ESPOSO(A)" + sql2 + "1" + sql3);
+            connectionJdbcMB.non_query(sql1 + "CONYUGE / COMPAÑERO" + sql2 + "2" + sql3);
+            connectionJdbcMB.non_query(sql1 + "NOVIO/A" + sql2 + "3" + sql3);
+            connectionJdbcMB.non_query(sql1 + "AMANTE" + sql2 + "4" + sql3);
+            connectionJdbcMB.non_query(sql1 + "EX-ESPOSO(A)" + sql2 + "5" + sql3);
+            connectionJdbcMB.non_query(sql1 + "EX-NOVIO(A)" + sql2 + "6" + sql3);
+            connectionJdbcMB.non_query(sql1 + "EX-AMANTE" + sql2 + "7" + sql3);
+            connectionJdbcMB.non_query(sql1 + "PADRE" + sql2 + "8" + sql3);
+            connectionJdbcMB.non_query(sql1 + "MADRE" + sql2 + "9" + sql3);
+            connectionJdbcMB.non_query(sql1 + "HIJO" + sql2 + "10" + sql3);
+            connectionJdbcMB.non_query(sql1 + "ENCARGADO(A) DEL NNA O ADULTO MAYOR" + sql2 + "11" + sql3);
+            connectionJdbcMB.non_query(sql1 + "HERMANO/A" + sql2 + "12" + sql3);
+            connectionJdbcMB.non_query(sql1 + "ABUELO(A)" + sql2 + "13" + sql3);
+            connectionJdbcMB.non_query(sql1 + "PADRASTRO" + sql2 + "14" + sql3);
+            connectionJdbcMB.non_query(sql1 + "MADRASTRA" + sql2 + "15" + sql3);
+            connectionJdbcMB.non_query(sql1 + "TIO(A)" + sql2 + "16" + sql3);
+            connectionJdbcMB.non_query(sql1 + "PRIMO(A)" + sql2 + "17" + sql3);
+            connectionJdbcMB.non_query(sql1 + "CUÑADO(A)" + sql2 + "18" + sql3);
+            connectionJdbcMB.non_query(sql1 + "SUEGRO(A)" + sql2 + "19" + sql3);
+            connectionJdbcMB.non_query(sql1 + "OTROS FAMILIARES CIVILES O CONSANGUINEOS" + sql2 + "20" + sql3);
+            connectionJdbcMB.non_query(sql1 + "SIN DATO" + sql2 + "21" + sql3);
+            connectionJdbcMB.non_query(sql1 + "OTRO, CUAL?" + sql2 + "22" + sql3);
+        }
+        if (variableExpectedSIVIGILA.compareTo("pertenencia_etnica") == 0) {
+            compareForCode = false;
+            connectionJdbcMB.non_query(sql1 + "INDIGENAS" + sql2 + "1" + sql3);
+            connectionJdbcMB.non_query(sql1 + "ROM,GITANO" + sql2 + "2" + sql3);
+            connectionJdbcMB.non_query(sql1 + "RAIZAL" + sql2 + "3" + sql3);
+            connectionJdbcMB.non_query(sql1 + "PALENQUERO" + sql2 + "4" + sql3);
+            connectionJdbcMB.non_query(sql1 + "AFRO COLOMBIANO" + sql2 + "5" + sql3);
+            connectionJdbcMB.non_query(sql1 + "OTRO" + sql2 + "6" + sql3);
+            //connectionJdbcMB.non_query(sql1 + "NINGUNO"+ sql2 + "1" + sql3);
+            //connectionJdbcMB.non_query(sql1 + "MESTIZO"+ sql2 + "1" + sql3);
+        }
+        if (variableExpectedSIVIGILA.compareTo("naturaleza_violencia") == 0) {
+            compareForCode = false;
+            connectionJdbcMB.non_query(sql1 + "FISICO" + sql2 + "1" + sql3);
+            connectionJdbcMB.non_query(sql1 + "PSICOLOGICO / VERBAL" + sql2 + "2" + sql3);
+            connectionJdbcMB.non_query(sql1 + "NEGLIGENCIA" + sql2 + "3" + sql3);
+            connectionJdbcMB.non_query(sql1 + "ABUSO SEXUAL" + sql2 + "4" + sql3);
+            connectionJdbcMB.non_query(sql1 + "ACOSO SEXUAL" + sql2 + "5" + sql3);
+            connectionJdbcMB.non_query(sql1 + "ASALTO SEXUAL" + sql2 + "6" + sql3);
+            connectionJdbcMB.non_query(sql1 + "EXPLOTACION SEXUAL" + sql2 + "7" + sql3);
+            connectionJdbcMB.non_query(sql1 + "TURISMO SEXUAL" + sql2 + "8" + sql3);
+            connectionJdbcMB.non_query(sql1 + "PORNOGRAFIA CON NNA" + sql2 + "9" + sql3);
+            connectionJdbcMB.non_query(sql1 + "TRATA DE PERSONAL PARA EXPLOTACION SEXUAL" + sql2 + "10" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "VIOLENCIA SEXUAL" + sql2 + "5" + sql3);                
+//                connectionJdbcMB.non_query(sql1 + "ABANDONO" + sql2 + "5" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "INSTITUCIONAL" + sql2 + "5" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "SIN DATO" + sql2 + "5" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "OTRO" + sql2 + "5" + sql3);
+        }
+        if (variableExpectedSIVIGILA.compareTo("grupo_vulnerable") == 0) {
+            compareForCode = false;
+            connectionJdbcMB.non_query(sql1 + "CAMPESINO" + sql2 + "5" + sql3);
+            connectionJdbcMB.non_query(sql1 + "DISCAPACITADO" + sql2 + "7" + sql3);
+            connectionJdbcMB.non_query(sql1 + "DESPLAZADO" + sql2 + "9" + sql3);
+            connectionJdbcMB.non_query(sql1 + "MIGRANTES" + sql2 + "13" + sql3);
+            connectionJdbcMB.non_query(sql1 + "CARCELARIOS" + sql2 + "14" + sql3);
+            connectionJdbcMB.non_query(sql1 + "GESTANTES" + sql2 + "16" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "DISCAPACITADO" + sql2 + "1" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "DESPLAZADO" + sql2 + "2" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "DESMOVILIZADO" + sql2 + "3" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "REFUGIADO" + sql2 + "4" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "CARCELARIOS" + sql2 + "14" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "GESTANTES" + sql2 + "16" + sql3);                                
+        }
+        if (variableExpectedSIVIGILA.compareTo("escenario_hechos") == 0) {
+            compareForCode = false;
+            connectionJdbcMB.non_query(sql1 + "ESPACIO O VIA PUBLICA" + sql2 + "1" + sql3);
+            connectionJdbcMB.non_query(sql1 + "CASA" + sql2 + "2" + sql3);
+            connectionJdbcMB.non_query(sql1 + "ESCUELA" + sql2 + "3" + sql3);
+            connectionJdbcMB.non_query(sql1 + "LUGAR DE TRABAJO" + sql2 + "4" + sql3);
+            connectionJdbcMB.non_query(sql1 + "SITIO DE DIVERSION" + sql2 + "5" + sql3);
+            connectionJdbcMB.non_query(sql1 + "DEPORTIVO" + sql2 + "6" + sql3);
+            connectionJdbcMB.non_query(sql1 + "OTRO LUGAR" + sql2 + "7" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "FINCA O CAMPO" + sql2 + "1" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "BAR O SIMILARES" + sql2 + "1" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "RIO" + sql2 + "1" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "CARCEL" + sql2 + "1" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "NO SE SABE" + sql2 + "1" + sql3);
+        }
+    }
+
+    private void convertNameToIdSIVIGILA(String variableExpectedSIVIGILA, String variableFoundSIVIGILA, Projects currentProject) {
+        /*
+         * convertir nombre en identificador para la tabla sivigila
+         */
+        String sql1 = ""
+                + " UPDATE \n"
+                + " project_records \n"
+                + " SET data_value = '";//aqui se adiciona identificador segun sivigila
+        String sql2 = ""
+                + "' \n"
+                + " WHERE \n"
+                + "    data_value like '";//aqui se adiciona el nombre segun sivigila
+        String sql3 = ""
+                + "' AND \n"
+                + "    project_id = " + currentProject.getProjectId() + " AND \n"
+                + "    column_id IN ( \n"
+                + "       SELECT \n"
+                + "          project_columns.column_id \n"
+                + "       FROM \n"
+                + "          public.project_records, \n"
+                + "          public.project_columns, \n"
+                + "          public.projects \n"
+                + "       WHERE \n"
+                + "          project_columns.column_id = project_records.column_id AND \n"
+                + "          projects.project_id = project_records.project_id AND \n"
+                + "          project_columns.column_name LIKE '" + variableFoundSIVIGILA + "' AND \n"
+                + "          projects.start_column_id >= " + currentProject.getStartColumnId() + " AND \n"
+                + "          projects.end_column_id <= " + currentProject.getEndColumnId() + " \n"
+                + "       GROUP BY \n"
+                + "          project_columns.column_id) \n";
+
+        if (variableExpectedSIVIGILA.compareTo("relacion_familiar_victima") == 0) {
+            connectionJdbcMB.non_query(sql1 + "1" + sql2 + "ESPOSO(A)" + sql3);
+            connectionJdbcMB.non_query(sql1 + "2" + sql2 + "CONYUGE / COMPAÑERO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "3" + sql2 + "NOVIO/A" + sql3);
+            connectionJdbcMB.non_query(sql1 + "4" + sql2 + "AMANTE" + sql3);
+            connectionJdbcMB.non_query(sql1 + "5" + sql2 + "EX-ESPOSO(A)" + sql3);
+            connectionJdbcMB.non_query(sql1 + "6" + sql2 + "EX-NOVIO(A)" + sql3);
+            connectionJdbcMB.non_query(sql1 + "7" + sql2 + "EX-AMANTE" + sql3);
+            connectionJdbcMB.non_query(sql1 + "8" + sql2 + "PADRE" + sql3);
+            connectionJdbcMB.non_query(sql1 + "9" + sql2 + "MADRE" + sql3);
+            connectionJdbcMB.non_query(sql1 + "10" + sql2 + "HIJO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "11" + sql2 + "ENCARGADO(A) DEL NNA O ADULTO MAYOR" + sql3);
+            connectionJdbcMB.non_query(sql1 + "12" + sql2 + "HERMANO/A" + sql3);
+            connectionJdbcMB.non_query(sql1 + "13" + sql2 + "ABUELO(A)" + sql3);
+            connectionJdbcMB.non_query(sql1 + "14" + sql2 + "PADRASTRO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "15" + sql2 + "MADRASTRA" + sql3);
+            connectionJdbcMB.non_query(sql1 + "16" + sql2 + "TIO(A)" + sql3);
+            connectionJdbcMB.non_query(sql1 + "17" + sql2 + "PRIMO(A)" + sql3);
+            connectionJdbcMB.non_query(sql1 + "18" + sql2 + "CUÑADO(A)" + sql3);
+            connectionJdbcMB.non_query(sql1 + "19" + sql2 + "SUEGRO(A)" + sql3);
+            connectionJdbcMB.non_query(sql1 + "20" + sql2 + "OTROS FAMILIARES CIVILES O CONSANGUINEOS" + sql3);
+            connectionJdbcMB.non_query(sql1 + "21" + sql2 + "SIN DATO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "22" + sql2 + "OTRO, CUAL?" + sql3);
+        }
+        if (variableExpectedSIVIGILA.compareTo("pertenencia_etnica") == 0) {
+            connectionJdbcMB.non_query(sql1 + "1" + sql2 + "INDIGENAS" + sql3);
+            connectionJdbcMB.non_query(sql1 + "2" + sql2 + "ROM,GITANO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "3" + sql2 + "RAIZAL" + sql3);
+            connectionJdbcMB.non_query(sql1 + "4" + sql2 + "PALENQUERO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "5" + sql2 + "AFRO COLOMBIANO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "6" + sql2 + "OTRO" + sql3);
+            //connectionJdbcMB.non_query(sql1 + "" + sql2 + "NINGUNO" + sql3);
+            //connectionJdbcMB.non_query(sql1 + "" + sql2 + "MESTIZO" +sql3);
+        }
+        if (variableExpectedSIVIGILA.compareTo("naturaleza_violencia") == 0) {
+            connectionJdbcMB.non_query(sql1 + "1" + sql2 + "FISICO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "2" + sql2 + "PSICOLOGICO / VERBAL" + sql3);
+            connectionJdbcMB.non_query(sql1 + "3" + sql2 + "NEGLIGENCIA" + sql3);
+            connectionJdbcMB.non_query(sql1 + "4" + sql2 + "ABUSO SEXUAL" + sql3);
+            connectionJdbcMB.non_query(sql1 + "5" + sql2 + "ACOSO SEXUAL" + sql3);
+            connectionJdbcMB.non_query(sql1 + "6" + sql2 + "ASALTO SEXUAL" + sql3);
+            connectionJdbcMB.non_query(sql1 + "7" + sql2 + "EXPLOTACION SEXUAL" + sql3);
+            connectionJdbcMB.non_query(sql1 + "8" + sql2 + "TURISMO SEXUAL" + sql3);
+            connectionJdbcMB.non_query(sql1 + "9" + sql2 + "PORNOGRAFIA CON NNA" + sql3);
+            connectionJdbcMB.non_query(sql1 + "10" + sql2 + "TRATA DE PERSONAL PARA EXPLOTACION SEXUAL" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "VIOLENCIA SEXUAL" + sql3);                
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "ABANDONO" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "INSTITUCIONAL" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "SIN DATO" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "OTRO" + sql3);
+        }
+        if (variableExpectedSIVIGILA.compareTo("grupo_vulnerable") == 0) {
+            connectionJdbcMB.non_query(sql1 + "5" + sql2 + "CAMPESINO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "7" + sql2 + "DISCAPACITADO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "9" + sql2 + "DESPLAZADO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "13" + sql2 + "MIGRANTES" + sql3);
+            connectionJdbcMB.non_query(sql1 + "14" + sql2 + "CARCELARIOS" + sql3);
+            connectionJdbcMB.non_query(sql1 + "16" + sql2 + "GESTANTES" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "DISCAPACITADO" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "DESPLAZADO" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "DESMOVILIZADO" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "REFUGIADO" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "CARCELARIOS" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "" + sql2 + "GESTANTES" +sql3);                                
+        }
+        if (variableExpectedSIVIGILA.compareTo("escenario_hechos") == 0) {
+            connectionJdbcMB.non_query(sql1 + "1" + sql2 + "ESPACIO O VIA PUBLICA" + sql3);
+            connectionJdbcMB.non_query(sql1 + "2" + sql2 + "CASA" + sql3);
+            connectionJdbcMB.non_query(sql1 + "3" + sql2 + "ESCUELA" + sql3);
+            connectionJdbcMB.non_query(sql1 + "4" + sql2 + "LUGAR DE TRABAJO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "5" + sql2 + "SITIO DE DIVERSION" + sql3);
+            connectionJdbcMB.non_query(sql1 + "6" + sql2 + "DEPORTIVO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "7" + sql2 + "OTRO LUGAR" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "2" + sql2 + "FINCA O CAMPO" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "2" + sql2 + "BAR O SIMILARES" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "2" + sql2 + "RIO" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "2" + sql2 + "CARCEL" + sql3);
+//                connectionJdbcMB.non_query(sql1 + "2" + sql2 + "NO SE SABE" + sql3);
+        }
+    }
 
     /*
      * click sobre asociar dos variables
@@ -468,7 +652,6 @@ public class RelationshipOfVariablesMB implements Serializable {
         //--- se detrmina si hat seleccionada una variable encontrada y una variable esperada
         //--------------------------------------------------------------------------------------------
         if (nextStep) {
-            //if (currentVarExpected == null || currentVarExpected.trim().length() == 0) {
             if (currentVariableExpected == null || currentVariableExpected.isEmpty()) {
                 error = "Debe seleccionarse una variable esperada";
                 nextStep = false;
@@ -481,7 +664,11 @@ public class RelationshipOfVariablesMB implements Serializable {
             }
         }
         if (nextStep) {
+            if (projectsMB.getCurrentFormName().compareTo("SIVIGILA-VIF") == 0) {//ES FORMULARIO SIVIGILA-VIF
+                convertIdToNameSIVIGILA(currentVariableExpected.get(0), currentVariableFound.get(0), projectsFacade.find(projectsMB.getCurrentProjectId()));                
+            }
             selectDateFormatDisabled = true;
+
             RelationVariables newRelationVariables = new RelationVariables();
             newRelationVariables.setIdRelationVariables(relationVariablesFacade.findMaxId() + 1);
             newRelationVariables.setNameExpected(currentVariableExpected.get(0));
@@ -493,7 +680,7 @@ public class RelationshipOfVariablesMB implements Serializable {
             relationVariablesFacade.create(newRelationVariables);
             loadVarsExpectedAndFound();//recargo listas de variables esperadas y encontradas   
         }
-        if (nextStep) {//no se produjeron errores solo alertas
+        if (nextStep) {//no se produjeron errores
             if (error.length() == 0) {//no existieron errores            
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto!!", "Asociación de variables realizada."));
             } else {//hay  errores al relacionar la variables 
@@ -508,19 +695,19 @@ public class RelationshipOfVariablesMB implements Serializable {
         int intReturn = -1;
         try {
             ResultSet rs = connectionJdbcMB.consult(""
-                    + " SELECT "
-                    + " 	id_relation_variables "
-                    + " FROM "
-                    + " 	relation_variables"
-                    + " WHERE   "
-                    + " 	id_relation_group=" + projectsMB.getCurrentRelationsGroupId() + " AND"
-                    + " 	name_expected LIKE '" + name_expected + "' AND "
-                    + " 	name_found LIKE '" + name_found + "'");
+                    + " SELECT \n"
+                    + " 	id_relation_variables \n"
+                    + " FROM \n"
+                    + " 	relation_variables \n"
+                    + " WHERE \n"
+                    + " 	id_relation_group=" + projectsMB.getCurrentRelationsGroupId() + " AND \n"
+                    + " 	name_expected LIKE '" + name_expected + "' AND \n"
+                    + " 	name_found LIKE '" + name_found + "' \n");
             if (rs.next()) {
                 return rs.getInt(1);
             }
         } catch (SQLException ex) {
-            System.out.println("Error: rovaMB_2 > " + ex.toString());
+            System.out.println("Error 7 en " + this.getClass().getName() + ":" + ex.toString());
         }
         return intReturn;
     }
@@ -535,14 +722,17 @@ public class RelationshipOfVariablesMB implements Serializable {
             //elimino los item de la lista de variables relacionadas
             for (int i = 0; i < currentRelatedVariables.size(); i++) {
                 String[] splitVarRelated = currentRelatedVariables.get(i).split("->");
-                //FALTA ELIMINAR RELACIONES DE VALORES SI ES UNA RELACION CATEGORICA
                 try {
+                    if (projectsMB.getCurrentFormName().compareTo("SIVIGILA-VIF") == 0) {//ES FORMULARIO SIVIGILA-VIF
+                        convertNameToIdSIVIGILA(splitVarRelated[0], splitVarRelated[1], projectsFacade.find(projectsMB.getCurrentProjectId()));
+                        compareForCode = false;
+                    }                    
                     int relationVariablesId = getRelationVariablesId(splitVarRelated[0], splitVarRelated[1]);
                     connectionJdbcMB.remove("relations_discarded_values", "id_relation_variables = " + relationVariablesId);
                     connectionJdbcMB.remove("relation_values", "id_relation_variables = " + relationVariablesId);
                     connectionJdbcMB.remove("relation_variables", "id_relation_variables = " + relationVariablesId);
                 } catch (Exception e) {
-                    System.out.println("Excepcion eliminando relacion de valores: " + e.toString());
+                    System.out.println("Error 8 en " + this.getClass().getName() + ":" + e.toString());
                 }
                 //relationVariablesFacade.remove(relationVariablesFacade.find(getRelationVariablesId(splitVarRelated[0], splitVarRelated[1])));
             }
@@ -557,20 +747,6 @@ public class RelationshipOfVariablesMB implements Serializable {
     //FUNCIONES GET Y SET DE LAS VARIABLES ---------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-//    public String getCurrentVarExpected() {
-//        return currentVarExpected;
-//    }
-//
-//    public void setCurrentVarExpected(String currentVarExpected) {
-//        this.currentVarExpected = currentVarExpected;
-//    }
-//    public String getCurrentVarFound() {
-//        return currentVarFound;
-//    }
-//
-//    public void setCurrentVarFound(String currentVarFound) {
-//        this.currentVarFound = currentVarFound;
-//    }
     public List<String> getCurrentVariableFound() {
         return currentVariableFound;
     }
@@ -603,27 +779,6 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.varsFound = varsFound;
     }
 
-//    public boolean isBtnAssociateRelationVarDisabled() {
-//        return btnAssociateRelationVarDisabled;
-//    }
-//
-//    public void setBtnAssociateRelationVarDisabled(boolean btnAssociateRelationVarDisabled) {
-//        this.btnAssociateRelationVarDisabled = btnAssociateRelationVarDisabled;
-//    }
-//    public boolean isBtnRemoveRelationVarDisabled() {
-//        return btnRemoveRelationVarDisabled;
-//    }
-//
-//    public void setBtnRemoveRelationVarDisabled(boolean btnRemoveRelationVarDisabled) {
-//        this.btnRemoveRelationVarDisabled = btnRemoveRelationVarDisabled;
-//    }
-//    public boolean isBtnValidateRelationVarDisabled() {
-//        return btnValidateRelationVarDisabled;
-//    }
-//
-//    public void setBtnValidateRelationVarDisabled(boolean btnValidateRelationVarDisabled) {
-//        this.btnValidateRelationVarDisabled = btnValidateRelationVarDisabled;
-//    }
     public List<String> getVariablesExpected() {
         return variablesExpected;
     }
@@ -632,13 +787,6 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.variablesExpected = variablesExpected;
     }
 
-//    public String getCurrentRelatedVars() {
-//        return currentRelatedVars;
-//    }
-//
-//    public void setCurrentRelatedVars(String currentRelatedtVars) {
-//        this.currentRelatedVars = currentRelatedtVars;
-//    }
     public List<String> getCurrentRelatedVariables() {
         return currentRelatedVariables;
     }
@@ -663,13 +811,6 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.compareForCode = compareForCode;
     }
 
-//    public boolean isCompareForCodeDisabled() {
-//        return compareForCodeDisabled;
-//    }
-//
-//    public void setCompareForCodeDisabled(boolean compareForCodeDisabled) {
-//        this.compareForCodeDisabled = compareForCodeDisabled;
-//    }
     public String getCurrentRelationGroupName() {
         return currentRelationGroupName;
     }
@@ -718,17 +859,6 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.variableDescription = variableDescription;
     }
 
-    public void setCurrentRelationsGroup(RelationGroup currentRelationsGroup) {
-        this.currentRelationGroup = currentRelationsGroup;
-    }
-
-    public RelationGroup getCurrentRelationsGroup() {
-        return currentRelationGroup;
-    }
-
-//    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
-//        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
-//    }
     public void setProjectsMB(ProjectsMB projectsMB) {
         this.projectsMB = projectsMB;
     }
@@ -795,5 +925,17 @@ public class RelationshipOfVariablesMB implements Serializable {
 
     public void setCurrentVariableExpected(List<String> currentVariableExpected) {
         this.currentVariableExpected = currentVariableExpected;
+    }
+
+    public void changeRelatedVariablesFilter() {
+        loadRelatedVariables();
+    }
+
+    public void changeFoundVariablesFilter() {
+        loadFoundVariables();
+    }
+
+    public void changeExpectedVariablesFilter() {
+        loadExpectedVariables();
     }
 }

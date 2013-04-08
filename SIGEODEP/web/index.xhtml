@@ -4,27 +4,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui">
-    <META HTTP-EQUIV="refresh" CONTENT="60"/>
     <h:head>
         <link rel="shortcut icon" href="resources/img/icon.gif"/>
         <title>INICIO</title>	        
         <script type="text/javascript">  
-            function mostrar(bloq) {
-                obj = document.getElementById(bloq);
-                var uname = document.getElementById("IdImgCarga");
-                obj.style.display = (obj.style.display=='none') ? 'block' : 'none';
-            }
-            function show() {
-                uname = document.getElementById("IdImgCarga");
-                //jQuery("#IdImgCarga").fadeIn();
-                uname.style.display='block';
-                alert("cargando");
-            }
-            function hide() {  
-                var uname = document.getElementById("IdImgCarga");
-                //jQuery("#IdImgCarga").fadeOut();
-                uname.style.display='none';
-                alert("ocultando");
+            
+            function clickSeeDialog() {
+                document.getElementById('IdForm:IdBtnSeeDialog').click();                    
             }
         </script>
     </h:head>
@@ -38,40 +24,56 @@
              top: 50%;
              margin-top: -190px;
              background-image:url(resources/img/entrada.png);">
-            <h:form id="IdForm3">
-                <!--p:idleMonitor 
-                    timeout="600000"
-                    onidle="document.getElementById('IdForm3:btnLogout').click();"/>
-                <p:commandButton 
-                    id="btnLogout"
-                    value="A"  
-                    style="display: none;"                            
-                    actionListener="# {loginMB.logout}"/-->
+            <h:form id="IdForm">                
                 <p:growl id="message"  showDetail="true" sticky="true" />
-                <h:graphicImage id="IdImgCarga" value="resources/img/ajaxloading.gif"  style="display: none" />
+                <p:commandButton
+                    id="IdBtnSeeDialog"
+                    oncomplete="#{loginMB.closeSessionDialog}"
+                    value="#{applicationControlMB.value}"
+                    style="width: 0px;height: 0px; display: none;"/> 
+                <h:graphicImage id="IdImgCarga" value="resources/img/ajaxloading.gif"  style="display: none" />                
 
                 <p:panelGrid style="margin-top: 160px; margin-left: 210px; "> 
                     <p:row>  
                         <p:column styleClass="ui-widget-header" ><h:outputText value="USUARIO: " /></p:column>
                         <p:column ><h:inputText id="loginname" value="#{loginMB.loginname}" />
-                            
+
                         </p:column>
                     </p:row>  
                     <p:row>
                         <p:column styleClass="ui-widget-header" ><h:outputText value="CLAVE: " /></p:column>
                         <p:column ><h:inputSecret id="password" value="#{loginMB.password}" /></p:column>
-                    </p:row>  
+                    </p:row>                      
                     <p:row>
                         <p:column colspan="2" style="text-align: center;" >
                             <p:commandButton 
                                 value="INGRESAR" 												
-                                action="#{loginMB.CheckValidUser}" 
-                                onclick="show();"
-                                oncomplete="hide();"
-                                update="message" />
+                                action="#{loginMB.CheckValidUser}"                                 
+                                oncomplete="clickSeeDialog()"
+                                update="@form" />
                         </p:column>
                     </p:row>  
                 </p:panelGrid>
+                <p:dialog 
+                    id="IdCloseSessionDialog"  
+                    modal="true"
+                    header="Otra Session Iniciada"         
+                    resizable="false"                    
+                    widgetVar="closeSessionDialog">  
+                    <br/>
+                    <p:inputTextarea 
+                        value="Este usuario tiene otra session en uso, desea cerrar la otra session e iniciar una nueva en este momento?" 
+                        readonly="true" 
+                        style="text-align: match-parent; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 60px; width: 320px;"/>
+                    <br/>                    
+                    <br/>
+                    <p:commandButton                        
+                        value="Continuar"
+                        style="margin:0;"
+                        action="#{loginMB.closeSessionAndLogin}"
+                        oncomplete="closeSessionDialog.hide()"
+                        update="@form"/>                      
+                </p:dialog>
             </h:form>  
         </div>
     </h:body>
