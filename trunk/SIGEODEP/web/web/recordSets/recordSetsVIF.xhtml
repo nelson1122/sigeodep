@@ -49,7 +49,7 @@
                                         <h:outputLabel value="Total de registros:"/>
                                     </p:column>
                                     <p:column>                                        
-                                        <h:outputLabel value="#{recordSetsVifMB.totalRecords}"/>                                        
+                                        <h:outputLabel id="IdTotalRecords" value="#{recordSetsVifMB.totalRecords}"/>                                        
                                     </p:column>
                                 </p:row>
                                 <p:row>
@@ -108,7 +108,7 @@
                                 <p:column headerText="TIP EDAD" width="100">#{rowX.column6}</p:column>                
                                 <p:column headerText="EDAD CANT" width="100">#{rowX.column7}</p:column>                
                                 <p:column headerText="GENERO" width="100">#{rowX.column8}</p:column>                
-                                <p:column headerText="OCUPACION" width="100">#{rowX.column9}</p:column>
+                                <p:column headerText="OCUPACION" width="300">#{rowX.column9}</p:column>
                                 <p:column headerText="ASEGURADORA" width="300">#{rowX.column18}</p:column>
                                 <p:column headerText="EXTRANJERO" width="100">#{rowX.column5}</p:column>  
                                 <p:column headerText="DEPARTAMENTO RESIDENCIA" width="100">#{rowX.column13}</p:column>
@@ -214,6 +214,7 @@
                                     <p:column styleClass="ui-widget-header" colspan="5">
                                         <p:commandButton 
                                             id="IdEdit"
+                                            rendered="#{recordSetsVifMB.renderControls}"
                                             disabled="#{recordSetsVifMB.btnEditDisabled}"
                                             value="Mostrar formulario"                                 
                                             icon="ui-icon-pencil"
@@ -222,7 +223,7 @@
                                             update=":IdForm1:message"/>
                                         <p:commandButton 
                                             id="IdRemove" 
-                                            disabled="#{recordSetsVifMB.btnRemoveDisabled}"
+                                            rendered="#{recordSetsVifMB.renderControls}"
                                             value="Eliminar registro" 
                                             icon="ui-icon-close"
                                             oncomplete="dialogDelete.show()"                                            
@@ -235,7 +236,7 @@
                                             actionListener="#{recordSetsVifMB.postProcessXLS1}"/>                                                                                
                                         <h:commandLink id="IdComandLink" style="display: none" >
                                             <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="VIF" postProcessor="#{recordSetsVifMB.postProcessXLS}"/>  
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="#{recordSetsVifMB.exportFileName}" postProcessor="#{recordSetsVifMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                         <p:dataTable id="IdOutFile" style="display: none">
                                             <p:column>                                                  
@@ -261,7 +262,7 @@
                     widgetVar="dialogDelete"> 
                     <br/>
                     <p:inputTextarea 
-                        value="Confirma la Eliminacion del registro seleccionado?" 
+                        value="Confirma la Eliminación del registro o registros seleccionados?" 
                         readonly="true" 
                         style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 48px;"/>
                     <br/>
@@ -270,7 +271,7 @@
                         oncomplete="dialogDelete.hide()"
                         actionListener="#{recordSetsVifMB.deleteRegistry}"
                         value="Eliminar" 
-                        update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>   
+                        update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message :IdForm1:IdTotalRecords"/>   
                     <p:commandButton
                         value="Cancelar" 
                         onclick="dialogDelete.hide()"/> 

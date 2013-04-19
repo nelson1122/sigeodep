@@ -49,7 +49,7 @@
                                         <h:outputLabel value="Total de registros:"/>
                                     </p:column>
                                     <p:column>                                        
-                                        <h:outputLabel value="#{recordSetsAccidentalMB.totalRecords}"/>                                        
+                                        <h:outputLabel id="IdTotalRecords" value="#{recordSetsAccidentalMB.totalRecords}"/>                                        
                                     </p:column>
                                 </p:row>
                                 <p:row>
@@ -91,8 +91,8 @@
                                 paginator="true" 
                                 rows="10" 
                                 pageLinks="5"
-                                paginatorPosition="bottom"
-                                emptyMessage="No existen resultados."
+                                paginatorPosition="bottom"                                
+                                emptyMessage="Vacio"
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15"
                                 scrollable="true">         
@@ -117,7 +117,7 @@
                                 <p:column headerText="SEXO" width="100">#{rowX.column8}</p:column> 
                                 <p:column headerText="TIPO EDAD" width="100">#{rowX.column6}</p:column>
                                 <p:column headerText="EDAD" width="100">#{rowX.column7}</p:column> 
-                                <p:column headerText="OCUPACION" width="100">#{rowX.column9}</p:column> 
+                                <p:column headerText="OCUPACION" width="300">#{rowX.column9}</p:column> 
                                 <p:column headerText="TIPO IDENTIFICACION" width="200">#{rowX.column2}</p:column>
                                 <p:column headerText="IDENTIFICACION" width="100">#{rowX.column3}</p:column>
                                 <p:column headerText="EXTRANJERO" width="100">#{rowX.column5}</p:column>
@@ -160,8 +160,7 @@
                                             action="#{recordSetsAccidentalMB.openForm}"                                            
                                             update=":IdForm1:message"/>
                                         <p:commandButton 
-                                            id="IdRemove" 
-                                            disabled="#{recordSetsAccidentalMB.btnRemoveDisabled}"
+                                            id="IdRemove"                                             
                                             value="Eliminar registros" 
                                             icon="ui-icon-close"
                                             oncomplete="dialogDelete.show()"                                            
@@ -174,7 +173,7 @@
                                             actionListener="#{recordSetsAccidentalMB.postProcessXLS1}"/>                                                                                
                                         <h:commandLink id="IdComandLink" style="display: none" >
                                             <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="Accidentes"  postProcessor="#{recordSetsAccidentalMB.postProcessXLS}"/>  
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="#{recordSetsAccidentalMB.exportFileName}"  postProcessor="#{recordSetsAccidentalMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                         <p:dataTable id="IdOutFile" style="display: none">
                                             <p:column>                                                  
@@ -200,7 +199,7 @@
                     widgetVar="dialogDelete"> 
                     <br/>
                     <p:inputTextarea 
-                        value="Confirma la Eliminacion del registro seleccionado?" 
+                        value="Confirma la Eliminación del registro o registros seleccionados?" 
                         readonly="true" 
                         style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 48px;"/>
                     <br/>
@@ -209,7 +208,7 @@
                         oncomplete="dialogDelete.hide()"
                         actionListener="#{recordSetsAccidentalMB.deleteRegistry}"
                         value="Eliminar" 
-                        update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>   
+                        update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message :IdForm1:IdTotalRecords"/>
                     <p:commandButton
                         value="Cancelar" 
                         onclick="dialogDelete.hide()"/> 
