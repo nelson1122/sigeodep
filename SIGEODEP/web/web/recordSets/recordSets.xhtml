@@ -86,6 +86,7 @@
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15,20,25,30"
                                 paginatorPosition="bottom"                                
+                                emptyMessage="Vacio"
                                 scrollable="true"
                                 scrollWidth="730"                                    
                                 pageLinks="3"
@@ -110,66 +111,43 @@
                             </p:dataTable>                            
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
-                                <p:row> 
-                                    <p:column>
-                                        <p:progressBar 
-                                            id="IdProgresValidate" 
-                                            interval="500" 
-                                            widgetVar="pbAjaxValidate" 
-                                            ajax="true" 
-                                            value="#{recordSetsMB.progress}" 
-                                            labelTemplate="{value}%">          
-                                            <p:ajax 
-                                                event="complete" 
-                                                listener="#{recordSetsMB.onCompleteLoad}" 
-                                                update="IdProgresValidate"/>  
-                                        </p:progressBar>
-                                    </p:column>
-                                </p:row>
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" colspan="5">
                                         <p:commandButton 
                                             id="IdNew"
                                             value="Nuevo"
                                             oncomplete="dialogNew.show()"                                            
-                                            update=":IdForm2:IdDialogNew :IdForm1:message"/>   
+                                            update=":IdForm2:IdDialogNew :IdForm1:message"/>                                           
                                         <p:commandButton 
                                             id="IdEdit" 
-                                            disabled="#{recordSetsMB.btnEditDisabled}"
                                             value="Editar"
                                             oncomplete="dialogEdit.show()"                                            
                                             update=":IdForm2:IdDialogEdit :IdForm1:message"/>                                        
+                                        <!--disabled="# {recordSetsMB.btnEditDisabled}" -->
                                         <p:commandButton 
                                             id="IdRemove" 
-                                            disabled="#{recordSetsMB.btnRemoveDisabled}"
                                             value="Eliminar"
                                             oncomplete="dialogDelete.show()"                                            
-                                            update=":IdForm2:IdDialogDelete :IdForm1:message"/>                                        
-                                        <!--p:commandButton 
-                                            id="IdView"
-                                            action="# {recordSetsMB.openRecordSets}"
-                                            actionListener="# {recordSetsMB.selectTagClick}"
-                                            disabled="# {recordSetsMB.btnViewDisabled}"                                            
-                                            value="Mostrar Datos"/-->
+                                            update=":IdForm2:IdDialogDelete :IdForm1:message"/>
+                                        <!--disabled="# {recordSetsMB.btnRemoveDisabled}" -->
                                         <p:commandButton 
-                                            id="IdView"
-                                            disabled="#{recordSetsMB.btnViewDisabled}"
+                                            id="IdView"                                            
                                             actionListener="#{recordSetsMB.resetDates}"
                                             value="Mostrar Datos"
                                             oncomplete="dialogView.show()"
                                             update=":IdForm2:IdDialogView :IdForm1:message"/>
+                                        <!-- disabled="# {recordSetsMB.btnViewDisabled}" -->
                                         <p:commandButton 
-                                            id="IdViewDuplicate"
-                                            action="#{recordSetsMB.openDuplicateSets}"
-                                            actionListener="#{recordSetsMB.duplicateTagClick}"
-                                            disabled="#{recordSetsMB.btnViewDisabled}"
-                                            onclick="pbAjaxValidate.start();"  
-                                            value="Detectar duplicados"/>
+                                            id="IdViewDuplicate"                                            
+                                            value="Detectar duplicados"
+                                            oncomplete="dialogDuplicate.show()"
+                                            update=":IdForm2:IdDialogView :IdForm1:message"/>                                        
+                                        <!-- disabled="# {recordSetsMB.btnDuplicateDisabled}" -->
                                         <p:commandButton 
-                                            id="IdJoinSets"                                            
-                                            disabled="#{recordSetsMB.btnViewDisabled}"
-                                            oncomplete="dialogSplit.show()"
-                                            value="Unir conjuntos"/>
+                                            id="IdJoinSets"
+                                            oncomplete="dialogJoin.show()"
+                                            value="Agrupar conjuntos"/>
+                                        <!-- disabled="# {recordSetsMB.btnJoinDisabled}" -->
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>
@@ -183,11 +161,11 @@
             <h:form id="IdForm2">
                 <!-- DIALOGO COMBINAR-->
                 <p:dialog                                                         
-                    id="IdDialogSplit"
+                    id="IdDialogJoin"
                     modal="true"
                     resizable="false"
-                    header="UNION DE CONJUNTOS" 
-                    widgetVar="dialogSplit"> 
+                    header="AGRUPACION DE CONJUNTOS" 
+                    widgetVar="dialogJoin"> 
                     <br/>
                     <p:inputTextarea 
                         value="Confirma que los conjuntos seleccionados formen uno solo?" 
@@ -195,16 +173,10 @@
                         style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; width: 250px; height: 68px;"/>
                     <br/>
                     <p:commandButton                                                           
-                        oncomplete="dialogSplit.hide()"
+                        oncomplete="dialogJoin.hide()"
                         actionListener="#{recordSetsMB.splitTags}"                        
                         value="Unir"                        
-                        update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"
-                        widgetVar="btnSplit"/>   
-                    <p:commandButton
-                        widgetVar="btnCancelSplit"
-                        value="Cancelar" 
-                        onclick="dialogSplit.hide()"
-                        /> 
+                        update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>                       
                 </p:dialog>
                 <!-- DIALOGO NUEVO-->
                 <p:dialog                                                         
@@ -288,23 +260,21 @@
                             </p:column>
                         </p:row>
                     </p:panelGrid>                     
-                </p:dialog>  
-                <!-- DIALOGO EDITAR-->
+                </p:dialog>                  
                 <p:dialog                                                         
                     id="IdDialogView"
                     modal="true"
                     resizable="false"
-                    header="Filtrado de registros" 
+                    header="Rango a mostrar" 
                     widgetVar="dialogView"> 
                     <p:panelGrid >                          
                         <p:row>
                             <p:column>
-                                <h:outputText value="Fecha Inicial:" />
-                                <h:inputText value="Fecha Inicial:" style="display: none;" />
+                                <h:outputText value="Fecha Inicial:" />                                
                             </p:column>
                             <p:column>                                                 
                                 <p:calendar 
-                                    value="#{recordSetsMB.initialDate}" 
+                                    value="#{recordSetsMB.initialDateView}" 
                                     converterMessage="La fecha inicial no es válida, por favor corríjala." 
                                     showOn="button" 
                                     pattern="dd/MM/yyyy"/> 
@@ -316,9 +286,9 @@
                             </p:column>
                             <p:column>                                
                                 <p:calendar 
-                                    value="#{recordSetsMB.endDate}" 
+                                    value="#{recordSetsMB.endDateView}" 
                                     converterMessage="La fecha final no es válida, por favor corríjala." 
-                                    showOn="button" 
+                                    showOn="button"                                     
                                     pattern="dd/MM/yyyy"/> 
                             </p:column>
                         </p:row>
@@ -336,6 +306,67 @@
                         </p:row>
                     </p:panelGrid>                     
                 </p:dialog>  
+                <!-- DIALOGO DETECTAR DUPLICADOS-->
+                <p:dialog                                                         
+                    id="IdDialogDuplicate"
+                    modal="true"
+                    resizable="false"
+                    header="Rango a detectar duplicados" 
+                    widgetVar="dialogDuplicate"> 
+                    <p:panelGrid >                          
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="Fecha Inicial:" />                                
+                            </p:column>
+                            <p:column>                                                 
+                                <p:calendar 
+                                    value="#{recordSetsMB.initialDateDuplicate}" 
+                                    converterMessage="La fecha inicial no es válida, por favor corríjala." 
+                                    showOn="button" 
+                                    pattern="dd/MM/yyyy"/> 
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="Fecha Final:" />
+                            </p:column>
+                            <p:column>                                
+                                <p:calendar 
+                                    value="#{recordSetsMB.endDateDuplicate}" 
+                                    converterMessage="La fecha final no es válida, por favor corríjala." 
+                                    showOn="button"                                     
+                                    pattern="dd/MM/yyyy"/> 
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column colspan="2">
+                                <p:progressBar 
+                                    id="IdProgresValidate" 
+                                    interval="500" 
+                                    widgetVar="pbAjaxValidate" 
+                                    ajax="true" 
+                                    value="#{recordSetsMB.progress}" 
+                                    labelTemplate="{value}%">          
+                                    <p:ajax 
+                                        event="complete" 
+                                        listener="#{recordSetsMB.onCompleteLoad}" 
+                                        update="IdProgresValidate"/>  
+                                </p:progressBar>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column colspan="2" styleClass="ui-widget-header">                                
+                                <p:commandButton
+                                    action="#{recordSetsMB.openDuplicateSets}"
+                                    actionListener="#{recordSetsMB.detectDuplicateClick}"                                    
+                                    onclick="pbAjaxValidate.start(); btnStarDetection.disable();"  
+                                    oncomplete="btnStarDetection.enable();"
+                                    widgetVar="btnStarDetection"
+                                    value="Iniciar detección"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>                     
+                </p:dialog>  
                 <!-- DIALOGO ELIMINAR-->
                 <p:dialog                                                         
                     id="IdDialogDelete"
@@ -345,7 +376,7 @@
                     widgetVar="dialogDelete"> 
                     <br/>
                     <p:inputTextarea 
-                        value="                                                       Confirma la eliminación de los conjuntos seleccionados?" 
+                        value="                                                       Confirma la eliminación del o los conjuntos seleccionados?" 
                         readonly="true" 
                         style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; width: 250px; height: 68px;"/>
                     <br/>

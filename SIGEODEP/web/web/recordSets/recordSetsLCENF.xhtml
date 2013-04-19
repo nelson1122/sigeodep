@@ -50,7 +50,7 @@
                                         <h:outputLabel value="Total de registros:"/>
                                     </p:column>
                                     <p:column>                                        
-                                        <h:outputLabel value="#{recordSetsLcenfMB.totalRecords}"/>                                        
+                                        <h:outputLabel id="IdTotalRecords" value="#{recordSetsLcenfMB.totalRecords}"/>                                        
                                     </p:column>
                                 </p:row>
                                 <p:row>
@@ -109,7 +109,7 @@
                                 <p:column headerText="TIPO EDAD" width="100">#{rowX.column6}</p:column>                
                                 <p:column headerText="EDAD" width="100">#{rowX.column7}</p:column>
                                 <p:column headerText="GENERO" width="100">#{rowX.column8}</p:column>                
-                                <p:column headerText="OCUPACION" width="100">#{rowX.column9}</p:column>
+                                <p:column headerText="OCUPACION" width="300">#{rowX.column9}</p:column>
                                 <p:column headerText="ASEGURADORA" width="300">#{rowX.column18}</p:column>
                                 <p:column headerText="DESPLAZADO" width="100">#{rowX.column16}</p:column>
                                 <p:column headerText="DISCAPACITADO" width="100">#{rowX.column17}</p:column>
@@ -287,7 +287,6 @@
                                             update=":IdForm1:message"/>
                                         <p:commandButton 
                                             id="IdRemove" 
-                                            disabled="#{recordSetsLcenfMB.btnRemoveDisabled}"
                                             value="Eliminar registro" 
                                             icon="ui-icon-close"
                                             oncomplete="dialogDelete.show()"                                            
@@ -300,7 +299,7 @@
                                             actionListener="#{recordSetsLcenfMB.postProcessXLS1}"/>                                                                                
                                         <h:commandLink id="IdComandLink" style="display: none" >
                                             <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>
-                                            <p:dataExporter type="xls" target="IdOutFile" fileName="LCENF"  postProcessor="#{recordSetsLcenfMB.postProcessXLS}"/>  
+                                            <p:dataExporter type="xls" target="IdOutFile" fileName="#{recordSetsLcenfMB.exportFileName}"  postProcessor="#{recordSetsLcenfMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                         <p:dataTable id="IdOutFile" style="display: none">
                                             <p:column>                                                  
@@ -326,7 +325,7 @@
                     widgetVar="dialogDelete"> 
                     <br/>
                     <p:inputTextarea 
-                        value="Confirma la Eliminacion del registro seleccionado?" 
+                        value="Confirma la Eliminación del registro o registros seleccionados?" 
                         readonly="true" 
                         style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 48px;"/>
                     <br/>
@@ -335,7 +334,7 @@
                         oncomplete="dialogDelete.hide()"
                         actionListener="#{recordSetsLcenfMB.deleteRegistry}"
                         value="Eliminar" 
-                        update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>   
+                        update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message :IdForm1:IdTotalRecords"/>
                     <p:commandButton
                         value="Cancelar" 
                         onclick="dialogDelete.hide()"/> 
