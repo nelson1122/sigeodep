@@ -1140,55 +1140,21 @@
                     resizable="false"
                     header="Buscar registro" 
                     widgetVar="dialogFind"> 
-                    <p:panelGrid>
-                        <p:row>  
-                            <p:column styleClass="ui-widget-header" colspan="5">
-                                <h:outputLabel value="Configuracion de la búsqueda"/>
-                            </p:column>                            
-                        </p:row>
-                        <p:row>  
-                            <p:column styleClass="ui-widget-header ui-state-focus" colspan="1">
-                                <h:outputLabel value="Variable"/>
-                            </p:column>
-                            <p:column colspan="1">
-                                <h:selectOneMenu id="IdSearchCriteria" value="#{transitMB.currentSearchCriteria}" > 
-                                    <f:selectItems value="#{transitMB.searchCriteriaList}"/>                                    
-                                </h:selectOneMenu>
-                            </p:column>
-                            <p:column styleClass="ui-widget-header ui-state-focus" colspan="1">
-                                <h:outputLabel value="Valor"/>
-                            </p:column>
-                            <p:column>
-                                <h:inputText 
-                                    id="IdSearcValue"
-                                    value="#{transitMB.currentSearchValue}"/>
-                            </p:column>
-                            <!--p:column colspan="1" rowspan="2"-->
-                            <p:column colspan="1"   >
-                                <p:commandButton 
-                                    value="Buscar" 
-                                    icon="ui-icon-search"                                                
-                                    actionListener="#{transitMB.createDynamicTable}"
-                                    update="IdSearchTable :IdForm1:message"/>                                
-                            </p:column>
-                        </p:row>
-                        <!--p:row>  
-                            <p:column colspan="1" styleClass="ui-widget-header ui-state-focus">
-                                <h:outputLabel value="Fecha Inicial"/>
-                            </p:column >
-                            <p:column colspan="1">
-                                <p:calendar value="{transitMB.date1}" id="cal1" showButtonPanel="true"/>
-                            </p:column>
-                            <p:column colspan="1" styleClass="ui-widget-header ui-state-focus">
-                                <h:outputLabel value="Fecha Final"/>
-                            </p:column>
-                            <p:column colspan="1">
-                                <p:calendar value="{transitMB.date2}" id="cal2" showButtonPanel="true"/>
-                            </p:column>
-                        </p:row-->
-                    </p:panelGrid>
                     <br/>
-
+                    <h:outputLabel value="Variable"/>
+                    <h:selectOneMenu id="IdSearchCriteria" value="#{transitMB.currentSearchCriteria}" > 
+                        <f:selectItems value="#{transitMB.searchCriteriaList}"/>                                    
+                    </h:selectOneMenu>
+                    <h:outputLabel value="Valor"/>
+                    <h:inputText 
+                        id="IdSearcValue"
+                        value="#{transitMB.currentSearchValue}"/>
+                    <p:commandButton 
+                        value="Buscar" 
+                        icon="ui-icon-search"                                                
+                        actionListener="#{transitMB.createDynamicTable}"
+                        update="IdSearchTable :IdForm1:message"/>                                
+                    <br/><br/>
                     <p:dataTable 
                         id="IdSearchTable" var="rowX" 
                         value="#{transitMB.rowDataTableList}" 
@@ -1200,6 +1166,7 @@
                         paginatorPosition="bottom"
                         scrollable="true"
                         scrollWidth="525"                                    
+                        emptyMessage="Vacio"
                         pageLinks="3"
                         resizableColumns="true"> 
                         <p:column headerText="CODIGO" width="50">  
@@ -1216,27 +1183,21 @@
                         </p:column-->
                     </p:dataTable> 
                     <br/>
-                    <p:panelGrid style="width: 100%;">
-                        <p:row>  
-                            <p:column styleClass="ui-widget-header">
-                                <p:commandButton 
-                                    id="IdLoadButton" 
-                                    value="Cargar" 
-                                    icon="ui-icon-document"  
-                                    update=":IdForm1 :IdForm2" 
-                                    actionListener="#{transitMB.openForm}"
-                                    oncomplete="dialogFind.hide(); goFirstFocus();"
-                                    style=""/>
-                                <p:commandButton 
-                                    id="IdCancelFind" 
-                                    value="Cancelar" 
-                                    icon="ui-icon-close"  
-                                    oncomplete="dialogFind.hide()"
-                                    style=""/>
-                            </p:column>
-                        </p:row>
-                    </p:panelGrid>
-
+                    <p:commandButton 
+                        id="IdLoadButton" 
+                        value="Cargar" 
+                        icon="ui-icon-document"  
+                        update=":IdForm1 :IdForm2" 
+                        actionListener="#{transitMB.openForm}"
+                        oncomplete="dialogFind.hide(); goFirstFocus();"
+                        style=""/>
+                    <p:commandButton 
+                        id="IdCancelFind" 
+                        value="Cancelar" 
+                        icon="ui-icon-close"  
+                        oncomplete="dialogFind.hide()"
+                        style=""/>
+                    <br/><br/>
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogFirst"

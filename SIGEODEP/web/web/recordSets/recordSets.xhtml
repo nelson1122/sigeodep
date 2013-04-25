@@ -122,30 +122,35 @@
                                             id="IdEdit" 
                                             value="Editar"
                                             oncomplete="dialogEdit.show()"                                            
+                                            disabled="#{recordSetsMB.btnEditDisabled}"
                                             update=":IdForm2:IdDialogEdit :IdForm1:message"/>                                        
-                                        <!--disabled="# {recordSetsMB.btnEditDisabled}" -->
+                                        
                                         <p:commandButton 
                                             id="IdRemove" 
                                             value="Eliminar"
+                                            disabled="#{recordSetsMB.btnRemoveDisabled}"
                                             oncomplete="dialogDelete.show()"                                            
                                             update=":IdForm2:IdDialogDelete :IdForm1:message"/>
-                                        <!--disabled="# {recordSetsMB.btnRemoveDisabled}" -->
+                                        <!-- -->
                                         <p:commandButton 
                                             id="IdView"                                            
                                             actionListener="#{recordSetsMB.resetDates}"
+                                            disabled="#{recordSetsMB.btnViewDisabled}"
                                             value="Mostrar Datos"
                                             oncomplete="dialogView.show()"
                                             update=":IdForm2:IdDialogView :IdForm1:message"/>
-                                        <!-- disabled="# {recordSetsMB.btnViewDisabled}" -->
+                                        <!--  -->
                                         <p:commandButton 
                                             id="IdViewDuplicate"                                            
                                             value="Detectar duplicados"
+                                            disabled="#{recordSetsMB.btnDuplicateDisabled}"
                                             oncomplete="dialogDuplicate.show()"
                                             update=":IdForm2:IdDialogView :IdForm1:message"/>                                        
-                                        <!-- disabled="# {recordSetsMB.btnDuplicateDisabled}" -->
+                                        <!--  -->
                                         <p:commandButton 
                                             id="IdJoinSets"
                                             oncomplete="dialogJoin.show()"
+                                            disabled="#{recordSetsMB.btnJoinDisabled}"
                                             value="Agrupar conjuntos"/>
                                         <!-- disabled="# {recordSetsMB.btnJoinDisabled}" -->
                                     </p:column>
@@ -296,8 +301,7 @@
                             <p:column colspan="2" styleClass="ui-widget-header">
                                 <p:commandButton 
                                     action="#{recordSetsMB.openRecordSets}"
-                                    actionListener="#{recordSetsMB.selectTagClick}"
-                                    disabled="#{recordSetsMB.btnViewDisabled}"                                            
+                                    actionListener="#{recordSetsMB.selectTagClick}"                                    
                                     value="Mostrar Datos"/>
                                 <p:commandButton
                                     value="Cancelar" 

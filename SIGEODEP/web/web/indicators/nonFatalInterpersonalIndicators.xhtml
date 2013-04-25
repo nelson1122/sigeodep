@@ -50,6 +50,11 @@
                                     action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
+                                    value="PORCENTAJE DE CASOS DE VIOLENCIA INTERPERSONAL EN FAMILIA SEGUN VARIABLE DE INTERES" 
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator67}"
+                                    action="percentageIndicator"/>
+                                <p:commandButton 
+                                    style="width: 400px;" 
                                     value="VARIACION DE CASOS DE VIOLENCIA INTERPERSONAL EN COMUNIDAD" 
                                     actionListener="#{indicatorsVariationMB.loadIndicator62}"
                                     action="variationIndicator"/>       
@@ -73,11 +78,6 @@
                                     value="TASA ESPECIFICA DE VIOLENCIA INTERPERSONAL EN COMUNIDAD SEGUN VARIABLE DE CONFUSION" 
                                     actionListener="#{indicatorsSpecifiedRateMB.loadIndicator66}"
                                     action="specifiedRateIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE VIOLENCIA INTERPERSONAL EN FAMILIA SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator67}"
-                                    action="percentageIndicator"/>
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       

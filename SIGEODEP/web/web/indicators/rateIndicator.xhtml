@@ -84,7 +84,7 @@
                 <p:tabView id="IdTabView"  style=" width: 750px;  margin-left: -375px; left: 50%;" > 
                     <p:tab id="tab1" title="#{indicatorsRateMB.subTitleIndicator}">  
                         <br/>
-                        <p:fieldset legend="RANGO DE FECHAS"> 
+                        <p:fieldset legend="OPCIONES"> 
                             <br/>
                             <h:outputText value="Fecha Inicial:" />
                             <p:calendar
@@ -93,14 +93,14 @@
                                 converterMessage="La fecha inicial no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
-                                <p:ajax 
+                                <!-- p:ajax 
                                     event="change" 
-                                    listener="#{indicatorsRateMB.initialDateFocusLost}" 
+                                    listener="# {indicatorsRateMB.initialDateFocusLost}" 
                                     update=":IdForm:message IdInitialDate IdEndDate"/>
                                 <p:ajax 
                                     event="dateSelect" 
-                                    listener="#{indicatorsRateMB.initialDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate"/>
+                                    listener="# {indicatorsRateMB.initialDateFocusLost}" 
+                                    update=":IdForm:message IdInitialDate IdEndDate"/ -->
                             </p:calendar>
                             <br/>
                             <br/>
@@ -111,22 +111,38 @@
                                 converterMessage="La fecha final no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
-                                <p:ajax 
+                                <!-- p:ajax 
                                     event="change" 
-                                    listener="#{indicatorsRateMB.endDateFocusLost}" 
+                                    listener="# {indicatorsRateMB.endDateFocusLost}" 
                                     update=":IdForm:message IdInitialDate IdEndDate" />
                                 <p:ajax 
                                     event="dateSelect" 
-                                    listener="#{indicatorsRateMB.endDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate" />
+                                    listener="# {indicatorsRateMB.endDateFocusLost}" 
+                                    update=":IdForm:message IdInitialDate IdEndDate" /-->
                             </p:calendar>
-                            <br/>
-                            <br/>
+                            <br/><br/>                            
+                            <h:outputText value="Desagregación temporal:" />
+                            <h:selectOneMenu 
+                                id="IdTimeType" value="#{indicatorsRateMB.currentTemporalDisaggregation}"> 
+                                <f:selectItems value="#{indicatorsRateMB.temporalDisaggregationTypes}"/>                                                
+                            </h:selectOneMenu>
+                            <br/><br/>
                             <h:outputText value="Desagregación espacial:" />
                             <h:selectOneMenu 
-                                id="IdTimeType" value="#{indicatorsRateMB.currentSpatialDisaggregation}"> 
+                                id="IdEspacialType" value="#{indicatorsRateMB.currentSpatialDisaggregation}"> 
                                 <f:selectItems value="#{indicatorsRateMB.spatialDisaggregationTypes}"/>                                                
+                                <f:ajax 
+                                    event="change"
+                                    listener="#{indicatorsRateMB.changeSpatialDisaggregation}"
+                                    render="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/>
                             </h:selectOneMenu>
+                            <br/><br/>
+                            <h:outputText value="Cifras por:" />
+                            <h:selectOneMenu 
+                                id="IdMultiplerType" value="#{indicatorsRateMB.currentMultipler}"> 
+                                <f:selectItems value="#{indicatorsRateMB.multiplers}"/>                                                
+                            </h:selectOneMenu>
+                            <h:outputText value=" habitantes" />
                             <br/>
                             <br/>
                         </p:fieldset>                        
@@ -150,10 +166,10 @@
                                     <p:column>
                                         <h:selectManyListbox 
                                             id="IdSelectOneListVariables" 
-                                            value="#{indicatorsRateMB.currentVariablesSelected}"
+                                            value="#{indicatorsRateMB.currentAvailableVariablesNamesSelected}"
                                             style="height:110px; width: 200px;"
                                             converterMessage="Fallo de comunicación, por favor intente nuevamente.">
-                                            <f:selectItems value="#{indicatorsRateMB.variablesList}"/>                                                                                                
+                                            <f:selectItems value="#{indicatorsRateMB.listOfAvailableVariablesNames}"/>                                                                                                
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsRateMB.changeVariable}"
@@ -189,8 +205,9 @@
                                             id="IdBtnOptions" 
                                             icon="ui-icon-wrench"
                                             disabled="#{indicatorsRateMB.btnRemoveVariableDisabled}"
-                                            onclick="configurationsDialog.show();"
-                                            update="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
+                                            actionListener="#{indicatorsRateMB.btnLoadConfigurationClick}"
+                                            oncomplete="configurationsDialog.show();"
+                                            update="IdSelectOneListVariables :IdForm2:IdConfigurationsList IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
                                     </p:column>
                                     <p:column>
                                         <h:selectManyListbox 
@@ -198,7 +215,7 @@
                                             value="#{indicatorsRateMB.currentVariablesCrossSelected}"
                                             style="height:110px; width: 200px;"
                                             converterMessage="Fallo de comunicación, por favor intente nuevamente.">
-                                            <f:selectItems value="#{indicatorsRateMB.variablesCrossList}"/>                                                            
+                                            <f:selectItems value="#{indicatorsRateMB.listOfCrossVariablesNames}"/>                                                            
                                             <f:ajax 
                                                 event="change"                                                                                                           
                                                 listener="#{indicatorsRateMB.changeCrossVariable}" 
@@ -230,7 +247,7 @@
                                                         id="IdBtnGenerate" 
                                                         actionListener="#{indicatorsRateMB.process}"
                                                         oncomplete="showTableResult()"                                                        
-                                                        update="IdImageChart IdPanelGraphConfig IdDataTableHtml">
+                                                        update="IdImageChart IdVariableGraph IdValueGraph IdDataTableHtml">
                                                     </p:commandButton>                           
                                                     <p:commandButton
                                                         id="IdPaint"
@@ -241,7 +258,7 @@
                                                         <f:ajax 
                                                             event="blur"
                                                             listener="#{indicatorsRateMB.createImage}"
-                                                            render="IdImageChart"/>
+                                                            render="IdImageChart IdVariableGraph IdValueGraph"/>
                                                     </p:commandButton>
                                                 </p:column>
                                                 <!--p:column styleClass="ui-widget-header">
@@ -286,24 +303,9 @@
                         </p:fieldset>
                         <br/>
                         <br/>                        
-                        <p:fieldset legend="GRAFICOS" rendered="false">
+                        <p:fieldset legend="GRAFICOS">
                             <br/> 
-                            <p:panelGrid id="IdPanelGraphConfig">
-                                <p:row>
-                                    <p:column>
-                                        Tipo de Gráfico
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdGraphType" value="#{indicatorsRateMB.currentGraphType}"> 
-                                            <f:selectItems value="#{indicatorsRateMB.graphTypes}"/>
-                                            <f:ajax 
-                                                event="change"
-                                                listener="#{indicatorsRateMB.createImage}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
-                                        </h:selectOneMenu>
-                                    </p:column>
-                                </p:row>
+                            <p:panelGrid>                                
                                 <p:row>
                                     <p:column>
                                         Variable
@@ -315,11 +317,9 @@
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsRateMB.loadValuesGraph}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
+                                                render="IdImageChart IdVariableGraph IdValueGraph"/>
                                         </h:selectOneMenu>
                                     </p:column>
-                                </p:row>
-                                <p:row>
                                     <p:column>
                                         Valor
                                     </p:column>
@@ -330,8 +330,20 @@
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsRateMB.createImage}"
-                                                render="IdImageChart"/>
+                                                render="IdImageChart IdVariableGraph IdValueGraph"/>
                                         </h:selectOneMenu>
+                                    </p:column>                                        
+                                    <p:column>
+                                        Mostrar Items
+                                    </p:column>
+                                    <p:column>
+                                        <h:selectBooleanCheckbox value="#{indicatorsRateMB.showItems}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsRateMB.createImage}"
+                                                render="IdVariableGraph IdValueGraph IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
+
                                     </p:column>                                        
                                 </p:row>
                             </p:panelGrid>                                
@@ -354,112 +366,156 @@
         </ui:define>
         <ui:define name="dialogs">
             <h:form id="IdForm2">
+                <p:dialog                     
+                    id="IdSaveConfigurationsDialog"  
+                    modal="true"
+                    header="Guardar configuración"
+                    resizable="false"                    
+                    widgetVar="saveConfigurationDialog">  
+                    <br/>                    
+                    Nombre para La configuración
+                    <br/>                    
+                    <br/>
+                    <h:inputText                         
+                        value="#{indicatorsRateMB.newConfigurationName}" 
+                        size="70"/>
+                    <br/>
+                    <br/>
+                    <p:commandButton                                                            
+                        value="Guardar"
+                        style="margin:0;"
+                        oncomplete="saveConfigurationDialog.hide()"
+                        actionListener="#{indicatorsRateMB.btnSaveConfigurationClick}"
+                        update="IdConfigurationsList :IdForm:message"/>
+                    <br/>
+                    <br/>
+                </p:dialog>
+                <p:dialog 
+                    id="IdOpenConfigurationsDialog"  
+                    modal="true"
+                    header="Cargar configuración"         
+                    resizable="false"                    
+                    widgetVar="openConfigurationDialog">  
+                    <br/>
+                    Seleccione la configuración a cargar
+                    <br/>
+                    <br/>
+                    <h:selectOneListbox 
+                        id="IdConfigurationsList"
+                        value="#{indicatorsRateMB.currentConfigurationSelected}"
+                        style="height:110px; width: 360px;"
+                        converterMessage="Fallo de comunicación, por favor intente nuevamente.">
+                        <f:selectItems value="#{indicatorsRateMB.configurationsList}"/>
+                    </h:selectOneListbox>
+                    <br/>
+                    <br/>
+                    <p:commandButton                                                            
+                        value="Cargar"
+                        style="margin:0;"
+                        oncomplete="openConfigurationDialog.hide()"
+                        actionListener="#{indicatorsRateMB.btnOpenConfigurationClick}"
+                        update="IdSelectManyListCategoryValues IdConfigurationsList :IdForm:message"/>
+                    <p:commandButton                                                            
+                        value="Eliminar"
+                        style="margin:0;"
+                        oncomplete="openConfigurationDialog.hide()"
+                        actionListener="#{indicatorsRateMB.btnRemoveConfigurationClick}"
+                        update="IdSelectManyListCategoryValues IdConfigurationsList :IdForm:message"/>  
+                    <br/>
+                    <br/>
+
+                </p:dialog>
                 <p:dialog 
                     id="IdConfigurationsDialog"  
                     modal="true"
-                    header="Configuracion de variable: #{indicatorsRateMB.firstVariablesCrossSelected}"         
+                    header="Configuración de variable: #{indicatorsRateMB.firstVariablesCrossSelected}"         
                     resizable="false"                    
                     widgetVar="configurationsDialog">  
                     <br/>
                     <p:panelGrid>
                         <p:row>
                             <p:column styleClass="ui-widget-header">
-                                Nuevo valor
-                            </p:column>    
+                                Nueva categoria
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                Valor inicial &nbsp;                            
+                                <h:inputText 
+                                    id="IdA" 
+                                    disabled="#{indicatorsRateMB.btnAddCategoricalValueDisabled}"
+                                    value="#{indicatorsRateMB.initialValue}" 
+                                    maxlength="4" 
+                                    size="4"/>
+                                &nbsp; &nbsp;                                 
+                                Valor Final &nbsp;                                
+                                <h:inputText 
+                                    id="IdB" 
+                                    disabled="#{indicatorsRateMB.btnAddCategoricalValueDisabled}"
+                                    value="#{indicatorsRateMB.endValue}" 
+                                    maxlength="4" 
+                                    size="4"/>
+                                &nbsp; &nbsp;
+                                <p:commandButton                        
+                                    id="IdBtnAddCategory"
+                                    value="Agregar"
+                                    style="margin:0;"
+                                    disabled="#{indicatorsRateMB.btnAddCategoricalValueDisabled}"
+                                    actionListener="#{indicatorsRateMB.btnAddCategoricalValueClick}"
+                                    update="IdSelectManyListCategoryValues :IdForm:message IdA IdB"/>  
+
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                    <br/>
+                    <p:panelGrid>
+                        <p:row>
                             <p:column styleClass="ui-widget-header">
-                                Valores
-                            </p:column>    
+                                Categorias actuales    
+                            </p:column>
                         </p:row>
+
                         <p:row>
                             <p:column>
-                                <p:panelGrid>
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            Inicio
-                                        </p:column>
-                                        <p:column>
-                                            <h:inputText 
-                                                id="IdA" 
-                                                disabled="#{indicatorsRateMB.btnAddCategoricalValueDisabled}"
-                                                value="#{indicatorsRateMB.initialValue}" 
-                                                maxlength="4" 
-                                                size="4"/>
-                                            <br/>                                
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            Fin
-                                        </p:column>
-                                        <p:column>
-                                            <h:inputText 
-                                                id="IdB" 
-                                                disabled="#{indicatorsRateMB.btnAddCategoricalValueDisabled}"
-                                                value="#{indicatorsRateMB.endValue}" 
-                                                maxlength="4" 
-                                                size="4"/>
-                                            <br/>                                
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column colspan="2" style="text-align: center;">
-                                            <p:commandButton                        
-                                                id="IdBtnAddCategory"
-                                                value="Agregar"
-                                                style="margin:0;"
-                                                disabled="#{indicatorsRateMB.btnAddCategoricalValueDisabled}"
-                                                actionListener="#{indicatorsRateMB.btnAddCategoricalValueClick}"
-                                                update="IdSelectManyListCategoryValues :IdForm:message IdA IdB"/>  
-                                        </p:column>
-                                    </p:row>
-                                </p:panelGrid>
-                            </p:column>    
-                            <p:column>
-                                <p:panelGrid>
-                                    <p:row>
-                                        <p:column>
-                                            <h:selectManyListbox 
-                                                id="IdSelectManyListCategoryValues" 
-                                                value="#{indicatorsRateMB.currentCategoricalValuesSelected}"
-                                                style="height:110px; width: 200px;"
-                                                converterMessage="Fallo de comunicación, por favor intente nuevamente.">
-                                                <f:selectItems value="#{indicatorsRateMB.currentCategoricalValuesList}"/>                                                                                                
-                                                <f:ajax 
-                                                    event="change"
-                                                    listener="#{indicatorsRateMB.changeCategoticalList}"
-                                                    render="IdBtnRemoveCategory"/>
-                                            </h:selectManyListbox>
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column>
-                                            <p:commandButton                        
-                                                id="IdBtnRemoveCategory"
-                                                value="Quitar"
-                                                style="margin:0;"
-                                                disabled="#{indicatorsRateMB.btnRemoveCategoricalValueDisabled}"
-                                                actionListener="#{indicatorsRateMB.btnRemoveCategoryValueClick}"                                                
-                                                update="IdBtnRemoveCategory IdSelectManyListCategoryValues"/>  
-                                            <p:commandButton                        
-                                                id="IdBtnResetCategory"
-                                                value="Reiniciar"
-                                                style="margin:0;"                                                
-                                                actionListener="#{indicatorsRateMB.btnResetCategoryListClick}"                                                
-                                                update="IdBtnRemoveCategory IdSelectManyListCategoryValues"/>  
-                                        </p:column>
-                                    </p:row>
-                                </p:panelGrid>
-                            </p:column>    
+                                <h:selectManyListbox 
+                                    id="IdSelectManyListCategoryValues" 
+                                    value="#{indicatorsRateMB.currentCategoricalValuesSelected}"
+                                    style="height:110px; width: 360px;"
+                                    converterMessage="Fallo de comunicación, por favor intente nuevamente.">
+                                    <f:selectItems value="#{indicatorsRateMB.currentCategoricalValuesList}"/>                                                                                                
+
+                                </h:selectManyListbox>
+                                <br/>
+                                <br/>
+                                <p:commandButton                        
+                                    id="IdBtnRemoveCategory"
+                                    value="Quitar"
+                                    style="margin:0;"                                    
+                                    actionListener="#{indicatorsRateMB.btnRemoveCategoryValueClick}"                                                
+                                    update="IdBtnRemoveCategory IdSelectManyListCategoryValues"/>  
+                                <p:commandButton                        
+                                    id="IdBtnResetCategory"
+                                    rendered="false"
+                                    value="Reiniciar"
+                                    style="margin:0;"                                                
+                                    actionListener="#{indicatorsRateMB.btnResetCategoryListClick}"                                                
+                                    update="IdBtnRemoveCategory IdSelectManyListCategoryValues"/>  
+                                <p:commandButton                                                            
+                                    value="Guardar"
+                                    style="margin:0;"
+                                    onclick="saveConfigurationDialog.show()"/>  
+                                <p:commandButton                                                            
+                                    value="Cargar/Eliminar"
+                                    style="margin:0;"                    
+                                    oncomplete="openConfigurationDialog.show()"
+                                    />  
+                                <br/>
+                                <br/>
+                            </p:column>
                         </p:row>
-                        <p:row>
-                            <p:column colspan="2">                                
-                                <p:commandButton                         
-                                    value="Finalizar" 
-                                    onclick="configurationsDialog.hide()"
-                                    type="button"/>   
-                            </p:column>    
-                        </p:row>
-                    </p:panelGrid>               
+                    </p:panelGrid>
+                    <br/>
+                    <br/>                    
                 </p:dialog>
             </h:form>
         </ui:define>

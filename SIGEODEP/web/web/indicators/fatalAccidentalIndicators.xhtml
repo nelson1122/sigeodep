@@ -50,6 +50,11 @@
                                     action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
+                                    value="PORCENTAJE DE CASOS DE LESIONES FATALES NO INTENCIONALES SEGUN VARIABLE DE INTERES" 
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator11}"
+                                    action="percentageIndicator"/>
+                                <p:commandButton 
+                                    style="width: 400px;" 
                                     value="VARIACION DE CASOS DE LESIONES FATALES NO INTENCIONALES" 
                                     actionListener="#{indicatorsVariationMB.loadIndicator6}"
                                     action="variationIndicator"/>
@@ -73,11 +78,7 @@
                                     value="TASA ESPECIFICA DE LESIONES FATALES NO INTENCIONALES SEGUN VARIABLE DE CONFUSION" 
                                     actionListener="#{indicatorsSpecifiedRateMB.loadIndicator10}"
                                     action="specifiedRateIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE LESIONES FATALES NO INTENCIONALES SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator11}"
-                                    action="percentageIndicator"/>
+                                
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       

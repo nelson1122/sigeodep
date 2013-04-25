@@ -36,9 +36,9 @@
                             <p:tab id="tab2" title="LISTADO DE REGISTROS CON POSIBLES DUPLICADOS">
                                 <p:dataTable 
                                     id="IdSearchTable" var="rowX" 
-                                    value="#{duplicateSetsVifMB.rowDuplicatedTableList}" 
+                                    value="#{duplicateSetsSivigilaVifMB.rowDuplicatedTableList}" 
                                     rowKey="#{rowX.column1}"  
-                                    selection="#{duplicateSetsVifMB.selectedRowDuplicatedTable}" 
+                                    selection="#{duplicateSetsSivigilaVifMB.selectedRowDuplicatedTable}" 
                                     paginator="true"
                                     rows="10" 
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -52,7 +52,7 @@
                                     resizableColumns="true">                                
                                     <p:ajax
                                         event="rowSelect"
-                                        listener="#{duplicateSetsVifMB.rowDuplicatedTableListSelect}"                                    
+                                        listener="#{duplicateSetsSivigilaVifMB.rowDuplicatedTableListSelect}"                                    
                                         update=":IdForm1:message :IdForm1:IdTabView:IdAccordionPanel:IdSearchTable2" />                    
 
                                     <p:column headerText="ID" width="40" style="display: none;">#{rowX.column1}</p:column>
@@ -64,29 +64,29 @@
 
                                 <!--p:commandButton 
                                     id="IdView"
-                                    disabled="# {duplicateSetsVifMB.btnViewDisabled}"
+                                    disabled="# {duplicateSetsSivigilaVifMB.btnViewDisabled}"
                                     value="Cargar registros Duplicados"     
-                                    actionListener="# {duplicateSetsVifMB.loadDuplicatedRecords}"
+                                    actionListener="# {duplicateSetsSivigilaVifMB.loadDuplicatedRecords}"
                                     update="IdSearchTable2 :IdForm1:message :IdForm1:IdTabView:IdAccordionPanel:IdRemove"/-->
                                 <!-- p:commandButton 
                                     id="IdReload" 
                                     value="Recargar" 
-                                    actionListener="# {duplicateSetsVifMB.loadDuplicatedList}"              
+                                    actionListener="# {duplicateSetsSivigilaVifMB.loadDuplicatedList}"              
                                     update="IdSearchTable IdSearchTable2 :IdForm1:message :IdForm1:IdTabView:IdAccordionPanel:IdRemove"/-->
 
                             </p:tab>
                             <p:tab id="tab3" title="LISTADO DE POSIBLES DUPLICADOS PARA EL REGISTRO SELECCIONADO">
                                 <p:dataTable 
                                     id="IdSearchTable2" var="rowX" 
-                                    value="#{duplicateSetsVifMB.rowDataTableList}" 
+                                    value="#{duplicateSetsSivigilaVifMB.rowDataTableList}" 
                                     rowKey="#{rowX.column1}"  
-                                    selection="#{duplicateSetsVifMB.selectedRowDataTable}" 
+                                    selection="#{duplicateSetsSivigilaVifMB.selectedRowDataTable}" 
                                     paginator="true"
                                     rows="10" 
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15,20,25,30"
                                     paginatorPosition="bottom"                                
-                                    emptyMessage="Vacio"
+                                    emptyMessage="Vacio"                                    
                                     scrollable="true"
                                     scrollWidth="660"                                    
                                     pageLinks="3"
@@ -94,7 +94,7 @@
                                     resizableColumns="true">                                
                                     <p:ajax
                                         event="rowSelect"
-                                        listener="#{duplicateSetsVifMB.rowDataTableListSelect}"                                    
+                                        listener="#{duplicateSetsSivigilaVifMB.rowDataTableListSelect}"                                    
                                         update=":IdForm1:message :IdForm1:IdTabView:IdAccordionPanel:IdRemove" />                    
 
                                     <p:column headerText="CODIGO INTERNO" width="50">#{rowX.column1}</p:column>
@@ -195,7 +195,7 @@
 
                                 <p:commandButton 
                                     id="IdRemove" 
-                                    disabled="#{duplicateSetsVifMB.btnRemoveDisabled}"
+                                    disabled="#{duplicateSetsSivigilaVifMB.btnRemoveDisabled}"
                                     value="Eliminar registro" 
                                     icon="ui-icon-close"
                                     oncomplete="dialogDelete.show()"                                            
@@ -225,7 +225,7 @@
                     <br/>
                     <p:commandButton                                                           
                         oncomplete="dialogDelete.hide()"
-                        actionListener="#{duplicateSetsVifMB.deleteRegistry}"
+                        actionListener="#{duplicateSetsSivigilaVifMB.deleteRegistry}"
                         value="Eliminar" 
                         update=":IdForm1:IdTabView:IdAccordionPanel:IdSearchTable2 :IdForm1:message"/>   
                     <p:commandButton

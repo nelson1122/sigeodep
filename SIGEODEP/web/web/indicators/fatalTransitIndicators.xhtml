@@ -50,6 +50,11 @@
                                     action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
+                                    value="PORCENTAJE DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO SEGUN VARIABLE DE INTERES" 
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator32}"
+                                    action="percentageIndicator"/>
+                                <p:commandButton 
+                                    style="width: 400px;" 
                                     value="VARIACION DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO" 
                                     actionListener="#{indicatorsVariationMB.loadIndicator27}"
                                     action="variationIndicator"/>       
@@ -72,12 +77,7 @@
                                     style="width: 400px;" 
                                     value="TASA ESPECIFICA DE MUERTES POR ACCIDENTES DE TRANSITO SEGUN VARIABLE DE CONFUSION" 
                                     actionListener="#{indicatorsSpecifiedRateMB.loadIndicator31}"
-                                    action="specifiedRateIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator32}"
-                                    action="percentageIndicator"/>
+                                    action="specifiedRateIndicator"/>                                
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       

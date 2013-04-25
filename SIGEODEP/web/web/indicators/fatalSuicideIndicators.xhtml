@@ -50,6 +50,11 @@
                                     action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
+                                    value="PORCENTAJE DE CASOS DE SUICIDIOS SEGUN VARIABLE DE INTERES" 
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator25}"
+                                    action="percentageIndicator"/>
+                                <p:commandButton 
+                                    style="width: 400px;" 
                                     value="VARIACION DE CASOS DE SUICIDIOS" 
                                     actionListener="#{indicatorsVariationMB.loadIndicator20}"
                                     action="variationIndicator"/>       
@@ -73,11 +78,7 @@
                                     value="TASA ESPECIFICA DE SUICIDIOS SEGUN VARIABLE DE CONFUSION" 
                                     actionListener="#{indicatorsSpecifiedRateMB.loadIndicator24}"
                                     action="specifiedRateIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE SUICIDIOS SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator25}"
-                                    action="percentageIndicator"/>
+                                
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       

@@ -44,6 +44,7 @@
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15,20,25,30"
                                     paginatorPosition="bottom"                                
+                                    emptyMessage="Vacio"
                                     scrollable="true"
                                     scrollWidth="660"                                    
                                     pageLinks="3"
@@ -67,11 +68,11 @@
                                     value="Cargar registros Duplicados"     
                                     actionListener="# {duplicateSetsLcenfMB.loadDuplicatedRecords}"
                                     update="IdSearchTable2 :IdForm1:message :IdForm1:IdTabView:IdAccordionPanel:IdRemove"/-->
-                                <p:commandButton 
+                                <!-- p:commandButton 
                                     id="IdReload" 
                                     value="Recargar" 
-                                    actionListener="#{duplicateSetsLcenfMB.loadDuplicatedList}"              
-                                    update="IdSearchTable IdSearchTable2 :IdForm1:message :IdForm1:IdTabView:IdAccordionPanel:IdRemove"/>
+                                    actionListener="# {duplicateSetsLcenfMB.loadDuplicatedList}"              
+                                    update="IdSearchTable IdSearchTable2 :IdForm1:message :IdForm1:IdTabView:IdAccordionPanel:IdRemove"/-->
 
                             </p:tab>
                             <p:tab id="tab3" title="LISTADO DE POSIBLES DUPLICADOS PARA EL REGISTRO SELECCIONADO">
@@ -85,6 +86,7 @@
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15,20,25,30"
                                     paginatorPosition="bottom"                                
+                                    emptyMessage="Vacio"
                                     scrollable="true"
                                     scrollWidth="660"                                    
                                     pageLinks="3"
@@ -104,7 +106,7 @@
                                     <p:column headerText="TIPO EDAD" width="100">#{rowX.column6}</p:column>                
                                     <p:column headerText="EDAD" width="100">#{rowX.column7}</p:column>
                                     <p:column headerText="GENERO" width="100">#{rowX.column8}</p:column>                
-                                    <p:column headerText="OCUPACION" width="100">#{rowX.column9}</p:column>
+                                    <p:column headerText="OCUPACION" width="400">#{rowX.column9}</p:column>
                                     <p:column headerText="ASEGURADORA" width="300">#{rowX.column18}</p:column>
                                     <p:column headerText="DESPLAZADO" width="100">#{rowX.column16}</p:column>
                                     <p:column headerText="DISCAPACITADO" width="100">#{rowX.column17}</p:column>

@@ -884,105 +884,69 @@
                     resizable="false"
                     header="Buscar registro" 
                     widgetVar="dialogFind"> 
-                    <p:panelGrid>
-                        <p:row>  
-                            <p:column styleClass="ui-widget-header ui-state-focus" colspan="5">
-                                <h:outputLabel value="Configuracion de la búsqueda"/>
-                            </p:column>                            
-                        </p:row>
-                        <p:row>  
-                            <p:column styleClass="ui-widget-header ui-state-focus" colspan="1">
-                                <h:outputLabel value="Variable"/>
-                            </p:column>
-                            <p:column colspan="1">
-                                <h:selectOneMenu id="IdSearchCriteria" value="#{accidentalMB.currentSearchCriteria}" > 
-                                    <f:selectItems value="#{accidentalMB.searchCriteriaList}"/>                                    
-                                </h:selectOneMenu>
-                            </p:column>
-                            <p:column styleClass="ui-widget-header ui-state-focus" colspan="1">
-                                <h:outputLabel value="Valor"/>
-                            </p:column>
-                            <p:column>
-                                <h:inputText 
-                                    id="IdSearcValue"
-                                    value="#{accidentalMB.currentSearchValue}"/>
-                            </p:column>
-                            <!--p:column colspan="1" rowspan="2"-->
-                            <p:column colspan="1"   >
-                                <p:commandButton 
-                                    value="Buscar" 
-                                    icon="ui-icon-search"                                                
-                                    actionListener="#{accidentalMB.createDynamicTable}"
-                                    update="IdSearchTable :IdForm1:message"/>                                
-                            </p:column>
-                        </p:row>
-                        <!--p:row>  
-                            <p:column colspan="1" styleClass="ui-widget-header ui-state-focus">
-                                <h:outputLabel value="Fecha Inicial"/>
-                            </p:column >
-                            <p:column colspan="1">
-                                <p:calendar value="{accidentalMB.date1}" id="cal1" showButtonPanel="true"/>
-                            </p:column>
-                            <p:column colspan="1" styleClass="ui-widget-header ui-state-focus">
-                                <h:outputLabel value="Fecha Final"/>
-                            </p:column>
-                            <p:column colspan="1">
-                                <p:calendar value="{accidentalMB.date2}" id="cal2" showButtonPanel="true"/>
-                            </p:column>
-                        </p:row-->
-                    </p:panelGrid>
-                    <br/>
-                    <p:panelGrid>
-                        <p:row>  
-                            <p:column styleClass="ui-widget-header  ui-state-focus">
-                                <h:outputLabel value="RESULTADOS DE LA CONSULTA"/>
-                            </p:column>
-                        </p:row>
-                        <p:row>  
-                            <p:column>        
-                                <p:dataTable 
-                                    id="IdSearchTable" var="rowX" 
-                                    value="#{accidentalMB.rowDataTableList}" 
-                                    rowKey="#{rowX.column1}"  
-                                    selection="#{accidentalMB.selectedRowDataTable}" 
-                                    selectionMode="single"
-                                    paginator="true"
-                                    rows="5"                                    
-                                    paginatorPosition="bottom"
-                                    scrollable="true"
-                                    scrollWidth="500"                                    
-                                    pageLinks="3"
-                                    resizableColumns="true"> 
-                                    <p:column headerText="CODIGO" width="50">  
-                                        #{rowX.column1}  
-                                    </p:column>  
-                                    <p:column headerText="IDENTIFICACION" width="200">  
-                                        #{rowX.column2}  
-                                    </p:column>  
-                                    <p:column headerText="NOMBRES APELLIDOS" width="450">  
-                                        #{rowX.column3}  
-                                    </p:column>                                      
-                                    <!--p:column headerText="FECHA REGISTRO"  width="150">  
-                                        {rowX.column4}  
-                                    </p:column-->
-                                </p:dataTable> 
-                                <p:commandButton 
-                                    id="IdLoadButton" 
-                                    value="Cargar" 
-                                    icon="ui-icon-document"  
-                                    update=":IdForm1 :IdForm2" 
-                                    actionListener="#{accidentalMB.openForm}"
-                                    oncomplete="dialogFind.hide(); goFirstFocus();"
-                                    style=""/>
-                                <p:commandButton 
-                                    id="IdCancelFind" 
-                                    value="Cancelar" 
-                                    icon="ui-icon-close"  
-                                    oncomplete="dialogFind.hide()"/>
-                            </p:column>
 
-                        </p:row>
-                    </p:panelGrid>
+                    <br/>
+                    <h:outputLabel value="Variable"/>
+
+                    <h:selectOneMenu id="IdSearchCriteria" value="#{accidentalMB.currentSearchCriteria}" > 
+                        <f:selectItems value="#{accidentalMB.searchCriteriaList}"/>                                    
+                    </h:selectOneMenu>
+
+                    <h:outputLabel value="Valor"/>
+
+                    <h:inputText 
+                        id="IdSearcValue"
+                        value="#{accidentalMB.currentSearchValue}"/>
+
+                    <p:commandButton 
+                        value="Buscar" 
+                        icon="ui-icon-search"                                                
+                        actionListener="#{accidentalMB.createDynamicTable}"
+                        update="IdSearchTable :IdForm1:message"/>                                
+                    <br/><br/>
+
+                    <p:dataTable 
+                        id="IdSearchTable" var="rowX" 
+                        value="#{accidentalMB.rowDataTableList}" 
+                        rowKey="#{rowX.column1}"  
+                        selection="#{accidentalMB.selectedRowDataTable}" 
+                        selectionMode="single"
+                        paginator="true"
+                        rows="5"                                    
+                        paginatorPosition="bottom"
+                        scrollable="true"
+                        scrollWidth="525"                                    
+                        emptyMessage="Vacio"
+                        pageLinks="3"
+                        resizableColumns="true"> 
+                        <p:column headerText="CODIGO" width="50">  
+                            #{rowX.column1}  
+                        </p:column>  
+                        <p:column headerText="IDENTIFICACION" width="200">  
+                            #{rowX.column2}  
+                        </p:column>  
+                        <p:column headerText="NOMBRES APELLIDOS" width="450">  
+                            #{rowX.column3}  
+                        </p:column>                                      
+                        <!--p:column headerText="FECHA REGISTRO"  width="150">  
+                            {rowX.column4}  
+                        </p:column-->
+                    </p:dataTable> 
+                    <br/>
+                    <p:commandButton 
+                        id="IdLoadButton" 
+                        value="Cargar" 
+                        icon="ui-icon-document"  
+                        update=":IdForm1 :IdForm2" 
+                        actionListener="#{accidentalMB.openForm}"
+                        oncomplete="dialogFind.hide(); goFirstFocus();"
+                        style=""/>
+                    <p:commandButton 
+                        id="IdCancelFind" 
+                        value="Cancelar" 
+                        icon="ui-icon-close"  
+                        oncomplete="dialogFind.hide()"/>
+                    <br/><br/>
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogFirst"

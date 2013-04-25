@@ -50,6 +50,11 @@
                                     action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
+                                    value="PORCENTAJE DE CASOS DE VIOLENCIA AUTOINFLINGIDA SEGUN VARIABLE DE INTERES" 
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator60}"
+                                    action="percentageIndicator"/>
+                                <p:commandButton 
+                                    style="width: 400px;" 
                                     value="VARIACION DE CASOS DE VIOLENCIA AUTOINFLINGIDA" 
                                     actionListener="#{indicatorsVariationMB.loadIndicator55}"
                                     action="variationIndicator"/>       
@@ -72,12 +77,7 @@
                                     style="width: 400px;" 
                                     value="TASA ESPECIFICA DE VIOLENCIA AUTOINFLINGIDA SEGUN VARIABLE DE CONFUSION" 
                                     actionListener="#{indicatorsSpecifiedRateMB.loadIndicator59}"
-                                    action="specifiedRateIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE VIOLENCIA AUTOINFLINGIDA SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator60}"
-                                    action="percentageIndicator"/>
+                                    action="specifiedRateIndicator"/>                                
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       
