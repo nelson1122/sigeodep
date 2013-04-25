@@ -202,9 +202,11 @@
                                     paginator="true"
                                     rows="10"                                    
                                     paginatorPosition="bottom" 
-                                    emptyMessage="No existen proyectos almacenados, para el usuario actual"
+                                    emptyMessage="Vacio"
                                     scrollable="true"                                    
-                                    pageLinks="3"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15"
+                                    pageLinks="5"
                                     selectionMode="single"
                                     resizableColumns="true">
                                     <p:ajax
@@ -370,8 +372,13 @@
                                     <p:row>
                                         <p:column>
                                             <p:dataTable 
-                                                id="filterDataTable" value="#{copyMB.filter_queryModel}" var="fields" 
-                                                rowKey="#{fields}" rows="10" paginator="true"
+                                                id="filterDataTable" 
+                                                value="#{copyMB.filter_queryModel}" 
+                                                var="fields" 
+                                                rowKey="#{fields}" 
+                                                rows="10" 
+                                                paginator="true"
+                                                emptyMessage="Vacio"
                                                 selection="#{copyMB.filter_selected}">
                                                 <p:column selectionMode="multiple" />
                                                 <p:columns value="#{copyMB.filter_headers}" var="headers" columnIndexVar="index">
@@ -481,8 +488,12 @@
                                     <p:row>
                                         <p:column colspan="2">
                                             <p:dataTable 
-                                                id="splitDataTable" value="#{copyMB.split_newfields}" var="newfields" 
-                                                paginator="true" rows="10"
+                                                id="splitDataTable" 
+                                                value="#{copyMB.split_newfields}" 
+                                                var="newfields" 
+                                                paginator="true" 
+                                                rows="10"
+                                                emptyMessage="Vacio"
                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                 rowsPerPageTemplate="5,10,15">
                                                 <p:columns value="#{copyMB.split_newheaders}" var="newheaders" columnIndexVar="split_index">
@@ -552,10 +563,15 @@
                                     </p:row>
                                     <p:row>
                                         <p:column colspan="2">
-                                            <p:dataTable id="mergeDataTable" value="#{copyMB.merge_newfields}" var="newfields" 
-                                                         paginator="true" rows="10"
-                                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                         rowsPerPageTemplate="5,10,15">
+                                            <p:dataTable 
+                                                id="mergeDataTable" 
+                                                value="#{copyMB.merge_newfields}" 
+                                                var="newfields" 
+                                                paginator="true" 
+                                                rows="10"
+                                                emptyMessage="Vacio"
+                                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                rowsPerPageTemplate="5,10,15">
                                                 <p:columns value="#{copyMB.merge_newheaders}" var="newheaders" columnIndexVar="index">
                                                     <f:facet name="header">
                                                         <h:outputText value="#{newheaders}"/>
@@ -587,8 +603,14 @@
                                     <p:row>
                                         <p:column>
                                             <p:dataTable 
-                                                id="renameValuesDataTable" value="#{copyMB.rename_model}" var="fields" 
-                                                rowKey="#{fields}" rows="10" paginator="true" editable="true">
+                                                id="renameValuesDataTable" 
+                                                value="#{copyMB.rename_model}" 
+                                                var="fields" 
+                                                rowKey="#{fields}" 
+                                                emptyMessage="Vacio"
+                                                rows="10" 
+                                                paginator="true" 
+                                                editable="true">
                                                 <p:column>
                                                     <f:facet name="header">
                                                         Valor Actual
@@ -671,12 +693,19 @@
                                     <p:row>
                                         <p:column colspan="2">
                                             <p:dataTable 
-                                                id="replicateSheet" value="#{copyMB.replicate_model2}" var="table" 
-                                                paginator="true" rows="10" paginatorPosition="bottom"
+                                                id="replicateSheet" 
+                                                value="#{copyMB.replicate_model2}" 
+                                                var="table" 
+                                                paginator="true" 
+                                                rows="10" 
+                                                paginatorPosition="bottom"
+                                                emptyMessage="Vacio"
                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                 rowsPerPageTemplate="5,10,15" 
-                                                rowKey="#{table.get(0)}" rowIndexVar="rowIndex"
-                                                scrollable="true" scrollWidth="600"
+                                                rowKey="#{table.get(0)}" 
+                                                rowIndexVar="rowIndex"
+                                                scrollable="true" 
+                                                scrollWidth="600"
                                                 resizableColumns="true" >
                                                 <p:columns 
                                                     styleClass="bla" 
@@ -712,7 +741,7 @@
                                                 <f:ajax 
                                                     event="keyup"
                                                     listener="#{relationshipOfVariablesMB.changeExpectedVariablesFilter}"
-                                                    render="IdSelectOneListVarExpected IdSelectOneListValuesExpected"/>
+                                                    render="IdPossibleVariableFound IdSelectOneListVarExpected IdSelectOneListValuesExpected"/>
                                             </h:inputText>
                                         </p:column>                                       
                                         <p:column styleClass="ui-widget-header">
@@ -744,8 +773,15 @@
                                                 <f:ajax 
                                                     event="change"                                            
                                                     listener="#{relationshipOfVariablesMB.changeVarExpected}" 
-                                                    render="IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat"/>
-                                            </h:selectManyMenu> 
+                                                    render="IdPossibleVariableFound IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat"/>
+                                            </h:selectManyMenu> <br/>
+                                            Posible: 
+                                            <h:inputText 
+                                                id="IdPossibleVariableFound"                                                                                         
+                                                value="#{relationshipOfVariablesMB.possibleVariableFound}"
+                                                disabled="true"
+                                                size="20">
+                                            </h:inputText>
                                         </p:column>
                                         <p:column>
                                             <!--MUESTRA VALORES ESPERADOS EN RELACION DE VARIABLES-->
@@ -827,7 +863,7 @@
                                                 icon="ui-icon-arrowthick-1-s"
                                                 value="CREAR RELACION DE VARIABLES" 
                                                 style="size: 10px;"
-                                                update="IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListVarRelated IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdExpectedValuesFilter IdFoundValuesFilter IdCategoriacalRelationsFilter IdDiscardedValuesFilter IdRelatedValuesFilter IdNameOfValueExpected"/>
+                                                update="IdPossibleVariableFound IdSelectOneListVarExpected IdSelectOneListVarFound IdSelectOneListVarRelated IdSelectOneListValuesFound IdSelectOneListValuesExpected IdBtnAssociateRelationVar IdBtnRemoveRelationVar IdCheckCompareForCode IdSelectDateFormat IdSelectOneListCategoricalVarsRelated IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdExpectedValuesFilter IdFoundValuesFilter IdCategoriacalRelationsFilter IdDiscardedValuesFilter IdRelatedValuesFilter IdNameOfValueExpected"/>
                                         </p:column>
                                     </p:row>
                                 </p:panelGrid> 
@@ -880,200 +916,220 @@
                             <!--======================== SECCION PARA LA RELACION DE VALORES ========================-->                    
                             <p:tab title="RELACION DE VALORES"> 
                                 <div style="margin-left: -20px;">
-                                <p:panelGrid >                            
-                                    <p:row>  
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Relaciones categóricas"/>  
-                                            <h:inputText 
-                                                id="IdCategoriacalRelationsFilter"                                                                                            
-                                                value="#{relationshipOfValuesMB.categoricalRelationsFilter}"                                                            
-                                                size="20">
-                                                <f:ajax 
-                                                    event="keyup"                                                                
-                                                    listener="#{relationshipOfValuesMB.changeCategoricalRelationsFilter}"
-                                                    render="IdSelectOneListCategoricalVarsRelated IdDiscardedValuesFilter IdSelectOneListValuesDiscarded IdExpectedValuesFilter IdFoundValuesFilter IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdRelatedValuesFilter IdSelectOneListValuesRelated IdNameOfValueExpected"/>
-                                            </h:inputText>
-                                            <p:commandButton 
-                                                id="IdBtnCopyFrom"                                                             
-                                                oncomplete="copyRelationsDialog.show();"
-                                                value="Importar relaciones de valores" 
-                                                actionListener="#{relationshipOfValuesMB.loadRelationsGroups}"
-                                                update=":IdForm2:IdCopyRelationsDialog :IdForm:message"/>
-                                        </p:column>                                       
-                                    </p:row>  
-                                    <p:row>  
-                                        <p:column>
-                                            <!--LISTA DE VARIABLES CATEGORICAS RELACIONADAS EN RELACION DE VALORES-->
-                                            <h:selectManyMenu 
-                                                id="IdSelectOneListCategoricalVarsRelated" 
-                                                value="#{relationshipOfValuesMB.currentCategoricalRelatedVariables}"
-                                                style="height:100px; width: 680px; ">
-                                                <f:selectItems value="#{relationshipOfValuesMB.categoricalRelatedVariables}"/>
-                                                <f:ajax 
-                                                    event="change"                                            
-                                                    listener="#{relationshipOfValuesMB.changeCategoricalRelatedVariables}" 
-                                                    render="IdDiscardedValuesFilter IdSelectOneListValuesDiscarded IdExpectedValuesFilter IdFoundValuesFilter IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdRelatedValuesFilter IdSelectOneListValuesRelated IdNameOfValueExpected"/>                                                            
-                                            </h:selectManyMenu> 
-                                        </p:column>                                                                        
-                                    </p:row>
-                                </p:panelGrid>                                 
-                                <p:panelGrid>                            
-                                    <p:row>  
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Valores esperados   "/>                                          
-                                            <h:inputText 
-                                                id="IdExpectedValuesFilter"                                                                                         
-                                                value="#{relationshipOfValuesMB.expectedValuesFilter}"                                                            
-                                                size="20">
-                                                <f:ajax 
-                                                    event="keyup"
-                                                    listener="#{relationshipOfValuesMB.changeExpectedValuesFilter}"
-                                                    render="IdSelectOneListValuesExpected2"/>                                        
-                                            </h:inputText>
-                                            <p:commandButton                                         
-                                                id="IdBtnAssociateValues"
-                                                actionListener="#{relationshipOfValuesMB.btnAssociateRelationValueClick}"
-                                                value="Relacionar Valores"
-                                                update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded"/>
-                                            <p:commandButton 
-                                                id="IdBtnAutomaticRelationValues" 
-                                                actionListener="#{relationshipOfValuesMB.btnAutomaticRelationClick}"
-                                                value="Relaciones Automáticas" 
-                                                style="size: 10px;"
-                                                update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded"/>
-                                        </p:column>                                                                                           
-                                    </p:row>  
-                                    <p:row>  
-                                        <p:column colspan="2">
-                                            <!--LISTA DE VALORES ESPERADOS EN RELACION DE VALORES-->
-                                            <h:selectManyMenu 
-                                                id="IdSelectOneListValuesExpected2" 
-                                                value="#{relationshipOfValuesMB.currentValueExpected}"
-                                                style="height:80px; width: 680px;"
-                                                converterMessage="Fallo de comunicación, por favor intente nuevamente.">
-                                                <f:selectItems value="#{relationshipOfValuesMB.valuesExpected}"/>
-                                                <f:ajax 
-                                                    event="change"                                                                                                           
-                                                    listener="#{relationshipOfValuesMB.changeValuesExpected}" 
-                                                    render="IdBtnAssociateValues IdBtnAutomaticRelationValues IdNameOfValueExpected"/>
-                                            </h:selectManyMenu> 
-                                            <br/>                                                        
-                                            <h:inputText id="IdNameOfValueExpected" value="#{relationshipOfValuesMB.nameOfValueExpected}" size="130" disabled="true"/>
-                                        </p:column>
-                                    </p:row>
-                                </p:panelGrid>                                
-                                <p:panelGrid>                            
-                                    <p:row>                                               
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Valores encontrados   "/>                                          
-                                            <h:inputText 
-                                                id="IdFoundValuesFilter"                                                                                            
-                                                value="#{relationshipOfValuesMB.foundValuesFilter}"                                                            
-                                                size="20">
-                                                <f:ajax 
-                                                    event="keyup"                                                                
-                                                    listener="#{relationshipOfValuesMB.changeFoundValuesFilter}"
-                                                    render="IdSelectOneListValuesFound2"/>                                        
-                                            </h:inputText>
-                                            <p:commandButton 
-                                                id="IdBtnDiscardValue" 
-                                                actionListener="#{relationshipOfValuesMB.btnDiscardValueClick}"
-                                                value="Descartar Valor" 
-                                                style="size: 10px;"
-                                                update="IdSelectOneListValuesFound2 IdSelectOneListValuesDiscarded"/> 
-                                            <p:commandButton 
-                                                id="IdBtnView" 
-                                                oncomplete="seeCoincidentsDialog.hide(); seeCoincidentsDialog.show();"
-                                                actionListener="#{relationshipOfValuesMB.createDynamicTable}"
-                                                value="Ver Registros" 
-                                                style="size: 10px;"
-                                                update=":IdForm2:IdSeeCoincidentsDialog"/>
-                                        </p:column>                                         
-                                    </p:row>
-                                    <p:row>
-                                        <p:column colspan="2">
-                                            <!--LISTA DE VALORES ENCONTRADOS EN RELACION DE VALORES-->                                                        
-                                            <h:selectManyMenu                                                              
-                                                id="IdSelectOneListValuesFound2" 
-                                                value="#{relationshipOfValuesMB.valuesFoundSelectedInRelationValues}"
-                                                style="height:100px; width: 680px;">
-                                                <f:selectItems value="#{relationshipOfValuesMB.valuesFound}"/>
-                                                <f:ajax 
-                                                    event="change"                                            
-                                                    listener="#{relationshipOfValuesMB.changeValuesFound}" 
-                                                    render="IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdBtnView :IdForm2:IdSeeCoincidentsDialog"/>
-                                            </h:selectManyMenu> 
-                                        </p:column>  
-                                    </p:row>
-                                </p:panelGrid>
-                                <p:panelGrid>                            
-                                    <p:row>                                                                                                                               
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Valores relacionados"/>  
-                                            <h:inputText 
-                                                id="IdRelatedValuesFilter"                                                                                         
-                                                value="#{relationshipOfValuesMB.relatedValuesFilter}"                                                            
-                                                size="20">
-                                                <f:ajax 
-                                                    event="keyup"
-                                                    listener="#{relationshipOfValuesMB.changeRelatedValuesFilter}"
-                                                    render="IdSelectOneListValuesRelated"/>                                        
-                                            </h:inputText>
-                                            <p:commandButton 
-                                                id="IdBtnRemoveRelationValues" 
-                                                actionListener="#{relationshipOfValuesMB.btnRemoveRelationValueClick}"
-                                                value="Quitar relación de valores"
-                                                style="size: 10px;"
-                                                update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded"/>
-                                        </p:column>
-                                    </p:row>  
-                                    <p:row>  
-                                        <p:column>
-                                            <!--LISTA DE VALORES RELACIONADOS-->
-                                            <h:selectManyMenu  
-                                                id="IdSelectOneListValuesRelated" 
-                                                style="height:100px; width: 680px;"                                                            
-                                                value="#{relationshipOfValuesMB.valuesRelatedSelectedInRelationValues}">
-                                                <f:selectItems value="#{relationshipOfValuesMB.valuesRelated}"/>                                                            
-                                            </h:selectManyMenu> 
-                                        </p:column>                                
-                                    </p:row>                                    
-                                </p:panelGrid>
-                                <p:panelGrid>                            
-                                    <p:row>                                                      
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="Valores descartados"/>  
-                                            <h:inputText 
-                                                id="IdDiscardedValuesFilter"                                                                                         
-                                                value="#{relationshipOfValuesMB.discardedValuesFilter}"                                                            
-                                                size="20">
-                                                <f:ajax 
-                                                    event="keyup"
-                                                    listener="#{relationshipOfValuesMB.changeDiscardedValuesFilter}"
-                                                    render="IdSelectOneListValuesDiscarded"/>                                        
-                                            </h:inputText>
-                                            <p:commandButton 
-                                                id="IdBtnRemoveDiscardedValues"                                                             
-                                                actionListener="#{relationshipOfValuesMB.btnRemoveDiscardedValuesClick}"
-                                                value="Quitar valor de descartados" 
-                                                style="size: 10px;"
-                                                update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/>
+                                    <p:panelGrid >                            
+                                        <p:row>  
+                                            <p:column styleClass="ui-widget-header">
+                                                <h:outputLabel value="Relaciones categóricas"/>  
+                                                <h:inputText 
+                                                    id="IdCategoriacalRelationsFilter"                                                                                            
+                                                    value="#{relationshipOfValuesMB.categoricalRelationsFilter}"                                                            
+                                                    size="20">
+                                                    <f:ajax 
+                                                        event="keyup"                                                                
+                                                        listener="#{relationshipOfValuesMB.changeCategoricalRelationsFilter}"
+                                                        render="IdSelectOneListCategoricalVarsRelated IdDiscardedValuesFilter IdSelectOneListValuesDiscarded IdExpectedValuesFilter IdFoundValuesFilter IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdRelatedValuesFilter IdSelectOneListValuesRelated IdNameOfValueExpected"/>
+                                                </h:inputText>
+                                                <p:commandButton 
+                                                    id="IdBtnCopyFrom"                                                             
+                                                    oncomplete="copyRelationsDialog.show();"
+                                                    value="Importar relaciones de valores" 
+                                                    actionListener="#{relationshipOfValuesMB.loadRelationsGroups}"
+                                                    update=":IdForm2:IdCopyRelationsDialog :IdForm:message"/>
+                                            </p:column>                                       
+                                        </p:row>  
+                                        <p:row>  
+                                            <p:column>
+                                                <!--LISTA DE VARIABLES CATEGORICAS RELACIONADAS EN RELACION DE VALORES-->
+                                                <h:selectManyMenu 
+                                                    id="IdSelectOneListCategoricalVarsRelated" 
+                                                    value="#{relationshipOfValuesMB.currentCategoricalRelatedVariables}"
+                                                    style="height:100px; width: 680px; ">
+                                                    <f:selectItems value="#{relationshipOfValuesMB.categoricalRelatedVariables}"/>
+                                                    <f:ajax 
+                                                        event="change"                                            
+                                                        listener="#{relationshipOfValuesMB.changeCategoricalRelatedVariables}" 
+                                                        render="IdDiscardedValuesFilter IdSelectOneListValuesDiscarded IdExpectedValuesFilter IdFoundValuesFilter IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdRelatedValuesFilter IdSelectOneListValuesRelated IdNameOfValueExpected"/>                                                            
+                                                </h:selectManyMenu> 
+                                            </p:column>                                                                        
+                                        </p:row>
+                                    </p:panelGrid>                                 
+                                    <p:panelGrid>                            
+                                        <p:row>  
+                                            <p:column styleClass="ui-widget-header">
+                                                <h:outputLabel value="Valores esperados   "/>                                          
+                                                <h:inputText 
+                                                    id="IdExpectedValuesFilter"                                                                                         
+                                                    value="#{relationshipOfValuesMB.expectedValuesFilter}"                                                            
+                                                    size="20">
+                                                    <f:ajax 
+                                                        event="keyup"
+                                                        listener="#{relationshipOfValuesMB.changeExpectedValuesFilter}"
+                                                        render="IdSelectOneListValuesExpected2"/>                                        
+                                                </h:inputText>
+                                                <p:commandButton                                         
+                                                    id="IdBtnAssociateValues"
+                                                    actionListener="#{relationshipOfValuesMB.btnAssociateRelationValueClick}"
+                                                    value="Relacionar Valores"
+                                                    update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded"/>
+                                                <p:commandButton 
+                                                    id="IdBtnAutomaticRelationValues" 
+                                                    actionListener="#{relationshipOfValuesMB.btnAutomaticRelationClick}"
+                                                    value="Relaciones Automáticas" 
+                                                    style="size: 10px;"
+                                                    update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded"/>
+                                            </p:column>                                                                                           
+                                        </p:row>  
+                                        <p:row>  
+                                            <p:column colspan="2">
+                                                <!--LISTA DE VALORES ESPERADOS EN RELACION DE VALORES-->
+                                                <h:selectManyMenu 
+                                                    id="IdSelectOneListValuesExpected2" 
+                                                    value="#{relationshipOfValuesMB.currentValueExpected}"
+                                                    style="height:80px; width: 680px;"
+                                                    converterMessage="Fallo de comunicación, por favor intente nuevamente.">
+                                                    <f:selectItems value="#{relationshipOfValuesMB.valuesExpected}"/>
+                                                    <f:ajax 
+                                                        event="change"                                                                                                           
+                                                        listener="#{relationshipOfValuesMB.changeValuesExpected}" 
+                                                        render="IdBtnAssociateValues IdBtnAutomaticRelationValues IdNameOfValueExpected :IdForm2:IdToolTipText"/>
+                                                    <f:ajax 
+                                                        event="dblclick"                                                                                                           
+                                                        onevent="toolTipDialog.show()"/>
+                                                </h:selectManyMenu> 
+                                                <br/>                                                        
+                                                <h:inputText id="IdNameOfValueExpected" value="#{relationshipOfValuesMB.nameOfValueExpected}" size="130" disabled="true"/>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>                                
+                                    <p:panelGrid>                            
+                                        <p:row>                                               
+                                            <p:column styleClass="ui-widget-header">
+                                                <h:outputLabel value="Valores encontrados   "/>                                          
+                                                <h:inputText 
+                                                    id="IdFoundValuesFilter"                                                                                            
+                                                    value="#{relationshipOfValuesMB.foundValuesFilter}"                                                            
+                                                    size="20">
+                                                    <f:ajax 
+                                                        event="keyup"                                                                
+                                                        listener="#{relationshipOfValuesMB.changeFoundValuesFilter}"
+                                                        render="IdSelectOneListValuesFound2"/>                                        
+                                                </h:inputText>
+                                                <p:commandButton 
+                                                    id="IdBtnDiscardValue" 
+                                                    actionListener="#{relationshipOfValuesMB.btnDiscardValueClick}"
+                                                    value="Descartar Valor" 
+                                                    style="size: 10px;"
+                                                    update="IdSelectOneListValuesFound2 IdSelectOneListValuesDiscarded"/> 
+                                                <p:commandButton 
+                                                    id="IdBtnView" 
+                                                    oncomplete="seeCoincidentsDialog.hide(); seeCoincidentsDialog.show();"
+                                                    actionListener="#{relationshipOfValuesMB.createDynamicTable}"
+                                                    value="Ver Registros" 
+                                                    style="size: 10px;"
+                                                    update=":IdForm2:IdSeeCoincidentsDialog"/>
+                                            </p:column>                                         
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="2">
+                                                <!--LISTA DE VALORES ENCONTRADOS EN RELACION DE VALORES-->                                                        
+                                                <h:selectManyMenu                                                              
+                                                    id="IdSelectOneListValuesFound2" 
+                                                    value="#{relationshipOfValuesMB.valuesFoundSelectedInRelationValues}"
+                                                    style="height:100px; width: 680px;">
+                                                    <f:selectItems value="#{relationshipOfValuesMB.valuesFound}"/>
+                                                    <f:ajax 
+                                                        event="change"                                            
+                                                        listener="#{relationshipOfValuesMB.changeValuesFound}" 
+                                                        render="IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdBtnView :IdForm2:IdSeeCoincidentsDialog :IdForm2:IdToolTipText"/>                                                    
+                                                    <f:ajax 
+                                                        event="dblclick"                                                                                                           
+                                                        onevent="toolTipDialog.show()"/>
+                                                </h:selectManyMenu> 
+                                            </p:column>  
+                                        </p:row>
+                                    </p:panelGrid>
+                                    <p:panelGrid>                            
+                                        <p:row>                                                                                                                               
+                                            <p:column styleClass="ui-widget-header">
+                                                <h:outputLabel value="Valores relacionados"/>  
+                                                <h:inputText 
+                                                    id="IdRelatedValuesFilter"                                                                                         
+                                                    value="#{relationshipOfValuesMB.relatedValuesFilter}"                                                            
+                                                    size="20">
+                                                    <f:ajax 
+                                                        event="keyup"
+                                                        listener="#{relationshipOfValuesMB.changeRelatedValuesFilter}"
+                                                        render="IdSelectOneListValuesRelated"/>                                        
+                                                </h:inputText>
+                                                <p:commandButton 
+                                                    id="IdBtnRemoveRelationValues" 
+                                                    actionListener="#{relationshipOfValuesMB.btnRemoveRelationValueClick}"
+                                                    value="Quitar relación de valores"
+                                                    style="size: 10px;"
+                                                    update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded"/>
+                                            </p:column>
+                                        </p:row>  
+                                        <p:row>  
+                                            <p:column>
+                                                <!--LISTA DE VALORES RELACIONADOS-->
+                                                <h:selectManyMenu  
+                                                    id="IdSelectOneListValuesRelated" 
+                                                    style="height:100px; width: 680px;"                                                            
+                                                    value="#{relationshipOfValuesMB.valuesRelatedSelectedInRelationValues}">
+                                                    <f:selectItems value="#{relationshipOfValuesMB.valuesRelated}"/>                                                            
+                                                    <f:ajax 
+                                                        event="change"                                            
+                                                        listener="#{relationshipOfValuesMB.changeValuesRelated}" 
+                                                        render="IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdBtnView :IdForm2:IdSeeCoincidentsDialog :IdForm2:IdToolTipText"/>                                                    
+                                                    <f:ajax 
+                                                        event="dblclick"                                                                                                           
+                                                        onevent="toolTipDialog.show()"/>    
+                                                </h:selectManyMenu> 
+                                            </p:column>                                
+                                        </p:row>                                    
+                                    </p:panelGrid>
+                                    <p:panelGrid>                            
+                                        <p:row>                                                      
+                                            <p:column styleClass="ui-widget-header">
+                                                <h:outputLabel value="Valores descartados"/>  
+                                                <h:inputText 
+                                                    id="IdDiscardedValuesFilter"                                                                                         
+                                                    value="#{relationshipOfValuesMB.discardedValuesFilter}"                                                            
+                                                    size="20">
+                                                    <f:ajax 
+                                                        event="keyup"
+                                                        listener="#{relationshipOfValuesMB.changeDiscardedValuesFilter}"
+                                                        render="IdSelectOneListValuesDiscarded"/>                                        
+                                                </h:inputText>
+                                                <p:commandButton 
+                                                    id="IdBtnRemoveDiscardedValues"                                                             
+                                                    actionListener="#{relationshipOfValuesMB.btnRemoveDiscardedValuesClick}"
+                                                    value="Quitar valor de descartados" 
+                                                    style="size: 10px;"
+                                                    update="IdSelectOneListValuesExpected2 IdSelectOneListValuesFound2 IdSelectOneListValuesRelated IdSelectOneListValuesDiscarded IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnRemoveRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues"/>
 
-                                        </p:column>
-                                    </p:row>  
-                                    <p:row>  
-                                        <p:column colspan="2">
-                                            <!--LISTA DE VALORES DESCARTADOS EN RELACION DE VALORES-->
-                                            <h:selectManyMenu                                                             
-                                                id="IdSelectOneListValuesDiscarded" 
-                                                value="#{relationshipOfValuesMB.valuesDiscardedSelectedInRelationValues}"
-                                                style="height:100px; width: 680px;">
-                                                <f:selectItems value="#{relationshipOfValuesMB.valuesDiscarded}"/>							                                                                
-                                            </h:selectManyMenu> 
-                                        </p:column> 
-                                    </p:row>
-                                </p:panelGrid>    
-                                    </div>
+                                            </p:column>
+                                        </p:row>  
+                                        <p:row>  
+                                            <p:column colspan="2">
+                                                <!--LISTA DE VALORES DESCARTADOS EN RELACION DE VALORES-->
+                                                <h:selectManyMenu                                                             
+                                                    id="IdSelectOneListValuesDiscarded" 
+                                                    value="#{relationshipOfValuesMB.valuesDiscardedSelectedInRelationValues}"
+                                                    style="height:100px; width: 680px;">
+                                                    <f:selectItems value="#{relationshipOfValuesMB.valuesDiscarded}"/>							                                                                
+                                                    <f:ajax 
+                                                        event="change"                                            
+                                                        listener="#{relationshipOfValuesMB.changeValuesDiscarded}" 
+                                                        render="IdBtnAssociateValues IdBtnAutomaticRelationValues IdBtnDiscardValue IdBtnRemoveDiscardedValues IdBtnView :IdForm2:IdSeeCoincidentsDialog :IdForm2:IdToolTipText"/>                                                    
+                                                    <f:ajax 
+                                                        event="dblclick"                                                                                                           
+                                                        onevent="toolTipDialog.show()"/>
+                                                </h:selectManyMenu> 
+                                            </p:column> 
+                                        </p:row>
+                                    </p:panelGrid>    
+                                </div>
                             </p:tab>
                             <!--======================== SECCION PARA LAS RELACION GUARDADAS ========================-->                    
                             <!--p:tab id="IdSavedRelations" title="RELACIONES ALMACENADAS">
@@ -1173,7 +1229,6 @@
                                         <p:column styleClass="ui-widget-header">                                            
                                             <p:commandButton 
                                                 value="INICIAR VALIDACION" 
-
                                                 actionListener="#{recordDataMB.btnValidateClick}" 
                                                 onclick="pbAjaxValidate.start(); startButton.disable();"  
                                                 widgetVar="startButton"/>
@@ -1183,179 +1238,162 @@
                             </p:tab>
                             <!--========================SECCION PARA ERRORES ==============================-->
                             <p:tab title="ERRORES">
-                                <table border="0" style="margin-left: -29px; overflow: no-display;" >
-                                    <tr >
-                                        <td>
-                                            <p:panelGrid>
-                                                <p:row>
-                                                    <p:column styleClass="ui-widget-header" colspan="2">
-                                                        <h:outputText 
-                                                            id="IdSizeErrors"
-                                                            value="LISTADO DE ERRORES (#{errorsControlMB.sizeErrorsList})" />
-                                                    </p:column>
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column colspan="2">
-                                                        <br/>
-                                <!--p:dataTable 
-                                    id="IdListErrors" var="rowX" 
-                                    value="# {projectsMB.rowDataTableList}" 
-                                    rowKey="# {rowX.column1}"  
-                                    selection="# {projectsMB.selectedProjectTable}" 
+                                <br/><b><h:outputText id="IdSizeErrors" value="LISTADO DE ERRORES (#{errorsControlMB.sizeErrorsList})"/></b><br/><br/>
+                                <p:dataTable 
+                                    id="IdListErrors" 
+                                    var="rowX" 
+                                    value="#{errorsControlMB.errorsList}" 
+                                    rowKey="#{rowX.column1}"  
+                                    selection="#{errorsControlMB.selectedErrorRowTable}" 
                                     paginator="true"
                                     rows="10"                                    
                                     paginatorPosition="bottom" 
-                                    emptyMessage="No existen proyectos almacenados, para el usuario actual"
+                                    emptyMessage="No hay errores ó se debe realizar la validación de los datos"
                                     scrollable="true"                                    
-                                    pageLinks="3"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15"
+                                    pageLinks="5"
                                     selectionMode="single"
                                     resizableColumns="true">
                                     <p:ajax
                                         event="rowSelect"
-                                        listener="# {projectsMB.load}"                                    
-                                        update=":IdForm:message" />
-                                    <p:column headerText="#" width="50">  
-                                        # {rowX.column1}  
+                                        listener="#{errorsControlMB.loadErrorData}"                                    
+                                        update=":IdForm:IdTabView:IdAccordionPanel4:IdErrorOptions :IdForm2:IdDataTableR" />
+                                    <p:column headerText="# LINEA" width="50">  
+                                        #{rowX.column2}  
                                     </p:column>  
-                                    <p:column headerText="NOMBRE PROYECTO" width="178">  
-                                        # {rowX.column2}  
+                                    <p:column headerText="COLUMNA" width="80">  
+                                        #{rowX.column3}
                                     </p:column>  
-                                    <p:column headerText="USUARIO" width="100">  
-                                        # {rowX.column3}
-                                    </p:column>  
-                                    <p:column headerText="FORMULARIO" width="250">  
-                                        # {rowX.column4}
+                                    <p:column headerText="VALOR" width="120">  
+                                        #{rowX.column4}
                                     </p:column>                                      
-                                </p:dataTable-->                            
-                                                        <p:selectOneListbox                                         
-                                                            value="#{errorsControlMB.currentError}" 
-                                                            id="IdListErrors" 
-                                                            style="height:120px; width: 100%; " >
-                                                            <f:selectItems value="#{errorsControlMB.errors}"/>
-                                                            <f:ajax 
-                                                                event="change" 
-                                                                listener="#{errorsControlMB.changeErrorsList}" 
-                                                                render="IdAccordionPanel4:IdValueFound IdAccordionPanel4:IdAcceptedValuesList IdAccordionPanel4:IdSizeErrors IdAccordionPanel4:IdSelectDateFormatAccepted IdAccordionPanel4:IdDescription IdAccordionPanel4:IdBtnSeeErrorRecord :IdForm2:IdDataTableR IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve"/>
-                                                        </p:selectOneListbox>
-                                                    </p:column>
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column styleClass="ui-widget-header" > <h:outputText value="DESCRIPCION" /> </p:column>
-                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="VALORES ACEPTADOS" /> </p:column>
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column> 
-                                                        <h:outputText 
-                                                            id="IdDescription"
-                                                            value="#{errorsControlMB.solution}" 
-                                                            style="width: 100px; height:100px;"/> 
-                                                    </p:column>
-                                                    <p:column>                                                    
-                                                        <p:selectOneListbox 
-                                                            value="#{errorsControlMB.currentAceptedValue}" 
-                                                            id="IdAcceptedValuesList" 
-                                                            style="height:70px; width: 350px; " >
-                                                            <f:selectItems value="#{errorsControlMB.aceptedValues}"/>
-                                                            <f:ajax 
-                                                                event="change" 
-                                                                listener="#{errorsControlMB.changeAcceptedValuesList}" 
-                                                                render="IdNewValue IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve" />
-                                                        </p:selectOneListbox>                                                        
-                                                    </p:column>
-                                                </p:row>                                                
-                                                <p:row>
-                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="VALOR ENCONTRADO" /> </p:column>
-                                                    <p:column styleClass="ui-widget-header"> <h:outputText value="NUEVO VALOR" />      </p:column>
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column> 
-                                                        <h:inputTextarea
-                                                            id="IdValueFound"
-                                                            style="width: 300px; "
-                                                            value="#{errorsControlMB.valueFound}" 
-                                                            disabled="true"/> 
-                                                    </p:column>
-                                                    <p:column> 
-                                                        <h:inputTextarea
-                                                            id="IdNewValue"
-                                                            style="width: 300px; "
-                                                            value="#{errorsControlMB.currentNewValue}"> 
-                                                            <f:ajax 
-                                                                event="valueChange"                                                                
-                                                                render="IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve"/>
-                                                        </h:inputTextarea>
-                                                    </p:column>
-                                                </p:row>
-                                                <p:row>
-                                                    <p:column colspan="2"  styleClass="ui-widget-header" style="text-align: left;">
-                                                        <h:outputText value="FORMATO: " />
-                                                        <p:inputText 
-                                                            id="IdSelectDateFormatAccepted"
-                                                            value="#{errorsControlMB.currentDateFormatAcepted}" 
-                                                            disabled="true"> 
-                                                        </p:inputText>
-                                                        <p:commandButton 
-                                                            id="IdBtnSolve" 
-                                                            value="RESOLVER"
-                                                            disabled="#{errorsControlMB.btnSolveDisabled}"
-                                                            actionListener="#{errorsControlMB.solveError}"
-                                                            update="IdAccordionPanel4:IdValueFound IdAccordionPanel4:IdAcceptedValuesList IdDescription IdAccordionPanel4:IdListErrors IdSizeErrors IdSelectDateFormatAccepted IdNewValue IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve IdHistorialList IdBtnRegisterData"/> 
-                                                        <p:commandButton 
-                                                            id="IdBtnDiscardErrorValue" 
-                                                            value="DESCARTAR"
-                                                            disabled="#{errorsControlMB.btnDiscardDisabled}"
-                                                            actionListener="#{errorsControlMB.discardError}"
-                                                            update="IdAccordionPanel4:IdValueFound IdAccordionPanel4:IdAcceptedValuesList IdDescription IdAccordionPanel4:IdListErrors IdSizeErrors IdSelectDateFormatAccepted IdNewValue IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve IdHistorialList"/>                                                         
-                                                        <p:commandButton                                                             
-                                                            id="IdBtnSeeErrorRecord"
-                                                            value="VER REGISTRO"
-                                                            disabled="#{errorsControlMB.btnSeeRecordDisabled}"
-                                                            onclick="seeRecordDialog.hide(); seeRecordDialog.show();"/>
-                                                    </p:column>
-                                                </p:row>
-                                            </p:panelGrid>  
-                                        </td>
-                                    </tr>
-                                </table>
-                            </p:tab>  
-                            <!--========================SECCION PARA HISTORIAL ==============================-->
-                            <p:tab id="tab11" title="HISTORIAL DE CORRECIONES">    
-                                <p:panelGrid>
+                                    <p:column headerText="DESCRIPCION" style="text-align: left" width="1200">  
+                                        #{rowX.column5}
+                                    </p:column>                                      
+                                </p:dataTable>                                
+                                <br/><b><h:outputText value="OPCIONES" /></b><br/><br/>
+                                <p:panelGrid id="IdErrorOptions">
                                     <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputText value="LISTADO DE CAMBIOS : " />
+                                        <p:column>
+                                            <h:outputText value="VALOR ENCONTRADO" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:inputTextarea
+                                                id="IdValueFound"
+                                                style="width: 370px; "
+                                                value="#{errorsControlMB.valueFound}" 
+                                                disabled="true"/> 
+                                        </p:column>
+                                        <p:column rowspan="3">
+                                            <h:outputText value="FORMATO: " />
+                                            <br/>
+                                            <p:inputText 
+                                                id="IdSelectDateFormatAccepted"                                                
+                                                value="#{errorsControlMB.currentDateFormatAcepted}" 
+                                                disabled="true"> 
+                                            </p:inputText>
+                                            <br/><br/>
+                                            <p:commandButton 
+                                                id="IdBtnSolve" 
+                                                value="RESOLVER"
+                                                style="width: 130px;"
+                                                disabled="#{errorsControlMB.btnSolveDisabled}"
+                                                actionListener="#{errorsControlMB.solveError}"
+                                                update="IdAccordionPanel4:IdErrorOptions IdSizeErrors IdListErrors IdHistorialList IdBtnRegisterData"/> 
+                                            <br/>
+                                            <p:commandButton 
+                                                id="IdBtnDiscardErrorValue" 
+                                                value="DESCARTAR"
+                                                style="width: 130px;"
+                                                disabled="#{errorsControlMB.btnSolveDisabled}"
+                                                actionListener="#{errorsControlMB.discardError}"
+                                                update="IdAccordionPanel4:IdValueFound IdAccordionPanel4:IdAcceptedValuesList IdAccordionPanel4:IdListErrors IdSizeErrors IdSelectDateFormatAccepted IdNewValue IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve IdHistorialList"/>                                                         
+                                            <br/>
+                                            <p:commandButton                                                             
+                                                id="IdBtnSeeErrorRecord"
+                                                value="VER REGISTRO"
+                                                style="width: 130px;"
+                                                disabled="#{errorsControlMB.btnSolveDisabled}"
+                                                onclick="seeRecordDialog.hide(); seeRecordDialog.show();"/>
                                         </p:column>
                                     </p:row>
                                     <p:row>
                                         <p:column>
-                                            <br/>
-                                            <h:outputText value="seleccione una de las correciones realizadas
-                                                          y presione deshacer para revertir el cambio realizado" />
-                                            <br/>
-                                            <br/>
-                                            <p:selectOneListbox 
-                                                value="#{errorsControlMB.currentCorrection}" 
-                                                id="IdHistorialList" 
-                                                style="height:200px; width: 99%;" >
-                                                <f:selectItems value="#{errorsControlMB.correctionList}"/>
-                                                <f:ajax 
-                                                    event="change" 
-                                                    listener="#{errorsControlMB.changeCorrectionList}" 
-                                                    render="IdBtnDeshacer"/>
-                                            </p:selectOneListbox>
-                                            <br/>
+                                            <h:outputText value="NUEVO VALOR" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:inputTextarea
+                                                id="IdNewValue"
+                                                style="width: 370px; "
+                                                value="#{errorsControlMB.currentNewValue}"> 
+
+                                            </h:inputTextarea>
                                         </p:column>
                                     </p:row>
                                     <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            <p:commandButton  
-                                                disabled="#{errorsControlMB.btnUndoDisabled}"
-                                                actionListener="#{errorsControlMB.btnUndoErrorClick}"
-                                                id="IdBtnDeshacer"
-                                                value="DESHACER"
-                                                update="IdHistorialList :IdForm:message IdBtnRegisterData"/>
-                                        </p:column></p:row>
+                                        <p:column>
+                                            <h:outputText value="VALORES ACEPTADOS" />
+                                        </p:column>
+                                        <p:column>
+                                            <p:selectOneListbox 
+                                                value="#{errorsControlMB.currentAceptedValue}" 
+                                                id="IdAcceptedValuesList" 
+                                                style="height:100px; width: 370px; " >
+                                                <f:selectItems value="#{errorsControlMB.aceptedValues}"/>
+                                                <f:ajax 
+                                                    event="change" 
+                                                    listener="#{errorsControlMB.changeAcceptedValuesList}" 
+                                                    render="IdNewValue IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve" />
+                                            </p:selectOneListbox>                                                        
+                                        </p:column>
+                                    </p:row>
                                 </p:panelGrid>
+                            </p:tab>  
+                            <!--========================SECCION PARA HISTORIAL ==============================-->
+                            <p:tab id="tab11" title="HISTORIAL DE CORRECIONES">    
+                                <br/>
+                                <h:outputText value="seleccione una de las correciones realizadas
+                                              y presione deshacer para revertir el cambio realizado" />
+                                <br/>
+                                <br/>
+                                <p:dataTable 
+                                    id="IdHistorialList" 
+                                    var="rowX" 
+                                    value="#{errorsControlMB.correctionList}" 
+                                    rowKey="#{rowX.column1}"  
+                                    selection="#{errorsControlMB.selectedCorrectionRowTable}" 
+                                    paginator="true"
+                                    rows="10"                                    
+                                    paginatorPosition="bottom" 
+                                    emptyMessage="No se han realizado correcciones"
+                                    scrollable="true"                                    
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15"
+                                    pageLinks="5"
+                                    selectionMode="single"
+
+                                    resizableColumns="true">
+                                    <p:column headerText="# LINEA" width="50">  
+                                        #{rowX.column2}  
+                                    </p:column>  
+                                    <p:column headerText="COLUMNA" width="80">  
+                                        #{rowX.column3}
+                                    </p:column>  
+                                    <p:column headerText="VALOR ANTERIOR" width="220">  
+                                        #{rowX.column4}
+                                    </p:column>                                      
+                                    <p:column headerText="VALOR ACTUAL" style="text-align: left" width="228">  
+                                        #{rowX.column5}
+                                    </p:column>                                      
+                                </p:dataTable>
+                                <br/>
+                                <p:commandButton
+                                    actionListener="#{errorsControlMB.btnUndoErrorClick}"
+                                    id="IdBtnDeshacer"
+                                    value="DESHACER"
+                                    update="IdHistorialList :IdForm:message"/>
+
                             </p:tab>                              
                             <!--======================== SECCION PARA EL REGISTRO DE LA INFORMACION======================-->
                             <p:tab title="REGISTRO DE LA INFORMACION">
@@ -1414,7 +1452,8 @@
                     id="IdCopyRelationsDialog"  
                     modal="true"
                     header="COPIAR RELACIONES DE"         
-                    resizable="false"                    
+                    resizable="false"             
+
                     widgetVar="copyRelationsDialog">  
                     <p:ajax
                         event="close"                         
@@ -1488,27 +1527,25 @@
                     header="Datos del registro que presenta Errores" 
                     widgetVar="seeRecordDialog" 
                     resizable="false"
-                    modal="true" >
-                    <div style="width: 700px; overflow:scroll; padding-right: 10px; ">
-                        <p:dataTable 
-                            value="#{errorsControlMB.dinamicTable.listOfRecords}" 
-                            var="listOfRecords"                                        
-                            id="IdDataTableR"
-                            editable="true">
-                            <p:column headerText="EDICION" style="width:50px">
-                                <p:rowEditor />
-                            </p:column>
-                            <p:columns  value="#{errorsControlMB.dinamicTable.titles}" var="titles" columnIndexVar="index">
-                                <f:facet name="header" >
-                                    <h:outputText value="#{titles}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"/>                                                
-                                </f:facet>
-                                <h:outputText value="#{listOfRecords[index]}"/>
-                            </p:columns>
-                        </p:dataTable>
-                    </div>
-                    <p:commandButton                                                                         
-                        value="CERRAR" 
-                        onclick="seeRecordDialog.hide()"/>
+                    modal="true" >                    
+                    <p:dataTable 
+                        id="IdDataTableR" 
+                        var="rowX" 
+                        value="#{errorsControlMB.moreInfoDataTableList}" 
+                        rowKey="#{rowX.column1}"  
+                        paginatorPosition="bottom"                  
+                        emptyMessage="Vacio"
+                        scrollable="true"
+                        scrollWidth="630"                                 
+                        scrollHeight="330"
+                        resizableColumns="true">                                                                
+                        <p:column headerText="COLUMNA" width="100" style="background-color: #ebf4fb">  
+                            #{rowX.column1}
+                        </p:column>  
+                        <p:column headerText="VALOR" width="470">  
+                            #{rowX.column2}  
+                        </p:column>                                                                  
+                    </p:dataTable>                            
                 </p:dialog>
                 <!-- /////////////////////////////////// MAS INFORMACION /////////////////////////////////// -->
                 <p:dialog 
@@ -1522,6 +1559,7 @@
                         value="#{relationshipOfValuesMB.moreInfoDataTableList}" 
                         rowKey="#{rowX.column1}"  
                         paginatorPosition="bottom"                                
+                        emptyMessage="Vacio"
                         scrollable="true"
                         scrollWidth="630"                                 
                         scrollHeight="330"
@@ -1555,6 +1593,7 @@
                         paginator="true"
                         rows="5"                                    
                         paginatorPosition="bottom"  
+                        emptyMessage="Vacio"
                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                         selectionMode="single"
                         scrollable="true"
@@ -1680,7 +1719,6 @@
                         actionListener="#{projectsMB.removeRelationGroup}" 
                         update=":IdForm:message IdRelationGroupsInLoad IdRelationGroupsInCopy" /> 
                 </p:dialog>
-
                 <!-- /////////////////////////////////// COPIAR RELACIONES /////////////////////////////////// -->
                 <p:dialog
                     id="IdCopyGroupDialog" 
@@ -1771,6 +1809,19 @@
                         value="Cancelar" 
                         onclick="removeProjectDialog.hide()"
                         type="button"/>   
+                </p:dialog>
+                <!-- /////////////////////////////////// TOOLTIP /////////////////////////////////// -->
+                <p:dialog 
+                    id="IdToolTipDialog"
+                    modal="true"          
+                    resizable="false"
+                    widgetVar="toolTipDialog">
+                    <h:inputTextarea 
+                        id="IdToolTipText"
+                        readonly="true"
+                        rows="3"
+                        cols="50"                        
+                        value="#{projectsMB.toolTipText}"/>
                 </p:dialog>
                 <!-- /////////////////////////////////// COPIA DE RELACIONES /////////////////////////////////// -->
                 <p:dialog 

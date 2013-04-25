@@ -50,6 +50,11 @@
                                     action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
+                                    value="PORCENTAJE DE CASOS DE VIOLENCIA EN ACCIDENTES DE TRANSITO SEGUN VARIABLE DE INTERES" 
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator46}"
+                                    action="percentageIndicator"/>
+                                <p:commandButton 
+                                    style="width: 400px;" 
                                     value="VARIACION DE CASOS DE VIOLENCIA EN ACCIDENTES DE TRANSITO" 
                                     actionListener="#{indicatorsVariationMB.loadIndicator41}"
                                     action="variationIndicator"/>       
@@ -72,12 +77,7 @@
                                     style="width: 400px;" 
                                     value="TASA ESPECIFICA DE LESIONES DE CAUSA EXTERNA NO FATALES SEGUN VARIABLE DE CONFUSION" 
                                     actionListener="#{indicatorsSpecifiedRateMB.loadIndicator45}"
-                                    action="specifiedRateIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE VIOLENCIA EN ACCIDENTES DE TRANSITO SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator46}"
-                                    action="percentageIndicator"/>
+                                    action="specifiedRateIndicator"/>                                
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       

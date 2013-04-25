@@ -50,6 +50,11 @@
                                     action="countIndicator"/>
                                 <p:commandButton 
                                     style="width: 400px;" 
+                                    value="PORCENTAJE DE CASOS DE VIOLENCIA NO INTENCIONAL SEGUN VARIABLE DE INTERES" 
+                                    actionListener="#{indicatorsPercentageMB.loadIndicator53}"
+                                    action="percentageIndicator"/>
+                                <p:commandButton 
+                                    style="width: 400px;" 
                                     value="VARIACION DE CASOS DE VIOLENCIA NO INTENCIONAL" 
                                     actionListener="#{indicatorsVariationMB.loadIndicator48}"
                                     action="variationIndicator"/>       
@@ -73,11 +78,6 @@
                                     value="TASA ESPECIFICA DE VIOLENCIA NO INTENCIONAL SEGUN VARIABLE DE CONFUSION" 
                                     actionListener="#{indicatorsSpecifiedRateMB.loadIndicator52}"
                                     action="specifiedRateIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE VIOLENCIA NO INTENCIONAL SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator53}"
-                                    action="percentageIndicator"/>
                             </p:panelGrid>
                             <br/>  
                         </p:column>                                       

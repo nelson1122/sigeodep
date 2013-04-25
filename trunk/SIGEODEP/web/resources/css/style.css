@@ -88,3 +88,10 @@ a:hover {
     
 }
 
+.ui-icon2 {   
+    width: 16px;   
+    height: 16px;       
+    background: url("#{resource['images:logo2.png']}");
+    /*background-image: url(#{resource['images:Save.png']});*/
+    
+}  

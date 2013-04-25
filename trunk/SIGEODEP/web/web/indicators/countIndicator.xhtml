@@ -61,7 +61,7 @@
                     document.getElementById('IdForm:IdTabView:IdPaint').click();
                     fnAdjustTable();
                 } 
-            </script> 
+            </script>             
         </ui:define>
         <!--=================================================================-->
         <!--================================TITULOS==========================-->
@@ -182,7 +182,7 @@
                                             disabled="#{indicatorsCountMB.btnRemoveVariableDisabled}"
                                             actionListener="#{indicatorsCountMB.btnLoadConfigurationClick}"
                                             oncomplete="configurationsDialog.show();"
-                                            update="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
+                                            update="IdSelectOneListVariables :IdForm2:IdConfigurationsList IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
                                     </p:column>
                                     <p:column>
                                         <h:selectManyListbox 
@@ -263,21 +263,21 @@
                         <p:fieldset legend="GRAFICOS">
                             <br/>
                             <p:panelGrid id="IdPanelGraphConfig">
-                                <p:row>
+                                <!-- p:row>
                                     <p:column>
                                         Tipo de Gráfico
                                     </p:column>
                                     <p:column>
                                         <h:selectOneMenu 
-                                            id="IdGraphType" value="#{indicatorsCountMB.currentGraphType}"> 
-                                            <f:selectItems value="#{indicatorsCountMB.graphTypes}"/>
+                                            id="IdGraphType" value="# {indicatorsCountMB.currentGraphType}"> 
+                                            <f:selectItems value="# {indicatorsCountMB.graphTypes}"/>
                                             <f:ajax 
                                                 event="change"
-                                                listener="#{indicatorsCountMB.createImage}"
+                                                listener="# {indicatorsCountMB.createImage}"
                                                 render="IdImageChart IdPanelGraphConfig"/>
                                         </h:selectOneMenu>
                                     </p:column>
-                                </p:row>
+                                </p:row -->
                                 <p:row>
                                     <p:column>
                                         Variable
@@ -292,8 +292,6 @@
                                                 render="IdImageChart IdPanelGraphConfig"/>
                                         </h:selectOneMenu>
                                     </p:column>
-                                </p:row>
-                                <p:row>
                                     <p:column>
                                         Valor
                                     </p:column>
@@ -306,6 +304,18 @@
                                                 listener="#{indicatorsCountMB.createImage}"
                                                 render="IdImageChart"/>
                                         </h:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        Mostrar Items
+                                    </p:column>
+                                    <p:column>
+                                        <h:selectBooleanCheckbox value="#{indicatorsCountMB.showItems}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsCountMB.createImage}"
+                                                render="IdVariableGraph IdValueGraph IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
+
                                     </p:column>                                        
                                 </p:row>
                             </p:panelGrid>                                
@@ -417,8 +427,7 @@
                                     value="#{indicatorsCountMB.endValue}" 
                                     maxlength="4" 
                                     size="4"/>
-                                <br/>
-                                <br/>
+                                &nbsp; &nbsp;
                                 <p:commandButton                        
                                     id="IdBtnAddCategory"
                                     value="Agregar"
@@ -456,33 +465,28 @@
                                     style="margin:0;"                                    
                                     actionListener="#{indicatorsCountMB.btnRemoveCategoryValueClick}"                                                
                                     update="IdBtnRemoveCategory IdSelectManyListCategoryValues"/>  
+                                <p:commandButton                        
+                                    id="IdBtnResetCategory"
+                                    rendered="false"
+                                    value="Reiniciar"
+                                    style="margin:0;"                                                
+                                    actionListener="#{indicatorsCountMB.btnResetCategoryListClick}"                                                
+                                    update="IdBtnRemoveCategory IdSelectManyListCategoryValues"/>  
+                                <p:commandButton                                                            
+                                    value="Guardar"
+                                    style="margin:0;"
+                                    onclick="saveConfigurationDialog.show()"/>  
+                                <p:commandButton                                                            
+                                    value="Cargar/Eliminar"
+                                    style="margin:0;"                    
+                                    oncomplete="openConfigurationDialog.show()"/>  
                                 <br/>
                                 <br/>
                             </p:column>
                         </p:row>
                     </p:panelGrid>
                     <br/>
-                    <br/>
-
-                    <p:commandButton                        
-                        id="IdBtnResetCategory"
-                        value="Reiniciar"
-                        style="margin:0;"                                                
-                        actionListener="#{indicatorsCountMB.btnResetCategoryListClick}"                                                
-                        update="IdBtnRemoveCategory IdSelectManyListCategoryValues"/>  
-                    <p:commandButton                                                            
-                        value="Guardar"
-                        style="margin:0;"
-                        onclick="saveConfigurationDialog.show()"/>  
-                    <p:commandButton                                                            
-                        value="Cargar/Eliminar"
-                        style="margin:0;"                    
-                        oncomplete="openConfigurationDialog.show()"
-                        actionListener="#{indicatorsCountMB.btnLoadConfigurationClick}"
-                        update="IdConfigurationsList"/>  
-                    <br/>
-                    <br/>
-
+                    <br/>                    
                 </p:dialog>
             </h:form>
         </ui:define>

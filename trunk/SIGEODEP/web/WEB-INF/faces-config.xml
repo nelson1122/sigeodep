@@ -240,6 +240,11 @@
             <redirect/>
         </navigation-case>
         <navigation-case>
+            <from-outcome>recordSetsSivigilaVif</from-outcome>
+            <to-view-id>/web/recordSets/recordSetsSivigilaVif.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
             <from-outcome>recordSetsAccidental</from-outcome>
             <to-view-id>/web/recordSets/recordSetsAccidental.xhtml</to-view-id>
             <redirect/>
@@ -267,6 +272,16 @@
         <navigation-case>
             <from-outcome>duplicateSetsVIF</from-outcome>
             <to-view-id>/web/duplicateSets/duplicateSetsVIF.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>duplicateSetsSivigilaVif</from-outcome>
+            <to-view-id>/web/duplicateSets/duplicateSetsSivigilaVif.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>duplicateSetsSivigilaVif</from-outcome>
+            <to-view-id>/web/duplicateSets/duplicateSetsSivigilaVif.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
         <navigation-case>
