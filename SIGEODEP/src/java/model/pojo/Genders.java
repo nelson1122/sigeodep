@@ -37,6 +37,8 @@ public class Genders implements Serializable {
     private String genderName;
     @OneToMany(mappedBy = "genderId")
     private List<Victims> victimsList;
+    @OneToMany(mappedBy = "gender")
+    private List<SivigilaAggresor> sivigilaAggresorList;
 
     public Genders() {
     }
@@ -73,6 +75,15 @@ public class Genders implements Serializable {
 
     public void setVictimsList(List<Victims> victimsList) {
 	this.victimsList = victimsList;
+    }
+
+    @XmlTransient
+    public List<SivigilaAggresor> getSivigilaAggresorList() {
+        return sivigilaAggresorList;
+    }
+
+    public void setSivigilaAggresorList(List<SivigilaAggresor> sivigilaAggresorList) {
+        this.sivigilaAggresorList = sivigilaAggresorList;
     }
 
     @Override

@@ -784,7 +784,7 @@ public class HomicideMB implements Serializable {
                 openDialogNew = "";
                 openDialogDelete = "";
                 if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
-                    System.out.println("guardando nuevo registro");
+                    //System.out.println("guardando nuevo registro");
                     newVictim.setTagId(tagsFacade.find(currentTag));
                     
                     victimsFacade.create(newVictim);
@@ -796,7 +796,7 @@ public class HomicideMB implements Serializable {
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 } else {//ES UN REGISTRO EXISTENTE SE DEBE ACTUALIZAR
-                    System.out.println("actualizando registro existente");
+                    //System.out.println("actualizando registro existente");
                     updateRegistry(newVictim, newFatalInjurie, newMurder);
                     save = true;
                     stylePosition = "color: #1471B1;";
@@ -805,7 +805,7 @@ public class HomicideMB implements Serializable {
                 }
                 return true;
             } catch (Exception e) {
-                System.out.println("*******************************************ERROR: " + e.toString());
+                System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
                 FacesContext.getCurrentInstance().addMessage(null, msg);
                 return false;
@@ -825,7 +825,7 @@ public class HomicideMB implements Serializable {
             fatalInjuryMurderFacade.remove(currentFatalInjuryMurder);
             fatalInjuriesFacade.remove(auxFatalInjuries);
             victimsFacade.remove(auxVictims);
-            System.out.println("registro eliminado");
+            //System.out.println("registro eliminado");
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
             FacesContext.getCurrentInstance().addMessage(null, msg);
             noSaveAndGoNew();
@@ -890,9 +890,9 @@ public class HomicideMB implements Serializable {
             fatalInjuriesFacade.edit(currentFatalInjuryMurder.getFatalInjuries());
             fatalInjuryMurderFacade.edit(currentFatalInjuryMurder);
             //currentFatalInjuryMurder.
-            System.out.println("registro actualizado");
+            //System.out.println("registro actualizado");
         } catch (Exception e) {
-            System.out.println("*******************************************ERROR: " + e.toString());
+            System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
@@ -910,14 +910,14 @@ public class HomicideMB implements Serializable {
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
         }
-        System.out.println("POSICION DETERMINADA: " + currentPosition);
+        //System.out.println("POSICION DETERMINADA: " + currentPosition);
     }
 
     public void saveAndGoNext() {//guarda cambios si se han realizado y se dirije al siguiente
         if (saveRegistry()) {
             next();
         } else {
-            System.out.println("No se guardo");
+            //System.out.println("No se guardo");
         }
     }
 
@@ -1018,7 +1018,7 @@ public class HomicideMB implements Serializable {
 
     public void next() {
         if (save) {//se busca el siguiente se el registro esta guardado (si esta guardado se abrira un dialogo que pregunta si guardar)             
-            System.out.println("cargando siguiente registro");
+            //System.out.println("cargando siguiente registro");
             if (currentFatalInjuriId == -1) {//esta en registro nuevo                
             } else {
                 auxFatalInjuryMurder = fatalInjuryMurderFacade.findNext(currentFatalInjuriId, currentTag);
@@ -1031,13 +1031,13 @@ public class HomicideMB implements Serializable {
                 }
             }
         } else {
-            System.out.println("No esta guardadado (para poder cargar siguiente registro)");
+            //System.out.println("No esta guardadado (para poder cargar siguiente registro)");
         }
     }
 
     public void previous() {
         if (save) {
-            System.out.println("cargando anterior registro");
+            //System.out.println("cargando anterior registro");
             if (currentFatalInjuriId == -1) {//esta en registro nuevo
                 last();
             } else {
@@ -1051,13 +1051,13 @@ public class HomicideMB implements Serializable {
                 }
             }
         } else {
-            System.out.println("No esta guardadado (para poder cargar anterior registro)");
+            //System.out.println("No esta guardadado (para poder cargar anterior registro)");
         }
     }
 
     public void first() {
         if (save) {
-            System.out.println("cargando primer registro");
+            //System.out.println("cargando primer registro");
             auxFatalInjuryMurder = fatalInjuryMurderFacade.findFirst(currentTag);
             if (auxFatalInjuryMurder != null) {
                 clearForm();
@@ -1067,13 +1067,13 @@ public class HomicideMB implements Serializable {
                 loadValues();
             }
         } else {
-            System.out.println("No esta guardadado (para poder cargar primer registro)");
+            //System.out.println("No esta guardadado (para poder cargar primer registro)");
         }
     }
 
     public void last() {
         if (save) {
-            System.out.println("cargando ultimo registro");
+            //System.out.println("cargando ultimo registro");
             auxFatalInjuryMurder = fatalInjuryMurderFacade.findLast(currentTag);
             if (auxFatalInjuryMurder != null) {
                 clearForm();
@@ -1083,13 +1083,13 @@ public class HomicideMB implements Serializable {
                 loadValues();
             }
         } else {
-            System.out.println("No esta guardadado (para poder cargar ultimo registro)");
+            //System.out.println("No esta guardadado (para poder cargar ultimo registro)");
         }
     }
 
     public void clearForm() {
 
-        System.out.println("Limpiando formulario");
+        //System.out.println("Limpiando formulario");
 
         currentAmPmEvent = "AM";
 
@@ -1179,7 +1179,7 @@ public class HomicideMB implements Serializable {
             currentFatalInjuriId = -1;
             determinePosition();
         } else {
-            System.out.println("No esta guardado (para poder limpiar formulario)");
+            //System.out.println("No esta guardado (para poder limpiar formulario)");
         }
     }
 
@@ -1302,14 +1302,14 @@ public class HomicideMB implements Serializable {
             openDialogPrevious = "";
             openDialogNew = "";
             save = true;
-            System.out.println("Save=true");
+            //System.out.println("Save=true");
             stylePosition = "color: #1471B1;";
         } catch (Exception e) {
-            System.out.println("*******************************************ERROR: " + e.toString());
+            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
-        System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////");
+        //System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////");
         loading = false;
     }
     //----------------------------------------------------------------------
@@ -1412,7 +1412,7 @@ public class HomicideMB implements Serializable {
 //                sql = sql + "injuries.injury_id = 52 OR ";
 //                sql = sql + "injuries.injury_id = 54 OR ";
 //                sql = sql + "injuries.injury_id = 55);";
-                System.out.println(sql);
+                //System.out.println(sql);
                 ResultSet rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
                     rowDataTableList.add(new RowDataTable(rs.getString(1), rs.getString(2), rs.getString(3)));

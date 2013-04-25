@@ -82,6 +82,9 @@ public class NonFatalInjuries implements Serializable {
     @JoinColumn(name = "victim_id", referencedColumnName = "victim_id")
     @ManyToOne
     private Victims victimId;
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    @ManyToOne
+    private Users userId;
     @JoinColumn(name = "activity_id", referencedColumnName = "activity_id")
     @ManyToOne
     private Activities activityId;
@@ -118,15 +121,16 @@ public class NonFatalInjuries implements Serializable {
     @JoinColumn(name = "use_alcohol_id", referencedColumnName = "use_alcohol_drugs_id")
     @ManyToOne
     private UseAlcoholDrugs useAlcoholId;
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    @ManyToOne
-    private Users userId;
-        
+   
+    //@ManyToMany(mappedBy = "nonFatalInjuriesList")
+    //private List<Diagnoses> diagnosesList;
     @JoinTable(name = "non_fatal_diagnosis", joinColumns = {
         @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)}, inverseJoinColumns = {
         @JoinColumn(name = "diagnosis_id", referencedColumnName = "diagnosis_id", nullable = false)})
     @ManyToMany
     private List<Diagnoses> diagnosesList;    
+    
+    
     @JoinTable(name = "non_fatal_anatomical_location", joinColumns = {
         @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)}, inverseJoinColumns = {
         @JoinColumn(name = "anatomical_location_id", referencedColumnName = "anatomical_location_id", nullable = false)})
@@ -307,6 +311,14 @@ public class NonFatalInjuries implements Serializable {
 	this.victimId = victimId;
     }
 
+    public Users getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Users userId) {
+        this.userId = userId;
+    }
+
     public Activities getActivityId() {
 	return activityId;
     }
@@ -401,15 +413,7 @@ public class NonFatalInjuries implements Serializable {
 
     public void setUseAlcoholId(UseAlcoholDrugs useAlcoholId) {
 	this.useAlcoholId = useAlcoholId;
-    }
-
-    public Users getUserId() {
-	return userId;
-    }
-
-    public void setUserId(Users userId) {
-	this.userId = userId;
-    }
+    }    
 
     public NonFatalInterpersonal getNonFatalInterpersonal() {
 	return nonFatalInterpersonal;

@@ -551,8 +551,8 @@ public class RelationshipOfValuesMB implements Serializable {
                         + "    departaments.departament_id = municipalities.departament_id \n";
                 if (expectedValuesFilter != null && expectedValuesFilter.trim().length() != 0) {
                     sql = sql + ""
-                            + "    AND municipalities.municipality_name ILIKE '%" + expectedValuesFilter + "%' \n"
-                            + "    OR departaments.departament_name ILIKE '%" + expectedValuesFilter + "%' \n";
+                            + "    AND (municipalities.municipality_name ILIKE '%" + expectedValuesFilter + "%' \n"
+                            + "    OR departaments.departament_name ILIKE '%" + expectedValuesFilter + "%') \n";
                 }
                 if (limit) {
                     sql = sql + " LIMIT 50 \n";
@@ -560,6 +560,54 @@ public class RelationshipOfValuesMB implements Serializable {
                 resultSetCategory = connectionJdbcMB.consult(sql);
                 while (resultSetCategory.next()) {
                     returnList.add(resultSetCategory.getString("municipality_name") + " - " + resultSetCategory.getString("departament_name"));
+                }
+                return returnList;
+            } else if (fieldType.compareTo("countries") == 0) {                
+                sql = ""
+                        + " SELECT \n"
+                        + "    * \n"
+                        + " FROM \n"
+                        + " ( \n"
+                        + "      SELECT \n"
+                        + "            name AS pais, '' AS departamento, '' AS municipio \n"
+                        + "      FROM \n"
+                        + "            countries \n"
+                        + "      UNION \n"
+                        + "      SELECT \n"                                    
+                        + "            'COLOMBIA' AS pais, departament_name AS departamento, municipality_name AS municipio \n"
+                        + "      FROM \n"
+                        + "            public.municipalities \n"
+                        + "      JOIN \n"
+                        + "            public.departaments \n"
+                        + "      USING \n"
+                        + "            (departament_id) \n"
+                        + "      ORDER BY \n"
+                        + "            1, 2, 3 \n"
+                        + " ) AS consulta \n"
+                        + " WHERE \n";
+                if (expectedValuesFilter != null && expectedValuesFilter.trim().length() != 0) {
+                    sql = sql + ""
+                            + "        municipio ILIKE '%" + expectedValuesFilter + "%' OR \n"
+                            + "        departamento ILIKE '%" + expectedValuesFilter + "%' OR \n"
+                            + "        pais ILIKE '%" + expectedValuesFilter + "%' \n";
+                } else {//se filtra solo por nariño
+                    sql = sql + "        departamento ILIKE 'NARIÑO%' \n";
+                }
+                if (limit) {
+                    sql = sql + " LIMIT 200 \n";
+                } //System.out.println("030 \n" + sql);
+                returnList = new ArrayList<String>();
+                resultSetCategory = connectionJdbcMB.consult(sql);
+                String result;
+                while (resultSetCategory.next()) {
+                    result = resultSetCategory.getString(1);
+                    if (resultSetCategory.getString(2) != null) {
+                        result = result + "-" + resultSetCategory.getString(2);
+                    }
+                    if (resultSetCategory.getString(2) != null) {
+                        result = result + "-" + resultSetCategory.getString(3);
+                    }
+                    returnList.add(result);
                 }
                 return returnList;
             } else {
@@ -584,7 +632,7 @@ public class RelationshipOfValuesMB implements Serializable {
                     sql = sql + "    WHERE CAST(" + columName + " as text) ILIKE '%" + expectedValuesFilter + "%' \n";
                 }
                 if (limit) {
-                    sql = sql + " LIMIT 50 \n";
+                    sql = sql + " ORDER BY 1 \n LIMIT 50 \n";
                 }
                 //System.out.println("012 \n" + sql);
                 resultSetCategory = connectionJdbcMB.consult(sql);
@@ -606,7 +654,7 @@ public class RelationshipOfValuesMB implements Serializable {
         /*
          * remueve '_v' de un tipo de dato (para que tome la tabla categorica)
          */
-        String strReturn="";
+        String strReturn = "";
         if (field_type != null && field_type.trim().length() != 0) {
             strReturn = field_type.substring(field_type.length() - 2, field_type.length());
             if (strReturn.compareTo("_v") == 0) {
@@ -660,14 +708,32 @@ public class RelationshipOfValuesMB implements Serializable {
     //----------------------------------------------------------------------
     public void changeValuesExpected() {
         nameOfValueExpected = "";
+        projectsMB.setToolTipText("");
         //busco el nombre o codigo del valor esperado
-        if (currentRelationVariables != null) {
+        if (currentRelationVariables != null && currentValueExpected != null && !currentValueExpected.isEmpty()) {
             fieldType = remove_v(currentRelationVariables.getFieldType());
             if (currentRelationVariables.getComparisonForCode()) {
                 nameOfValueExpected = connectionJdbcMB.findNameByCategoricalCode(fieldType, currentValueExpected.get(0));
             } else {
                 nameOfValueExpected = connectionJdbcMB.findCodeByCategoricalName(fieldType, currentValueExpected.get(0));
             }
+            projectsMB.setToolTipText(currentValueExpected.get(0));
+        }
+    }
+
+    public void changeValuesRelated() {
+        if (valuesRelatedSelectedInRelationValues != null && !valuesRelatedSelectedInRelationValues.isEmpty()) {
+            projectsMB.setToolTipText(valuesRelatedSelectedInRelationValues.get(0));
+        } else {
+            projectsMB.setToolTipText("");
+        }
+    }
+
+    public void changeValuesDiscarded() {
+        if (valuesDiscardedSelectedInRelationValues != null && !valuesDiscardedSelectedInRelationValues.isEmpty()) {
+            projectsMB.setToolTipText(valuesDiscardedSelectedInRelationValues.get(0));
+        } else {
+            projectsMB.setToolTipText("");
         }
     }
 
@@ -677,6 +743,11 @@ public class RelationshipOfValuesMB implements Serializable {
         newValueDisabled = true;
         if (currentRelationVariables != null) {
             variableFoundToModify = currentRelationVariables.getNameFound();
+        }
+        if (valuesFoundSelectedInRelationValues != null && !valuesFoundSelectedInRelationValues.isEmpty()) {
+            projectsMB.setToolTipText(valuesFoundSelectedInRelationValues.get(0));
+        } else {
+            projectsMB.setToolTipText("");
         }
     }
 
@@ -1045,8 +1116,8 @@ public class RelationshipOfValuesMB implements Serializable {
 
             for (int i = 0; i < valuesFoundList.size(); i++) {
                 for (int j = 0; j < valuesExpectedList.size(); j++) {
-                    String valueFoundNoAccent = valuesFoundList.get(i).trim().toUpperCase().replace(".", "").replace(";", "");
-                    String valueExpectedNoAccent = valuesExpectedList.get(j).trim().toUpperCase().replace(".", "").replace(";", "");
+                    String valueFoundNoAccent = valuesFoundList.get(i).trim().toUpperCase().replace("\\.", "").replace(";", "");
+                    String valueExpectedNoAccent = valuesExpectedList.get(j).trim().toUpperCase().replace("\\.", "").replace(";", "");
                     valueFoundNoAccent = valueFoundNoAccent.replace("Á", "A").replace("É", "E").replace("Í", "I").replace("Ó", "O").replace("Ú", "U");
                     valueExpectedNoAccent = valueExpectedNoAccent.replace("Á", "A").replace("É", "E").replace("Í", "I").replace("Ó", "O").replace("Ú", "U");
 

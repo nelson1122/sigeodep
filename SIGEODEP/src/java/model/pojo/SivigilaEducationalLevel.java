@@ -46,6 +46,8 @@ public class SivigilaEducationalLevel implements Serializable {
     private String sivigilaEducationalLevelName;
     @OneToMany(mappedBy = "educationalLevelId")
     private List<SivigilaAggresor> sivigilaAggresorList;
+    @OneToMany(mappedBy = "educationalLevelId")
+    private List<SivigilaVictim> sivigilaVictimList;
 
     public SivigilaEducationalLevel() {
     }
@@ -82,6 +84,15 @@ public class SivigilaEducationalLevel implements Serializable {
 
     public void setSivigilaAggresorList(List<SivigilaAggresor> sivigilaAggresorList) {
         this.sivigilaAggresorList = sivigilaAggresorList;
+    }
+
+    @XmlTransient
+    public List<SivigilaVictim> getSivigilaVictimList() {
+        return sivigilaVictimList;
+    }
+
+    public void setSivigilaVictimList(List<SivigilaVictim> sivigilaVictimList) {
+        this.sivigilaVictimList = sivigilaVictimList;
     }
 
     @Override

@@ -33,11 +33,13 @@ public class AggressorTypes implements Serializable {
     private Short aggressorTypeId;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 25)
-    @Column(name = "aggressor_type_name", nullable = false, length = 25)
+    @Size(min = 1, max = 45)
+    @Column(name = "aggressor_type_name", nullable = false, length = 45)
     private String aggressorTypeName;
     @ManyToMany(mappedBy = "aggressorTypesList")
     private List<NonFatalDomesticViolence> nonFatalDomesticViolenceList;
+    @OneToMany(mappedBy = "relativeId")
+    private List<SivigilaAggresor> sivigilaAggresorList;
 
     public AggressorTypes() {
     }
@@ -74,6 +76,15 @@ public class AggressorTypes implements Serializable {
 
     public void setNonFatalDomesticViolenceList(List<NonFatalDomesticViolence> nonFatalDomesticViolenceList) {
 	this.nonFatalDomesticViolenceList = nonFatalDomesticViolenceList;
+    }
+
+    @XmlTransient
+    public List<SivigilaAggresor> getSivigilaAggresorList() {
+        return sivigilaAggresorList;
+    }
+
+    public void setSivigilaAggresorList(List<SivigilaAggresor> sivigilaAggresorList) {
+        this.sivigilaAggresorList = sivigilaAggresorList;
     }
 
     @Override

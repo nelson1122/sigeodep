@@ -7,14 +7,14 @@ package model.dao;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import model.pojo.SivigilaAggresor;
+import model.pojo.SivigilaEvent;
 
 /**
  *
  * @author santos
  */
 @Stateless
-public class SivigilaAggresorFacade extends AbstractFacade<SivigilaAggresor> {
+public class SivigilaEventFacade extends AbstractFacade<SivigilaEvent> {
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
@@ -23,17 +23,8 @@ public class SivigilaAggresorFacade extends AbstractFacade<SivigilaAggresor> {
         return em;
     }
 
-    public SivigilaAggresorFacade() {
-        super(SivigilaAggresor.class);
-    }
-    
-    public int findMax() {
-        try {
-            String hql = "Select MAX(x.sivigilaAgresorId) from SivigilaAggresor x";
-            return em.createQuery(hql, Integer.class).getSingleResult();
-        } catch (Exception e) {
-            return 0;
-        }
+    public SivigilaEventFacade() {
+        super(SivigilaEvent.class);
     }
     
 }

@@ -7,14 +7,14 @@ package model.dao;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import model.pojo.SivigilaRelative;
+import model.pojo.SivigilaMechanism;
 
 /**
  *
  * @author santos
  */
 @Stateless
-public class SivigilaRelativeFacade extends AbstractFacade<SivigilaRelative> {
+public class SivigilaMechanismFacade extends AbstractFacade<SivigilaMechanism> {
     @PersistenceContext(unitName = "SIGEODEPPU")
     private EntityManager em;
 
@@ -23,8 +23,8 @@ public class SivigilaRelativeFacade extends AbstractFacade<SivigilaRelative> {
         return em;
     }
 
-    public SivigilaRelativeFacade() {
-        super(SivigilaRelative.class);
+    public SivigilaMechanismFacade() {
+        super(SivigilaMechanism.class);
     }
     
 }

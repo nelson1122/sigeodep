@@ -56,10 +56,10 @@ public class RecordSetsHomicideMB implements Serializable {
     private String name = "";
     private String newName = "";
     private boolean btnEditDisabled = true;
-    private boolean btnRemoveDisabled = true;
+    //private boolean btnRemoveDisabled = true;
     private String data = "-";
     private HomicideMB homicideMB;
-    private String openForm = "";    
+    private String openForm = "";
     private LazyDataModel<RowDataTable> table_model;
     private ArrayList<RowDataTable> rowsDataTableArrayList;
     private ConnectionJdbcMB connection;
@@ -69,7 +69,7 @@ public class RecordSetsHomicideMB implements Serializable {
     private int tuplesNumber;
     private Integer tuplesProcessed;
     private int progress = 0;//PROGRESO AL CREAR XLS
-    private String sqlTags = "";
+    private String exportFileName = "";
     private String sql = "";
 
     public void onCompleteLoad() {
@@ -100,8 +100,10 @@ public class RecordSetsHomicideMB implements Serializable {
     }
 
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
+
         try {
-            //CREO LA LISTA DE TAGS SELECCIONADOS        
+            //CREO LA LISTA DE TAGS SELECCIONADOS     
+            exportFileName = "HOMICIDIOS - " + initialDateStr + " - " + endDateStr;
             tagsList = new ArrayList<Tags>();
             data = "";
             for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
@@ -113,39 +115,47 @@ public class RecordSetsHomicideMB implements Serializable {
                 tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
             }
             //DETERMINO TOTAL DE REGISTROS
-            sql = "";
-            sql = sql + " SELECT ";
-            sql = sql + " count(*)";
-            sql = sql + " FROM ";
-            sql = sql + " public.victims, ";
-            sql = sql + " public.fatal_injuries";
-            sql = sql + " WHERE ";
-            sql = sql + " fatal_injuries.victim_id = victims.victim_id AND";
+            sql = "\n";
+            sql = sql + " SELECT \n";
+            sql = sql + " count(*) \n";
+            sql = sql + " FROM \n";
+            sql = sql + " public.victims, \n";
+            sql = sql + " public.fatal_injuries \n";
+            sql = sql + " WHERE \n";
+            sql = sql + " fatal_injuries.victim_id = victims.victim_id AND ( \n";
             for (int i = 0; i < tagsList.size(); i++) {
-                sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
+                if (i == tagsList.size() - 1) {
+                    sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " \n";
+                } else {
+                    sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " OR \n";
+                }
             }
-            sql = sql + " fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND";
-            sql = sql + " fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+            sql = sql + " ) AND fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n";
+            sql = sql + " fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') \n";
             ResultSet resultSet = connection.consult(sql);
             totalRecords = "0";
             if (resultSet.next()) {
                 totalRecords = String.valueOf(resultSet.getInt(1));
             }
-            System.out.println("Total de registros = " + totalRecords);
+            //System.out.println("Total de registros = " + totalRecords);
             //DETERMINO EL ID DE CADA REGISTRO            
-            sql = "";
-            sql = sql + " SELECT ";
-            sql = sql + " fatal_injuries.victim_id";
-            sql = sql + " FROM ";
-            sql = sql + " public.victims, ";
-            sql = sql + " public.fatal_injuries";
-            sql = sql + " WHERE ";
-            sql = sql + " fatal_injuries.victim_id = victims.victim_id AND";
+            sql = "\n";
+            sql = sql + " SELECT \n";
+            sql = sql + " fatal_injuries.victim_id \n";
+            sql = sql + " FROM \n";
+            sql = sql + " public.victims, \n";
+            sql = sql + " public.fatal_injuries \n";
+            sql = sql + " WHERE \n";
+            sql = sql + " fatal_injuries.victim_id = victims.victim_id AND ( \n";
             for (int i = 0; i < tagsList.size(); i++) {
-                sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
+                if (i == tagsList.size() - 1) {
+                    sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " \n";
+                } else {
+                    sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " OR \n";
+                }
             }
-            sql = sql + " fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND";
-            sql = sql + " fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+            sql = sql + " ) AND fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n";
+            sql = sql + " fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') \n";
 
             //CONSTRUYO EL TABLE_MODEL
             table_model = new LazyRecordSetsDataModel(Integer.parseInt(totalRecords), sql, FormsEnum.SCC_F_028);
@@ -186,7 +196,7 @@ public class RecordSetsHomicideMB implements Serializable {
         }
         progress = 100;
     }
-    
+
     public void postProcessXLS(Object document) {
         try {
             progress = 0;
@@ -293,23 +303,23 @@ public class RecordSetsHomicideMB implements Serializable {
     public void load() {
         currentFatalInjuryMurder = null;
         btnEditDisabled = true;
-        btnRemoveDisabled = true;
+//        btnRemoveDisabled = true;
         if (selectedRowsDataTable != null) {
             if (selectedRowsDataTable.length == 1) {
                 currentFatalInjuryMurder = fatalInjuryMurderFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
             }
             if (selectedRowsDataTable.length > 1) {
                 btnEditDisabled = true;
-                btnRemoveDisabled = false;
+//                btnRemoveDisabled = false;
             } else {
                 btnEditDisabled = false;
-                btnRemoveDisabled = false;
+//                btnRemoveDisabled = false;
             }
         }
     }
 
     public void deleteRegistry() {
-        if (selectedRowsDataTable != null) {
+        if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
             List<FatalInjuryMurder> fatalInjuryMurderList = new ArrayList<FatalInjuryMurder>();
             for (int j = 0; j < selectedRowsDataTable.length; j++) {
                 fatalInjuryMurderList.add(fatalInjuryMurderFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
@@ -322,12 +332,13 @@ public class RecordSetsHomicideMB implements Serializable {
                     fatalInjuriesFacade.remove(auxFatalInjuries);
                     victimsFacade.remove(auxVictims);
                 }
-            }
-            //deselecciono los controles
+            }//deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
-            btnRemoveDisabled = true;
+            totalRecords=String.valueOf(Integer.parseInt(totalRecords)-1);
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
+        } else {
+            printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
         }
     }
 
@@ -379,13 +390,13 @@ public class RecordSetsHomicideMB implements Serializable {
         this.btnEditDisabled = btnEditDisabled;
     }
 
-    public boolean isBtnRemoveDisabled() {
-        return btnRemoveDisabled;
-    }
-
-    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
-        this.btnRemoveDisabled = btnRemoveDisabled;
-    }
+//    public boolean isBtnRemoveDisabled() {
+//        return btnRemoveDisabled;
+//    }
+//
+//    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
+//        this.btnRemoveDisabled = btnRemoveDisabled;
+//    }
 
     public String getData() {
         return data;
@@ -402,7 +413,7 @@ public class RecordSetsHomicideMB implements Serializable {
     public void setTable_model(LazyDataModel<RowDataTable> table_model) {
         this.table_model = table_model;
     }
-    
+
     public int getProgress() {
         return progress;
     }
@@ -433,5 +444,13 @@ public class RecordSetsHomicideMB implements Serializable {
 
     public void setInitialDateStr(String initialDateStr) {
         this.initialDateStr = initialDateStr;
+    }
+
+    public String getExportFileName() {
+        return exportFileName;
+    }
+
+    public void setExportFileName(String exportFileName) {
+        this.exportFileName = exportFileName;
     }
 }

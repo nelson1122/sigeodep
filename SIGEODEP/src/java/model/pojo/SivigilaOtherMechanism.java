@@ -5,17 +5,20 @@
 package model.pojo;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -41,6 +44,8 @@ public class SivigilaOtherMechanism implements Serializable {
     @Size(min = 1, max = 2147483647)
     @Column(name = "sivigila_other_mechanism_name", nullable = false, length = 2147483647)
     private String sivigilaOtherMechanismName;
+    @OneToMany(mappedBy = "otherMechanismId")
+    private List<SivigilaEvent> sivigilaEventList;
 
     public SivigilaOtherMechanism() {
     }
@@ -68,6 +73,15 @@ public class SivigilaOtherMechanism implements Serializable {
 
     public void setSivigilaOtherMechanismName(String sivigilaOtherMechanismName) {
         this.sivigilaOtherMechanismName = sivigilaOtherMechanismName;
+    }
+
+    @XmlTransient
+    public List<SivigilaEvent> getSivigilaEventList() {
+        return sivigilaEventList;
+    }
+
+    public void setSivigilaEventList(List<SivigilaEvent> sivigilaEventList) {
+        this.sivigilaEventList = sivigilaEventList;
     }
 
     @Override

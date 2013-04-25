@@ -5,10 +5,12 @@
 package model.pojo;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -71,6 +73,8 @@ public class Users implements Serializable {
     private String permissions;
     @Column(name = "project_id")
     private Integer projectId;
+    @OneToMany(mappedBy = "userId")
+    private List<NonFatalInjuries> nonFatalInjuriesList;
 
     public Users() {
     }
@@ -172,6 +176,15 @@ public class Users implements Serializable {
 
     public void setProjectId(Integer projectId) {
         this.projectId = projectId;
+    }
+
+    @XmlTransient
+    public List<NonFatalInjuries> getNonFatalInjuriesList() {
+        return nonFatalInjuriesList;
+    }
+
+    public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
+        this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override

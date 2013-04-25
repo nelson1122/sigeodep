@@ -50,7 +50,7 @@ public class RelationshipOfVariablesMB implements Serializable {
     private List<String> currentVariableFound = new ArrayList<String>();
     private List<String> currentRelatedVariables = new ArrayList<String>();
     private String typeVarExepted;
-    private String variableDescription = "";
+    private String possibleVariableFound = "";//posible variable encontrada para un variable esperada
     private ProjectsMB projectsMB;
     private RelationshipOfValuesMB relationshipOfValuesMB;
     private String filterConsult = "";
@@ -113,6 +113,7 @@ public class RelationshipOfVariablesMB implements Serializable {
     //----------------------------------------------------------------------
     private void loadExpectedVariables() {
         try {
+            possibleVariableFound="";
             filterConsult = "";
             if (expectedVariablesFilter != null && expectedVariablesFilter.trim().length() != 0) {
                 filterConsult = "fields.field_name ILIKE '%" + expectedVariablesFilter + "%' AND \n";
@@ -154,18 +155,18 @@ public class RelationshipOfVariablesMB implements Serializable {
             varsFound = new ArrayList<String>();//vaiables encontradas----------            
             filterConsult = "";
             if (foundVariablesFilter != null && foundVariablesFilter.trim().length() != 0) {
-                filterConsult = "    project_columns.column_name ILIKE '%" + foundVariablesFilter + "%' AND \n";
+                filterConsult = "project_columns.column_name ILIKE '%" + foundVariablesFilter + "%' AND \n";
             }
             sql = ""
                     + " SELECT \n"
                     + "	   project_columns.column_name \n"
                     + " FROM \n"
-                    + "	   public.project_records, \n"
-                    + "	   public.project_columns \n"
-                    + " WHERE \n"
-                    + "	   project_columns.column_id = project_records.column_id AND \n"
-                    + filterConsult
-                    + "	   project_records.project_id = " + projectsMB.getCurrentProjectId() + " AND \n"
+                    + "	   public.project_columns, \n"
+                    + "	   public.projects \n"
+                    + " WHERE \n"+filterConsult                    
+                    + "	   project_columns.column_id >= projects.start_column_id AND \n"
+                    + "	   project_columns.column_id <= projects.end_column_id AND \n"                    
+                    + "	   projects.project_id = " + projectsMB.getCurrentProjectId() + " AND \n"
                     + "	   project_columns.column_name NOT IN \n"
                     + "	   (SELECT \n"
                     + "		relation_variables.name_found \n"
@@ -176,9 +177,9 @@ public class RelationshipOfVariablesMB implements Serializable {
                     + "		relation_variables.id_relation_group = relation_group.id_relation_group AND \n"
                     + "		relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "' \n"
                     + "	   ) \n"
-                    + " GROUP BY \n"
-                    + "	   project_columns.column_name, \n"
-                    + "	   project_columns.column_id \n"
+                    //+ " GROUP BY \n"
+                    //+ "	   project_columns.column_name, \n"
+                    //+ "	   project_columns.column_id \n"
                     + " ORDER BY \n"
                     + "	   project_columns.column_id \n";
             rs = connectionJdbcMB.consult(sql);            //System.out.println("A002\n" + sql);
@@ -252,6 +253,28 @@ public class RelationshipOfVariablesMB implements Serializable {
         }
         return strReturn;
     }
+    
+    private String findPossibleVariableFound() {
+        //buscar la posible variable encontrada para ser relacionada
+        String strReturn = "";
+        try {
+            //determino el ty            
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + " SELECT \n"
+                    + "    fields.field_name_small \n"
+                    + " FROM \n"
+                    + "    public.fields \n"
+                    + " WHERE "
+                    + "    fields.form_id LIKE '" + projectsMB.getCurrentFormId() + "' AND \n"
+                    + "    fields.field_name LIKE '" + currentVariableExpected.get(0) + "' \n");
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error 4 en " + this.getClass().getName() + ":" + ex.toString());
+        }
+        return strReturn;
+    }
 
     private String getDescriptionVariableExpected() {
         String strReturn = "";
@@ -297,6 +320,7 @@ public class RelationshipOfVariablesMB implements Serializable {
          */
         if (currentVariableExpected != null && !currentVariableExpected.isEmpty()) {
             typeVarExepted = getTypeVariableExpected();
+            possibleVariableFound = findPossibleVariableFound();
             valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
             selectDateFormatDisabled = true;
             fieldType = remove_v(typeVarExepted);
@@ -312,7 +336,7 @@ public class RelationshipOfVariablesMB implements Serializable {
                     selectDateFormatDisabled = false;
                     break;
                 case age:
-                    valuesExpected.add("Edad representada por un entero o definida en meses y años");
+                    valuesExpected.add("Edad : entero o definida en meses y años");
                     break;
                 case military:
                     valuesExpected.add("Hora militar");
@@ -335,9 +359,9 @@ public class RelationshipOfVariablesMB implements Serializable {
                 case percentage:
                     valuesExpected.add("El porcentaje es un valor entero de 1 a 100");
                     break;
-//                case degree:
-//                    valuesExpected.add("El grado mas grave para quemados es un valor entero de 1 a 3 ");
-//                    break;
+                case level:
+                    valuesExpected.add("Nivel de alcohol en la víctima");
+                    break;
                 case NOVALUE://se espera un valor categorico compareForCodeDisabled = false;
                     if (compareForCode == true) {
                         valuesExpected = connectionJdbcMB.categoricalCodeList(fieldType, 20);
@@ -395,7 +419,7 @@ public class RelationshipOfVariablesMB implements Serializable {
     public void changeVarExpected() {
         valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
         if (currentVariableExpected != null && !currentVariableExpected.isEmpty()) {
-            variableDescription = getDescriptionVariableExpected();
+            //variableDescription = getDescriptionVariableExpected();
             loadValuesExpected();
         }
     }
@@ -420,7 +444,7 @@ public class RelationshipOfVariablesMB implements Serializable {
         String sql1 = ""
                 + " UPDATE \n"
                 + " project_records \n"
-                + " SET data_value = '";//aqui se adiciona nombre que coresponde a un identificador srgun sivigila
+                + " SET data_value = '";//aqui se adiciona nombre que coresponde a un identificador segun sivigila
         String sql2 = ""
                 + "' \n"
                 + " WHERE \n"
@@ -438,8 +462,8 @@ public class RelationshipOfVariablesMB implements Serializable {
                 + "       WHERE \n"
                 + "          project_columns.column_id = project_records.column_id AND \n"
                 + "          projects.project_id = project_records.project_id AND \n"
-                + "          project_columns.column_name LIKE '" + variableFoundSIVIGILA + "' AND \n"
-                + "          projects.start_column_id >= " + currentProject.getStartColumnId() + " AND \n"
+                + "          project_columns.column_name LIKE '" + variableFoundSIVIGILA + "' AND \n"//nombre de la columna
+                + "          projects.start_column_id >= " + currentProject.getStartColumnId() + " AND \n"//solo las columnas del proyecto start - end
                 + "          projects.end_column_id <= " + currentProject.getEndColumnId() + " \n"
                 + "       GROUP BY \n"
                 + "          project_columns.column_id) \n";
@@ -851,13 +875,13 @@ public class RelationshipOfVariablesMB implements Serializable {
         this.selectDateFormatDisabled = selectDateFormatDisabled;
     }
 
-    public String getVariableDescription() {
-        return variableDescription;
-    }
-
-    public void setVariableDescription(String variableDescription) {
-        this.variableDescription = variableDescription;
-    }
+//    public String getVariableDescription() {
+//        return variableDescription;
+//    }
+//
+//    public void setVariableDescription(String variableDescription) {
+//        this.variableDescription = variableDescription;
+//    }
 
     public void setProjectsMB(ProjectsMB projectsMB) {
         this.projectsMB = projectsMB;
@@ -936,6 +960,17 @@ public class RelationshipOfVariablesMB implements Serializable {
     }
 
     public void changeExpectedVariablesFilter() {
+        
         loadExpectedVariables();
     }
+
+    public String getPossibleVariableFound() {
+        return possibleVariableFound;
+    }
+
+    public void setPossibleVariableFound(String possibleVariableFound) {
+        this.possibleVariableFound = possibleVariableFound;
+    }
+    
+    
 }

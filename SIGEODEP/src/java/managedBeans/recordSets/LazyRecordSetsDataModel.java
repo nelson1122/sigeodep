@@ -28,13 +28,13 @@ public class LazyRecordSetsDataModel extends LazyDataModel<RowDataTable> {
     private ConnectionJdbcMB connection;
     private String sqlTags = "";
     private FormsEnum currentForm;
-    private int rowCountAux=0;
+    private int rowCountAux = 0;
 
     public LazyRecordSetsDataModel(int rowCountAux, String sqlTags, FormsEnum form) {
-        
-        
+
+
         this.setRowCount(rowCountAux);
-        this.rowCountAux=rowCountAux;
+        this.rowCountAux = rowCountAux;
         this.sqlTags = sqlTags;
         this.currentForm = form;
         connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
@@ -108,6 +108,11 @@ public class LazyRecordSetsDataModel extends LazyDataModel<RowDataTable> {
                     case SCC_F_033:
                         while (resultSet.next()) {
                             datasource.add(connection.loadNonFatalDomesticViolenceRecord(resultSet.getString(1)));
+                        }
+                        break;
+                    case SIVIGILA_VIF:
+                        while (resultSet.next()) {
+                            datasource.add(connection.loadSivigilaVifRecord(resultSet.getString(1)));
                         }
                         break;
                 }

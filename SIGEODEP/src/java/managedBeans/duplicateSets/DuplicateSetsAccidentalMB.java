@@ -81,6 +81,8 @@ public class DuplicateSetsAccidentalMB implements Serializable {
     ConnectionJdbcMB connectionJdbcMB;
     private int tuplesNumber = 0;
     private int tuplesProcessed = 0;
+    private String initialDateStr = "";
+    private String endDateStr = "";
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
@@ -175,7 +177,7 @@ public class DuplicateSetsAccidentalMB implements Serializable {
         FacesContext context = FacesContext.getCurrentInstance();
         recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
         recordSetsMB.setProgress(0);
-        
+
         tuplesNumber = 0;
         tuplesProcessed = 0;
 
@@ -189,7 +191,7 @@ public class DuplicateSetsAccidentalMB implements Serializable {
             tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
             tuplesNumber = tuplesNumber + fatalInjuryAccidentFacade.countFromTag(tagsList.get(i).getTagId());
         }
-        
+
         selectedRowDuplicatedTable = null;
         selectedRowDataTable = null;
         rowDataTableList = new ArrayList<RowDataTable>();
@@ -202,26 +204,59 @@ public class DuplicateSetsAccidentalMB implements Serializable {
          * posiblemente son duplicados
          */
         try {
-            String sql = "DROP VIEW IF EXISTS duplicate";
-            connectionJdbcMB.non_query(sql);
-            sql = "create view duplicate as "
-                    + "SELECT "
-                    + "   * "
-                    + "FROM "
-                    + "   victims "
-                    + "WHERE ";
+            connectionJdbcMB.non_query("DROP VIEW IF EXISTS duplicate");
+            String sql = ""
+                    + "create view duplicate as \n"
+                    + "   SELECT \n"
+                    + "      victims.victim_id, \n"
+                    + "      victims.victim_nid, \n"
+                    + "      victims.victim_name \n"
+                    + "   FROM \n"
+                    + "      public.victims, \n"
+                    + "      public.fatal_injuries \n"
+                    + "   WHERE  \n"
+                    + "      fatal_injuries.victim_id = victims.victim_id AND ( \n";
             for (int i = 0; i < tagsList.size(); i++) {
                 if (i == 0) {
-                    sql = sql + " tag_id = " + tagsList.get(i).getTagId().toString() + " ";
+                    sql = sql + "     victims.tag_id = " + tagsList.get(i).getTagId().toString() + " \n";
                 } else {
-                    sql = sql + " OR tag_id = " + tagsList.get(i).getTagId().toString() + " ";
+                    sql = sql + "     OR victims.tag_id = " + tagsList.get(i).getTagId().toString() + " \n";
                 }
             }
+            //limitar rango de fecha
+            sql = sql + "    ) AND fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n";
+            sql = sql + "    fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') \n";
+            //System.out.println("SQL001: \n" + sql);
             connectionJdbcMB.non_query(sql);
+            //CUENTO EL NUMERO DE REGISTROS EN LA CONSULTA---------------------------
+            tuplesNumber = 0;
+            sql = ""
+                    + "   SELECT \n"
+                    + "      count(*) \n"
+                    + "   FROM \n"
+                    + "      public.victims, \n"
+                    + "      public.fatal_injuries \n"
+                    + "   WHERE  \n"
+                    + "      fatal_injuries.victim_id = victims.victim_id AND ( \n";
+            for (int i = 0; i < tagsList.size(); i++) {
+                if (i == 0) {
+                    sql = sql + "     victims.tag_id = " + tagsList.get(i).getTagId().toString() + " \n";
+                } else {
+                    sql = sql + "     OR victims.tag_id = " + tagsList.get(i).getTagId().toString() + " \n";
+                }
+            }
+            sql = sql + "    ) AND fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n";
+            sql = sql + "    fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') \n";
+            ResultSet rs = connectionJdbcMB.consult(sql);
+            if (rs.next()) {
+                tuplesNumber = rs.getInt(1);
+            }
+            //------------
+
             rowDuplicatedTableList = new ArrayList<RowDataTable>();
-            sql = "Select * from duplicate";
-            ResultSet resultSetFileData = connectionJdbcMB.consult(sql);
-            ArrayList<String> addedRecords = new ArrayList<String>();;
+            
+            ResultSet resultSetFileData = connectionJdbcMB.consult("Select * from duplicate");
+            ArrayList<String> addedRecords = new ArrayList<String>();
             boolean first;
             boolean found;
             int countRegisters;
@@ -235,16 +270,16 @@ public class DuplicateSetsAccidentalMB implements Serializable {
                     }
                 }
                 if (!found) {//el elemento no ha sido evaluado ni adicionado
-                    sql = "";
-                    sql = sql + "SELECT ";
-                    sql = sql + "t1.victim_id ";
-                    sql = sql + "FROM ";
-                    sql = sql + "duplicate t1, duplicate t2 ";
-                    sql = sql + "WHERE ";
-                    sql = sql + "t2.victim_id = " + resultSetFileData.getString("victim_id") + " ";
-                    sql = sql + "AND t1.victim_id != t2.victim_id ";
-                    sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 4 ";
-                    sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 4 ";
+                    sql = ""
+                            + " SELECT \n"
+                            + "    t1.victim_id \n"
+                            + " FROM "
+                            + "    duplicate t1, duplicate t2 \n"
+                            + " WHERE \n"
+                            + "    t2.victim_id = " + resultSetFileData.getString("victim_id") + " \n"
+                            + "    AND t1.victim_id != t2.victim_id \n"
+                            + "    AND levenshtein(t1.victim_nid, t2.victim_nid) < 4 \n"
+                            + "    AND levenshtein(t1.victim_name, t2.victim_name) < 4 \n";
                     ResultSet resultSetCount = connectionJdbcMB.consult(sql);
                     first = true;
                     countRegisters = 0;
@@ -667,5 +702,21 @@ public class DuplicateSetsAccidentalMB implements Serializable {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public String getInitialDateStr() {
+        return initialDateStr;
+    }
+
+    public void setInitialDateStr(String initialDateStr) {
+        this.initialDateStr = initialDateStr;
+    }
+
+    public String getEndDateStr() {
+        return endDateStr;
+    }
+
+    public void setEndDateStr(String endDateStr) {
+        this.endDateStr = endDateStr;
     }
 }

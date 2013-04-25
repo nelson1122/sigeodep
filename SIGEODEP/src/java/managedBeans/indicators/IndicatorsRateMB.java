@@ -27,8 +27,10 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.component.html.HtmlOutputText;
 import javax.faces.context.FacesContext;
 import managedBeans.reports.SpanColumns;
+import model.dao.IndicatorsConfigurationsFacade;
 import model.dao.IndicatorsFacade;
 import model.pojo.Indicators;
+import model.pojo.IndicatorsConfigurations;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -57,6 +59,11 @@ public class IndicatorsRateMB {
 
     @EJB
     IndicatorsFacade indicatorsFacade;
+    @EJB
+    IndicatorsConfigurationsFacade indicatorsConfigurationsFacade;
+    private String currentConfigurationSelected = "";    
+    private List<String> configurationsList = new ArrayList<String>();
+    private String newConfigurationName = "";
     private Indicators currentIndicator;
     private StreamedContent chartImage;
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
@@ -66,7 +73,7 @@ public class IndicatorsRateMB {
     private String titlePage = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
     private String titleIndicator = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
     private String subTitleIndicator = "NUMERO DE CASOS POR LESION";
-    private String currentGraphType;
+    //private String currentGraphType;
     private String currentVariableGraph;
     private String currentValueGraph;
     private String firstVariablesCrossSelected = null;
@@ -83,17 +90,21 @@ public class IndicatorsRateMB {
     private String pivotTableName;
     private String prepivotTableName;
     private String currentSpatialDisaggregation;
+    private String currentTemporalDisaggregation;
+    private String currentMultipler;
+    private List<String> multiplers = new ArrayList<String>();
+    private List<String> temporalDisaggregationTypes = new ArrayList<String>();
     private List<String> spatialDisaggregationTypes = new ArrayList<String>();
     private List<String> variablesGraph = new ArrayList<String>();
     private List<String> valuesGraph = new ArrayList<String>();
-    private List<String> variablesList = new ArrayList<String>();//lista de nombres de variables disponibles que sepueden cruzar(se visualizan en pagina)
-    private List<String> variablesCrossList = new ArrayList<String>();//ista de nombres de variables que se van a cruzar(se visualizan en pagina)
-    private List<String> currentVariablesSelected = new ArrayList<String>();//lista de nombres seleccionados en la lista de variables disponibles
+    private List<String> listOfAvailableVariablesNames = new ArrayList<String>();//lista de nombres de variables disponibles que sepueden cruzar(se visualizan en pagina)
+    private List<String> listOfCrossVariablesNames = new ArrayList<String>();//ista de nombres de variables que se van a cruzar(se visualizan en pagina)
+    private List<String> currentAvailableVariablesNamesSelected = new ArrayList<String>();//lista de nombres seleccionados en la lista de variables disponibles
     private List<String> currentVariablesCrossSelected = new ArrayList<String>();//lista de nombres seleccionados en la lista de variables a cruzar    
     private List<String> currentCategoricalValuesList = new ArrayList<String>();
     private List<String> currentCategoricalValuesSelected;
     private ArrayList<SpanColumns> headers1;//CABECERA 1 CUANDO EL CRUCE SE REALIZA SOBRE 3 VARIABLES
-    private ArrayList<Variable> variablesListData;//lista de variables que tiene el indicador
+    private ArrayList<Variable> completeListOfVariableData;//lista de variables que tiene el indicador
     private ArrayList<Variable> variablesCrossData = new ArrayList<Variable>();//lista de variables a cruzar
     private ArrayList<String> valuesCategoryList;//lista de valores para una categoria
     private ArrayList<String> columNames;//NOMBRES DE LAS COLUMNAS, (SI EL CRUCE ES DE TRES VARIABLES ESTA SEPARADO POR EL CARACTER: }  )
@@ -105,6 +116,7 @@ public class IndicatorsRateMB {
     //private int grandTotal = 0;//total general de la matriz
     private int multiplierK = 0;
     private int currentYear = 0;
+    //private boolean renderGraphOptions = false;//mostrar combos para grafico
     private boolean btnAddVariableDisabled = true;
     private boolean btnAddCategoricalValueDisabled = true;
     private boolean btnRemoveCategoricalValueDisabled = true;
@@ -113,6 +125,7 @@ public class IndicatorsRateMB {
     //private boolean showAll = false;//mostrar filas y columnas vacias
     private boolean showCalculation = false;//mostrar la division
     private boolean colorType = true;
+    private boolean showItems = true;
 
     public IndicatorsRateMB() {
         //-------------------------------------------------
@@ -125,15 +138,6 @@ public class IndicatorsRateMB {
         endDate.setDate(c.get(Calendar.DATE));
         endDate.setMonth(c.get(Calendar.MONTH));
         endDate.setYear(c.get(Calendar.YEAR) - 1900);
-
-        spatialDisaggregationTypes = new ArrayList<String>();
-
-        spatialDisaggregationTypes.add("Zona");
-        spatialDisaggregationTypes.add("Cuadrante");
-        spatialDisaggregationTypes.add("Comuna");
-        spatialDisaggregationTypes.add("Corredor");
-        spatialDisaggregationTypes.add("Barrio");
-        currentSpatialDisaggregation = "Zona";
     }
 
     public void showMessage() {
@@ -172,50 +176,46 @@ public class IndicatorsRateMB {
 
     public void process() {
         variablesCrossData = new ArrayList<Variable>();//lista de variables a cruzar            
-        boolean continueProcess;
+        boolean continueProcess=true;
         message = null;
         variablesGraph = new ArrayList<String>();
         valuesGraph = new ArrayList<String>();
         currentValueGraph = "";
         currentVariableGraph = "";
+
+        //----------------------------------------------------------------------
+        //VALIDO LAS FECHAS
+        //----------------------------------------------------------------------
+        Calendar c1 = Calendar.getInstance();
+        Calendar c2 = Calendar.getInstance();
+        c1.setTime(initialDate);
+        c2.setTime(endDate);
+        if (c1.compareTo(c2) > 0) {
+            continueProcess = false;
+            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial debe ser inferior o igual a la fecha final");
+        }
+
         //----------------------------------------------------------------------
         //NUMERO DE VARIABLES A CRUZAR SEA MENOR O IGUAL AL LIMITE ESTABLECIDO
         //----------------------------------------------------------------------
-        if (variablesCrossList.size() <= numberCross) {
-            continueProcess = true;
-        } else {
-            continueProcess = false;
-            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "En la lista de variables a cruzar deben haber " + numberCross + " o menos variables");
+        if (continueProcess) {
+            if (listOfCrossVariablesNames.size() <= 2) {
+                continueProcess = true;
+            } else {
+                continueProcess = false;
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "En la lista de variables a cruzar deben haber " + numberCross + " o menos variables");
+            }
         }
-
         //----------------------------------------------------------------------
         //AGREGO LAS VARIABLES INDICADAS POR EL USUARIO
         //----------------------------------------------------------------------        
         if (continueProcess) {
-
             //agrego la variable de desagregacion temporal            
-            Variable newVariable = null;
-            if (currentSpatialDisaggregation.compareTo("Barrio") == 0) {
-                newVariable = createVariable("barrio", "neighborhoods", false);
-            }
-            if (currentSpatialDisaggregation.compareTo("Comuna") == 0) {
-                newVariable = createVariable("comuna", "communes", false);
-            }
-            if (currentSpatialDisaggregation.compareTo("Corredor") == 0) {
-                newVariable = createVariable("corredor", "corridors", false);
-            }
-            if (currentSpatialDisaggregation.compareTo("Cuadrante") == 0) {
-                newVariable = createVariable("cuadrante", "quadrants", false);
-            }
-            if (currentSpatialDisaggregation.compareTo("Zona") == 0) {
-                newVariable = createVariable("zona", "areas", false);
-            }
-            variablesCrossData.add(newVariable);//variable de desagregacion espacial
-
-            for (int j = 0; j < variablesCrossList.size(); j++) {
-                for (int i = 0; i < variablesListData.size(); i++) {
-                    if (variablesListData.get(i).getName().compareTo(variablesCrossList.get(j)) == 0) {
-                        variablesCrossData.add(variablesListData.get(i));
+            variablesCrossData.add(createTemporalDisaggregationVariable(initialDate, endDate));//variable de desagregacion temporal
+            for (int j = 0; j < listOfCrossVariablesNames.size(); j++) {
+                for (int i = 0; i < completeListOfVariableData.size(); i++) {
+                    if (completeListOfVariableData.get(i).getName().compareTo(listOfCrossVariablesNames.get(j)) == 0) {
+                        variablesCrossData.add(completeListOfVariableData.get(i));
                     }
                 }
             }
@@ -227,7 +227,7 @@ public class IndicatorsRateMB {
         if (continueProcess) {
             for (int i = 0; i < variablesCrossData.size(); i++) {
                 if (variablesCrossData.get(i).getValuesConfigured().isEmpty()) {
-                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La variable " + variablesListData.get(i).getName() + " no tiene valores configurados, para continuar debe ser configurada.");
+                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La variable " + completeListOfVariableData.get(i).getName() + " no tiene valores configurados, para continuar debe ser configurada.");
                     continueProcess = false;
                 }
             }
@@ -237,11 +237,10 @@ public class IndicatorsRateMB {
         //----------------------------------------------------------------------
         if (continueProcess) {
             if (variablesCrossData.size() == 3) {
-                for (int i = 0; i < variablesCrossData.size(); i++) {
-                    if (i == 0) {
+                for (int i = 1; i < variablesCrossData.size(); i++) {//i es 1 por que en la posicion 0 esta la desagregacion y esta no entra en el combo                    
+                    if (i == 1) {//si es el primero cargo valores
                         variablesGraph.add(variablesCrossData.get(i).getName());
                         currentVariableGraph = variablesGraph.get(0);
-                        //cargo el combo de valores
                         for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
                             valuesGraph.add(variablesCrossData.get(i).getValuesConfigured().get(j));
                             currentValueGraph = valuesGraph.get(0);
@@ -249,6 +248,7 @@ public class IndicatorsRateMB {
                     } else {
                         variablesGraph.add(variablesCrossData.get(i).getName());
                     }
+
                 }
             }
         }
@@ -269,7 +269,7 @@ public class IndicatorsRateMB {
         //----------------------------------------------------------------------
         if (continueProcess) {
             dataTableHtml = createDataTableResult();
-            //createImage();//creo el grafico
+            createImage();//creo el grafico
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze de conteo realizado");
         }
     }
@@ -278,6 +278,123 @@ public class IndicatorsRateMB {
         if (!currentCategoricalValuesSelected.isEmpty()) {
             btnRemoveCategoricalValueDisabled = false;
         }
+    }
+
+       public int btnRemoveConfigurationClick() {
+        //System.out.println("currentConfigurationSelected es " + currentConfigurationSelected);
+        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
+            return 0;
+        }
+        List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
+        for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
+            if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(currentConfigurationSelected) == 0) {
+                indicatorsConfigurationsFacade.remove(indicatorsConfigurationsList.get(i));
+                btnLoadConfigurationClick();
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La configuración ha sido eliminada"));
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    public int btnOpenConfigurationClick() {
+        //realizar la carga de la configuracion indicada
+        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
+            return 0;
+        }
+        currentCategoricalValuesList = new ArrayList<String>();
+        IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected);
+
+        if (firstVariablesCrossSelected.compareTo(indicatorsConfigurationsSelected.getVariableName()) != 0) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La configuracion corresponde a la variable ("
+                    + indicatorsConfigurationsSelected.getVariableName() + ") se debe abrir una configuracion para"
+                    + " una variable de tipo (" + firstVariablesCrossSelected + ")"));
+            return 0;
+        }
+
+        String[] splitConfiguration = indicatorsConfigurationsSelected.getConfiguredValues().split("\t");
+        currentCategoricalValuesList.addAll(Arrays.asList(splitConfiguration));
+
+        for (int i = 0; i < variablesCrossData.size(); i++) {
+            if (variablesCrossData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
+                variablesCrossData.get(i).setValuesConfigured(Arrays.asList(splitConfiguration));
+                variablesCrossData.get(i).setValuesId(Arrays.asList(splitConfiguration));
+                variablesCrossData.get(i).setValues(Arrays.asList(splitConfiguration));
+                break;
+            }
+            
+        }
+        for (int i = 0; i < completeListOfVariableData.size(); i++) {
+            if (completeListOfVariableData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
+                completeListOfVariableData.get(i).setValuesConfigured(Arrays.asList(splitConfiguration));
+                completeListOfVariableData.get(i).setValuesId(Arrays.asList(splitConfiguration));
+                completeListOfVariableData.get(i).setValues(Arrays.asList(splitConfiguration));
+                break;
+            }
+            
+        }
+        //completeListOfVariableData
+        
+        
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Configuración cargada"));
+        return 0;
+    }
+
+    public void btnLoadConfigurationClick() {
+        //recargar las configuraciones existentes
+        //System.out.println("inicia carga de configuraciones");
+        currentConfigurationSelected = null;
+        configurationsList = new ArrayList<String>();
+        List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
+        for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
+            if (currentVariablesCrossSelected.get(0).compareTo(indicatorsConfigurationsList.get(i).getVariableName()) == 0) {
+                configurationsList.add(indicatorsConfigurationsList.get(i).getConfigurationName());
+            }
+            //System.out.println("inicia carga de configuraciones");
+        }
+    }
+
+    public int btnSaveConfigurationClick() {
+        if (newConfigurationName.trim().length() == 0) {//VALOR INICIAL INGRESADO
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Digite el nombre para la nueva configuración"));
+            return 0;
+        }
+        //determino si el nombre ya esta ingresado
+        boolean founConfiguration = false;
+        List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
+        for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
+            if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(newConfigurationName) == 0) {
+                founConfiguration = true;
+                break;
+            }
+        }
+        if (!founConfiguration) {
+            if (!currentCategoricalValuesList.isEmpty()) {
+                IndicatorsConfigurations newIndicatorsConfigurations = new IndicatorsConfigurations(indicatorsConfigurationsFacade.findMax() + 1);
+                //System.out.println("El valor de id_configuration es : " + newIndicatorsConfigurations.getConfigurationId());
+                newIndicatorsConfigurations.setConfigurationName(newConfigurationName);
+                newIndicatorsConfigurations.setVariableName(firstVariablesCrossSelected);
+                String configuredValues = "";
+                for (int i = 0; i < currentCategoricalValuesList.size(); i++) {
+                    configuredValues = configuredValues + currentCategoricalValuesList.get(i);
+                    if (i != currentCategoricalValuesList.size() - 1) {
+                        configuredValues = configuredValues + "\t";
+                    }
+                }
+                newIndicatorsConfigurations.setConfiguredValues(configuredValues);
+                indicatorsConfigurationsFacade.create(newIndicatorsConfigurations);
+                btnLoadConfigurationClick();
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La cofiguración ha sido almacenada"));
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No existen categorias para almacenar"));
+            }
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El nombre registrado ya fue ingresado, por favor digite uno diferente"));
+        }
+
+        return 0;
     }
 
     public int btnAddCategoricalValueClick() {
@@ -291,34 +408,59 @@ public class IndicatorsRateMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Digite un valor final"));
             return 0;
         }
-        try {//VALOR INICIAL Y FINAL NUMERICOS
-            i = Integer.parseInt(initialValue);
-            e = Integer.parseInt(endValue);
-            if (i < 0 && e < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+        if (endValue.compareToIgnoreCase("n") == 0) {
+            endValue = "n";
+        }
+
+        if (endValue.compareTo("n") == 0) {
+            try {//VALOR INICIAL NUMERICOS
+                i = Integer.parseInt(initialValue);
+                if (i < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+                    return 0;
+                }
+            } catch (Exception ex) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser numéricos"));
                 return 0;
             }
-        } catch (Exception ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser numéricos"));
-            return 0;
+        } else {
+            try {//VALOR INICIAL Y FINAL NUMERICOS
+                i = Integer.parseInt(initialValue);
+                e = Integer.parseInt(endValue);
+
+                if (i < 0 && e < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+                    return 0;
+                }
+                if (i < 0 && e < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+                    return 0;
+                }
+            } catch (Exception ex) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser numéricos"));
+                return 0;
+            }
+            if (i > e) {//VALOR INICIAL MAYOR QUE FINAL
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El valor inicial debe ser menor que el valor final"));
+                return 0;
+            }
         }
-        if (i > e) {//VALOR INICIAL MAYOR QUE FINAL
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El valor inicial debe ser menor que el valor final"));
-            return 0;
-        }
+
         //EL RANGO NO ESTE DENTRO DE OTRO
-        if (currentVariableConfiguring != null) {
-            for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
-                String[] splitValues = currentVariableConfiguring.getValuesConfigured().get(j).split("/");
-                int initialValueFoundInteger = Integer.parseInt(splitValues[0]);
-                int endValueFoundInteger = Integer.parseInt(splitValues[1]);
-                int initialValueAddInteger = Integer.parseInt(initialValue);
-                int endValueAddInteger = Integer.parseInt(endValue);
-                for (int k = initialValueFoundInteger; k < endValueFoundInteger; k++) {
-                    for (int l = initialValueAddInteger; l < endValueAddInteger; l++) {
-                        if (k == l) {
-                            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Dentro del rango ingresado el valor (" + String.valueOf(k) + ") esta contenido en la lista de valores"));
-                            return 0;
+        if (endValue.compareTo("n") != 0) {
+            if (currentVariableConfiguring != null) {
+                for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
+                    String[] splitValues = currentVariableConfiguring.getValuesConfigured().get(j).split("/");
+                    int initialValueFoundInteger = Integer.parseInt(splitValues[0]);
+                    int endValueFoundInteger = Integer.parseInt(splitValues[1]);
+                    int initialValueAddInteger = Integer.parseInt(initialValue);
+                    int endValueAddInteger = Integer.parseInt(endValue);
+                    for (int k = initialValueFoundInteger; k < endValueFoundInteger; k++) {
+                        for (int l = initialValueAddInteger; l < endValueAddInteger; l++) {
+                            if (k == l) {
+                                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Dentro del rango ingresado el valor (" + String.valueOf(k) + ") esta contenido en la lista de valores"));
+                                return 0;
+                            }
                         }
                     }
                 }
@@ -326,10 +468,11 @@ public class IndicatorsRateMB {
         }
         //ingreso el nuevo valor a la categoria
         if (currentVariableConfiguring != null) {
+
             if (initialValue.length() == 1) {
                 initialValue = "0" + initialValue;
             }
-            if (endValue.length() == 1) {
+            if (endValue.length() == 1 && endValue.compareTo("n") != 0) {
                 endValue = "0" + endValue;
             }
             currentVariableConfiguring.getValuesConfigured().add(initialValue + "/" + endValue);
@@ -347,7 +490,7 @@ public class IndicatorsRateMB {
     }
 
     public void btnRemoveCategoryValueClick() {
-        btnRemoveCategoricalValueDisabled = false;
+        //btnRemoveCategoricalValueDisabled = false;
         if (currentVariableConfiguring != null) {
             for (int i = 0; i < currentCategoricalValuesSelected.size(); i++) {
                 for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
@@ -367,7 +510,7 @@ public class IndicatorsRateMB {
 
     public void btnResetCategoryListClick() {
         currentCategoricalValuesSelected = new ArrayList<String>();
-        btnRemoveCategoricalValueDisabled = false;
+        //btnRemoveCategoricalValueDisabled = false;
         if (currentVariableConfiguring != null) {
             //paso los elementos de la lista: values a valuesConfiguration
             currentVariableConfiguring.setValuesConfigured(new ArrayList<String>());
@@ -385,8 +528,8 @@ public class IndicatorsRateMB {
     public void changeVariable() {
         btnAddVariableDisabled = true;
         btnRemoveVariableDisabled = true;
-        if (currentVariablesSelected != null) {
-            if (!currentVariablesSelected.isEmpty()) {
+        if (currentAvailableVariablesNamesSelected != null) {
+            if (!currentAvailableVariablesNamesSelected.isEmpty()) {
                 btnAddVariableDisabled = false;
             }
         }
@@ -411,13 +554,13 @@ public class IndicatorsRateMB {
             firstVariablesCrossSelected = currentVariablesCrossSelected.get(0);
             //filtro los años segun la fecha
             currentCategoricalValuesSelected = new ArrayList<String>();
-            for (int i = 0; i < variablesListData.size(); i++) {
-                if (variablesListData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
-                    if (variablesListData.get(i).getGeneric_table().compareTo("year") == 0) {
-                        variablesListData.get(i).filterYear(initialDate, endDate);
+            for (int i = 0; i < completeListOfVariableData.size(); i++) {
+                if (completeListOfVariableData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
+                    if (completeListOfVariableData.get(i).getGeneric_table().compareTo("year") == 0) {
+                        completeListOfVariableData.get(i).filterYear(initialDate, endDate);
                     }
-                    currentCategoricalValuesList = variablesListData.get(i).getValuesConfigured();
-                    currentVariableConfiguring = variablesListData.get(i);
+                    currentCategoricalValuesList = completeListOfVariableData.get(i).getValuesConfigured();
+                    currentVariableConfiguring = completeListOfVariableData.get(i);
                     btnAddCategoricalValueDisabled = !currentVariableConfiguring.isConfigurable();
                     break;
                 }
@@ -428,25 +571,25 @@ public class IndicatorsRateMB {
     public void addVariableClick() {
         String error = "";
         boolean nextStep = true;
-        if (currentVariablesSelected == null) {
+        if (currentAvailableVariablesNamesSelected == null) {
             error = "Debe seleccionarse una variable";
             nextStep = false;
         }
         if (nextStep) {
-            for (int i = 0; i < variablesList.size(); i++) {
-                for (int j = 0; j < currentVariablesSelected.size(); j++) {
-                    //System.out.println("comparar: " + variablesList.get(i)+ " CON "+currentVariablesSelected.get(j));
-                    if (variablesList.get(i).compareTo(currentVariablesSelected.get(j)) == 0) {//esta es la variable encontrada que saldra de la lista                    
-                        //System.out.println("quitar: " + variablesList.get(i));
-                        variablesList.remove(i);//la quito de este listado                    
-                        variablesCrossList.add(currentVariablesSelected.get(j));//la agrego al otro                        
+            for (int i = 0; i < listOfAvailableVariablesNames.size(); i++) {
+                for (int j = 0; j < currentAvailableVariablesNamesSelected.size(); j++) {
+                    //System.out.println("comparar: " + listOfAvailableVariablesNames.get(i)+ " CON "+currentVariablesSelected.get(j));
+                    if (listOfAvailableVariablesNames.get(i).compareTo(currentAvailableVariablesNamesSelected.get(j)) == 0) {//esta es la variable encontrada que saldra de la lista                    
+                        //System.out.println("quitar: " + listOfAvailableVariablesNames.get(i));
+                        listOfAvailableVariablesNames.remove(i);//la quito de este listado                    
+                        listOfCrossVariablesNames.add(currentAvailableVariablesNamesSelected.get(j));//la agrego al otro                        
                         btnAddVariableDisabled = true;
                         i = -1;
                         break;
                     }
                 }
             }
-            currentVariablesSelected = null;
+            currentAvailableVariablesNamesSelected = null;
         }
         if (error.length() != 0) {//hay  errores al relacionar la variables 
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
@@ -461,17 +604,24 @@ public class IndicatorsRateMB {
             nextStep = false;
         }
         if (nextStep) {
-            for (int i = 0; i < variablesCrossList.size(); i++) {
+            for (int i = 0; i < listOfCrossVariablesNames.size(); i++) {
                 for (int j = 0; j < currentVariablesCrossSelected.size(); j++) {
-                    if (variablesCrossList.get(i).compareTo(currentVariablesCrossSelected.get(j)) == 0) {//esta es la variable encontrada que saldra de la lista                    
-                        variablesCrossList.remove(i);//la quito de este listado                    
-                        variablesList.add(currentVariablesCrossSelected.get(j));//la agrego al otro                        
-                        btnRemoveVariableDisabled = true;
-                        i = -1;
+                    if (listOfCrossVariablesNames.get(i).compareTo(currentVariablesCrossSelected.get(j)) == 0) {//esta es la variable encontrada que saldra de la lista                    
+                        if (listOfCrossVariablesNames.get(i).compareTo("comuna") != 0
+                                && listOfCrossVariablesNames.get(i).compareTo("zona") != 0
+                                && listOfCrossVariablesNames.get(i).compareTo("cuadrante") != 0
+                                && listOfCrossVariablesNames.get(i).compareTo("corredor") != 0
+                                && listOfCrossVariablesNames.get(i).compareTo("barrio") != 0) {
+                            listOfCrossVariablesNames.remove(i);//la quito de este listado                    
+                            listOfAvailableVariablesNames.add(currentVariablesCrossSelected.get(j));//la agrego al otro                        
+
+                            i = -1;
+                        }
                         break;
                     }
                 }
             }
+            btnRemoveVariableDisabled = true;
             currentVariablesCrossSelected = null;
         }
         if (error.length() != 0) {//hay  errores al relacionar la variables 
@@ -480,21 +630,24 @@ public class IndicatorsRateMB {
     }
 
     public void createImage() {
-        if (currentGraphType.compareTo("barras vertical") == 0) {
+        if (!variablesCrossData.isEmpty()) {
             try {
-                JFreeChart chart = createBarChart();
+                JFreeChart chart = createLineChart();
                 File chartFile = new File("dynamichart");
-                ChartUtilities.saveChartAsPNG(chartFile, chart, 650, 500);
+                ChartUtilities.saveChartAsPNG(chartFile, chart, 700, 500);
                 chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
             } catch (Exception e) {
+                System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
             }
         }
     }
 
     public void reset() {
+        dataTableHtml = "";
+        chartImage = null;
         currentVariableConfiguring = null;
-        variablesCrossList = new ArrayList<String>();
-        currentVariablesSelected = new ArrayList<String>();
+        listOfCrossVariablesNames = new ArrayList<String>();
+        currentAvailableVariablesNamesSelected = new ArrayList<String>();
         currentVariablesCrossSelected = new ArrayList<String>();
         firstVariablesCrossSelected = null;
         currentCategoricalValuesList = new ArrayList<String>();
@@ -502,23 +655,207 @@ public class IndicatorsRateMB {
         titlePage = currentIndicator.getIndicatorGroup();
         titleIndicator = currentIndicator.getIndicatorGroup();
         subTitleIndicator = currentIndicator.getIndicatorName();
-        variablesListData = getVariablesIndicator();
+        listOfCrossVariablesNames = new ArrayList<String>();//SelectItem[listOfAvailableVariablesNames.size()];
+        listOfAvailableVariablesNames = new ArrayList<String>();//SelectItem[completeListOfVariableData.size()];        
+        completeListOfVariableData = getVariablesIndicator();
+        for (int i = 0; i < completeListOfVariableData.size(); i++) {
+            listOfAvailableVariablesNames.add(completeListOfVariableData.get(i).getName());
+        }
+        completeListOfVariableData.add(createVariable("zona", "areas", false));//agrego de ultima la desagregacion espacial
+        listOfCrossVariablesNames.add("zona");//agrego de primera en la lista de nombres a cruzar
+
         variablesGraph = new ArrayList<String>();
         valuesGraph = new ArrayList<String>();
         currentValueGraph = "";
         currentVariableGraph = "";
         numberCross = currentIndicator.getNumberCross();
-        variablesList = new ArrayList<String>();//SelectItem[variablesListData.size()];
-        for (int i = 0; i < variablesListData.size(); i++) {
-            variablesList.add(variablesListData.get(i).getName());
-        }
-        dynamicDataTableGroup = new OutputPanel();//creo el panel grid
 
-        variablesCrossList = new ArrayList<String>();//SelectItem[variablesListData.size()];
+        dynamicDataTableGroup = new OutputPanel();//creo el panel grid        
         btnAddVariableDisabled = true;
         btnRemoveVariableDisabled = true;
-        currentVariablesSelected = null;
+        currentAvailableVariablesNamesSelected = null;
         currentVariablesCrossSelected = null;
+
+        spatialDisaggregationTypes = new ArrayList<String>();
+        spatialDisaggregationTypes.add("Zona");
+        spatialDisaggregationTypes.add("Cuadrante");
+        spatialDisaggregationTypes.add("Comuna");
+        spatialDisaggregationTypes.add("Corredor");
+        spatialDisaggregationTypes.add("Barrio");
+        currentSpatialDisaggregation = "Zona";
+
+        temporalDisaggregationTypes = new ArrayList<String>();
+        temporalDisaggregationTypes.add("Anual");
+        temporalDisaggregationTypes.add("Mensual");
+        temporalDisaggregationTypes.add("Diaria");
+        currentTemporalDisaggregation = "Anual";
+
+        multiplers = new ArrayList<String>();
+        multiplers.add("1.000");
+        multiplers.add("10.000");
+        multiplers.add("100.000");
+        multiplers.add("1'000.000");
+        currentMultipler = "100.000";
+
+
+    }
+
+    public void changeSpatialDisaggregation() {
+
+        btnAddVariableDisabled = true;
+        currentAvailableVariablesNamesSelected = null;
+        //elimino la primera de variables a cruzar y la ultima de listaVariblesData
+        listOfCrossVariablesNames.remove(0);
+        completeListOfVariableData.remove(completeListOfVariableData.size() - 1);
+        //copeo las demas variables
+        List<String> listOfCrossVariablesNamesAux = new ArrayList<String>();
+        for (int i = 0; i < listOfCrossVariablesNames.size(); i++) {
+            listOfCrossVariablesNamesAux.add(listOfCrossVariablesNames.get(i));
+            listOfCrossVariablesNames.remove(0);
+            i--;
+        }
+
+        //agrego la nueva variable
+        if (currentSpatialDisaggregation.compareTo("Barrio") == 0) {
+            completeListOfVariableData.add(createVariable("barrio", "neighborhoods", false));//agrego de ultima la desagregacion espacial
+            listOfCrossVariablesNames.add("barrio");//agrego de primera en la lista de nombres a cruzar                        
+        }
+        if (currentSpatialDisaggregation.compareTo("Comuna") == 0) {
+            completeListOfVariableData.add(createVariable("comuna", "communes", false));//agrego de ultima la desagregacion espacial
+            listOfCrossVariablesNames.add("comuna");//agrego de primera en la lista de nombres a cruzar                        
+        }
+        if (currentSpatialDisaggregation.compareTo("Corredor") == 0) {
+            completeListOfVariableData.add(createVariable("corredor", "corridors", false));//agrego de ultima la desagregacion espacial
+            listOfCrossVariablesNames.add("corredor");//agrego de primera en la lista de nombres a cruzar                      
+        }
+        if (currentSpatialDisaggregation.compareTo("Cuadrante") == 0) {
+            completeListOfVariableData.add(createVariable("cuadrante", "quadrants", false));//agrego de ultima la desagregacion espacial
+            listOfCrossVariablesNames.add("cuadrante");//agrego de primera en la lista de nombres a cruzar                        
+        }
+        if (currentSpatialDisaggregation.compareTo("Zona") == 0) {
+            completeListOfVariableData.add(createVariable("zona", "areas", false));//agrego de ultima la desagregacion espacial
+            listOfCrossVariablesNames.add("zona");//agrego de primera en la lista de nombres a cruzar                                    
+        }
+        //agrego las variables que copie anteriormente(todas menos la primera que este en el listado de variables acruzar)
+        for (int i = 0; i < listOfCrossVariablesNamesAux.size(); i++) {
+            listOfCrossVariablesNames.add(listOfCrossVariablesNamesAux.get(i));
+        }
+        
+    }
+
+    private int getDateDifference(Date date1, Date date2, int typeDifference) {
+        //obtiene la diferencia entre dos fechas //dias valor=1 //meses valor=2 //años valor=3
+        int retorno = 0;
+        try {
+            Calendar cal1;
+            cal1 = Calendar.getInstance();
+            Calendar cal2;
+            cal2 = Calendar.getInstance();
+            // different date might have different offset 
+            cal1.setTime(date1);
+            long ldate1 = date1.getTime() + cal1.get(Calendar.ZONE_OFFSET) + cal1.get(Calendar.DST_OFFSET);
+            cal2.setTime(date2);
+            long ldate2 = date2.getTime() + cal2.get(Calendar.ZONE_OFFSET) + cal2.get(Calendar.DST_OFFSET);
+
+            // Use integer calculation, truncate the decimals 
+            int hr1 = (int) (ldate1 / 3600000); //60*60*1000 
+            int hr2 = (int) (ldate2 / 3600000);
+
+            int days1 = (int) hr1 / 24;
+            int days2 = (int) hr2 / 24;
+
+            int dateDiff = days2 - days1;
+            int yearDiff = cal2.get(Calendar.YEAR) - cal1.get(Calendar.YEAR);
+            int monthDiff = yearDiff * 12 + cal2.get(Calendar.MONTH) - cal1.get(Calendar.MONTH);
+
+            if (typeDifference == 1) {//diferencia en dias
+                if (dateDiff < 0) {
+                    dateDiff = dateDiff * (-1);
+                }
+                retorno = dateDiff;
+            } else if (typeDifference == 2) {//diferencia en meses
+                if (monthDiff < 0) {
+                    monthDiff = monthDiff * (-1);
+                }
+                retorno = monthDiff;
+            } else if (typeDifference == 3) {//diferencia en años
+                if (yearDiff < 0) {
+                    yearDiff = yearDiff * (-1);
+                }
+                retorno = yearDiff;
+            }
+        } catch (Exception pe) {
+            System.out.println("Error 2 en " + this.getClass().getName() + ":" + pe.toString());
+        }
+        return retorno;
+    }
+
+    private Variable createTemporalDisaggregationVariable(Date initialDate, Date endDate) {
+        Variable newVariable = new Variable("Desagregación temporal", "temporalDisaggregation", false);
+        int diferenceRank;
+        int daysMax;
+        Calendar cal1 = Calendar.getInstance();
+        ArrayList<String> valuesName = new ArrayList<String>();//NOMBRE DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(NOMBRE EN LA CATEGORIA)
+        ArrayList<String> valuesId = new ArrayList<String>();  //IDENTIFICADORES DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(ID EN LA CATEGORIA)
+        ArrayList<String> valuesConf = new ArrayList<String>();//NOMBRE DE LOS VALORES CONFIGURADOS POR EL USUARIO QUE PUEDE TOMAR LA VARIABLE        
+        // different date might have different offset 
+        SimpleDateFormat sdf;
+
+        if (currentTemporalDisaggregation.compareTo("Diaria") == 0) {
+            diferenceRank = getDateDifference(initialDate, endDate, 1);
+            //System.out.println("(DIFERENCIA EN DIAS) :" + diferenceRank);
+            sdf = new SimpleDateFormat("dd MMM yyyy");
+            for (int i = 0; i < diferenceRank + 1; i++) {//+1 por que la difrencia no toma el ultimo dia
+                cal1.setTime(initialDate);
+                cal1.add(Calendar.DATE, i);
+                initialDateStr = formato.format(cal1.getTime());
+                valuesName.add(sdf.format(cal1.getTime()));//agrego el dia en formato: 14 Junio 2013
+                valuesId.add(initialDateStr + "}" + initialDateStr);
+                valuesConf.add(sdf.format(cal1.getTime()));
+            }
+        }
+        if (currentTemporalDisaggregation.compareTo("Mensual") == 0) {
+            diferenceRank = getDateDifference(initialDate, endDate, 2);
+            //System.out.println("(DIFERENCIA EN MESES) :" + diferenceRank);
+            sdf = new SimpleDateFormat("MMM yyyy");
+            for (int i = 0; i < diferenceRank + 1; i++) {//+1 por que la difrencia no toma el ultimo mes
+                cal1.setTime(initialDate);
+                cal1.set(Calendar.DATE, 1);//coloco el dia en 1
+                cal1.add(Calendar.MONTH, i);//fecha inicial se la aumenta i meses                
+                initialDateStr = formato.format(cal1.getTime());
+                daysMax = cal1.getActualMaximum(Calendar.DAY_OF_MONTH); // numero maximo de dias del mes
+                cal1.set(Calendar.DATE, daysMax);//coloco el dia en el maximo para el mes                
+                endDateStr = formato.format(cal1.getTime());
+                valuesName.add(sdf.format(cal1.getTime()));//agrego el dia en formato: Junio 2013
+                valuesId.add(initialDateStr + "}" + endDateStr);
+                valuesConf.add(sdf.format(cal1.getTime()));
+            }
+        }
+        if (currentTemporalDisaggregation.compareTo("Anual") == 0) {
+            diferenceRank = getDateDifference(initialDate, endDate, 3);
+            //System.out.println("(DIFERENCIA EN AÑOS) :" + diferenceRank);
+            sdf = new SimpleDateFormat("yyyy");
+            for (int i = 0; i < diferenceRank + 1; i++) {//+1 por que la difrencia no toma el ultimo dia
+                cal1.setTime(initialDate);
+                cal1.set(Calendar.DATE, 1);//coloco el dia en 1
+                cal1.set(Calendar.MONTH, 0);//coloco el mes en enero(0)
+                cal1.add(Calendar.YEAR, i);//fecha inicial se la aumenta i años                
+                initialDateStr = formato.format(cal1.getTime());
+                cal1.set(Calendar.DATE, 31);//coloco el dia en 31
+                cal1.set(Calendar.MONTH, 11);//coloco el mes en diciembre(11)
+                endDateStr = formato.format(cal1.getTime());
+                valuesName.add(sdf.format(cal1.getTime()));//agrego el dia en formato: Junio 2013
+                valuesId.add(initialDateStr + "}" + endDateStr);
+                valuesConf.add(sdf.format(cal1.getTime()));
+            }
+        }
+        newVariable.setValues(valuesName);
+        newVariable.setValuesId(valuesId);
+        newVariable.setValuesConfigured(valuesConf);
+//        for (int i = 0; i < newVariable.getValues().size(); i++) {
+//            System.out.println(newVariable.getValues().get(i)+"\t:\t"+newVariable.getValuesId().get(i));
+//        }
+        return newVariable;
     }
 
     public Variable createVariable(String name, String generic_table, boolean conf) {
@@ -536,7 +873,7 @@ public class IndicatorsRateMB {
             case age:
                 infInt = 0;
                 supInt = 4;
-                for (int i = 0; i < 23; i++) {
+                for (int i = 0; i < 16; i++) {
                     infStr = String.valueOf(infInt);
                     supStr = String.valueOf(supInt);
                     if (infStr.length() == 1) {
@@ -551,6 +888,9 @@ public class IndicatorsRateMB {
                     infInt = infInt + 5;
                     supInt = supInt + 5;
                 }
+                valuesName.add("80/n");
+                valuesConf.add("80/n");
+                valuesId.add("80/n");
                 break;
             case injuries_fatal:
                 valuesId.add("10");
@@ -662,6 +1002,7 @@ public class IndicatorsRateMB {
                         valuesId.add(rs.getString(1));
                     }
                 } catch (Exception e) {
+                    System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
                 }
                 break;
         }
@@ -684,19 +1025,19 @@ public class IndicatorsRateMB {
         return arrayReturn;
     }
 
-    public List<String> getGraphTypes() {
-        ArrayList<String> listReturn = new ArrayList<String>();
-        try {
-            ResultSet rs = connectionJdbcMB.consult("Select graph_type from indicators where indicator_id=" + String.valueOf(currentIndicator.getIndicatorId()));
-            if (rs.next()) {
-                String[] splitGraphType = rs.getString(1).split(",");
-                listReturn.addAll(Arrays.asList(splitGraphType));
-            }
-        } catch (Exception e) {
-        }
-        return listReturn;
-    }
-
+//    public List<String> getGraphTypes() {
+//        ArrayList<String> listReturn = new ArrayList<String>();
+//        try {
+//            ResultSet rs = connectionJdbcMB.consult("Select graph_type from indicators where indicator_id=" + String.valueOf(currentIndicator.getIndicatorId()));
+//            if (rs.next()) {
+//                String[] splitGraphType = rs.getString(1).split(",");
+//                listReturn.addAll(Arrays.asList(splitGraphType));
+//            }
+//        } catch (Exception e) {
+//            System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
+//        }
+//        return listReturn;
+//    }
     private String getColorType() {
         if (colorType) {
             return "bgcolor=\"#DDDDFF\"";
@@ -738,7 +1079,7 @@ public class IndicatorsRateMB {
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
         strReturn = strReturn + "            <tr>\r\n";
         strReturn = strReturn + "                <td id=\"firstTd\" >\r\n";
-        strReturn = strReturn + "                Cifras por: " + String.valueOf(multiplierK) + " habitantes\r\n";
+        //strReturn = strReturn + "                Cifras por: " + String.valueOf(multiplierK) + " habitantes\r\n";
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td class=\"ui-widget-header\">\r\n";
         //-------------------------------------------------------------------
@@ -865,15 +1206,6 @@ public class IndicatorsRateMB {
             strReturn = strReturn + "                            </tr>\r\n";
             changeColorType();//cambiar de color las filas de blanco a azul
         }
-        //----------------------------------------------------------------------
-        //AGREGO LA ULTIMA FILA CORRESPONDIENTE A LOS TOTALES
-        //----------------------------------------------------------------------
-//        strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-//        for (int i = 0; i < totalsHorizontal.size(); i++) {
-//            strReturn = strReturn + "                                <td>" + totalsHorizontal.get(i) + "</td>\r\n";
-//        }
-//        strReturn = strReturn + "                                <td>" + String.valueOf(grandTotal) + "</td>\r\n";
-//        strReturn = strReturn + "                            </tr>\r\n";
         //-------------------------------------------------------------------
         //FINALIZA
         //-------------------------------------------------------------------        
@@ -882,35 +1214,34 @@ public class IndicatorsRateMB {
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "            </tr>\r\n";
         strReturn = strReturn + "        </table>\r\n";
-        System.out.println(strReturn);
+        //System.out.println(strReturn);
         return strReturn;
     }
 
-    public JFreeChart createBarChart() {
+    public JFreeChart createLineChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         String indicatorName = currentIndicator.getIndicatorName();
         String categoryAxixLabel = "";
         try {
-
             int pos = 0;
+            double value;
             String sql = "";
             sql = sql + "SELECT * FROM " + pivotTableName;
             ResultSet rs;
-            if (variablesCrossData.size() == 1) {
-                rs = connectionJdbcMB.consult(sql);
-                while (rs.next()) {
-                    dataset.setValue(rs.getLong("count"), rs.getString(1), "-");
-                }
-            }
+
             if (variablesCrossData.size() == 2) {
-                rs = connectionJdbcMB.consult(sql);
+                rs = connectionJdbcMB.consult(sql + " ORDER BY id");
                 while (rs.next()) {
-                    dataset.setValue(rs.getLong("count"), rs.getString(1), rs.getString(2));
+                    value = Double.parseDouble(formateador.format(Double.parseDouble("0")).replace(",", "."));
+                    if (rs.getString("count").compareTo("0") != 0 && rs.getString("poblacion").compareTo("SIN DATO") != 0) {
+                        value = Double.parseDouble(formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("poblacion"))) * multiplierK).replace(",", "."));
+                    }
+                    dataset.setValue(value, rs.getString(2), rs.getString(1));
                 }
             }
             if (variablesCrossData.size() == 3) {
                 //determino los nombres de las columnas
-                rs = connectionJdbcMB.consult(sql);
+                rs = connectionJdbcMB.consult(sql + " ORDER BY id");
                 int numberColumns = rs.getMetaData().getColumnCount();
                 ArrayList<String> nameColumns = new ArrayList<String>();
                 for (int i = 1; i <= numberColumns; i++) {//metadata cuenta desde 1
@@ -925,44 +1256,50 @@ public class IndicatorsRateMB {
                 }
                 //adicino la instruccion WHERE a la consulta
                 sql = sql + " WHERE " + nameColumns.get(pos) + " LIKE '" + currentValueGraph + "' ";
-                rs = connectionJdbcMB.consult(sql);
-                if (pos == 0) {
-                    while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString(2), rs.getString(3));
+                rs = connectionJdbcMB.consult(sql + " ORDER BY id");
+
+                while (rs.next()) {
+                    value = Double.parseDouble(formateador.format(Double.parseDouble("0")).replace(",", "."));
+                    if (rs.getString("count").compareTo("0") != 0 && rs.getString("poblacion").compareTo("SIN DATO") != 0) {
+                        value = Double.parseDouble(formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("poblacion"))) * multiplierK).replace(",", "."));
                     }
-                    categoryAxixLabel = variablesCrossData.get(2).getName();
-                }
-                if (pos == 1) {
-                    while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString(1), rs.getString(3));
+                    if (pos == 1) {
+                        dataset.setValue(value, rs.getString(3), rs.getString(1));
                     }
-                    categoryAxixLabel = variablesCrossData.get(2).getName();
-                }
-                if (pos == 2) {
-                    while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString(1), rs.getString(2));
+                    if (pos == 2) {
+                        dataset.setValue(value, rs.getString(2), rs.getString(1));
                     }
-                    categoryAxixLabel = variablesCrossData.get(1).getName();
                 }
+                categoryAxixLabel = variablesCrossData.get(0).getName();
                 indicatorName = currentIndicator.getIndicatorName() + "\n(" + currentVariableGraph + " es " + currentValueGraph + ")";
             }
         } catch (SQLException ex) {
-            System.out.println("Error: " + ex.toString());
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + ex.toString());
         }
-        JFreeChart chartReturn = ChartFactory.createBarChart(indicatorName, categoryAxixLabel, "Conteo", dataset, PlotOrientation.VERTICAL, true, true, false);
+        indicatorName = indicatorName + "\n Cifras por " + currentMultipler + " habitantes";
+        final JFreeChart chartReturn = ChartFactory.createLineChart(
+                indicatorName, // chart title
+                categoryAxixLabel, // domain axis label
+                "Tasa", // range axis label
+                dataset, // data
+                PlotOrientation.VERTICAL, // orientation
+                true, // include legend
+                true, // tooltips
+                false // urls
+                );
+        //JFreeChart chartReturn = ChartFactory.createLineChart(indicatorName, categoryAxixLabel, "Conteo", dataset, PlotOrientation.VERTICAL, true, true, false);
         //COLORES DE FONDO Y TITULO----------------------------
         chartReturn.setBackgroundPaint(new Color(200, 200, 200));
         chartReturn.getTitle().setPaint(new Color(50, 50, 50));
         chartReturn.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
-        //COLOCAR GRADIENTE----------------------------
-        CategoryPlot p = chartReturn.getCategoryPlot();
-        p.setRangeGridlinePaint(Color.white);
         //COLOCAR LABELS A LOS GRAFICOS----------------------------
         CategoryPlot plot = (CategoryPlot) chartReturn.getPlot();
-        CategoryItemRenderer renderer = plot.getRenderer();
-        CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0"));//DecimalFormat("0.00"));
-        renderer.setItemLabelGenerator(generator);
-        renderer.setItemLabelsVisible(true);
+        if (showItems) {
+            CategoryItemRenderer renderer = plot.getRenderer();
+            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00"));//DecimalFormat("0.00"));
+            renderer.setItemLabelGenerator(generator);
+            renderer.setItemLabelsVisible(true);
+        }
         //ROTAR LASETIQUETAS DEL EJE X-----------------------------
         CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
         xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
@@ -979,7 +1316,7 @@ public class IndicatorsRateMB {
             //---------------------------------------------------------
             //DETEMINO LOS NOMBRES DE LAS COLUMNAS DE TABLA PIVOT()
             //---------------------------------------------------------
-            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
+            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName + " ORDER BY id");
             int ncol = rs.getMetaData().getColumnCount();
             for (int i = 1; i <= ncol; i++) {
                 columnNamesPivot.add(rs.getMetaData().getColumnName(i));
@@ -992,21 +1329,16 @@ public class IndicatorsRateMB {
                         "SELECT " + columnNamesPivot.get(0)
                         + " FROM " + pivotTableName
                         + " GROUP BY " + columnNamesPivot.get(0)
-                        + " order by MIN(id);");
-//                rs = connectionJdbcMB.consult(
-//                        "SELECT DISTINCT " + columnNamesPivot.get(0)
-//                        + " FROM " + pivotTableName
-//                        + " ORDER BY " + columnNamesPivot.get(0));
+                        + " ORDER BY MIN(id)");
             }
             if (variablesCrossData.size() == 3) {
                 String sql =
                         "SELECT "
                         + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
                         + " FROM " + pivotTableName
-                        + " group by "
+                        + " GROUP BY "
                         + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
-                        + " order by "
-                        + " MIN(id); ";
+                        + " ORDER BY MIN(id)";
                 rs = connectionJdbcMB.consult(sql);
 
 //                rs = connectionJdbcMB.consult(
@@ -1030,7 +1362,7 @@ public class IndicatorsRateMB {
                         "SELECT " + columnNamesPivot.get(1)
                         + " FROM " + pivotTableName
                         + " GROUP BY " + columnNamesPivot.get(1)
-                        + " order by MIN(id);");
+                        + " order by MIN(id)");
 
 //                rs = connectionJdbcMB.consult(
 //                        "SELECT DISTINCT " + columnNamesPivot.get(1)
@@ -1043,7 +1375,7 @@ public class IndicatorsRateMB {
                         "SELECT " + columnNamesPivot.get(2)
                         + " FROM " + pivotTableName
                         + " GROUP BY " + columnNamesPivot.get(2)
-                        + " order by MIN(id);");
+                        + " order by MIN(id)");
 //                rs = connectionJdbcMB.consult(
 //                        "SELECT DISTINCT " + columnNamesPivot.get(2)
 //                        + " FROM " + pivotTableName
@@ -1061,15 +1393,15 @@ public class IndicatorsRateMB {
                     matrixResult[i][j] = "0";
                 }
             }
-            rs = connectionJdbcMB.consult("SELECT MAX(poblacion) FROM " + pivotTableName);
-            rs.next();
-            multiplierK = rs.getString("max").length();
-            multiplierK = multiplierK - 1;
-            double m = Math.pow(10, multiplierK);
-            multiplierK = (int) m;
+            //rs = connectionJdbcMB.consult("SELECT MAX(poblacion) FROM " + pivotTableName + " WHERE poblacion NOT LIKE 'SIN DATO'");
+            //rs.next();
+            multiplierK = Integer.parseInt(currentMultipler.replace(".", "").replace("'", ""));
+//            multiplierK = multiplierK - 1;
+//            double m = Math.pow(10, multiplierK);
+//            multiplierK = (int) m;
             //multiplierK=Math.pow(10, multiplierK);
 
-            rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
+            rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName + " ORDER BY id");
             while (rs.next()) {
                 boolean find = false;
                 String value;
@@ -1078,8 +1410,8 @@ public class IndicatorsRateMB {
                         if (variablesCrossData.size() == 1) {//ES UNA VARIABLE                            
                             if (rs.getString(1).compareTo(columNames.get(i)) == 0) {
                                 value = formateador.format(Double.parseDouble("0"));
-                                if (rs.getString("count").compareTo("0") != 0) {
-                                    value = formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("poblacion"))) * m);
+                                if (rs.getString("count").compareTo("0") != 0 && rs.getString("poblacion").compareTo("SIN DATO") != 0) {
+                                    value = formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("poblacion"))) * multiplierK);
                                 }
                                 matrixResult[i][j] = "<b>" + value + "</b><br/>(" + rs.getString("count") + "/" + rs.getString("poblacion") + ")";
                                 //matrixResult[i][j] = rs.getString("count");
@@ -1089,8 +1421,8 @@ public class IndicatorsRateMB {
                         if (variablesCrossData.size() == 2) {//SON DOS VARIABLES                            
                             if (rs.getString(1).compareTo(columNames.get(i)) == 0 && rs.getString(2).compareTo(rowNames.get(j)) == 0) {
                                 value = formateador.format(Double.parseDouble("0"));
-                                if (rs.getString("count").compareTo("0") != 0) {
-                                    value = formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("poblacion"))) * m);
+                                if (rs.getString("count").compareTo("0") != 0 && rs.getString("poblacion").compareTo("SIN DATO") != 0) {
+                                    value = formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("poblacion"))) * multiplierK);
                                 }
                                 matrixResult[i][j] = "<b>" + value + "</b><br/>(" + rs.getString("count") + "/" + rs.getString("poblacion") + ")";
                                 //matrixResult[i][j] = rs.getString("count");
@@ -1100,8 +1432,8 @@ public class IndicatorsRateMB {
                         if (variablesCrossData.size() == 3) {//SON TRES VARIABLES                            
                             if (columNames.get(i).compareTo(rs.getString(1) + "}" + rs.getString(2)) == 0 && rs.getString(3).compareTo(rowNames.get(j)) == 0) {
                                 value = formateador.format(Double.parseDouble("0"));
-                                if (rs.getString("count").compareTo("0") != 0) {
-                                    value = formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("poblacion"))) * m);
+                                if (rs.getString("count").compareTo("0") != 0 && rs.getString("poblacion").compareTo("SIN DATO") != 0) {
+                                    value = formateador.format((Double.parseDouble(rs.getString("count")) / Double.parseDouble(rs.getString("poblacion"))) * multiplierK);
                                 }
                                 matrixResult[i][j] = "<b>" + value + "</b><br/>(" + rs.getString("count") + "/" + rs.getString("poblacion") + ")";
                                 //matrixResult[i][j] = rs.getString("count");
@@ -1117,34 +1449,8 @@ public class IndicatorsRateMB {
                     }
                 }
             }
-            //---------------------------------------------------------            
-            //DETERMINO LOS VECTORES TOTALES DE FILAS Y TOTALES DE COLUMNAS
-            //---------------------------------------------------------            
-//            //System.out.println("INICIA DETERMINO LOS VECTORES TOTALES DE FILAS Y TOTALES DE COLUMNAS xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-//            totalsHorizontal = new ArrayList<String>();
-//            totalsVertical = new ArrayList<String>();
-//            for (int i = 0; i < columNames.size(); i++) {
-            //                totalsHorizontal.add("0");
-//            }
-//            int total;
-//            for (int j = 0; j < rowNames.size(); j++) {
-//                //AGREGO LOS DATOS DE LA FILA
-//                total = 0;
-//                for (int i = 0; i < columNames.size(); i++) {
-//                    totalsHorizontal.set(i, String.valueOf(Integer.parseInt(totalsHorizontal.get(i)) + Integer.parseInt(matrixResult[i][j])));
-//                    total = total + Integer.parseInt(matrixResult[i][j]);
-//                }
-//                totalsVertical.add(String.valueOf(total));
-//            }
-//            //determino general total
-//            grandTotal = 0;
-//            for (int i = 0; i < totalsVertical.size(); i++) {
-//                grandTotal = grandTotal + Integer.parseInt(totalsVertical.get(i));
-//            }
-
-//            System.out.println("FINALIZA IMPRIMIR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         } catch (Exception e) {
-            System.out.println("Error: " + e.toString());
+            System.out.println("Error 6 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -1282,7 +1588,7 @@ public class IndicatorsRateMB {
 //                connectionJdbcMB.non_query("DELETE FROM " + pivotTableName + " WHERE count = 0");//elimino los que tengan resultado=0
 //            }
         } catch (Exception e) {
-            System.out.println("EXCEPTION--------------------------" + e.toString());
+            System.out.println("Error 7 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -1296,24 +1602,24 @@ public class IndicatorsRateMB {
 
         for (int i = 0; i < variablesCrossData.size(); i++) {
             switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable 
-//                case injuries_fatal://TIPO DE LESION -----------------------
-//                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
-//                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
-//                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-//                    }
-//                    sql = sql + "   END AS tipo_lesion";
-//                    break;
-//                case injuries_non_fatal://TIPO DE LESION -----------------------
-//                    sql = sql + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
-//                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
-//                        sql = sql + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-//                    }
-//                    sql = sql + "   END AS tipo_lesion";
-//                    break;
+                case temporalDisaggregation://DETERMINAR LA DESAGREGACION TEMPORAL -----------------------                   
+                    sql = sql + "   CASE \n\r";
+                    for (int j = 0; j < variablesCrossData.get(i).getValuesId().size(); j++) {
+                        String[] splitDates = variablesCrossData.get(i).getValuesId().get(j).split("}");
+                        sql = sql + "       WHEN ( \n\r";
+                        sql = sql + "           " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + splitDates[0] + "','dd/MM/yyyy') AND \n\r";
+                        sql = sql + "           " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + splitDates[1] + "','dd/MM/yyyy') \n\r";
+                        sql = sql + "       ) THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+                    }
+                    sql = sql + "   END AS fecha";
+                    break;
                 case age://DETERMINAR EDAD -----------------------                   
                     sql = sql + "   CASE \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
                         String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
+                        if (splitAge[1].compareTo("n") == 0) {
+                            splitAge[1] = "200";
+                        }
                         sql = sql + "       WHEN (( \n\r";
                         sql = sql + "           CASE \n\r";
                         sql = sql + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r";
@@ -1339,20 +1645,16 @@ public class IndicatorsRateMB {
                     sql = sql + "   CAST((SELECT population FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as poblacion \n\r";
                     break;
                 case communes://COMUNA -----------------------
-                    sql = sql + "   CAST((SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna, \n\r";
-                    sql = sql + "   CAST((SELECT population FROM communes WHERE communes_id=(SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as text) as poblacion \n\r";
+                    //sql = sql + "   CAST((SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna, \n\r";
+                    sql = sql + "   (SELECT commune_name FROM communes WHERE commune_id IN( SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as comuna, \n\r";
+                    sql = sql + "   CAST((SELECT population FROM communes WHERE commune_id=(SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as text) as poblacion \n\r";
                     break;
                 case quadrants://CUADRANTE -----------------------
-                    sql = sql + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante, \n\r";
+                    sql = sql + "   (SELECT quadrant_name FROM quadrants WHERE quadrant_id IN( SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as cuadrante, \n\r";
                     sql = sql + "   CAST((SELECT population FROM quadrants WHERE quadrant_id=(SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as text) as poblacion \n\r";
                     break;
                 case corridors://CORREDOR -----------------------
-                    sql = sql + "   CASE (SELECT neighborhood_corridor FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r";
-                    sql = sql + "       WHEN '1' THEN 'CENTRAL'  \n\r";
-                    sql = sql + "       WHEN '2' THEN 'OCCIDENTAL' \n\r";
-                    sql = sql + "       WHEN '3' THEN 'ORIENTAL' \n\r";
-                    sql = sql + "       WHEN '4' THEN 'SURORIENTAL' \n\r";
-                    sql = sql + "   END AS corredor, \n\r";
+                    sql = sql + "   (SELECT corridor_name FROM corridors WHERE corridor_id IN( SELECT neighborhood_corridor FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as corredor, \n\r";
                     sql = sql + "   CAST((SELECT population FROM corridors WHERE corridor_id=(SELECT neighborhood_corridor FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as text) as poblacion \n\r";
                     break;
                 case areas://ZONA -----------------------        
@@ -1502,7 +1804,7 @@ public class IndicatorsRateMB {
                 connectionJdbcMB.non_query(sql);
             }
         } catch (Exception e) {
-            System.out.println("ERROR POR EXCEPTION:---" + e.toString());
+            System.out.println("Error 8 en " + this.getClass().getName() + ":" + e.toString());
         }
         //------------------------------------------------------------------
         //CREO LA TABLA PREPIVOT A PARTIR DE LA TABLA PREPIVOT_2(agrupando los valores)
@@ -1647,20 +1949,20 @@ public class IndicatorsRateMB {
         this.initialDate = initialDate;
     }
 
-    public List<String> getVariablesCrossList() {
-        return variablesCrossList;
+    public List<String> getListOfCrossVariablesNames() {
+        return listOfCrossVariablesNames;
     }
 
-    public void setVariablesCrossList(List<String> variablesCrossList) {
-        this.variablesCrossList = variablesCrossList;
+    public void setListOfCrossVariablesNames(List<String> listOfCrossVariablesNames) {
+        this.listOfCrossVariablesNames = listOfCrossVariablesNames;
     }
 
-    public List<String> getVariablesList() {
-        return variablesList;
+    public List<String> getListOfAvailableVariablesNames() {
+        return listOfAvailableVariablesNames;
     }
 
-    public void setVariablesList(List<String> variablesList) {
-        this.variablesList = variablesList;
+    public void setListOfAvailableVariablesNames(List<String> listOfAvailableVariablesNames) {
+        this.listOfAvailableVariablesNames = listOfAvailableVariablesNames;
     }
 
     public List<String> getCurrentVariablesCrossSelected() {
@@ -1671,12 +1973,12 @@ public class IndicatorsRateMB {
         this.currentVariablesCrossSelected = currentVariablesCrossSelected;
     }
 
-    public List<String> getCurrentVariablesSelected() {
-        return currentVariablesSelected;
+    public List<String> getCurrentAvailableVariablesNamesSelected() {
+        return currentAvailableVariablesNamesSelected;
     }
 
-    public void setCurrentVariablesSelected(List<String> currentVariablesSelected) {
-        this.currentVariablesSelected = currentVariablesSelected;
+    public void setCurrentAvailableVariablesNamesSelected(List<String> currentAvailableVariablesNamesSelected) {
+        this.currentAvailableVariablesNamesSelected = currentAvailableVariablesNamesSelected;
     }
 
     public boolean isBtnAddVariableDisabled() {
@@ -1703,14 +2005,13 @@ public class IndicatorsRateMB {
         this.valuesCategoryList = valuesCategoryList;
     }
 
-    public String getCurrentGraphType() {
-        return currentGraphType;
-    }
-
-    public void setCurrentGraphType(String currentGraphType) {
-        this.currentGraphType = currentGraphType;
-    }
-
+//    public String getCurrentGraphType() {
+//        return currentGraphType;
+//    }
+//
+//    public void setCurrentGraphType(String currentGraphType) {
+//        this.currentGraphType = currentGraphType;
+//    }
     public List<String> getCurrentCategoricalValuesList() {
         return currentCategoricalValuesList;
     }
@@ -1859,5 +2160,68 @@ public class IndicatorsRateMB {
 
     public void setShowCalculation(boolean showCalculation) {
         this.showCalculation = showCalculation;
+    }
+
+    public String getCurrentTemporalDisaggregation() {
+        return currentTemporalDisaggregation;
+    }
+
+    public void setCurrentTemporalDisaggregation(String currentTemporalDisaggregation) {
+        this.currentTemporalDisaggregation = currentTemporalDisaggregation;
+    }
+
+    public String getCurrentMultipler() {
+        return currentMultipler;
+    }
+
+    public void setCurrentMultipler(String currentMultipler) {
+        this.currentMultipler = currentMultipler;
+    }
+
+    public List<String> getMultiplers() {
+        return multiplers;
+    }
+
+    public void setMultiplers(List<String> multiplers) {
+        this.multiplers = multiplers;
+    }
+
+    public List<String> getTemporalDisaggregationTypes() {
+        return temporalDisaggregationTypes;
+    }
+
+    public void setTemporalDisaggregationTypes(List<String> temporalDisaggregationTypes) {
+        this.temporalDisaggregationTypes = temporalDisaggregationTypes;
+    }
+
+    public boolean isShowItems() {
+        return showItems;
+    }
+
+    public void setShowItems(boolean showItems) {
+        this.showItems = showItems;
+    }
+    public String getNewConfigurationName() {
+        return newConfigurationName;
+    }
+
+    public void setNewConfigurationName(String newConfigurationName) {
+        this.newConfigurationName = newConfigurationName;
+    }
+
+    public String getCurrentConfigurationSelected() {
+        return currentConfigurationSelected;
+    }
+
+    public void setCurrentConfigurationSelected(String currentConfigurationSelected) {
+        this.currentConfigurationSelected = currentConfigurationSelected;
+    }
+
+    public List<String> getConfigurationsList() {
+        return configurationsList;
+    }
+
+    public void setConfigurationsList(List<String> configurationsList) {
+        this.configurationsList = configurationsList;
     }
 }
