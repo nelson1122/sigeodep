@@ -38,6 +38,8 @@ public class Jobs implements Serializable {
     private String jobName;
     @OneToMany(mappedBy = "jobId")
     private List<Victims> victimsList;
+    @OneToMany(mappedBy = "occupation")
+    private List<SivigilaAggresor> sivigilaAggresorList;
 
     public Jobs() {
     }
@@ -74,6 +76,15 @@ public class Jobs implements Serializable {
 
     public void setVictimsList(List<Victims> victimsList) {
 	this.victimsList = victimsList;
+    }
+
+    @XmlTransient
+    public List<SivigilaAggresor> getSivigilaAggresorList() {
+        return sivigilaAggresorList;
+    }
+
+    public void setSivigilaAggresorList(List<SivigilaAggresor> sivigilaAggresorList) {
+        this.sivigilaAggresorList = sivigilaAggresorList;
     }
 
     @Override

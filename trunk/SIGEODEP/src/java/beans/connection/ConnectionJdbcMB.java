@@ -1844,7 +1844,7 @@ public class ConnectionJdbcMB implements Serializable {
     }
 
     public RowDataTable loadFatalInjuryTraafficRecord(String idVIctim) {
-        //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
+        //CARGO LOS DATOS ACCIDENTE FALTAL POR TRANSITO
         //btnEditDisabled = true;
         //btnRemoveDisabled = true;
         FatalInjuryTraffic currentFatalInjuryT = fatalInjuryTrafficFacade.findByIdVictim(idVIctim);
@@ -2146,7 +2146,7 @@ public class ConnectionJdbcMB implements Serializable {
         }
         //******alcohol_level_counterpart_id
         try {
-            if (currentFatalInjuryT.getFatalInjuries().getAlcoholLevelVictimId() != null) {
+            if (currentFatalInjuryT.getAlcoholLevelCounterpartId() != null) {
                 newRowDataTable.setColumn42(currentFatalInjuryT.getAlcoholLevelCounterpartId().getAlcoholLevelName());
             }
         } catch (Exception e) {
@@ -2639,47 +2639,534 @@ public class ConnectionJdbcMB implements Serializable {
         return newRowDataTable;
     }
 
+    public RowDataTable loadSivigilaVifRecord(String idVIctim) {
+        //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
+        //btnEditDisabled = true;
+        //btnRemoveDisabled = true;
+        NonFatalDomesticViolence currentNonFatalDomesticV = nonFatalDomesticViolenceFacade.findByIdVictim(idVIctim);
+        RowDataTable newRowDataTable = new RowDataTable();
+        //------------------------------------------------------------
+        //SE CARGAN VALORES PARA LA VICTIMA
+        //------------------------------------------------------------               
+        //******non_fatal_injury_id
+        newRowDataTable.setColumn1(currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalInjuryId().toString());
+        //******victim_name        
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimName() != null) {
+            newRowDataTable.setColumn2(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimName());
+        }
+        //******type_id
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getTypeId() != null) {
+            newRowDataTable.setColumn3(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getTypeId().getTypeName());
+        }
+        //******victim_nid
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimNid() != null) {
+            newRowDataTable.setColumn4(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimNid());
+        }
+        //******age_type_id
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getAgeTypeId() != null) {
+            newRowDataTable.setColumn5(ageTypesFacade.find(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getAgeTypeId()).getAgeTypeName());
+        }
+        //******victim_age
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimAge() != null) {
+            newRowDataTable.setColumn6(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimAge().toString());
+        }
+        //******gender_id
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getGenderId() != null) {
+            newRowDataTable.setColumn7(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getGenderId().getGenderName());
+        }
+        //******job_id        
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getJobId() != null) {
+            newRowDataTable.setColumn8(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getJobId().getJobName());
+        }
+        //******victim_address
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimAddress() != null) {
+            newRowDataTable.setColumn9(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimAddress());
+        }
+        //******insurance_id
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getInsuranceId() != null) {
+            newRowDataTable.setColumn10(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getInsuranceId().getInsuranceName());
+        }
+        //******ethnic_group_id
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getEthnicGroupId() != null) {
+            newRowDataTable.setColumn11(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getEthnicGroupId().getEthnicGroupName());
+        }
+        //informacion de grupos vunerables
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVulnerableGroupsList() != null) {
+            if (!currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVulnerableGroupsList().isEmpty()) {
+                newRowDataTable.setColumn12(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVulnerableGroupsList().get(0).getVulnerableGroupName());
+            }
+        }
+        //******residence_municipality
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getResidenceDepartment() != null && (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getResidenceMunicipality() != null)) {
+                short departamentId = currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getResidenceDepartment();
+                short municipalityId = currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getResidenceMunicipality();
+                MunicipalitiesPK mPk = new MunicipalitiesPK(departamentId, municipalityId);
+                newRowDataTable.setColumn13(municipalitiesFacade.find(mPk).getMunicipalityName());
+            }
+        } catch (Exception e) {
+        }
+        //******residence_department
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getResidenceDepartment() != null) {
+            newRowDataTable.setColumn14(departamentsFacade.find(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getResidenceDepartment()).getDepartamentName());
+        }
+        //******victim_telephone
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimTelephone() != null) {
+            newRowDataTable.setColumn15(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimTelephone());
+        }
+        //******victim_date_of_birth
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimDateOfBirth() != null) {
+            newRowDataTable.setColumn16(sdf.format(currentNonFatalDomesticV.getNonFatalInjuries().getVictimId().getVictimDateOfBirth()));
+        }
+        //------------------------------------------------------------
+        //SE CARGAN VALORES PARA SIVIGILA VICTIM
+        //------------------------------------------------------------               
+        //******sivigila_victim.health_category
+        //try {
+            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getHealthCategory() != null) {
+                newRowDataTable.setColumn17(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getHealthCategory().getSivigilaTipSsName());
+//                String sql = "SELECT sivigila_tip_ss_name FROM sivigila_tip_ss WHERE sivigila_tip_ss_id=" + currentNonFatalDomesticV.getSivigilaEvent().getZone();
+//                rs = consult(sql);
+//                if (rs.next()) {
+//                    newRowDataTable.setColumn17(rs.getString(1));
+//                }
+            }
+        //} catch (Exception e) {
+        //}
+        //escolaridad victima
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getEducationalLevelId() != null) {
+            newRowDataTable.setColumn18(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getEducationalLevelId().getSivigilaEducationalLevelName());
+        }
+        //factor vulnerabilidad victima
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getVulnerabilityId() != null) {
+            newRowDataTable.setColumn19(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getVulnerabilityId().getSivigilaVulnerabilityName());
+        }
+        //otro factor vulnerabilidad victima
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getOtherVulnerability() != null) {
+            newRowDataTable.setColumn20(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getOtherVulnerability());
+        }
+        //antecedentes de hecho similar        
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getAntecedent() != null) {
+            newRowDataTable.setColumn21(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getAntecedent().getBooleanName());
+//            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getAntecedent() == true) {
+//                newRowDataTable.setColumn21("SI");
+//            } else {
+//                newRowDataTable.setColumn21("NO");
+//            }
+        }
+
+        //------------------------------------------------------------
+        //SE CARGAN VALORES PARA LA LESION
+        //------------------------------------------------------------       
+        //******injury_neighborhood_id//y comuna
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId() != null) {
+            newRowDataTable.setColumn22(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId().getNeighborhoodName());
+            newRowDataTable.setColumn23(String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId().getNeighborhoodSuburb()));
+        }
+        //******direccion evento
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryAddress() != null) {
+            newRowDataTable.setColumn40(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryAddress());
+        }
+        //******checkup_date
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getCheckupDate() != null) {
+            newRowDataTable.setColumn24(sdf.format(currentNonFatalDomesticV.getNonFatalInjuries().getCheckupDate()));
+        }
+        //******checkup_time
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getCheckupTime() != null) {
+                hours = String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getCheckupTime().getHours());
+                minutes = String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getCheckupTime().getMinutes());
+                if (hours.length() != 2) {
+                    hours = "0" + hours;
+                }
+                if (minutes.length() != 2) {
+                    minutes = "0" + minutes;
+                }
+                newRowDataTable.setColumn25(hours + minutes);
+            }
+        } catch (Exception e) {
+        }
+        //******injury_date
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryDate() != null) {
+            newRowDataTable.setColumn26(sdf.format(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryDate()));
+        }        
+        //******injury_time
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryTime() != null) {
+                hours = String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryTime().getHours());
+                minutes = String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryTime().getMinutes());
+                if (hours.length() != 2) {
+                    hours = "0" + hours;
+                }
+                if (minutes.length() != 2) {
+                    minutes = "0" + minutes;
+                }
+                newRowDataTable.setColumn27(hours + minutes);
+            }
+        } catch (Exception e) {
+        }        
+        //nombre profesional salud
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getHealthProfessionalId() != null) {
+            newRowDataTable.setColumn28(currentNonFatalDomesticV.getNonFatalInjuries().getHealthProfessionalId().getHealthProfessionalName());
+        }
+        //cargo la lista de abusos(tipos de maltrato)-----------------------------------
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalDomesticViolence() != null) {
+                if (currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalDomesticViolence().getAbuseTypesList() != null) {
+                    List<AbuseTypes> abuseTypesList = currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalDomesticViolence().getAbuseTypesList();
+                    for (int i = 0; i < abuseTypesList.size(); i++) {
+                        int caso = (int) abuseTypesList.get(i).getAbuseTypeId();
+                        String sql = "SELECT abuse_type_name FROM abuse_types WHERE abuse_type_id=" + caso;
+                        rs = consult(sql);
+                        if (rs.next()) {
+                            newRowDataTable.setColumn29(rs.getString(1));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            //System.out.println("no se cargo tipos de maltrato"+e.toString());
+        }
+        
+
+        
+        //******injury_place_id
+        //try {
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryPlaceId() != null) {
+            newRowDataTable.setColumn39(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryPlaceId().getNonFatalPlaceName());
+        }
+        //} catch (Exception e) {
+        //}
+
+        //uso de alcohol victima
+        //try {
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getUseAlcoholId() != null) {
+            newRowDataTable.setColumn41(currentNonFatalDomesticV.getNonFatalInjuries().getUseAlcoholId().getUseAlcoholDrugsName());
+        }
+        //} catch (Exception e) {
+        //}
+        //******non_fatal_data_source_id
+        //try {
+        if (currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalDataSourceId() != null) {
+            newRowDataTable.setColumn42(currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalDataSourceId().getNonFatalDataSourceName());
+        }
+        //} catch (Exception e) {
+        //}
+
+        //------------------------------------------------------------
+        //SE CARGAN VALORES PARA SIVIGILA EVENT
+        //------------------------------------------------------------               
+        //******sivigila_event.area
+//        try {
+            if (currentNonFatalDomesticV.getSivigilaEvent().getArea() != null) {
+//                String sql = "SELECT area_name FROM areas WHERE area_id=" + currentNonFatalDomesticV.getSivigilaEvent().getZone();
+//                rs = consult(sql);
+//                if (rs.next()) {
+//                    newRowDataTable.setColumn43(rs.getString(1));
+//                }
+                newRowDataTable.setColumn43(currentNonFatalDomesticV.getSivigilaEvent().getArea().getAreaName());
+            }
+//        } catch (Exception e) {
+//        }
+        //edad agresor
+        try {
+            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getAge() != null) {
+                newRowDataTable.setColumn44(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getAge().toString());
+            }
+        } catch (Exception e) {
+        }
+        //genero agresor
+//        try {
+            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender() != null) {
+//                String sql = "SELECT gender_name FROM genders WHERE gender_id=" + currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender();
+//                rs = consult(sql);
+//                if (rs.next()) {
+//                    newRowDataTable.setColumn45(rs.getString(1));
+//                }
+                newRowDataTable.setColumn45(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender().getGenderName());
+            }
+//        } catch (Exception e) {
+//        }
+        //ocupacion agresor
+        try {
+            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOccupation() != null) {
+//                String sql = "SELECT job_name FROM jobs WHERE job_id=" + currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOccupation();
+//                rs = consult(sql);
+//                if (rs.next()) {
+//                    newRowDataTable.setColumn46(rs.getString(1));
+//                }
+                newRowDataTable.setColumn46(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOccupation().getJobName());
+            }
+        } catch (Exception e) {
+        }
+        //escolaridad agresor
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getEducationalLevelId() != null) {
+            newRowDataTable.setColumn47(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getEducationalLevelId().getSivigilaEducationalLevelName());
+        }
+        //} catch (Exception e) {
+        //}
+        //relacion familiar victima
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getRelativeId() != null) {
+            newRowDataTable.setColumn48(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getRelativeId().getAggressorTypeName());
+        }
+        //} catch (Exception e) {
+        //}
+        //otra relacion familiar victima
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherRelative() != null) {
+            newRowDataTable.setColumn49(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherRelative());
+        }
+        //} catch (Exception e) {
+        //}
+        //convive con agresor
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getLiveTogether() != null) {
+            newRowDataTable.setColumn50(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getLiveTogether().getBooleanName());
+//            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getLiveTogether() == true) {
+//                newRowDataTable.setColumn50("SI");
+//            } else {
+//                newRowDataTable.setColumn50("NO");
+//            }
+        }
+        //} catch (Exception e) {
+        //}
+
+        //relacion no familiar victima
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getNoRelativeId() != null) {
+            newRowDataTable.setColumn51(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getNoRelativeId().getSivigilaNoRelativeName());
+        }
+        //} catch (Exception e) {
+        //}
+        //otra relacion no familiar victima
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherNoRelative() != null) {
+            newRowDataTable.setColumn52(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherNoRelative());
+        }
+        //} catch (Exception e) {
+        //}
+        //grupo agresor
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGroupId() != null) {
+            newRowDataTable.setColumn53(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGroupId().getSivigilaGroupName());
+        }
+        //} catch (Exception e) {
+        //}
+        //OTRO grupo agresor
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherGroup() != null) {
+            newRowDataTable.setColumn54(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherGroup());
+        }
+        //} catch (Exception e) {
+        //}
+        //precencia alcohol agresor
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getAlcoholOrDrugs() != null) {
+            newRowDataTable.setColumn55(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getAlcoholOrDrugs().getBooleanName());
+//            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getAlcoholOrDrugs() == true) {
+//                newRowDataTable.setColumn55("SI");
+//            } else {
+//                newRowDataTable.setColumn55("NO");
+//            }
+        }
+        //} catch (Exception e) {
+        //}
+        //armas utilizadas
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getMechanismId() != null) {
+            newRowDataTable.setColumn56(currentNonFatalDomesticV.getSivigilaEvent().getMechanismId().getSivigilaMechanismName());
+        }
+        //} catch (Exception e) {
+        //}
+        //sustancia intoxicacion
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getIntoxication() != null) {
+            newRowDataTable.setColumn57(currentNonFatalDomesticV.getSivigilaEvent().getIntoxication());
+        }
+        //} catch (Exception e) {
+        // }
+        //otra arma
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getOthers() != null) {
+            newRowDataTable.setColumn58(currentNonFatalDomesticV.getSivigilaEvent().getOthers());
+        }
+        //} catch (Exception e) {
+        //}
+        //otro mecanismo
+        //try {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getOtherMechanismId() != null) {
+            newRowDataTable.setColumn59(currentNonFatalDomesticV.getSivigilaEvent().getOtherMechanismId().getSivigilaOtherMechanismName());
+        }
+        //} catch (Exception e) {
+        //}
+
+        //zona conflicto
+        if (currentNonFatalDomesticV.getSivigilaEvent().getConflictZone() != null) {
+            newRowDataTable.setColumn60(currentNonFatalDomesticV.getSivigilaEvent().getConflictZone().getBooleanName());
+//            if (currentNonFatalDomesticV.getSivigilaEvent().getConflictZone() == true) {
+//                newRowDataTable.setColumn60("SI");
+//            } else {
+//                newRowDataTable.setColumn60("NO");
+//            }
+        }
+        //CARGO ACCIONES EN SALUD------
+        try {
+            if (currentNonFatalDomesticV.getSivigilaEvent().getPublicHealthActionsList() != null
+                    && !currentNonFatalDomesticV.getSivigilaEvent().getPublicHealthActionsList().isEmpty()) {
+                List<PublicHealthActions> publicHealthActionsList = currentNonFatalDomesticV.getSivigilaEvent().getPublicHealthActionsList();
+                for (int i = 0; i < publicHealthActionsList.size(); i++) {
+                    int caso = (int) publicHealthActionsList.get(i).getActionId();
+                    switch (caso) {
+                        case 1://"ATENCION PSICOSOCIAL"
+                            newRowDataTable.setColumn62("SI");
+                            break;
+                        case 2://"PROFILAXIS ITS"
+                            newRowDataTable.setColumn63("SI");
+                            break;
+                        case 3://"ANTICONCEPCION DE EMERGENCIA"
+                            newRowDataTable.setColumn64("SI");
+                            break;
+                        case 4://"ORIENTACION IVE"
+                            newRowDataTable.setColumn65("SI");
+                            break;
+                        case 5://"ATENCION EN SALUD MENTAL ESPECIALIZADA"
+                            newRowDataTable.setColumn66("SI");
+                            break;
+                        case 6://"INFORME A LA AUTORIDAD"
+                            newRowDataTable.setColumn67("SI");
+                            break;
+                        case 7://"OTRO"
+                            newRowDataTable.setColumn68("SI");
+                            break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            //System.out.println("no se cargo tipos de maltrato"+e.toString());
+        }
+
+        //recomienda proteccion
+        if (currentNonFatalDomesticV.getSivigilaEvent().getRecommendedProtection() != null) {
+            newRowDataTable.setColumn69(currentNonFatalDomesticV.getSivigilaEvent().getRecommendedProtection().getBooleanName());
+//            if (currentNonFatalDomesticV.getSivigilaEvent().getRecommendedProtection() == true) {
+//                newRowDataTable.setColumn69("SI");
+//            } else {
+//                newRowDataTable.setColumn69("NO");
+//            }
+        }
+        //trabajo de campo
+        if (currentNonFatalDomesticV.getSivigilaEvent().getFurtherFieldwork() != null) {
+            newRowDataTable.setColumn70(currentNonFatalDomesticV.getSivigilaEvent().getFurtherFieldwork().getBooleanName());
+//            if (currentNonFatalDomesticV.getSivigilaEvent().getFurtherFieldwork() == true) {
+//                newRowDataTable.setColumn70("SI");
+//            } else {
+//                newRowDataTable.setColumn70("NO");
+//            }
+        }
+
+        return newRowDataTable;
+    }
+
     /*
      * METODOS PARA RELACIONES DE VARIABLES
      */
-    private String searchCountry(String value) {
+    public String searchCountry(String value) {
         /*
          * COMO PARAMETRO LLEGA UNA CADENA: COLOMBIA-NARIÑO-PASTO ME RETORNA UNA
          * CADENA CON : 20-52-1 OSEA: id_pais - id_departamento - id_municipio
          */
-        String nameSearch;
-        List<Countries> countriesList = countriesFacade.findAll();
-        for (int k = 0; k < countriesList.size(); k++) {
-            nameSearch = countriesList.get(k).getName();
-            if (nameSearch.compareTo("COLOMBIA") == 0) {
-                List<Departaments> departamentsList = departamentsFacade.findAll();
-                for (int l = 0; l < departamentsList.size(); l++) {
-                    nameSearch = countriesList.get(k).getName() + "-" + departamentsList.get(l).getDepartamentName();
-                    if (nameSearch.compareTo(value) == 0) {
-                        nameSearch = countriesList.get(k).getIdCountry().toString();
-                        nameSearch = nameSearch + "-" + departamentsList.get(l).getDepartamentId().toString();
-                        return nameSearch;
-                    }
-                    for (int m = 0; m < departamentsList.get(l).getMunicipalitiesList().size(); m++) {
-                        nameSearch = nameSearch + "-" + departamentsList.get(l).getMunicipalitiesList().get(m).getMunicipalityName();
-                        if (nameSearch.compareTo(value) == 0) {
-                            nameSearch = countriesList.get(k).getIdCountry().toString();
-                            nameSearch = nameSearch + "-" + departamentsList.get(l).getDepartamentId().toString();
-                            nameSearch = nameSearch + "-" + String.valueOf(departamentsList.get(l).getMunicipalitiesList().get(m).getMunicipalitiesPK().getMunicipalityId());
-                            return nameSearch;
-                        }
-                    }
-                }
+        try {
+            String[] splitValue = value.split("-");
+            ArrayList<String> arrayValue = new ArrayList<String>();
+            if (splitValue.length == 1) {
+                arrayValue.add(splitValue[0]);
+                arrayValue.add("SIN DATO");
+                arrayValue.add("SIN DATO");
+            } else if (splitValue.length == 2) {
+                arrayValue.add(splitValue[0]);
+                arrayValue.add(splitValue[1]);
+                arrayValue.add("SIN DATO");
+            } else if (splitValue.length == 3) {
+                arrayValue.add(splitValue[0]);
+                arrayValue.add(splitValue[1]);
+                arrayValue.add(splitValue[2]);
             } else {
-                if (nameSearch.compareTo(value) == 0) {
-                    return countriesList.get(k).getIdCountry().toString();
-                }
+                arrayValue.add("SIN DATO");
+                arrayValue.add("SIN DATO");
+                arrayValue.add("SIN DATO");
             }
+            String strReturn = "";
+            String sql = ""
+                    + " SELECT \n"
+                    + "    countries.id_country \n"
+                    + " FROM \n"
+                    + "  public.countries \n"
+                    + "WHERE \n"
+                    + "  countries.name ILIKE '" + arrayValue.get(0) + "' ";
+            rs = consult(sql);
+            if (rs.next()) {
+                strReturn = strReturn + rs.getString(1);
+            } else {
+                strReturn = "0x";
+            }
+            sql = ""
+                    + " SELECT \n"
+                    + "    departaments.departament_id, \n"
+                    + "    municipalities.municipality_id, \n"
+                    + "    departaments.departament_name, \n"
+                    + "    municipalities.municipality_name \n"
+                    + " FROM \n"
+                    + "    public.departaments, \n"
+                    + "    public.municipalities \n"
+                    + " WHERE \n"
+                    + "    departaments.departament_id = municipalities.departament_id AND \n"
+                    + "    departaments.departament_name ILIKE '" + arrayValue.get(1) + "' AND \n"
+                    + "    municipalities.municipality_name ILIKE '" + arrayValue.get(2) + "'";
+            rs = consult(sql);
+            if (rs.next()) {
+                strReturn = strReturn + "-" + rs.getString(1) + "-" + rs.getString(2);
+            } else {
+                strReturn = strReturn + "-0x-0x";
+            }
+//            String nameSearch;
+//            List<Countries> countriesList = countriesFacade.findAll();
+//            for (int k = 0; k < countriesList.size(); k++) {
+//                nameSearch = countriesList.get(k).getName();
+//                if (nameSearch.compareTo("COLOMBIA") == 0) {
+//                    List<Departaments> departamentsList = departamentsFacade.findAll();
+//                    for (int l = 0; l < departamentsList.size(); l++) {
+//                        nameSearch = countriesList.get(k).getName() + "-" + departamentsList.get(l).getDepartamentName();
+//                        if (nameSearch.compareTo(value) == 0) {
+//                            nameSearch = countriesList.get(k).getIdCountry().toString();
+//                            nameSearch = nameSearch + "-" + departamentsList.get(l).getDepartamentId().toString();
+//                            return nameSearch;
+//                        }
+//                        for (int m = 0; m < departamentsList.get(l).getMunicipalitiesList().size(); m++) {
+//                            nameSearch = nameSearch + "-" + departamentsList.get(l).getMunicipalitiesList().get(m).getMunicipalityName();
+//                            if (nameSearch.compareTo(value) == 0) {
+//                                nameSearch = countriesList.get(k).getIdCountry().toString();
+//                                nameSearch = nameSearch + "-" + departamentsList.get(l).getDepartamentId().toString();
+//                                nameSearch = nameSearch + "-" + String.valueOf(departamentsList.get(l).getMunicipalitiesList().get(m).getMunicipalitiesPK().getMunicipalityId());
+//                                return nameSearch;
+//                            }
+//                        }
+//                    }
+//                } else {
+//                    if (nameSearch.compareTo(value) == 0) {
+//                        return countriesList.get(k).getIdCountry().toString();
+//                    }
+//                }
+//            }
+            return strReturn;
+        } catch (Exception e) {
+            System.out.println("Error 12 en " + this.getClass().getName() + ":" + e.toString());
+            return null;
         }
-        return null;
     }
 
-    private String searchMunicipalitie(String value) {
+    public String searchMunicipalitie(String value) {
 
         List<Municipalities> municipalitiesList = municipalitiesFacade.findAll();
         for (int k = 0; k < municipalitiesList.size(); k++) {

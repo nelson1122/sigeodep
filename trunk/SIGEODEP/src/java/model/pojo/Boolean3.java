@@ -43,7 +43,19 @@ public class Boolean3 implements Serializable {
     private List<FatalInjurySuicide> fatalInjurySuicideList;
     @OneToMany(mappedBy = "mentalAntecedent")
     private List<FatalInjurySuicide> fatalInjurySuicideList1;
-
+    @OneToMany(mappedBy = "furtherFieldwork")
+    private List<SivigilaEvent> sivigilaEventList;
+    @OneToMany(mappedBy = "recommendedProtection")
+    private List<SivigilaEvent> sivigilaEventList1;
+    @OneToMany(mappedBy = "conflictZone")
+    private List<SivigilaEvent> sivigilaEventList2;
+    @OneToMany(mappedBy = "alcoholOrDrugs")
+    private List<SivigilaAggresor> sivigilaAggresorList;
+    @OneToMany(mappedBy = "liveTogether")
+    private List<SivigilaAggresor> sivigilaAggresorList1;
+    @OneToMany(mappedBy = "antecedent")
+    private List<SivigilaVictim> sivigilaVictimList;
+    
     public Boolean3() {
     }
 
@@ -112,6 +124,60 @@ public class Boolean3 implements Serializable {
         this.fatalInjurySuicideList1 = fatalInjurySuicideList1;
     }
 
+    @XmlTransient
+    public List<SivigilaEvent> getSivigilaEventList() {
+        return sivigilaEventList;
+    }
+
+    public void setSivigilaEventList(List<SivigilaEvent> sivigilaEventList) {
+        this.sivigilaEventList = sivigilaEventList;
+    }
+
+    @XmlTransient
+    public List<SivigilaEvent> getSivigilaEventList1() {
+        return sivigilaEventList1;
+    }
+
+    public void setSivigilaEventList1(List<SivigilaEvent> sivigilaEventList1) {
+        this.sivigilaEventList1 = sivigilaEventList1;
+    }
+
+    @XmlTransient
+    public List<SivigilaEvent> getSivigilaEventList2() {
+        return sivigilaEventList2;
+    }
+
+    public void setSivigilaEventList2(List<SivigilaEvent> sivigilaEventList2) {
+        this.sivigilaEventList2 = sivigilaEventList2;
+    }
+
+    @XmlTransient
+    public List<SivigilaAggresor> getSivigilaAggresorList() {
+        return sivigilaAggresorList;
+    }
+
+    public void setSivigilaAggresorList(List<SivigilaAggresor> sivigilaAggresorList) {
+        this.sivigilaAggresorList = sivigilaAggresorList;
+    }
+
+    @XmlTransient
+    public List<SivigilaAggresor> getSivigilaAggresorList1() {
+        return sivigilaAggresorList1;
+    }
+
+    public void setSivigilaAggresorList1(List<SivigilaAggresor> sivigilaAggresorList1) {
+        this.sivigilaAggresorList1 = sivigilaAggresorList1;
+    }
+
+    @XmlTransient
+    public List<SivigilaVictim> getSivigilaVictimList() {
+        return sivigilaVictimList;
+    }
+
+    public void setSivigilaVictimList(List<SivigilaVictim> sivigilaVictimList) {
+        this.sivigilaVictimList = sivigilaVictimList;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;

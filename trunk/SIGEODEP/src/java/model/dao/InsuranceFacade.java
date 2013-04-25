@@ -47,6 +47,17 @@ public class InsuranceFacade extends AbstractFacade<Insurance> {
         }
     }
     
+    public Insurance findByCode(String id) {
+        
+        String hql = "Select x from Insurance x where x.insuranceId = '"+id+"'";
+        try {
+            return (Insurance) em.createQuery(hql).getSingleResult();
+        } catch (Exception e) {
+            //System.out.println(e.toString() + "----------------------------------------------------");
+            return null;
+        }
+    }
+    
     public List<Insurance> findCriteria(int variable, String value) {
         String hql;
         try {

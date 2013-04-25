@@ -5,10 +5,14 @@
 package model.pojo;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -16,6 +20,7 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -41,7 +46,15 @@ public class PublicHealthActions implements Serializable {
     @Size(min = 1, max = 2147483647)
     @Column(name = "action_name", nullable = false, length = 2147483647)
     private String actionName;
-
+//    @JoinTable(name = "sivigila_event_public_health", joinColumns = {
+//        @JoinColumn(name = "action_id", referencedColumnName = "action_id", nullable = false)}, inverseJoinColumns = {
+//        @JoinColumn(name = "non_fatal_injury_id", referencedColumnName = "non_fatal_injury_id", nullable = false)})
+//    @ManyToMany
+//    private List<SivigilaEvent> sivigilaEventList;
+    @ManyToMany(mappedBy = "publicHealthActionsList")
+    private List<SivigilaEvent> sivigilaEventList;
+    
+    
     public PublicHealthActions() {
     }
 
@@ -68,6 +81,15 @@ public class PublicHealthActions implements Serializable {
 
     public void setActionName(String actionName) {
         this.actionName = actionName;
+    }
+
+    @XmlTransient
+    public List<SivigilaEvent> getSivigilaEventList() {
+        return sivigilaEventList;
+    }
+
+    public void setSivigilaEventList(List<SivigilaEvent> sivigilaEventList) {
+        this.sivigilaEventList = sivigilaEventList;
     }
 
     @Override

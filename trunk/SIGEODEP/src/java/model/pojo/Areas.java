@@ -43,7 +43,8 @@ public class Areas implements Serializable {
     private String geom;
     @OneToMany(mappedBy = "areaId")
     private List<FatalInjuries> fatalInjuriesList;
-
+    @OneToMany(mappedBy = "area")
+    private List<SivigilaEvent> sivigilaEventList;
     public Areas() {
     }
 
@@ -97,6 +98,15 @@ public class Areas implements Serializable {
 	this.fatalInjuriesList = fatalInjuriesList;
     }
 
+    @XmlTransient
+    public List<SivigilaEvent> getSivigilaEventList() {
+        return sivigilaEventList;
+    }
+
+    public void setSivigilaEventList(List<SivigilaEvent> sivigilaEventList) {
+        this.sivigilaEventList = sivigilaEventList;
+    }
+    
     @Override
     public int hashCode() {
 	int hash = 0;

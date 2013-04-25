@@ -38,7 +38,7 @@ public class RecordSetsVifMB implements Serializable {
 
     //--------------------
     @EJB
-    TagsFacade tagsFacade;    
+    TagsFacade tagsFacade;
     @EJB
     NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
     @EJB
@@ -68,14 +68,15 @@ public class RecordSetsVifMB implements Serializable {
     private String name = "";
     private String newName = "";
     private boolean btnEditDisabled = true;
-    private boolean btnRemoveDisabled = true;
+    private boolean renderControls = true;//se esta combinando con un conjunto de tipo sivigila
+    
     private String data = "-";
     private VIFMB vifMB;
     private String openForm = "";
     private LazyDataModel<RowDataTable> table_model;
     private ArrayList<RowDataTable> rowsDataTableArrayList;
     private ConnectionJdbcMB connection;
-    private String sqlTags = "";
+    private String exportFileName = "";
     private String totalRecords = "0";
     private String initialDateStr = "";
     private String endDateStr = "";
@@ -113,7 +114,8 @@ public class RecordSetsVifMB implements Serializable {
 
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
         try {
-            //CREO LA LISTA DE TAGS SELECCIONADOS        
+            //CREO LA LISTA DE TAGS SELECCIONADOS 
+            exportFileName = "VIF - " + initialDateStr + " - " + endDateStr;
             tagsList = new ArrayList<Tags>();
             data = "";
             for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
@@ -125,40 +127,47 @@ public class RecordSetsVifMB implements Serializable {
                 tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));
             }
             //DETERMINO TOTAL DE REGISTROS
-            sql = "";
-            sql = sql + " SELECT ";
-            sql = sql + " count(*)";
-            sql = sql + " FROM ";
-            sql = sql + " public.victims, ";
-            sql = sql + " public.non_fatal_injuries";
-            sql = sql + " WHERE ";
-            sql = sql + " non_fatal_injuries.victim_id = victims.victim_id AND";
+            sql = "\n";
+            sql = sql + " SELECT \n";
+            sql = sql + " count(*) \n";
+            sql = sql + " FROM \n";
+            sql = sql + " public.victims, \n";
+            sql = sql + " public.non_fatal_injuries \n";
+            sql = sql + " WHERE \n";
+            sql = sql + " non_fatal_injuries.victim_id = victims.victim_id AND ( \n";
             for (int i = 0; i < tagsList.size(); i++) {
-                sql = sql + " tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
+                if (i == tagsList.size() - 1) {
+                    sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " \n";
+                } else {
+                    sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " OR \n";
+                }
             }
-            sql = sql + " non_fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND";
-            sql = sql + " non_fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+            sql = sql + " ) AND non_fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n";
+            sql = sql + " non_fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') \n";
             ResultSet resultSet = connection.consult(sql);
             totalRecords = "0";
             if (resultSet.next()) {
                 totalRecords = String.valueOf(resultSet.getInt(1));
             }
-            System.out.println("Total de registros = " + totalRecords);
+            //System.out.println("Total de registros = " + totalRecords);
             //DETERMINO EL ID DE CADA REGISTRO            
-            sql = "";
-            sql = sql + " SELECT ";
-            sql = sql + " non_fatal_injuries.victim_id";
-            sql = sql + " FROM ";
-            sql = sql + " public.victims, ";
-            sql = sql + " public.non_fatal_injuries";
-            sql = sql + " WHERE ";
-            sql = sql + " non_fatal_injuries.victim_id = victims.victim_id AND";
+            sql = "\n";
+            sql = sql + " SELECT \n";
+            sql = sql + " non_fatal_injuries.victim_id \n";
+            sql = sql + " FROM \n";
+            sql = sql + " public.victims, \n";
+            sql = sql + " public.non_fatal_injuries \n";
+            sql = sql + " WHERE \n";
+            sql = sql + " non_fatal_injuries.victim_id = victims.victim_id AND ( \n";
             for (int i = 0; i < tagsList.size(); i++) {
-                sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " AND ";
+                if (i == tagsList.size() - 1) {
+                    sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " \n";
+                } else {
+                    sql = sql + " victims.tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + " OR \n";
+                }
             }
-            sql = sql + " non_fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND";
-            sql = sql + " non_fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
-
+            sql = sql + " ) AND non_fatal_injuries.injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n";
+            sql = sql + " non_fatal_injuries.injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') \n";
             //CONSTRUYO EL TABLE_MODEL
             table_model = new LazyRecordSetsDataModel(Integer.parseInt(totalRecords), sql, FormsEnum.SCC_F_033);
 
@@ -199,7 +208,7 @@ public class RecordSetsVifMB implements Serializable {
         }
         progress = 100;
     }
-    
+
     public void postProcessXLS(Object document) {
         try {
             progress = 0;
@@ -216,14 +225,14 @@ public class RecordSetsVifMB implements Serializable {
             cellStyle.setFont(font);
 
             row = sheet.createRow(rowPosition);// Se crea una fila dentro de la hoja
-            
+
             createCell(cellStyle, row, 0, "CODIGO INTERNO");
             createCell(cellStyle, row, 1, "INSTITUCION RECEPTORA");
             createCell(cellStyle, row, 2, "NOMBRES Y APELLIDOS");
             createCell(cellStyle, row, 3, "TIPO IDENTIFICACION");
             createCell(cellStyle, row, 4, "IDENTIFICACION");
             createCell(cellStyle, row, 5, "TIPO EDAD");
-            createCell(cellStyle, row, 6, "EDAD CANT");              
+            createCell(cellStyle, row, 6, "EDAD CANT");
             createCell(cellStyle, row, 7, "GENERO");//1           
             createCell(cellStyle, row, 8, "OCUPACION");
             createCell(cellStyle, row, 9, "ASEGURADORA");
@@ -441,7 +450,7 @@ public class RecordSetsVifMB implements Serializable {
     public void load() {
         currentNonFatalDomesticViolence = null;
         btnEditDisabled = true;
-        btnRemoveDisabled = true;
+//        btnRemoveDisabled = true;
         if (selectedRowsDataTable != null) {
 
             if (selectedRowsDataTable.length == 1) {
@@ -450,16 +459,16 @@ public class RecordSetsVifMB implements Serializable {
             if (selectedRowsDataTable.length > 1) {
 
                 btnEditDisabled = true;
-                btnRemoveDisabled = false;
+//                btnRemoveDisabled = false;
             } else {
                 btnEditDisabled = false;
-                btnRemoveDisabled = false;
+//                btnRemoveDisabled = false;
             }
         }
     }
 
     public void deleteRegistry() {
-        if (selectedRowsDataTable != null) {
+        if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
             List<NonFatalDomesticViolence> nonFatalDomesticViolenceList = new ArrayList<NonFatalDomesticViolence>();
             for (int j = 0; j < selectedRowsDataTable.length; j++) {
                 nonFatalDomesticViolenceList.add(nonFatalDomesticViolenceFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
@@ -481,12 +490,13 @@ public class RecordSetsVifMB implements Serializable {
 //                        break;
 //                    }
 //                }
-//            }
-            //deselecciono los controles
+//            }//deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
-            btnRemoveDisabled = true;
+            totalRecords=String.valueOf(Integer.parseInt(totalRecords)-1);
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
+        } else {
+            printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
         }
     }
 
@@ -545,13 +555,13 @@ public class RecordSetsVifMB implements Serializable {
         this.btnEditDisabled = btnEditDisabled;
     }
 
-    public boolean isBtnRemoveDisabled() {
-        return btnRemoveDisabled;
-    }
-
-    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
-        this.btnRemoveDisabled = btnRemoveDisabled;
-    }
+//    public boolean isBtnRemoveDisabled() {
+//        return btnRemoveDisabled;
+//    }
+//
+//    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
+//        this.btnRemoveDisabled = btnRemoveDisabled;
+//    }
 
     public String getData() {
         return data;
@@ -568,7 +578,7 @@ public class RecordSetsVifMB implements Serializable {
     public void setTable_model(LazyDataModel<RowDataTable> table_model) {
         this.table_model = table_model;
     }
-    
+
     public int getProgress() {
         return progress;
     }
@@ -600,81 +610,21 @@ public class RecordSetsVifMB implements Serializable {
     public void setInitialDateStr(String initialDateStr) {
         this.initialDateStr = initialDateStr;
     }
-    /*
-     public void exportarExcel() {
-        if (movimientos == null) {// Cargamos el ArrayList si esta nulo
-            cargaTablaDinamica();
-        }
-        HSSFWorkbook workbook = new HSSFWorkbook();//Creamos el libro excel
- 
-        //Creamos la hoja de Excel llamada "Movimientos"
-        HSSFSheet sheet = workbook.createSheet("Movimientos");
- 
-        //* Creamos la primera fila para colocar los titulos correspondientes a 
-         * cada columna
- 
-        HSSFRow header = sheet.createRow(0);
-        HSSFRow fila = null;
- 
-        for (int i = 0; i < movimientos.size(); i++) {
-            //* Creamos las filas segun la cantidad de datos que contiene 
-             * el arraylist
-             
-            fila = sheet.createRow(i + 1);
- 
-            /* Creamos las celdas, se sabe que son 5
-            for (int j = 0; j < 5; j++) {
- 
-                fila.createCell(j);
- 
-            }
-            //* Asignamos los titulos a la primera fila, 
-             * en cada celda correspondiente 
- 
-            header.createCell(0).setCellValue(new HSSFRichTextString("Fecha"));
-            header.createCell(1).setCellValue(new HSSFRichTextString("Descripcion"));
-            header.createCell(2).setCellValue(new HSSFRichTextString("Serie"));
-            header.createCell(3).setCellValue(new HSSFRichTextString("Monto"));
-            header.createCell(4).setCellValue(new HSSFRichTextString("Saldo"));
- 
-            //* Seteamos los valores a cada celda correspondiente 
-            fila.getCell(0).setCellValue("" + movimientos.get(i).getFecha().toLocaleString());
-            fila.getCell(1).setCellValue(new HSSFRichTextString(movimientos.get(i).getDescripcion()));
-            fila.getCell(2).setCellValue(new HSSFRichTextString(movimientos.get(i).getSerie()));
-            fila.getCell(3).setCellValue(Integer.parseInt(String.valueOf(movimientos.get(i).getMonto()).replace(".0", "")));
-            fila.getCell(4).setCellValue(Integer.parseInt(String.valueOf(movimientos.get(i).getSaldo()).replace(".0", "")));
- 
-            //*Modificamos el tamaño de las celdas segun el contenido de las celdas
- 
-            sheet.autoSizeColumn((short) (i));
- 
-        }
- 
-        sheet.autoSizeColumn((short) (0));//Arreglamos el tamaño al header
- 
-        try {
-            FacesContext facesContext = FacesContext.getCurrentInstance();
-            HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
- 
-            // Le asignamos el tipo de fichero que abrirá
-            response.setContentType("application/vnd.ms-excel");
-            // El nombre que recibira el archivo a descargar 
-            response.setHeader("Content-disposition", "attachment; filename=movimientos.xls");
- 
-            ServletOutputStream out = response.getOutputStream();
-            //Escribimos el fichero al out 
-            workbook.write(out);
-            out.close(); // Cerramos el streaming
- 
-        } catch (Exception e) {
-            e.printStackTrace();
- 
- 
-        }
- 
- 
- 
-    }
-     */
-}
 
+    public String getExportFileName() {
+        return exportFileName;
+    }
+
+    public void setExportFileName(String exportFileName) {
+        this.exportFileName = exportFileName;
+    }
+
+    public boolean isRenderControls() {
+        return renderControls;
+    }
+
+    public void setRenderControls(boolean renderControls) {
+        this.renderControls = renderControls;
+    }
+    
+}

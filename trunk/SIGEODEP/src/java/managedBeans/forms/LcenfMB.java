@@ -747,17 +747,17 @@ public class LcenfMB implements Serializable {
             openDialogPrevious = "";
             openDialogNew = "";
             save = true;
-            System.out.println("Save=true");
+            //System.out.println("Save=true");
             stylePosition = "color: #1471B1;";
             neighborhoodHomeNameDisabled = false;
             directionHomeDisabled = false;
         } catch (Exception e) {
-            System.out.println("*******************************************ERROR_L1: " + e.toString());
+            System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
         }
         loading = false;
         //noSaveAndGoNew();
         determinePosition();
-        System.out.println("////////////// FORMULARIO LCENF REINICIADO //////////////////////////");
+        //System.out.println("////////////// FORMULARIO LCENF REINICIADO //////////////////////////");
     }
 
     @PostConstruct
@@ -2579,7 +2579,7 @@ public class LcenfMB implements Serializable {
 
 
                 if (currentNonFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
-                    System.out.println("guardando nuevo registro");
+                    //System.out.println("guardando nuevo registro");
 
                     newVictim.setTagId(tagsFacade.find(currentTag));
 
@@ -2618,9 +2618,9 @@ public class LcenfMB implements Serializable {
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
-                    System.out.println("nuevo registro almacenado");
+                    //System.out.println("nuevo registro almacenado");
                 } else {//ES UN REGISTRO EXISTENTE SE DEBE ACTUALIZAR                    
-                    System.out.println("actualizando registro existente");
+                    //System.out.println("actualizando registro existente");
                     if (currentNonFatalInjury.getNonFatalDomesticViolence() != null) {
                         nonFatalDomesticViolenceFacade.remove(currentNonFatalInjury.getNonFatalDomesticViolence());
                     }
@@ -2673,7 +2673,7 @@ public class LcenfMB implements Serializable {
                 }
                 return true;
             } catch (Exception e) {
-                System.out.println("*******************************************ERROR_L2: " + e.toString());
+                System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
                 FacesContext.getCurrentInstance().addMessage(null, msg);
                 return false;
@@ -2786,7 +2786,7 @@ public class LcenfMB implements Serializable {
 
     public void next() {
         if (save) {
-            System.out.println("cargando siguiente registro");
+            //System.out.println("cargando siguiente registro");
             if (currentNonFatalInjuriId == -1) {//esta en registro nuevo                
             } else {
                 auxNonFatalInjury = nonFatalInjuriesFacade.findNext(currentNonFatalInjuriId, currentTag);
@@ -2799,13 +2799,13 @@ public class LcenfMB implements Serializable {
                 }
             }
         } else {
-            System.out.println("No esta guardadado (para poder cargar siguiente registro)");
+            //System.out.println("No esta guardadado (para poder cargar siguiente registro)");
         }
     }
 
     public void previous() {
         if (save) {
-            System.out.println("cargando anterior registro");
+            //System.out.println("cargando anterior registro");
             if (currentNonFatalInjuriId == -1) {//esta en registro nuevo 
                 last();
             } else {
@@ -2819,12 +2819,12 @@ public class LcenfMB implements Serializable {
                 }
             }
         } else {
-            System.out.println("No esta guardadado (para poder cargar anterior registro)");
+            //System.out.println("No esta guardadado (para poder cargar anterior registro)");
         }
     }
 
     public void first() {
-        //System.out.println("Entra en first(): " + openDialogFirst + " save:" + String.valueOf(save));
+        ////System.out.println("Entra en first(): " + openDialogFirst + " save:" + String.valueOf(save));
         if (save) {
             openDialogFirst = "-";
             openDialogNext = "-";
@@ -2844,12 +2844,12 @@ public class LcenfMB implements Serializable {
         } else {
             //System.out.println("No esta guardadado (para poder cargar primer registro)");
         }
-        System.out.println("dialog firts sale en : " + openDialogFirst);
+        //System.out.println("dialog firts sale en : " + openDialogFirst);
     }
 
     public void last() {
         if (save) {
-            System.out.println("cargando ultimo registro");
+            //System.out.println("cargando ultimo registro");
             auxNonFatalInjury = nonFatalInjuriesFacade.findLast(currentTag);
             if (auxNonFatalInjury != null) {
                 clearForm();
@@ -2859,7 +2859,7 @@ public class LcenfMB implements Serializable {
                 loadValues();
             }
         } else {
-            System.out.println("No esta guardadado (para poder cargar ultimo registro)");
+            //System.out.println("No esta guardadado (para poder cargar ultimo registro)");
         }
     }
 
@@ -3118,7 +3118,7 @@ public class LcenfMB implements Serializable {
 
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
             FacesContext.getCurrentInstance().addMessage(null, msg);
-            System.out.println("registro eliminado");
+            //System.out.println("registro eliminado");
             noSaveAndGoNew();
             determinePosition();
         }
@@ -3188,7 +3188,7 @@ public class LcenfMB implements Serializable {
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
         }
-        System.out.println("POSICION DETERMINADA: " + currentPosition);
+        //System.out.println("POSICION DETERMINADA: " + currentPosition);
     }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -3282,15 +3282,15 @@ public class LcenfMB implements Serializable {
                 sql = sql + "injuries.injury_id = 52 OR ";
                 sql = sql + "injuries.injury_id = 54 OR ";
                 sql = sql + "injuries.injury_id = 55);";
-                System.out.println(sql);
+                //System.out.println(sql);
                 ResultSet rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
                     rowDataTableList.add(new RowDataTable(rs.getString(1), rs.getString(2), rs.getString(3)));
                     s = false;//aqui se usa para saber si hay registros
-                    System.out.println("hubieron");
+                    //System.out.println("hubieron");
                 }
                 if (s) {//si es true no hay registros
-                    System.out.println("no hubieron");
+                    //System.out.println("no hubieron");
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "No hay coincidencias", "No se encontraron registros para esta búsqueda");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }

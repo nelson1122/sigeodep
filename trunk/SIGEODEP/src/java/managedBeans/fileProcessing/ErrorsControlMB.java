@@ -6,14 +6,12 @@ package managedBeans.fileProcessing;
 
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.DataTypeEnum;
-import beans.errorsControl.ErrorControl;
+import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -22,11 +20,15 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import managedBeans.login.LoginMB;
+import model.dao.ProjectsFacade;
 import model.dao.RelationGroupFacade;
+import model.pojo.Projects;
 import model.pojo.RelationGroup;
 import model.pojo.RelationValues;
 import model.pojo.RelationVariables;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 /**
  *
@@ -38,40 +40,32 @@ public class ErrorsControlMB implements Serializable {
 
     @EJB
     RelationGroupFacade relationGroupFacade;
-    
-    //ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
-    private String currentError = "";//error actual
-    private SelectItem[] errors;
+    @EJB
+    ProjectsFacade projectsFacade;
     private boolean btnSolveDisabled = true;
-    private boolean btnDiscardDisabled = true;
-    //private boolean btnDeleteRecordDisabled = true;
-    private boolean btnUndoDisabled = true;
-    private boolean selectDateFormatDisabled;
-    private boolean btnSeeRecordDisabled = true;
-    private String currentAceptedValue = "";//proveedor actual    
+    //private boolean btnUndoDisabled = true;
+    private String currentAceptedValue = "";
     private SelectItem[] aceptedValues;
-    private SelectItem[] correctionList;
-    private String currentCorrection;
-    private ArrayList<ErrorControl> errorControlArrayList;
-    private ArrayList<ErrorControl> errorCorrectionArrayList;
+    private List<RowDataTable> moreInfoDataTableList;
     private int sizeErrorsList = 0;
-    private String solution = " ";
     private String currentDateFormat = "dd/MM/yyyy";
     private String currentDateFormatAcepted;
     private String currentNewValue;
-    private String description = "";
     private String valueFound = "";
     private RecordDataMB recordDataMB;
-    //private FormsAndFieldsDataMB formsAndFieldsDataMB;
     private ProjectsMB projectsMB;
-    private RelationVariables relationVar;
     private RelationGroup currentRelationsGroup;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     DinamicTable dinamicTable = new DinamicTable();
     ConnectionJdbcMB connectionJdbcMB;
-    private LoginMB loginMB;
-    private String nameTableTemp = "temp";
+    //private LoginMB loginMB;
+    private RowDataTable selectedErrorRowTable;
+    private List<RowDataTable> errorsList = new ArrayList<RowDataTable>();
+    private RowDataTable selectedCorrectionRowTable;
+    private List<RowDataTable> correctionList = new ArrayList<RowDataTable>();
 
+    //private SelectItem[] correctionList;
+    //private String currentCorrection;
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
@@ -79,323 +73,556 @@ public class ErrorsControlMB implements Serializable {
     @PostConstruct
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        recordDataMB = (RecordDataMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{recordDataMB}", RecordDataMB.class);
     }
 
     public ErrorsControlMB() {
-        correctionList = new SelectItem[0];
-        errorControlArrayList = new ArrayList<ErrorControl>();
-        errorCorrectionArrayList = new ArrayList<ErrorControl>();
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        nameTableTemp = "temp" + loginMB.getLoginname();
+        //connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        //loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        //recordDataMB = (RecordDataMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{recordDataMB}", RecordDataMB.class);
+    }
+
+    public void loadErrorData() {
+        /*
+         * se selecciona una fila de la tabla e errores
+         */
+        //        updateErrorsArrayList();                
+
+        if (selectedErrorRowTable != null && selectedErrorRowTable.getColumn2().compareTo("-") != 0) {
+            switch (DataTypeEnum.convert(selectedErrorRowTable.getColumn7())) {//tipo de relacion()
+                case text:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Cualquier texto"),};
+                    break;
+                case integer:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Número entero"),};
+                    break;
+                case age:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Número entero"),};
+                    break;
+                case military:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Hora militar"),};
+                    break;
+                case date:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Fecha segun el formato"),};
+                    break;
+                case day:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 31"),};
+                    break;
+                case month:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 12"),};
+                    break;
+                case year:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Entero de 4 cifras"),};
+                    break;
+                case minute:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 0 a 59"),};
+                    break;
+                case hour:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 0 a 24"),};
+                    break;
+//                    case degree:
+//                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero 1, 2, 3"),};
+//                        break;
+                case percentage:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 100"),};
+                    break;
+                case error:
+                    aceptedValues = new SelectItem[]{new SelectItem("1", " "),};
+                    break;
+                case NOVALUE:
+                    ArrayList<String> categoricalList;
+                    if (Boolean.parseBoolean(selectedErrorRowTable.getColumn8())) {//tipo de comparacion
+                        categoricalList = connectionJdbcMB.categoricalCodeList(selectedErrorRowTable.getColumn7(), 0);
+                    } else {
+                        categoricalList = connectionJdbcMB.categoricalNameList(selectedErrorRowTable.getColumn7(), 0);
+                    }
+                    aceptedValues = new SelectItem[categoricalList.size()];
+                    for (int j = 0; j < categoricalList.size(); j++) {
+                        aceptedValues[j] = new SelectItem(categoricalList.get(j));
+                    }
+                    break;
+            }
+            createDynamicTable();
+            btnSolveDisabled = false;
+            valueFound = selectedErrorRowTable.getColumn4();//valor actual
+            currentNewValue = "";
+            currentDateFormatAcepted = selectedErrorRowTable.getColumn9();
+        } else {
+            //el error no so se puede corregir desde esta seccion(falta una relacion de variables)
+            btnSolveDisabled = true;
+            valueFound = "";//valor actual
+            currentNewValue = "";
+            currentDateFormatAcepted = "";
+            aceptedValues = new SelectItem[0];
+            currentAceptedValue = "";
+        }
+
     }
 
     public final void createDynamicTable() {
+        /*
+         * crea una tabla con los datos del registro que presenta el conflicto
+         */
+        ResultSet rs;
+        moreInfoDataTableList = new ArrayList<RowDataTable>();
         ArrayList<String> titles = new ArrayList<String>();
-        ArrayList<ArrayList<String>> listOfRecords = new ArrayList<ArrayList<String>>();
         try {
-            //determino el error que esta seleccionado en la lista
-            ErrorControl currentE = null;
-            for (int i = 0; i < errorControlArrayList.size(); i++) {
-                if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
-                    currentE = errorControlArrayList.get(i);
-                    break;
-                }
+            rs = connectionJdbcMB.consult(""
+                    + " SELECT "
+                    + "    project_columns.column_name, "
+                    + "    project_columns.column_id "
+                    + " FROM "
+                    + "    public.project_columns, "
+                    + "    public.project_records "
+                    + " WHERE "
+                    + "    project_columns.column_id = project_records.column_id AND "
+                    + "    project_records.project_id = " + projectsMB.getCurrentProjectId()
+                    + " GROUP BY "
+                    + "    project_columns.column_name, "
+                    + "    project_columns.column_id   "
+                    + " ORDER BY "
+                    + "    project_columns.column_id");
+            while (rs.next()) {
+                titles.add(rs.getString(1));
             }
-            if (currentE != null) {
-                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + nameTableTemp + " WHERE id='" + currentE.getRowId() + "'");
-                // determino las cabeceras
-                for (int j = 1; j < rs.getMetaData().getColumnCount(); j++) {
-                    titles.add(rs.getMetaData().getColumnName(j));
+            rs = connectionJdbcMB.consult(""
+                    + " SELECT "
+                    + "    project_records.project_id, "
+                    + "    project_records.record_id, "
+                    + "    array_agg(project_columns.column_name || '<=>' || project_records.data_value) "
+                    + " FROM "
+                    + "    project_records,project_columns "
+                    + " WHERE "
+                    + "    project_records.project_id = " + projectsMB.getCurrentProjectId() + " AND "
+                    + "    project_columns.column_id = project_records.column_id AND "
+                    + "    project_records.record_id = " + selectedErrorRowTable.getColumn2() + " "
+                    + " GROUP BY "
+                    + "    project_records.project_id, "
+                    + "    project_records.record_id ");
+            if (rs.next()) {
+                //en la tercer columna esta definido un arreglo con id_columna <=> valor encontrado
+                String[] newRow = new String[titles.size()];
+                Object[] arrayInJava = (Object[]) rs.getArray(3).getArray();
+                for (int i = 0; i < arrayInJava.length; i++) {
+                    String splitElement[] = arrayInJava[i].toString().split("<=>");
+                    for (int j = 0; j < titles.size(); j++) {
+                        if (titles.get(j).compareTo(splitElement[0]) == 0) {
+                            newRow[j] = splitElement[1];
+                            break;
+                        }
+                    }
                 }
-                // determino los datos                
-                ArrayList<String> newRow = new ArrayList<String>();
-                rs.next();
+                ArrayList<String> newRow2 = new ArrayList<String>();
+                newRow2.addAll(Arrays.asList(newRow));
 
-                for (int k = 1; k < rs.getMetaData().getColumnCount(); k++) {
-                    newRow.add(rs.getString(k));
+                for (int i = 0; i < titles.size(); i++) {
+                    moreInfoDataTableList.add(new RowDataTable(titles.get(i), newRow2.get(i)));
                 }
-                listOfRecords.add(newRow);
-                dinamicTable = new DinamicTable(listOfRecords, titles);
             }
         } catch (SQLException ex) {
-            System.out.println("Error en la creacion de columnas dinamicas: " + ex.toString());
+            System.out.println("Error 2 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
 
     public void reset() {
-        correctionList = new SelectItem[0];
-        errorControlArrayList = new ArrayList<ErrorControl>();
-        errorCorrectionArrayList = new ArrayList<ErrorControl>();
-        errors = new SelectItem[0];
-        btnSolveDisabled = true;
-        btnSeeRecordDisabled = true;
+        //correctionList = new ArrayList<RowDataTable>();
+        errorsList = new ArrayList<RowDataTable>();
+        aceptedValues = new SelectItem[0];
+        selectedErrorRowTable = null;
         sizeErrorsList = 0;
+        btnSolveDisabled = true;
+        valueFound = "";//valor actual
+        currentNewValue = "";
+        currentDateFormatAcepted = "";
     }
 
-    private void updateErrors() {
-        if (errorControlArrayList.isEmpty()) {
-            errors = new SelectItem[0];
-            btnSolveDisabled = true;
-            btnSeeRecordDisabled = true;
-        } else {
-            errors = new SelectItem[errorControlArrayList.size()];
-            for (int i = 0; i < errorControlArrayList.size(); i++) {
-                errors[i] = new SelectItem(errorControlArrayList.get(i).getErrorDescription());
-            }
+    public void addError(int errorsNumber, RelationVariables relationVar, String value, String rowId) {
+        if (relationVar == null) {//error cuando falta relacion oblicatoria
+            errorsList.add(new RowDataTable(
+                    String.valueOf(errorsNumber), //                    column1 ==> numero del error 
+                    "-", //no rowId (problema en toda columna)          column2 ==> identificador del registro
+                    "-", //                                             column3 ==> columna (nombre encontrado)
+                    value, //                                             column4 ==> valor que presenta el conflicto
+                    rowId)); //                                        column5 ==> descripcion de error(como corregir)
+        } else {//error cuando falla el valor 
+            errorsList.add(new RowDataTable(
+                    String.valueOf(errorsNumber), //                    column1 ==> numero del error 
+                    rowId, //                                           column2 ==> identificador del registro
+                    relationVar.getNameFound(), //                      column3 ==> columna (nombre encontrado)
+                    value, //                                           column4 ==> valor que presenta el conflicto
+                    createDescriptions(relationVar, value), //          column5 ==> descripcion de error(como corregir)
+                    relationVar.getNameExpected(), //                   column6 ==> nombre variable esperada
+                    relationVar.getFieldType(), //                      column7 ==> tipo de variable o tabla categorica
+                    relationVar.getComparisonForCode().toString(), //   column8 ==> coparacion por codigo
+                    relationVar.getDateFormat()));                  //  column9 ==> formato de fecha    
         }
     }
 
-    public void addError(ErrorControl error) {
-        errorControlArrayList.add(error);
-        updateErrors();
-    }
+    private String createDescriptions(RelationVariables relationVar, String value) {
+        String strReturn = null;
 
-    private void updateCorrectionArrayList() {
-        correctionList = new SelectItem[errorCorrectionArrayList.size()];
-        for (int j = 0; j < errorCorrectionArrayList.size(); j++) {
-            correctionList[j] = new SelectItem(
-                    String.valueOf(j + 1) + ". Se cambio el valor (" + errorCorrectionArrayList.get(j).getValue()
-                    + ") por (" + errorCorrectionArrayList.get(j).getNewValue() + ") en la fila ("
-                    + errorCorrectionArrayList.get(j).getRowId()
-                    + ") columna (" + errorCorrectionArrayList.get(j).getRelationVar().getNameFound() + ")");
+        switch (DataTypeEnum.convert(remove_v(relationVar.getFieldType()))) {//tipo de relacion
+            case text:
+                break;
+            case integer:
+                strReturn = "Digite en la casilla 'nuevo valor' un número entero  y presione resolver";
+                break;
+            case age:
+                strReturn = "Digite en la casilla 'nuevo valor' una edad válida  y presione resolver. La edad debe ser un número entero o ser especificada en años y meses ejemplo: 3 años 4 meses";
+                break;
+            case military:
+                strReturn = "Una hora militar válida es: * numero de 4 cifras de 0000 a 2400    * horas + minutos  * horas:minutos  4. horas:minutos:segundos:centesimas.milesimas ejemplo 20:23:12.200";
+                break;
+            case date:
+                if (value.length() == 0) {//el valor nulo no es aceptado
+                    strReturn = "El valor es obligatorio, ingrese una fecha segun el formato indicado.";
+                } else {
+                    strReturn = "El valor (" + value + ") no cumple con el formato (" + relationVar.getDateFormat() + ") válido para esta fecha";
+                }
+                break;
+            case day:
+                strReturn = "Digite en la casilla 'nuevo valor' un dia válido y presione resolver. El dia debe ser un número entero de 1 a 31";
+                break;
+            case month:
+                strReturn = "Digite en la casilla 'nuevo valor' un mes válido y presione resolver. El mes es un número entero de 1 a 12";
+                break;
+            case year:
+                strReturn = "Digite en la casilla 'nuevo valor' un año válido y presione resolver. El año es un número de 2 o cuatro cifras";
+                break;
+            case minute:
+                strReturn = "Digite en la casilla 'nuevo valor' un minuto válido y presione resolver. El minuto es un número de 0 59";
+                break;
+            case hour:
+                strReturn = "Digite en la casilla 'nuevo valor' una hora válida y presione resolver. La hora es un número de 0 a 24";
+                break;
+            case percentage:
+                strReturn = "Digite en la casilla 'nuevo valor' un porcentaje válido y presione resolver. El porcentaje es un número de 1 a 100";
+                break;
+            //            case degree:
+            //                errorSolution = "Digite en la casilla 'nuevo valor' una grado válido y presione resolver. El grado puede ser: 1, 2, 3";
+            //                break;
+            case NOVALUE:
+                if (value.length() == 0) {//el valor nulo no es aceptado
+                    strReturn = "El valor es obligatorio, seleccione un valor de la lista de valores aceptados o digite un valor válido en la casilla (nuevo valor) y presione resolver";
+                } else {
+                    strReturn = "El valor esperado debe ser: (" + relationVar.getNameExpected() + ") seleccione un valor de la lista de valores aceptados o digite un valor válido en la casilla (nuevo valor) y presione resolver";
+                }
+                break;
+
         }
+        return strReturn;
     }
 
-//    public void deleteErrorRecord() {
-//        for (int i = 0; i < errorControlArrayList.size(); i++) {
-//            if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
-//                currentRelationsGroup = relationshipOfVariablesMB.getCurrentRelationsGroup();
-//                relationVar = currentRelationsGroup.findRelationVarByNameFound(errorControlArrayList.get(i).getRelationVar().getNameFound());
-//                //////////////////////////////
-//                //creo la instruccion que revertira la eliminacion
-//                //String sql="";
-//                //se realiza la eliminacion de la tabla                    
-//                conx = new ConnectionJDBC();
-//                conx.connect();
-//                String rowId=errorControlArrayList.get(i).getRowId();
-//                conx.remove("temp", "id=" + rowId);
-//
-//                //quitamos los errores de esta linea de la lista
-//                for (int j = errorControlArrayList.size(); j > -1; j--) {
-//                    if(errorControlArrayList.get(j).getRowId().compareTo(rowId)==0){
-//                        errorControlArrayList.remove(j);
-//                        sizeErrorsList--;
-//                    }
-//                }
-//                //adiciono la nueva correccion
-//                //errorCorrectionArrayList.add(errorControlArrayList.get(i));               
-//                
-//                updateErrorsArrayList();
-//                updateCorrectionArrayList();
-//                btnSolveDisabled = true;
-//                btnDiscardDisabled = true;
-//                btnDeleteRecordDisabled = true;
-//                btnSeeRecordDisabled = true;
-//                conx.disconnect();
-//                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Registro eliminado");
-//                FacesContext.getCurrentInstance().addMessage(null, msg);
-////                    return 0;
-////                }
-//            }
-//        }
-////        return 0;
-//    }
     public int discardError() {
         boolean correction = false;
-        for (int i = 0; i < errorControlArrayList.size(); i++) {
-            if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
-                currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());
-                        //relationshipOfVariablesMB.getCurrentRelationsGroup();
-                relationVar = currentRelationsGroup.findRelationVarByNameFound(errorControlArrayList.get(i).getRelationVar().getNameFound());
-                //////////////////////////////
+        if (selectedErrorRowTable == null) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe seleccionar un error de la lista"));
+            return 0;
+        } else {
+            //verifico que la columna a descartar no sea la de intencionalidad ni fecha evento
+            //switch (DataTypeEnum.convert(errorControlArrayList.get(i).getRelationVar().getFieldType())) {//tipo de relacion 
+            switch (DataTypeEnum.convert(remove_v(selectedErrorRowTable.getColumn7()))) {//tipo de relacion
+                case integer:
+                case text:
 
-                //verifico que la columna a descartar no sea la de intencionalidad
-                switch (DataTypeEnum.convert(errorControlArrayList.get(i).getRelationVar().getFieldType())) {//tipo de relacion 
-                    case integer:
-                    case text:
-                    case date:
-                    case age:
-                    case military:
-                    case minute:
-                    case hour:
-                    case day:
-                    case month:
-                    case year:
-                    case percentage:
+                case age:
+                case military:
+                case minute:
+                case hour:
+                case day:
+                case month:
+                case year:
+                case percentage:
+                    correction = true;
+                    break;
+                case date:
+                    if (selectedErrorRowTable.getColumn6().compareTo("fecha_evento") != 0) {//estas relaciones no pueden ser descartadas                                                
                         correction = true;
-                        break;
-                    case NOVALUE://categorical
-                        if (errorControlArrayList.get(i).getRelationVar().getNameExpected().compareTo("intencionalidad") == 0) {
-                            correction = false;
-                        } else {
-                            correction = true;
-                        }
-                        break;
-                }
-                ///////////////////////////////                
-                if (!correction) {
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Este campo debe contener un valor obligatoriamente");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                } else {
-                    //se realiza la actualizacion de la tabla                    
-                    String sqlUpdate = errorControlArrayList.get(i).getRelationVar().getNameFound() + "=''";
-                    String sqlId = "id=" + errorControlArrayList.get(i).getRowId();
-                    connectionJdbcMB.update(nameTableTemp, sqlUpdate, sqlId);
-                    //quitamos el error de la lista
-                    errorControlArrayList.get(i).setNewValue(currentNewValue);
-                    errorCorrectionArrayList.add(errorControlArrayList.get(i));
-                    errorControlArrayList.remove(i);
-                    sizeErrorsList--;
-                    updateErrorsArrayList();
-                    updateCorrectionArrayList();
-                    btnSolveDisabled = true;
-                    btnDiscardDisabled = true;
-                    btnSeeRecordDisabled = true;
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                    return 0;
-                }
+                    }
+                    break;
+                case NOVALUE://categorical
+                    if (selectedErrorRowTable.getColumn6().compareTo("intencionalidad") != 0) {//estas relaciones no pueden ser descartadas
+                        correction = true;
+                    }
+                    break;
             }
+        }
+        if (!correction) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Este campo debe contener un valor obligatoriamente; por ello no puede ser descartado");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+        } else {//se realiza la actualizacion de la tabla                    
+            try {
+                Projects currentProject = projectsFacade.find(projectsMB.getCurrentProjectId());
+                long columnId = -1;//determino el identificador de la columna
+                String sql = ""
+                        + "       SELECT \n"
+                        + "          project_columns.column_id \n"
+                        + "       FROM \n"
+                        + "          public.project_records, \n"
+                        + "          public.project_columns, \n"
+                        + "          public.projects \n"
+                        + "       WHERE \n"
+                        + "          project_columns.column_id = project_records.column_id AND \n"
+                        + "          projects.project_id = project_records.project_id AND \n"
+                        + "          project_columns.column_name LIKE '" + selectedErrorRowTable.getColumn3() + "' AND \n"//nombre de la columna                        
+                        + "          projects.start_column_id >= " + currentProject.getStartColumnId() + " AND \n"//solo las columnas del proyecto start - end
+                        + "          projects.end_column_id <= " + currentProject.getEndColumnId() + " \n"
+                        + "       GROUP BY \n"
+                        + "          project_columns.column_id \n";
+                ResultSet rs = connectionJdbcMB.consult(sql);
+                if (rs.next()) {
+                    columnId = rs.getLong(1);
+                }
+                if (columnId != -1) {
+                    sql = ""
+                            + " DELETE FROM \n"
+                            + "    project_records \n"
+                            + " WHERE \n"
+                            + "    project_id = " + currentProject.getProjectId() + " AND \n"
+                            + "    record_id = " + selectedErrorRowTable.getColumn2() + " AND \n"//identificador del registro
+                            + "    column_id = " + columnId + " \n";//identificador de la columna
+                    connectionJdbcMB.non_query(sql);
+                }
+                //se elimina el error de la lista de errores y se agrega a lista de correcciones                    
+                for (int i = 0; i < errorsList.size(); i++) {
+                    if (errorsList.get(i).getColumn1().compareTo(selectedErrorRowTable.getColumn1()) == 0) {
+                        //elimino de la lista de errores
+                        errorsList.remove(i);
+                        sizeErrorsList--;
+                        //agrego a la lista de correciones
+                        correctionList.add(new RowDataTable(
+                                String.valueOf(correctionList.size() + 1), //       column1 ==> identificador de la correcion
+                                selectedErrorRowTable.getColumn2(), //              column2 ==> identificador de registro
+                                selectedErrorRowTable.getColumn3(), //              column3 ==> nombre columna
+                                selectedErrorRowTable.getColumn4(), //              column4 ==> valor anterior
+                                "", //  es vacio por que fue descartado             column5 ==> valor actual
+                                String.valueOf(columnId), //                        column6 ==> identificador del nombre de columna
+                                String.valueOf(currentProject.getProjectId())));//  column7 ==> identificador del proyecto
+                        //reseteo variables
+                        selectedErrorRowTable = null;
+                        btnSolveDisabled = true;
+                        valueFound = "";//valor actual
+                        currentNewValue = "";
+                        currentDateFormatAcepted = "";
+                        aceptedValues = new SelectItem[0];
+                        break;
+                    }
+                }
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error"));
+                return 0;
+            } catch (Exception e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "ALERTA", "no se realizo por: " + e.toString()));
+                return 0;
+            }
+//            String sqlUpdate = errorControlArrayList.get(i).getRelationVar().getNameFound() + "=''";
+//            String sqlId = "id=" + errorControlArrayList.get(i).getRowId();
+//            connectionJdbcMB.update(nameTableTemp, sqlUpdate, sqlId);
+//            //quitamos el error de la lista
+//            errorControlArrayList.get(i).setNewValue(currentNewValue);
+//            errorCorrectionArrayList.add(errorControlArrayList.get(i));
+//            errorControlArrayList.remove(i);
+//            sizeErrorsList--;
+//            btnSolveDisabled = true;
+//            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
+//            FacesContext.getCurrentInstance().addMessage(null, msg);
+//            return 0;
         }
         return 0;
     }
 
     public int solveError() {
         boolean correction = false;
-        //verifico que el nuevo dato sea un valor esperado
-        for (int i = 0; i < errorControlArrayList.size(); i++) {
-            if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
-                currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());
-                relationVar = currentRelationsGroup.findRelationVarByNameFound(errorControlArrayList.get(i).getRelationVar().getNameFound());
-                //////////////////////////////
-                switch (DataTypeEnum.convert(errorControlArrayList.get(i).getRelationVar().getFieldType())) {//tipo de relacion
-                    case text:
-                        break;
-                    case integer:
-                        if (isNumeric(currentNewValue)) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                    case age:
-                        if (isAge(currentNewValue)) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                    case date:
-                        if (isDate(currentNewValue, currentDateFormat)) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                    case military:
-                        if (isMilitary(currentNewValue) == null) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                    case hour:
-                        if (isHour(currentNewValue)) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                    case minute:
-                        if (isMinute(currentNewValue)) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                    case day:
-                        if (isDay(currentNewValue)) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                    case month:
-                        if (isMonth(currentNewValue)) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                    case year:
-                        if (isYear(currentNewValue)) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                    case percentage:
-                        if (isPercentage(currentNewValue)) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                    case NOVALUE://categorical
-                        if (isCategorical(
-                                currentNewValue, errorControlArrayList.get(i).getRelationVar().getFieldType(),
-                                errorControlArrayList.get(i).getRelationVar().getComparisonForCode(), relationVar.getRelationValuesList())) {
-                            correction = true;
-                        } else {
-                            correction = false;
-                        }
-                        break;
-                }
-                ///////////////////////////////                
-                if (!correction) {
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "El valor ingresado no es aceptado como válido");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                } else {
-                    //se realiza la actualizacion de la tabla
-                    String sqlUpdate = errorControlArrayList.get(i).getRelationVar().getNameFound() + "='" + currentNewValue + "'";
-                    String sqlId = "id=" + errorControlArrayList.get(i).getRowId();
-                    connectionJdbcMB.update(nameTableTemp, sqlUpdate, sqlId);
-                    //quitamos el error de la lista
-                    errorControlArrayList.get(i).setNewValue(currentNewValue);
-                    errorCorrectionArrayList.add(errorControlArrayList.get(i));
-                    errorControlArrayList.remove(i);
-                    sizeErrorsList--;
-                    updateErrorsArrayList();
-                    updateCorrectionArrayList();
-                    btnSolveDisabled = true;
-                    btnDiscardDisabled = true;
-                    btnSeeRecordDisabled = true;
-                    FacesContext context = FacesContext.getCurrentInstance();
-                    recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
-                    //si no hay errores permitir el registro
-                    if (errorControlArrayList.isEmpty()) {
-                        recordDataMB.setBtnRegisterDataDisabled(false);
-                        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el último error, puede proceder a registrar la informacion");
-                        FacesContext.getCurrentInstance().addMessage(null, msg);
-
-                    } else {
-                        recordDataMB.setBtnRegisterDataDisabled(true);
-                        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error, prosiga hasta corregir todos los errores");
-                        FacesContext.getCurrentInstance().addMessage(null, msg);
+        if (currentNewValue == null || currentNewValue.trim().length() == 0) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Debe ingresar un valor para realizar la correción"));
+            return 0;
+        }
+        if (selectedErrorRowTable != null) {
+            switch (DataTypeEnum.convert(remove_v(selectedErrorRowTable.getColumn7()))) {//tipo de relacion()
+                case text:
+                    break;
+                case integer:
+                    if (isNumeric(currentNewValue)) {
+                        correction = true;
                     }
+                    break;
+                case age:
+                    if (isAge(currentNewValue)) {
+                        correction = true;
+                    }
+                    break;
+                case date:
+                    if (isDate(currentNewValue, selectedErrorRowTable.getColumn9())) {
+                        //System.out.println("SE determino que: " + currentNewValue + "con formato " + currentDateFormat + " es válido");
+                        correction = true;
+                    }
+                    break;
+                case military:
+                    if (isMilitary(currentNewValue) == null) {
+                        correction = true;
+                    }
+                    break;
+                case hour:
+                    if (isHour(currentNewValue)) {
+                        correction = true;
+                    }
+                    break;
+                case minute:
+                    if (isMinute(currentNewValue)) {
+                        correction = true;
+                    }
+                    break;
+                case day:
+                    if (isDay(currentNewValue)) {
+                        correction = true;
+                    }
+                    break;
+                case month:
+                    if (isMonth(currentNewValue)) {
+                        correction = true;
+                    }
+                    break;
+                case year:
+                    if (isYear(currentNewValue)) {
+                        correction = true;
+                    }
+                    break;
+                case percentage:
+                    if (isPercentage(currentNewValue)) {
+                        correction = true;
+                    }
+                    break;
+                case NOVALUE://categorical
+                    //correction = false;
+                    if (Boolean.parseBoolean(selectedErrorRowTable.getColumn8()) == true) {
+                        if (connectionJdbcMB.findNameByCategoricalCode(remove_v(selectedErrorRowTable.getColumn7()), currentNewValue) != null) {
+                            correction = true;
+                        }
+                    } else {
+                        if (connectionJdbcMB.findCodeByCategoricalName(remove_v(selectedErrorRowTable.getColumn7()), currentNewValue) != null) {
+                            correction = true;
+                        }
+                    }
+                    break;
+            }
+            if (!correction) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "El valor ingresado no es aceptado como válido"));
+            } else {//se realiza la actualizacion de la tabla
+                Projects currentProject = projectsFacade.find(projectsMB.getCurrentProjectId());
+                try {
+                    long columnId = -1;//determino el identificador de la columna
+                    String sql = ""
+                            + "       SELECT \n"
+                            + "          project_columns.column_id \n"
+                            + "       FROM \n"
+                            + "          public.project_records, \n"
+                            + "          public.project_columns, \n"
+                            + "          public.projects \n"
+                            + "       WHERE \n"
+                            + "          project_columns.column_id = project_records.column_id AND \n"
+                            + "          projects.project_id = project_records.project_id AND \n"
+                            + "          project_columns.column_name LIKE '" + selectedErrorRowTable.getColumn3() + "' AND \n"//nombre de la columna                        
+                            + "          projects.start_column_id >= " + currentProject.getStartColumnId() + " AND \n"//solo las columnas del proyecto start - end
+                            + "          projects.end_column_id <= " + currentProject.getEndColumnId() + " \n"
+                            + "       GROUP BY \n"
+                            + "          project_columns.column_id \n";
+                    ResultSet rs = connectionJdbcMB.consult(sql);
+                    if (rs.next()) {
+                        columnId = rs.getLong(1);
+                    }
+                    if (columnId != -1) {
+                        //determino si este registro existe sino debo crearlo
+                        boolean exist = false;
+                        sql = ""
+                                + " SELECT \n"
+                                + "    * \n"
+                                + " FROM \n"
+                                + "    project_records \n"
+                                + " WHERE \n"
+                                + "    project_id = " + currentProject.getProjectId() + " AND \n"
+                                + "    record_id = " + selectedErrorRowTable.getColumn2() + " AND \n"//identificador del registro
+                                + "    column_id = " + columnId + " \n";//identificador de la columna
+                        rs = connectionJdbcMB.consult(sql);
+                        if (rs.next()) {
+                            exist = true;
+                        }
+                        if (exist) {//si existe se actualiza
+                            sql = ""
+                                    + " UPDATE \n"
+                                    + " project_records \n"
+                                    + " SET data_value = '" + currentNewValue + "' \n"
+                                    + " WHERE \n"
+                                    + "    project_id = " + currentProject.getProjectId() + " AND \n"
+                                    + "    record_id = " + selectedErrorRowTable.getColumn2() + " AND \n"//identificador del registro
+                                    + "    column_id = " + columnId + " \n";//identificador de la columna                        
+                            connectionJdbcMB.non_query(sql);//System.out.println("sql para corregir error \n" + sql);
+                        } else {//si no existe se crea
+                            sql = ""
+                                    + " INSERT INTO project_records VALUES ("
+                                    + currentProject.getProjectId() + ","
+                                    + selectedErrorRowTable.getColumn2() + ","//identificador del registro
+                                    + columnId + ","//identificador de la columna                        
+                                    + "'" + currentNewValue + "')";
+                            connectionJdbcMB.non_query(sql);//System.out.println("sql para corregir error \n" + sql);
+                        }
+                    }
+                    //se elimina el error de la lista de errores y se agrega a lista de correcciones                    
+                    for (int i = 0; i < errorsList.size(); i++) {
+                        if (errorsList.get(i).getColumn1().compareTo(selectedErrorRowTable.getColumn1()) == 0) {
+                            //elimino de la lista de errores
+                            errorsList.remove(i);
+                            sizeErrorsList--;
+                            //agrego a la lista de correciones
+                            correctionList.add(new RowDataTable(
+                                    String.valueOf(correctionList.size() + 1), //       column1 ==> identificador de la correcion
+                                    selectedErrorRowTable.getColumn2(), //              column2 ==> identificador de registro
+                                    selectedErrorRowTable.getColumn3(), //              column3 ==> nombre columna
+                                    selectedErrorRowTable.getColumn4(), //              column4 ==> valor anterior
+                                    currentNewValue, //                                 column5 ==> valor actual
+                                    String.valueOf(columnId), //                        column6 ==> identificador del nombre de columna
+                                    String.valueOf(currentProject.getProjectId())));//  column7 ==> identificador del proyecto
+                            //reseteo variables
+                            selectedErrorRowTable = null;
+                            btnSolveDisabled = true;
+                            valueFound = "";//valor actual
+                            currentNewValue = "";
+                            currentDateFormatAcepted = "";
+                            aceptedValues = new SelectItem[0];
+                            break;
+                        }
+                    }
+                    recordDataMB.setBtnRegisterDataDisabled(true);
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error"));
+                    return 0;
+                } catch (Exception e) {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "ALERTA", "no se realizo por: " + e.toString()));
                     return 0;
                 }
             }
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Seleccione un error de la lista"));
         }
         return 0;
     }
-//----------------------------------------------------------------------
+
+    private String remove_v(String field_type) {
+        /*
+         * remueve '_v' de un tipo de dato (para que tome la tabla categorica)
+         */
+        String strReturn;
+        strReturn = field_type.substring(field_type.length() - 2, field_type.length());
+        if (strReturn.compareTo("_v") == 0) {
+            strReturn = field_type.substring(0, field_type.length() - 2);
+        } else {
+            strReturn = field_type;
+        }
+        return strReturn;
+    }
+
+    //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //VALIDACIONES ---------------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-
     private boolean isDay(String str) {
         /*
          * validacion de si un numero de 1 y 31
@@ -530,8 +757,8 @@ public class ErrorsControlMB implements Serializable {
             return true;
         }
         try {
-            str.replaceAll(",", "");
-            str.replaceAll(".", "");
+            str = str.replaceAll(",", "");
+            str = str.replaceAll("\\.", "");
             Integer.parseInt(str);
             return true;
         } catch (NumberFormatException nfe) {
@@ -539,20 +766,19 @@ public class ErrorsControlMB implements Serializable {
         }
     }
 
-    private boolean isDate(String fecha, String format) {
+    private boolean isDate(String f, String format) {
         /*
-         * validacion de si un string es una fecha de un determinado formto
+         *  null=inválido ""=aceptado pero vacio "valor"=aceptado (valor para db)
          */
-        if (fecha.trim().length() == 0) {
+        if (f.trim().length() == 0) {
             return true;
         }
-        SimpleDateFormat formato = new SimpleDateFormat(format);
-        Date fechaDate = null;
         try {
-            fechaDate = formato.parse(fecha);
+            DateTimeFormatter fmt2 = DateTimeFormat.forPattern(format);
+            DateTime the_date = DateTime.parse(f, fmt2);//trata de convertir al formato "format"(me llega por parametro)
             return true;
-        } catch (ParseException ex) {
-            return false;
+        } catch (Throwable ex) {
+            return false;//invalida
         }
     }
 
@@ -560,21 +786,17 @@ public class ErrorsControlMB implements Serializable {
         /*
          * validacion de si un string es un hora miitar
          */
-
-
-        //----------------------------------------------
-        //determinar si hay caracteres
+        //determinar si hay caracteres----------------------------------------------
         if (str.trim().length() == 0) {
             return "no se acepta cadenas vacias";
         }
-        //----------------------------------------------
-        //quitar " AM A.M.
+        //quitar " AM A.M.----------------------------------------------
         str = str.trim().toUpperCase();
         str = str.replace("AM", "");
         str = str.replace("A.M.", "");
         str = str.replace("\"", "");
 
-        //determinar si es un timestamp
+        //determinar si es un timestamp----------------------------------------------
         if (str.trim().length() == 12 || str.trim().length() == 8) {
             String[] splitMilitary = str.split(":");
             if (splitMilitary.length == 3) {
@@ -592,14 +814,9 @@ public class ErrorsControlMB implements Serializable {
                 }
             }
         }
-
-
-        //----------------------------------------------
-        //determinar si tiene como separador un :
+        //determinar si tiene como separador un :----------------------------------------------
         boolean length2 = false;
-
         String[] splitMilitary;
-
         splitMilitary = str.split(":");
         if (splitMilitary.length == 2) {
             length2 = true;
@@ -646,9 +863,7 @@ public class ErrorsControlMB implements Serializable {
             } catch (Exception ex) {
             }
         }
-
-        //----------------------------------------------
-        //determinar si tiene caracteres diferentes a    0123456789
+        //determinar si tiene caracteres diferentes a    0123456789----------------------------------------------
         for (int i = 0; i < str.length(); i++) {
             if (str.charAt(i) != '0' && str.charAt(i) != '1' && str.charAt(i) != '2'
                     && str.charAt(i) != '3' && str.charAt(i) != '4' && str.charAt(i) != '5'
@@ -657,14 +872,12 @@ public class ErrorsControlMB implements Serializable {
                 return "Valor no aceptado como hora militar";
             }
         }
-
-        //----------------------------------------------
-        //verificar si tiene menos de 4 cifras 
+        //verificar si tiene menos de 4 cifras ----------------------------------------------
         if (str.trim().length() < 4) {
             //con tres cifras y mayor de 241            
             //y se evalua los dos ultimos digitos < 60
-            //3 40 valido
-            //9 99 no valido
+            //3 40 válido
+            //9 99 no válido
             return "Una hora militar con menos de 3 cifras es ambigua";
         }
 
@@ -750,139 +963,52 @@ public class ErrorsControlMB implements Serializable {
     //----------------------------------------------------------------------
 
     public void btnUndoErrorClick() {
-        for (int i = 0; i < correctionList.length; i++) {
-            //String i_str=String.valueOf(i+1)+". ";
-            if (correctionList[i].getValue().toString().compareTo(currentCorrection) == 0) {
+        String sql;
+        if (selectedCorrectionRowTable != null) {
+            if (selectedCorrectionRowTable.getColumn4() == null || selectedCorrectionRowTable.getColumn4().trim().length() == 0) {
+                //se debe eliminar un registro
+                sql = ""
+                        + " DELETE FROM \n"
+                        + "    project_records \n"
+                        + " WHERE \n"
+                        + "    project_id = " + selectedCorrectionRowTable.getColumn7() + " AND \n"
+                        + "    record_id = " + selectedCorrectionRowTable.getColumn2() + " AND \n"//identificador del registro
+                        + "    column_id = " + selectedCorrectionRowTable.getColumn6() + " \n";//identificador de la columna                        
 
-                try {
-                    //determino el error que esta seleccionado en la lista                    
-                    int id_int = Integer.parseInt(errorCorrectionArrayList.get(i).getRowId());
-
-                    connectionJdbcMB.update(nameTableTemp,
-                            errorCorrectionArrayList.get(i).getRelationVar().getNameFound() + "='" + errorCorrectionArrayList.get(i).getValue() + "'",
-                            "id=" + String.valueOf(id_int));
-                    errorCorrectionArrayList.remove(i);//elimino del historial
-                    updateCorrectionArrayList();
-                    FacesContext context = FacesContext.getCurrentInstance();
-                    recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
-                    recordDataMB.setBtnRegisterDataDisabled(true);
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El cambio se a revertido");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                } catch (Exception ex) {
-                    System.out.println("Error en la creación de columnas dinamicas: " + ex.toString());
-                }
-
-                break;
+                connectionJdbcMB.non_query(sql);//System.out.println("sql para revertir correcion \n" + sql);
+            } else if (selectedCorrectionRowTable.getColumn5() == null || selectedCorrectionRowTable.getColumn5().trim().length() == 0) {
+                //se debe insertar nuevo registro
+                sql = ""
+                        + " INSERT INTO project_records VALUES ("
+                        + selectedCorrectionRowTable.getColumn7() + ","//identificador del proyecto
+                        + selectedCorrectionRowTable.getColumn2() + ","//identificador del registro
+                        + selectedCorrectionRowTable.getColumn6() + ","//identificador de la columna                        
+                        + "'" + selectedCorrectionRowTable.getColumn4() + "')";//valor anterior
+                connectionJdbcMB.non_query(sql);//System.out.println("sql para revertir correcion \n" + sql);
+            } else {//se debe actualizar un registro
+                sql = ""
+                        + " UPDATE \n"
+                        + " project_records \n"
+                        + " SET data_value = '" + selectedCorrectionRowTable.getColumn4() + "' \n"//valor anterior
+                        + " WHERE \n"
+                        + "    project_id = " + selectedCorrectionRowTable.getColumn7() + " AND \n"
+                        + "    record_id = " + selectedCorrectionRowTable.getColumn2() + " AND \n"//identificador del registro
+                        + "    column_id = " + selectedCorrectionRowTable.getColumn6() + " \n";//identificador de la columna                        
+                connectionJdbcMB.non_query(sql);//System.out.println("sql para revertir correcion \n" + sql);
             }
-        }
-    }
-
-    public void changeCorrectionList() {
-        btnUndoDisabled = false;
-    }
-
-    public void changeErrorsList() {
-        updateErrorsArrayList();
-        btnSolveDisabled = true;
-        btnSeeRecordDisabled = true;
-        //btnDeleteRecordDisabled = true;
-        btnDiscardDisabled = true;
-
-        for (int i = 0; i < errorControlArrayList.size(); i++) {
-            if (errorControlArrayList.get(i).getErrorDescription().compareTo(currentError) == 0) {
-                selectDateFormatDisabled = true;
-                description = errorControlArrayList.get(i).getErrorDescription();
-                //valores aceptados
-                switch (DataTypeEnum.convert(errorControlArrayList.get(i).getRelationVar().getFieldType())) {//tipo de relacion
-                    case text:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Cualquier texto"),};
-                        break;
-                    case integer:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Número entero"),};
-                        break;
-                    case age:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Número entero"),};
-                        break;
-                    case military:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Hora militar"),};
-                        break;
-                    case date:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Fecha segun el formato"),};
-                        selectDateFormatDisabled = false;
-                        break;
-                    case day:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 31"),};
-                        break;
-                    case month:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 12"),};
-                        break;
-                    case year:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Entero de 4 cifras"),};
-                        break;
-                    case minute:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 0 a 59"),};
-                        break;
-                    case hour:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 0 a 24"),};
-                        break;
-//                    case degree:
-//                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero 1, 2, 3"),};
-//                        break;
-                    case percentage:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 100"),};
-                        break;
-                    case error:
-                        aceptedValues = new SelectItem[]{new SelectItem("1", " "),};
-                        break;
-                    case NOVALUE:
-                        selectDateFormatDisabled = true;
-                        //btnSolveDisabled = false;
-                        ArrayList<String> categoricalList;
-                        if (errorControlArrayList.get(i).getRelationVar().getComparisonForCode()) {
-                            categoricalList = connectionJdbcMB.categoricalCodeList(
-                                    errorControlArrayList.get(i).getRelationVar().getFieldType(), 0);
-                        } else {
-                            categoricalList = connectionJdbcMB.categoricalNameList(
-                                    errorControlArrayList.get(i).getRelationVar().getFieldType(), 0);
-                        }
-                        aceptedValues = new SelectItem[categoricalList.size()];
-                        for (int j = 0; j < categoricalList.size(); j++) {
-                            aceptedValues[j] = new SelectItem(categoricalList.get(j));
-                        }
-                        break;
+            //se elimina la correcion de la lista de correcciones 
+            for (int i = 0; i < correctionList.size(); i++) {
+                if (correctionList.get(i).getColumn1().compareTo(selectedCorrectionRowTable.getColumn1()) == 0) {
+                    //elimino de la lista de correciones                    
+                    correctionList.remove(i);
+                    selectedCorrectionRowTable = null;
+                    break;
                 }
-
-                if (errorControlArrayList.get(i).getRelationVar().getFieldType().compareTo("error") != 0) {
-                    createDynamicTable();
-                    btnSeeRecordDisabled = false;
-                    //btnDeleteRecordDisabled = false;
-                    btnDiscardDisabled = false;
-                    valueFound = errorControlArrayList.get(i).getValue();//valor actual
-                    solution = errorControlArrayList.get(i).getErrorSolution();//solucion
-                } else {
-                    valueFound = "";//valor actual
-                    solution = errorControlArrayList.get(i).getErrorSolution();//solucion
-                }
-
-                break;
             }
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El cambio se a revertido"));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Seleccione una corrección de la lista"));
         }
-    }
-
-    public void updateErrorsArrayList() {
-        errors = new SelectItem[errorControlArrayList.size()];
-        for (int i = 0; i < errorControlArrayList.size(); i++) {
-            errors[i] = new SelectItem(errorControlArrayList.get(i).getErrorDescription());
-        }
-        setAceptedValues(new SelectItem[0]);
-        setBtnSolveDisabled(false);
-        setCurrentAceptedValue("");
-        setCurrentNewValue("");
-        setDescription("");
-        setSelectDateFormatDisabled(true);
-        setSolution("");
-        setValueFound("");
-
     }
 
     public void changeAcceptedValuesList() {
@@ -918,44 +1044,19 @@ public class ErrorsControlMB implements Serializable {
 //    public void setBtnDeleteRecordDisabled(boolean btnDeleteRecordDisabled) {
 //        this.btnDeleteRecordDisabled = btnDeleteRecordDisabled;
 //    }
-    public boolean isBtnDiscardDisabled() {
-        return btnDiscardDisabled;
-    }
-
-    public void setBtnDiscardDisabled(boolean btnDiscardDisabled) {
-        this.btnDiscardDisabled = btnDiscardDisabled;
-    }
-
+//    public boolean isBtnDiscardDisabled() {
+//        return btnDiscardDisabled;
+//    }
+//
+//    public void setBtnDiscardDisabled(boolean btnDiscardDisabled) {
+//        this.btnDiscardDisabled = btnDiscardDisabled;
+//    }
     public String getCurrentAceptedValue() {
         return currentAceptedValue;
     }
 
     public void setCurrentAceptedValue(String currentAceptedValue) {
         this.currentAceptedValue = currentAceptedValue;
-    }
-
-    public String getCurrentError() {
-        return currentError;
-    }
-
-    public void setCurrentError(String currentError) {
-        this.currentError = currentError;
-    }
-
-    public SelectItem[] getErrors() {
-        return errors;
-    }
-
-    public void setErrors(SelectItem[] errors) {
-        this.errors = errors;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public int getSizeErrorsList() {
@@ -966,14 +1067,6 @@ public class ErrorsControlMB implements Serializable {
         this.sizeErrorsList = sizeErrorsList;
     }
 
-    public String getSolution() {
-        return solution;
-    }
-
-    public void setSolution(String solution) {
-        this.solution = solution;
-    }
-
     public String getValueFound() {
         return valueFound;
     }
@@ -982,13 +1075,6 @@ public class ErrorsControlMB implements Serializable {
         this.valueFound = valueFound;
     }
 
-//    public FormsAndFieldsDataMB getFormsAndFieldsDataMB() {
-//        return formsAndFieldsDataMB;
-//    }
-//
-//    public void setFormsAndFieldsDataMB(FormsAndFieldsDataMB formsAndFieldsDataMB) {
-//        this.formsAndFieldsDataMB = formsAndFieldsDataMB;
-//    }
     public String getCurrentDateFormat() {
         return currentDateFormat;
     }
@@ -997,33 +1083,12 @@ public class ErrorsControlMB implements Serializable {
         this.currentDateFormat = currentDateFormat;
     }
 
-    public boolean isSelectDateFormatDisabled() {
-        return selectDateFormatDisabled;
-    }
-
-    public void setSelectDateFormatDisabled(boolean selectDateFormatDisabled) {
-        this.selectDateFormatDisabled = selectDateFormatDisabled;
-    }
-
     public String getCurrentNewValue() {
         return currentNewValue;
     }
 
     public void setCurrentNewValue(String currentNewValue) {
         this.currentNewValue = currentNewValue;
-        if (currentNewValue.trim().length() == 0) {
-            btnSolveDisabled = true;
-        } else {
-            btnSolveDisabled = false;
-        }
-    }
-
-    public ArrayList<ErrorControl> getErrorControlArrayList() {
-        return errorControlArrayList;
-    }
-
-    public void setErrorControlArrayList(ArrayList<ErrorControl> errorControlArrayList) {
-        this.errorControlArrayList = errorControlArrayList;
     }
 
     public RelationGroup getCurrentRelationsGroup() {
@@ -1050,36 +1115,20 @@ public class ErrorsControlMB implements Serializable {
         this.currentDateFormatAcepted = currentDateFormatAcepted;
     }
 
-    public boolean isBtnSeeRecordDisabled() {
-        return btnSeeRecordDisabled;
+    public RowDataTable getSelectedCorrectionRowTable() {
+        return selectedCorrectionRowTable;
     }
 
-    public void setBtnSeeRecordDisabled(boolean btnSeeRecordDisabled) {
-        this.btnSeeRecordDisabled = btnSeeRecordDisabled;
+    public void setSelectedCorrectionRowTable(RowDataTable selectedCorrectionRowTable) {
+        this.selectedCorrectionRowTable = selectedCorrectionRowTable;
     }
 
-    public boolean isBtnUndoDisabled() {
-        return btnUndoDisabled;
-    }
-
-    public void setBtnUndoDisabled(boolean btnUndoDisabled) {
-        this.btnUndoDisabled = btnUndoDisabled;
-    }
-
-    public SelectItem[] getCorrectionList() {
+    public List<RowDataTable> getCorrectionList() {
         return correctionList;
     }
 
-    public void setCorrectionList(SelectItem[] correctionList) {
+    public void setCorrectionList(List<RowDataTable> correctionList) {
         this.correctionList = correctionList;
-    }
-
-    public String getCurrentCorrection() {
-        return currentCorrection;
-    }
-
-    public void setCurrentCorrection(String currentCorrection) {
-        this.currentCorrection = currentCorrection;
     }
 
     public DinamicTable getDinamicTable() {
@@ -1089,8 +1138,32 @@ public class ErrorsControlMB implements Serializable {
     public void setDinamicTable(DinamicTable dinamicTable) {
         this.dinamicTable = dinamicTable;
     }
-    
+
     public void setProjectsMB(ProjectsMB projectsMB) {
         this.projectsMB = projectsMB;
+    }
+
+    public RowDataTable getSelectedErrorRowTable() {
+        return selectedErrorRowTable;
+    }
+
+    public void setSelectedErrorRowTable(RowDataTable selectedErrorRowTable) {
+        this.selectedErrorRowTable = selectedErrorRowTable;
+    }
+
+    public List<RowDataTable> getErrorsList() {
+        return errorsList;
+    }
+
+    public void setErrorsList(List<RowDataTable> errorsList) {
+        this.errorsList = errorsList;
+    }
+
+    public List<RowDataTable> getMoreInfoDataTableList() {
+        return moreInfoDataTableList;
+    }
+
+    public void setMoreInfoDataTableList(List<RowDataTable> moreInfoDataTableList) {
+        this.moreInfoDataTableList = moreInfoDataTableList;
     }
 }

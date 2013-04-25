@@ -205,8 +205,6 @@ public class Victims implements Serializable {
         this.residenceDepartment = residenceDepartment;
     }
     
-    
-    
     public Tags getTagId() {
         return tagId;
     }

@@ -352,13 +352,6 @@ public class VIFMB implements Serializable {
                     count++;
                 }
             }
-            //cargo las aseguradoras
-//            List<Insurance> insuranceList = insuranceFacade.findAll();
-//            insurances = new SelectItem[insuranceList.size() + 1];
-//            insurances[0] = new SelectItem(0, "");
-//            for (int i = 0; i < insuranceList.size(); i++) {
-//                insurances[i + 1] = new SelectItem(insuranceList.get(i).getInsuranceId(), insuranceList.get(i).getInsuranceName());
-//            }
             //cargo las instituciones receptoras
             List<DomesticViolenceDataSources> violenceDataSourcesList = domesticViolenceDataSourcesFacade.findAll();
             violenceDataSources = new SelectItem[violenceDataSourcesList.size()];
@@ -445,13 +438,6 @@ public class VIFMB implements Serializable {
             for (int i = 0; i < gendersList.size(); i++) {
                 genders[i + 1] = new SelectItem(gendersList.get(i).getGenderId(), gendersList.get(i).getGenderName());
             }
-            //trabajos
-//            List<Jobs> jobsList = jobsFacade.findAllOrder();
-//            jobs = new SelectItem[jobsList.size() + 1];
-//            jobs[0] = new SelectItem(0, "");
-//            for (int i = 0; i < jobsList.size(); i++) {
-//                jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
-//            }
             //Uso de drogas y alcohol
             List<UseAlcoholDrugs> useAlcoholDrugsList = useAlcoholDrugsFacade.findAll();
             useAlcohol = new SelectItem[useAlcoholDrugsList.size() + 1];
@@ -463,21 +449,16 @@ public class VIFMB implements Serializable {
                 useDrugs[i + 1] = new SelectItem(useAlcoholDrugsList.get(i).getUseAlcoholDrugsId(), useAlcoholDrugsList.get(i).getUseAlcoholDrugsName());
             }
             currentResponsible = "ADMIN";
-
             determinePosition();
-
             currentDepartamentHome = 52;
             changeDepartamentHome();
             currentMunicipalitie = 1;
-
             //lista de criterios de busqueda            
             searchCriteriaList = new SelectItem[3];
             searchCriteriaList[0] = new SelectItem(1, "IDENTIFICACION");
             searchCriteriaList[1] = new SelectItem(2, "NOMBRE");
             searchCriteriaList[2] = new SelectItem(3, "CODIGO INTERNO");
-
             rowDataTableList = new ArrayList<RowDataTable>();
-
             determinePosition();
             openDialogFirst = "";
             openDialogNext = "";
@@ -485,16 +466,16 @@ public class VIFMB implements Serializable {
             openDialogPrevious = "";
             openDialogNew = "";
             save = true;
-            System.out.println("Save=true");
+            //System.out.println("Save=true");
             stylePosition = "color: #1471B1;";
             neighborhoodHomeNameDisabled = false;
             directionHomeDisabled = false;
 
         } catch (Exception e) {
-            System.out.println("*******************************************ERROR_V3: " + e.toString());
+            System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
         }
         loading = false;
-        System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////");
+        //System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////");
     }
 
     @PostConstruct
@@ -1652,7 +1633,7 @@ public class VIFMB implements Serializable {
                 //    return false;
                 //}
             } catch (Exception e) {
-                System.out.println("*******************************************ERROR_V2: " + e.toString());
+                System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
                 FacesContext.getCurrentInstance().addMessage(null, msg);
                 return false;
@@ -1759,10 +1740,10 @@ public class VIFMB implements Serializable {
             victimsFacade.edit(currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId());
             nonFatalInjuriesFacade.edit(currentNonFatalDomesticViolence.getNonFatalInjuries());
             nonFatalDomesticViolenceFacade.edit(currentNonFatalDomesticViolence);
-            System.out.println("registro actualizado");
+            //System.out.println("registro actualizado");
 
         } catch (Exception e) {
-            System.out.println("*******************************************ERROR: " + e.toString());
+            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
@@ -2115,7 +2096,7 @@ public class VIFMB implements Serializable {
             nonFatalDomesticViolenceFacade.remove(currentNonFatalDomesticViolence);
             nonFatalInjuriesFacade.remove(auxNonFatalInjuries);
             victimsFacade.remove(auxVictims);
-            System.out.println("registro eliminado");
+            //System.out.println("registro eliminado");
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
             FacesContext.getCurrentInstance().addMessage(null, msg);
             noSaveAndGoNew();
@@ -2134,7 +2115,7 @@ public class VIFMB implements Serializable {
             currentPosition = position + "/" + String.valueOf(totalRegisters);
             openDialogDelete = "dialogDelete.show();";
         }
-        System.out.println("POSICION DETERMINADA: " + currentPosition);
+        //System.out.println("POSICION DETERMINADA: " + currentPosition);
     }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -2234,7 +2215,7 @@ public class VIFMB implements Serializable {
                 //sql = sql + "injuries.injury_id = 52 OR ";
                 //sql = sql + "injuries.injury_id = 54 OR ";
                 //sql = sql + "injuries.injury_id = 55);";
-                System.out.println(sql);
+                //System.out.println(sql);
                 ResultSet rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
                     rowDataTableList.add(new RowDataTable(rs.getString(1), rs.getString(2), rs.getString(3)));

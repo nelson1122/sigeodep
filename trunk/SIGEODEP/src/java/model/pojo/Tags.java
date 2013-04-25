@@ -51,37 +51,6 @@ public class Tags implements Serializable {
     @OneToMany(mappedBy = "tagId")
     private List<Victims> victimsList;
     
-    
-    
-    public Forms getFormId() {
-        return formId;
-    }
-
-    public void setFormId(Forms formId) {
-        this.formId = formId;
-    }
-
-//    @XmlTransient
-//    public List<Loads> getLoadsList() {
-//        return loadsList;
-//    }
-//
-//    public void setLoadsList(List<Loads> loadsList) {
-//        this.loadsList = loadsList;
-//    }
-    
-    
-
-    @XmlTransient
-    public List<Victims> getVictimsList() {
-        return victimsList;
-    }
-
-    public void setNonFatalInjuriesList(List<Victims> victimsList) {
-        this.victimsList = victimsList;
-    }
-    
-    
     public Tags() {
     }
 
@@ -125,6 +94,23 @@ public class Tags implements Serializable {
 
     public void setTagFileStored(String tagFileStored) {
 	this.tagFileStored = tagFileStored;
+    }
+
+    public Forms getFormId() {
+        return formId;
+    }
+
+    public void setFormId(Forms formId) {
+        this.formId = formId;
+    }
+
+    @XmlTransient
+    public List<Victims> getVictimsList() {
+        return victimsList;
+    }
+
+    public void setVictimsList(List<Victims> victimsList) {
+        this.victimsList = victimsList;
     }
 
     @Override

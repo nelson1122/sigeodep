@@ -88,7 +88,7 @@ public class ProjectsMB implements Serializable {
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     private String newProjectName = "";
     private String lastCreatedProjectName = "";
-    
+    private String toolTipText="";
     private String newRelationsCopyName = "";
     private String currentProjectName = "";
     private String selectedRelationsNameInCopy = "";
@@ -2042,5 +2042,13 @@ public class ProjectsMB implements Serializable {
 
     public void setInconsistentRelationsDialog(String inconsistentRelationsDialog) {
         this.inconsistentRelationsDialog = inconsistentRelationsDialog;
+    }
+
+    public String getToolTipText() {
+        return toolTipText;
+    }
+
+    public void setToolTipText(String toolTipText) {
+        this.toolTipText = toolTipText;
     }
 }

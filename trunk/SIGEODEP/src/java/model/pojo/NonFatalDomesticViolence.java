@@ -57,8 +57,18 @@ public class NonFatalDomesticViolence implements Serializable {
     @JoinColumn(name = "domestic_violence_data_source_id", referencedColumnName = "domestic_violence_data_sources_id")
     @ManyToOne
     private DomesticViolenceDataSources domesticViolenceDataSourceId;
-
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "nonFatalDomesticViolence")
+    private SivigilaEvent sivigilaEvent;
+    
     public NonFatalDomesticViolence() {
+    }
+    
+    public SivigilaEvent getSivigilaEvent() {
+        return sivigilaEvent;
+    }
+
+    public void setSivigilaEvent(SivigilaEvent sivigilaEvent) {
+        this.sivigilaEvent = sivigilaEvent;
     }
 
     public NonFatalDomesticViolence(Integer nonFatalInjuryId) {

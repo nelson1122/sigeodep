@@ -83,7 +83,7 @@ public class InsurancesVariableMB implements Serializable {
     public void load() {
         currentInsurance = null;
         if (selectedRowDataTable != null) {
-            currentInsurance = insuranceFacade.find(Short.parseShort(selectedRowDataTable.getColumn1()));
+            currentInsurance = insuranceFacade.find(selectedRowDataTable.getColumn1());
         }
         if (currentInsurance != null) {
             btnEditDisabled = false;
@@ -141,30 +141,34 @@ public class InsurancesVariableMB implements Serializable {
 //                FacesContext.getCurrentInstance().addMessage(null, msg);
 //            }
 //        }
-
     }
 
     public void saveRegistry() {
         //determinar consecutivo
         if (newName.trim().length() != 0) {
             if (newCode.trim().length() != 0) {
-                if (insuranceFacade.find(newCode) == null) {
-                    //int max = insuranceFacade.findMax() + 1;
-                    newCode = newCode.toUpperCase();
-                    newName = newName.toUpperCase();
-                    Insurance newRegistry = new Insurance();
-                    newRegistry.setInsuranceId(newCode);
-                    newRegistry.setInsuranceName(newName);
-                    insuranceFacade.create(newRegistry);
-                    newName = "";
-                    newCode = "";
-                    currentInsurance = null;
-                    selectedRowDataTable = null;
-                    createDynamicTable();
-                    btnEditDisabled = true;
-                    btnRemoveDisabled = true;
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                
+                if (insuranceFacade.findByCode(newCode) == null) {
+                    if (insuranceFacade.findByName(newName) == null) {
+                        newCode = newCode.toUpperCase();
+                        newName = newName.toUpperCase();
+                        Insurance newRegistry = new Insurance();
+                        newRegistry.setInsuranceId(newCode);
+                        newRegistry.setInsuranceName(newName);
+                        insuranceFacade.create(newRegistry);
+                        newName = "";
+                        newCode = "";
+                        currentInsurance = null;
+                        selectedRowDataTable = null;
+                        createDynamicTable();
+                        btnEditDisabled = true;
+                        btnRemoveDisabled = true;
+                        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
+                        FacesContext.getCurrentInstance().addMessage(null, msg);
+                    } else {
+                        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "NOMBRE EXISTENTE", "El nombre digitado ya se encuentra registrado");
+                        FacesContext.getCurrentInstance().addMessage(null, msg);
+                    }
                 } else {
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "CODIGO EXISTENTE", "El código digitado ya se encuentra registrado");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
