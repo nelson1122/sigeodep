@@ -144,20 +144,7 @@ public class IndicatorsCountMB {
         }
     }
 
-    public void initialDateFocusLost() {
-        Calendar c1 = Calendar.getInstance();
-        Calendar c2 = Calendar.getInstance();
-        c1.setTime(initialDate);
-        c2.setTime(endDate);
-        if (c1.compareTo(c2) > 0) {
-            initialDate = endDate;
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial debe ser inferior o igual a la fecha final, el valor fue correjido."));
-        }
-    }
-
-    public void endDateFocusLost() {
-    }
-
+    
     public void loadValuesGraph() {
         valuesGraph = new ArrayList<String>();
         for (int i = 0; i < variablesCrossData.size(); i++) {
@@ -254,9 +241,9 @@ public class IndicatorsCountMB {
         if (continueProcess) {//ALMACENO EN BASE DE DATOS LOS REGISTROS DE ESTE CRUCE
             saveIndicatorRecords(createIndicatorConsult());
         }
-        if (continueProcess) {//ELIMINO LOS VALORES QUE SEAN CONFIGURADOS POR EL USUARIO
-            removeValuesConfigured();
-        }
+//        if (continueProcess) {//ELIMINO LOS VALORES QUE SEAN CONFIGURADOS POR EL USUARIO
+//            removeValuesConfigured();
+//        }
         if (continueProcess) {//CREO TODAS LAS POSIBLES COMBINACIONES
             createCombinations();
         }
@@ -1112,19 +1099,8 @@ public class IndicatorsCountMB {
         return chartReturn;
 
     }
-
-//    private String searchTypeName(String columnName) {
-//        //palabra que se agregara a la cabecera        
-//        if (columnName.compareTo("anyo") == 0) {
-//            return " años ";
-//        } else {
-//            return " " + columnName + " ";
-//        }
-//    }
     public void createMatrixResult() {        
-        try {//System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-            //ArrayList<String> columnNamesPivot = new ArrayList<String>();
-            //columnTypeName = new ArrayList<String>();
+        try {//System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");     
             columNames = new ArrayList<String>();
             rowNames = new ArrayList<String>();
             ResultSet rs = null;
@@ -1203,7 +1179,6 @@ public class IndicatorsCountMB {
             while (rs.next()) {
                 rowNames.add(rs.getString(1));
             }
-
             //---------------------------------------------------------            
             //SE CREA LA MATRIZ DE RESULTADOS (iniciada en 0 )
             //---------------------------------------------------------
@@ -1283,53 +1258,53 @@ public class IndicatorsCountMB {
         }
     }
 
-    private void removeValuesConfigured() {
-        
-        ArrayList<String> valuesDiscardedList;//valores descartados de la categoria(los valores que el usuario elimino de la categoria)
-        List<String> valuesList;//todos los valores (puede y no puede tomar)
-        List<String> valuesConfiguredList;//valores configurados (solo los que puede tomar, unos eliminados por el usuario)
-        sql = "";
-        for (int i = 0; i < variablesCrossData.size(); i++) {
-            //DETERMINO SI SE HA REALIZADO UNA CONFIGURACION
-            valuesDiscardedList = new ArrayList<String>();
-            if (variablesCrossData.get(i).getValues().size() != variablesCrossData.get(i).getValuesConfigured().size()) {
-                valuesList = variablesCrossData.get(i).getValues();
-                valuesConfiguredList = variablesCrossData.get(i).getValuesConfigured();
-                for (int j = 0; j < valuesList.size(); j++) {
-                    boolean find = false;
-                    for (int k = 0; k < valuesConfiguredList.size(); k++) {
-                        if (valuesList.get(j).compareTo(valuesConfiguredList.get(k)) == 0) {
-                            find = true;
-                            break;
-                        }
-                    }
-                    if (!find) {//si el valor no se encuentra es por que se descarto
-                        valuesDiscardedList.add(valuesList.get(j));
-                    }
-                }
-            }
-            if (!valuesDiscardedList.isEmpty()) {//adicionamos usuario e indicador                                
-                sql = "";
-                for (int j = 0; j < valuesDiscardedList.size(); j++) {
-                    sql = sql + "OR column_" + (i + 1) + " LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
-                }
-            }
-        }
-        if (sql.trim().length() != 0) {
-            sql = sql.substring(2, sql.length());//elimino primer "OR"                    
-            sql = ""
-                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-                    + "    indicator_id = " + currentIndicator.getIndicatorId() + " AND \n\r"
-                    + " ( \n\r"
-                    + sql
-                    + " ) \n\r";
-            sql = "\n\r DELETE FROM indicators_records WHERE " + sql;
-            connectionJdbcMB.non_query(sql);//
-            //System.out.println("REALIZO LAS ElIMINACIONES DE LA TABLA PIVOT \n " + sql);
-        } else {
-            //System.out.println("NO HAY ELIMINACIONES DE LA TABLA PIVOT \n " + sql);
-        }
-    }
+//    private void removeValuesConfigured() {
+//        
+//        ArrayList<String> valuesDiscardedList;//valores descartados de la categoria(los valores que el usuario elimino de la categoria)
+//        List<String> valuesList;//todos los valores (puede y no puede tomar)
+//        List<String> valuesConfiguredList;//valores configurados (solo los que puede tomar, unos eliminados por el usuario)
+//        sql = "";
+//        for (int i = 0; i < variablesCrossData.size(); i++) {
+//            //DETERMINO SI SE HA REALIZADO UNA CONFIGURACION
+//            valuesDiscardedList = new ArrayList<String>();
+//            if (variablesCrossData.get(i).getValues().size() != variablesCrossData.get(i).getValuesConfigured().size()) {
+//                valuesList = variablesCrossData.get(i).getValues();
+//                valuesConfiguredList = variablesCrossData.get(i).getValuesConfigured();
+//                for (int j = 0; j < valuesList.size(); j++) {
+//                    boolean find = false;
+//                    for (int k = 0; k < valuesConfiguredList.size(); k++) {
+//                        if (valuesList.get(j).compareTo(valuesConfiguredList.get(k)) == 0) {
+//                            find = true;
+//                            break;
+//                        }
+//                    }
+//                    if (!find) {//si el valor no se encuentra es por que se descarto
+//                        valuesDiscardedList.add(valuesList.get(j));
+//                    }
+//                }
+//            }
+//            if (!valuesDiscardedList.isEmpty()) {//adicionamos usuario e indicador                                
+//                sql = "";
+//                for (int j = 0; j < valuesDiscardedList.size(); j++) {
+//                    sql = sql + "OR column_" + (i + 1) + " LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
+//                }
+//            }
+//        }
+//        if (sql.trim().length() != 0) {
+//            sql = sql.substring(2, sql.length());//elimino primer "OR"                    
+//            sql = ""
+//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+//                    + "    indicator_id = " + currentIndicator.getIndicatorId() + " AND \n\r"
+//                    + " ( \n\r"
+//                    + sql
+//                    + " ) \n\r";
+//            sql = "\n\r DELETE FROM indicators_records WHERE " + sql;
+//            connectionJdbcMB.non_query(sql);//
+//            //System.out.println("REALIZO LAS ElIMINACIONES DE LA TABLA PIVOT \n " + sql);
+//        } else {
+//            //System.out.println("NO HAY ELIMINACIONES DE LA TABLA PIVOT \n " + sql);
+//        }
+//    }
 
     private void removeIndicatorRecords() {
         //---------------------------------------------------------        
@@ -1680,7 +1655,7 @@ public class IndicatorsCountMB {
                 addNoData = true;
                 for (int i = 0; i < variablesCrossData.get(1).getValuesConfigured().size(); i++) {
                     values2.add(variablesCrossData.get(1).getValuesConfigured().get(i));
-                    if (variablesCrossData.get(0).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
+                    if (variablesCrossData.get(1).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
                         addNoData = false;//la categoria contiene un valor sin dato
                     }
                 }
@@ -1705,7 +1680,7 @@ public class IndicatorsCountMB {
                 addNoData = true;
                 for (int i = 0; i < variablesCrossData.get(2).getValuesConfigured().size(); i++) {
                     values3.add(variablesCrossData.get(2).getValuesConfigured().get(i));
-                    if (variablesCrossData.get(0).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
+                    if (variablesCrossData.get(2).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
                         addNoData = false;//la categoria contiene un valor sin dato
                     }
                 }
@@ -1728,14 +1703,11 @@ public class IndicatorsCountMB {
             //---------------------------------------------------------
             //REALIZO LAS POSIBLES COMBINACIONES
             //---------------------------------------------------------            
-
             cpManager = new CopyManager((BaseConnection) connectionJdbcMB.getConn());
             sb = new StringBuilder();
             tuplesProcessed = 0;
             int id = 0;
             if (variablesCrossData.size() == 1) {
-                //columnTypeName.add(variablesCrossData.get(0).getName());//searchTypeName(columnNamesPivot.get(0)));
-                //columnTypeName.add("");
                 for (int i = 0; i < values1.size(); i++) {
                     columNames.add(values1.get(i));
                     sb.
@@ -1748,7 +1720,6 @@ public class IndicatorsCountMB {
                             append(0).append("\t").
                             append(0).append("\n");
                     id++;
-
                 }
                 rowNames.add("Cantidad");
             } else if (variablesCrossData.size() == 2) {
@@ -1799,18 +1770,6 @@ public class IndicatorsCountMB {
             System.out.println("EXCEPTION--------------------------" + e.toString());
         }
     }
-
-//    private void addColumToRow(Row row1, String get, String style, int colSpan, int rowSpan) {
-//        Column column = new Column();
-//        HtmlOutputText text = new HtmlOutputText();
-//        column.setStyleClass(style);
-//        text.setValue(get);
-//        column.getChildren().add(text);
-//        column.setStyle("width: 200px;");
-//        column.setRowspan(rowSpan);
-//        column.setColspan(colSpan);
-//        row1.getChildren().add(column);
-//    }
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
@@ -1977,14 +1936,6 @@ public class IndicatorsCountMB {
     public void setValuesCategoryList(ArrayList<String> valuesCategoryList) {
         this.valuesCategoryList = valuesCategoryList;
     }
-
-//    public String getCurrentGraphType() {
-//        return currentGraphType;
-//    }
-//
-//    public void setCurrentGraphType(String currentGraphType) {
-//        this.currentGraphType = currentGraphType;
-//    }
     public List<String> getCurrentCategoricalValuesList() {
         return currentCategoricalValuesList;
     }
@@ -2008,14 +1959,6 @@ public class IndicatorsCountMB {
     public void setFirstVariablesCrossSelected(String firstVariablesCrossSelected) {
         this.firstVariablesCrossSelected = firstVariablesCrossSelected;
     }
-
-//    public boolean isBtnRemoveCategoricalValueDisabled() {
-//        return btnRemoveCategoricalValueDisabled;
-//    }
-//
-//    public void setBtnRemoveCategoricalValueDisabled(boolean btnRemoveCategoricalValueDisabled) {
-//        this.btnRemoveCategoricalValueDisabled = btnRemoveCategoricalValueDisabled;
-//    }
     public boolean isBtnAddCategoricalValueDisabled() {
         return btnAddCategoricalValueDisabled;
     }
@@ -2047,21 +1990,7 @@ public class IndicatorsCountMB {
     public void setDataTableHtml(String dataTableHtml) {
         this.dataTableHtml = dataTableHtml;
     }
-
-//    public boolean isShowTotals() {
-//        return showTotals;
-//    }
-//
-//    public void setShowTotals(boolean showTotals) {
-//        this.showTotals = showTotals;
-//    }
-//    public boolean isShowAll() {
-//        return showAll;
-//    }
-//
-//    public void setShowAll(boolean showAll) {
-//        this.showAll = showAll;
-//    }
+    
     public OutputPanel getDynamicDataTableGroup() {
         return dynamicDataTableGroup;
     }

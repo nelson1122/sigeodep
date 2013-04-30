@@ -15,7 +15,9 @@
         </script>
     </h:head>
     <h:body style="font-size: 10px;">
-        <div style=" 
+        
+            <h:form id="IdForm">    
+                <div style=" 
              position:absolute;
              width: 500px; 
              height: 380px; 
@@ -24,7 +26,6 @@
              top: 50%;
              margin-top: -190px;
              background-image:url(resources/img/entrada.png);">
-            <h:form id="IdForm">                
                 <p:growl id="message"  showDetail="true" sticky="true" />
                 <p:commandButton
                     id="IdBtnSeeDialog"
@@ -74,7 +75,9 @@
                         oncomplete="closeSessionDialog.hide()"
                         update="@form"/>                      
                 </p:dialog>
+                
+                </div>
             </h:form>  
-        </div>
+        
     </h:body>
 </html>

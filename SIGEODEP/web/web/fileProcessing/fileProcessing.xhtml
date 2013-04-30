@@ -807,14 +807,12 @@
                                             </h:inputText>
                                         </p:column>                                       
                                         <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="MUESTRA"/>                                                                                                                                                 
-                                            <h:outputText 
-                                                value="&nbsp;FORMATO:&nbsp;" 
-                                                style="margin-left: 50px; margin-top: 5px;"/>
+                                            MUESTRA &nbsp;&nbsp;&nbsp;&nbsp;
                                             <p:selectOneMenu 
                                                 id="IdSelectDateFormat"                                                            
                                                 value="#{relationshipOfVariablesMB.currentDateFormat}" 
                                                 disabled="#{relationshipOfVariablesMB.selectDateFormatDisabled}"
+                                                style="width: 200px;"                                                
                                                 effect="fold" 
                                                 editable="true">                                                 
                                                 <f:selectItem itemLabel="dd/MM/yyyy" itemValue="dd/MM/yyyy" />  
@@ -826,7 +824,7 @@
                                                 <f:selectItem itemLabel="MM/dd/yy" itemValue="MM/dd/yy" />                                                              
                                                 <f:selectItem itemLabel="MM-dd-yy" itemValue="MM-dd-yy" />
                                                 <f:selectItem itemLabel="yy/MM/dd" itemValue="yy/MM/dd" />  
-                                                <f:selectItem itemLabel="yy-MM-dd" itemValue="yy-MM-dd" />  
+                                                <f:selectItem itemLabel="yy-MM-dd" itemValue="yy-MM-dd" />
                                             </p:selectOneMenu>
                                         </p:column>                                         
                                     </p:row>  

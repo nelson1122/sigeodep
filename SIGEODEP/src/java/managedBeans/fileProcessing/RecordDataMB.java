@@ -639,10 +639,10 @@ public class RecordDataMB implements Serializable {
                                 case day:
                                     value = isDay(registryData);
                                     //System.out.println("Validando Dia: " + registryData + "   Resultado: " + value);
-                                    if (relationVar.getNameExpected().compareTo("dia") == 0 || relationVar.getNameExpected().compareTo("fecha") == 0) {
+                                    if (relationVar.getNameExpected().compareTo("dia_evento") == 0) {
                                         dia = value;
                                     }
-                                    if (relationVar.getNameExpected().compareTo("dia1") == 0) {
+                                    if (relationVar.getNameExpected().compareTo("dia_consulta") == 0) {
                                         dia1 = value;
                                     }
                                     if (value == null) {
@@ -653,10 +653,10 @@ public class RecordDataMB implements Serializable {
                                 case month:
                                     value = isMonth(registryData);
                                     //System.out.println("Validando Mes: " + registryData + "   Resultado: " + value);
-                                    if (relationVar.getNameExpected().compareTo("mes") == 0) {
+                                    if (relationVar.getNameExpected().compareTo("mes_evento") == 0) {
                                         mes = value;
                                     }
-                                    if (relationVar.getNameExpected().compareTo("mes1") == 0) {
+                                    if (relationVar.getNameExpected().compareTo("mes_consulta") == 0) {
                                         mes1 = value;
                                     }
                                     if (value == null) {
@@ -665,13 +665,13 @@ public class RecordDataMB implements Serializable {
                                     }
                                     break;
                                 case year:
-                                    if (relationVar.getNameExpected().compareTo("ao") == 0) {
+                                    value = isYear(registryData);
+                                    if (relationVar.getNameExpected().compareTo("año_evento") == 0) {
                                         ao = value;
                                     }
-                                    if (relationVar.getNameExpected().compareTo("ao1") == 0) {
+                                    if (relationVar.getNameExpected().compareTo("año_consulta") == 0) {
                                         ao1 = value;
-                                    }
-                                    value = isYear(registryData);
+                                    }                                    
                                     //System.out.println("Validando Año: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada

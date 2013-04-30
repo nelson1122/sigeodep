@@ -92,14 +92,6 @@
                                 converterMessage="La fecha inicial no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
-                                <p:ajax 
-                                    event="change" 
-                                    listener="#{indicatorsPercentageMB.initialDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate"/>
-                                <p:ajax 
-                                    event="dateSelect" 
-                                    listener="#{indicatorsPercentageMB.initialDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate"/>
                             </p:calendar>
                             <br/>
                             <br/>
@@ -110,14 +102,6 @@
                                 converterMessage="La fecha final no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
-                                <p:ajax 
-                                    event="change" 
-                                    listener="#{indicatorsPercentageMB.endDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate" />
-                                <p:ajax 
-                                    event="dateSelect" 
-                                    listener="#{indicatorsPercentageMB.endDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate" />
                             </p:calendar>
 
                             <br/>
@@ -262,11 +246,11 @@
                                 <p:column>                                                  
                                 </p:column>
                             </p:dataTable> 
-                            <h:commandLink >  
+                            <h:commandLink rendered="false">  
                                 <p:graphicImage value="../../resources/img/excel.png"/>
                                 <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{crossMB.postProcessXLS}"/>  
                             </h:commandLink>
-                            <h:commandLink>  
+                            <h:commandLink rendered="false">  
                                 <p:graphicImage value="../../resources/img/pdf.png" />  
                                 <p:dataExporter type="pdf" target="IdOutFile" fileName="salidaPDF" preProcessor="#{crossMB.preProcessPDF}"/>  
                             </h:commandLink>
@@ -304,6 +288,18 @@
                                                 listener="#{indicatorsPercentageMB.createImage}"
                                                 render="IdImageChart"/>
                                         </h:selectOneMenu>
+                                    </p:column>                                        
+                                    <p:column>
+                                        Mostrar Items
+                                    </p:column>
+                                    <p:column>
+                                        <h:selectBooleanCheckbox value="#{indicatorsPercentageMB.showItems}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsPercentageMB.createImage}"
+                                                render="IdVariableGraph IdValueGraph IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
+
                                     </p:column>                                        
                                 </p:row>
                             </p:panelGrid>                                

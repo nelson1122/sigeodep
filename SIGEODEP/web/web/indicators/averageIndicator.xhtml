@@ -96,14 +96,6 @@
                                 value="#{indicatorsAverageMB.initialDate}" 
                                 converterMessage="La fecha inicial no es válida, por favor corríjala." 
                                 showOn="button">
-                                <p:ajax 
-                                    event="change" 
-                                    listener="#{indicatorsAverageMB.initialDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate"/>
-                                <p:ajax 
-                                    event="dateSelect" 
-                                    listener="#{indicatorsAverageMB.initialDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate"/>
                             </p:calendar>
                             <br/>
                             <br/>
@@ -111,17 +103,9 @@
                             <p:calendar 
                                 id="IdEndDate"
                                 value="#{indicatorsAverageMB.endDate}" 
-                                converterMessage="La fecha final no es válida, por favor corríjala." 
+                                converterMessage="La fecha final no es válida, por favor corríjala."                                 
                                 showOn="button" 
-                                pattern="dd/MM/yyyy">
-                                <p:ajax 
-                                    event="change" 
-                                    listener="#{indicatorsAverageMB.endDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate" />
-                                <p:ajax 
-                                    event="dateSelect" 
-                                    listener="#{indicatorsAverageMB.endDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate" />
+                                pattern="dd/MM/yyyy">                                
                             </p:calendar>                                        
                             <br/>
                             <br/>
@@ -261,11 +245,11 @@
                                 <p:column>                                                  
                                 </p:column>
                             </p:dataTable> 
-                            <h:commandLink >  
+                            <h:commandLink rendered="false">  
                                 <p:graphicImage value="../../resources/img/excel.png"/>
                                 <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{crossMB.postProcessXLS}"/>  
                             </h:commandLink>
-                            <h:commandLink>  
+                            <h:commandLink rendered="false">  
                                 <p:graphicImage value="../../resources/img/pdf.png" />  
                                 <p:dataExporter type="pdf" target="IdOutFile" fileName="salidaPDF" preProcessor="#{crossMB.preProcessPDF}"/>  
                             </h:commandLink>
@@ -276,50 +260,40 @@
                         <br/>                        
                         <p:fieldset legend="GRAFICOS" >
                             <br/>
-                            <p:panelGrid id="IdPanelGraphConfig">
+                            <p:panelGrid id="IdPanelGraphConfig">                                
                                 <p:row>
                                     <p:column>
-                                        Tipo de Gráfico
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdGraphType" value="#{indicatorsAverageMB.currentGraphType}"> 
-                                            <f:selectItems value="#{indicatorsAverageMB.graphTypes}"/>
-                                            <f:ajax 
-                                                event="change"
-                                                listener="#{indicatorsAverageMB.createImage}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
-                                        </h:selectOneMenu>
-                                    </p:column>
-                                </p:row>
-                                <p:row>
-                                    <p:column>
-                                        Variable
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdVariableGraph" value="#{indicatorsAverageMB.currentVariableGraph}"> 
-                                            <f:selectItems value="#{indicatorsAverageMB.variablesGraph}"/>
-                                            <f:ajax 
-                                                event="change"
-                                                listener="#{indicatorsAverageMB.loadValuesGraph}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
-                                        </h:selectOneMenu>
-                                    </p:column>
-                                </p:row>
-                                <p:row>
-                                    <p:column>
-                                        Valor
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdValueGraph" value="#{indicatorsAverageMB.currentValueGraph}"> 
-                                            <f:selectItems value="#{indicatorsAverageMB.valuesGraph}"/>
+                                        #{indicatorsAverageMB.currentVariableGraph1}
+                                        <h:selectOneMenu
+                                            value="#{indicatorsAverageMB.currentValueGraph1}"> 
+                                            <f:selectItems value="#{indicatorsAverageMB.valuesGraph1}"/>
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsAverageMB.createImage}"
                                                 render="IdImageChart"/>
                                         </h:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        #{indicatorsAverageMB.currentVariableGraph2}
+                                        <h:selectOneMenu
+                                            value="#{indicatorsAverageMB.currentValueGraph2}"> 
+                                            <f:selectItems value="#{indicatorsAverageMB.valuesGraph2}"/>
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsAverageMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        Mostrar Items
+                                    </p:column>
+                                    <p:column>
+                                        <h:selectBooleanCheckbox value="#{indicatorsAverageMB.showItems}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsAverageMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
                                     </p:column>                                        
                                 </p:row>
                             </p:panelGrid>                                
