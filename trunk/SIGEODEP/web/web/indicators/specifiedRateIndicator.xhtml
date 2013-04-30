@@ -96,14 +96,6 @@
                                 converterMessage="La fecha inicial no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
-                                <p:ajax 
-                                    event="change" 
-                                    listener="#{indicatorsSpecifiedRateMB.initialDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate"/>
-                                <p:ajax 
-                                    event="dateSelect" 
-                                    listener="#{indicatorsSpecifiedRateMB.initialDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate"/>
                             </p:calendar>                                        
                             <br/>
                             <br/>
@@ -114,14 +106,6 @@
                                 converterMessage="La fecha final no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
-                                <p:ajax 
-                                    event="change" 
-                                    listener="#{indicatorsSpecifiedRateMB.endDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate" />
-                                <p:ajax 
-                                    event="dateSelect" 
-                                    listener="#{indicatorsSpecifiedRateMB.endDateFocusLost}" 
-                                    update=":IdForm:message IdInitialDate IdEndDate" />
                             </p:calendar>
                             <br/><br/>
                             <h:outputText value="Desagregación temporal:" />
@@ -266,11 +250,11 @@
                                 <p:column>                                                  
                                 </p:column>
                             </p:dataTable> 
-                            <h:commandLink >  
+                            <h:commandLink rendered="false">  
                                 <p:graphicImage value="../../resources/img/excel.png"/>
                                 <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{crossMB.postProcessXLS}"/>  
                             </h:commandLink>
-                            <h:commandLink>  
+                            <h:commandLink rendered="false">  
                                 <p:graphicImage value="../../resources/img/pdf.png" />  
                                 <p:dataExporter type="pdf" target="IdOutFile" fileName="salidaPDF" preProcessor="#{crossMB.preProcessPDF}"/>  
                             </h:commandLink>

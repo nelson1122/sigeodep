@@ -288,11 +288,11 @@
                                 </p:column>
                             </p:dataTable>      
                             <br/>
-                            <h:commandLink >  
+                            <h:commandLink rendered="false" >  
                                 <p:graphicImage value="../../resources/img/excel.png"/>
                                 <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{crossMB.postProcessXLS}"/>  
                             </h:commandLink>
-                            <h:commandLink>  
+                            <h:commandLink rendered="false">  
                                 <p:graphicImage value="../../resources/img/pdf.png" />  
                                 <p:dataExporter type="pdf" target="IdOutFile" fileName="salidaPDF" preProcessor="#{crossMB.preProcessPDF}"/>  
                             </h:commandLink>
@@ -306,48 +306,37 @@
                             <p:panelGrid id="IdPanelGraphConfig">
                                 <p:row>
                                     <p:column>
-                                        Tipo de Gráfico
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdGraphType" value="#{indicatorsVariationMB.currentGraphType}"> 
-                                            <f:selectItems value="#{indicatorsVariationMB.graphTypes}"/>
-                                            <f:ajax 
-                                                event="change"
-                                                listener="#{indicatorsVariationMB.createImage}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
-                                        </h:selectOneMenu>
-
-                                    </p:column>
-                                </p:row>
-                                <p:row>
-                                    <p:column>
-                                        Variable
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdVariableGraph" value="#{indicatorsVariationMB.currentVariableGraph}"> 
-                                            <f:selectItems value="#{indicatorsVariationMB.variablesGraph}"/>
-                                            <f:ajax 
-                                                event="change"
-                                                listener="#{indicatorsVariationMB.loadValuesGraph}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
-                                        </h:selectOneMenu>
-                                    </p:column>
-                                </p:row>
-                                <p:row>
-                                    <p:column>
-                                        Valor
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdValueGraph" value="#{indicatorsVariationMB.currentValueGraph}"> 
-                                            <f:selectItems value="#{indicatorsVariationMB.valuesGraph}"/>
+                                        #{indicatorsVariationMB.currentVariableGraph1}
+                                        <h:selectOneMenu
+                                            value="#{indicatorsVariationMB.currentValueGraph1}"> 
+                                            <f:selectItems value="#{indicatorsVariationMB.valuesGraph1}"/>
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsVariationMB.createImage}"
                                                 render="IdImageChart"/>
                                         </h:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        #{indicatorsVariationMB.currentVariableGraph2}
+                                        <h:selectOneMenu
+                                            value="#{indicatorsVariationMB.currentValueGraph2}"> 
+                                            <f:selectItems value="#{indicatorsVariationMB.valuesGraph2}"/>
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsVariationMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        Mostrar Items
+                                    </p:column>
+                                    <p:column>
+                                        <h:selectBooleanCheckbox value="#{indicatorsVariationMB.showItems}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsVariationMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
                                     </p:column>                                        
                                 </p:row>
                             </p:panelGrid>                                

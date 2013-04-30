@@ -39,20 +39,18 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.CategoryItemLabelGenerator;
 import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.general.PieDataset;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 import org.primefaces.component.column.Column;
-import org.primefaces.component.outputpanel.OutputPanel;
 import org.primefaces.component.panelgrid.PanelGrid;
 import org.primefaces.component.row.Row;
 import org.primefaces.model.DefaultStreamedContent;
@@ -97,8 +95,8 @@ public class IndicatorsPercentageMB {
     private Date endDate = new Date();
     private String initialDateStr;
     private String endDateStr;
-    private String pivotTableName;
-    private String prepivotTableName;
+    //private String pivotTableName;
+    //private String prepivotTableName;
     private LoginMB loginMB;
     private List<String> variablesGraph = new ArrayList<String>();
     private List<String> valuesGraph = new ArrayList<String>();
@@ -126,7 +124,7 @@ public class IndicatorsPercentageMB {
     private boolean btnAddCategoricalValueDisabled = true;
     private boolean btnRemoveCategoricalValueDisabled = true;
     private boolean btnRemoveVariableDisabled = true;
-    //private boolean renderedDynamicDataTable = true;
+    private boolean showItems = true;
     private String sql;//mostrar filas y columnas vacias
     private boolean showCount = true;//mostrar recuento
     private boolean showRowPercentage = true;//mostrar porcentaje por fila
@@ -156,20 +154,6 @@ public class IndicatorsPercentageMB {
         }
     }
 
-    public void initialDateFocusLost() {
-        Calendar c1 = Calendar.getInstance();
-        Calendar c2 = Calendar.getInstance();
-        c1.setTime(initialDate);
-        c2.setTime(endDate);
-        if (c1.compareTo(c2) > 0) {
-            initialDate = endDate;
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial debe ser inferior o igual a la fecha final, el valor fue correjido."));
-        }
-    }
-
-    public void endDateFocusLost() {
-    }
-
     public void loadValuesGraph() {
         valuesGraph = new ArrayList<String>();
         for (int i = 0; i < variablesCrossData.size(); i++) {
@@ -187,7 +171,7 @@ public class IndicatorsPercentageMB {
     public void createMatrixResult() {
 
         try {//System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-            ArrayList<String> columnNamesPivot = new ArrayList<String>();
+            //ArrayList<String> columnNamesPivot = new ArrayList<String>();
             columNames = new ArrayList<String>();
             rowNames = new ArrayList<String>();
             ResultSet rs = null;
@@ -430,9 +414,9 @@ public class IndicatorsPercentageMB {
         if (continueProcess) {//ALMACENO EN BASE DE DATOS LOS REGISTROS DE ESTE CRUCE
             saveIndicatorRecords(createIndicatorConsult());
         }
-        if (continueProcess) {//ELIMINO LOS VALORES QUE SEAN CONFIGURADOS POR EL USUARIO
-            removeValuesConfigured();
-        }
+//        if (continueProcess) {//ELIMINO LOS VALORES QUE SEAN CONFIGURADOS POR EL USUARIO
+//            removeValuesConfigured();
+//        }
         if (continueProcess) {//CREO TODAS LAS POSIBLES COMBINACIONES
             createCombinations();
         }
@@ -444,7 +428,7 @@ public class IndicatorsPercentageMB {
         }
         if (continueProcess) {//GENERO TABLA E IMAGEN
             dataTableHtml = createDataTableResult();
-            //createImage();//creo el grafico
+            createImage();//creo el grafico
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze de porcentaje realizado");
         }
     }
@@ -544,7 +528,7 @@ public class IndicatorsPercentageMB {
                 addNoData = true;
                 for (int i = 0; i < variablesCrossData.get(1).getValuesConfigured().size(); i++) {
                     values2.add(variablesCrossData.get(1).getValuesConfigured().get(i));
-                    if (variablesCrossData.get(0).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
+                    if (variablesCrossData.get(1).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
                         addNoData = false;//la categoria contiene un valor sin dato
                     }
                 }
@@ -569,7 +553,7 @@ public class IndicatorsPercentageMB {
                 addNoData = true;
                 for (int i = 0; i < variablesCrossData.get(2).getValuesConfigured().size(); i++) {
                     values3.add(variablesCrossData.get(2).getValuesConfigured().get(i));
-                    if (variablesCrossData.get(0).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
+                    if (variablesCrossData.get(2).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
                         addNoData = false;//la categoria contiene un valor sin dato
                     }
                 }
@@ -664,56 +648,56 @@ public class IndicatorsPercentageMB {
         }
     }
 
-    private void removeValuesConfigured() {
-        /*
-         * elimina los registros que no sean necesarios por que se ha configurado una 
-         * variable quitando valores
-         */
-        ArrayList<String> valuesDiscardedList;//valores descartados de la categoria(los valores que el usuario elimino de la categoria)
-        List<String> valuesList;//todos los valores (puede y no puede tomar)
-        List<String> valuesConfiguredList;//valores configurados (solo los que puede tomar, unos eliminados por el usuario)
-        sql = "";
-        for (int i = 0; i < variablesCrossData.size(); i++) {
-            //DETERMINO SI SE HA REALIZADO UNA CONFIGURACION
-            valuesDiscardedList = new ArrayList<String>();
-            if (variablesCrossData.get(i).getValues().size() != variablesCrossData.get(i).getValuesConfigured().size()) {
-                valuesList = variablesCrossData.get(i).getValues();
-                valuesConfiguredList = variablesCrossData.get(i).getValuesConfigured();
-                for (int j = 0; j < valuesList.size(); j++) {
-                    boolean find = false;
-                    for (int k = 0; k < valuesConfiguredList.size(); k++) {
-                        if (valuesList.get(j).compareTo(valuesConfiguredList.get(k)) == 0) {
-                            find = true;
-                            break;
-                        }
-                    }
-                    if (!find) {//si el valor no se encuentra es por que se descarto
-                        valuesDiscardedList.add(valuesList.get(j));
-                    }
-                }
-            }
-            if (!valuesDiscardedList.isEmpty()) {//adicionamos usuario e indicador                                
-                sql = "";
-                for (int j = 0; j < valuesDiscardedList.size(); j++) {
-                    sql = sql + "OR column_" + (i + 1) + " LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
-                }
-            }
-        }
-        if (sql.trim().length() != 0) {
-            sql = sql.substring(2, sql.length());//elimino primer "OR"                    
-            sql = ""
-                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-                    + "    indicator_id = " + currentIndicator.getIndicatorId() + " AND \n\r"
-                    + " ( \n\r"
-                    + sql
-                    + " ) \n\r";
-            sql = "\n\r DELETE FROM indicators_records WHERE " + sql;
-            connectionJdbcMB.non_query(sql);//
-            //System.out.println("REALIZO LAS ElIMINACIONES DE LA TABLA PIVOT \n " + sql);
-        } else {
-            //System.out.println("NO HAY ELIMINACIONES DE LA TABLA PIVOT \n " + sql);
-        }
-    }
+//    private void removeValuesConfigured() {
+//        /*
+//         * elimina los registros que no sean necesarios por que se ha configurado una 
+//         * variable quitando valores
+//         */
+//        ArrayList<String> valuesDiscardedList;//valores descartados de la categoria(los valores que el usuario elimino de la categoria)
+//        List<String> valuesList;//todos los valores (puede y no puede tomar)
+//        List<String> valuesConfiguredList;//valores configurados (solo los que puede tomar, unos eliminados por el usuario)
+//        sql = "";
+//        for (int i = 0; i < variablesCrossData.size(); i++) {
+//            //DETERMINO SI SE HA REALIZADO UNA CONFIGURACION
+//            valuesDiscardedList = new ArrayList<String>();
+//            if (variablesCrossData.get(i).getValues().size() != variablesCrossData.get(i).getValuesConfigured().size()) {
+//                valuesList = variablesCrossData.get(i).getValues();
+//                valuesConfiguredList = variablesCrossData.get(i).getValuesConfigured();
+//                for (int j = 0; j < valuesList.size(); j++) {
+//                    boolean find = false;
+//                    for (int k = 0; k < valuesConfiguredList.size(); k++) {
+//                        if (valuesList.get(j).compareTo(valuesConfiguredList.get(k)) == 0) {
+//                            find = true;
+//                            break;
+//                        }
+//                    }
+//                    if (!find) {//si el valor no se encuentra es por que se descarto
+//                        valuesDiscardedList.add(valuesList.get(j));
+//                    }
+//                }
+//            }
+//            if (!valuesDiscardedList.isEmpty()) {//adicionamos usuario e indicador                                
+//                sql = "";
+//                for (int j = 0; j < valuesDiscardedList.size(); j++) {
+//                    sql = sql + "OR column_" + (i + 1) + " LIKE '" + valuesDiscardedList.get(j) + "' \n\r";
+//                }
+//            }
+//        }
+//        if (sql.trim().length() != 0) {
+//            sql = sql.substring(2, sql.length());//elimino primer "OR"                    
+//            sql = ""
+//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+//                    + "    indicator_id = " + currentIndicator.getIndicatorId() + " AND \n\r"
+//                    + " ( \n\r"
+//                    + sql
+//                    + " ) \n\r";
+//            sql = "\n\r DELETE FROM indicators_records WHERE " + sql;
+//            connectionJdbcMB.non_query(sql);//
+//            //System.out.println("REALIZO LAS ElIMINACIONES DE LA TABLA PIVOT \n " + sql);
+//        } else {
+//            //System.out.println("NO HAY ELIMINACIONES DE LA TABLA PIVOT \n " + sql);
+//        }
+//    }
 
     private void saveIndicatorRecords(String sqlConsult) {
         //------------------------------------------------------------------
@@ -746,7 +730,7 @@ public class IndicatorsPercentageMB {
                     for (int i = 0; i < 3 - ncol; i++) {//variables no usadas(vacias)
                         sb.append("-").append("\t");
                     }
-                    sb.append(0).append("\t").append("0").append("\n");//count y poblacion quedan como cero                    
+                    sb.append(0).append("\t").append(0).append("\n");//count y poblacion quedan como cero                    
                 }
             }
             //REALIZO LA INSERCION
@@ -757,12 +741,7 @@ public class IndicatorsPercentageMB {
         }
     }
 
-    private String createIndicatorConsult() {
-        //String prepivotTableName_2 = prepivotTableName + "_2";
-        //String sqlReturn = "\n\r DROP TABLE IF EXISTS " + prepivotTableName_2 + ";\n\r";
-        //sqlReturn = sqlReturn + " CREATE TABLE  \n\r";
-        //sqlReturn = sqlReturn + "	" + prepivotTableName_2 + "  \n\r";
-        //sqlReturn = sqlReturn + " AS  \n\r";
+    private String createIndicatorConsult() {        
         String sqlReturn = " SELECT  \n\r";
         for (int i = 0; i < variablesCrossData.size(); i++) {
             switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable 
@@ -782,36 +761,44 @@ public class IndicatorsPercentageMB {
                     break;
                 case age://DETERMINAR EDAD -----------------------                   
                     sqlReturn = sqlReturn + "   CASE \n\r";
+                    sqlReturn = sqlReturn + "       WHEN (victims.victim_age is null)  THEN 'SIN DATO' \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
                         String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
                         if (splitAge[1].compareTo("n") == 0) {
                             splitAge[1] = "200";
                         }
-                        sqlReturn = sqlReturn + "       WHEN (( \n\r";
-                        sqlReturn = sqlReturn + "           CASE \n\r";
-                        sqlReturn = sqlReturn + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r";
-                        sqlReturn = sqlReturn + "               WHEN (victims.age_type_id = 1) THEN victims.victim_age \n\r";
-                        sqlReturn = sqlReturn + "           END \n\r";
-                        sqlReturn = sqlReturn + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
+                        sqlReturn = sqlReturn + ""
+                                + "       WHEN (( \n\r"
+                                + "           CASE \n\r"
+                                + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r"
+                                + "               WHEN (victims.age_type_id = 1) THEN victims.victim_age \n\r"
+                                + "           END \n\r"
+                                + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                     }
                     sqlReturn = sqlReturn + "   END AS edad";
                     break;
                 case hour://HORA -----------------------
-                    sqlReturn = sqlReturn + "   CASE \n\r";
+                    sqlReturn = sqlReturn + ""
+                            + "   CASE \n\r"
+                            + "       WHEN (" + currentIndicator.getInjuryType() + ".injury_time is null)  THEN 'SIN DATO' \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
                         String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
                         String[] splitAge2 = splitAge[0].split(":");
                         String[] splitAge3 = splitAge[1].split(":");
-                        sqlReturn = sqlReturn + "       WHEN (extract(hour from fatal_injuries.injury_time) \n\r";
-                        sqlReturn = sqlReturn + "       between " + splitAge2[0] + " and " + splitAge3[0] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
+                        sqlReturn = sqlReturn + ""
+                                + "       WHEN (extract(hour from " + currentIndicator.getInjuryType() + ".injury_time) \n\r"
+                                + "       between " + splitAge2[0] + " and " + splitAge3[0] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                     }
                     sqlReturn = sqlReturn + "   END AS hora";
                     break;
                 case neighborhoods://NOMBRE DEL BARRIO -----------------------
-                    sqlReturn = sqlReturn + "   (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as barrio";
+                    sqlReturn = sqlReturn + ""
+                            + "   CASE \n\r"
+                            + "      WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "      ELSE (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r"
+                            + "   END AS barrio";
                     break;
-                case communes://COMUNA -----------------------
-                    //sql = sql + "   CAST((SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as comuna";
+                case communes://COMUNA -----------------------                    
                     sqlReturn = sqlReturn + ""
                             + " CASE \n\r"
                             + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
@@ -829,49 +816,102 @@ public class IndicatorsPercentageMB {
                             + " END AS comuna";
                     break;
                 case quadrants://CUADRANTE -----------------------
-                    sqlReturn = sqlReturn + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
+                    //sqlReturn = sqlReturn + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          quadrants.quadrant_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.quadrants, \n\r"
+                            + "          public.neighborhoods \n\r"
+                            + "       WHERE \n\r"
+                            + "          neighborhoods.neighborhood_quadrant = quadrants.quadrant_id AND \n\r"
+                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
+                            + "    )"
+                            + " END AS cuadrante";                    
                     break;
                 case corridors://CORREDOR -----------------------
-                    sqlReturn = sqlReturn + "   CASE (SELECT neighborhood_corridor FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r";
-                    sqlReturn = sqlReturn + "       WHEN '1' THEN 'CENTRAL'  \n\r";
-                    sqlReturn = sqlReturn + "       WHEN '2' THEN 'OCCIDENTAL' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN '3' THEN 'ORIENTAL' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN '4' THEN 'SURORIENTAL' \n\r";
-                    sqlReturn = sqlReturn + "   END AS corredor";
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          corridors.corridor_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.corridors, \n\r"
+                            + "          public.neighborhoods \n\r"
+                            + "       WHERE \n\r"
+                            + "          neighborhoods.neighborhood_corridor = corridors.corridor_id AND \n\r"
+                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
+                            + "    )"
+                            + " END AS corredor";
                     break;
                 case areas://ZONA -----------------------        
-                    sqlReturn = sqlReturn + "   CASE (SELECT neighborhood_area FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)  \n\r";
-                    sqlReturn = sqlReturn + "       WHEN '1' THEN 'ZONA URBANA'  \n\r";
-                    sqlReturn = sqlReturn + "       WHEN '2' THEN 'ZONA RURAL' \n\r";
-                    sqlReturn = sqlReturn + "   END AS zona";
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          areas.area_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.areas, \n\r"
+                            + "          public.neighborhoods \n\r"
+                            + "       WHERE \n\r"
+                            + "          neighborhoods.neighborhood_area = areas.area_id AND \n\r"
+                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
+                            + "    )"
+                            + " END AS zona";
                     break;
                 case genders://GENERO  ----------------------
-                    sqlReturn = sqlReturn + "   CASE (victims.gender_id) \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 1 THEN 'MASCULINO'  \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 2 THEN 'FEMENINO' \n\r";
-                    sqlReturn = sqlReturn + "   END AS genero";
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN victims.gender_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          genders.gender_name \n\r"
+                            + "       FROM \n\r"
+                            + "          genders \n\r"
+                            + "       WHERE \n\r"
+                            + "          victims.gender_id = genders.gender_id \n\r"
+                            + "    )"
+                            + " END AS genero";
                     break;
-                case days://DIA SEMANA ----------------------
-                    sqlReturn = sqlReturn + "   " + currentIndicator.getInjuryType() + ".injury_day_of_week as dia_semana";
+                case days://DIA SEMANA ---------------------
+                    //sqlReturn = sqlReturn + "   " + currentIndicator.getInjuryType() + ".injury_day_of_week as dia_semana";
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_day_of_week is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE ( " + currentIndicator.getInjuryType() + ".injury_day_of_week )"
+                            + " END AS dia_semana";
                     break;
                 case year://AÑO -----------------------
-                    sqlReturn = sqlReturn + "   CAST(extract(year from " + currentIndicator.getInjuryType() + ".injury_date)::int as text) as anyo";
+                    //sqlReturn = sqlReturn + "   CAST(extract(year from " + currentIndicator.getInjuryType() + ".injury_date)::int as text) as anyo";
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_date is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE ( CAST(extract(year from " + currentIndicator.getInjuryType() + ".injury_date)::int as text) )"
+                            + " END AS anyo";
                     break;
                 case month://MES -----------------------
-                    sqlReturn = sqlReturn + "   CASE (extract(month from " + currentIndicator.getInjuryType() + ".injury_date)::int) \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 1  THEN 'ENERO' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 2  THEN 'FEBRERO' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 3  THEN 'MARZO' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 4  THEN 'ABRIL' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 5  THEN 'MAYO' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 6  THEN 'JUNIO' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 7  THEN 'JULIO' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 8  THEN 'AGOSTO' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 9  THEN 'SEPTIEMBRE' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 10 THEN 'OCTUBRE' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 11 THEN 'NOVIEMBRE' \n\r";
-                    sqlReturn = sqlReturn + "       WHEN 12 THEN 'DICIEMBRE' \n\r";
-                    sqlReturn = sqlReturn + "   END AS mes";
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_date is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          months.month_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.months \n\r"
+                            + "       WHERE \n\r"
+                            + "          (extract(month from " + currentIndicator.getInjuryType() + ".injury_date)::int) = months.month_id \n\r"
+                            + "    )"
+                            + " END AS mes";
                     break;
             }
             if (i == variablesCrossData.size() - 1) {//si es la ultima instruccion se agrega salto de linea
@@ -1254,9 +1294,7 @@ public class IndicatorsPercentageMB {
     }
 
     public void createImage() {
-//        if (currentGraphType.compareTo("barras apiladas") == 0) {
         try {//JFreeChart 
-            //String 
             JFreeChart chart = createStackedBarChart();
             File chartFile = new File("dynamichart");
             ChartUtilities.saveChartAsPNG(chartFile, chart, 700, 500);
@@ -1264,7 +1302,6 @@ public class IndicatorsPercentageMB {
         } catch (Exception e) {
             System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.toString());
         }
-        //      }
     }
 
     public void reset() {
@@ -1855,32 +1892,30 @@ public class IndicatorsPercentageMB {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         String indicatorName = currentIndicator.getIndicatorName();
         String categoryAxixLabel = "";
+        int pos = 0;
         try {
-
-            int pos = 0;
-            sql = "";
-            sql = sql + "SELECT * FROM " + pivotTableName;
+            sql = ""
+                    + " SELECT \n"
+                    + "    * \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
             ResultSet rs;
             if (variablesCrossData.size() == 1) {
-                rs = connectionJdbcMB.consult(sql);
+                rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
                 while (rs.next()) {
-                    dataset.setValue(rs.getLong("count"), rs.getString(1), "-");
+                    dataset.setValue(rs.getLong("count"), rs.getString("column_1"), "-");
                 }
             }
             if (variablesCrossData.size() == 2) {
-                rs = connectionJdbcMB.consult(sql);
+                rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
                 while (rs.next()) {
-                    dataset.setValue(rs.getLong("count"), rs.getString(1), rs.getString(2));
+                    dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_2"));
                 }
             }
             if (variablesCrossData.size() == 3) {
-                //determino los nombres de las columnas
-                rs = connectionJdbcMB.consult(sql);
-                int numberColumns = rs.getMetaData().getColumnCount();
-                ArrayList<String> nameColumns = new ArrayList<String>();
-                for (int i = 1; i <= numberColumns; i++) {//metadata cuenta desde 1
-                    nameColumns.add(rs.getMetaData().getColumnName(i));
-                }
                 //determino el numero de columna a filtrar (variable en variableCrossData                
                 for (int i = 0; i < variablesCrossData.size(); i++) {
                     if (variablesCrossData.get(i).getName().compareTo(currentVariableGraph) == 0) {
@@ -1888,31 +1923,31 @@ public class IndicatorsPercentageMB {
                         break;
                     }
                 }
-                //adicino la instruccion WHERE a la consulta
-                sql = sql + " WHERE " + nameColumns.get(pos) + " LIKE '" + currentValueGraph + "' ";
-                rs = connectionJdbcMB.consult(sql);
+                //adiciono la instruccion WHERE a la consulta
+                sql = sql + " AND column_" + String.valueOf(pos + 1) + " LIKE '" + currentValueGraph + "' ";
+                rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
                 if (pos == 0) {
                     while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString(2), rs.getString(3));
+                        dataset.setValue(rs.getLong("count"), rs.getString("column_2"), rs.getString("column_3"));
                     }
                     categoryAxixLabel = variablesCrossData.get(2).getName();
                 }
                 if (pos == 1) {
                     while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString(1), rs.getString(3));
+                        dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_3"));
                     }
                     categoryAxixLabel = variablesCrossData.get(2).getName();
                 }
                 if (pos == 2) {
                     while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString(1), rs.getString(2));
+                        dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_2"));
                     }
                     categoryAxixLabel = variablesCrossData.get(1).getName();
                 }
                 indicatorName = currentIndicator.getIndicatorName() + "\n(" + currentVariableGraph + " es " + currentValueGraph + ")";
             }
         } catch (SQLException ex) {
-            System.out.println("Error 8 en " + this.getClass().getName() + ":" + ex.toString());
+            System.out.println("Error: " + ex.toString());
         }
 
         JFreeChart chartReturn = ChartFactory.createStackedBarChart(
@@ -1935,10 +1970,15 @@ public class IndicatorsPercentageMB {
         renderer.setBaseItemLabelsVisible(true);
         renderer.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator("{3}", NumberFormat.getIntegerInstance(), new DecimalFormat("0.0%")));
 
-
         ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());//quitar gradiente
         CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();//rotacion a 45 grados        
         xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+        if (showItems) {
+            CategoryItemRenderer renderer2 = plot.getRenderer();
+            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00"));//DecimalFormat("0.00"));
+            renderer2.setItemLabelGenerator(generator);
+            renderer2.setItemLabelsVisible(true);
+        }
 
         return chartReturn;
     }
@@ -2294,4 +2334,14 @@ public class IndicatorsPercentageMB {
     public void setConfigurationsList(List<String> configurationsList) {
         this.configurationsList = configurationsList;
     }
+
+    public boolean isShowItems() {
+        return showItems;
+    }
+
+    public void setShowItems(boolean showItems) {
+        this.showItems = showItems;
+    }
+    
+    
 }

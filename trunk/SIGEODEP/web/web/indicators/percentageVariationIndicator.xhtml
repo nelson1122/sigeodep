@@ -133,6 +133,7 @@
                                             converterMessage="La fecha inicial no es válida, por favor corríjala." 
                                             showOn="button" 
                                             pattern="dd/MM/yyyy">
+                                            <!--p:ajax event="change" listener="# {indicatorsPercentageVariationMB.changeDateB}" update="IdEndDateB" /-->
                                         </p:calendar>
                                     </p:column>
                                     <p:column>
@@ -141,6 +142,7 @@
                                     <p:column>                                
                                         <p:calendar 
                                             id="IdEndDateB"
+                                            
                                             value="#{indicatorsPercentageVariationMB.endDateB}" 
                                             converterMessage="La fecha final no es válida, por favor corríjala." 
                                             showOn="button" 
@@ -308,11 +310,11 @@
                                 </p:column>
                             </p:dataTable> 
                             <br/>
-                            <h:commandLink >  
+                            <h:commandLink rendered="false">  
                                 <p:graphicImage value="../../resources/img/excel.png"/>
                                 <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{crossMB.postProcessXLS}"/>  
                             </h:commandLink>
-                            <h:commandLink>  
+                            <h:commandLink rendered="false">  
                                 <p:graphicImage value="../../resources/img/pdf.png" />  
                                 <p:dataExporter type="pdf" target="IdOutFile" fileName="salidaPDF" preProcessor="#{crossMB.preProcessPDF}"/>  
                             </h:commandLink>
@@ -326,54 +328,42 @@
                             <p:panelGrid id="IdPanelGraphConfig">
                                 <p:row>
                                     <p:column>
-                                        Tipo de Gráfico
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdGraphType" value="#{indicatorsPercentageVariationMB.currentGraphType}"> 
-                                            <f:selectItems value="#{indicatorsPercentageVariationMB.graphTypes}"/>
-                                            <f:ajax 
-                                                event="change"
-                                                listener="#{indicatorsPercentageVariationMB.createImage}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
-                                        </h:selectOneMenu>
-
-                                    </p:column>
-                                </p:row>
-                                <p:row>
-                                    <p:column>
-                                        Variable
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdVariableGraph" value="#{indicatorsPercentageVariationMB.currentVariableGraph}"> 
-                                            <f:selectItems value="#{indicatorsPercentageVariationMB.variablesGraph}"/>
-                                            <f:ajax 
-                                                event="change"
-                                                listener="#{indicatorsPercentageVariationMB.loadValuesGraph}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
-                                        </h:selectOneMenu>
-                                    </p:column>
-                                </p:row>
-                                <p:row>
-                                    <p:column>
-                                        Valor
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdValueGraph" value="#{indicatorsPercentageVariationMB.currentValueGraph}"> 
-                                            <f:selectItems value="#{indicatorsPercentageVariationMB.valuesGraph}"/>
+                                        #{indicatorsPercentageVariationMB.currentVariableGraph1}
+                                        <h:selectOneMenu
+                                            value="#{indicatorsPercentageVariationMB.currentValueGraph1}"> 
+                                            <f:selectItems value="#{indicatorsPercentageVariationMB.valuesGraph1}"/>
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsPercentageVariationMB.createImage}"
                                                 render="IdImageChart"/>
                                         </h:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        #{indicatorsPercentageVariationMB.currentVariableGraph2}
+                                        <h:selectOneMenu
+                                            value="#{indicatorsPercentageVariationMB.currentValueGraph2}"> 
+                                            <f:selectItems value="#{indicatorsPercentageVariationMB.valuesGraph2}"/>
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsPercentageVariationMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        Mostrar Items
+                                    </p:column>
+                                    <p:column>
+                                        <h:selectBooleanCheckbox value="#{indicatorsPercentageVariationMB.showItems}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsPercentageVariationMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
                                     </p:column>                                        
                                 </p:row>
                             </p:panelGrid>                                
                             <br/>
                             <p:graphicImage id="IdImageChart" value="#{indicatorsPercentageVariationMB.chartImage}"/>
-                            <br/>
                             <br/>
                         </p:fieldset>
                         <br/>

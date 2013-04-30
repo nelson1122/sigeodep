@@ -73,6 +73,7 @@ public class LoginMB {
         try {
             applicationControlMB.removeSession(idSession);
             if (!connectionJdbcMB.conn.isClosed()) {
+                connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = "+currentUser.getUserId());
                 connectionJdbcMB.disconnect();
             }
         } catch (Exception e) {
