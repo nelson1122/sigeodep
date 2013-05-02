@@ -35,7 +35,7 @@ import org.joda.time.format.DateTimeFormatter;
 @ManagedBean(name = "recordDataMB")
 @SessionScoped
 public class RecordDataMB implements Serializable {
-    
+
     @EJB
     FormsFacade formsFacade;
     @EJB
@@ -191,7 +191,7 @@ public class RecordDataMB implements Serializable {
     @EJB
     ProjectsFacade projectsFacade;
     @EJB
-    SivigilaEducationalLevelFacade sivigilaEducationalLevelFacade;    
+    SivigilaEducationalLevelFacade sivigilaEducationalLevelFacade;
     @EJB
     SivigilaNoRelativeFacade sivigilaNoRelativeFacade;
     @EJB
@@ -284,20 +284,20 @@ public class RecordDataMB implements Serializable {
     private int errorsNumber = 0;
     private int currentSource = 0;
     boolean continueProcces = false;
-    
+
     public Integer getProgress() {
         return progress;
     }
-    
+
     public void setProgress(Integer progress) {
         this.progress = progress;
     }
-    
+
     public void onComplete() {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la adición de " + String.valueOf(tuplesProcessed)
                 + " registros en el conjunto de registros: \" " + lastTagNameCreated + " \""));
     }
-    
+
     public void onCompleteValidate() {
         progressValidate = 100;
         if (errorsNumber != 0) {
@@ -308,7 +308,7 @@ public class RecordDataMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha superado el proceso de validacion, presione el boton registrar datos para que sean almacenados."));
         }
     }
-    
+
     public void cancel() {
         progress = null;
         progressValidate = null;
@@ -328,13 +328,13 @@ public class RecordDataMB implements Serializable {
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-    
+
     public RecordDataMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         //nameTableTemp = "temp" + loginMB.getLoginname();
     }
-    
+
     public void reset() {
         /*
          * Cargar el formulario con los valores iniciales
@@ -343,7 +343,7 @@ public class RecordDataMB implements Serializable {
         btnRegisterDataDisabled = true;
         //btnValidateDisabled = true;
     }
-    
+
     private boolean relationshipsRequired() {
         /*
          * deben existir obligatoriamente relaciones para
@@ -384,13 +384,13 @@ public class RecordDataMB implements Serializable {
                     noErrors = false;
                     errorsNumber++;
                     errorsControlMB.addError(errorsNumber, null, "Falta relación", "No existe una relación de variables que determine la identificación de la victima");
-                    
+
                 }
                 break;
         }
         return noErrors;
     }
-    
+
     private String determineTagName(String name) {
         /*
          * determina si el nombre ya existe sino aumentarle 1,2,3...
@@ -419,7 +419,7 @@ public class RecordDataMB implements Serializable {
         }
         return nameReturn;
     }
-    
+
     private ResultSet determineRecords() {
         ResultSet rsReturn = connectionJdbcMB.consult(""
                 + " SELECT "
@@ -436,7 +436,7 @@ public class RecordDataMB implements Serializable {
                 + "    project_records.record_id ");
         return rsReturn;
     }
-    
+
     private ArrayList<String> determineColumnNames() {
         ArrayList<String> listReturn = new ArrayList<String>();
         try {
@@ -462,9 +462,9 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
         }
         return listReturn;
-        
+
     }
-    
+
     private int determineTuplesNumber() {
         int intReturn = 0;
         try {
@@ -483,18 +483,18 @@ public class RecordDataMB implements Serializable {
         } catch (Exception e) {
             System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
         }
-        
+
         return intReturn;
     }
-    
+
     private String determineRegistryData(Object[] arrayInJava, String columnName) {
         /*
          * obtener un valor de una tupla dada una columna
          */
         String returnValue = null;
         try {
-            
-            
+
+
             for (int i = 0; i < arrayInJava.length; i++) {
                 String splitElement[] = arrayInJava[i].toString().split("<=>");
                 if (columnName.compareTo(splitElement[0]) == 0) {
@@ -507,7 +507,7 @@ public class RecordDataMB implements Serializable {
         }
         return returnValue;
     }
-    
+
     private String remove_v(String field_type) {
         /*
          * remueve '_v' de un tipo de dato (para que tome la tabla categorica)
@@ -521,7 +521,7 @@ public class RecordDataMB implements Serializable {
         }
         return strReturn;
     }
-    
+
     public void btnValidateClick() {
         /*
          * click sobre el boton iniciar validacion aqui se generaran los errores
@@ -563,7 +563,7 @@ public class RecordDataMB implements Serializable {
                     mes1 = "";
                     ao1 = "";
                     intencionality = "";
-                    
+
                     for (int i = 0; i < columnsNames.size(); i++) {//recorro cada una de las columnas de cada registro                                            
 //                        if (columnsNames.get(i).compareTo("num_id_") == 0) {
 ////                                columnsNames.get(i).compareTo("tip_ss_") == 0||
@@ -610,7 +610,7 @@ public class RecordDataMB implements Serializable {
                                         errorsNumber++;//error = "dia_evento no corresponde al formato";
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
                                     }
-                                    
+
                                     break;
                                 case military:
                                     value = isMilitary(registryData);
@@ -724,7 +724,7 @@ public class RecordDataMB implements Serializable {
                             }
                         }
                     }
-                    
+
                     switch (FormsEnum.convert(nameForm.replace("-", "_"))) {//tipo de relacion                        
                         case SCC_F_032:
                             //RELACION PARA LA INTENCIONALIDAD
@@ -768,7 +768,7 @@ public class RecordDataMB implements Serializable {
 //            }
         }
     }
-    
+
     private String haveData(String a) {
         if (a != null) {
             if (a.length() == 0) {
@@ -777,7 +777,7 @@ public class RecordDataMB implements Serializable {
         }
         return a;
     }
-    
+
     public void registerSCC_F_028() {
         /**
          * *********************************************************************
@@ -1142,11 +1142,11 @@ public class RecordDataMB implements Serializable {
                     if (newVictim.getVictimAge() == null) {
                         int birthMonths;
                         int eventMonths;
-                        
+
                         Calendar systemCalendar = Calendar.getInstance();
                         Calendar birthCalendar = Calendar.getInstance();
                         birthCalendar.setTime(newVictim.getVictimDateOfBirth());
-                        
+
                         try {//DETERMINO LA EDAD EN MESES
                             birthMonths = birthCalendar.get(Calendar.YEAR);
                             birthMonths = birthMonths * 12;
@@ -1157,7 +1157,7 @@ public class RecordDataMB implements Serializable {
                             eventMonths = systemCalendar.get(Calendar.YEAR);
                             eventMonths = eventMonths * 12;
                             eventMonths = eventMonths + systemCalendar.get(Calendar.MONTH);
-                            
+
                             int ageMonths = eventMonths - birthMonths;
                             if (ageMonths < 0) {
                                 System.out.println("ERROR fecha de nacimiento mayor a la del sistema o evento: ");
@@ -1224,7 +1224,7 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
-                        
+
                     }
                 }
                 //PERSISTO
@@ -1251,7 +1251,7 @@ public class RecordDataMB implements Serializable {
 //        System.out.println("CASOS PARA FEMENINO: " + String.valueOf(contadorFemenino));
 //        System.out.println("CASOS PARA OTRO: " + String.valueOf(contadorOtro));
     }
-    
+
     public void registerSCC_F_029() {
         /**
          * ******************************************************************
@@ -1262,7 +1262,7 @@ public class RecordDataMB implements Serializable {
         tuplesProcessed = 0;
         progress = 0;
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        
+
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
             //columnsNames = determineColumnNames();//determino nombres de columnas
@@ -1355,7 +1355,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                         }
                     }
-                    
+
                     continueProcces = false;
                     if (value != null) {
                         if (value.trim().length() != 0) {
@@ -1499,7 +1499,7 @@ public class RecordDataMB implements Serializable {
                                 if (splitArray.length == 3) {
                                     newFatalInjurie.setVictimPlaceOfOrigin(value);
                                 }
-                                
+
                                 break;
                             case caracteristicas_victima:
                                 newFatalInjuryTraffic.setVictimCharacteristicId(victimCharacteristicsFacade.find(Short.parseShort(value)));
@@ -1615,11 +1615,11 @@ public class RecordDataMB implements Serializable {
                     if (newVictim.getVictimAge() == null) {
                         int birthMonths;
                         int eventMonths;
-                        
+
                         Calendar systemCalendar = Calendar.getInstance();
                         Calendar birthCalendar = Calendar.getInstance();
                         birthCalendar.setTime(newVictim.getVictimDateOfBirth());
-                        
+
                         try {//DETERMINO LA EDAD EN MESES
                             birthMonths = birthCalendar.get(Calendar.YEAR);
                             birthMonths = birthMonths * 12;
@@ -1630,7 +1630,7 @@ public class RecordDataMB implements Serializable {
                             eventMonths = systemCalendar.get(Calendar.YEAR);
                             eventMonths = eventMonths * 12;
                             eventMonths = eventMonths + systemCalendar.get(Calendar.MONTH);
-                            
+
                             int ageMonths = eventMonths - birthMonths;
                             if (ageMonths < 0) {
                                 System.out.println("ERROR fecha de nacimiento mayor a la del sistema o evento: ");
@@ -1648,7 +1648,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                
+
                 if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
@@ -1692,7 +1692,7 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
-                        
+
                     }
                 }
 
@@ -1725,7 +1725,7 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 12 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-    
+
     public void registerSCC_F_030() {
         /**
          * *********************************************************************
@@ -1826,7 +1826,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                         }
                     }
-                    
+
                     continueProcces = false;
                     if (value != null) {
                         if (value.trim().length() != 0) {
@@ -2081,11 +2081,11 @@ public class RecordDataMB implements Serializable {
                     if (newVictim.getVictimAge() == null) {
                         int birthMonths;
                         int eventMonths;
-                        
+
                         Calendar systemCalendar = Calendar.getInstance();
                         Calendar birthCalendar = Calendar.getInstance();
                         birthCalendar.setTime(newVictim.getVictimDateOfBirth());
-                        
+
                         try {//DETERMINO LA EDAD EN MESES
                             birthMonths = birthCalendar.get(Calendar.YEAR);
                             birthMonths = birthMonths * 12;
@@ -2096,7 +2096,7 @@ public class RecordDataMB implements Serializable {
                             eventMonths = systemCalendar.get(Calendar.YEAR);
                             eventMonths = eventMonths * 12;
                             eventMonths = eventMonths + systemCalendar.get(Calendar.MONTH);
-                            
+
                             int ageMonths = eventMonths - birthMonths;
                             if (ageMonths < 0) {
                                 System.out.println("ERROR fecha de nacimiento mayor a la del sistema o evento: ");
@@ -2121,7 +2121,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                
+
                 if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
@@ -2165,7 +2165,7 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
-                        
+
                     }
                 }
 
@@ -2190,7 +2190,7 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 16 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-    
+
     public void registerSCC_F_031() {
         /**
          * *********************************************************************
@@ -2220,7 +2220,7 @@ public class RecordDataMB implements Serializable {
                 FatalInjuries newFatalInjurie = new FatalInjuries();
                 newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
                 newFatalInjurie.setInputTimestamp(new Date());
-                
+
                 newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
                 newFatalInjurie.setVictimId(newVictim);
                 FatalInjuryAccident newFatalInjuryAccident = new FatalInjuryAccident();
@@ -2294,7 +2294,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                         }
                     }
-                    
+
                     continueProcces = false;
                     if (value != null) {
                         if (value.trim().length() != 0) {
@@ -2437,7 +2437,7 @@ public class RecordDataMB implements Serializable {
                                 if (splitArray.length == 3) {
                                     newFatalInjurie.setVictimPlaceOfOrigin(value);
                                 }
-                                
+
                                 break;
                             case arma_o_causa_muerte:
                                 newFatalInjuryAccident.setDeathMechanismId(accidentMechanismsFacade.find(Short.parseShort(value)));
@@ -2471,7 +2471,7 @@ public class RecordDataMB implements Serializable {
                                 }
                                 break;
                             default:
-                            
+
                         }
                     }
                 }
@@ -2544,11 +2544,11 @@ public class RecordDataMB implements Serializable {
                     if (newVictim.getVictimAge() == null) {
                         int birthMonths;
                         int eventMonths;
-                        
+
                         Calendar systemCalendar = Calendar.getInstance();
                         Calendar birthCalendar = Calendar.getInstance();
                         birthCalendar.setTime(newVictim.getVictimDateOfBirth());
-                        
+
                         try {//DETERMINO LA EDAD EN MESES
                             birthMonths = birthCalendar.get(Calendar.YEAR);
                             birthMonths = birthMonths * 12;
@@ -2559,7 +2559,7 @@ public class RecordDataMB implements Serializable {
                             eventMonths = systemCalendar.get(Calendar.YEAR);
                             eventMonths = eventMonths * 12;
                             eventMonths = eventMonths + systemCalendar.get(Calendar.MONTH);
-                            
+
                             int ageMonths = eventMonths - birthMonths;
                             if (ageMonths < 0) {
                                 System.out.println("ERROR fecha de nacimiento mayor a la del sistema o evento: ");
@@ -2584,7 +2584,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                
+
                 if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
@@ -2628,7 +2628,7 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
-                        
+
                     }
                 }
 
@@ -2653,7 +2653,7 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 20 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-    
+
     public void registerSCC_F_032() throws ParseException {
         /**
          * *********************************************************************
@@ -2767,7 +2767,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                         }
                     }
-                    
+
                     continueProcces = false;
                     if (value != null) {
                         if (value.trim().length() != 0) {
@@ -3178,16 +3178,22 @@ public class RecordDataMB implements Serializable {
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_diagnosis
                             case CIE_1:
-                                diagnosesList.add(diagnosesFacade.find(value));
-                                break;
                             case CIE_2:
-                                diagnosesList.add(diagnosesFacade.find(value));
-                                break;
                             case CIE_3:
-                                diagnosesList.add(diagnosesFacade.find(value));
-                                break;
                             case CIE_4:
-                                diagnosesList.add(diagnosesFacade.find(value));
+                                Diagnoses d = diagnosesFacade.find(value);
+                                boolean addDiagnose = true;
+                                if (d != null) {
+                                    for (int i = 0; i < diagnosesList.size(); i++) {
+                                        if (d.getDiagnosisId().compareTo(diagnosesList.get(i).getDiagnosisId()) == 0) {
+                                            addDiagnose = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (addDiagnose) {
+                                    diagnosesList.add(d);
+                                }
                                 break;
                             // ************************************************DATOS PARA LA TABLA victim_vulnerable_group
                             case desplazado:
@@ -3412,7 +3418,7 @@ public class RecordDataMB implements Serializable {
                             default:
                         }
                     }
-                    
+
                 }
 
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
@@ -3563,11 +3569,11 @@ public class RecordDataMB implements Serializable {
                     if (newVictim.getVictimAge() == null) {
                         int birthMonths;
                         int eventMonths;
-                        
+
                         Calendar systemCalendar = Calendar.getInstance();
                         Calendar birthCalendar = Calendar.getInstance();
                         birthCalendar.setTime(newVictim.getVictimDateOfBirth());
-                        
+
                         try {//DETERMINO LA EDAD EN MESES
                             birthMonths = birthCalendar.get(Calendar.YEAR);
                             birthMonths = birthMonths * 12;
@@ -3578,7 +3584,7 @@ public class RecordDataMB implements Serializable {
                             eventMonths = systemCalendar.get(Calendar.YEAR);
                             eventMonths = eventMonths * 12;
                             eventMonths = eventMonths + systemCalendar.get(Calendar.MONTH);
-                            
+
                             int ageMonths = eventMonths - birthMonths;
                             if (ageMonths < 0) {
                                 System.out.println("ERROR fecha de nacimiento mayor a la del sistema o evento: ");
@@ -3602,8 +3608,8 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                
-                
+
+
                 if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
@@ -3663,7 +3669,7 @@ public class RecordDataMB implements Serializable {
                 } else {//se detrmino por archivo
                     newNonFatalInjury.setInjuryId(selectInjuryFile);
                 }
-                
+
                 if (newNonFatalInjury.getInjuryId().getInjuryId() == (short) 53) {//53 ES POR QUE ES VIF 
                     newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 55));//CAMBIA A 55 PARA SER VIF INGRESADA DESDE LCENF
                 }
@@ -3685,13 +3691,13 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
-                        
+
                     }
                 }
 
                 //PERSISTO//////////////////////////////////////////////////////
                 try {
-                    
+
                     if (!othersList.isEmpty()) {
                         newVictim.setOthersList(othersList);
                     }
@@ -3722,7 +3728,7 @@ public class RecordDataMB implements Serializable {
             }
             progress = 100;
             System.out.println("PROGRESO INGRESANDO LCENF: " + String.valueOf(progress));
-            
+
         } catch (SQLException ex) {
             System.out.println("Error 23 en " + this.getClass().getName() + ":" + ex.toString());
         }
@@ -3731,7 +3737,7 @@ public class RecordDataMB implements Serializable {
 //        }
 
     }
-    
+
     public void registerSCC_F_033() {
         /**
          * *********************************************************************
@@ -3835,7 +3841,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                         }
                     }
-                    
+
                     continueProcces = false;
                     if (value != null) {
                         if (value.trim().length() != 0) {
@@ -3843,7 +3849,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                     if (continueProcces) {
-                        
+
                         switch (SCC_F_033Enum.convert(relationVar.getNameExpected())) {
                             // ************************************************DATOS PARA LA TABLA victims                                
                             //case registro:
@@ -4041,11 +4047,11 @@ public class RecordDataMB implements Serializable {
                             case lugar_ocurrio_evento:
                                 newNonFatalInjury.setInjuryPlaceId(nonFatalPlacesFacade.find(Short.parseShort(value)));
                                 break;
-                            
+
                             case activida_que_realizaba:
                                 newNonFatalInjury.setActivityId(activitiesFacade.find(Short.parseShort(value)));
                                 break;
-                            
+
                             case mecanismo_objeto_lesion:
                                 newNonFatalInjury.setMechanismId(mechanismsFacade.find(Short.parseShort(value)));
                                 break;
@@ -4438,11 +4444,11 @@ public class RecordDataMB implements Serializable {
                     if (newVictim.getVictimAge() == null) {
                         int birthMonths;
                         int eventMonths;
-                        
+
                         Calendar systemCalendar = Calendar.getInstance();
                         Calendar birthCalendar = Calendar.getInstance();
                         birthCalendar.setTime(newVictim.getVictimDateOfBirth());
-                        
+
                         try {//DETERMINO LA EDAD EN MESES
                             birthMonths = birthCalendar.get(Calendar.YEAR);
                             birthMonths = birthMonths * 12;
@@ -4453,7 +4459,7 @@ public class RecordDataMB implements Serializable {
                             eventMonths = systemCalendar.get(Calendar.YEAR);
                             eventMonths = eventMonths * 12;
                             eventMonths = eventMonths + systemCalendar.get(Calendar.MONTH);
-                            
+
                             int ageMonths = eventMonths - birthMonths;
                             if (ageMonths < 0) {
                                 System.out.println("ERROR fecha de nacimiento mayor a la del sistema o evento: ");
@@ -4477,8 +4483,8 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                
-                
+
+
                 if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
@@ -4544,19 +4550,19 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
-                        
+
                     }
                 }
 
                 //PERSISTO//////////////////////////////////////////////////////////////////
                 try {
-                    
+
                     newNonFatalInjury.setVictimId(newVictim);
                     victimsFacade.create(newVictim);//PERSISTO LA VICTIMA                
                     nonFatalInjuriesFacade.create(newNonFatalInjury);//PERSISTO LA LESION NO FATAL                    
                     newNonFatalDomesticViolence.setNonFatalInjuryId(newNonFatalInjury.getNonFatalInjuryId());
                     nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
-                    
+
                 } catch (Exception e) {
                     System.out.println("Error 25 en " + this.getClass().getName() + ":" + e.toString());
                 }
@@ -4566,14 +4572,14 @@ public class RecordDataMB implements Serializable {
             }
             progress = 100;
             System.out.println("PROGRESO INGRESANDO VIF: " + String.valueOf(progress));
-            
+
         } catch (SQLException ex) {
             System.out.println("Error 26 en " + this.getClass().getName() + ":" + ex.toString());
         } catch (Exception ex) {
             System.out.println("Error 27 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-    
+
     public void register_SIVIGILA() {
         /*
          * *********************************************************************
@@ -4602,13 +4608,13 @@ public class RecordDataMB implements Serializable {
                 newVictim.setVictimClass(Short.parseShort("1"));
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
-                
+
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
                 newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
                 SivigilaEvent newSivigilaEvent = new SivigilaEvent(newNonFatalInjury.getNonFatalInjuryId());
                 SivigilaVictim newSivigilaVictim = new SivigilaVictim(sivigilaVictimFacade.findMax() + 1);
                 SivigilaAggresor newSivigilaAggresor = new SivigilaAggresor(sivigilaAggresorFacade.findMax() + 1);
-                
+
                 newNonFatalInjury.setInputTimestamp(new Date());
                 //actionsToTakeList = new ArrayList<ActionsToTake>();
                 //anatomicalLocationsList = new ArrayList<AnatomicalLocations>();
@@ -4683,7 +4689,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                         }
                     }
-                    
+
                     continueProcces = false;
                     if (value != null) {
                         if (value.trim().length() != 0) {
@@ -5073,11 +5079,11 @@ public class RecordDataMB implements Serializable {
                     if (newVictim.getVictimAge() == null) {
                         int birthMonths;
                         int eventMonths;
-                        
+
                         Calendar systemCalendar = Calendar.getInstance();
                         Calendar birthCalendar = Calendar.getInstance();
                         birthCalendar.setTime(newVictim.getVictimDateOfBirth());
-                        
+
                         try {//DETERMINO LA EDAD EN MESES
                             birthMonths = birthCalendar.get(Calendar.YEAR);
                             birthMonths = birthMonths * 12;
@@ -5088,7 +5094,7 @@ public class RecordDataMB implements Serializable {
                             eventMonths = systemCalendar.get(Calendar.YEAR);
                             eventMonths = eventMonths * 12;
                             eventMonths = eventMonths + systemCalendar.get(Calendar.MONTH);
-                            
+
                             int ageMonths = eventMonths - birthMonths;
                             if (ageMonths < 0) {
                                 System.out.println("ERROR fecha de nacimiento mayor a la del sistema o evento: ");
@@ -5112,8 +5118,8 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                
-                
+
+
                 if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
@@ -5178,13 +5184,13 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
-                        
+
                     }
                 }
 
                 //PERSISTO//////////////////////////////////////////////////////////////////
                 try {
-                    
+
                     newNonFatalInjury.setVictimId(newVictim);
                     victimsFacade.create(newVictim);//PERSISTO LA VICTIMA                
                     nonFatalInjuriesFacade.create(newNonFatalInjury);//PERSISTO LA LESION NO FATAL                    
@@ -5199,8 +5205,8 @@ public class RecordDataMB implements Serializable {
                     newSivigilaEvent.setNonFatalDomesticViolence(newNonFatalDomesticViolence);
                     newSivigilaEvent.setSivigilaAgresorId(newSivigilaAggresor);
                     sivigilaEventFacade.create(newSivigilaEvent);
-                    
-                    
+
+
                 } catch (Exception e) {
                     System.out.println("Error 29 en " + this.getClass().getName() + ":" + e.toString());
                 }
@@ -5210,18 +5216,18 @@ public class RecordDataMB implements Serializable {
             }
             progress = 100;
             System.out.println("PROGRESO INGRESANDO SIVIGILA: " + String.valueOf(progress));
-            
+
         } catch (SQLException ex) {
             System.out.println("Error 30 en " + this.getClass().getName() + ":" + ex.toString());
         } catch (Exception ex) {
             System.out.println("Error 31 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-    
+
     public void btnRegisterDataClick() throws ParseException {
         nameForm = projectsMB.getCurrentFormId();
         currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());//tomo el grupos_vulnerables de relaciones de valores y de variables
-        continueProcces = false;        
+        continueProcces = false;
         if (errorsControlMB.getErrorsList() != null && errorsControlMB.getErrorsList().isEmpty()) {
             continueProcces = true;
         } else {
@@ -5277,7 +5283,7 @@ public class RecordDataMB implements Serializable {
             return "Domingo";
         }
     }
-    
+
     private String isPercentage(String str) {
         /*
          * validacion de si un numero_identificacion_victima es porcentaje 1-100
@@ -5298,7 +5304,7 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-    
+
     private String isLevel(String str) {
         /*
          * validacion de si un numero_identificacion_victima es >= 0
@@ -5316,7 +5322,7 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-    
+
     private String isDay(String str) {
         /*
          * validacion de si un numero_identificacion_victima de 1 y 31
@@ -5336,7 +5342,7 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-    
+
     private String isMonth(String str) {
         /*
          * validacion de si un numero_identificacion_victima de 1 y 12
@@ -5356,7 +5362,7 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-    
+
     private String isYear(String str) {
         /*
          * validacion de si un numero_identificacion_victima de 1 y 12
@@ -5376,7 +5382,7 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-    
+
     private String isMinute(String str) {
         /*
          * validacion de si un numero_identificacion_victima de 1 y 12
@@ -5396,7 +5402,7 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-    
+
     private String isHour(String str) {
         /*
          * validacion de si un numero_identificacion_victima de 1 y 12
@@ -5416,7 +5422,7 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-    
+
     private String isNumeric(String str) {
         /*
          * validacion de si un string es entero null=invalido ""=aceptado pero
@@ -5434,7 +5440,7 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-    
+
     private String isDate(String f, String format) {
         /*
          *  null=invalido ""=aceptado pero vacio "valor"=aceptado (valor para db)
@@ -5451,7 +5457,7 @@ public class RecordDataMB implements Serializable {
             return null;//invalida
         }
     }
-    
+
     private String isMilitary(String strIn) {
         /*
          * validacion de si un string es un hora_evento miitar null=invalido
@@ -5472,7 +5478,7 @@ public class RecordDataMB implements Serializable {
         if (str.indexOf("AM") != -1) {
             int a = 0;
             a++;
-            
+
         }
         str = str.replace(" ", "");
         str = str.replace("AM", "");
@@ -5601,11 +5607,11 @@ public class RecordDataMB implements Serializable {
             return null;
             //return "Una hora_evento militar debe tener menos de 4 digitos";
         }
-        
+
         return null;
         //return "Valor no aceptado como hora_evento militar";
     }
-    
+
     private String isAge(String str) {
         /*
          * validacion de si un string es numero_identificacion_victima entero o
@@ -5643,7 +5649,7 @@ public class RecordDataMB implements Serializable {
                 if (y == 0) {
                     return "1";
                 }
-                
+
                 return String.valueOf(y);
             }
             return null;
@@ -5651,7 +5657,7 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-    
+
     private String isCategorical(String valueFound, RelationVariables relationVar) {
         /*
          * validacion de si un valor esta dentro de una categoria, o es
@@ -5660,7 +5666,7 @@ public class RecordDataMB implements Serializable {
         if (valueFound.trim().length() == 0) {
             return "";
         }
-        
+
         if (relationVar.getFieldType().compareTo("municipalities") == 0 || relationVar.getFieldType().compareTo("countries") == 0) {
             relationVar.setComparisonForCode(false);//siempre se busca por nombre         
         }
@@ -5701,55 +5707,55 @@ public class RecordDataMB implements Serializable {
     public ErrorsControlMB getErrorsControlMB() {
         return errorsControlMB;
     }
-    
+
     public void setErrorsControlMB(ErrorsControlMB errorsControlMB) {
         this.errorsControlMB = errorsControlMB;
     }
-    
+
     public LoginMB getLoginMB() {
         return loginMB;
     }
-    
+
     public void setLoginMB(LoginMB loginMB) {
         this.loginMB = loginMB;
     }
-    
+
     public String getNameForm() {
         return nameForm;
     }
-    
+
     public void setNameForm(String nameForm) {
         this.nameForm = nameForm;
     }
-    
+
     public boolean isBtnRegisterDataDisabled() {
         return btnRegisterDataDisabled;
     }
-    
+
     public void setBtnRegisterDataDisabled(boolean btnRegisterDataDisabled) {
         this.btnRegisterDataDisabled = btnRegisterDataDisabled;
     }
-    
+
     public Integer getProgressValidate() {
         return progressValidate;
     }
-    
+
     public void setProgressValidate(Integer progressValidate) {
         this.progressValidate = progressValidate;
     }
-    
+
     public ProjectsMB getProjectsMB() {
         return projectsMB;
     }
-    
+
     public void setProjectsMB(ProjectsMB projectsMB) {
         this.projectsMB = projectsMB;
     }
-    
+
     public int getCurrentSource() {
         return currentSource;
     }
-    
+
     public void setCurrentSource(int currentSource) {
         this.currentSource = currentSource;
     }
