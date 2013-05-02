@@ -43,10 +43,10 @@ public class ProtectiveMeasuresFacade extends AbstractFacade<ProtectiveMeasures>
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from ProtectiveMeasures x where x.protectiveMeasuresName like '" + value + "%'";
+                    hql = "Select x from ProtectiveMeasures x where x.protectiveMeasuresName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from ProtectiveMeasures x where x.protectiveMeasuresName like '" + value + "%'";
+                    hql = "Select x from ProtectiveMeasures x where x.protectiveMeasuresName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

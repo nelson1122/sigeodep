@@ -55,10 +55,10 @@ public class HealthProfessionalsFacade extends AbstractFacade<HealthProfessional
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from HealthProfessionals x where x.healthProfessionalName like '" + value + "%'";
+                    hql = "Select x from HealthProfessionals x where x.healthProfessionalName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from HealthProfessionals x where x.healthProfessionalName like '" + value + "%'";
+                    hql = "Select x from HealthProfessionals x where x.healthProfessionalName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

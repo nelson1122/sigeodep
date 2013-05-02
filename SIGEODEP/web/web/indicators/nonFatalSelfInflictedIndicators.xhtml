@@ -39,47 +39,51 @@
                         </p:column>                                       
                     </p:row>
                     <p:row>  
-                        <p:column>
-                            <!--=====================================DATOS DEL REGISTO==============================================-->
-                            <br/>  
-                            <p:panelGrid style=" margin-left: 150px;" columns="1">                        
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="NUMERO DE CASOS DE VIOLENCIA AUTOINFLINGIDA" 
-                                    actionListener="#{indicatorsCountMB.loadIndicator54}"
-                                    action="countIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE VIOLENCIA AUTOINFLINGIDA SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator60}"
-                                    action="percentageIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="VARIACION DE CASOS DE VIOLENCIA AUTOINFLINGIDA" 
-                                    actionListener="#{indicatorsVariationMB.loadIndicator55}"
-                                    action="variationIndicator"/>       
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="VARIACION PORCENTUAL DE VIOLENCIA AUTOINFLINGIDA" 
-                                    actionListener="#{indicatorsPercentageVariationMB.loadIndicator56}"
-                                    action="percentageVariationIndicator"/>       
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PROMEDIO DE CASOS DE VIOLENCIA AUTOINFLINGIDA" 
-                                    actionListener="#{indicatorsAverageMB.loadIndicator57}"
-                                    action="averageIndicator"/>       
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="TASA DE VIOLENCIA AUTOINFLINGIDA" 
-                                    actionListener="#{indicatorsRateMB.loadIndicator58}"
-                                    action="rateIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="TASA ESPECIFICA DE VIOLENCIA AUTOINFLINGIDA SEGUN VARIABLE DE CONFUSION" 
-                                    actionListener="#{indicatorsSpecifiedRateMB.loadIndicator59}"
-                                    action="specifiedRateIndicator"/>                                
-                            </p:panelGrid>
-                            <br/>  
+                        <p:column style="text-align: center;">
+                            <br/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="NUMERO DE CASOS DE VIOLENCIA AUTOINFLINGIDA" 
+                                actionListener="#{indicatorsCountMB.loadIndicator54}"
+                                action="countIndicator"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="PORCENTAJE DE CASOS DE VIOLENCIA AUTOINFLINGIDA SEGUN VARIABLE DE INTERES" 
+                                actionListener="#{indicatorsPercentageMB.loadIndicator60}"
+                                action="percentageIndicator"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="VARIACION DE CASOS DE VIOLENCIA AUTOINFLINGIDA" 
+                                actionListener="#{indicatorsVariationMB.loadIndicator55}"
+                                action="variationIndicator"/>       
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="VARIACION PORCENTUAL DE VIOLENCIA AUTOINFLINGIDA" 
+                                actionListener="#{indicatorsPercentageVariationMB.loadIndicator56}"
+                                action="percentageVariationIndicator"/>       
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="PROMEDIO DE CASOS DE VIOLENCIA AUTOINFLINGIDA" 
+                                actionListener="#{indicatorsAverageMB.loadIndicator57}"
+                                action="averageIndicator"/>       
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="TASA DE VIOLENCIA AUTOINFLINGIDA" 
+                                actionListener="#{indicatorsRateMB.loadIndicator58}"
+                                action="rateIndicator"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="TASA ESPECIFICA DE VIOLENCIA AUTOINFLINGIDA SEGUN VARIABLE DE CONFUSION" 
+                                actionListener="#{indicatorsSpecifiedRateMB.loadIndicator59}"
+                                action="specifiedRateIndicator"/>                                
+
+                            <br/>  <br/>
                         </p:column>                                       
                     </p:row>
                 </p:panelGrid>

@@ -43,10 +43,10 @@ public class VulnerableGroupsFacade extends AbstractFacade<VulnerableGroups> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from VulnerableGroups x where x.vulnerableGroupName like '" + value + "%'";
+                    hql = "Select x from VulnerableGroups x where x.vulnerableGroupName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from VulnerableGroups x where x.vulnerableGroupName like '" + value + "%'";
+                    hql = "Select x from VulnerableGroups x where x.vulnerableGroupName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

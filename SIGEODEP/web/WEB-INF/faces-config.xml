@@ -399,5 +399,10 @@
             <to-view-id>/web/configurations/populations.xhtml</to-view-id>
             <redirect/>
         </navigation-case>                  
+        <navigation-case>
+            <from-outcome>backups</from-outcome>
+            <to-view-id>/web/configurations/backups.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>                  
     </navigation-rule>    
 </faces-config>

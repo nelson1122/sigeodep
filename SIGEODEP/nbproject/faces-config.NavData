@@ -8,15 +8,15 @@
         <Node id="web/configurations/involvedVehicles.xhtml" x="900" y="750" zoom="true"/>
         <Node id="web/configurations/neighborhoods.xhtml" x="1900" y="150" zoom="true"/>
         <Node id="web/configurations/municipalities.xhtml" x="1150" y="600" zoom="true"/>
-        <Node id="web/configurations/victimCharacteristics.xhtml" x="400" y="900" zoom="true"/>
         <Node id="web/configurations/violenceDataSources.xhtml" x="150" y="900" zoom="true"/>
+        <Node id="web/configurations/victimCharacteristics.xhtml" x="400" y="900" zoom="true"/>
         <Node id="web/configurations/fromWhereSumbited.xhtml" x="650" y="750" zoom="true"/>
-        <Node id="web/configurations/protectiveMeasures.xhtml" x="150" y="750" zoom="true"/>
         <Node id="web/configurations/insurances.xhtml" x="900" y="150" zoom="true"/>
+        <Node id="web/configurations/protectiveMeasures.xhtml" x="150" y="750" zoom="true"/>
         <Node id="web/configurations/relatedEvents.xhtml" x="150" y="300" zoom="true"/>
         <Node id="web/configurations/departaments.xhtml" x="1150" y="450" zoom="true"/>
-        <Node id="web/Forms/accidental.xhtml" x="684" y="101" zoom="false"/>
         <Node id="web/configurations/mechanism.xhtml" x="400" y="450" zoom="true"/>
+        <Node id="web/Forms/accidental.xhtml" x="684" y="101" zoom="false"/>
         <Node id="web/configurations/murderContext.xhtml" x="1150" y="150" zoom="true"/>
         <Node id="web/configurations/destinationPatient.xhtml" x="150" y="1200" zoom="true"/>
         <Node id="web/homepage.xhtml" x="31" y="192" zoom="false"/>
@@ -28,8 +28,8 @@
         <Node id="web/configurations/jobs.xhtml" x="1650" y="150" zoom="true"/>
         <Node id="web/configurations/categoricalVariables.xhtml" x="1400" y="150" zoom="true"/>
         <Node id="web/geo/data.jsp" x="1150" y="300" zoom="true"/>
-        <Node id="web/recordSets/recordSets.xhtml" x="45" y="525" zoom="true"/>
         <Node id="*" x="406" y="255" zoom="false"/>
+        <Node id="web/recordSets/recordSets.xhtml" x="45" y="525" zoom="true"/>
         <Node id="web/fileProcessing/fileProcessing.xhtml" x="19" y="414" zoom="false"/>
         <Node id="web/configurations/accidentClass.xhtml" x="150" y="146" zoom="true"/>
         <Node id="web/Forms/LCENF.xhtml" x="539" y="68" zoom="true"/>
@@ -41,8 +41,8 @@
         <Node id="web/configurations/weaponType.xhtml" x="650" y="600" zoom="true"/>
         <Node id="web/Forms/VIF.xhtml" x="31" y="103" zoom="false"/>
         <Node id="web/configurations/vulnerableGroup.xhtml" x="400" y="1050" zoom="true"/>
-        <Node id="web/configurations/nonFatalPlaces.xhtml" x="1400" y="450" zoom="true"/>
         <Node id="web/geo/geo1.xhtml" x="900" y="300" zoom="true"/>
+        <Node id="web/configurations/nonFatalPlaces.xhtml" x="1400" y="450" zoom="true"/>
         <Node id="web/Forms/transit.xhtml" x="415" y="530" zoom="false"/>
         <Node id="web/Forms/forms.xhtml" x="16" y="353" zoom="true"/>
         <Node id="web/configurations/places.xhtml" x="1650" y="300" zoom="true"/>

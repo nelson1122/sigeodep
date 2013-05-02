@@ -58,10 +58,10 @@ public class JobsFacade extends AbstractFacade<Jobs> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from Jobs x where x.jobName like '" + value + "%'";
+                    hql = "Select x from Jobs x where x.jobName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from Jobs x where x.jobName like '" + value + "%'";
+                    hql = "Select x from Jobs x where x.jobName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

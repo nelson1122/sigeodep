@@ -4,7 +4,9 @@
  */
 package managedBeans.login;
 
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -14,7 +16,6 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import model.dao.UsersFacade;
 import model.pojo.Users;
-
 
 /**
  *
@@ -36,6 +37,8 @@ public class UsersMB {
 //    @EJB
 //    UsersConfigurationFacade usersConfigurationFacade;
     private List<Users> usersList;
+    private String stateUser = "Activa";
+    private String newStateUser = "Activa";
     private Users currentUser;
     private String name = "";
     private String newName = "";
@@ -49,6 +52,8 @@ public class UsersMB {
     private String newEmail = "";
     private String password = "";
     private String newPasword = "";
+    private String confirmPassword = "";
+    private String newConfirmPasword = "";
     private String address = "";
     private String newAddress = "";
     private String login = "";
@@ -65,15 +70,13 @@ public class UsersMB {
     private boolean newPermission3 = true;
     private boolean newPermission4 = true;
     private boolean newPermission5 = true;
+    private ConnectionJdbcMB connectionJdbcMB;
 
     /**
      * Creates a new instance of UsersMB
      */
     public UsersMB() {
-        /*
-         * edicion creacion y modificacion de usuarios del sistema
-         *
-         */
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
     public void load() {
@@ -125,97 +128,272 @@ public class UsersMB {
             } else {
                 login = "";
             }
+
+            if (currentUser.getActive()) {
+                stateUser = "Activa";
+            } else {
+                stateUser = "Inactiva";
+            }
+            permission1 = false;
+            permission2 = false;
+            permission3 = false;
+            permission4 = false;
+            permission5 = false;
+            if (currentUser.getPermissions() != null && currentUser.getPermissions().length() != 0) {
+                String[] splitPermissions = currentUser.getPermissions().split("\t");
+                for (int i = 0; i < splitPermissions.length; i++) {
+                    if (splitPermissions[i].compareTo("1") == 0) {
+                        permission1 = true;
+                    }
+                    if (splitPermissions[i].compareTo("2") == 0) {
+                        permission2 = true;
+                    }
+                    if (splitPermissions[i].compareTo("3") == 0) {
+                        permission3 = true;
+                    }
+                    if (splitPermissions[i].compareTo("4") == 0) {
+                        permission4 = true;
+                    }
+                    if (splitPermissions[i].compareTo("5") == 0) {
+                        permission5 = true;
+                    }
+                }
+
+            }
         }
     }
 
     public void deleteRegistry() {
-        if (currentUser != null) {
+        boolean continueProcess = true;
+        if (currentUser == null) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "NO REALIZADO", "Se debe seleccionar un usuario de la lista");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+            continueProcess = false;
+        }
+        if (continueProcess == true) {
+            try {
+                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM projects WHERE user_id = " + currentUser.getUserId());
+                if (rs.next()) {
+                    continueProcess = false;
+                } else {
+                    rs = connectionJdbcMB.consult("SELECT * FROM fatal_injuries WHERE user_id = " + currentUser.getUserId());
+                    if (rs.next()) {
+                        continueProcess = false;
+                    } else {
+                        rs = connectionJdbcMB.consult("SELECT * FROM non_fatal_injuries WHERE user_id = " + currentUser.getUserId());
+                        if (rs.next()) {
+                            continueProcess = false;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                continueProcess = false;
+            }
+            if (continueProcess == false) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "NO REALIZADO", "El usuario que se intenta eliminar tiene registro de actividad dentro del sistema por lo cual no puede ser eliminado.");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            }
+        }
+
+        if (continueProcess) {
             try {
                 usersFacade.remove(currentUser);
                 currentUser = null;
-                selectedRowDataTable = null;
+                
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             } catch (Exception e) {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "NO REALIZADO", "El registro no puede ser eliminado por que su informacion esta siendo utilizada");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "NO REALIZADO", "El usuario que se intenta eliminar tiene actividades dentro del sistema; por lo cual no puede ser eliminado");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
-
         }
+        
+        selectedRowDataTable = null;
         createDynamicTable();
         btnEditDisabled = true;
         btnRemoveDisabled = true;
     }
 
     public void updateRegistry() {
-        //determinar consecutivo
-        if (currentUser != null) {
+
+        boolean continueProcess = true;
+        if (currentUser == null) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Seleccionar usuario", "Se de be seleccionar un usuario de la lista");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+            continueProcess = false;
+        }
+
+        if (continueProcess) {
             if (name.trim().length() == 0 || password.trim().length() == 0 || login.trim().length() == 0) {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Faltan datos", "los campos: NOMBRE, PASWORD y LOGIN son obligatorios");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Faltan datos", "los campos: LOGIN, CLAVE y NOMBRES son obligatorios");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
-            } else {
-                Users u = usersFacade.findByLogin(login);
-                if (currentUser.getUserLogin().compareTo(u.getUserLogin()) == 0) {
-                    currentUser.setUserName(name);
-                    currentUser.setUserLogin(login);
-                    currentUser.setUserName(name);
-                    currentUser.setUserJob(job);
-                    currentUser.setUserInstitution(institution);
-                    currentUser.setUserTelephone(telephone);
-                    currentUser.setUserEmail(email);
-                    currentUser.setUserAddress(address);
-                    currentUser.setUserPassword(password);
-                    usersFacade.edit(currentUser);
-                    name = "";
-                    currentUser = null;
-                    selectedRowDataTable = null;
-                    createDynamicTable();
-                    btnEditDisabled = true;
-                    btnRemoveDisabled = true;
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                continueProcess = false;
+            }
+        }
+
+        if (continueProcess) {
+            if (password.compareTo(confirmPassword) != 0) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Confirmacion de clave no coincide", "La clave y la confirmación de clave no coinciden");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+                continueProcess = false;
+            }
+        }
+        if (continueProcess) {
+            Users u = usersFacade.findByLogin(login);
+            if (u != null && currentUser.getUserLogin().compareTo(u.getUserLogin()) != 0) {
+
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "El login digitado ya esta en uso");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+                continueProcess = false;
+            }
+        }
+        if (continueProcess) {
+            currentUser.setUserName(name);
+            currentUser.setUserLogin(login);
+            currentUser.setUserName(name);
+            currentUser.setUserJob(job);
+            currentUser.setUserInstitution(institution);
+            currentUser.setUserTelephone(telephone);
+            currentUser.setUserEmail(email);
+            currentUser.setUserAddress(address);
+            currentUser.setUserPassword(password);
+            String permissions = "";
+            if (permission1) {
+                if (permissions.length() != 0) {
+                    permissions = permissions + "\t1";
                 } else {
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "El login digitado ya esta en uso");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                    permissions = permissions + "1";
                 }
             }
+            if (permission2) {
+                if (permissions.length() != 0) {
+                    permissions = permissions + "\t2";
+                } else {
+                    permissions = permissions + "2";
+                }
+            }
+            if (permission3) {
+                if (permissions.length() != 0) {
+                    permissions = permissions + "\t3";
+                } else {
+                    permissions = permissions + "3";
+                }
+            }
+            if (permission4) {
+                if (permissions.length() != 0) {
+                    permissions = permissions + "\t4";
+                } else {
+                    permissions = permissions + "4";
+                }
+            }
+            if (permission5) {
+                if (permissions.length() != 0) {
+                    permissions = permissions + "\t5";
+                } else {
+                    permissions = permissions + "5";
+                }
+            }
+            currentUser.setPermissions(permissions);
+            if (stateUser.compareTo("Activa") == 0) {
+                currentUser.setActive(true);
+            } else {
+                currentUser.setActive(false);
+            }
+            usersFacade.edit(currentUser);
+            name = "";
+            selectedRowDataTable = null;
+            createDynamicTable();
+            btnEditDisabled = true;
+            btnRemoveDisabled = true;
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
 
     public void saveRegistry() {
+        boolean continueProcess = true;
         if (newName.trim().length() == 0 || newPasword.trim().length() == 0 || newLogin.trim().length() == 0) {
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Faltan datos", "los campos: NOMBRE, PASWORD y LOGIN son obligatorios");
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Faltan datos", "los campos: NOMBRE, CLAVE y LOGIN son obligatorios");
             FacesContext.getCurrentInstance().addMessage(null, msg);
-        } else {
-            Users u = usersFacade.findByLogin(newLogin);
-            if (u == null) {
-                newName = newName.toUpperCase();
-                Users newRegistry = new Users();
-                newRegistry.setUserId(usersFacade.findMax() + 1);
-                newRegistry.setUserLogin(newLogin);
-                newRegistry.setUserName(newName);
-                newRegistry.setUserJob(newJob);
-                newRegistry.setUserInstitution(newInstitution);
-                newRegistry.setUserTelephone(newtelephone);
-                newRegistry.setUserEmail(newEmail);
-                newRegistry.setUserAddress(newAddress);
-                newRegistry.setUserPassword(newPasword);
-//               UsersConfiguration usersConfiguration = new UsersConfiguration(newRegistry.getUserId());
-                //newRegistry.setUsersConfiguration(usersConfiguration);                
-                //usersFacade.edit(currentUser);
-                usersFacade.create(newRegistry);
-                newRegistry();
-                currentUser = null;
-                selectedRowDataTable = null;
-                createDynamicTable();
-                btnEditDisabled = true;
-                btnRemoveDisabled = true;
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
+            continueProcess = false;
+        }
+        if (continueProcess) {
+            if (newPasword.compareTo(newConfirmPasword) != 0) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Confirmacion de clave no coincide", "La clave y la confirmación de clave no coinciden");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
-            } else {
+                continueProcess = false;
+            }
+        }
+        if (continueProcess) {
+            Users u = usersFacade.findByLogin(newLogin);
+            if (u != null) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "El login digitado ya esta en uso");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
+        }
+        if (continueProcess) {
+            newName = newName.toUpperCase();
+            Users newRegistry = new Users();
+            newRegistry.setUserId(usersFacade.findMax() + 1);
+            newRegistry.setUserLogin(newLogin);
+            newRegistry.setUserName(newName);
+            newRegistry.setUserJob(newJob);
+            newRegistry.setUserInstitution(newInstitution);
+            newRegistry.setUserTelephone(newtelephone);
+            newRegistry.setUserEmail(newEmail);
+            newRegistry.setUserAddress(newAddress);
+            newRegistry.setUserPassword(newPasword);
+            String permissions = "";
+            if (permission1) {
+                if (permissions.length() != 0) {
+                    permissions = permissions + "\t1";
+                } else {
+                    permissions = permissions + "1";
+                }
+            }
+            if (permission2) {
+                if (permissions.length() != 0) {
+                    permissions = permissions + "\t2";
+                } else {
+                    permissions = permissions + "2";
+                }
+            }
+            if (permission3) {
+                if (permissions.length() != 0) {
+                    permissions = permissions + "\t3";
+                } else {
+                    permissions = permissions + "3";
+                }
+            }
+            if (permission4) {
+                if (permissions.length() != 0) {
+                    permissions = permissions + "\t4";
+                } else {
+                    permissions = permissions + "4";
+                }
+            }
+            if (permission5) {
+                if (permissions.length() != 0) {
+                    permissions = permissions + "\t5";
+                } else {
+                    permissions = permissions + "5";
+                }
+            }
+            newRegistry.setPermissions(permissions);
+            if (newStateUser.compareTo("Activa") == 0) {
+                newRegistry.setActive(true);
+            } else {
+                newRegistry.setActive(false);
+            }
+            usersFacade.create(newRegistry);
+            newRegistry();
+            currentUser = null;
+            selectedRowDataTable = null;
+            createDynamicTable();
+            btnEditDisabled = true;
+            btnRemoveDisabled = true;
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
 
@@ -236,6 +414,13 @@ public class UsersMB {
         newAddress = "";
         login = "";
         newLogin = "";
+        permission1 = true;
+        permission2 = true;
+        permission3 = true;
+        permission4 = true;
+        permission5 = true;
+        stateUser = "Activa";
+        newStateUser = "Activa";
     }
 
     public void createDynamicTable() {
@@ -250,9 +435,19 @@ public class UsersMB {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
+            String active;
             for (int i = 0; i < usersList.size(); i++) {
+
+
+                if (usersList.get(i).getActive() == null || usersList.get(i).getActive() == false) {
+                    active = "Inactiva";
+                } else {
+                    active = "Activa";
+                }
+
                 rowDataTableList.add(new RowDataTable(
                         usersList.get(i).getUserId().toString(),
+                        active,
                         usersList.get(i).getUserLogin(),
                         usersList.get(i).getUserName(),
                         usersList.get(i).getUserJob(),
@@ -267,9 +462,16 @@ public class UsersMB {
     public void reset() {
         rowDataTableList = new ArrayList<RowDataTable>();
         usersList = usersFacade.findAll();
+        String active;
         for (int i = 0; i < usersList.size(); i++) {
+            if (usersList.get(i).getActive() == null || usersList.get(i).getActive() == false) {
+                active = "Inactiva";
+            } else {
+                active = "Activa";
+            }
             rowDataTableList.add(new RowDataTable(
                     usersList.get(i).getUserId().toString(),
+                    active,
                     usersList.get(i).getUserLogin(),
                     usersList.get(i).getUserName(),
                     usersList.get(i).getUserJob(),
@@ -542,5 +744,37 @@ public class UsersMB {
 
     public void setNewPermission5(boolean newPermission5) {
         this.newPermission5 = newPermission5;
+    }
+
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
+    public String getNewConfirmPasword() {
+        return newConfirmPasword;
+    }
+
+    public void setNewConfirmPasword(String newConfirmPasword) {
+        this.newConfirmPasword = newConfirmPasword;
+    }
+
+    public String getStateUser() {
+        return stateUser;
+    }
+
+    public void setStateUser(String stateUser) {
+        this.stateUser = stateUser;
+    }
+
+    public String getNewStateUser() {
+        return newStateUser;
+    }
+
+    public void setNewStateUser(String newStateUser) {
+        this.newStateUser = newStateUser;
     }
 }

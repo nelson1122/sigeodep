@@ -1962,22 +1962,26 @@ public class IndicatorsPercentageMB {
                 );
 
         CategoryPlot plot = (CategoryPlot) chartReturn.getPlot();
+        
+        ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());//quitar gradiente
+        CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();//rotacion a 45 grados        
+        xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+        
         NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
         rangeAxis.setNumberFormatOverride(NumberFormat.getPercentInstance());
         StackedBarRenderer renderer = (StackedBarRenderer) plot.getRenderer();
         renderer.setRenderAsPercentages(true);
+        if (showItems) {
         renderer.setDrawBarOutline(false);
         renderer.setBaseItemLabelsVisible(true);
-        renderer.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator("{3}", NumberFormat.getIntegerInstance(), new DecimalFormat("0.0%")));
+        renderer.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator("{3}", NumberFormat.getIntegerInstance(), new DecimalFormat("0.00%")));
 
-        ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());//quitar gradiente
-        CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();//rotacion a 45 grados        
-        xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-        if (showItems) {
-            CategoryItemRenderer renderer2 = plot.getRenderer();
-            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00"));//DecimalFormat("0.00"));
-            renderer2.setItemLabelGenerator(generator);
-            renderer2.setItemLabelsVisible(true);
+        
+        
+//            CategoryItemRenderer renderer2 = plot.getRenderer();
+//            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00"));//DecimalFormat("0.00"));
+//            renderer2.setItemLabelGenerator(generator);
+//            renderer2.setItemLabelsVisible(true);
         }
 
         return chartReturn;

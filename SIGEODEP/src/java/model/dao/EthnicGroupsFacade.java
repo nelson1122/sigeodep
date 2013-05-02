@@ -43,10 +43,10 @@ public class EthnicGroupsFacade extends AbstractFacade<EthnicGroups> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from EthnicGroups x where x.ethnicGroupName like '" + value + "%'";
+                    hql = "Select x from EthnicGroups x where x.ethnicGroupName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from EthnicGroups x where x.ethnicGroupName like '" + value + "%'";
+                    hql = "Select x from EthnicGroups x where x.ethnicGroupName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

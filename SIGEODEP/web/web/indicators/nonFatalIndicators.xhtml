@@ -39,22 +39,21 @@
                         </p:column>                                       
                     </p:row>
                     <p:row>  
-                        <p:column>
-                            <!--=====================================DATOS DEL REGISTO==============================================-->
-                            <br/>  
-                            <p:panelGrid style=" margin-left: 130px; " columns="1">
-                                <p:commandButton 
-                                    style="width: 450px;" 
-                                    value="NUMERO DE CASOS POR LESION NO FATAL" 
-                                    actionListener="#{indicatorsCountMB.loadIndicator3}"
-                                    action="countIndicator"/>
-                                <p:commandButton 
-                                    style="width: 450px;" 
-                                    value="PORCENTAJE DE CASOS POR LESION NO FATAL" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator4}"
-                                    action="percentageIndicator"/>         
-                            </p:panelGrid>
-                            <br/>  
+                        <p:column style="text-align: center;">
+                            <br/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="NUMERO DE CASOS POR LESION NO FATAL" 
+                                actionListener="#{indicatorsCountMB.loadIndicator3}"
+                                action="countIndicator"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="PORCENTAJE DE CASOS POR LESION NO FATAL" 
+                                actionListener="#{indicatorsPercentageMB.loadIndicator4}"
+                                action="percentageIndicator"/>         
+
+                            <br/>  <br/>
                         </p:column>                                       
                     </p:row>
                 </p:panelGrid>

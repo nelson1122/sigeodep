@@ -39,75 +39,51 @@
                         </p:column>                                       
                     </p:row>
                     <p:row>  
-                        <p:column>
+                        <p:column style="text-align: center;">
                             <!--=====================================DATOS DEL REGISTO==============================================-->
-                            <br/>                            
-                            <p:panelGrid style=" margin-left: 180px; height: 200px; ">                            
-                                <p:row>  
-                                    <p:column>
-                                        <p:commandButton 
-                                            style="width: 350px;" 
-                                            value="HOMICIDIOS" 
-                                            actionListener="#{homicideMB.reset}"
-                                            action="homicide"/>
-                                    </p:column>
-                                </p:row>                                
-                                <p:row>  
-                                    <p:column>
-                                        <p:commandButton 
-                                            style="width: 350px;" 
-                                            value="MUERTES POR ACCIDENTES DE TRANSITO"
-                                            actionListener="#{transitMB.reset}"
-                                            action="transit"/>
-                                    </p:column>
-                                </p:row>
-                                <p:row>  
-                                    <p:column>
-                                        <p:commandButton 
-                                            style="width: 350px;" 
-                                            value="SUICIDIOS"
-                                            actionListener="#{suicideMB.reset}"
-                                            action="suicide"/>
-                                    </p:column>
-                                </p:row>
-                                <p:row>  
-                                    <p:column>
-                                        <p:commandButton 
-                                            style="width: 350px;" 
-                                            value="MUERTES ACCIDENTALES"
-                                            actionListener="#{accidentalMB.reset}"
-                                            action="accidental"/>
-                                    </p:column>
-                                </p:row>
-                                <p:row>  
-                                    <p:column>
-                                        <p:commandButton 
-                                            style="width: 350px;" 
-                                            value="LESIONES DE CAUSA EXTERNA NO FATALES"
-                                            actionListener="#{lcenfMB.reset}"
-                                            action="LCENF"/>
-                                    </p:column>
-                                </p:row>
-                                <p:row>  
-                                    <p:column>
-                                        <p:commandButton 
-                                            style="width: 350px;" 
-                                            value="VIOLENCIA INTRAFAMILIAR"
-                                            actionListener="#{vifMB.reset}"
-                                            action="VIF"/>
-                                    </p:column>
-                                </p:row>
-                                <p:row>  
-                                    <p:column>
-                                        <p:commandButton 
-                                            rendered="false"
-                                            style="width: 350px;" 
-                                            value="ELIMINAR DATOS"
-                                            actionListener="#{loginMB.eliminarDatos}"
-                                            action="VIF"/>
-                                    </p:column>
-                                </p:row>
-                            </p:panelGrid>                                                        
+                            <br/>
+                            <p:commandButton 
+                                rendered="#{loginMB.permissionFatal}"
+                                style="width: 350px;" 
+                                value="HOMICIDIOS" 
+                                actionListener="#{homicideMB.reset}"
+                                action="homicide"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 350px"/> 
+                            <p:commandButton 
+                                rendered="#{loginMB.permissionFatal}"
+                                style="width: 350px;" 
+                                value="MUERTES POR ACCIDENTES DE TRANSITO"
+                                actionListener="#{transitMB.reset}"
+                                action="transit"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 350px"/> 
+                            <p:commandButton 
+                                rendered="#{loginMB.permissionFatal}"
+                                style="width: 350px;" 
+                                value="SUICIDIOS"
+                                actionListener="#{suicideMB.reset}"
+                                action="suicide"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 350px"/> 
+                            <p:commandButton 
+                                rendered="#{loginMB.permissionFatal}"
+                                style="width: 350px;" 
+                                value="MUERTES ACCIDENTALES"
+                                actionListener="#{accidentalMB.reset}"
+                                action="accidental"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 350px"/> 
+                            <p:commandButton 
+                                rendered="#{loginMB.permissionNonFatal}"
+                                style="width: 350px;" 
+                                value="LESIONES DE CAUSA EXTERNA NO FATALES"
+                                actionListener="#{lcenfMB.reset}"
+                                action="LCENF"/>
+                            <p:separator rendered="#{loginMB.permissionNonFatal}" style="width: 350px"/> 
+                            <p:commandButton 
+                                rendered="#{loginMB.permissionVif}"
+                                style="width: 350px;" 
+                                value="VIOLENCIA INTRAFAMILIAR"
+                                actionListener="#{vifMB.reset}"
+                                action="VIF"/>
+                            <br/>
                             <br/>
                         </p:column>                                       
                     </p:row>

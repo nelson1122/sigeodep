@@ -39,48 +39,50 @@
                         </p:column>                                       
                     </p:row>
                     <p:row>  
-                        <p:column>
-                            <!--=====================================DATOS DEL REGISTO==============================================-->
+                        <p:column style="text-align: center;">                            
                             <br/>  
-                            <p:panelGrid style=" margin-left: 150px;" columns="1">                                                              
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="NUMERO DE CASOS DE HOMICIDIOS" 
-                                    actionListener="#{indicatorsCountMB.loadIndicator12}"
-                                    action="countIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE HOMICIDIOS SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator18}"
-                                    action="percentageIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="VARIACION DE CASOS DE HOMICIDIOS" 
-                                    actionListener="#{indicatorsVariationMB.loadIndicator13}"
-                                    action="variationIndicator"/>        
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="VARIACION PORCENTUAL DE HOMICIDIOS" 
-                                    actionListener="#{indicatorsPercentageVariationMB.loadIndicator14}"
-                                    action="percentageVariationIndicator"/>       
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PROMEDIO DE CASOS DE HOMICIDIOS" 
-                                    actionListener="#{indicatorsAverageMB.loadIndicator15}"
-                                    action="averageIndicator"/>       
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="TASA DE HOMICIDIOS" 
-                                    actionListener="#{indicatorsRateMB.loadIndicator16}"
-                                    action="rateIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="TASA ESPECIFICA DE HOMICIDIOS SEGUN VARIABLE DE CONFUSION" 
-                                    actionListener="#{indicatorsSpecifiedRateMB.loadIndicator17}"
-                                    action="specifiedRateIndicator"/>
-                                
-                            </p:panelGrid>
-                            <br/>  
+                            <p:commandButton 
+                                style="width: 500px;" 
+                                value="NUMERO DE CASOS DE HOMICIDIOS" 
+                                actionListener="#{indicatorsCountMB.loadIndicator12}"
+                                action="countIndicator"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 500px"/> 
+                            <p:commandButton 
+                                style="width: 500px;" 
+                                value="PORCENTAJE DE CASOS DE HOMICIDIOS SEGUN VARIABLE DE INTERES" 
+                                actionListener="#{indicatorsPercentageMB.loadIndicator18}"
+                                action="percentageIndicator"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 500px"/> 
+                            <p:commandButton 
+                                style="width: 500px;" 
+                                value="VARIACION DE CASOS DE HOMICIDIOS" 
+                                actionListener="#{indicatorsVariationMB.loadIndicator13}"
+                                action="variationIndicator"/>        
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 500px"/> 
+                            <p:commandButton 
+                                style="width: 500px;" 
+                                value="VARIACION PORCENTUAL DE HOMICIDIOS" 
+                                actionListener="#{indicatorsPercentageVariationMB.loadIndicator14}"
+                                action="percentageVariationIndicator"/>       
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 500px"/> 
+                            <p:commandButton 
+                                style="width: 500px;" 
+                                value="PROMEDIO DE CASOS DE HOMICIDIOS" 
+                                actionListener="#{indicatorsAverageMB.loadIndicator15}"
+                                action="averageIndicator"/>       
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 500px"/> 
+                            <p:commandButton 
+                                style="width: 500px;" 
+                                value="TASA DE HOMICIDIOS" 
+                                actionListener="#{indicatorsRateMB.loadIndicator16}"
+                                action="rateIndicator"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 500px"/> 
+                            <p:commandButton 
+                                style="width: 500px;" 
+                                value="TASA ESPECIFICA DE HOMICIDIOS SEGUN VARIABLE DE CONFUSION" 
+                                actionListener="#{indicatorsSpecifiedRateMB.loadIndicator17}"
+                                action="specifiedRateIndicator"/>                              
+                            <br/><br/>  
                         </p:column>                                       
                     </p:row>
                 </p:panelGrid>
