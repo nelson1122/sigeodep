@@ -43,10 +43,10 @@ public class ServiceTypesFacade extends AbstractFacade<ServiceTypes> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from ServiceTypes x where x.serviceTypeName like '" + value + "%'";
+                    hql = "Select x from ServiceTypes x where x.serviceTypeName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from ServiceTypes x where x.serviceTypeName like '" + value + "%'";
+                    hql = "Select x from ServiceTypes x where x.serviceTypeName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

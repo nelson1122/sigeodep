@@ -43,10 +43,10 @@ public class CountriesFacade extends AbstractFacade<Countries> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from Countries x where x.name like '" + value + "%'";
+                    hql = "Select x from Countries x where x.name like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from Countries x where x.name like '" + value + "%'";
+                    hql = "Select x from Countries x where x.name like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

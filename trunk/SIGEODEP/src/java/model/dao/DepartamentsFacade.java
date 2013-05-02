@@ -63,10 +63,10 @@ public class DepartamentsFacade extends AbstractFacade<Departaments> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from Departaments x where x.departamentName like '" + value + "%'";
+                    hql = "Select x from Departaments x where x.departamentName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    List<Departaments> neighborhoodsList = (List<Departaments>) em.createNativeQuery("select * from departaments where departament_id::text like '" + value + "%';", Departaments.class).getResultList();
+                    List<Departaments> neighborhoodsList = (List<Departaments>) em.createNativeQuery("select * from departaments where departament_id::text like '%" + value + "%';", Departaments.class).getResultList();
                     return neighborhoodsList;
             }
         } catch (Exception e) {

@@ -47,6 +47,7 @@
                                     <p:menuitem 
                                         icon="ui-icon-document"
                                         value="Conjuntos desde Archivo"
+                                        rendered="#{loginMB.permissionAdministrator}"
                                         actionListener="#{projectsMB.loadConfigurationUser}"
                                         action="proccesFile"
                                         ajax="false"/>
@@ -57,13 +58,13 @@
                                         ajax="false"/>  
                                     <p:menuitem 
                                         icon="ui-icon-newwin" 
-                                        value="Gestion de Conjuntos" 
-                                        actionListener="#{recordSetsMB.reset}"
+                                        value="Gestion de Conjuntos"                                         
+                                        rendered="#{loginMB.permissionAdministrator}"
                                         action="recordSets"
                                         ajax="false"/>
                                 </p:menu> 
                             </p:tab>
-                            <p:tab title="INDICADORES">
+                            <p:tab title="INDICADORES" rendered="#{loginMB.permissionIndicators}">
                                 <p:accordionPanel activeIndex="#{loginMB.activeIndexAcoordion2}" style="width: 250px;" > 
                                     <p:tab title="FATALES">
                                         <p:menu >                               
@@ -139,7 +140,7 @@
                                         ajax="false"/>
                                 </p:menu> 
                             </p:tab>
-                            <p:tab title="CONFIGURACIONES">
+                            <p:tab title="CONFIGURACIONES" rendered="#{loginMB.permissionAdministrator}">
                                 <p:menu style="width: 200px; z-index:23;">                               
                                     <p:menuitem 
                                         icon="ui-icon-calculator"
@@ -147,11 +148,24 @@
                                         action="categoricalVariables" 
                                         ajax="false"/>                                      
                                     <p:menuitem 
-                                        icon="ui-icon-calculator"
+                                        icon="ui-icon-link"
                                         value="Configurar Poblaciones" 
                                         actionListener="#{populationsMB.createDynamicTable}"
                                         action="populations" 
-                                        ajax="false"/>                                      
+                                        ajax="false"/>  
+                                    <p:menuitem 
+                                        icon="ui-icon-person"
+                                        value="Gestión de Usuarios" 
+                                        actionListener="#{usersMB.reset}"
+                                        action="users" 
+                                        ajax="false"/>  
+                                    <p:menuitem 
+                                        icon="ui-icon-disk"
+                                        value="Copias de seguridad" 
+                                        actionListener="#{backupsMB.reset}"
+                                        action="backups" 
+                                        ajax="false"/>  
+                                    
                                 </p:menu> 
                             </p:tab>
                             <p:tab title="GENERAL">
@@ -172,13 +186,7 @@
                                         icon="ui-icon-circle-close"
                                         value="Cerrar Sesión"
                                         actionListener="#{loginMB.logout2}"
-                                        ajax="false"/>  
-                                    <p:menuitem 
-                                        icon="ui-icon-person"
-                                        value="Gestión de Usuarios" 
-                                        actionListener="#{usersMB.reset}"
-                                        action="users" 
-                                        ajax="false"/>  
+                                        ajax="false"/>                                      
                                 </p:menu> 
                             </p:tab>
                         </p:accordionPanel>

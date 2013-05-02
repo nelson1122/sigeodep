@@ -43,11 +43,11 @@ public class ActivitiesFacade extends AbstractFacade<Activities> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from Activities x where x.activityName like '" + value + "%'";
+                    hql = "Select x from Activities x where x.activityName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
 
                 case 2:
-                    hql = "Select x from Activities x where x.activityName like '" + value + "%'";
+                    hql = "Select x from Activities x where x.activityName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
 
             }

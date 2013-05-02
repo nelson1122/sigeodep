@@ -73,6 +73,8 @@ public class Users implements Serializable {
     private String permissions;
     @Column(name = "project_id")
     private Integer projectId;
+    @Column(name = "active")
+    private Boolean active;
     @OneToMany(mappedBy = "userId")
     private List<NonFatalInjuries> nonFatalInjuriesList;
 
@@ -176,6 +178,14 @@ public class Users implements Serializable {
 
     public void setProjectId(Integer projectId) {
         this.projectId = projectId;
+    }
+    
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 
     @XmlTransient

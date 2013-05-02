@@ -43,10 +43,10 @@ public class RelatedEventsFacade extends AbstractFacade<RelatedEvents> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from RelatedEvents x where x.relatedEventName like '" + value + "%'";
+                    hql = "Select x from RelatedEvents x where x.relatedEventName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from RelatedEvents x where x.relatedEventName like '" + value + "%'";
+                    hql = "Select x from RelatedEvents x where x.relatedEventName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

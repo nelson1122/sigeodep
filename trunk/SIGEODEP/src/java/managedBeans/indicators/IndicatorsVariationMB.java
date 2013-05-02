@@ -240,20 +240,20 @@ public class IndicatorsVariationMB {
         c2B.setTime(endDateB);
 
         //fecha no puede ser menor a 2002 ni mayor al año del sistema
-        if (c1A.get(Calendar.YEAR) < 2002 || c1A.get(Calendar.YEAR) > currentYear) {
-            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial del rango A debe estar entre el año 2002 y " + currentYear);
+        if (c1A.get(Calendar.YEAR) < 2002 || c1A.get(Calendar.YEAR) > currentYear+1) {
+            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial del rango A debe estar entre el año 2002 y " + (currentYear+1));
             return false;
         }
-        if (c2A.get(Calendar.YEAR) < 2002 || c2A.get(Calendar.YEAR) > currentYear) {
-            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha final del rango A debe estar entre el año 2002 y " + currentYear);
+        if (c2A.get(Calendar.YEAR) < 2002 || c2A.get(Calendar.YEAR) > currentYear+1) {
+            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha final del rango A debe estar entre el año 2002 y " + (currentYear+1));
             return false;
         }
-        if (c1B.get(Calendar.YEAR) < 2002 || c1B.get(Calendar.YEAR) > currentYear) {
-            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial del rango B debe estar entre el año 2002 y " + currentYear);
+        if (c1B.get(Calendar.YEAR) < 2002 || c1B.get(Calendar.YEAR) > currentYear+1) {
+            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial del rango B debe estar entre el año 2002 y " + (currentYear+1));
             return false;
         }
-        if (c2B.get(Calendar.YEAR) < 2002 || c2B.get(Calendar.YEAR) > currentYear) {
-            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha final del rango B debe estar entre el año 2002 y " + currentYear);
+        if (c2B.get(Calendar.YEAR) < 2002 || c2B.get(Calendar.YEAR) > currentYear+1) {
+            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha final del rango B debe estar entre el año 2002 y " + (currentYear+1));
             return false;
         }
 

@@ -43,10 +43,10 @@ public class PlacesFacade extends AbstractFacade<Places> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from Places x where x.placeName like '" + value + "%'";
+                    hql = "Select x from Places x where x.placeName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from Places x where x.placeName like '" + value + "%'";
+                    hql = "Select x from Places x where x.placeName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

@@ -43,10 +43,10 @@ public class AccidentClassesFacade extends AbstractFacade<AccidentClasses> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from AccidentClasses x where x.accidentClassName like '" + value + "%'";
+                    hql = "Select x from AccidentClasses x where x.accidentClassName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from AccidentClasses x where x.accidentClassName like '" + value + "%'";
+                    hql = "Select x from AccidentClasses x where x.accidentClassName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

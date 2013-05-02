@@ -741,7 +741,7 @@ public class ProjectsMB implements Serializable {
                                 for (int i = 0; i < empyColumns; i++) {
                                     rowFileData.add("");//completar casillas vacias
                                 }
-                                rowFileData.add(formattedValue);
+                                rowFileData.add(formattedValue.replace("\n", " "));
                             }
 
                             @Override

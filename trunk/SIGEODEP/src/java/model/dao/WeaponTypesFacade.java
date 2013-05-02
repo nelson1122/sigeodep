@@ -43,10 +43,10 @@ public class WeaponTypesFacade extends AbstractFacade<WeaponTypes> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from WeaponTypes x where x.weaponTypeName like '" + value + "%'";
+                    hql = "Select x from WeaponTypes x where x.weaponTypeName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from WeaponTypes x where x.weaponTypeName like '" + value + "%'";
+                    hql = "Select x from WeaponTypes x where x.weaponTypeName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

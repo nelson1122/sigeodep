@@ -104,10 +104,10 @@ public class NeighborhoodsFacade extends AbstractFacade<Neighborhoods> {
         try {
             switch (variable) {
                 case 1:
-                    List<Neighborhoods> neighborhoodsList = (List<Neighborhoods>) em.createNativeQuery("select * from neighborhoods where neighborhood_id::text like '" + value + "%';", Neighborhoods.class).getResultList();
+                    List<Neighborhoods> neighborhoodsList = (List<Neighborhoods>) em.createNativeQuery("select * from neighborhoods where neighborhood_id::text like '" + value + "';", Neighborhoods.class).getResultList();
                     return neighborhoodsList;
                 case 2:
-                    String hql = "Select x from Neighborhoods x where x.neighborhoodName like '" + value + "%'";
+                    String hql = "Select x from Neighborhoods x where x.neighborhoodName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

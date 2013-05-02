@@ -39,47 +39,50 @@
                         </p:column>                                       
                     </p:row>
                     <p:row>  
-                        <p:column>
-                            <!--=====================================DATOS DEL REGISTO==============================================-->
-                            <br/>  
-                            <p:panelGrid style=" margin-left: 150px;" columns="1">                                
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="NUMERO DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO" 
-                                    actionListener="#{indicatorsCountMB.loadIndicator26}"
-                                    action="countIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PORCENTAJE DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO SEGUN VARIABLE DE INTERES" 
-                                    actionListener="#{indicatorsPercentageMB.loadIndicator32}"
-                                    action="percentageIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="VARIACION DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO" 
-                                    actionListener="#{indicatorsVariationMB.loadIndicator27}"
-                                    action="variationIndicator"/>       
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="VARIACION PORCENTUAL DE MUERTES POR ACCIDENTES DE TRANSITO" 
-                                    actionListener="#{indicatorsPercentageVariationMB.loadIndicator28}"
-                                    action="percentageVariationIndicator"/>       
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="PROMEDIO DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO" 
-                                    actionListener="#{indicatorsAverageMB.loadIndicator29}"
-                                    action="averageIndicator"/>                          
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="TASA DE MUERTES POR ACCIDENTES DE TRANSITO" 
-                                    actionListener="#{indicatorsRateMB.loadIndicator30}"
-                                    action="rateIndicator"/>
-                                <p:commandButton 
-                                    style="width: 400px;" 
-                                    value="TASA ESPECIFICA DE MUERTES POR ACCIDENTES DE TRANSITO SEGUN VARIABLE DE CONFUSION" 
-                                    actionListener="#{indicatorsSpecifiedRateMB.loadIndicator31}"
-                                    action="specifiedRateIndicator"/>                                
-                            </p:panelGrid>
-                            <br/>  
+                        <p:column style="text-align: center;">
+                            <br/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="NUMERO DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO" 
+                                actionListener="#{indicatorsCountMB.loadIndicator26}"
+                                action="countIndicator"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="PORCENTAJE DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO SEGUN VARIABLE DE INTERES" 
+                                actionListener="#{indicatorsPercentageMB.loadIndicator32}"
+                                action="percentageIndicator"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="VARIACION DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO" 
+                                actionListener="#{indicatorsVariationMB.loadIndicator27}"
+                                action="variationIndicator"/>       
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="VARIACION PORCENTUAL DE MUERTES POR ACCIDENTES DE TRANSITO" 
+                                actionListener="#{indicatorsPercentageVariationMB.loadIndicator28}"
+                                action="percentageVariationIndicator"/>       
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="PROMEDIO DE CASOS DE MUERTES POR ACCIDENTES DE TRANSITO" 
+                                actionListener="#{indicatorsAverageMB.loadIndicator29}"
+                                action="averageIndicator"/>                          
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="TASA DE MUERTES POR ACCIDENTES DE TRANSITO" 
+                                actionListener="#{indicatorsRateMB.loadIndicator30}"
+                                action="rateIndicator"/>
+                            <p:separator rendered="#{loginMB.permissionFatal}" style="width: 650px"/> 
+                            <p:commandButton 
+                                style="width: 650px;" 
+                                value="TASA ESPECIFICA DE MUERTES POR ACCIDENTES DE TRANSITO SEGUN VARIABLE DE CONFUSION" 
+                                actionListener="#{indicatorsSpecifiedRateMB.loadIndicator31}"
+                                action="specifiedRateIndicator"/>                                
+                            <br/><br/>  
                         </p:column>                                       
                     </p:row>
                 </p:panelGrid>

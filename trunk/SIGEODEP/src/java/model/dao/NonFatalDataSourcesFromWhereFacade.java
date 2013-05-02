@@ -43,10 +43,10 @@ public class NonFatalDataSourcesFromWhereFacade extends AbstractFacade<NonFatalD
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from NonFatalDataSourcesFromWhere x where x.nonFatalDataSourcesFromWhereName like '" + value + "%'";
+                    hql = "Select x from NonFatalDataSourcesFromWhere x where x.nonFatalDataSourcesFromWhereName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    hql = "Select x from NonFatalDataSourcesFromWhere x where x.nonFatalDataSourcesFromWhereName like '" + value + "%'";
+                    hql = "Select x from NonFatalDataSourcesFromWhere x where x.nonFatalDataSourcesFromWhereName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
             }
         } catch (Exception e) {

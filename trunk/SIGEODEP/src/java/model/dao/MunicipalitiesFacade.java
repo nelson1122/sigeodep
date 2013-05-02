@@ -57,10 +57,10 @@ public class MunicipalitiesFacade extends AbstractFacade<Municipalities> {
         try {
             switch (variable) {
                 case 1:
-                    hql = "Select x from Municipalities x where x.municipalityName like '" + value + "%'";
+                    hql = "Select x from Municipalities x where x.municipalityName like '%" + value + "%'";
                     return em.createQuery(hql).getResultList();
                 case 2:
-                    List<Municipalities> neighborhoodsList = (List<Municipalities>) em.createNativeQuery("select * from municipalities where municipality_id::text like '" + value + "%';", Municipalities.class).getResultList();
+                    List<Municipalities> neighborhoodsList = (List<Municipalities>) em.createNativeQuery("select * from municipalities where municipality_id::text ilike '%" + value + "%';", Municipalities.class).getResultList();
                     return neighborhoodsList;
                 case 3:
                     hql = "Select x from Municipalities x where x.departaments.departamentName like '" + value + "%'";

@@ -5,9 +5,9 @@
 package managedBeans.login;
 
 import beans.connection.ConnectionJdbcMB;
-import java.sql.ResultSet;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
+import javax.faces.FacesException;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -36,6 +36,16 @@ public class LoginMB {
     private Users currentUser;
     private String activeIndexAcoordion1 = "-1";
     private String activeIndexAcoordion2 = "-1";
+    private boolean permissionFatal = false;
+    private boolean permissionNonFatal = false;
+    private boolean permissionVif = false;
+    private boolean permissionIndicators = false;
+    private boolean permissionAdministrator = false;
+    private boolean disableNonFatalSection = true;
+    private boolean disableFatalSection = true;
+    private boolean disableVifSection = true;
+    private boolean disableIndicatorsSection = true;
+    private boolean disableAdministratorSection = true;
     FacesContext context;
     ConnectionJdbcMB connectionJdbcMB;
     ProjectsMB projectsMB;
@@ -48,39 +58,29 @@ public class LoginMB {
     UsersFacade usersFacade;
     private String closeSessionDialog = "";
 
-    //progreso de carga de la aplicacion ***********************************    
-//    private Integer progress;   
-//
-//    public Integer getProgress() {
-//        return progress;
-//    }
-//
-//    public void setProgress(Integer progress) {
-//        this.progress = progress;
-//    }
-//
-//    public void onComplete() {
-//        //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la adición de " + String.valueOf(tuplesProcessed)
-//        //       + "registros, para filalizar guarde si lo desea la configuración de relaciones actual o reinicie para realizar la carga de registros de otro acrchivo"));
-//    }
-//
-//    public void cancel() {
-//        progress = null;
-//    }
-    //progreso de carga de la aplicacion***********************************    
     @PreDestroy
     private void destroySession() {
         try {
             applicationControlMB.removeSession(idSession);
             if (!connectionJdbcMB.conn.isClosed()) {
-                connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = "+currentUser.getUserId());
+                connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());
                 connectionJdbcMB.disconnect();
             }
         } catch (Exception e) {
             //System.out.println("Termina session por inactividad 003 " + e.toString());
         }
     }
-    
+
+    public void newWindow2() {
+        try {
+            ExternalContext ext = FacesContext.getCurrentInstance().getExternalContext();
+            String ctxPath = ((ServletContext) ext.getContext()).getContextPath();
+            //return ctxPath + "/index.html?v=timeout";//System.out.println("enviado a: " + ctxPath + "/index.html?v=timeout");        
+            ext.redirect(ctxPath + "/index.html?v=close");
+        } catch (Exception ex) {//System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
+        }
+    }
+
     public void logout1() {//fin de session por que se inicio una nueva session en otro equipo      
         applicationControlMB.removeSession(idSession);
         try {
@@ -88,7 +88,7 @@ public class LoginMB {
             String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
             ((HttpSession) ctx.getSession(false)).invalidate();  //System.out.println("se redirecciona");
             ctx.redirect(ctxPath + "/index.html?v=close");
-        } catch (Exception ex) { //System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
+        } catch (Exception ex) {//System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
         }
     }
 
@@ -105,20 +105,6 @@ public class LoginMB {
     }
 
     public LoginMB() {
-        /**
-         * Creates a new instance of LoginMB
-         */
-        //sessionControlMB
-        //System.out.println("ingreso a Login MB");
-//        try {
-//            System.out.println("DIRECTORIO TEMPORALES:    " + System.getProperty("java.io.tmpdir"));
-//            PrintStream out = new PrintStream(new FileOutputStream(System.getProperty("java.io.tmpdir")+"output.txt"));
-//            System.setOut(out);
-//            PrintStream out2 = new PrintStream(new FileOutputStream(System.getProperty("java.io.tmpdir")+"output2.txt"));
-//            System.setErr(out2);
-//        } catch (Exception booleanValue) {
-//            System.out.println("error:    " + booleanValue);
-//        }
     }
 
     public void reset() {
@@ -149,6 +135,36 @@ public class LoginMB {
     private String continueLogin() {
         FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", loginname);
         HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
+
+
+        String[] splitPermissions = currentUser.getPermissions().split("\t");
+        for (int i = 0; i < splitPermissions.length; i++) {
+            if (splitPermissions[i].compareTo("1") == 0) {
+                permissionFatal = true;
+                disableFatalSection = false;
+            }
+            if (splitPermissions[i].compareTo("2") == 0) {
+                permissionNonFatal = true;
+                disableNonFatalSection = false;
+            }
+            if (splitPermissions[i].compareTo("3") == 0) {
+                permissionVif = true;
+                disableVifSection = false;
+            }
+            if (splitPermissions[i].compareTo("4") == 0) {
+                permissionIndicators = true;
+                disableIndicatorsSection = false;
+            }
+            if (splitPermissions[i].compareTo("5") == 0) {
+                permissionAdministrator = true;
+                disableAdministratorSection = false;
+            }
+        }
+
+
+
+
+
         idSession = session.getId();
         userLogin = currentUser.getUserLogin();
         userName = currentUser.getUserName();
@@ -197,17 +213,7 @@ public class LoginMB {
     public String CheckValidUser() {
         closeSessionDialog = "";
         currentUser = usersFacade.findUser(loginname, password);
-        if (currentUser != null) {
-            ExternalContext contexto = FacesContext.getCurrentInstance().getExternalContext();
-            applicationControlMB = (ApplicationControlMB) contexto.getApplicationMap().get("applicationControlMB");
-            //determino si el usuario tiene una session alctiva
-            if (applicationControlMB.hasLogged(currentUser.getUserId())) {//System.out.println("Ingreso rechazado, ya tiene otra session activa");
-                closeSessionDialog = "closeSessionDialog.show()";
-                return "";//no dirigir a ninguna pagina
-            } else {
-                return continueLogin();
-            }
-        } else {
+        if (currentUser == null) {
             //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "SESION FINALIZADA", "La sesión fue finalizada por que se inició una nueva sesión para el mismo usuario");
             //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "SESION FINALIZADA", "Después de 20 minutos de inactividad el sistema finaliza la sesión automáticamente, por favor presione el botón: ' ingresar a la aplicación ' para acceder nuevamente.");
             //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "ACCESO DENEGADO", "La sesión ha finalizado por inactividad o no se ha iniciado una sesión.");
@@ -216,6 +222,25 @@ public class LoginMB {
             password = "";
             return "";
         }
+        if (!currentUser.getActive()) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "La cuenta de este usuario se encuentra Inactiva");
+            FacesContext.getCurrentInstance().addMessage(null, msg);
+            password = "";
+            return "";
+        }
+
+        ExternalContext contexto = FacesContext.getCurrentInstance().getExternalContext();
+        applicationControlMB = (ApplicationControlMB) contexto.getApplicationMap().get("applicationControlMB");
+        //determino si el usuario tiene una session alctiva
+        if (applicationControlMB.hasLogged(currentUser.getUserId())) {//System.out.println("Ingreso rechazado, ya tiene otra session activa");
+            closeSessionDialog = "closeSessionDialog.show()";//permitir terminar sesion de otra terminal
+            return "";//no dirigir a ninguna pagina
+        } else {
+            return continueLogin();
+        }
+
+
+
     }
 
     public String getLoginname() {
@@ -296,5 +321,85 @@ public class LoginMB {
 
     public void setIdSession(String idSession) {
         this.idSession = idSession;
+    }
+
+    public boolean isPermissionFatal() {
+        return permissionFatal;
+    }
+
+    public void setPermissionFatal(boolean permissionFatal) {
+        this.permissionFatal = permissionFatal;
+    }
+
+    public boolean isPermissionNonFatal() {
+        return permissionNonFatal;
+    }
+
+    public void setPermissionNonFatal(boolean permissionNonFatal) {
+        this.permissionNonFatal = permissionNonFatal;
+    }
+
+    public boolean isPermissionVif() {
+        return permissionVif;
+    }
+
+    public void setPermissionVif(boolean permissionVif) {
+        this.permissionVif = permissionVif;
+    }
+
+    public boolean isPermissionIndicators() {
+        return permissionIndicators;
+    }
+
+    public void setPermissionIndicators(boolean permissionIndicators) {
+        this.permissionIndicators = permissionIndicators;
+    }
+
+    public boolean isPermissionAdministrator() {
+        return permissionAdministrator;
+    }
+
+    public void setPermissionAdministrator(boolean permissionAdministrator) {
+        this.permissionAdministrator = permissionAdministrator;
+    }
+
+    public boolean isDisableNonFatalSection() {
+        return disableNonFatalSection;
+    }
+
+    public void setDisableNonFatalSection(boolean disableNonFatalSection) {
+        this.disableNonFatalSection = disableNonFatalSection;
+    }
+
+    public boolean isDisableFatalSection() {
+        return disableFatalSection;
+    }
+
+    public void setDisableFatalSection(boolean disableFatalSection) {
+        this.disableFatalSection = disableFatalSection;
+    }
+
+    public boolean isDisableVifSection() {
+        return disableVifSection;
+    }
+
+    public void setDisableVifSection(boolean disableVifSection) {
+        this.disableVifSection = disableVifSection;
+    }
+
+    public boolean isDisableIndicatorsSection() {
+        return disableIndicatorsSection;
+    }
+
+    public void setDisableIndicatorsSection(boolean disableIndicatorsSection) {
+        this.disableIndicatorsSection = disableIndicatorsSection;
+    }
+
+    public boolean isDisableAdministratorSection() {
+        return disableAdministratorSection;
+    }
+
+    public void setDisableAdministratorSection(boolean disableAdministratorSection) {
+        this.disableAdministratorSection = disableAdministratorSection;
     }
 }
