@@ -220,11 +220,6 @@
             <redirect/>
         </navigation-case>
         <navigation-case>
-            <from-outcome>geo</from-outcome>
-            <to-view-id>/web/geo/geo2.xhtml</to-view-id>
-            <redirect/>
-        </navigation-case>
-        <navigation-case>
             <from-outcome>recordSets</from-outcome>
             <to-view-id>/web/recordSets/recordSets.xhtml</to-view-id>
             <redirect/>

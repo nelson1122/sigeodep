@@ -193,13 +193,15 @@ public class AccidentalMB implements Serializable {
     private String currentIdForm = "";
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
+    private LoginMB loginMB;
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa 
      * variables y carga la conexion por jdbc
      */
+
     @PostConstruct
     private void initialize() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -208,6 +210,7 @@ public class AccidentalMB implements Serializable {
     //----------------------------------------------------------------------
 
     public AccidentalMB() {
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
     }
 
     public void loadValues(List<Tags> tagsList, FatalInjuryAccident currentFatalInjuryA) {
@@ -227,11 +230,10 @@ public class AccidentalMB implements Serializable {
         }
     }
 
-    
     public void reset() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        currentUser=loginMB.getCurrentUser();
+        currentUser = loginMB.getCurrentUser();
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         loading = true;
         try {
@@ -350,7 +352,7 @@ public class AccidentalMB implements Serializable {
         //System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////");
 
     }
-    
+
     public void changeTag() {//cambia el conjunto de registros
         noSaveAndGoNew();
     }
@@ -692,6 +694,13 @@ public class AccidentalMB implements Serializable {
 
     private boolean validateFields() {
         validationsErrors = new ArrayList<String>();
+
+        //---------VALIDAR EL USUARIO TENGA PERMISMOS SUFIENTES
+        if (currentFatalInjuriId != -1) {//SE ESTA ACTUALIZANDO UN REGISTRO
+            if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentFatalInjuryAccident.getFatalInjuries().getUserId().getUserId()) {
+                validationsErrors.add("Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
+            }
+        }
         //---------VALIDAR QUE EXISTA FECHA DE HECHO
         if (currentDateEvent.trim().length() == 0) {
             validationsErrors.add("Es obligatorio ingresar la fecha del evento");
@@ -765,7 +774,7 @@ public class AccidentalMB implements Serializable {
                     newVictim.setGenderId(gendersFacade.find(currentGender));
                 }
                 //******job_id
-                if (currentJob != null && currentJob.trim().length()!=0) {
+                if (currentJob != null && currentJob.trim().length() != 0) {
                     newVictim.setJobId(jobsFacade.findByName(currentJob));
                 }
                 //******vulnerable_group_id
@@ -829,7 +838,7 @@ public class AccidentalMB implements Serializable {
                 if (currentNarrative.trim().length() != 0) {
                     newFatalInjurie.setInjuryDescription(currentNarrative);
                 }
-                
+
                 //******user_id	
                 try {
                     newFatalInjurie.setUserId(currentUser);//usuario que se encuentre logueado
@@ -971,7 +980,7 @@ public class AccidentalMB implements Serializable {
             //FatalInjuries newFatalInjurie = new FatalInjuries();
             //newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
             //newFatalInjurie.setInjuryId(injuriesFacade.find((short) 10));//es 10 por ser homicidio
-            
+
             currentFatalInjuryAccident.getFatalInjuries().setInjuryDate(fatalInjurie.getInjuryDate());
             currentFatalInjuryAccident.getFatalInjuries().setInjuryTime(fatalInjurie.getInjuryTime());
             currentFatalInjuryAccident.getFatalInjuries().setInjuryAddress(fatalInjurie.getInjuryAddress());
@@ -1302,15 +1311,20 @@ public class AccidentalMB implements Serializable {
 
     public void deleteRegistry() {
         if (currentFatalInjuriId != -1) {
-            FatalInjuries auxFatalInjuries = currentFatalInjuryAccident.getFatalInjuries();
-            Victims auxVictims = currentFatalInjuryAccident.getFatalInjuries().getVictimId();
-            fatalInjuryAccidentFacade.remove(currentFatalInjuryAccident);
-            fatalInjuriesFacade.remove(auxFatalInjuries);
-            victimsFacade.remove(auxVictims);
-            //System.out.println("registro eliminado");
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
-            noSaveAndGoNew();
+            if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentFatalInjuryAccident.getFatalInjuries().getUserId().getUserId()) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            } else {
+                FatalInjuries auxFatalInjuries = currentFatalInjuryAccident.getFatalInjuries();
+                Victims auxVictims = currentFatalInjuryAccident.getFatalInjuries().getVictimId();
+                fatalInjuryAccidentFacade.remove(currentFatalInjuryAccident);
+                fatalInjuriesFacade.remove(auxFatalInjuries);
+                victimsFacade.remove(auxVictims);
+                //System.out.println("registro eliminado");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+                noSaveAndGoNew();
+            }
         }
     }
     //----------------------------------------------------------------------
@@ -1324,7 +1338,7 @@ public class AccidentalMB implements Serializable {
     private Date date2;
     private int currentSearchCriteria = 0;
     private SelectItem[] searchCriteriaList;
-    private String currentSearchValue = "";    
+    private String currentSearchValue = "";
 
     public List<RowDataTable> getRowDataTableList() {
         return rowDataTableList;
@@ -1373,7 +1387,7 @@ public class AccidentalMB implements Serializable {
         }
         if (s) {
             try {
-                rowDataTableList = new ArrayList<RowDataTable>();                
+                rowDataTableList = new ArrayList<RowDataTable>();
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "fatal_injuries.fatal_injury_id, ";
@@ -1422,38 +1436,38 @@ public class AccidentalMB implements Serializable {
     public List<String> suggestNeighborhoods(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    neighborhoods.neighborhood_name"
                     + " FROM "
                     + "    public.neighborhoods"
                     + " WHERE "
-                    + "    neighborhoods.neighborhood_name ILIKE '"+entered+"%'"
+                    + "    neighborhoods.neighborhood_name ILIKE '" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
         }
         return list;
     }
-    
+
     public List<String> suggestJobs(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    jobs.job_name"
                     + " FROM "
                     + "    public.jobs"
                     + " WHERE "
-                    + "    jobs.job_name ILIKE '%"+entered+"%'"
+                    + "    jobs.job_name ILIKE '%" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
@@ -2244,7 +2258,6 @@ public class AccidentalMB implements Serializable {
 //    public SelectItem[] getJobs() {
 //        return jobs;
 //    }
-
     public boolean isNeighborhoodHomeNameDisabled() {
         return neighborhoodHomeNameDisabled;
     }

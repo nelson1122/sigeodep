@@ -252,7 +252,11 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:selectBooleanCheckbox value="#{usersMB.permission1}">                                            
+                                <h:selectBooleanCheckbox id="IdPermission1" value="#{usersMB.permission1}">                                            
+                                    <f:ajax 
+                                        event="change"
+                                        listener="#{usersMB.changePermission1}"
+                                        render="IdPermission1 IdPermission2 IdPermission3 IdPermission4 IdPermission5"/>
                                 </h:selectBooleanCheckbox>
                             </p:column>
                             <p:column>
@@ -261,7 +265,11 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:selectBooleanCheckbox value="#{usersMB.permission2}">                                            
+                                <h:selectBooleanCheckbox id="IdPermission2" value="#{usersMB.permission2}">                                            
+                                    <f:ajax 
+                                        event="change"
+                                        listener="#{usersMB.changePermission2}"
+                                        render="IdPermission1 IdPermission2 IdPermission3 IdPermission4 IdPermission5"/>
                                 </h:selectBooleanCheckbox>
                             </p:column>
                             <p:column>
@@ -270,7 +278,11 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:selectBooleanCheckbox value="#{usersMB.permission3}">                                            
+                                <h:selectBooleanCheckbox id="IdPermission3" value="#{usersMB.permission3}">                                            
+                                    <f:ajax 
+                                        event="change"
+                                        listener="#{usersMB.changePermission3}"
+                                        render="IdPermission1 IdPermission2 IdPermission3 IdPermission4 IdPermission5"/>
                                 </h:selectBooleanCheckbox>
                             </p:column>
                             <p:column>
@@ -279,7 +291,11 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:selectBooleanCheckbox value="#{usersMB.permission4}">                                            
+                                <h:selectBooleanCheckbox id="IdPermission4" value="#{usersMB.permission4}">                                            
+                                    <f:ajax 
+                                        event="change"
+                                        listener="#{usersMB.changePermission4}"
+                                        render="IdPermission1 IdPermission2 IdPermission3 IdPermission4 IdPermission5"/>
                                 </h:selectBooleanCheckbox>
                             </p:column>
                             <p:column>
@@ -288,7 +304,11 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:selectBooleanCheckbox value="#{usersMB.permission5}">                                            
+                                <h:selectBooleanCheckbox id="IdPermission5" value="#{usersMB.permission5}">                                            
+                                    <f:ajax 
+                                        event="change"
+                                        listener="#{usersMB.changePermission5}"
+                                        render="IdPermission1 IdPermission2 IdPermission3 IdPermission4 IdPermission5"/>
                                 </h:selectBooleanCheckbox>
                             </p:column>
                             <p:column>
@@ -400,7 +420,11 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:selectBooleanCheckbox value="#{usersMB.newPermission1}">                                            
+                                <h:selectBooleanCheckbox id="IdNewPermission1" value="#{usersMB.newPermission1}">                                            
+                                    <f:ajax 
+                                        event="change"
+                                        listener="#{usersMB.changeNewPermission1}"
+                                        render="IdNewPermission1 IdNewPermission2 IdNewPermission3 IdNewPermission4 IdNewPermission5"/>
                                 </h:selectBooleanCheckbox>
                             </p:column>
                             <p:column>
@@ -409,7 +433,12 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:selectBooleanCheckbox value="#{usersMB.newPermission2}"/>                                            
+                                <h:selectBooleanCheckbox id="IdNewPermission2" value="#{usersMB.newPermission2}">
+                                    <f:ajax 
+                                        event="change"
+                                        listener="#{usersMB.changeNewPermission2}"
+                                        render="IdNewPermission1 IdNewPermission2 IdNewPermission3 IdNewPermission4 IdNewPermission5"/>
+                                </h:selectBooleanCheckbox>                                            
                             </p:column>
                             <p:column>
                                 Gestionar formularios de lesiones no fatales
@@ -417,7 +446,11 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:selectBooleanCheckbox value="#{usersMB.newPermission3}">                                            
+                                <h:selectBooleanCheckbox id="IdNewPermission3" value="#{usersMB.newPermission3}">                                            
+                                    <f:ajax 
+                                        event="change"
+                                        listener="#{usersMB.changeNewPermission3}"
+                                        render="IdNewPermission1 IdNewPermission2 IdNewPermission3 IdNewPermission4 IdNewPermission5"/>
                                 </h:selectBooleanCheckbox>
                             </p:column>
                             <p:column>
@@ -426,7 +459,11 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:selectBooleanCheckbox value="#{usersMB.newPermission4}">                                            
+                                <h:selectBooleanCheckbox id="IdNewPermission4" value="#{usersMB.newPermission4}">                                            
+                                    <f:ajax 
+                                        event="change"
+                                        listener="#{usersMB.changeNewPermission4}"
+                                        render="IdNewPermission1 IdNewPermission2 IdNewPermission3 IdNewPermission4 IdNewPermission5"/>
                                 </h:selectBooleanCheckbox>
                             </p:column>
                             <p:column>
@@ -435,7 +472,11 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:selectBooleanCheckbox value="#{usersMB.newPermission5}">                                            
+                                <h:selectBooleanCheckbox id="IdNewPermission5" value="#{usersMB.newPermission5}">                                            
+                                    <f:ajax 
+                                        event="change"
+                                        listener="#{usersMB.changeNewPermission5}"
+                                        render="IdNewPermission1 IdNewPermission2 IdNewPermission3 IdNewPermission4 IdNewPermission5"/>
                                 </h:selectBooleanCheckbox>
                             </p:column>
                             <p:column>

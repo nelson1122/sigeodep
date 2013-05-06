@@ -286,6 +286,7 @@ public class VIFMB implements Serializable {
     private String currentIdForm = "";
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
+    private LoginMB loginMB;
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
@@ -302,6 +303,7 @@ public class VIFMB implements Serializable {
     //----------------------------------------------------------------------
 
     public VIFMB() {
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
     }
 
     public void loadValues(List<Tags> tagsList, NonFatalDomesticViolence currentNonDomesticV) {
@@ -1120,6 +1122,14 @@ public class VIFMB implements Serializable {
 
     private boolean validateFields() {
         validationsErrors = new ArrayList<String>();
+        //---------VALIDAR EL USUARIO TENGA PERMISMOS SUFIENTES
+        if (currentNonFatalInjuriId != -1) {//SE ESTA ACTUALIZANDO UN REGISTRO
+            if (!loginMB.isPermissionAdministrator()) {
+                if (currentNonFatalDomesticViolence != null && loginMB.getCurrentUser().getUserId() != currentNonFatalDomesticViolence.getNonFatalInjuries().getUserId().getUserId()) {
+                    validationsErrors.add("Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
+                }
+            }
+        }
         //---------VALIDAR QUE EXISTA FECHA DE HECHO
         if (currentDateEvent.trim().length() == 0) {
             validationsErrors.add("Es obligatorio ingresar la fecha del evento");
@@ -1245,7 +1255,7 @@ public class VIFMB implements Serializable {
                 if (currentGender != 0) {
                     newVictim.setGenderId(gendersFacade.find(currentGender));
                 }
-                if (currentJob != null && currentJob.trim().length()!=0) {
+                if (currentJob != null && currentJob.trim().length() != 0) {
                     newVictim.setJobId(jobsFacade.findByName(currentJob));
                 }
                 if (currentVulnerableGroup != 0) {
@@ -1282,7 +1292,7 @@ public class VIFMB implements Serializable {
                 newVictim.setResidenceDepartment(currentDepartamentHome);
                 //}
 
-                if (currentInsurance != null && currentInsurance.trim().length()!=0) {
+                if (currentInsurance != null && currentInsurance.trim().length() != 0) {
                     newVictim.setInsuranceId(insuranceFacade.findByName(currentInsurance));
                 }
 
@@ -2091,15 +2101,20 @@ public class VIFMB implements Serializable {
     public void deleteRegistry() {
         //NonFatalDomesticViolence auxNonFatalDomesticViolence=currentNonFatalDomesticViolence;
         if (currentNonFatalInjuriId != -1) {
-            NonFatalInjuries auxNonFatalInjuries = currentNonFatalDomesticViolence.getNonFatalInjuries();
-            Victims auxVictims = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId();
-            nonFatalDomesticViolenceFacade.remove(currentNonFatalDomesticViolence);
-            nonFatalInjuriesFacade.remove(auxNonFatalInjuries);
-            victimsFacade.remove(auxVictims);
-            //System.out.println("registro eliminado");
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
-            noSaveAndGoNew();
+            if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentNonFatalDomesticViolence.getNonFatalInjuries().getUserId().getUserId()) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            } else {
+                NonFatalInjuries auxNonFatalInjuries = currentNonFatalDomesticViolence.getNonFatalInjuries();
+                Victims auxVictims = currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId();
+                nonFatalDomesticViolenceFacade.remove(currentNonFatalDomesticViolence);
+                nonFatalInjuriesFacade.remove(auxNonFatalInjuries);
+                victimsFacade.remove(auxVictims);
+                //System.out.println("registro eliminado");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+                noSaveAndGoNew();
+            }
         }
     }
 
@@ -2238,59 +2253,59 @@ public class VIFMB implements Serializable {
     public List<String> suggestNeighborhoods(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    neighborhoods.neighborhood_name"
                     + " FROM "
                     + "    public.neighborhoods"
                     + " WHERE "
-                    + "    neighborhoods.neighborhood_name ILIKE '"+entered+"%'"
+                    + "    neighborhoods.neighborhood_name ILIKE '" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
         }
         return list;
     }
-    
+
     public List<String> suggestInsurances(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    insurance.insurance_name"
                     + " FROM "
                     + "    public.insurance"
                     + " WHERE "
-                    + "    insurance.insurance_name ILIKE '%"+entered+"%'"
+                    + "    insurance.insurance_name ILIKE '%" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
         }
         return list;
     }
-    
+
     public List<String> suggestJobs(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    jobs.job_name"
                     + " FROM "
                     + "    public.jobs"
                     + " WHERE "
-                    + "    jobs.job_name ILIKE '%"+entered+"%'"
+                    + "    jobs.job_name ILIKE '%" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
@@ -3551,7 +3566,6 @@ public class VIFMB implements Serializable {
 //    public SelectItem[] getJobs() {
 //        return jobs;
 //    }
-
     public boolean isNeighborhoodHomeNameDisabled() {
         return neighborhoodHomeNameDisabled;
     }
@@ -4437,7 +4451,6 @@ public class VIFMB implements Serializable {
 //    public void setInsurances(SelectItem[] insurances) {
 //        this.insurances = insurances;
 //    }
-
     public String getCurrentIdForm() {
         return currentIdForm;
     }

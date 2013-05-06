@@ -62,10 +62,8 @@ public class LoginMB {
     private void destroySession() {
         try {
             applicationControlMB.removeSession(idSession);
-            if (!connectionJdbcMB.conn.isClosed()) {
-                connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());
-                connectionJdbcMB.disconnect();
-            }
+            connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());
+            //System.out.println("Eliminadas variables de session para: "+currentUser.getUserLogin());
         } catch (Exception e) {
             //System.out.println("Termina session por inactividad 003 " + e.toString());
         }
@@ -161,10 +159,6 @@ public class LoginMB {
             }
         }
 
-
-
-
-
         idSession = session.getId();
         userLogin = currentUser.getUserLogin();
         userName = currentUser.getUserName();
@@ -174,6 +168,7 @@ public class LoginMB {
         //System.out.println("Usuario se logea " + loginname + " ID: " + idSession);
         connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         if (connectionJdbcMB.connectToDb()) {
+            connectionJdbcMB.setCurrentUser(currentUser);
             projectsMB = (ProjectsMB) context.getApplication().evaluateExpressionGet(context, "#{projectsMB}", ProjectsMB.class);
             relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
             relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
@@ -213,6 +208,7 @@ public class LoginMB {
     public String CheckValidUser() {
         closeSessionDialog = "";
         currentUser = usersFacade.findUser(loginname, password);
+
         if (currentUser == null) {
             //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "SESION FINALIZADA", "La sesión fue finalizada por que se inició una nueva sesión para el mismo usuario");
             //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "SESION FINALIZADA", "Después de 20 minutos de inactividad el sistema finaliza la sesión automáticamente, por favor presione el botón: ' ingresar a la aplicación ' para acceder nuevamente.");
