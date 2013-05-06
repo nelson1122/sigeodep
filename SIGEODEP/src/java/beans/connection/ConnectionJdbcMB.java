@@ -16,11 +16,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javassist.*;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.sql.DataSource;
 import managedBeans.filters.FieldCount;
@@ -35,7 +36,7 @@ import model.pojo.*;
  * @author SANTOS
  */
 @ManagedBean(name = "connectionJdbcMB")
-@SessionScoped
+@ApplicationScoped
 public class ConnectionJdbcMB implements Serializable {
 
     @Resource(name = "jdbc/od")
@@ -90,6 +91,7 @@ public class ConnectionJdbcMB implements Serializable {
     private String url = "";
     private boolean connectionIsConfigured = true;
     private boolean connectionNotConfigured = false;
+    private Users currentUser;
 
     /**
      * Creates a new instance of ConnectionJdbcMB
@@ -102,6 +104,16 @@ public class ConnectionJdbcMB implements Serializable {
 //            connectionIsConfigured = false;
 //            connectionNotConfigured = true;
 //        }
+    }
+    @PreDestroy
+    private void destroySession() {
+        try {
+            if (!conn.isClosed()) {
+                disconnect();
+            }
+        } catch (Exception e) {
+            //System.out.println("Termina session por inactividad 003 " + e.toString());
+        }
     }
 
     public void disconnect() {
@@ -159,44 +171,46 @@ public class ConnectionJdbcMB implements Serializable {
     }
 
     public final boolean connectToDb() {
-        boolean returnValue = false;
-        try {
-            if (ds == null) {
-                System.out.println("ERROR: No se obtubo data source");
-            } else {
-                conn = ds.getConnection();
-
-                if (conn == null) {
-                    System.out.println("Error: No se obtubo conexion");
+        boolean returnValue = true;
+        if (conn == null) {
+            returnValue = false;
+            try {
+                if (ds == null) {
+                    System.out.println("ERROR: No se obtubo data source");
                 } else {
-                    ResultSet rs1 = consult("Select * from configurations");
-                    if (rs1.next()) {
-                        user = rs1.getString("user_db");
-                        db = rs1.getString("name_db");
-                        password = rs1.getString("password_db");
-                        server = rs1.getString("server_db");
-                        url = "jdbc:postgresql://" + server + "/" + db;
-                        try {
-                            Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
-                        } catch (Exception e) {
-                            System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
-                            msj = "ERROR: " + e.getMessage();
-                        }
-                        conn.close();
-                        conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
-                        if (conn != null) {
-                            System.out.println("Conexion a base de datos " + url + " ... OK");
-                            returnValue = true;
+                    conn = ds.getConnection();
+                    if (conn == null) {
+                        System.out.println("Error: No se obtubo conexion");
+                    } else {
+                        ResultSet rs1 = consult("Select * from configurations");
+                        if (rs1.next()) {
+                            user = rs1.getString("user_db");
+                            db = rs1.getString("name_db");
+                            password = rs1.getString("password_db");
+                            server = rs1.getString("server_db");
+                            url = "jdbc:postgresql://" + server + "/" + db;
+                            try {
+                                Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
+                            } catch (Exception e) {
+                                System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
+                                msj = "ERROR: " + e.getMessage();
+                            }
+                            conn.close();
+                            conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
+                            if (conn != null) {
+                                System.out.println("Conexion a base de datos " + url + " ... OK");
+                                returnValue = true;
+                            } else {
+                                System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
+                            }
                         } else {
                             System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
                         }
-                    } else {
-                        System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
                     }
                 }
+            } catch (Exception e) {
+                System.out.println("Error2: " + e.toString() + " --- Clase: " + this.getClass().getName());
             }
-        } catch (Exception e) {
-            System.out.println("Error2: " + e.toString() + " --- Clase: " + this.getClass().getName());
         }
         return returnValue;
     }
@@ -2723,14 +2737,14 @@ public class ConnectionJdbcMB implements Serializable {
         //------------------------------------------------------------               
         //******sivigila_victim.health_category
         //try {
-            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getHealthCategory() != null) {
-                newRowDataTable.setColumn17(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getHealthCategory().getSivigilaTipSsName());
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getHealthCategory() != null) {
+            newRowDataTable.setColumn17(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getHealthCategory().getSivigilaTipSsName());
 //                String sql = "SELECT sivigila_tip_ss_name FROM sivigila_tip_ss WHERE sivigila_tip_ss_id=" + currentNonFatalDomesticV.getSivigilaEvent().getZone();
 //                rs = consult(sql);
 //                if (rs.next()) {
 //                    newRowDataTable.setColumn17(rs.getString(1));
 //                }
-            }
+        }
         //} catch (Exception e) {
         //}
         //escolaridad victima
@@ -2789,7 +2803,7 @@ public class ConnectionJdbcMB implements Serializable {
         //******injury_date
         if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryDate() != null) {
             newRowDataTable.setColumn26(sdf.format(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryDate()));
-        }        
+        }
         //******injury_time
         try {
             if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryTime() != null) {
@@ -2804,7 +2818,7 @@ public class ConnectionJdbcMB implements Serializable {
                 newRowDataTable.setColumn27(hours + minutes);
             }
         } catch (Exception e) {
-        }        
+        }
         //nombre profesional salud
         if (currentNonFatalDomesticV.getNonFatalInjuries().getHealthProfessionalId() != null) {
             newRowDataTable.setColumn28(currentNonFatalDomesticV.getNonFatalInjuries().getHealthProfessionalId().getHealthProfessionalName());
@@ -2827,9 +2841,9 @@ public class ConnectionJdbcMB implements Serializable {
         } catch (Exception e) {
             //System.out.println("no se cargo tipos de maltrato"+e.toString());
         }
-        
 
-        
+
+
         //******injury_place_id
         //try {
         if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryPlaceId() != null) {
@@ -2858,14 +2872,14 @@ public class ConnectionJdbcMB implements Serializable {
         //------------------------------------------------------------               
         //******sivigila_event.area
 //        try {
-            if (currentNonFatalDomesticV.getSivigilaEvent().getArea() != null) {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getArea() != null) {
 //                String sql = "SELECT area_name FROM areas WHERE area_id=" + currentNonFatalDomesticV.getSivigilaEvent().getZone();
 //                rs = consult(sql);
 //                if (rs.next()) {
 //                    newRowDataTable.setColumn43(rs.getString(1));
 //                }
-                newRowDataTable.setColumn43(currentNonFatalDomesticV.getSivigilaEvent().getArea().getAreaName());
-            }
+            newRowDataTable.setColumn43(currentNonFatalDomesticV.getSivigilaEvent().getArea().getAreaName());
+        }
 //        } catch (Exception e) {
 //        }
         //edad agresor
@@ -2877,14 +2891,14 @@ public class ConnectionJdbcMB implements Serializable {
         }
         //genero agresor
 //        try {
-            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender() != null) {
+        if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender() != null) {
 //                String sql = "SELECT gender_name FROM genders WHERE gender_id=" + currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender();
 //                rs = consult(sql);
 //                if (rs.next()) {
 //                    newRowDataTable.setColumn45(rs.getString(1));
 //                }
-                newRowDataTable.setColumn45(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender().getGenderName());
-            }
+            newRowDataTable.setColumn45(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender().getGenderName());
+        }
 //        } catch (Exception e) {
 //        }
         //ocupacion agresor
@@ -4047,5 +4061,13 @@ public class ConnectionJdbcMB implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Users getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(Users currentUser) {
+        this.currentUser = currentUser;
     }
 }

@@ -79,6 +79,91 @@ public class UsersMB {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
+    public void changePermission1() {
+        if (permission1 == false) {
+            permission5 = false;
+        } else if (permission1 && permission2 && permission3 && permission4) {
+            permission5 = true;
+        }
+    }
+
+    public void changePermission2() {
+        if (permission2 == false) {
+            permission5 = false;
+        } else if (permission1 && permission2 && permission3 && permission4) {
+            permission5 = true;
+        }
+    }
+
+    public void changePermission3() {
+        if (permission3 == false) {
+            permission5 = false;
+        } else if (permission1 && permission2 && permission3 && permission4) {
+            permission5 = true;
+        }
+    }
+
+    public void changePermission4() {
+        if (permission4 == false) {
+            permission5 = false;
+        } else if (permission1 && permission2 && permission3 && permission4) {
+            permission5 = true;
+        }
+    }
+
+    public void changePermission5() {
+        if (permission5 == true) {
+            permission1 = true;
+            permission2 = true;
+            permission3 = true;
+            permission4 = true;
+            permission5 = true;
+        } else if (permission1 && permission2 && permission3 && permission4) {
+            permission5 = true;
+        }
+    }
+    //////////////
+    public void changeNewPermission1() {
+        if (newPermission1 == false) {
+            newPermission5 = false;
+        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
+            newPermission5 = true;
+        }
+    }
+    public void changeNewPermission2() {
+        if (newPermission2 == false) {
+            newPermission5 = false;
+        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
+            newPermission5 = true;
+        }
+    }
+    public void changeNewPermission3() {
+        if (newPermission3 == false) {
+            newPermission5 = false;
+        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
+            newPermission5 = true;
+        }
+    }
+    public void changeNewPermission4() {
+        if (newPermission4 == false) {
+            newPermission5 = false;
+        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
+            newPermission5 = true;
+        }
+    }
+    public void changeNewPermission5() {
+        if (newPermission5 == true) {
+            newPermission1 = true;
+            newPermission2 = true;
+            newPermission3 = true;
+            newPermission4 = true;
+            newPermission5 = true;
+        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
+            newPermission5 = true;
+        }
+    }
+    //////////////
+
     public void load() {
         currentUser = null;
         if (selectedRowDataTable != null) {
@@ -199,7 +284,7 @@ public class UsersMB {
             try {
                 usersFacade.remove(currentUser);
                 currentUser = null;
-                
+
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             } catch (Exception e) {
@@ -207,7 +292,7 @@ public class UsersMB {
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
-        
+
         selectedRowDataTable = null;
         createDynamicTable();
         btnEditDisabled = true;

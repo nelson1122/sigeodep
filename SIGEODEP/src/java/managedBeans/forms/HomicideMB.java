@@ -4,7 +4,6 @@
  */
 package managedBeans.forms;
 
-
 import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
@@ -136,7 +135,6 @@ public class HomicideMB implements Serializable {
     private Short currentMurderContext;
     private SelectItem[] murderContexts;
     //------------------
-    
     @EJB
     VictimsFacade victimsFacade;
     @EJB
@@ -197,16 +195,17 @@ public class HomicideMB implements Serializable {
     private Calendar c = Calendar.getInstance();
     private String stylePosition = "color: #1471B1;";
     private String currentIdForm = "";
-    
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
+    private LoginMB loginMB;
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa 
      * variables y carga la conexion por jdbc
      */
+
     @PostConstruct
     private void initialize() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -215,12 +214,11 @@ public class HomicideMB implements Serializable {
     //----------------------------------------------------------------------
 
     public HomicideMB() {
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
     }
-    
-    
 
-    public void loadValues(List<Tags> tagsList, FatalInjuryMurder currentFatalInjuryM) {        
-        for (int i = 0; i < tagsList.size(); i++) {            
+    public void loadValues(List<Tags> tagsList, FatalInjuryMurder currentFatalInjuryM) {
+        for (int i = 0; i < tagsList.size(); i++) {
             try {
                 reset();
                 clearForm();
@@ -313,7 +311,7 @@ public class HomicideMB implements Serializable {
         //******ethnic_group_id
         //******victim_telephone
         //******victim_address
-        
+
         //******victim_neighborhood_id
         try {
             if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodId() != null) {
@@ -576,6 +574,12 @@ public class HomicideMB implements Serializable {
 
     private boolean validateFields() {
         validationsErrors = new ArrayList<String>();
+        //---------VALIDAR EL USUARIO TENGA PERMISMOS SUFIENTES
+        if (currentFatalInjuriId != -1) {//SE ESTA ACTUALIZANDO UN REGISTRO
+            if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentFatalInjuryMurder.getFatalInjuries().getUserId().getUserId()) {
+                validationsErrors.add("Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
+            }
+        }
         //---------VALIDAR QUE EXISTA FECHA DE HECHO
         if (currentDateEvent.trim().length() == 0) {
             validationsErrors.add("Es obligatorio ingresar la fecha del evento");
@@ -650,7 +654,7 @@ public class HomicideMB implements Serializable {
                     newVictim.setGenderId(gendersFacade.find(currentGender));
                 }
                 //******job_id
-                if (currentJob != null && currentJob.trim().length()!=0) {
+                if (currentJob != null && currentJob.trim().length() != 0) {
                     newVictim.setJobId(jobsFacade.findByName(currentJob));
                 }
                 //******vulnerable_group_id
@@ -786,11 +790,11 @@ public class HomicideMB implements Serializable {
                 if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     //System.out.println("guardando nuevo registro");
                     newVictim.setTagId(tagsFacade.find(currentTag));
-                    
+
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryMurderFacade.create(newMurder);
-                    
+
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
@@ -820,15 +824,20 @@ public class HomicideMB implements Serializable {
 
     public void deleteRegistry() {
         if (currentFatalInjuriId != -1) {
-            FatalInjuries auxFatalInjuries = currentFatalInjuryMurder.getFatalInjuries();
-            Victims auxVictims = currentFatalInjuryMurder.getFatalInjuries().getVictimId();
-            fatalInjuryMurderFacade.remove(currentFatalInjuryMurder);
-            fatalInjuriesFacade.remove(auxFatalInjuries);
-            victimsFacade.remove(auxVictims);
-            //System.out.println("registro eliminado");
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
-            noSaveAndGoNew();
+            if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentFatalInjuryMurder.getFatalInjuries().getUserId().getUserId()) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            } else {
+                FatalInjuries auxFatalInjuries = currentFatalInjuryMurder.getFatalInjuries();
+                Victims auxVictims = currentFatalInjuryMurder.getFatalInjuries().getVictimId();
+                fatalInjuryMurderFacade.remove(currentFatalInjuryMurder);
+                fatalInjuriesFacade.remove(auxFatalInjuries);
+                victimsFacade.remove(auxVictims);
+                //System.out.println("registro eliminado");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+                noSaveAndGoNew();
+            }
         }
     }
 
@@ -863,7 +872,7 @@ public class HomicideMB implements Serializable {
             //newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
             //newFatalInjurie.setInjuryId(injuriesFacade.find((short) 10));//es 10 por ser homicidio
 
-            
+
             currentFatalInjuryMurder.getFatalInjuries().setInjuryDate(fatalInjurie.getInjuryDate());
             currentFatalInjuryMurder.getFatalInjuries().setInjuryTime(fatalInjurie.getInjuryTime());
             currentFatalInjuryMurder.getFatalInjuries().setInjuryAddress(fatalInjurie.getInjuryAddress());
@@ -1184,9 +1193,9 @@ public class HomicideMB implements Serializable {
     }
 
     public void reset() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        currentUser=loginMB.getCurrentUser();
+        currentUser = loginMB.getCurrentUser();
         loading = true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         try {
@@ -1238,7 +1247,7 @@ public class HomicideMB implements Serializable {
             for (int i = 0; i < countriesList.size(); i++) {
                 sourceCountries[i + 1] = new SelectItem(countriesList.get(i).getIdCountry(), countriesList.get(i).getName());
             }
-            
+
             //cargo departamentos residencia
             List<Departaments> departamentsHomeList = departamentsFacade.findAll();
             homeDepartaments = new SelectItem[departamentsHomeList.size() + 1];
@@ -1246,9 +1255,9 @@ public class HomicideMB implements Serializable {
             for (int i = 0; i < departamentsHomeList.size(); i++) {
                 homeDepartaments[i + 1] = new SelectItem(departamentsHomeList.get(i).getDepartamentId(), departamentsHomeList.get(i).getDepartamentName());
             }
-            
-            
-            
+
+
+
             //cargo municipios de residencia
             findMunicipalities();
             currentSourceCountry = 52;
@@ -1324,7 +1333,6 @@ public class HomicideMB implements Serializable {
     private int currentSearchCriteria = 0;
     private SelectItem[] searchCriteriaList;
     private String currentSearchValue = "";
-    
 
     public List<RowDataTable> getRowDataTableList() {
         return rowDataTableList;
@@ -1373,7 +1381,7 @@ public class HomicideMB implements Serializable {
         }
         if (s) {
             try {
-                rowDataTableList = new ArrayList<RowDataTable>();                
+                rowDataTableList = new ArrayList<RowDataTable>();
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "fatal_injuries.fatal_injury_id, ";
@@ -1435,38 +1443,38 @@ public class HomicideMB implements Serializable {
     public List<String> suggestNeighborhoods(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    neighborhoods.neighborhood_name"
                     + " FROM "
                     + "    public.neighborhoods"
                     + " WHERE "
-                    + "    neighborhoods.neighborhood_name ILIKE '"+entered+"%'"
+                    + "    neighborhoods.neighborhood_name ILIKE '" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
         }
         return list;
     }
-    
+
     public List<String> suggestJobs(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    jobs.job_name"
                     + " FROM "
                     + "    public.jobs"
                     + " WHERE "
-                    + "    jobs.job_name ILIKE '%"+entered+"%'"
+                    + "    jobs.job_name ILIKE '%" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
@@ -1671,7 +1679,7 @@ public class HomicideMB implements Serializable {
         } else {
             neighborhoodHomeNameDisabled = true;
             currentNeighborhoodHome = "";
-            currentNeighborhoodHomeCode = "";            
+            currentNeighborhoodHomeCode = "";
         }
     }
 
@@ -2247,7 +2255,6 @@ public class HomicideMB implements Serializable {
 //    public SelectItem[] getJobs() {
 //        return jobs;
 //    }
-
     public boolean isNeighborhoodHomeNameDisabled() {
         return neighborhoodHomeNameDisabled;
     }
@@ -2614,8 +2621,6 @@ public class HomicideMB implements Serializable {
     public void setHomeDepartaments(SelectItem[] homeDepartaments) {
         this.homeDepartaments = homeDepartaments;
     }
-    
-    
 
     public SelectItem[] getSourceMunicipalities() {
         return sourceMunicipalities;
@@ -2840,5 +2845,3 @@ public class HomicideMB implements Serializable {
         this.tags = tags;
     }
 }
-
-

@@ -416,16 +416,16 @@ public class LcenfMB implements Serializable {
     private String currentIdForm = "";
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
+    private LoginMB loginMB;
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
      */
 
-    @PostConstruct
-    private void initialize() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-    }
-
+//    @PostConstruct
+//    private void initialize() {
+//        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+//    }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
@@ -477,6 +477,7 @@ public class LcenfMB implements Serializable {
                 + ":IdForm1:IdIdCIE10_2 :IdForm1:IdTxtCIE10_2 :IdForm1:IdIdCIE10_3 :IdForm1:IdTxtCIE10_3 :IdForm1:IdIdCIE10_4 :IdForm1:IdTxtCIE10_4 "
                 + ":IdForm1:IdHealthProfessionals :IdForm1:IdResponsible :IdForm1:IdControls :IdForm1:message :IdForm2:IdSearchCriteria :IdForm2:IdSearcValue :IdForm2:IdSearchTable "
                 + ":IdForm1:IdInsurance :IdForm1:IdFormId";
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
     }
 
     /*
@@ -504,7 +505,7 @@ public class LcenfMB implements Serializable {
 
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         //determino el usuario
-        LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         currentUser = loginMB.getCurrentUser();
 
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
@@ -936,7 +937,7 @@ public class LcenfMB implements Serializable {
 
         //******insurance_id
         try {
-            currentInsurance = currentNonFatalInjury.getVictimId().getInsuranceId().getInsuranceId();
+            currentInsurance = currentNonFatalInjury.getVictimId().getInsuranceId().getInsuranceName();
             if (currentInsurance == null) {
                 currentInsurance = null;
             }
@@ -1757,10 +1758,10 @@ public class LcenfMB implements Serializable {
 
     private boolean validateFields() {
         validationsErrors = new ArrayList<String>();
-
-
-
-
+        //---------VALIDAR EL USUARIO TENGA PERMISMOS SUFIENTES
+        if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentNonFatalInjury.getUserId().getUserId()) {
+            validationsErrors.add("Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
+        }
         //---------VALIDAR QUE LA FECHA DEL SISTEMA SEA MAYOR A LA FECHA DEL HECHO 
         if (currentDateEvent.trim().length() != 0) {
             try {
@@ -1904,8 +1905,8 @@ public class LcenfMB implements Serializable {
                 if (currentGender != 0) {
                     newVictim.setGenderId(gendersFacade.find(currentGender));
                 }
-                if (currentJob != null && currentJob.trim().length()!=0) {
-                    
+                if (currentJob != null && currentJob.trim().length() != 0) {
+
                     newVictim.setJobId(jobsFacade.findByName(currentJob));
                 }
                 //if (currentVulnerableGroup != 0) {
@@ -1951,7 +1952,7 @@ public class LcenfMB implements Serializable {
                 } else {
                     newVictim.setVulnerableGroupsList(null);
                 }
-                if (currentInsurance != null && currentInsurance.trim().length()!=0) {
+                if (currentInsurance != null && currentInsurance.trim().length() != 0) {
                     newVictim.setInsuranceId(insuranceFacade.findByName(currentInsurance));
                 }
 
@@ -2149,18 +2150,69 @@ public class LcenfMB implements Serializable {
 
                 //---CODIGO CIE10---------------------------------
                 List<Diagnoses> diagnosesesList = new ArrayList<Diagnoses>();
-
+                Diagnoses d;
+                boolean addDiagnose;
                 if (idCIE10_1.trim().length() != 0) {
-                    diagnosesesList.add(diagnosesFacade.find(idCIE10_1));
+                    d = diagnosesFacade.find(idCIE10_1);
+                    addDiagnose = true;
+                    if (d != null) {
+                        for (int i = 0; i < diagnosesesList.size(); i++) {
+                            if (d.getDiagnosisId().compareTo(diagnosesesList.get(i).getDiagnosisId()) == 0) {
+                                addDiagnose = false;
+                                break;
+                            }
+                        }
+                        if (addDiagnose) {
+                            diagnosesesList.add(d);
+                        }
+                    }
                 }
                 if (idCIE10_2.trim().length() != 0) {
-                    diagnosesesList.add(diagnosesFacade.find(idCIE10_2));
+                    d = diagnosesFacade.find(idCIE10_2);
+                    addDiagnose = true;
+                    if (d != null) {
+                        for (int i = 0; i < diagnosesesList.size(); i++) {
+                            if (d.getDiagnosisId().compareTo(diagnosesesList.get(i).getDiagnosisId()) == 0) {
+                                addDiagnose = false;
+                                break;
+                            }
+                        }
+                        if (addDiagnose) {
+                            diagnosesesList.add(d);
+                        }
+                    }
+
                 }
                 if (idCIE10_3.trim().length() != 0) {
-                    diagnosesesList.add(diagnosesFacade.find(idCIE10_3));
+                    d = diagnosesFacade.find(idCIE10_3);
+                    addDiagnose = true;
+                    if (d != null) {
+                        for (int i = 0; i < diagnosesesList.size(); i++) {
+                            if (d.getDiagnosisId().compareTo(diagnosesesList.get(i).getDiagnosisId()) == 0) {
+                                addDiagnose = false;
+                                break;
+                            }
+                        }
+                        if (addDiagnose) {
+                            diagnosesesList.add(d);
+                        }
+                    }
+
                 }
                 if (idCIE10_4.trim().length() != 0) {
-                    diagnosesesList.add(diagnosesFacade.find(idCIE10_4));
+                    d = diagnosesFacade.find(idCIE10_4);
+                    addDiagnose = true;
+                    if (d != null) {
+                        for (int i = 0; i < diagnosesesList.size(); i++) {
+                            if (d.getDiagnosisId().compareTo(diagnosesesList.get(i).getDiagnosisId()) == 0) {
+                                addDiagnose = false;
+                                break;
+                            }
+                        }
+                        if (addDiagnose) {
+                            diagnosesesList.add(d);
+                        }
+                    }
                 }
                 newNonFatalInjuries.setDiagnosesList(diagnosesesList);
 
@@ -2620,7 +2672,6 @@ public class LcenfMB implements Serializable {
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                     //System.out.println("nuevo registro almacenado");
                 } else {//ES UN REGISTRO EXISTENTE SE DEBE ACTUALIZAR                    
-                    //System.out.println("actualizando registro existente");
                     if (currentNonFatalInjury.getNonFatalDomesticViolence() != null) {
                         nonFatalDomesticViolenceFacade.remove(currentNonFatalInjury.getNonFatalDomesticViolence());
                     }
@@ -2670,6 +2721,7 @@ public class LcenfMB implements Serializable {
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "REGISTRO ACTUALIZADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
+
                 }
                 return true;
             } catch (Exception e) {
@@ -2714,6 +2766,7 @@ public class LcenfMB implements Serializable {
     }
 
     public void saveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
+
         if (saveRegistry()) {
             newForm();
         }
@@ -3097,30 +3150,30 @@ public class LcenfMB implements Serializable {
 
     public void deleteRegistry() {
         if (currentNonFatalInjuriId != -1) {
-            if (currentNonFatalInjury.getNonFatalDomesticViolence() != null) {
-                nonFatalDomesticViolenceFacade.remove(currentNonFatalInjury.getNonFatalDomesticViolence());
+            if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentNonFatalInjury.getUserId().getUserId()) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+            } else {
+                if (currentNonFatalInjury.getNonFatalDomesticViolence() != null) {
+                    nonFatalDomesticViolenceFacade.remove(currentNonFatalInjury.getNonFatalDomesticViolence());
+                }
+                if (currentNonFatalInjury.getNonFatalInterpersonal() != null) {
+                    nonFatalInterpersonalFacade.remove(currentNonFatalInjury.getNonFatalInterpersonal());
+                }
+                if (currentNonFatalInjury.getNonFatalSelfInflicted() != null) {
+                    nonFatalSelfInflictedFacade.remove(currentNonFatalInjury.getNonFatalSelfInflicted());
+                }
+                if (currentNonFatalInjury.getNonFatalTransport() != null) {
+                    nonFatalTransportFacade.remove(currentNonFatalInjury.getNonFatalTransport());
+                }
+                nonFatalInjuriesFacade.remove(currentNonFatalInjury);
+                victimsFacade.remove(currentNonFatalInjury.getVictimId());
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+                //System.out.println("registro eliminado");
+                noSaveAndGoNew();
+                determinePosition();
             }
-            if (currentNonFatalInjury.getNonFatalInterpersonal() != null) {
-                nonFatalInterpersonalFacade.remove(currentNonFatalInjury.getNonFatalInterpersonal());
-            }
-            if (currentNonFatalInjury.getNonFatalSelfInflicted() != null) {
-                nonFatalSelfInflictedFacade.remove(currentNonFatalInjury.getNonFatalSelfInflicted());
-            }
-            if (currentNonFatalInjury.getNonFatalTransport() != null) {
-                nonFatalTransportFacade.remove(currentNonFatalInjury.getNonFatalTransport());
-            }
-            nonFatalInjuriesFacade.remove(currentNonFatalInjury);
-            victimsFacade.remove(currentNonFatalInjury.getVictimId());
-
-
-
-
-
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
-            //System.out.println("registro eliminado");
-            noSaveAndGoNew();
-            determinePosition();
         }
     }
 
@@ -3307,59 +3360,59 @@ public class LcenfMB implements Serializable {
     public List<String> suggestInsurances(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    insurance.insurance_name"
                     + " FROM "
                     + "    public.insurance"
                     + " WHERE "
-                    + "    insurance.insurance_name ILIKE '%"+entered+"%'"
+                    + "    insurance.insurance_name ILIKE '%" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
         }
         return list;
     }
-    
+
     public List<String> suggestJobs(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    jobs.job_name"
                     + " FROM "
                     + "    public.jobs"
                     + " WHERE "
-                    + "    jobs.job_name ILIKE '%"+entered+"%'"
+                    + "    jobs.job_name ILIKE '%" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
         }
         return list;
     }
-    
+
     public List<String> suggestNeighborhoods(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    neighborhoods.neighborhood_name"
                     + " FROM "
                     + "    public.neighborhoods"
                     + " WHERE "
-                    + "    neighborhoods.neighborhood_name ILIKE '"+entered+"%'"
+                    + "    neighborhoods.neighborhood_name ILIKE '" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
@@ -3370,17 +3423,17 @@ public class LcenfMB implements Serializable {
     public List<String> suggestCIE10(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    diagnoses.diagnosis_id"
                     + " FROM "
                     + "    public.diagnoses"
                     + " WHERE "
-                    + "    diagnoses.diagnosis_id ILIKE '"+entered+"%'"
+                    + "    diagnoses.diagnosis_id ILIKE '" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
@@ -3391,17 +3444,17 @@ public class LcenfMB implements Serializable {
     public List<String> suggestHealthProfessionals(String entered) {
         List<String> list = new ArrayList<String>();
         try {
-            ResultSet rs;            
-            String sql=""
+            ResultSet rs;
+            String sql = ""
                     + " SELECT "
                     + "    health_professionals.health_professional_name"
                     + " FROM "
                     + "    public.health_professionals"
                     + " WHERE "
-                    + "    health_professionals.health_professional_name ILIKE '%"+entered+"%'"
+                    + "    health_professionals.health_professional_name ILIKE '%" + entered + "%'"
                     + " LIMIT 10;";
-            rs=connectionJdbcMB.consult(sql);            
-            while(rs.next()){
+            rs = connectionJdbcMB.consult(sql);
+            while (rs.next()) {
                 list.add(rs.getString(1));
             }
         } catch (Exception e) {
@@ -5084,7 +5137,6 @@ public class LcenfMB implements Serializable {
 //    public SelectItem[] getJobs() {
 //        return jobs;
 //    }
-
     public boolean isNeighborhoodHomeNameDisabled() {
         return neighborhoodHomeNameDisabled;
     }
@@ -6610,7 +6662,6 @@ public class LcenfMB implements Serializable {
 //    public void setInsurances(SelectItem[] insurances) {
 //        this.insurances = insurances;
 //    }
-
     public String getCurrentInsurance() {
         return currentInsurance;
     }
