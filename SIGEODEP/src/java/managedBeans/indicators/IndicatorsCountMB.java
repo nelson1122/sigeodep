@@ -157,9 +157,11 @@ public class IndicatorsCountMB {
             }
         }
         createImage();
-    }
-
+    }   
+    
+    
     public void process() {
+        
         variablesCrossData = new ArrayList<Variable>();//lista de variables a cruzar            
         boolean continueProcess = true;
         message = null;

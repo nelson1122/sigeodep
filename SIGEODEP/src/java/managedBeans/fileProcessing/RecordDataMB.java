@@ -806,7 +806,7 @@ public class RecordDataMB implements Serializable {
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
-                newVictim.setVictimClass(Short.parseShort("1"));
+                newVictim.setVictimClass((short) 1);
                 FatalInjuries newFatalInjurie = new FatalInjuries();
                 newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
                 newFatalInjurie.setInputTimestamp(new Date());
@@ -1135,7 +1135,7 @@ public class RecordDataMB implements Serializable {
                 //UNION DE NOMBRES Y APELLIOS
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
-                    newVictim.setVictimName(name);
+                    newVictim.setVictimName(name.trim());
                 }
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
@@ -1198,10 +1198,8 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                     int newGenNnId = genNnFacade.findMax() + 1;
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn=" + newGenNnId);
-//                    GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
-//                    currentGenNn.setCodNn(genNnFacade.findMax() + 1);
-//                    genNnFacade.edit(currentGenNn);
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
+
                 } else {//HAY NUMERO DE IDENTIFICACION
                     if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
@@ -1278,7 +1276,7 @@ public class RecordDataMB implements Serializable {
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
-                newVictim.setVictimClass(Short.parseShort("1"));
+                newVictim.setVictimClass((short) 1);
                 FatalInjuries newFatalInjurie = new FatalInjuries();
                 newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
                 newFatalInjurie.setInputTimestamp(new Date());
@@ -1552,18 +1550,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                //ASIGNO LA NARRACION DE LOS HECHOS
-                if (narrative.trim().length() != 0) {
-                    newFatalInjurie.setInjuryDescription(narrative);
-                }
-                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
-                if (newVictim.getVictimNeighborhoodId() == null) {
-                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
-                }
-                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
-                if (newFatalInjurie.getInjuryNeighborhoodId() == null) {
-                    newFatalInjurie.setInjuryNeighborhoodId((int) 52001);
-                }
+
                 //SI NO HAY FECHA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
                 if (newFatalInjurie.getInjuryDate() == null) {
                     dia = haveData(dia);
@@ -1605,10 +1592,24 @@ public class RecordDataMB implements Serializable {
                         newFatalInjurie.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
                     }
                 }
+
+                //ASIGNO LA NARRACION DE LOS HECHOS
+                if (narrative.trim().length() != 0) {
+                    newFatalInjurie.setInjuryDescription(narrative);
+                }
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newVictim.getVictimNeighborhoodId() == null) {
+                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newFatalInjurie.getInjuryNeighborhoodId() == null) {
+                    newFatalInjurie.setInjuryNeighborhoodId((int) 52001);
+                }
+
                 //UNION DE NOMBRES Y APELLIOS
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
-                    newVictim.setVictimName(name);
+                    newVictim.setVictimName(name.trim());
                 }
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
@@ -1665,10 +1666,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                     int newGenNnId = genNnFacade.findMax() + 1;
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn=" + newGenNnId);
-//                    GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
-//                    currentGenNn.setCodNn(genNnFacade.findMax() + 1);
-//                    genNnFacade.edit(currentGenNn);
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 } else {//HAY NUMERO DE IDENTIFICACION
                     if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
@@ -1751,7 +1749,7 @@ public class RecordDataMB implements Serializable {
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
-                newVictim.setVictimClass(Short.parseShort("1"));
+                newVictim.setVictimClass((short) 1);
                 FatalInjuries newFatalInjurie = new FatalInjuries();
                 newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
                 newFatalInjurie.setInputTimestamp(new Date());
@@ -2073,7 +2071,7 @@ public class RecordDataMB implements Serializable {
                 //UNION DE NOMBRES Y APELLIOS
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
-                    newVictim.setVictimName(name);
+                    newVictim.setVictimName(name.trim());
                 }
 
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
@@ -2138,10 +2136,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                     int newGenNnId = genNnFacade.findMax() + 1;
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn=" + newGenNnId);
-//                    GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
-//                    currentGenNn.setCodNn(genNnFacade.findMax() + 1);
-//                    genNnFacade.edit(currentGenNn);
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 } else {//HAY NUMERO DE IDENTIFICACION
                     if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
@@ -2216,7 +2211,7 @@ public class RecordDataMB implements Serializable {
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
-                newVictim.setVictimClass(Short.parseShort("1"));
+                newVictim.setVictimClass((short) 1);
                 FatalInjuries newFatalInjurie = new FatalInjuries();
                 newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
                 newFatalInjurie.setInputTimestamp(new Date());
@@ -2536,7 +2531,7 @@ public class RecordDataMB implements Serializable {
                 //UNION DE NOMBRES Y APELLIOS
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
-                    newVictim.setVictimName(name);
+                    newVictim.setVictimName(name.trim());
                 }
 
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
@@ -2601,10 +2596,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                     int newGenNnId = genNnFacade.findMax() + 1;
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn=" + newGenNnId);
-//                    GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
-//                    currentGenNn.setCodNn(genNnFacade.findMax() + 1);
-//                    genNnFacade.edit(currentGenNn);
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 } else {//HAY NUMERO DE IDENTIFICACION
                     if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
@@ -2677,9 +2669,12 @@ public class RecordDataMB implements Serializable {
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
+
+
+
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
-                newVictim.setVictimClass(Short.parseShort("1"));
+                newVictim.setVictimClass((short) 1);
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
                 newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
@@ -2770,6 +2765,9 @@ public class RecordDataMB implements Serializable {
 
                     continueProcces = false;
                     if (value != null) {
+//                        if (value.compareTo("2012") == 0 || value.compareTo("2013") == 0) {
+//                            System.out.print("aqui");
+//                        }
                         if (value.trim().length() != 0) {
                             continueProcces = true;
                         }
@@ -3228,6 +3226,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case dia_evento://dia del evento
                                 dia = value;
+                                break;
                             case mes_evento://mes evento
                                 mes = value;
                                 break;
@@ -3270,6 +3269,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case año_consulta://año de la consulta
                                 ao1 = value;
+
                                 break;
                             case hora_militar_consulta:
                                 n = new Date();
@@ -3418,32 +3418,18 @@ public class RecordDataMB implements Serializable {
                             default:
                         }
                     }
-
                 }
 
-                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
-                if (newVictim.getVictimNeighborhoodId() == null) {
-                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
-                }
-                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
-                if (newNonFatalInjury.getInjuryNeighborhoodId() == null) {
-                    newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find((int) 52001));
-                }
-
-                //DATOS DE LA CONLUSTA..........................................
-                //SI NO HAY FECHA DE CONSULTA PASAR LA DE EVENTO
-                if (newNonFatalInjury.getCheckupDate() == null) {
-                    if (newNonFatalInjury.getInjuryDate() != null) {
-                        newNonFatalInjury.setCheckupDate(newNonFatalInjury.getInjuryDate());
-                    }
-                }
-                //SI NO HAY HORA DE CONSULTA PASAR LA DE EVENTO
-                if (newNonFatalInjury.getCheckupTime() == null) {
-                    if (newNonFatalInjury.getInjuryTime() != null) {
-                        newNonFatalInjury.setCheckupTime(newNonFatalInjury.getInjuryTime());
-                    }
-                }
-
+//                if (newNonFatalInjury.getInjuryDate() == null) {
+//                    if (tuplesProcessed == 2417
+//                            || tuplesProcessed == 2420
+//                            || tuplesProcessed == 2421
+//                            || tuplesProcessed == 2438
+//                            || tuplesProcessed == 2453
+//                            || tuplesProcessed == 2455) {
+//                        System.out.print("");
+//                    }
+//                }
                 //SI NO HAY FECHA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
                 if (newNonFatalInjury.getCheckupDate() == null) {
                     dia1 = haveData(dia1);
@@ -3477,22 +3463,6 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setCheckupTime(currentDate);
                     }
                 }
-
-                //DATOS PARA EL EVENTO..........................................
-                //SI NO HAY FECHA DE EVENTO PASAR LA DE CONSULTA
-                if (newNonFatalInjury.getInjuryDate() == null) {
-                    if (newNonFatalInjury.getCheckupDate() != null) {
-                        newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
-                    }
-                }
-
-                //SI NO HAY HORA DE EVENTO PASAR LA DE CONSULTA
-                if (newNonFatalInjury.getInjuryTime() == null) {
-                    if (newNonFatalInjury.getCheckupTime() != null) {
-                        newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
-                    }
-                }
-
 
                 //SI NO HAY FECHA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
                 if (newNonFatalInjury.getInjuryDate() == null) {
@@ -3542,6 +3512,35 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
                     }
                 }
+
+
+                //SI NO HAY FECHA DE EVENTO PASAR LA DE CONSULTA
+                if (newNonFatalInjury.getInjuryDate() == null) {
+                    if (newNonFatalInjury.getCheckupDate() != null) {
+                        newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
+                    }
+                }
+
+                //SI NO HAY HORA DE EVENTO PASAR LA DE CONSULTA
+                if (newNonFatalInjury.getInjuryTime() == null) {
+                    if (newNonFatalInjury.getCheckupTime() != null) {
+                        newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
+                    }
+                }
+
+                //SI NO HAY FECHA DE CONSULTA PASAR LA DE EVENTO
+                if (newNonFatalInjury.getCheckupDate() == null) {
+                    if (newNonFatalInjury.getInjuryDate() != null) {
+                        newNonFatalInjury.setCheckupDate(newNonFatalInjury.getInjuryDate());
+                    }
+                }
+                //SI NO HAY HORA DE CONSULTA PASAR LA DE EVENTO
+                if (newNonFatalInjury.getCheckupTime() == null) {
+                    if (newNonFatalInjury.getInjuryTime() != null) {
+                        newNonFatalInjury.setCheckupTime(newNonFatalInjury.getInjuryTime());
+                    }
+                }
+
                 //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
                 if (newNonFatalInjury.getInjuryDate() != null) {
                     if (newNonFatalInjury.getInjuryDayOfWeek() == null) {
@@ -3551,10 +3550,19 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newVictim.getVictimNeighborhoodId() == null) {
+                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newNonFatalInjury.getInjuryNeighborhoodId() == null) {
+                    newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+
                 //UNION DE NOMBRES Y APELLIOS
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
-                    newVictim.setVictimName(name);
+                    newVictim.setVictimName(name.trim());
                 }
 
                 //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
@@ -3626,10 +3634,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                     int newGenNnId = genNnFacade.findMax() + 1;
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn=" + newGenNnId);
-//                    GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
-//                    currentGenNn.setCodNn(genNnFacade.findMax() + 1);
-//                    genNnFacade.edit(currentGenNn);
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 } else {//HAY NUMERO DE IDENTIFICACION
                     if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
@@ -3695,6 +3700,12 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
+                if (newNonFatalInjury.getInjuryDate() != null) {
+                    if (newNonFatalInjury.getInjuryDate().getYear() + 1900 != 2011) {
+                        System.out.print("aqui el error se guarda");
+                    }
+                }
+
                 //PERSISTO//////////////////////////////////////////////////////
                 try {
 
@@ -3722,9 +3733,21 @@ public class RecordDataMB implements Serializable {
                 } catch (Exception e) {
                     System.out.println("Error 22 en " + this.getClass().getName() + ":" + e.toString());
                 }
+
                 tuplesProcessed++;
                 progress = (int) (tuplesProcessed * 100) / tuplesNumber;
-                System.out.println("PROGRESO INGRESANDO LCENF: " + String.valueOf(progress));
+                //System.out.println("PROGRESO INGRESANDO LCENF: " + String.valueOf(progress));
+                ResultSet rs = connectionJdbcMB.consult("select count(*) from victims where tag_id = " + newVictim.getTagId().getTagId());
+                if (rs.next()) {
+                    if (tuplesProcessed != rs.getInt(1)) {
+                        System.out.println("FALLO " + String.valueOf(progress));
+                    } else {
+                        System.out.println("CORRECTO " + String.valueOf(progress));
+                    }
+                }
+                if (tuplesProcessed > 2460) {
+                    break;
+                }
             }
             progress = 100;
             System.out.println("PROGRESO INGRESANDO LCENF: " + String.valueOf(progress));
@@ -3763,7 +3786,7 @@ public class RecordDataMB implements Serializable {
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
-                newVictim.setVictimClass(Short.parseShort("1"));
+                newVictim.setVictimClass((short) 1);
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
@@ -4307,27 +4330,6 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
-                if (newVictim.getVictimNeighborhoodId() == null) {
-                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
-                }
-                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
-                if (newNonFatalInjury.getInjuryNeighborhoodId() == null) {
-                    newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find((int) 52001));
-                }
-                //DATOS DE LA CONLUSTA..........................................
-                //SI NO HAY FECHA DE CONSULTA PASAR LA DE EVENTO
-                if (newNonFatalInjury.getCheckupDate() == null) {
-                    if (newNonFatalInjury.getInjuryDate() != null) {
-                        newNonFatalInjury.setCheckupDate(newNonFatalInjury.getInjuryDate());
-                    }
-                }
-                //SI NO HAY HORA DE CONSULTA PASAR LA DE EVENTO
-                if (newNonFatalInjury.getCheckupTime() == null) {
-                    if (newNonFatalInjury.getInjuryTime() != null) {
-                        newNonFatalInjury.setCheckupTime(newNonFatalInjury.getInjuryTime());
-                    }
-                }
                 //SI NO HAY FECHA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
                 if (newNonFatalInjury.getCheckupDate() == null) {
                     dia1 = haveData(dia1);
@@ -4361,19 +4363,8 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setCheckupTime(currentDate);
                     }
                 }
-                //DATOS PARA EL EVENTO..........................................
-                //SI NO HAY FECHA DE EVENTO PASAR LA DE CONSULTA
-                if (newNonFatalInjury.getInjuryDate() == null) {
-                    if (newNonFatalInjury.getCheckupDate() != null) {
-                        newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
-                    }
-                }
-                //SI NO HAY HORA DE EVENTO PASAR LA DE CONSULTA
-                if (newNonFatalInjury.getInjuryTime() == null) {
-                    if (newNonFatalInjury.getCheckupTime() != null) {
-                        newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
-                    }
-                }
+
+
                 //SI NO HAY FECHA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
                 if (newNonFatalInjury.getInjuryDate() == null) {
                     dia = haveData(dia);
@@ -4407,6 +4398,32 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setInjuryTime(currentDate);
                     }
                 }
+                //SI NO HAY FECHA DE CONSULTA PASAR LA DE EVENTO
+                if (newNonFatalInjury.getCheckupDate() == null) {
+                    if (newNonFatalInjury.getInjuryDate() != null) {
+                        newNonFatalInjury.setCheckupDate(newNonFatalInjury.getInjuryDate());
+                    }
+                }
+                //SI NO HAY HORA DE CONSULTA PASAR LA DE EVENTO
+                if (newNonFatalInjury.getCheckupTime() == null) {
+                    if (newNonFatalInjury.getInjuryTime() != null) {
+                        newNonFatalInjury.setCheckupTime(newNonFatalInjury.getInjuryTime());
+                    }
+                }
+
+                //SI NO HAY FECHA DE EVENTO PASAR LA DE CONSULTA
+                if (newNonFatalInjury.getInjuryDate() == null) {
+                    if (newNonFatalInjury.getCheckupDate() != null) {
+                        newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
+                    }
+                }
+                //SI NO HAY HORA DE EVENTO PASAR LA DE CONSULTA
+                if (newNonFatalInjury.getInjuryTime() == null) {
+                    if (newNonFatalInjury.getCheckupTime() != null) {
+                        newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
+                    }
+                }
+
                 //SI LA HORA DE LA CONSULTA ES 0000 PASAR LA HORA DEL EVENTO A LA DE LA CONSULTA
                 if (newNonFatalInjury.getCheckupTime() != null) {
                     if (newNonFatalInjury.getInjuryTime() != null) {
@@ -4419,6 +4436,7 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
                     }
                 }
+
                 //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
                 if (newNonFatalInjury.getInjuryDate() != null) {
                     if (newNonFatalInjury.getInjuryDayOfWeek() == null) {
@@ -4427,10 +4445,21 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
                     }
                 }
+
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newVictim.getVictimNeighborhoodId() == null) {
+                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newNonFatalInjury.getInjuryNeighborhoodId() == null) {
+                    newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+
+
                 //UNION DE NOMBRES Y APELLIOS
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
-                    newVictim.setVictimName(name);
+                    newVictim.setVictimName(name.trim());
                 }
 
                 //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
@@ -4501,10 +4530,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                     int newGenNnId = genNnFacade.findMax() + 1;
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn=" + newGenNnId);
-//                    GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
-//                    currentGenNn.setCodNn(genNnFacade.findMax() + 1);
-//                    genNnFacade.edit(currentGenNn);
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 } else {//HAY NUMERO DE IDENTIFICACION
                     if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
@@ -4569,6 +4595,8 @@ public class RecordDataMB implements Serializable {
                 tuplesProcessed++;
                 progress = (int) (tuplesProcessed * 100) / tuplesNumber;
                 System.out.println("PROGRESO INGRESANDO VIF: " + String.valueOf(progress));
+
+
             }
             progress = 100;
             System.out.println("PROGRESO INGRESANDO VIF: " + String.valueOf(progress));
@@ -4577,6 +4605,31 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 26 en " + this.getClass().getName() + ":" + ex.toString());
         } catch (Exception ex) {
             System.out.println("Error 27 en " + this.getClass().getName() + ":" + ex.toString());
+        }
+    }
+
+    public void corregirDB() {
+        try {
+            //DETERMINAR EN CUANTO ESTA GEN_NN
+
+            ResultSet rs = connectionJdbcMB.consult("Select * from victims where victim_nid is null");
+            boolean determinada;
+            while (rs.next()) {
+                determinada = false;
+                if (rs.getString("victim_age") != null && rs.getString("victim_age").length() != 0) {
+                    if (rs.getString("age_type_id") != null && rs.getString("age_type_id").length() != 0 && rs.getString("age_type_id").compareTo("1") == 0) {
+                    }
+                }
+                if (determinada == false) {
+                    connectionJdbcMB.consult("UPDATE victims SET  where victim_nid is null");
+                    //ACtUALIZAR victim class                    
+                    //victim id
+                    //type_id
+                }
+            }
+            //actuañizar GEN_NN
+
+        } catch (Exception e) {
         }
     }
 
@@ -4605,7 +4658,7 @@ public class RecordDataMB implements Serializable {
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
-                newVictim.setVictimClass(Short.parseShort("1"));
+                newVictim.setVictimClass((short) 1);
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
 
@@ -4942,14 +4995,6 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
-                if (newVictim.getVictimNeighborhoodId() == null) {
-                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
-                }
-                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
-                if (newNonFatalInjury.getInjuryNeighborhoodId() == null) {
-                    newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find((int) 52001));
-                }
                 //DATOS DE LA CONLUSTA..........................................
                 //SI NO HAY FECHA DE CONSULTA PASAR LA DE EVENTO
                 if (newNonFatalInjury.getCheckupDate() == null) {
@@ -4957,6 +5002,7 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setCheckupDate(newNonFatalInjury.getInjuryDate());
                     }
                 }
+
                 //SI NO HAY HORA DE CONSULTA PASAR LA DE EVENTO
                 if (newNonFatalInjury.getCheckupTime() == null) {
                     if (newNonFatalInjury.getInjuryTime() != null) {
@@ -5054,6 +5100,7 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
                     }
                 }
+
                 //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
                 if (newNonFatalInjury.getInjuryDate() != null) {
                     if (newNonFatalInjury.getInjuryDayOfWeek() == null) {
@@ -5062,10 +5109,18 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
                     }
                 }
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newVictim.getVictimNeighborhoodId() == null) {
+                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newNonFatalInjury.getInjuryNeighborhoodId() == null) {
+                    newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
                 //UNION DE NOMBRES Y APELLIOS
                 name = name + " " + surname;
                 if (name.trim().length() > 1) {
-                    newVictim.setVictimName(name);
+                    newVictim.setVictimName(name.trim());
                 }
 
                 //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
@@ -5136,10 +5191,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                     int newGenNnId = genNnFacade.findMax() + 1;
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn=" + newGenNnId);
-//                    GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
-//                    currentGenNn.setCodNn(genNnFacade.findMax() + 1);
-//                    genNnFacade.edit(currentGenNn);
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 } else {//HAY NUMERO DE IDENTIFICACION
                     if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
                         newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar

@@ -69,15 +69,15 @@ public class LoginMB {
         }
     }
 
-    public void newWindow2() {
-        try {
-            ExternalContext ext = FacesContext.getCurrentInstance().getExternalContext();
-            String ctxPath = ((ServletContext) ext.getContext()).getContextPath();
-            //return ctxPath + "/index.html?v=timeout";//System.out.println("enviado a: " + ctxPath + "/index.html?v=timeout");        
-            ext.redirect(ctxPath + "/index.html?v=close");
-        } catch (Exception ex) {//System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
-        }
-    }
+//    public void newWindow2() {
+//        try {
+//            ExternalContext ext = FacesContext.getCurrentInstance().getExternalContext();
+//            String ctxPath = ((ServletContext) ext.getContext()).getContextPath();
+//            //return ctxPath + "/index.html?v=timeout";//System.out.println("enviado a: " + ctxPath + "/index.html?v=timeout");        
+//            ext.redirect(ctxPath + "/index.html?v=close");
+//        } catch (Exception ex) {//System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
+//        }
+//    }
 
     public void logout1() {//fin de session por que se inicio una nueva session en otro equipo      
         applicationControlMB.removeSession(idSession);
@@ -133,8 +133,6 @@ public class LoginMB {
     private String continueLogin() {
         FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", loginname);
         HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
-
-
         String[] splitPermissions = currentUser.getPermissions().split("\t");
         for (int i = 0; i < splitPermissions.length; i++) {
             if (splitPermissions[i].compareTo("1") == 0) {

@@ -2520,9 +2520,7 @@ public class LcenfMB implements Serializable {
                         newNonFatalInjuries.setInjuryTime(newNonFatalInjuries.getCheckupTime());
                     }
                 }
-
-
-
+                
                 //SI LA HORA DE LA CONSULTA ES 0000 PASAR LA HORA DEL EVENTO A LA DE LA CONSULTA
                 if (newNonFatalInjuries.getCheckupTime() != null) {
                     if (newNonFatalInjuries.getInjuryTime() != null) {
@@ -2590,15 +2588,17 @@ public class LcenfMB implements Serializable {
                     }
                 }
                 //SI EXISTE EDAD Y NO HAY TIPO DE EDAD DETERMINARLA EN AÑOS
-
+                newVictim.setVictimClass((short) 1);
+                if(newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
+                    newVictim.setVictimNid(null);
+                }
                 //DETERMINAR EL NUMERO DE IDENTIFICACION
                 if (newVictim.getVictimNid() == null) {
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
                     newVictim.setVictimClass((short) 2);//nn
-                    newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion
-                    GenNn currentGenNn = genNnFacade.find(genNnFacade.findMax());
-                    currentGenNn.setCodNn(genNnFacade.findMax() + 1);
-                    genNnFacade.edit(currentGenNn);
+                    newVictim.setTypeId(null);
+                    int newGenNnId = genNnFacade.findMax() + 1;                    
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = "+newGenNnId+" where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");                    
                 }
 
 

@@ -112,15 +112,10 @@ public class HomicideMB implements Serializable {
     private Short currentMeasureOfAge;
     private String currentAge = "";
     private boolean valueAgeDisabled = true;
-    //------------------
-//    @EJB
-//    StateTimeFacade stateTimeFacade;
-//    @EJB
-//    StateDateFacade stateDateFacade;
-//    private SelectItem[] stateDateList;
-//    private SelectItem[] stateTimeList;    
-//    private Short currentStateDate = 1;    
-//    private Short currentStateTime = 1;    
+    //--------------------
+    @EJB
+    GenNnFacade genNnFacade;
+    //--------------------
     private boolean strangerDisabled = true;
     private boolean currentDayEventDisabled = false;
     private boolean currentMonthEventDisabled = false;
@@ -779,6 +774,45 @@ public class HomicideMB implements Serializable {
                 }
                 //******fatal_injury_id
                 newMurder.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
+                
+                //--------------------------------------------------------------
+                //--------------AUTOCOMPLETAR LOS FORMULARIOS-------------------
+                newVictim.setVictimClass((short) 1);
+                //DETERMINAR EL NUMERO DE IDENTIFICACION
+                if(newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
+                    newVictim.setVictimNid(null);
+                }
+                if (newVictim.getVictimNid() == null) {
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
+                    newVictim.setVictimClass((short) 2);//nn
+                    newVictim.setTypeId(null);
+                    int newGenNnId = genNnFacade.findMax() + 1;                    
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = "+newGenNnId+" where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");                    
+                }
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newVictim.getVictimNeighborhoodId() == null) {
+                    newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
+                }
+                //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
+                if (newFatalInjurie.getInjuryNeighborhoodId() == null) {
+                    newFatalInjurie.setInjuryNeighborhoodId((int) 52001);
+                }
+                //DETERMINAR TIPO DE IDENTIFICACION
+                if (newVictim.getVictimNid() != null) {
+                    if (newVictim.getTypeId() == null) {
+                        //si tiene edad menor o mayor sin identificacion, si no hay edad dejar sin determinar
+                        if (newVictim.getVictimAge() != null) {
+                            if (newVictim.getVictimAge() >= 18) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//6. ADULTO SIN IDENTIFICACION
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//7. MENOR SIN IDENTIFICACION
+                            }
+                        } else {
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
+                        }
+                    }
+                }
+                
                 //-------------------GUARDAR----------------------------
                 //if (validationsErrors.isEmpty()) {
                 openDialogFirst = "";

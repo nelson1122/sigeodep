@@ -35,8 +35,10 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Victims.findByResidenceMunicipality", query = "SELECT v FROM Victims v WHERE v.residenceMunicipality = :residenceMunicipality")})
 public class Victims implements Serializable {
     private static final long serialVersionUID = 1L;
-    @Size(max = 20)
-    @Column(name = "victim_nid", length = 20)
+//    @Size(max = 20)
+//    @Column(name = "victim_nid", length = 20)
+    @Size(max = 2147483647)
+    @Column(name = "victim_nid", length = 2147483647)
     private String victimNid;
     @Size(max = 2147483647)
     @Column(name = "victim_name", length = 2147483647)
@@ -45,8 +47,10 @@ public class Victims implements Serializable {
     private Short victimAge;
     @Column(name = "age_type_id")
     private Short ageTypeId;
-    @Size(max = 20)
-    @Column(name = "victim_telephone", length = 20)
+    //@Size(max = 20)
+    //@Column(name = "victim_telephone", length = 20)
+    @Size(max = 2147483647)
+    @Column(name = "victim_telephone", length = 2147483647)
     private String victimTelephone;
     @Size(max = 2147483647)
     @Column(name = "victim_address", length = 2147483647)
