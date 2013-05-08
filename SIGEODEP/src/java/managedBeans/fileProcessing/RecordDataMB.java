@@ -2777,7 +2777,7 @@ public class RecordDataMB implements Serializable {
                             // ************************************************DATOS PARA LA TABLA victims                                
                             case primer_nombre:
                                 if (name.trim().length() != 0) {
-                                    name = name + " " + value;
+                                    name = value + " " + name;
                                 } else {
                                     name = value;
                                 }
@@ -2791,7 +2791,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case primer_apellido:
                                 if (surname.trim().length() != 0) {
-                                    surname = surname + " " + value;
+                                    surname = value + " " + surname;
                                 } else {
                                     surname = value;
                                 }
@@ -3740,14 +3740,14 @@ public class RecordDataMB implements Serializable {
                 ResultSet rs = connectionJdbcMB.consult("select count(*) from victims where tag_id = " + newVictim.getTagId().getTagId());
                 if (rs.next()) {
                     if (tuplesProcessed != rs.getInt(1)) {
-                        System.out.println("FALLO " + String.valueOf(progress));
+                        System.out.println("FALLO " + String.valueOf(progress) + "% registros:" + tuplesProcessed);
                     } else {
-                        System.out.println("CORRECTO " + String.valueOf(progress));
+                        System.out.println(String.valueOf(progress) + "% registros:" + tuplesProcessed);
                     }
                 }
-                if (tuplesProcessed > 2460) {
-                    break;
-                }
+//                if (tuplesProcessed > 2460) {
+//                    break;
+//                }
             }
             progress = 100;
             System.out.println("PROGRESO INGRESANDO LCENF: " + String.valueOf(progress));
@@ -3884,7 +3884,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case primer_apellido:
                                 if (surname.trim().length() != 0) {
-                                    surname = surname + " " + value;
+                                    surname = value + " " + surname;
                                 } else {
                                     surname = value;
                                 }
@@ -3898,7 +3898,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case primer_nombre:
                                 if (name.trim().length() != 0) {
-                                    name = name + " " + value;
+                                    name = value + " " + name;
                                 } else {
                                     name = value;
                                 }
@@ -4754,7 +4754,7 @@ public class RecordDataMB implements Serializable {
                             // ************************************************DATOS PARA LA TABLA victims                                
                             case primer_apellido:
                                 if (surname.trim().length() != 0) {
-                                    surname = surname + " " + value;
+                                    surname = value + " " + surname;
                                 } else {
                                     surname = value;
                                 }
@@ -4768,7 +4768,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case primer_nombre:
                                 if (name.trim().length() != 0) {
-                                    name = name + " " + value;
+                                    name = value + " " + name;
                                 } else {
                                     name = value;
                                 }
