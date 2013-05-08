@@ -1182,12 +1182,11 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-
                     if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
-                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
                             if (newVictim.getVictimAge() > 17) {
                                 newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
                             } else {
@@ -1199,10 +1198,17 @@ public class RecordDataMB implements Serializable {
                     }
                     int newGenNnId = genNnFacade.findMax() + 1;
                     connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
-
                 } else {//HAY NUMERO DE IDENTIFICACION
-                    if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
-                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
                     }
                 }
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
@@ -1650,12 +1656,11 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-
                     if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
-                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
                             if (newVictim.getVictimAge() > 17) {
                                 newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
                             } else {
@@ -1668,8 +1673,16 @@ public class RecordDataMB implements Serializable {
                     int newGenNnId = genNnFacade.findMax() + 1;
                     connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 } else {//HAY NUMERO DE IDENTIFICACION
-                    if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
-                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
                     }
                 }
 
@@ -2120,12 +2133,11 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-
                     if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
-                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
                             if (newVictim.getVictimAge() > 17) {
                                 newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
                             } else {
@@ -2138,8 +2150,16 @@ public class RecordDataMB implements Serializable {
                     int newGenNnId = genNnFacade.findMax() + 1;
                     connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 } else {//HAY NUMERO DE IDENTIFICACION
-                    if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
-                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
                     }
                 }
 
@@ -2580,12 +2600,11 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-
                     if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
-                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
                             if (newVictim.getVictimAge() > 17) {
                                 newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
                             } else {
@@ -2598,8 +2617,16 @@ public class RecordDataMB implements Serializable {
                     int newGenNnId = genNnFacade.findMax() + 1;
                     connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 } else {//HAY NUMERO DE IDENTIFICACION
-                    if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
-                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
                     }
                 }
 
@@ -3617,30 +3644,7 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-
-                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
-                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
-                    newVictim.setVictimClass((short) 2);//nn
-
-                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
-                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
-                            if (newVictim.getVictimAge() > 17) {
-                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
-                            } else {
-                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
-                            }
-                        } else {//NO HAY EDAD
-                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
-                        }
-                    }
-                    int newGenNnId = genNnFacade.findMax() + 1;
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
-                } else {//HAY NUMERO DE IDENTIFICACION
-                    if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
-                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
-                    }
-                }
-
+                
                 //AGREGO LAS LISTAS NO VACIAS///////////////////////////////////
                 if (!anatomicalLocationsList.isEmpty()) {
                     newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
@@ -3678,7 +3682,36 @@ public class RecordDataMB implements Serializable {
                 if (newNonFatalInjury.getInjuryId().getInjuryId() == (short) 53) {//53 ES POR QUE ES VIF 
                     newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 55));//CAMBIA A 55 PARA SER VIF INGRESADA DESDE LCENF
                 }
-
+                
+                if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
+                    newVictim.setVictimClass((short) 2);//nn
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
+                    int newGenNnId = genNnFacade.findMax() + 1;
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
+                } else {//HAY NUMERO DE IDENTIFICACION
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
+                }
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
                 if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
                     if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad
@@ -4513,31 +4546,6 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-
-                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
-                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
-                    newVictim.setVictimClass((short) 2);//nn
-
-                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
-                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
-                            if (newVictim.getVictimAge() > 17) {
-                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
-                            } else {
-                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
-                            }
-                        } else {//NO HAY EDAD
-                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
-                        }
-                    }
-                    int newGenNnId = genNnFacade.findMax() + 1;
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
-                } else {//HAY NUMERO DE IDENTIFICACION
-                    if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
-                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
-                    }
-                }
-
-
                 //agrego las listas las listas
                 if (!anatomicalLocationsList.isEmpty()) {
                     newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
@@ -4559,6 +4567,36 @@ public class RecordDataMB implements Serializable {
                 }
                 newNonFatalInjury.setInjuryId(injuriesFacade.find(Short.parseShort("53")));
 
+                if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
+                    newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
+                    newVictim.setVictimClass((short) 2);//nn
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
+                    int newGenNnId = genNnFacade.findMax() + 1;
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
+                } else {//HAY NUMERO DE IDENTIFICACION
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
+                    }
+                }
+                
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
                 if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
                     if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad
@@ -4667,35 +4705,15 @@ public class RecordDataMB implements Serializable {
                 SivigilaEvent newSivigilaEvent = new SivigilaEvent(newNonFatalInjury.getNonFatalInjuryId());
                 SivigilaVictim newSivigilaVictim = new SivigilaVictim(sivigilaVictimFacade.findMax() + 1);
                 SivigilaAggresor newSivigilaAggresor = new SivigilaAggresor(sivigilaAggresorFacade.findMax() + 1);
-
                 newNonFatalInjury.setInputTimestamp(new Date());
-                //actionsToTakeList = new ArrayList<ActionsToTake>();
-                //anatomicalLocationsList = new ArrayList<AnatomicalLocations>();
                 List<AbuseTypes> abuseTypesList = new ArrayList<AbuseTypes>();
                 List<PublicHealthActions> publicHealthActionsList = new ArrayList<PublicHealthActions>();
-                //aggressorTypesList = new ArrayList<AggressorTypes>();
-                //othersList = new ArrayList<Others>();
-                //diagnosesList = new ArrayList<Diagnoses>();//lista non_fatal_diagnosis
                 List<VulnerableGroups> vulnerableGroupList = new ArrayList<VulnerableGroups>();// lista vector victim_vulnerable_group
 
                 value = "";
                 name = "";
                 surname = "";
-                //dia = "";//dia evento
-                //mes = "";//mes evento
-                //ao = "";//año del evento
-                //diacon = "";//dia de la semana cnsulta                                
-                //dia1 = "";//dia de la consulta
-                //mes1 = "";//mes de la consulta
-                //ao1 = "";//año de la consulta
-                //horas = "";//hora evento
-                //minutos = "";//minuto evento
-                //ampm = "";//ampm evento
-                //horas1 = "";//hora consulta
-                // minutos1 = "";//minuto consulta
-                //ampm1 = "";//ampm consulta
-                //hourInt = 0;
-                //minuteInt = 0;
+                
                 Object[] arrayInJava = (Object[]) resultSetFileData.getArray(3).getArray();
                 for (int posCol = 0; posCol < arrayInJava.length; posCol++) {
                     value = null;
@@ -5008,98 +5026,7 @@ public class RecordDataMB implements Serializable {
                     if (newNonFatalInjury.getInjuryTime() != null) {
                         newNonFatalInjury.setCheckupTime(newNonFatalInjury.getInjuryTime());
                     }
-                }
-                //SI NO HAY FECHA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
-//                if (newNonFatalInjury.getCheckupDate() == null) {
-//                    dia1 = haveData(dia1);
-//                    mes1 = haveData(mes1);
-//                    ao1 = haveData(ao1);
-//                    if (dia1 != null && mes1 != null && ao1 != null) {
-//                        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
-//                        Date fechaI;
-//                        fechaI = formato.parse(dia1 + "/" + mes1 + "/" + ao1);
-//                        newNonFatalInjury.setCheckupDate(fechaI);
-//                    }
-//                }
-                //SI NO HAY HORA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
-//                if (newNonFatalInjury.getCheckupTime() == null) {
-//                    horas1 = haveData(horas1);
-//                    minutos1 = haveData(minutos1);
-//                    ampm1 = haveData(ampm1);
-//                    if (horas1 != null && minutos1 != null && ampm1 != null) {
-//                        hourInt = Integer.parseInt(horas1);
-//                        minuteInt = Integer.parseInt(minutos1);
-//                        if (ampm1.compareTo("2") == 0) {
-//                            hourInt = hourInt + 12;
-//                            if (hourInt == 24) {
-//                                hourInt = 0;
-//                            }
-//                        }
-//                        currentDate = new Date();
-//                        currentDate.setHours(hourInt);
-//                        currentDate.setMinutes(minuteInt);
-//                        currentDate.setSeconds(0);
-//                        newNonFatalInjury.setCheckupTime(currentDate);
-//                    }
-//                }
-                //DATOS PARA EL EVENTO..........................................
-                //SI NO HAY FECHA DE EVENTO PASAR LA DE CONSULTA
-                if (newNonFatalInjury.getInjuryDate() == null) {
-                    if (newNonFatalInjury.getCheckupDate() != null) {
-                        newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
-                    }
-                }
-                //SI NO HAY HORA DE EVENTO PASAR LA DE CONSULTA
-                if (newNonFatalInjury.getInjuryTime() == null) {
-                    if (newNonFatalInjury.getCheckupTime() != null) {
-                        newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
-                    }
-                }
-                //SI NO HAY FECHA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
-//                if (newNonFatalInjury.getInjuryDate() == null) {
-//                    dia = haveData(dia);
-//                    mes = haveData(mes);
-//                    ao = haveData(ao);
-//                    if (dia != null && mes != null && ao != null) {
-//                        SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
-//                        Date fechaI;
-//                        fechaI = formato.parse(dia + "/" + mes + "/" + ao);
-//                        newNonFatalInjury.setInjuryDate(fechaI);
-//                    }
-//                }
-                //SI NO HAY HORA DE EVENTO TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
-//                if (newNonFatalInjury.getInjuryTime() == null) {
-//                    horas = haveData(horas);
-//                    minutos = haveData(minutos);
-//                    ampm = haveData(ampm);
-//                    if (horas != null && minutos != null && ampm != null) {
-//                        hourInt = Integer.parseInt(horas);
-//                        minuteInt = Integer.parseInt(minutos);
-//                        if (ampm.compareTo("2") == 0) {
-//                            hourInt = hourInt + 12;
-//                            if (hourInt == 24) {
-//                                hourInt = 0;
-//                            }
-//                        }
-//                        currentDate = new Date();
-//                        currentDate.setHours(hourInt);
-//                        currentDate.setMinutes(minuteInt);
-//                        currentDate.setSeconds(0);
-//                        newNonFatalInjury.setInjuryTime(currentDate);
-//                    }
-//                }
-                //SI LA HORA DE LA CONSULTA ES 0000 PASAR LA HORA DEL EVENTO A LA DE LA CONSULTA
-                if (newNonFatalInjury.getCheckupTime() != null) {
-                    if (newNonFatalInjury.getInjuryTime() != null) {
-                        int hour = newNonFatalInjury.getInjuryTime().getHours();
-                        int minute = newNonFatalInjury.getInjuryTime().getMinutes();
-                        if (hour == 0 && minute == 0) {
-                            newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
-                        }
-                    } else {
-                        newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
-                    }
-                }
+                }                
 
                 //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
                 if (newNonFatalInjury.getInjuryDate() != null) {
@@ -5160,27 +5087,28 @@ public class RecordDataMB implements Serializable {
                                 }
                                 newVictim.setVictimAge((short) ageYears);
                                 newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
-//                                if (newVictim.getTypeId() == null) {
-//                                    if (ageYears >= 18) {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-//                                    } else {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-//                                    }
-//                                }
                             }
                         } catch (Exception ex) {
                             System.out.println("Error 28 en " + this.getClass().getName() + ":" + ex.toString());
                         }
                     }
                 }
-
-
-                if (newVictim.getVictimNid() == null) {//SI NO HAY NUMERO DE IDENTIFICACION 
+                
+                //agrego las listas las listas
+                if (!publicHealthActionsList.isEmpty()) {
+                    newSivigilaEvent.setPublicHealthActionsList(publicHealthActionsList);
+                }
+                if (!abuseTypesList.isEmpty()) {
+                    newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                }
+                
+                newNonFatalInjury.setInjuryId(injuriesFacade.find(Short.parseShort("56")));
+                
+                if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
-
                     if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
-                        if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad                            
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
                             if (newVictim.getVictimAge() > 17) {
                                 newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
                             } else {
@@ -5193,31 +5121,18 @@ public class RecordDataMB implements Serializable {
                     int newGenNnId = genNnFacade.findMax() + 1;
                     connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 } else {//HAY NUMERO DE IDENTIFICACION
-                    if (newVictim.getTypeId() == null) {//NO HAY TIPO DE IDENTIFICACION
-                        newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                    if (newVictim.getTypeId() == null) {//no hay tipo de identificacion
+                        if (newVictim.getVictimAge() != null && newVictim.getAgeTypeId() != null && newVictim.getAgeTypeId() == 1) {//HAY EDAD Y HAY tipo de edad                            
+                            if (newVictim.getVictimAge() > 17) {
+                                newVictim.setTypeId(idTypesFacade.find((short) 6));//adulto sin identificacion                                
+                            } else {
+                                newVictim.setTypeId(idTypesFacade.find((short) 7));//menor sin identificacion
+                            }
+                        } else {//NO HAY EDAD
+                            newVictim.setTypeId(idTypesFacade.find((short) 9));//tipo de identificacoin sin determinar
+                        }
                     }
                 }
-
-                //agrego las listas las listas
-                if (!publicHealthActionsList.isEmpty()) {
-                    newSivigilaEvent.setPublicHealthActionsList(publicHealthActionsList);
-                }
-                if (!abuseTypesList.isEmpty()) {
-                    newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
-                }
-//                if (!aggressorTypesList.isEmpty()) {
-//                    newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
-//                }
-//                if (!actionsToTakeList.isEmpty()) {
-//                    newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
-//                }
-//                if (!vulnerableGroupList.isEmpty()) {
-//                    newVictim.setVulnerableGroupsList(vulnerableGroupList);
-//                }
-//                if (!othersList.isEmpty()) {
-//                    newVictim.setOthersList(othersList);
-//                }
-                newNonFatalInjury.setInjuryId(injuriesFacade.find(Short.parseShort("56")));
 
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
                 if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
@@ -5236,13 +5151,11 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find((short) 9));//sin determinar
                             }
                         }
-
                     }
                 }
 
                 //PERSISTO//////////////////////////////////////////////////////////////////
                 try {
-
                     newNonFatalInjury.setVictimId(newVictim);
                     victimsFacade.create(newVictim);//PERSISTO LA VICTIMA                
                     nonFatalInjuriesFacade.create(newNonFatalInjury);//PERSISTO LA LESION NO FATAL                    
@@ -5257,8 +5170,6 @@ public class RecordDataMB implements Serializable {
                     newSivigilaEvent.setNonFatalDomesticViolence(newNonFatalDomesticViolence);
                     newSivigilaEvent.setSivigilaAgresorId(newSivigilaAggresor);
                     sivigilaEventFacade.create(newSivigilaEvent);
-
-
                 } catch (Exception e) {
                     System.out.println("Error 29 en " + this.getClass().getName() + ":" + e.toString());
                 }
