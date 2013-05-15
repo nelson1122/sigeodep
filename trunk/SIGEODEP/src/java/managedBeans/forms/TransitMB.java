@@ -1249,11 +1249,9 @@ public class TransitMB implements Serializable {
                             newVictim.setTypeId(idTypesFacade.find((short) 9));//9. SIN DETERMINAR
                         }
                     }
-                }
-                
-                //-------------------------------------------------------------------------------
+                }                
+                //------------------------------------------------------
                 //-------------------GUARDAR----------------------------
-                //if (validationsErrors.isEmpty()) {
                 openDialogFirst = "";
                 openDialogNext = "";
                 openDialogLast = "";
@@ -1261,20 +1259,16 @@ public class TransitMB implements Serializable {
                 openDialogNew = "";
                 openDialogDelete = "";
                 if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
-                    //System.out.println("guardando nuevo registro");
-
                     newVictim.setTagId(tagsFacade.find(currentTag));
+                    newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryTrafficFacade.create(newFatalInjuryTraffic);
-
-
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 } else {//ES UN REGISTRO EXISTENTE SE DEBE ACTUALIZAR
-                    //System.out.println("actualizando registro existente");
                     updateRegistry(newVictim, newFatalInjurie, newFatalInjuryTraffic);
                     save = true;
                     stylePosition = "color: #1471B1;";
@@ -1282,13 +1276,6 @@ public class TransitMB implements Serializable {
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
                 return true;
-                //} else {
-                //    for (int i = 0; i < validationsErrors.size(); i++) {
-                //        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de validación", validationsErrors.get(i));
-                //        FacesContext.getCurrentInstance().addMessage(null, msg);
-                //    }
-                //    return false;
-                //}
             } catch (Exception e) {
                 System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());

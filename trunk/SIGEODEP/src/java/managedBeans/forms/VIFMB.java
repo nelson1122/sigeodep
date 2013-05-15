@@ -1358,16 +1358,9 @@ public class VIFMB implements Serializable {
                 if (currentPercentBurned.trim().length() != 0) {
                     newNonFatalInjuries.setBurnInjuryPercentage(Short.parseShort(currentPercentBurned));
                 }
-
-                //newNonFatalInjuries.setDestinationPatientId(null);            
+                
                 newNonFatalInjuries.setInputTimestamp(new Date());
-
-
-                //newNonFatalInjuries.setHealthProfessionalId(null);
-
-                //if (currentDomesticViolenceDataSource != 0) {
-                //newNonFatalInjuries.setNonFatalDataSourceId(currentDomesticViolenceDataSource);
-                //}
+                
                 if (currentMechanisms != 0) {
                     newNonFatalInjuries.setMechanismId(mechanismsFacade.find(currentMechanisms));
                 }
@@ -1657,12 +1650,11 @@ public class VIFMB implements Serializable {
                 openDialogNew = "";
                 openDialogDelete = "";
                 if (currentNonFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR  //System.out.println("guardando nuevo registro");
-
                     newVictim.setTagId(tagsFacade.find(currentTag));
+                    newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                     victimsFacade.create(newVictim);
                     nonFatalInjuriesFacade.create(newNonFatalInjuries);
                     nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
-
                     save = true;
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "NUEVO REGISTRO ALMACENADO");
@@ -1675,13 +1667,6 @@ public class VIFMB implements Serializable {
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
                 return true;
-                //} else {
-                //    for (int i = 0; i < validationsErrors.size(); i++) {
-                //        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de validación", validationsErrors.get(i));
-                //        FacesContext.getCurrentInstance().addMessage(null, msg);
-                //    }
-                //    return false;
-                //}
             } catch (Exception e) {
                 System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
@@ -1694,38 +1679,29 @@ public class VIFMB implements Serializable {
     }
 
     private void updateRegistry(Victims victim, NonFatalInjuries nonFatalInjurie, NonFatalDomesticViolence nonFatalDomesticViolence) {
-
         try {
             //------------------------------------------------------------
             //SE CREA VARIABLE PARA LA NUEVA VICTIMA
             //------------------------------------------------------------
-
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setTypeId(victim.getTypeId());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimNid(victim.getVictimNid());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimName(victim.getVictimName());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setInsuranceId(victim.getInsuranceId());
 
-//            currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimFirstname(victim.getVictimFirstname());
-//            currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimLastname(victim.getVictimLastname());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setAgeTypeId(victim.getAgeTypeId());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimAge(victim.getVictimAge());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setGenderId(victim.getGenderId());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setJobId(victim.getJobId());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVulnerableGroupsList(victim.getVulnerableGroupsList());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setEthnicGroupId(victim.getEthnicGroupId());
-            //if (otherEthnicGroup.trim().length() != 0) {	
-            //if (otherVulnerableGroup.trim().length() != 0) {	
+            
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimTelephone(victim.getVictimTelephone());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimAddress(victim.getVictimAddress());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimNeighborhoodId(victim.getVictimNeighborhoodId());
-            //newVictim.setVictimDateOfBirth(new Date());
-            //newVictim.setEpsId(null);
-            //newVictim.setVictimClass(null);            
+                        
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setResidenceMunicipality(victim.getResidenceMunicipality());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setResidenceDepartment(victim.getResidenceDepartment());
-
             //-----GUARDAR CAMPOS OTROS----------------
-
             List<Others> othersList = new ArrayList<Others>();
             Others newOther;
             OthersPK newOtherPK;
@@ -1744,13 +1720,9 @@ public class VIFMB implements Serializable {
             }
             //persisto nueva lista
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setOthersList(othersList);
-
-
             //------------------------------------------------------------
             //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA NO FATAL
             //------------------------------------------------------------
-            //
-
             currentNonFatalDomesticViolence.getNonFatalInjuries().setCheckupDate(nonFatalInjurie.getCheckupDate());
             currentNonFatalDomesticViolence.getNonFatalInjuries().setCheckupTime(nonFatalInjurie.getCheckupTime());
             currentNonFatalDomesticViolence.getNonFatalInjuries().setInjuryDate(nonFatalInjurie.getInjuryDate());
@@ -1784,8 +1756,6 @@ public class VIFMB implements Serializable {
             currentNonFatalDomesticViolence.setAggressorTypesList(nonFatalDomesticViolence.getAggressorTypesList());
             currentNonFatalDomesticViolence.setAbuseTypesList(nonFatalDomesticViolence.getAbuseTypesList());
             currentNonFatalDomesticViolence.setActionsToTakeList(nonFatalDomesticViolence.getActionsToTakeList());
-
-
 
             victimsFacade.edit(currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId());
             nonFatalInjuriesFacade.edit(currentNonFatalDomesticViolence.getNonFatalInjuries());

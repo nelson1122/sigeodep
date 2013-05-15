@@ -88,7 +88,7 @@ public class ProjectsMB implements Serializable {
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     private String newProjectName = "";
     private String lastCreatedProjectName = "";
-    private String toolTipText="";
+    private String toolTipText = "";
     private String newRelationsCopyName = "";
     private String currentProjectName = "";
     private String selectedRelationsNameInCopy = "";
@@ -792,20 +792,20 @@ public class ProjectsMB implements Serializable {
                 int rowNumber = 0;
                 ResultSet rs = connectionJdbcMB.consult(""
                         + " SELECT "
-                        + "    project_columns.column_name, "
-                        + "    project_columns.column_id "
+                        + " 	project_columns.column_name, "
+                        + "     project_columns.column_id "
                         + " FROM "
-                        + "    public.project_columns, "
-                        + "    public.project_records "
+                        + " 	public.project_columns, "
+                        + "     public.projects "
                         + " WHERE "
-                        + "    project_columns.column_id = project_records.column_id AND "
-                        + "    project_records.project_id = " + currentProjectId + " "
+                        + "     project_columns.column_id >= projects.start_column_id AND "
+                        + "     project_columns.column_id <= projects.end_column_id AND "
+                        + "     projects.project_id = " + currentProjectId + " "
                         + " GROUP BY "
-                        + "    project_columns.column_name, "
-                        + "    project_columns.column_id   "
+                        + "     project_columns.column_name, "
+                        + "     project_columns.column_id "
                         + " ORDER BY "
-                        + "    project_columns.column_id");
-
+                        + "     project_columns.column_id ");
                 while (rs.next()) {
                     titles.add(rs.getString(1));
                 }
@@ -1225,7 +1225,7 @@ public class ProjectsMB implements Serializable {
             newProject.setRelationGroupName(newRelationsGroupName);
             newProject.setSourceId(newSourceName);
             newProject.setUserId(loginMB.getCurrentUser().getUserId());
-            lastCreatedProjectName=newProjectName;
+            lastCreatedProjectName = newProjectName;
             projectsFacade.create(newProject);
             //PREPARO VARIABLES PARA LA CARGA DE REGISTROS----------------------
             if (file.getFileName().endsWith("xlsx")) {
@@ -1411,7 +1411,7 @@ public class ProjectsMB implements Serializable {
                         }
                     } catch (SQLException ex) {
                         System.out.println("Error 23 en " + this.getClass().getName() + ":" + ex.toString());
-                        
+
                     }
                     //---------------------------------------------------------
                     sql = " \n"
@@ -1675,11 +1675,10 @@ public class ProjectsMB implements Serializable {
                             relationsDiscardedValuesFacade.create(newRelationDiscardedValues);//persisto el objeto
                         }
                     }
+                    printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El grupo de relaciones \"" + newRelationsCopyName + "\" ha sido creado.");
                     newRelationsCopyName = "";
                     selectedRelationsNameInCopy = "";
                     loadRelatedGroups();
-                    printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El grupo de relaciones (" + newRelationsCopyName + ") ha sido creado.");
-
                 }
             } catch (Exception e) {
                 System.out.println("Error 25 en " + this.getClass().getName() + ":" + e.toString());

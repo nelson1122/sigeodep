@@ -41,8 +41,11 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.CategoryItemLabelGenerator;
 import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.IntervalMarker;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.time.Day;
@@ -156,10 +159,10 @@ public class IndicatorsPercentageVariationMB {
     private boolean btnRemoveCategoricalValueDisabled = true;
     private boolean btnRemoveVariableDisabled = true;
     private boolean renderedDynamicDataTable = true;
-    private boolean showCount = true;//mostrar recuento
+    private boolean showCount = false;//mostrar recuento
     private boolean showRowPercentage = true;//mostrar porcentaje por fila
-    private boolean showColumnPercentage = true;//mostrar porcentaje por columna
-    private boolean showTotalPercentage = true;//mostrar porcentaje del total
+    //private boolean showColumnPercentage = true;//mostrar porcentaje por columna
+    //private boolean showTotalPercentage = true;//mostrar porcentaje del total
     private boolean showCalculation = false;//mostrar la resta
     private boolean colorType = true;
     DecimalFormat formateador = new DecimalFormat("0.00");
@@ -193,7 +196,7 @@ public class IndicatorsPercentageVariationMB {
         temporalDisaggregationTypes.add("Diaria");
     }
 
-    public void changeDateB() {        
+    public void changeDateB() {
         int diferenceMonths = getDateDifference(initialDateA, endDateA, "mensual");
         Calendar cal1 = Calendar.getInstance();
         cal1.setTime(initialDateB);
@@ -1236,7 +1239,7 @@ public class IndicatorsPercentageVariationMB {
         try {
             JFreeChart chart = createAreaChart();
             File chartFile = new File("dynamichart");
-            ChartUtilities.saveChartAsPNG(chartFile, chart, 600, 500);
+            ChartUtilities.saveChartAsPNG(chartFile, chart, 750, 500);
             chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
         } catch (Exception e) {
         }
@@ -1751,9 +1754,9 @@ public class IndicatorsPercentageVariationMB {
                 strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(columNamesFinal.get(i)) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-            strReturn = strReturn + "                                <td>\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
-            strReturn = strReturn + "                                </td>\r\n";
+//            strReturn = strReturn + "                                <td>\r\n";
+//            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
+//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         if (variablesCrossData.size() == 3) {
@@ -1782,9 +1785,9 @@ public class IndicatorsPercentageVariationMB {
                 strReturn = strReturn + "                                    <div >" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-            strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div >-</div>\r\n";
-            strReturn = strReturn + "                                </td>\r\n";
+//            strReturn = strReturn + "                                <td >\r\n";
+//            strReturn = strReturn + "                                    <div >-</div>\r\n";
+//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
 
             strReturn = strReturn + "                            <tr>\r\n";
@@ -1794,9 +1797,9 @@ public class IndicatorsPercentageVariationMB {
                 strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(headers2[i]) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-            strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
-            strReturn = strReturn + "                                </td>\r\n";
+//            strReturn = strReturn + "                                <td >\r\n";
+//            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
+//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -1810,23 +1813,23 @@ public class IndicatorsPercentageVariationMB {
         //TABLA QUE CONTIENE LA PRIMER COLUMNA
         //-------------------------------------------------------------------        
         int rowsForRecord = 0;//filas a crear por registro(inicia en 1 por el rowspan cuenta desde 1)
-        if (showColumnPercentage) {
-            rowsForRecord++;
-        }
+//        if (showColumnPercentage) {
+//            rowsForRecord++;
+//        }
         if (showRowPercentage) {
             rowsForRecord++;
         }
         if (showCount) {
             rowsForRecord++;
         }
-        if (showTotalPercentage) {
-            rowsForRecord++;
-        }
+//        if (showTotalPercentage) {
+//            rowsForRecord++;
+//        }
 
         strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden;height:280px\">\r\n";//tamaño del div izquierdo
         strReturn = strReturn + "                        <table width=\"200px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
 
-        rowNames.add("Totales");
+        //rowNames.add("Totales");
         for (int j = 0; j < rowNames.size(); j++) {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
@@ -1844,14 +1847,14 @@ public class IndicatorsPercentageVariationMB {
                 strReturn = strReturn + "                                <td class=\"tableFirstCol\">% por fila</td>\r\n";
                 showRowPercentageAdd = true;
             }
-            if (showColumnPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% por columna</td>\r\n";
-                showColumnPercentageAdd = true;
-            }
-            if (showTotalPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% del total</td>\r\n";
-                showTotalPercentageAdd = true;
-            }
+//            if (showColumnPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
+//                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% por columna</td>\r\n";
+//                showColumnPercentageAdd = true;
+//            }
+//            if (showTotalPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
+//                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% del total</td>\r\n";
+//                showTotalPercentageAdd = true;
+//            }
             strReturn = strReturn + "                            </tr>\r\n";
             //
             if (showCount && !showCountAdd) {
@@ -1864,16 +1867,16 @@ public class IndicatorsPercentageVariationMB {
                 strReturn = strReturn + "                                <td class=\"tableFirstCol\">% por fila</td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
-            if (showColumnPercentage && !showColumnPercentageAdd) {
-                strReturn = strReturn + "                            <tr>\r\n";
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% por columna</td>\r\n";
-                strReturn = strReturn + "                            </tr>\r\n";
-            }
-            if (showTotalPercentage && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                            <tr>\r\n";
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% del total</td>\r\n";
-                strReturn = strReturn + "                            </tr>\r\n";
-            }
+//            if (showColumnPercentage && !showColumnPercentageAdd) {
+//                strReturn = strReturn + "                            <tr>\r\n";
+//                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% por columna</td>\r\n";
+//                strReturn = strReturn + "                            </tr>\r\n";
+//            }
+//            if (showTotalPercentage && !showTotalPercentageAdd) {
+//                strReturn = strReturn + "                            <tr>\r\n";
+//                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% del total</td>\r\n";
+//                strReturn = strReturn + "                            </tr>\r\n";
+//            }
         }
         strReturn = strReturn + "                        </table>\r\n";
         strReturn = strReturn + "                    </div>\r\n";
@@ -1896,7 +1899,7 @@ public class IndicatorsPercentageVariationMB {
         boolean firstTrAdd = false;
 
         //AGREGO LOS REGISTROS DE LA MATRIZ        
-        for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
+        for (int j = 0; j < rowNames.size(); j++) {//-1 por que le agrege "TOTALES"
             if (showCount) {
                 if (j == 0 && !firstTrAdd) {
                     strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
@@ -1914,14 +1917,14 @@ public class IndicatorsPercentageVariationMB {
                     }
                     strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 }
-                totalA = Double.parseDouble(getMatrixValueA("rowTotal", -1, j));
-                totalB = Double.parseDouble(getMatrixValueB("rowTotal", -1, j));
-                if (showCalculation) {
-                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-                } else {
-                    value = formateador.format(totalA - totalB);
-                }
-                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
+//                totalA = Double.parseDouble(getMatrixValueA("rowTotal", -1, j));
+//                totalB = Double.parseDouble(getMatrixValueB("rowTotal", -1, j));
+//                if (showCalculation) {
+//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                } else {
+//                    value = formateador.format(totalA - totalB);
+//                }
+//                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             if (showRowPercentage) {
@@ -1942,74 +1945,74 @@ public class IndicatorsPercentageVariationMB {
                     }
                     strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 }
-                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingTotalRow", -1, j));
-                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingTotalRow", -1, j));
-                if (showCalculation) {
-                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-                } else {
-                    value = formateador.format(totalA - totalB);
-                }
-                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
+//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingTotalRow", -1, j));
+//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingTotalRow", -1, j));
+//                if (showCalculation) {
+//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                } else {
+//                    value = formateador.format(totalA - totalB);
+//                }
+//                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             //total = 0;
-            if (showColumnPercentage) {
-                if (j == 0 && !firstTrAdd) {
-                    strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
-                    firstTrAdd = true;
-                } else {
-                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-                }
-                for (int i = 0; i < columNamesFinal.size(); i++) {
-                    //value;
-                    totalA = Double.parseDouble(getMatrixValueA("columnPercentageXY", i, j));
-                    totalB = Double.parseDouble(getMatrixValueB("columnPercentageXY", i, j));
-                    if (showCalculation) {
-                        value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-                    } else {
-                        value = formateador.format(totalA - totalB);
-                    }
-                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
-                }
-                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingGrandTotal", -1, j));
-                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingGrandTotal", -1, j));
-                if (showCalculation) {
-                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-                } else {
-                    value = formateador.format(totalA - totalB);
-                }
-                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
-                strReturn = strReturn + "                            </tr>\r\n";
-            }
-            //total = 0;
-            if (showTotalPercentage) {
-                if (j == 0 && !firstTrAdd) {
-                    strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
-                    firstTrAdd = true;
-                } else {
-                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-                }
-                for (int i = 0; i < columNamesFinal.size(); i++) {
-                    //value;
-                    totalA = Double.parseDouble(getMatrixValueA("totalPercentageXY", i, j));
-                    totalB = Double.parseDouble(getMatrixValueB("totalPercentageXY", i, j));
-                    if (showCalculation) {
-                        value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-                    } else {
-                        value = formateador.format(totalA - totalB);
-                    }
-                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
-                }
-                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingGrandTotal", -1, j));
-                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingGrandTotal", -1, j));
-                if (showCalculation) {
-                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-                } else {
-                    value = formateador.format(totalA - totalB);
-                }
-                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
-                strReturn = strReturn + "                            </tr>\r\n";
-            }
+//            if (showColumnPercentage) {
+//                if (j == 0 && !firstTrAdd) {
+//                    strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
+//                    firstTrAdd = true;
+//                } else {
+//                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+//                }
+//                for (int i = 0; i < columNamesFinal.size(); i++) {
+//                    //value;
+//                    totalA = Double.parseDouble(getMatrixValueA("columnPercentageXY", i, j));
+//                    totalB = Double.parseDouble(getMatrixValueB("columnPercentageXY", i, j));
+//                    if (showCalculation) {
+//                        value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                    } else {
+//                        value = formateador.format(totalA - totalB);
+//                    }
+//                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
+//                }
+//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingGrandTotal", -1, j));
+//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingGrandTotal", -1, j));
+//                if (showCalculation) {
+//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                } else {
+//                    value = formateador.format(totalA - totalB);
+//                }
+//                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
+//                strReturn = strReturn + "                            </tr>\r\n";
+//            }
+//            //total = 0;
+//            if (showTotalPercentage) {
+//                if (j == 0 && !firstTrAdd) {
+//                    strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
+//                    firstTrAdd = true;
+//                } else {
+//                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+//                }
+//                for (int i = 0; i < columNamesFinal.size(); i++) {
+//                    //value;
+//                    totalA = Double.parseDouble(getMatrixValueA("totalPercentageXY", i, j));
+//                    totalB = Double.parseDouble(getMatrixValueB("totalPercentageXY", i, j));
+//                    if (showCalculation) {
+//                        value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                    } else {
+//                        value = formateador.format(totalA - totalB);
+//                    }
+//                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
+//                }
+//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingGrandTotal", -1, j));
+//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingGrandTotal", -1, j));
+//                if (showCalculation) {
+//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                } else {
+//                    value = formateador.format(totalA - totalB);
+//                }
+//                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
+//                strReturn = strReturn + "                            </tr>\r\n";
+//            }
             changeColorType();//cambiar de color las filas de blanco a azul
         }
         //----------------------------------------------------------------------
@@ -2017,99 +2020,99 @@ public class IndicatorsPercentageVariationMB {
         //----------------------------------------------------------------------
 
 
-        if (showCount) {
-            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-            for (int i = 0; i < totalsHorizontalA.size(); i++) {
-                totalA = Double.parseDouble(getMatrixValueA("columnTotal", i, 0));
-                totalB = Double.parseDouble(getMatrixValueB("columnTotal", i, 0));
-                if (showCalculation) {
-                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-                } else {
-                    value = formateador.format(totalA - totalB);
-                }
-                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-            }
-            totalA = grandTotalA;
-            totalB = grandTotalB;
-            if (showCalculation) {
-                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-            } else {
-                value = formateador.format(totalA - totalB);
-            }
-            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-            strReturn = strReturn + "                            </tr>\r\n";
-        }
-
-        if (showRowPercentage) {
-            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-            for (int i = 0; i < totalsHorizontalA.size(); i++) {
-                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalColumnAccordingGrandTotal", i, 0));
-                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalColumnAccordingGrandTotal", i, 0));
-                if (showCalculation) {
-                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-                } else {
-                    value = formateador.format(totalA - totalB);
-                }
-                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-                //strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0) + "</td>\r\n";
-            }
-            totalA = Double.parseDouble(getMatrixValueA("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-            totalB = Double.parseDouble(getMatrixValueB("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-            if (showCalculation) {
-                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-            } else {
-                value = formateador.format(totalA - totalB);
-            }
-            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-            strReturn = strReturn + "                            </tr>\r\n";
-        }
-        if (showColumnPercentage) {
-            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-            for (int i = 0; i < totalsHorizontalA.size(); i++) {
-                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalColumnAccordingTotalColumn", i, 0));
-                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalColumnAccordingTotalColumn", i, 0));
-                if (showCalculation) {
-                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-                } else {
-                    value = formateador.format(totalA - totalB);
-                }
-                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-            }
-            totalA = Double.parseDouble(getMatrixValueA("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-            totalB = Double.parseDouble(getMatrixValueB("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-            if (showCalculation) {
-                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-            } else {
-                value = formateador.format(totalA - totalB);
-            }
-            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-            strReturn = strReturn + "                            </tr>\r\n";
-        }
-        if (showTotalPercentage) {
-            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-            for (int i = 0; i < totalsHorizontalA.size(); i++) {
-                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalColumnAccordingGrandTotal", i, 0));
-                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalColumnAccordingGrandTotal", i, 0));
-                if (showCalculation) {
-                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-                } else {
-                    value = formateador.format(totalA - totalB);
-                }
-                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-            }
-            totalA = Double.parseDouble(getMatrixValueA("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-            totalB = Double.parseDouble(getMatrixValueB("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-            if (showCalculation) {
-                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-            } else {
-                value = formateador.format(totalA - totalB);
-            }
-            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-            strReturn = strReturn + "                            </tr>\r\n";
-
-//            strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0) + "</td>\r\n";
+//        if (showCount) {
+//            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+//            for (int i = 0; i < totalsHorizontalA.size(); i++) {
+//                totalA = Double.parseDouble(getMatrixValueA("columnTotal", i, 0));
+//                totalB = Double.parseDouble(getMatrixValueB("columnTotal", i, 0));
+//                if (showCalculation) {
+//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                } else {
+//                    value = formateador.format(totalA - totalB);
+//                }
+//                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+//            }
+//            totalA = grandTotalA;
+//            totalB = grandTotalB;
+//            if (showCalculation) {
+//                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//            } else {
+//                value = formateador.format(totalA - totalB);
+//            }
+//            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
 //            strReturn = strReturn + "                            </tr>\r\n";
-        }
+//        }
+//
+//        if (showRowPercentage) {
+//            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+//            for (int i = 0; i < totalsHorizontalA.size(); i++) {
+//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalColumnAccordingGrandTotal", i, 0));
+//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalColumnAccordingGrandTotal", i, 0));
+//                if (showCalculation) {
+//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                } else {
+//                    value = formateador.format(totalA - totalB);
+//                }
+//                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+//                //strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0) + "</td>\r\n";
+//            }
+//            totalA = Double.parseDouble(getMatrixValueA("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+//            totalB = Double.parseDouble(getMatrixValueB("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+//            if (showCalculation) {
+//                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//            } else {
+//                value = formateador.format(totalA - totalB);
+//            }
+//            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+//            strReturn = strReturn + "                            </tr>\r\n";
+//        }
+//        if (showColumnPercentage) {
+//            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+//            for (int i = 0; i < totalsHorizontalA.size(); i++) {
+//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalColumnAccordingTotalColumn", i, 0));
+//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalColumnAccordingTotalColumn", i, 0));
+//                if (showCalculation) {
+//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                } else {
+//                    value = formateador.format(totalA - totalB);
+//                }
+//                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+//            }
+//            totalA = Double.parseDouble(getMatrixValueA("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+//            totalB = Double.parseDouble(getMatrixValueB("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+//            if (showCalculation) {
+//                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//            } else {
+//                value = formateador.format(totalA - totalB);
+//            }
+//            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+//            strReturn = strReturn + "                            </tr>\r\n";
+//        }
+//        if (showTotalPercentage) {
+//            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+//            for (int i = 0; i < totalsHorizontalA.size(); i++) {
+//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalColumnAccordingGrandTotal", i, 0));
+//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalColumnAccordingGrandTotal", i, 0));
+//                if (showCalculation) {
+//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                } else {
+//                    value = formateador.format(totalA - totalB);
+//                }
+//                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+//            }
+//            totalA = Double.parseDouble(getMatrixValueA("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+//            totalB = Double.parseDouble(getMatrixValueB("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+//            if (showCalculation) {
+//                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//            } else {
+//                value = formateador.format(totalA - totalB);
+//            }
+//            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
+//            strReturn = strReturn + "                            </tr>\r\n";
+//
+////            strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0) + "</td>\r\n";
+////            strReturn = strReturn + "                            </tr>\r\n";
+//        }
 
 
 //        strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
@@ -2176,6 +2179,7 @@ public class IndicatorsPercentageVariationMB {
         String serieName = "";
         ResultSet rs;
         ResultSet rs2;
+        double increment = 0;
         try {
             sql = ""
                     + " SELECT \n"
@@ -2218,25 +2222,34 @@ public class IndicatorsPercentageVariationMB {
 
             String strDateName;
             int totalInt;
+
+
             while (rs.next()) {
                 rs2.next();
-                totalInt = rs.getInt("count") - rs2.getInt("count");
-                strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1") + " (" + String.valueOf(totalInt) + ")";
-                dataset.setValue(rs.getLong("count"), "Rango A", strDateName);
-                dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);
+                //if (rs != null && rs2 != null) {
+                    totalInt = rs.getInt("count") - rs2.getInt("count");
+                    if (increment < Math.sqrt(totalInt * totalInt)) {
+                        increment = Math.sqrt(totalInt * totalInt);
+                    }
+                    strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1");
+                    dataset.setValue(totalInt, "-", strDateName);
+                //}
+                //dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);
             }
+            increment = increment * 0.005;//grosor linea
 
         } catch (SQLException ex) {
-            System.out.println("Error: " + ex.toString());
+            //System.out.println("Error: " + ex.toString());
+            increment = increment * 0.005;//grosor linea
         }
 
-        final JFreeChart chart = ChartFactory.createAreaChart(
-                "Variacion de casos", // chart title
+        final JFreeChart chart = ChartFactory.createBarChart(
+                "Variación porcentual de casos", // chart title
                 "Fecha", // domain axis label
                 "Value", // range axis label
                 dataset, // data
                 PlotOrientation.VERTICAL, // orientation
-                true, // include legend
+                false, // include legend
                 true, // tooltips
                 false // urls
                 );
@@ -2254,6 +2267,11 @@ public class IndicatorsPercentageVariationMB {
         final CategoryPlot plot = chart.getCategoryPlot();
         plot.setForegroundAlpha(0.5f);
 
+        ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());//quitar gradiente
+
+        IntervalMarker intervalmarker = new IntervalMarker(-1 * increment, increment, Color.yellow);
+        plot.addRangeMarker(intervalmarker);
+
         plot.setBackgroundPaint(Color.lightGray);
         plot.setDomainGridlinesVisible(true);
         plot.setDomainGridlinePaint(Color.white);
@@ -2262,15 +2280,15 @@ public class IndicatorsPercentageVariationMB {
 
         final CategoryAxis domainAxis = plot.getDomainAxis();
         domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-        domainAxis.setLowerMargin(0.0);
-        domainAxis.setUpperMargin(0.0);
-        domainAxis.addCategoryLabelToolTip("Type 1", "The first type.");
-        domainAxis.addCategoryLabelToolTip("Type 2", "The second type.");
-        domainAxis.addCategoryLabelToolTip("Type 3", "The third type.");
-
-        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        rangeAxis.setLabelAngle(0 * Math.PI / 2.0);
+//        domainAxis.setLowerMargin(0.0);
+//        domainAxis.setUpperMargin(0.0);
+//        domainAxis.addCategoryLabelToolTip("Type 1", "The first type.");
+//        domainAxis.addCategoryLabelToolTip("Type 2", "The second type.");
+//        domainAxis.addCategoryLabelToolTip("Type 3", "The third type.");
+//
+//        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+//        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+//        rangeAxis.setLabelAngle(0 * Math.PI / 2.0);
 
 //        NumberAxis xAxis2 = new NumberAxis("Domain Axis 2");
 //        xAxis2.setAutoRangeIncludesZero(false);
@@ -2443,7 +2461,7 @@ public class IndicatorsPercentageVariationMB {
                                 totalB = Integer.parseInt(rs2.getString("count"));
                                 matrixResultA[i][j] = rs.getString("count");
                                 matrixResultB[i][j] = rs2.getString("count");
-                                columNamesFinal.set(i, rs.getString("column_1") + " - " + rs2.getString("column_1")+ "}" + rs.getString("column_2"));
+                                columNamesFinal.set(i, rs.getString("column_1") + " - " + rs2.getString("column_1") + "}" + rs.getString("column_2"));
                                 find = true;
                             }
                         }
@@ -2857,21 +2875,21 @@ public class IndicatorsPercentageVariationMB {
         this.showRowPercentage = showRowPercentage;
     }
 
-    public boolean isShowColumnPercentage() {
-        return showColumnPercentage;
-    }
-
-    public void setShowColumnPercentage(boolean showColumnPercentage) {
-        this.showColumnPercentage = showColumnPercentage;
-    }
-
-    public boolean isShowTotalPercentage() {
-        return showTotalPercentage;
-    }
-
-    public void setShowTotalPercentage(boolean showTotalPercentage) {
-        this.showTotalPercentage = showTotalPercentage;
-    }
+//    public boolean isShowColumnPercentage() {
+//        return showColumnPercentage;
+//    }
+//
+//    public void setShowColumnPercentage(boolean showColumnPercentage) {
+//        this.showColumnPercentage = showColumnPercentage;
+//    }
+//
+//    public boolean isShowTotalPercentage() {
+//        return showTotalPercentage;
+//    }
+//
+//    public void setShowTotalPercentage(boolean showTotalPercentage) {
+//        this.showTotalPercentage = showTotalPercentage;
+//    }
 
     public String getNewConfigurationName() {
         return newConfigurationName;

@@ -5,6 +5,7 @@
 package model.pojo;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -49,7 +50,7 @@ public class Tags implements Serializable {
     @ManyToOne
     private Forms formId;
     @OneToMany(mappedBy = "tagId")
-    private List<Victims> victimsList;
+    private List<Victims> victimsList;    
     
     public Tags() {
     }
@@ -103,7 +104,7 @@ public class Tags implements Serializable {
     public void setFormId(Forms formId) {
         this.formId = formId;
     }
-
+    
     @XmlTransient
     public List<Victims> getVictimsList() {
         return victimsList;
