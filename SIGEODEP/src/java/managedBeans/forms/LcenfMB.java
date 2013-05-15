@@ -1978,6 +1978,7 @@ public class LcenfMB implements Serializable {
                 } else {//SI SE ESTA MODIFICANDO
                     newNonFatalInjuries.setNonFatalInjuryId(currentNonFatalInjury.getNonFatalInjuryId());
                     newVictim.setTagId(currentNonFatalInjury.getVictimId().getTagId());
+                    newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 }
 
                 if (currentDateConsult.trim().length() != 0) {
@@ -2634,7 +2635,7 @@ public class LcenfMB implements Serializable {
                     //System.out.println("guardando nuevo registro");
 
                     newVictim.setTagId(tagsFacade.find(currentTag));
-
+                    newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                     if (currentIntentionality == 1) {
                         newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 54));//54. No intencional
                     }

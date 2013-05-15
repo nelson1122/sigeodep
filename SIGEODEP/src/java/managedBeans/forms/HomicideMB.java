@@ -824,7 +824,7 @@ public class HomicideMB implements Serializable {
                 if (currentFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     //System.out.println("guardando nuevo registro");
                     newVictim.setTagId(tagsFacade.find(currentTag));
-
+                    newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryMurderFacade.create(newMurder);

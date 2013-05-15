@@ -173,6 +173,8 @@ public class RecordDataMB implements Serializable {
     @EJB
     TagsFacade tagsFacade;
     @EJB
+    UngroupedTagsFacade ungroupedTagsFacade;
+    @EJB
     HealthProfessionalsFacade healthProfessionalsFacade;
     @EJB
     UsersFacade usersFacade;
@@ -271,7 +273,8 @@ public class RecordDataMB implements Serializable {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private Date currentDate;
     //private int maxTag;
-    private Tags newTag;//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
+    private Tags newTag;
+    private UngroupedTags newUngroupedTags;
     //private String nameTableTemp = "temp";
     String fieldType = "";
     //----------------------------------------------------------------------
@@ -793,16 +796,25 @@ public class RecordDataMB implements Serializable {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
-            //columnsNames = determineColumnNames();//determino nombres de columnas
             resultSetFileData = determineRecords();//resulset con los registros a procesar
-            newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
-            newTag.setTagId(tagsFacade.findMax() + 1);
+            
+            newUngroupedTags= new UngroupedTags();            
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+            newUngroupedTags.setUngroupedTagDate(new Date());
+            newUngroupedTags.setFormId(nameForm);            
+            ungroupedTagsFacade.create(newUngroupedTags);
+            
+            newTag = new Tags();
+            newTag.setTagId(ungroupedTagsFacade.findMax());
             newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
-            lastTagNameCreated = newTag.getTagName();
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
-            newTag.setFormId(formsFacade.find(nameForm));
+            newTag.setFormId(formsFacade.find(nameForm));            
             tagsFacade.create(newTag);
+            
+            lastTagNameCreated = newTag.getTagName();
+            
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -816,6 +828,7 @@ public class RecordDataMB implements Serializable {
                 newFatalInjuryMurder = new FatalInjuryMurder();
                 newFatalInjuryMurder.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
+                newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 value = "";
                 name = "";
                 surname = "";
@@ -1269,16 +1282,25 @@ public class RecordDataMB implements Serializable {
 
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
-            //columnsNames = determineColumnNames();//determino nombres de columnas
             resultSetFileData = determineRecords();//resulset con los registros a procesar
+            
+            newUngroupedTags= new UngroupedTags();            
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+            newUngroupedTags.setUngroupedTagDate(new Date());
+            newUngroupedTags.setFormId(nameForm);            
+            ungroupedTagsFacade.create(newUngroupedTags);
+            
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
-            newTag.setTagId(tagsFacade.findMax() + 1);
-            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
-            lastTagNameCreated = newTag.getTagName();
+            newTag.setTagId(ungroupedTagsFacade.findMax());
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));            
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
+            
+            lastTagNameCreated = newTag.getTagName();
+            
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -1292,6 +1314,7 @@ public class RecordDataMB implements Serializable {
                 newFatalInjuryTraffic = new FatalInjuryTraffic();
                 newFatalInjuryTraffic.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
+                newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 serviceTypesList = new ArrayList<CounterpartServiceType>();
                 involvedVehiclesList = new ArrayList<CounterpartInvolvedVehicle>();
                 value = "";
@@ -1706,7 +1729,6 @@ public class RecordDataMB implements Serializable {
 
                     }
                 }
-
                 //AGREGO LAS LISTAS
                 if (!involvedVehiclesList.isEmpty()) {
                     newFatalInjurie.setCounterpartInvolvedVehicleList(involvedVehiclesList);
@@ -1714,10 +1736,8 @@ public class RecordDataMB implements Serializable {
                 if (!serviceTypesList.isEmpty()) {
                     newFatalInjurie.setCounterpartServiceTypeList(serviceTypesList);
                 }
-
                 //PERSISTO
                 try {
-                    //newVictim.setTagId(tagsFacade.find(newTag));
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryTrafficFacade.create(newFatalInjuryTraffic);
@@ -1749,16 +1769,25 @@ public class RecordDataMB implements Serializable {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
-            //columnsNames = determineColumnNames();//determino nombres de columnas
             resultSetFileData = determineRecords();//resulset con los registros a procesar
+            
+            newUngroupedTags= new UngroupedTags();            
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+            newUngroupedTags.setUngroupedTagDate(new Date());
+            newUngroupedTags.setFormId(nameForm);            
+            ungroupedTagsFacade.create(newUngroupedTags);
+            
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
-            newTag.setTagId(tagsFacade.findMax() + 1);
+            newTag.setTagId(ungroupedTagsFacade.findMax());
             newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
-            lastTagNameCreated = newTag.getTagName();
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
+            
+            lastTagNameCreated = newTag.getTagName();
+            
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -1771,6 +1800,7 @@ public class RecordDataMB implements Serializable {
                 newFatalInjurySuicide = new FatalInjurySuicide();
                 newFatalInjurySuicide.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
+                newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 newFatalInjurie.setInjuryId(injuriesFacade.find((short) 12));//es 12 por ser suicidio
                 value = "";
                 name = "";
@@ -2183,10 +2213,8 @@ public class RecordDataMB implements Serializable {
 
                     }
                 }
-
                 //PERSISTO
                 try {
-                    //newVictim.setTagId(tagsFacade.find(newTag));
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjurySuicideFacade.create(newFatalInjurySuicide);
@@ -2218,16 +2246,25 @@ public class RecordDataMB implements Serializable {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
-            //columnsNames = determineColumnNames();//determino nombres de columnas            
             resultSetFileData = determineRecords();//resulset con los registros a procesar
+            
+            newUngroupedTags= new UngroupedTags();            
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+            newUngroupedTags.setUngroupedTagDate(new Date());
+            newUngroupedTags.setFormId(nameForm);            
+            ungroupedTagsFacade.create(newUngroupedTags);
+            
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
-            newTag.setTagId(tagsFacade.findMax() + 1);
-            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
-            lastTagNameCreated = newTag.getTagName();
+            newTag.setTagId(ungroupedTagsFacade.findMax());
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));            
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
+            
+            lastTagNameCreated = newTag.getTagName();
+            
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -2241,6 +2278,7 @@ public class RecordDataMB implements Serializable {
                 FatalInjuryAccident newFatalInjuryAccident = new FatalInjuryAccident();
                 newFatalInjuryAccident.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
+                newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 newFatalInjurie.setInjuryId(injuriesFacade.find((short) 13));//es 13 por ser muerte accidental
                 value = "";
                 name = "";
@@ -2653,7 +2691,6 @@ public class RecordDataMB implements Serializable {
 
                 //PERSISTO
                 try {
-                    //newVictim.setTagId(tagsFacade.find(newTag));
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryAccidentFacade.create(newFatalInjuryAccident);
@@ -2685,24 +2722,31 @@ public class RecordDataMB implements Serializable {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
-            //columnsNames = determineColumnNames();//determino nombres de columnas
             resultSetFileData = determineRecords();//resulset con los registros a procesar
+            
+            newUngroupedTags= new UngroupedTags();            
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+            newUngroupedTags.setUngroupedTagDate(new Date());
+            newUngroupedTags.setFormId(nameForm);            
+            ungroupedTagsFacade.create(newUngroupedTags);
+            
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
-            newTag.setTagId(tagsFacade.findMax() + 1);
-            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
-            lastTagNameCreated = newTag.getTagName();
+            newTag.setTagId(ungroupedTagsFacade.findMax());
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));            
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
+            
+            lastTagNameCreated = newTag.getTagName();
+            
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
-
-
-
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
                 newVictim.setVictimClass((short) 1);
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
+                newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
                 newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
@@ -3806,21 +3850,30 @@ public class RecordDataMB implements Serializable {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
-            //columnsNames = determineColumnNames();//determino nombres de columnas
             resultSetFileData = determineRecords();//resulset con los registros a procesar
+            
+            newUngroupedTags= new UngroupedTags();            
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+            newUngroupedTags.setUngroupedTagDate(new Date());
+            newUngroupedTags.setFormId(nameForm);            
+            ungroupedTagsFacade.create(newUngroupedTags);
+            
             newTag = new Tags();//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
-            newTag.setTagId(tagsFacade.findMax() + 1);
+            newTag.setTagId(ungroupedTagsFacade.findMax());
             newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
-            lastTagNameCreated = newTag.getTagName();
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
-            newTag.setFormId(formsFacade.find(nameForm));
+            newTag.setFormId(formsFacade.find(nameForm));            
+            lastTagNameCreated = newTag.getTagName();
+            
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
                 newVictim.setVictimClass((short) 1);
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
+                newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
                 newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
@@ -4683,21 +4736,31 @@ public class RecordDataMB implements Serializable {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
-            //columnsNames = determineColumnNames();//determino nombres de columnas
             resultSetFileData = determineRecords();//resulset con los registros a procesar
+            
+            newUngroupedTags= new UngroupedTags();            
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+            newUngroupedTags.setUngroupedTagDate(new Date());
+            newUngroupedTags.setFormId(nameForm);            
+            ungroupedTagsFacade.create(newUngroupedTags);
+            
             newTag = new Tags();//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
-            newTag.setTagId(tagsFacade.findMax() + 1);
-            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
-            lastTagNameCreated = newTag.getTagName();
+            newTag.setTagId(ungroupedTagsFacade.findMax());
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));            
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
+            
+            lastTagNameCreated = newTag.getTagName();
+            
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
                 newVictim.setVictimClass((short) 1);
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
+                newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
 
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
@@ -5191,6 +5254,7 @@ public class RecordDataMB implements Serializable {
         nameForm = projectsMB.getCurrentFormId();
         currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());//tomo el grupos_vulnerables de relaciones de valores y de variables
         continueProcces = false;
+        btnRegisterDataDisabled=true;
         if (errorsControlMB.getErrorsList() != null && errorsControlMB.getErrorsList().isEmpty()) {
             continueProcces = true;
         } else {
