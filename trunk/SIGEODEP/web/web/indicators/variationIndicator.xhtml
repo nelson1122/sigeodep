@@ -305,6 +305,30 @@
                             <br/> 
                             <p:panelGrid id="IdPanelGraphConfig">
                                 <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        Tipo de Gráfico
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:selectBooleanCheckbox id="IdGraphType1" value="#{indicatorsVariationMB.graphType1}">                                            
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsVariationMB.changeGraphType1}"
+                                                render="IdImageChart IdGraphType2"/>
+                                        </h:selectBooleanCheckbox>                                        
+                                        Por Areas
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:selectBooleanCheckbox id="IdGraphType2" value="#{indicatorsVariationMB.graphType2}">                                            
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsVariationMB.changeGraphType2}"
+                                                render="IdImageChart IdGraphType1"/>
+                                        </h:selectBooleanCheckbox>                                        
+                                        Barras
+                                    </p:column>
+                                    <p:column styleClass="ui-widget-header">
+                                        Filtro 1
+                                    </p:column>
                                     <p:column>
                                         #{indicatorsVariationMB.currentVariableGraph1}
                                         <h:selectOneMenu
@@ -315,6 +339,22 @@
                                                 listener="#{indicatorsVariationMB.createImage}"
                                                 render="IdImageChart"/>
                                         </h:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        Mostrar Items
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <h:selectBooleanCheckbox value="#{indicatorsVariationMB.showItems}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsVariationMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
+                                    </p:column>
+                                    <p:column styleClass="ui-widget-header">
+                                        Filtro 2
                                     </p:column>
                                     <p:column>
                                         #{indicatorsVariationMB.currentVariableGraph2}
@@ -327,18 +367,13 @@
                                                 render="IdImageChart"/>
                                         </h:selectOneMenu>
                                     </p:column>
-                                    <p:column>
-                                        Mostrar Items
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectBooleanCheckbox value="#{indicatorsVariationMB.showItems}" >
-                                            <f:ajax 
-                                                event="change"
-                                                listener="#{indicatorsVariationMB.createImage}"
-                                                render="IdImageChart"/>
-                                        </h:selectBooleanCheckbox>
-                                    </p:column>                                        
                                 </p:row>
+                                
+                                    
+                                    
+                                    
+                                    
+                                
                             </p:panelGrid>                                
                             <br/>
                             <p:graphicImage id="IdImageChart" value="#{indicatorsVariationMB.chartImage}"/>

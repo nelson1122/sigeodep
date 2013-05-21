@@ -39,7 +39,7 @@ import model.pojo.*;
 @ApplicationScoped
 public class ConnectionJdbcMB implements Serializable {
 
-    @Resource(name = "jdbc/od")
+    @Resource(name = "jdbc/od2")
     private DataSource ds;
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;

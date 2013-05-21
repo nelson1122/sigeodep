@@ -42,8 +42,11 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.CategoryItemLabelGenerator;
 import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.IntervalMarker;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RectangleEdge;
@@ -147,8 +150,8 @@ public class IndicatorsVariationMB {
     private boolean btnRemoveCategoricalValueDisabled = true;
     private boolean btnRemoveVariableDisabled = true;
     private boolean renderedDynamicDataTable = true;
-    //private boolean showAll = false;//mostrar filas y columnas vacias
-    //private boolean showTotals = false;//mostrar totales  
+    private boolean graphType1 = true;
+    private boolean graphType2 = false;
     private boolean showCalculation = false;//mostrar la resta
     private boolean colorType = true;
     private CopyManager cpManager;
@@ -240,20 +243,20 @@ public class IndicatorsVariationMB {
         c2B.setTime(endDateB);
 
         //fecha no puede ser menor a 2002 ni mayor al año del sistema
-        if (c1A.get(Calendar.YEAR) < 2002 || c1A.get(Calendar.YEAR) > currentYear+1) {
-            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial del rango A debe estar entre el año 2002 y " + (currentYear+1));
+        if (c1A.get(Calendar.YEAR) < 2002 || c1A.get(Calendar.YEAR) > currentYear + 1) {
+            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial del rango A debe estar entre el año 2002 y " + (currentYear + 1));
             return false;
         }
-        if (c2A.get(Calendar.YEAR) < 2002 || c2A.get(Calendar.YEAR) > currentYear+1) {
-            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha final del rango A debe estar entre el año 2002 y " + (currentYear+1));
+        if (c2A.get(Calendar.YEAR) < 2002 || c2A.get(Calendar.YEAR) > currentYear + 1) {
+            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha final del rango A debe estar entre el año 2002 y " + (currentYear + 1));
             return false;
         }
-        if (c1B.get(Calendar.YEAR) < 2002 || c1B.get(Calendar.YEAR) > currentYear+1) {
-            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial del rango B debe estar entre el año 2002 y " + (currentYear+1));
+        if (c1B.get(Calendar.YEAR) < 2002 || c1B.get(Calendar.YEAR) > currentYear + 1) {
+            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial del rango B debe estar entre el año 2002 y " + (currentYear + 1));
             return false;
         }
-        if (c2B.get(Calendar.YEAR) < 2002 || c2B.get(Calendar.YEAR) > currentYear+1) {
-            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha final del rango B debe estar entre el año 2002 y " + (currentYear+1));
+        if (c2B.get(Calendar.YEAR) < 2002 || c2B.get(Calendar.YEAR) > currentYear + 1) {
+            message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha final del rango B debe estar entre el año 2002 y " + (currentYear + 1));
             return false;
         }
 
@@ -1216,9 +1219,16 @@ public class IndicatorsVariationMB {
 
     public void createImage() {
         try {
-            JFreeChart chart = createAreaChart();
+            
+            JFreeChart chart = null;
+            if(graphType1){
+                chart = createAreaChart();
+            }else{
+                chart = createBarChart();
+            }
+            
             File chartFile = new File("dynamichart");
-            ChartUtilities.saveChartAsPNG(chartFile, chart, 600, 500);
+            ChartUtilities.saveChartAsPNG(chartFile, chart, 700, 500);
             chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
         } catch (Exception e) {
         }
@@ -1708,8 +1718,141 @@ public class IndicatorsVariationMB {
         //System.out.println(strReturn);
         return strReturn;
     }
+    
+    
+    private JFreeChart createBarChart() {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        String serieName = "";
+        ResultSet rs;
+        ResultSet rs2;
+        double increment = 0;
+        try {
+            sql = ""
+                    + " SELECT \n"
+                    + "    * \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
+            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
+                sql = sql + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
+                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+            }
+            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
+                sql = sql + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
+                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+            }
 
-        private JFreeChart createAreaChart() {
+            rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
+            sql = ""
+                    + " SELECT \n"
+                    + "    * \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
+            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
+                sql = sql + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
+                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+            }
+            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
+                sql = sql + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
+                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+            }
+//            if (serieName.length() == 0) {
+//                serieName = "Casos";
+//            }
+            rs2 = connectionJdbcMB.consult(sql + " ORDER BY record_id");
+
+            String strDateName;
+            int totalInt;
+
+
+            while (rs.next()) {
+                rs2.next();
+                //if (rs != null && rs2 != null) {
+                    totalInt = rs.getInt("count") - rs2.getInt("count");
+                    if (increment < Math.sqrt(totalInt * totalInt)) {
+                        increment = Math.sqrt(totalInt * totalInt);
+                    }
+                    strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1");
+                    dataset.setValue(totalInt, "-", strDateName);
+                //}
+                //dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);
+            }
+            increment = increment * 0.005;//grosor linea
+
+        } catch (SQLException ex) {
+            //System.out.println("Error: " + ex.toString());
+            increment = increment * 0.005;//grosor linea
+        }
+
+        final JFreeChart chart = ChartFactory.createBarChart(
+                "Variación de casos", // chart title
+                "Fecha", // domain axis label
+                "Value", // range axis label
+                dataset, // data
+                PlotOrientation.VERTICAL, // orientation
+                false, // include legend
+                true, // tooltips
+                false // urls
+                );
+
+        chart.setBackgroundPaint(Color.white);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
+        final TextTitle subtitle = new TextTitle(
+                "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\t\n"
+                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")" + serieName);
+        subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        subtitle.setPosition(RectangleEdge.TOP);
+        subtitle.setVerticalAlignment(VerticalAlignment.BOTTOM);
+        chart.addSubtitle(subtitle);
+
+        final CategoryPlot plot = chart.getCategoryPlot();
+        plot.setForegroundAlpha(0.5f);
+
+        ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());//quitar gradiente
+
+        IntervalMarker intervalmarker = new IntervalMarker(-1 * increment, increment, Color.yellow);
+        plot.addRangeMarker(intervalmarker);
+
+        plot.setBackgroundPaint(Color.lightGray);
+        plot.setDomainGridlinesVisible(true);
+        plot.setDomainGridlinePaint(Color.white);
+        plot.setRangeGridlinesVisible(true);
+        plot.setRangeGridlinePaint(Color.white);
+
+        final CategoryAxis domainAxis = plot.getDomainAxis();
+        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+//        domainAxis.setLowerMargin(0.0);
+//        domainAxis.setUpperMargin(0.0);
+//        domainAxis.addCategoryLabelToolTip("Type 1", "The first type.");
+//        domainAxis.addCategoryLabelToolTip("Type 2", "The second type.");
+//        domainAxis.addCategoryLabelToolTip("Type 3", "The third type.");
+//
+//        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+//        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+//        rangeAxis.setLabelAngle(0 * Math.PI / 2.0);
+
+//        NumberAxis xAxis2 = new NumberAxis("Domain Axis 2");
+//        xAxis2.setAutoRangeIncludesZero(false);
+//        plot.setSecondaryDomainAxis(0, xAxis2);
+//        plot.setSecondaryDomainAxisLocation(0, AxisLocation.BOTTOM_OR_LEFT);
+
+
+        if (showItems) {
+            CategoryItemRenderer renderer = plot.getRenderer();
+            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00"));//DecimalFormat("0.00"));
+            renderer.setItemLabelGenerator(generator);
+            renderer.setItemLabelsVisible(true);
+        }
+
+        return chart;
+    }
+    
+    private JFreeChart createAreaChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         String serieName = "";
         ResultSet rs;
@@ -1825,7 +1968,7 @@ public class IndicatorsVariationMB {
 
         return chart;
     }
-    
+
     private void createMatrixDifference() {
         //System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         try {
@@ -1978,7 +2121,7 @@ public class IndicatorsVariationMB {
                             if (columNames.get(i).compareTo(rs.getString("column_1") + "}" + rs.getString("column_2")) == 0 && rs.getString("column_3").compareTo(rowNames.get(j)) == 0) {
                                 totalA = Integer.parseInt(rs.getString("count"));
                                 totalB = Integer.parseInt(rs2.getString("count"));
-                                columNamesFinal.set(i, rs.getString("column_1") + " - " + rs2.getString("column_1")+ "}" + rs.getString("column_2"));
+                                columNamesFinal.set(i, rs.getString("column_1") + " - " + rs2.getString("column_1") + "}" + rs.getString("column_2"));
                                 matrixResult[i][j] = "<b>" + String.valueOf(totalA - totalB) + "</b><br/>(" + totalA + "-" + totalB + ")";
                                 find = true;
                             }
@@ -2000,6 +2143,24 @@ public class IndicatorsVariationMB {
     private void loadIndicator(int n) {
         currentIndicator = indicatorsFacade.find(n);
         reset();
+    }
+
+    public void changeGraphType1() {
+        if (graphType1 == false) {
+            graphType2 = true;
+        } else {
+            graphType2 = false;
+        }
+        createImage();
+    }
+
+    public void changeGraphType2() {
+        if (graphType2 == false) {
+            graphType1 = true;
+        } else {
+            graphType1 = false;
+        }
+        createImage();
     }
 
     //---------------------------------------------------------------------------------------------
@@ -2376,5 +2537,21 @@ public class IndicatorsVariationMB {
 
     public void setShowItems(boolean showItems) {
         this.showItems = showItems;
+    }
+
+    public boolean isGraphType1() {
+        return graphType1;
+    }
+
+    public void setGraphType1(boolean graphType1) {
+        this.graphType1 = graphType1;
+    }
+
+    public boolean isGraphType2() {
+        return graphType2;
+    }
+
+    public void setGraphType2(boolean graphType2) {
+        this.graphType2 = graphType2;
     }
 }
