@@ -15,6 +15,7 @@ import java.io.StringReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +33,12 @@ import model.dao.IndicatorsConfigurationsFacade;
 import model.dao.IndicatorsFacade;
 import model.pojo.Indicators;
 import model.pojo.IndicatorsConfigurations;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRichTextString;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.CellRangeAddress;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -48,10 +55,6 @@ import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.time.Day;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.VerticalAlignment;
 import org.joda.time.DateTime;
@@ -161,8 +164,8 @@ public class IndicatorsPercentageVariationMB {
     private boolean renderedDynamicDataTable = true;
     private boolean showCount = false;//mostrar recuento
     private boolean showRowPercentage = true;//mostrar porcentaje por fila
-    //private boolean showColumnPercentage = true;//mostrar porcentaje por columna
-    //private boolean showTotalPercentage = true;//mostrar porcentaje del total
+    private boolean graphType1 = true;
+    private boolean graphType2 = false;
     private boolean showCalculation = false;//mostrar la resta
     private boolean colorType = true;
     DecimalFormat formateador = new DecimalFormat("0.00");
@@ -1237,9 +1240,14 @@ public class IndicatorsPercentageVariationMB {
 
     public void createImage() {
         try {
-            JFreeChart chart = createAreaChart();
+            JFreeChart chart = null;
+            //if (graphType1) {
+            //    chart = createAreaChart();
+            //} else {
+            chart = createBarChart();
+            //}
             File chartFile = new File("dynamichart");
-            ChartUtilities.saveChartAsPNG(chartFile, chart, 750, 500);
+            ChartUtilities.saveChartAsPNG(chartFile, chart, 700, 500);
             chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
         } catch (Exception e) {
         }
@@ -1490,11 +1498,11 @@ public class IndicatorsPercentageVariationMB {
                     valuesId.add(String.valueOf(i));
                 }
                 break;
-            case neighborhoods://barrio,
-            case communes://comuna,
-            case corridors://corredor,
-            case areas://zona,
-            case genders://genero,
+            case neighborhoods://barrio
+            case communes://comuna
+            case corridors://corredor
+            case areas://zona
+            case genders://genero
             case days://dia semana
             case quadrants://cuadrante
             case NOVALUE://es una tabla categorica
@@ -1547,7 +1555,6 @@ public class IndicatorsPercentageVariationMB {
 
     private String getMatrixValueA(String type, int col, int row) {
         String strReturn = "-1";
-
 
         try {
             if (type.compareTo("countXY") == 0) {//valor en la matriz            
@@ -1729,6 +1736,163 @@ public class IndicatorsPercentageVariationMB {
         return value;
     }
 
+    public void postProcessXLS(Object document) {
+        HSSFWorkbook book = (HSSFWorkbook) document;
+        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+        HSSFRow fila;
+        HSSFCell celda;
+        HSSFRichTextString texto;
+
+        headers1 = new ArrayList<SpanColumns>();
+        headers2 = new String[columNamesFinal.size()];
+        int posRow = 0;
+        int posF;
+        int posI;
+        String strReturn = " ";
+        String value;
+        double totalA;
+        double totalB;
+        //-------------------------------------------------------------------
+        //TABLA QUE CONTIENE LA CABECERA
+        //-------------------------------------------------------------------                
+        if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
+            fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja            
+            posRow++;
+            for (int i = 0; i < columNamesFinal.size(); i++) {
+                celda = fila.createCell((short) i + 2);// +2 por que faltal las filas               
+                texto = new HSSFRichTextString(determineHeader(columNamesFinal.get(i)));// Se crea el contenido de la celda y se mete en ella.
+                celda.setCellValue(texto);
+            }
+        }
+        if (variablesCrossData.size() == 3) {
+            //-------------------------------------------------------------------
+            //CABECERA COMPUESTA            
+            String currentVar = "";
+            String[] splitVars;
+            for (int i = 0; i < columNamesFinal.size(); i++) {
+                splitVars = columNamesFinal.get(i).split("\\}");//separo las dos variables
+                if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
+                    int num = headers1.get(headers1.size() - 1).getColumns();
+                    headers1.get(headers1.size() - 1).setColumns(num + 1);
+                } else {//no existe la columna la debo crear y adicionar a la lista                    
+                    currentVar = splitVars[0];
+                    SpanColumns newSpanColumn = new SpanColumns();
+                    newSpanColumn.setLabel(splitVars[0]);
+                    newSpanColumn.setColumns(1);
+                    headers1.add(newSpanColumn);
+                }
+                headers2[i] = splitVars[1];//a la segunda cabecera le agrego la segunda variable separada
+            }
+            //AGREGO LA CABECERA 1 A El PANEL_GRID
+            fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja
+            posRow++;
+            posF = 1;
+            posI = 1;
+            for (int j = 0; j < headers1.size(); j++) {
+                posI = posF + 1;
+                for (int i = 0; i < headers1.get(j).getColumns(); i++) {
+                    posF++;
+                }
+                sheet.addMergedRegion(new CellRangeAddress(0, 0, posI, posF));
+                //posF++;
+            }
+            short posColumn = 2;// +2 por que faltal las filas               
+            for (int i = 0; i < headers1.size(); i++) {
+                celda = fila.createCell(posColumn);
+                posColumn = (short) (posColumn + headers1.get(i).getColumns());
+                texto = new HSSFRichTextString(determineHeader(headers1.get(i).getLabel()));// Se crea el contenido de la celda y se mete en ella.
+                celda.setCellValue(texto);
+            }
+            fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja
+            posRow++;
+            for (int i = 0; i < headers2.length; i++) {
+                celda = fila.createCell((short) i + 2);// +2 por que faltal las filas               
+                texto = new HSSFRichTextString(determineHeader(headers2[i]));// Se crea el contenido de la celda y se mete en ella.
+                celda.setCellValue(texto);
+            }
+        }
+
+        //-------------------------------------------------------------------
+        //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
+        //-------------------------------------------------------------------      
+        int rowsForRecord = 0;//filas a crear por registro(inicia en 1 por el rowspan cuenta desde 1)
+        if (showRowPercentage) {
+            rowsForRecord++;
+        }
+        if (showCount) {
+            rowsForRecord++;
+        }
+        posI = posRow;
+        posF = posRow + 1;
+
+        for (int j = 0; j < rowNames.size(); j++) {
+            if (rowsForRecord == 2) {
+                sheet.addMergedRegion(new CellRangeAddress(posI, posF, 0, 0));
+                posI = posI + 2;
+                posF = posF + 2;
+                fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja            
+                posRow++;
+                celda = fila.createCell(0);
+                celda.setCellValue(determineHeader(rowNames.get(j)));
+
+                celda = fila.createCell(1);
+                celda.setCellValue("Recuento");
+                for (int i = 0; i < columNamesFinal.size(); i++) {
+                    totalA = Double.parseDouble(getMatrixValueA("countXY", i, j));
+                    totalB = Double.parseDouble(getMatrixValueB("countXY", i, j));
+                    if (showCalculation) {
+                        value = formateador.format(totalA - totalB) + "(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                    } else {
+                        value = formateador.format(totalA - totalB);
+                    }
+                    celda = fila.createCell((short) i + 2);// +2 por que faltal nombres de filas
+                    celda.setCellValue(new HSSFRichTextString(value));
+                }
+
+                fila = sheet.createRow(posRow);
+                posRow++;
+                celda = fila.createCell(1);
+                celda.setCellValue(new HSSFRichTextString("% por fila"));
+
+                for (int i = 0; i < columNamesFinal.size(); i++) {
+                    //value;
+                    totalA = Double.parseDouble(getMatrixValueA("rowPercentageXY", i, j));
+                    totalB = Double.parseDouble(getMatrixValueB("rowPercentageXY", i, j));
+                    if (showCalculation) {
+                        value = formateador.format(totalA - totalB) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                    } else {
+                        value = formateador.format(totalA - totalB);
+                    }
+                    celda = fila.createCell((short) i + 2);// +2 por que faltal nombres de filas                            
+                    celda.setCellValue(new HSSFRichTextString(value));
+                }
+
+            } else {
+                fila = sheet.createRow(posRow);
+                posRow++;
+
+                celda = fila.createCell(0);
+                celda.setCellValue(new HSSFRichTextString(determineHeader(rowNames.get(j))));
+
+                celda = fila.createCell(1);
+                celda.setCellValue(new HSSFRichTextString("% por fila"));
+
+                for (int i = 0; i < columNamesFinal.size(); i++) {
+                    //value;
+                    totalA = Double.parseDouble(getMatrixValueA("rowPercentageXY", i, j));
+                    totalB = Double.parseDouble(getMatrixValueB("rowPercentageXY", i, j));
+                    if (showCalculation) {
+                        value = formateador.format(totalA - totalB) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                    } else {
+                        value = formateador.format(totalA - totalB);
+                    }
+                    celda = fila.createCell((short) i + 2);// +2 por que faltal nombres de columnas               
+                    celda.setCellValue(new HSSFRichTextString(value));
+                }
+            }
+        }
+    }
+
     private String createDataTableResult() {
 
         headers1 = new ArrayList<SpanColumns>();
@@ -1883,14 +2047,10 @@ public class IndicatorsPercentageVariationMB {
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td valign=\"top\">\r\n";
 
-
         //-------------------------------------------------------------------
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
         //-------------------------------------------------------------------      
-        //int sizeTableMatrix = columNamesFinal.size() * 150;//que cada columna tenga 100px
-        //sizeTableMatrix = sizeTableMatrix + 100;//de los totales
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
-        //strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
         strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
         //----------------------------------------------------------------------
         String value;
@@ -1917,14 +2077,6 @@ public class IndicatorsPercentageVariationMB {
                     }
                     strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 }
-//                totalA = Double.parseDouble(getMatrixValueA("rowTotal", -1, j));
-//                totalB = Double.parseDouble(getMatrixValueB("rowTotal", -1, j));
-//                if (showCalculation) {
-//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//                } else {
-//                    value = formateador.format(totalA - totalB);
-//                }
-//                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             if (showRowPercentage) {
@@ -1945,196 +2097,10 @@ public class IndicatorsPercentageVariationMB {
                     }
                     strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 }
-//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingTotalRow", -1, j));
-//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingTotalRow", -1, j));
-//                if (showCalculation) {
-//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//                } else {
-//                    value = formateador.format(totalA - totalB);
-//                }
-//                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
-            //total = 0;
-//            if (showColumnPercentage) {
-//                if (j == 0 && !firstTrAdd) {
-//                    strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
-//                    firstTrAdd = true;
-//                } else {
-//                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-//                }
-//                for (int i = 0; i < columNamesFinal.size(); i++) {
-//                    //value;
-//                    totalA = Double.parseDouble(getMatrixValueA("columnPercentageXY", i, j));
-//                    totalB = Double.parseDouble(getMatrixValueB("columnPercentageXY", i, j));
-//                    if (showCalculation) {
-//                        value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//                    } else {
-//                        value = formateador.format(totalA - totalB);
-//                    }
-//                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
-//                }
-//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingGrandTotal", -1, j));
-//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingGrandTotal", -1, j));
-//                if (showCalculation) {
-//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//                } else {
-//                    value = formateador.format(totalA - totalB);
-//                }
-//                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
-//                strReturn = strReturn + "                            </tr>\r\n";
-//            }
-//            //total = 0;
-//            if (showTotalPercentage) {
-//                if (j == 0 && !firstTrAdd) {
-//                    strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
-//                    firstTrAdd = true;
-//                } else {
-//                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-//                }
-//                for (int i = 0; i < columNamesFinal.size(); i++) {
-//                    //value;
-//                    totalA = Double.parseDouble(getMatrixValueA("totalPercentageXY", i, j));
-//                    totalB = Double.parseDouble(getMatrixValueB("totalPercentageXY", i, j));
-//                    if (showCalculation) {
-//                        value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//                    } else {
-//                        value = formateador.format(totalA - totalB);
-//                    }
-//                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
-//                }
-//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalRowAccordingGrandTotal", -1, j));
-//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalRowAccordingGrandTotal", -1, j));
-//                if (showCalculation) {
-//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//                } else {
-//                    value = formateador.format(totalA - totalB);
-//                }
-//                strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
-//                strReturn = strReturn + "                            </tr>\r\n";
-//            }
             changeColorType();//cambiar de color las filas de blanco a azul
         }
-        //----------------------------------------------------------------------
-        //AGREGO LA ULTIMA FILA CORRESPONDIENTE A LOS TOTALES
-        //----------------------------------------------------------------------
-
-
-//        if (showCount) {
-//            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-//            for (int i = 0; i < totalsHorizontalA.size(); i++) {
-//                totalA = Double.parseDouble(getMatrixValueA("columnTotal", i, 0));
-//                totalB = Double.parseDouble(getMatrixValueB("columnTotal", i, 0));
-//                if (showCalculation) {
-//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//                } else {
-//                    value = formateador.format(totalA - totalB);
-//                }
-//                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-//            }
-//            totalA = grandTotalA;
-//            totalB = grandTotalB;
-//            if (showCalculation) {
-//                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//            } else {
-//                value = formateador.format(totalA - totalB);
-//            }
-//            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-//            strReturn = strReturn + "                            </tr>\r\n";
-//        }
-//
-//        if (showRowPercentage) {
-//            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-//            for (int i = 0; i < totalsHorizontalA.size(); i++) {
-//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalColumnAccordingGrandTotal", i, 0));
-//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalColumnAccordingGrandTotal", i, 0));
-//                if (showCalculation) {
-//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//                } else {
-//                    value = formateador.format(totalA - totalB);
-//                }
-//                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-//                //strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0) + "</td>\r\n";
-//            }
-//            totalA = Double.parseDouble(getMatrixValueA("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-//            totalB = Double.parseDouble(getMatrixValueB("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-//            if (showCalculation) {
-//                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//            } else {
-//                value = formateador.format(totalA - totalB);
-//            }
-//            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-//            strReturn = strReturn + "                            </tr>\r\n";
-//        }
-//        if (showColumnPercentage) {
-//            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-//            for (int i = 0; i < totalsHorizontalA.size(); i++) {
-//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalColumnAccordingTotalColumn", i, 0));
-//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalColumnAccordingTotalColumn", i, 0));
-//                if (showCalculation) {
-//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//                } else {
-//                    value = formateador.format(totalA - totalB);
-//                }
-//                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-//            }
-//            totalA = Double.parseDouble(getMatrixValueA("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-//            totalB = Double.parseDouble(getMatrixValueB("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-//            if (showCalculation) {
-//                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//            } else {
-//                value = formateador.format(totalA - totalB);
-//            }
-//            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-//            strReturn = strReturn + "                            </tr>\r\n";
-//        }
-//        if (showTotalPercentage) {
-//            strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-//            for (int i = 0; i < totalsHorizontalA.size(); i++) {
-//                totalA = Double.parseDouble(getMatrixValueA("percentageOfTotalColumnAccordingGrandTotal", i, 0));
-//                totalB = Double.parseDouble(getMatrixValueB("percentageOfTotalColumnAccordingGrandTotal", i, 0));
-//                if (showCalculation) {
-//                    value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//                } else {
-//                    value = formateador.format(totalA - totalB);
-//                }
-//                strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-//            }
-//            totalA = Double.parseDouble(getMatrixValueA("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-//            totalB = Double.parseDouble(getMatrixValueB("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
-//            if (showCalculation) {
-//                value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
-//            } else {
-//                value = formateador.format(totalA - totalB);
-//            }
-//            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-//            strReturn = strReturn + "                            </tr>\r\n";
-//
-////            strReturn = strReturn + "                                <td>" + getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0) + "</td>\r\n";
-////            strReturn = strReturn + "                            </tr>\r\n";
-//        }
-
-
-//        strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
-//        for (int i = 0; i < totalsHorizontalA.size(); i++) {
-//            totalA = Double.parseDouble(totalsHorizontalA.get(i));
-//            totalB = Double.parseDouble(totalsHorizontalB.get(i));
-//            if (showCalculation) {
-//                value = "<b>" + String.valueOf(totalA - totalB) + "</b><br/>(" + totalA + "-" + totalB + ")";
-//            } else {
-//                value = String.valueOf(totalA - totalB);
-//            }
-//            strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-//        }
-//        totalA = grandTotalA;
-//        totalB = grandTotalB;
-//        if (showCalculation) {
-//            value = "<b>" + String.valueOf(totalA - totalB) + "</b><br/>(" + totalA + "-" + totalB + ")";
-//        } else {
-//            value = String.valueOf(totalA - totalB);
-//        }
-//        strReturn = strReturn + "                                <td>" + value + "</td>\r\n";
-//        strReturn = strReturn + "                            </tr>\r\n";
         //-------------------------------------------------------------------
         //FINALIZA
         //-------------------------------------------------------------------        
@@ -2147,41 +2113,20 @@ public class IndicatorsPercentageVariationMB {
         return strReturn;
     }
 
-    private static XYDataset createDataset() {
-        TimeSeries series1 = new TimeSeries("Random 1");
-        TimeSeries series2 = new TimeSeries("Random 2");
-        double value1 = 0.0;
-        double value2 = 0.0;
-        Day day = new Day();
-        for (int i = 0; i < 200; i++) {
-            value1 = value1 + Math.random() - 0.5;
-            value2 = value2 + Math.random() - 0.5;
-            series1.add(day, value1);
-            series2.add(day, value2);
-            day = (Day) day.next();
-        }
-
-        TimeSeriesCollection dataset = new TimeSeriesCollection();
-        dataset.addSeries(series1);
-        dataset.addSeries(series2);
-        return dataset;
-    }
-//    double[][] data = new double[][]{
-//        {1.0, 4.0, 3.0, 5.0, 5.0, 7.0, 7.0, 8.0},
-//        {5.0, 7.0, 6.0, 8.0, 4.0, 4.0, 2.0, 1.0},
-//        {4.0, 3.0, 2.0, 3.0, 6.0, 3.0, 4.0, 3.0}
-//    };
-//    CategoryDataset dataset = DatasetUtilities.createCategoryDataset(
-//            "Series ", "Type ", data);
-
-    private JFreeChart createAreaChart() {
+    private JFreeChart createBarChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         String serieName = "";
         ResultSet rs;
         ResultSet rs2;
+        ResultSet rs3;
+        ResultSet rs4;
+        String sql1;
+        String sql2;
+        String sql3;
+        String sql4;
         double increment = 0;
         try {
-            sql = ""
+            sql1 = ""
                     + " SELECT \n"
                     + "    * \n"
                     + " FROM \n"
@@ -2190,16 +2135,31 @@ public class IndicatorsPercentageVariationMB {
                     + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
                     + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-                sql = sql + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
+                sql1 = sql1 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
                 serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-                sql = sql + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
+                sql1 = sql1 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
+                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+            }
+            sql3 = ""
+                    + " SELECT \n"
+                    + "    SUM(count) \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
+            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
+                sql3 = sql3 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
+                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+            }
+            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
+                sql3 = sql3 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
                 serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
             }
 
-            rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
-            sql = ""
+            sql2 = ""
                     + " SELECT \n"
                     + "    * \n"
                     + " FROM \n"
@@ -2208,31 +2168,59 @@ public class IndicatorsPercentageVariationMB {
                     + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
                     + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-                sql = sql + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
+                sql2 = sql2 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
                 serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-                sql = sql + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
+                sql2 = sql2 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
+                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+            }
+
+            sql4 = ""
+                    + " SELECT \n"
+                    + "    SUM(count) \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
+            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
+                sql4 = sql4 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
+                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+            }
+            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
+                sql4 = sql4 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
                 serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
             }
 //            if (serieName.length() == 0) {
 //                serieName = "Casos";
 //            }
-            rs2 = connectionJdbcMB.consult(sql + " ORDER BY record_id");
+            rs = connectionJdbcMB.consult(sql1 + " ORDER BY record_id");
+            rs2 = connectionJdbcMB.consult(sql2 + " ORDER BY record_id");
+            rs3 = connectionJdbcMB.consult(sql3);
+            rs4 = connectionJdbcMB.consult(sql4);
+
+            rs3.next();
+            rs4.next();
 
             String strDateName;
-            int totalInt;
-
+            double valor;
+            double valor2;
+            int totalA = rs3.getInt(1);
+            int totalB = rs4.getInt(1);
 
             while (rs.next()) {
                 rs2.next();
                 //if (rs != null && rs2 != null) {
-                    totalInt = rs.getInt("count") - rs2.getInt("count");
-                    if (increment < Math.sqrt(totalInt * totalInt)) {
-                        increment = Math.sqrt(totalInt * totalInt);
-                    }
-                    strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1");
-                    dataset.setValue(totalInt, "-", strDateName);
+                valor = (double) (rs.getInt("count") * 100) / (double) totalA;
+                valor2 = (double) (rs2.getInt("count") * 100) / (double) totalB;
+
+                valor = valor - valor2;
+                if (increment < Math.sqrt(valor * valor)) {
+                    increment = Math.sqrt(valor * valor);
+                }
+                strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1");
+                dataset.setValue(valor, "-", strDateName);
                 //}
                 //dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);
             }
@@ -2266,7 +2254,6 @@ public class IndicatorsPercentageVariationMB {
 
         final CategoryPlot plot = chart.getCategoryPlot();
         plot.setForegroundAlpha(0.5f);
-
         ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());//quitar gradiente
 
         IntervalMarker intervalmarker = new IntervalMarker(-1 * increment, increment, Color.yellow);
@@ -2280,15 +2267,180 @@ public class IndicatorsPercentageVariationMB {
 
         final CategoryAxis domainAxis = plot.getDomainAxis();
         domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-//        domainAxis.setLowerMargin(0.0);
-//        domainAxis.setUpperMargin(0.0);
-//        domainAxis.addCategoryLabelToolTip("Type 1", "The first type.");
-//        domainAxis.addCategoryLabelToolTip("Type 2", "The second type.");
-//        domainAxis.addCategoryLabelToolTip("Type 3", "The third type.");
-//
-//        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-//        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-//        rangeAxis.setLabelAngle(0 * Math.PI / 2.0);
+
+        if (showItems) {
+            CategoryItemRenderer renderer = plot.getRenderer();
+            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00"));//DecimalFormat("0.00"));
+            //CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{3}", NumberFormat.getIntegerInstance(), new DecimalFormat("0.00%"));
+
+            renderer.setItemLabelGenerator(generator);
+            renderer.setItemLabelsVisible(true);
+        }
+
+        return chart;
+    }
+
+    private JFreeChart createAreaChart() {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        String serieName = "";
+        ResultSet rs;
+        ResultSet rs2;
+        ResultSet rs3;
+        ResultSet rs4;
+        String sql1;
+        String sql2;
+        String sql3;
+        String sql4;
+        double increment = 0;
+        try {
+            sql1 = ""
+                    + " SELECT \n"
+                    + "    * \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
+            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
+                sql1 = sql1 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
+                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+            }
+            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
+                sql1 = sql1 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
+                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+            }
+
+            sql3 = ""
+                    + " SELECT \n"
+                    + "    SUM(count) \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
+            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
+                sql1 = sql1 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
+                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+            }
+            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
+                sql1 = sql1 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
+                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+            }
+
+
+            sql2 = ""
+                    + " SELECT \n"
+                    + "    * \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
+            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
+                sql2 = sql2 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
+                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+            }
+            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
+                sql2 = sql2 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
+                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+            }
+
+            sql4 = ""
+                    + " SELECT \n"
+                    + "    SUM(count) \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
+            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
+                sql2 = sql2 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
+                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+            }
+            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
+                sql2 = sql2 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
+                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+            }
+//            if (serieName.length() == 0) {
+//                serieName = "Casos";
+//            }
+            rs = connectionJdbcMB.consult(sql1 + " ORDER BY record_id");
+            rs2 = connectionJdbcMB.consult(sql2 + " ORDER BY record_id");
+            rs3 = connectionJdbcMB.consult(sql3);
+            rs4 = connectionJdbcMB.consult(sql4);
+
+            rs3.next();
+            rs4.next();
+
+            String strDateName;
+            double valor;
+            double valor2;
+            int totalA = rs3.getInt(1);
+            int totalB = rs4.getInt(1);
+
+            while (rs.next()) {
+                rs2.next();
+                //if (rs != null && rs2 != null) {
+                valor = (double) (rs.getInt("count") * 100) / (double) totalA;
+                valor2 = (double) (rs2.getInt("count") * 100) / (double) totalB;
+
+                valor = valor - valor2;
+                if (increment < Math.sqrt(valor * valor)) {
+                    increment = Math.sqrt(valor * valor);
+                }
+                strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1");
+                dataset.setValue(valor, "-", strDateName);
+                //}
+                //dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);
+            }
+            increment = increment * 0.005;//grosor linea
+
+        } catch (SQLException ex) {
+            //System.out.println("Error: " + ex.toString());
+            increment = increment * 0.005;//grosor linea
+        }
+
+        final JFreeChart chart = ChartFactory.createAreaChart(
+                "Variacion de casos", // chart title
+                "Fecha", // domain axis label
+                "Value", // range axis label
+                dataset, // data
+                PlotOrientation.VERTICAL, // orientation
+                true, // include legend
+                true, // tooltips
+                false // urls
+                );
+
+        chart.setBackgroundPaint(Color.white);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
+        final TextTitle subtitle = new TextTitle(
+                "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\t\n"
+                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")" + serieName);
+        subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        subtitle.setPosition(RectangleEdge.TOP);
+        subtitle.setVerticalAlignment(VerticalAlignment.BOTTOM);
+        chart.addSubtitle(subtitle);
+
+        final CategoryPlot plot = chart.getCategoryPlot();
+        plot.setForegroundAlpha(0.5f);
+
+        plot.setBackgroundPaint(Color.lightGray);
+        plot.setDomainGridlinesVisible(true);
+        plot.setDomainGridlinePaint(Color.white);
+        plot.setRangeGridlinesVisible(true);
+        plot.setRangeGridlinePaint(Color.white);
+
+        final CategoryAxis domainAxis = plot.getDomainAxis();
+        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+        domainAxis.setLowerMargin(0.0);
+        domainAxis.setUpperMargin(0.0);
+        domainAxis.addCategoryLabelToolTip("Type 1", "The first type.");
+        domainAxis.addCategoryLabelToolTip("Type 2", "The second type.");
+        domainAxis.addCategoryLabelToolTip("Type 3", "The third type.");
+
+        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        rangeAxis.setLabelAngle(0 * Math.PI / 2.0);
 
 //        NumberAxis xAxis2 = new NumberAxis("Domain Axis 2");
 //        xAxis2.setAutoRangeIncludesZero(false);
@@ -2309,7 +2461,6 @@ public class IndicatorsPercentageVariationMB {
     private void createMatrixDifference() {
         //System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         try {
-
             ArrayList<String> columnNamesPivot = new ArrayList<String>();
             columNames = new ArrayList<String>();
             columNamesFinal = new ArrayList<String>();
@@ -2318,7 +2469,6 @@ public class IndicatorsPercentageVariationMB {
             int totalB;
             ResultSet rs = null;
             ResultSet rs2;
-
             //---------------------------------------------------------            
             //DETERMINO NOMBRES DE COLUMNAS PARA MATIRZ SALIDA
             //---------------------------------------------------------            
@@ -2524,6 +2674,24 @@ public class IndicatorsPercentageVariationMB {
         for (int i = 0; i < totalsVerticalB.size(); i++) {
             grandTotalB = grandTotalB + Integer.parseInt(totalsVerticalB.get(i));
         }
+    }
+
+    public void changeGraphType1() {
+        if (graphType1 == false) {
+            graphType2 = true;
+        } else {
+            graphType2 = false;
+        }
+        createImage();
+    }
+
+    public void changeGraphType2() {
+        if (graphType2 == false) {
+            graphType1 = true;
+        } else {
+            graphType1 = false;
+        }
+        createImage();
     }
 
     //---------------------------------------------------------------------------------------------
@@ -2890,7 +3058,6 @@ public class IndicatorsPercentageVariationMB {
 //    public void setShowTotalPercentage(boolean showTotalPercentage) {
 //        this.showTotalPercentage = showTotalPercentage;
 //    }
-
     public String getNewConfigurationName() {
         return newConfigurationName;
     }
@@ -2969,5 +3136,21 @@ public class IndicatorsPercentageVariationMB {
 
     public void setShowItems(boolean showItems) {
         this.showItems = showItems;
+    }
+
+    public boolean isGraphType1() {
+        return graphType1;
+    }
+
+    public void setGraphType1(boolean graphType1) {
+        this.graphType1 = graphType1;
+    }
+
+    public boolean isGraphType2() {
+        return graphType2;
+    }
+
+    public void setGraphType2(boolean graphType2) {
+        this.graphType2 = graphType2;
     }
 }
