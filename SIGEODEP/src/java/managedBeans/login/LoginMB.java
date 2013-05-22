@@ -5,6 +5,10 @@
 package managedBeans.login;
 
 import beans.connection.ConnectionJdbcMB;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.faces.FacesException;
@@ -131,6 +135,10 @@ public class LoginMB {
     }
 
     private String continueLogin() {
+        context = FacesContext.getCurrentInstance();
+        connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+
+
         FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", loginname);
         HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
         String[] splitPermissions = currentUser.getPermissions().split("\t");
@@ -162,9 +170,7 @@ public class LoginMB {
         userName = currentUser.getUserName();
         userJob = currentUser.getUserJob();
         applicationControlMB.addSession(currentUser.getUserId(), idSession);
-        context = FacesContext.getCurrentInstance();
         //System.out.println("Usuario se logea " + loginname + " ID: " + idSession);
-        connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         if (connectionJdbcMB.connectToDb()) {
             connectionJdbcMB.setCurrentUser(currentUser);
             projectsMB = (ProjectsMB) context.getApplication().evaluateExpressionGet(context, "#{projectsMB}", ProjectsMB.class);
@@ -192,6 +198,19 @@ public class LoginMB {
                 projectsMB.openProject(currentUser.getProjectId());
             }
             autenticado = true;
+
+            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM configurations");
+            try {
+                rs.next();
+                FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("db_user", rs.getString("user_db"));
+                FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("db_pass", rs.getString("password_db"));
+                FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("db_host", rs.getString("server_db"));
+                FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("db_name", rs.getString("name_db"));
+
+            } catch (SQLException ex) {
+                Logger.getLogger(LoginMB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto!!", "Se ha ingresado al sistema");
             FacesContext.getCurrentInstance().addMessage(null, msg);
             return "homePage";
