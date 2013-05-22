@@ -10,8 +10,20 @@
         <!--==================================================================-->
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
-            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
+            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />
+            <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.4.0/adapter/ext/ext-base.js"></script>
+            <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.4.0/ext-all.js"></script>
+            <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-3.4.0/resources/css/ext-all.css" />
+            <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-3.4.0/examples/shared/examples.css" />
+            <script type="text/javascript" src="../../resources/js/OpenLayers.js"></script>
+            <script type="text/javascript" src="../../resources/js/GeoExt.js"></script>
+            <script type="text/javascript" src="../../resources/js/geo.js"></script>
             <script>
+                Ext.onReady(function() {
+
+                    alert("Congratulations! You have Ext configured correctly!");
+
+                });
                 fnAdjustTable = function(){
                     var colCount = $('#firstTr>td').length; //get total number of column
                     var m = 0;
@@ -201,7 +213,7 @@
                                 id="IdBtnGenerate" 
                                 actionListener="#{indicatorsCountMB.process}"
                                 oncomplete="showTableResult()"                                                        
-                                update="IdImageChart IdPanelGraphConfig IdDataTableHtml"/>
+                                update="IdImageChart IdPanelGraphConfig IdDataTableHtml :maps_form"/>
                             <p:commandButton
                                 id="IdPaint"
                                 value="paint"
@@ -309,16 +321,90 @@
                         <br/>
                         <br/>                        
                         <p:fieldset legend="MAPAS"> 
-                            <br/>
-                            Mapas
-                            <br/>
-                            <br/>
+
                         </p:fieldset>
                         <br/>
                     </p:tab>
                 </p:tabView>
             </h:form>            
+            <h:form target="_blank" id="maps_form">
+                <br/>
+                <p:spinner min="1" max="#{geoDBConnectionMB.gap}" value="#{geoDBConnectionMB.bins}" id="cat_spinner" >
+                    <f:ajax event="change" 
+                            listener="#{geoDBConnectionMB.createRanges}" 
+                            render="rangeTable" />
+                </p:spinner>
+                <p:selectOneMenu id="splitMethod" 
+                                 value="#{geoDBConnectionMB.splitMethod}" >
+                    <f:selectItem itemValue="2"
+                                  itemLabel="EqualFrequency"/>
+                    <f:selectItem itemValue="0"
+                                  itemLabel="EqualWidth"/>
+                    <f:selectItem itemValue="1"
+                                  itemLabel="Jenks"/>
+                    <f:selectItem itemValue="3"
+                                  itemLabel="KMeans"/>
+                    <f:ajax event="change" 
+                            listener="#{geoDBConnectionMB.createRanges}" 
+                            render="rangeTable" />
+                </p:selectOneMenu>
+
+                <p:selectOneMenu id="ramp"
+                                 value="#{geoDBConnectionMB.selectedRamp}" 
+                                 converter="#{rampConverter}"
+                                 effect="fade" var="r">
+                    <f:selectItems value="#{geoDBConnectionMB.ramps}" var="ramp" itemLabel="#{ramp.name}" itemValue="#{ramp}"/>
+                    <p:column>
+                        <p:graphicImage value="#{r.image}" />                     
+                        <h:outputText value="#{r.name}" />
+                    </p:column>
+                    <f:ajax event="change" 
+                            listener="#{geoDBConnectionMB.createRanges}" 
+                            render="rangeTable" />                
+                </p:selectOneMenu>                
+
+                <p:dataTable 
+                    id="rangeTable" 
+                    value="#{geoDBConnectionMB.ranges}" 
+                    var="range" 
+                    rowKey="#{range}" 
+                    editable="true">
+                    <p:column headerText="Color" style="width:5%">
+                        <p:colorPicker id="cpRangeTable" value="#{range.hexcolor}"></p:colorPicker>
+                    </p:column>
+
+                    <p:column headerText="Limite Inferior" style="width:10%">
+                        <h:outputText value="#{range.start}" />
+                    </p:column>
+                    <p:column headerText="Limite Superior" style="width:10%">
+                        <h:outputText value="#{range.end}" />
+                    </p:column>
+                    <p:column headerText="Etiqueta" style="width:50%">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{range.label}" />
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{range.label}" style="width:100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Conteo" style="width:10%">
+                        <h:outputText value="#{range.count}" />
+                    </p:column>                    
+                    <p:column headerText="Editar" style="width:10%">
+                        <p:rowEditor />
+                    </p:column>
+
+                </p:dataTable>
+
+                <h:commandButton value="Generar Mapa" action="#{geoDBConnectionMB.crearURL}" />
+                <br/>
+                <div id="mainpanel"></div>
+                <br/>
+            </h:form>
         </ui:define>
+
         <ui:define name="dialogs">
             <h:form id="IdForm2">
                 <p:dialog                     
