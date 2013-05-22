@@ -179,29 +179,36 @@ public class GeoDBConnection implements Serializable {
      */
     public List<MfFeature> getPolygons(RangeFactory rf) {
         // indicator_records
-        String query = ""
-                + "SELECT "
-                + "	record_id, " + geo_column + ", count, geom "
-                + "FROM "
-                + "	indicators_records "
-                + "INNER JOIN "
-                + "	neighborhoods "
-                + "ON "
-                + "	neighborhood_name LIKE " + geo_column + " "
-                + "WHERE "
-                + "	geom IS NOT NULL "
-                + "     AND indicator_id = " + indicator_id + " "
-                + "     AND user_id = " + user_id + " "
-                + "     AND count <> 0 "
-                + "ORDER BY "
-                + "	count DESC";
+        String query = "SELECT "
+                       +"        record_id, neighborhood_name, count, geom "
+                       +" FROM "
+                       +"         neighborhoods "
+                       +" INNER JOIN "
+                       +"         (SELECT "
+                       +"                 min(record_id) AS record_id, " + geo_column + ", sum(count) AS count "
+                       +"         FROM "
+                       +"                 indicators_records "
+                       +"         WHERE "
+                       +"                 count > 0 "
+                       +"                 AND user_id = " + user_id + " " 
+                       +"                 AND indicator_id = " + indicator_id + " "
+                       +"         GROUP BY "
+                       +"                 " + geo_column + " "
+                       +"         ORDER BY "
+                       +"                 2) AS foo "
+                       +" ON 	"
+                       +"      (" + geo_column + " LIKE neighborhood_name)  "
+                       +" WHERE "
+                       +"         geom IS NOT NULL "
+                       +" ORDER BY "
+                       +"         count DESC";        
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
         ResultSet records = this.consult(query);
         try {
             while (records.next()) {
                 final int fid = records.getInt("record_id");
-                final String fname = records.getString(geo_column);
+                final String fname = records.getString("neighborhood_name");
                 final Double fvalue = new Double(records.getInt("count"));
                 final String fcolour = "#" + rf.getColorByValue(fvalue);
                 String geom = records.getString("geom");
@@ -246,23 +253,30 @@ public class GeoDBConnection implements Serializable {
     public ArrayList<Double> getCommunesNumbers() {
         numbers = new ArrayList<>();
         String query = "SELECT "
-                + "	count "
-                + "FROM "
-                + "	communes "
-                + "LEFT JOIN "
-                + "	indicators_records "
-                + "ON 	"
-                + "     (" + geo_column + " LIKE commune_name) "
-                + "WHERE "
-                + "     geom IS NOT NULL "
-                + "	AND count > 0 "
-                + "	AND user_id = " + user_id + " "
-                + "	AND indicator_id = " + indicator_id + " "
-                + "ORDER BY "
-                + "	count";
-
-        ResultSet records = this.consult(query);
+                       +"        count "
+                       +" FROM "
+                       +"         communes "
+                       +" INNER JOIN "
+                       +"         (SELECT "
+                       +"                 min(record_id) AS record_id, " + geo_column + ", sum(count) AS count "
+                       +"         FROM "
+                       +"                 indicators_records "
+                       +"         WHERE "
+                       +"                 count > 0 "
+                       +"                 AND user_id = " + user_id + " " 
+                       +"                 AND indicator_id = " + indicator_id + " "
+                       +"         GROUP BY "
+                       +"                 " + geo_column + " "
+                       +"         ORDER BY "
+                       +"                 2) AS foo "
+                       +" ON 	"
+                       +"      (" + geo_column + " LIKE commune_name)  "
+                       +" WHERE "
+                       +"         geom IS NOT NULL "
+                       +" ORDER BY "
+                       +"         count";
         System.out.println(query);
+        ResultSet records = this.consult(query);
         try {
             while (records.next()) {
                 numbers.add(new Double(records.getString("count")));
@@ -277,20 +291,28 @@ public class GeoDBConnection implements Serializable {
 
     public List<MfFeature> getCommunesPolygons(RangeFactory rf) {
         String query = "SELECT "
-                + "	record_id, commune_name, count, geom "
-                + "FROM "
-                + "	communes "
-                + "LEFT JOIN "
-                + "	indicators_records "
-                + "ON 	"
-                + "     (" + geo_column + " LIKE commune_name) "
-                + "WHERE "
-                + "     geom IS NOT NULL "
-                + "	AND count > 0 "
-                + "	AND user_id = " + user_id + " "
-                + "	AND indicator_id = " + indicator_id + " "
-                + "ORDER BY "
-                + "	count DESC";
+                       +"        record_id, commune_name, count, geom "
+                       +" FROM "
+                       +"         communes "
+                       +" INNER JOIN "
+                       +"         (SELECT "
+                       +"                 min(record_id) AS record_id, " + geo_column + ", sum(count) AS count "
+                       +"         FROM "
+                       +"                 indicators_records "
+                       +"         WHERE "
+                       +"                 count > 0 "
+                       +"                 AND user_id = " + user_id + " " 
+                       +"                 AND indicator_id = " + indicator_id + " "
+                       +"         GROUP BY "
+                       +"                 " + geo_column + " "
+                       +"         ORDER BY "
+                       +"                 2) AS foo "
+                       +" ON 	"
+                       +"      (" + geo_column + " LIKE commune_name)  "
+                       +" WHERE "
+                       +"         geom IS NOT NULL "
+                       +" ORDER BY "
+                       +"         count DESC";
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
         ResultSet records = this.consult(query);
@@ -341,22 +363,29 @@ public class GeoDBConnection implements Serializable {
 
     public ArrayList<Double> getTestNumbers() {
         numbers = new ArrayList<>();
-        String query = ""
-                + "SELECT "
-                + "	record_id, " + geo_column + ", count "
-                + "FROM "
-                + "	indicators_records "
-                + "INNER JOIN "
-                + "	neighborhoods "
-                + "ON "
-                + "	neighborhood_name LIKE " + geo_column + " "
-                + "WHERE "
-                + "	geom IS NOT NULL "
-                + "     AND indicator_id = " + indicator_id + " "
-                + "     AND user_id = " + user_id + " "
-                + "     AND count <> 0 "
-                + "ORDER BY "
-                + "	count";
+        String query = "SELECT "
+                       +"        count "
+                       +" FROM "
+                       +"         neighborhoods "
+                       +" INNER JOIN "
+                       +"         (SELECT "
+                       +"                 min(record_id) AS record_id, " + geo_column + ", sum(count) AS count "
+                       +"         FROM "
+                       +"                 indicators_records "
+                       +"         WHERE "
+                       +"                 count > 0 "
+                       +"                 AND user_id = " + user_id + " " 
+                       +"                 AND indicator_id = " + indicator_id + " "
+                       +"         GROUP BY "
+                       +"                 " + geo_column + " "
+                       +"         ORDER BY "
+                       +"                 2) AS foo "
+                       +" ON 	"
+                       +"      (" + geo_column + " LIKE neighborhood_name)  "
+                       +" WHERE "
+                       +"         geom IS NOT NULL "
+                       +" ORDER BY "
+                       +"         count";        
         ResultSet records = this.consult(query);
         System.out.println(query);
         try {
