@@ -26,6 +26,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import managedBeans.geo2.GeoDBConnection;
 import managedBeans.login.LoginMB;
 import managedBeans.reports.SpanColumns;
 import model.dao.IndicatorsConfigurationsFacade;
@@ -70,6 +71,7 @@ public class IndicatorsCountMB {
     private FacesMessage message = null;
     private ConnectionJdbcMB connectionJdbcMB;
     private LoginMB loginMB;
+    private GeoDBConnection geoDBConnection;
     private String titlePage = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
     private String titleIndicator = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
     private String subTitleIndicator = "NUMERO DE CASOS POR LESION";
@@ -128,6 +130,7 @@ public class IndicatorsCountMB {
         //-------------------------------------------------
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        geoDBConnection = (GeoDBConnection) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{geoDBConnectionMB}", GeoDBConnection.class);
         Calendar c = Calendar.getInstance();
         currentYear = c.get(Calendar.YEAR);
         initialDate.setDate(1);
@@ -260,7 +263,34 @@ public class IndicatorsCountMB {
             createImage();//creo el grafico
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze de conteo realizado");
         }
+        geoDBConnection.refreshIndicatorData(loginMB.getCurrentUser().getUserId(), currentIndicator.getIndicatorId(), variablesCrossData);
+        indicator_id = currentIndicator.getIndicatorId();
+        vars = "";
+        for(Variable var : variablesCrossData) {
+            vars += var.getName() + ",";
+        }
     }
+    
+    private int indicator_id;
+    private String vars;
+
+    public int getIndicator_id() {
+        return indicator_id;
+    }
+
+    public void setIndicator_id(int indicator_id) {
+        this.indicator_id = indicator_id;
+    }
+
+    public String getVars() {
+        return vars;
+    }
+
+    public void setVars(String vars) {
+        this.vars = vars;
+    }
+
+    
 
     public void changeCategoticalList() {
         if (!currentCategoricalValuesSelected.isEmpty()) {
