@@ -14,7 +14,6 @@
 
 var mapPanel, mainPanel;
 var bkey = "AnyGyd4GaAzToU0sDaA0NaXDD88yChcUh8ySoNc32_ddxkrxkl9K5SIATkA8EpMn"
-var rf = "00ff00<tab>1.0<->1.0<tab>Igual a 1.0<tab>46<end>40ff00<tab>2.0<->2.0<tab>Igual a 2.0<tab>28<end>80ff00<tab>3.0<->3.0<tab>Igual a 3.0<tab>5<end>bfff00<tab>4.0<->4.0<tab>Igual a 4.0<tab>16<end>ffff00<tab>5.0<->5.0<tab>Igual a 5.0<tab>6<end>ffcc00<tab>6.0<->6.0<tab>Igual a 6.0<tab>5<end>ff9900<tab>7.0<->7.0<tab>Igual a 7.0<tab>4<end>ff6600<tab>8.0<->8.0<tab>Igual a 8.0<tab>7<end>ff3300<tab>9.0<->12.0<tab>De 9.0 a 12.0<tab>10<end>ff0000<tab>13.0<->72.0<tab>De 13.0 a 72.0<tab>8<end>";
 
 function createLegend(rf){
     var paper = Raphael(document.getElementById('legend'), 320, 320);
@@ -132,14 +131,14 @@ Ext.onReady(function() {
     var store = new GeoExt.data.FeatureStore({
         layer: vectors,
         fields: [
-            {
-                name: 'name', 
-                type: 'string'
-            },
-            {
-                name: 'value', 
-                type: 'float'
-            }
+        {
+            name: 'name', 
+            type: 'string'
+        },
+        {
+            name: 'value', 
+            type: 'float'
+        }
         ],
         autoLoad: true
     });
@@ -152,26 +151,44 @@ Ext.onReady(function() {
         store: store,
         width: 320,        
         cm: new Ext.grid.ColumnModel([
-            {
-                id: "name", 
-                header: "Nombre", 
-                dataIndex: "name", 
-                sortable: true
-            },
+        {
+            id: "name", 
+            header: "Nombre", 
+            dataIndex: "name", 
+            sortable: true
+        },
 
-            {
-                id: "value", 
-                header: "Valor", 
-                dataIndex: "value", 
-                sortable: true,
-                direction: "desc"
-            }
+        {
+            id: "value", 
+            header: "Valor", 
+            dataIndex: "value", 
+            sortable: true,
+            direction: "desc"
+        }
         ]),
         sm: new GeoExt.grid.FeatureSelectionModel(),
         autoExpandColumn: "name"
     });
     
-
+    vectors.events.on({
+        featureselected: function(e) {
+            //alert(e.feature.data.name);
+            WHERE = "(";
+            for(var i = 0; i < this.selectedFeatures.length; i++){
+                WHERE += "'" +this.selectedFeatures[i].data.name + "',";
+            }
+            WHERE = WHERE.substring(0, WHERE.length - 1) + ")";
+            var uri = "getPieData.jsp?WHERE=" + WHERE
+            OpenLayers.loadURL(uri, "", this, function onComplete(response) {
+                if (response.responseText.indexOf('EPIC FAIL!!!') == -1) {
+                    var data = obj = JSON.parse(response.responseText);
+                    alert(data.values)
+                    alert(data.labels)
+                }
+            });
+        }
+    });
+    
 
     // create a panel and add the map panel and grid panel
     // inside it
