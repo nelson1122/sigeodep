@@ -448,13 +448,15 @@ public class GeoDBConnection implements Serializable {
         }
     }
 
-    public String getPieData(String WHERE) {
+    public String getPieData(String WHERE, int user_id, int indicator_id) {
         String query = "SELECT "
                 + "	min(record_id) AS id, column_2 AS label, sum(count) AS count "
                 + "FROM "
                 + "	indicators_records "
                 + "WHERE "
                 + "	column_1 IN " + WHERE + " "
+                + "     AND user_id = " + user_id + " "
+                + "     AND indicator_id = " + indicator_id + ""
                 + "GROUP BY "
                 + "	column_2 "
                 + "ORDER BY "
@@ -468,8 +470,10 @@ public class GeoDBConnection implements Serializable {
             while (records.next()) {
                 String label = records.getString("label");
                 int count = records.getInt("count");
-                labels.put(label);
-                values.put(count);
+                if (count != 0) {
+                    labels.put(label);
+                    values.put(count);
+                }
             }
             obj.put("labels", labels);
             obj.put("values", values);

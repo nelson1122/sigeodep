@@ -103,7 +103,7 @@ public class MyFeatureCollection {
     }
 
     public String getPieData(String WHERE) {
-            return geo.getPieData(WHERE);
+            return geo.getPieData(WHERE, user_id, indicator_id);
     }
 
     public ArrayList<Range> getRanges() {
