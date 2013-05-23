@@ -4,13 +4,16 @@
  */
 package managedBeans.geo2;
 
+import java.io.FileWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.json.JSONWriter;
 import org.mapfish.geo.MfFeature;
 import org.mapfish.geo.MfFeatureCollection;
@@ -97,6 +100,10 @@ public class MyFeatureCollection {
             Logger.getLogger(MyFeatureCollection.class.getName()).log(Level.SEVERE, null, ex);
         }
         return w;
+    }
+
+    public String getPieData(String WHERE) {
+            return geo.getPieData(WHERE);
     }
 
     public ArrayList<Range> getRanges() {
