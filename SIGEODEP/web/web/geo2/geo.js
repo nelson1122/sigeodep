@@ -105,6 +105,45 @@ Ext.onReady(function() {
         }
     })
     
+    vectors.events.on({
+        featureselected: function(e) {
+            //alert(e.feature.data.name);
+            WHERE = "(";
+            for(var i = 0; i < this.selectedFeatures.length; i++){
+                WHERE += "'" +this.selectedFeatures[i].data.name + "',";
+            }
+            WHERE = WHERE.substring(0, WHERE.length - 1) + ")";
+            var uri = "getPieData.jsp?WHERE=" + WHERE + "&" + window.location.href.split("?")[1];
+            OpenLayers.loadURL(uri, "", this, function onComplete(response) {
+                if (response.responseText.indexOf('EPIC FAIL!!!') == -1) {
+                    data = JSON.parse(response.responseText);
+                    createPopup(e.feature);
+                    setPie(e.feature.data.id);
+                }
+            });
+        }
+    });
+
+    function createPopup(feature) {
+        if(typeof popup != 'undefined' && Ext.get(popup.id) != null){
+            var flag = Ext.get(popup.id).select("div.x-tool-unpin").elements[0].style.display
+            if(flag != 'none'){
+                popup.destroy();
+            }
+        }
+        popup = new GeoExt.Popup({
+            id: 'pie_window' + feature.data.id,
+            title: 'My Popup',
+            location: feature,
+            width:600,
+            html: "<div id='pie" + feature.data.id + "'></div>",
+            maximizable: true,
+            collapsible: true,
+            unpinnable: true
+        });
+        popup.show();
+    }
+    
     neighborhoods = new OpenLayers.Layer.Vector("Barrios", {
         styleMap: initialStyles,
         projection: new OpenLayers.Projection("EPSG:900913"),
@@ -170,24 +209,6 @@ Ext.onReady(function() {
         autoExpandColumn: "name"
     });
     
-    vectors.events.on({
-        featureselected: function(e) {
-            //alert(e.feature.data.name);
-            WHERE = "(";
-            for(var i = 0; i < this.selectedFeatures.length; i++){
-                WHERE += "'" +this.selectedFeatures[i].data.name + "',";
-            }
-            WHERE = WHERE.substring(0, WHERE.length - 1) + ")";
-            var uri = "getPieData.jsp?WHERE=" + WHERE
-            OpenLayers.loadURL(uri, "", this, function onComplete(response) {
-                if (response.responseText.indexOf('EPIC FAIL!!!') == -1) {
-                    var data = obj = JSON.parse(response.responseText);
-                    alert(data.values)
-                    alert(data.labels)
-                }
-            });
-        }
-    });
     
 
     // create a panel and add the map panel and grid panel
@@ -231,4 +252,46 @@ function parseURLParams(url) {
         params[n].push(nv.length === 2 ? v : null);
     }
     return params;
+}
+
+function setPie(id){
+    var r = new Raphael("pie" + id)
+    var pie = r.piechart(90, 110, 80, data.values, 
+    {
+        legend: data.labels, 
+        legendpos: "east"
+    });
+
+    r.text(10, 10, "Pie").attr({
+        font: "20px sans-serif",
+        "text-anchor" : "start"
+    });
+    pie.hover(function () {
+        this.sector.stop();
+        this.sector.scale(1.1, 1.1, this.cx, this.cy);
+
+        if (this.label) {
+            this.label[0].stop();
+            this.label[0].attr({
+                r: 7.5
+            });
+            this.label[1].attr({
+                "font-weight": 800
+            });
+        }
+    }, function () {
+        this.sector.animate({
+            transform: 's1 1 ' + this.cx + ' ' + this.cy
+        }, 500, "bounce");
+
+        if (this.label) {
+            this.label[0].animate({
+                r: 5
+            }, 500, "bounce");
+            this.label[1].attr({
+                "font-weight": 400
+            });
+        }
+    });    
+    popup.setSize(pie.getBBox().x2 + 30, pie.getBBox().y2 + 60);
 }
