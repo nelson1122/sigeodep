@@ -126,9 +126,11 @@ Ext.onReady(function() {
 
     function createPopup(feature) {
         if(typeof popup != 'undefined' && Ext.get(popup.id) != null){
-            var flag = Ext.get(popup.id).select("div.x-tool-unpin").elements[0].style.display
-            if(flag != 'none'){
-                popup.destroy();
+            if( typeof Ext.get(popup.id).select("div.x-tool-unpin").elements[0] != 'undefined'){
+                var flag = Ext.get(popup.id).select("div.x-tool-unpin").elements[0].style.display
+                if(flag != 'none'){
+                    popup.destroy();
+                }
             }
         }
         popup = new GeoExt.Popup({
