@@ -46,7 +46,13 @@ function createLegend(rf){
 Ext.onReady(function() {
     var params = parseURLParams(window.location.href);
     createLegend(params["rf"][0]);
-               
+    vars = params["vars"][0]
+    if(vars.indexOf('cuadrante') != -1){
+        attribution = "<br>Policia Nacional";
+    } else {
+        attribution ="<br>Universidad de Nari&ntilde;o";
+    }
+    initializeColumns(vars);
     var url_data = "data.jsp?" + window.location.href.split("?")[1];
 
     var map = new OpenLayers.Map();
@@ -91,6 +97,7 @@ Ext.onReady(function() {
 
     vectors = new OpenLayers.Layer.Vector("Lesiones", {
         styleMap: customStyles,
+        attribution: attribution,
         projection: new OpenLayers.Projection("EPSG:900913"),
         strategies: [new OpenLayers.Strategy.Fixed()],
         protocol: new OpenLayers.Protocol.HTTP({
@@ -105,25 +112,27 @@ Ext.onReady(function() {
         }
     })
     
-    vectors.events.on({
-        featureselected: function(e) {
-            //alert(e.feature.data.name);
-            WHERE = "(";
-            for(var i = 0; i < this.selectedFeatures.length; i++){
-                WHERE += "'" +this.selectedFeatures[i].data.name + "',";
-            }
-            WHERE = WHERE.substring(0, WHERE.length - 1) + ")";
-            var uri = "getPieData.jsp?WHERE=" + WHERE + "&" + window.location.href.split("?")[1];
-            OpenLayers.loadURL(uri, "", this, function onComplete(response) {
-                if (response.responseText.indexOf('EPIC FAIL!!!') == -1) {
-                    data = JSON.parse(response.responseText);
-                    createPopup(e.feature);
-                    setPie(e.feature.data.id);
+    if(vars.length > 1){
+        vectors.events.on({
+            featureselected: function(e) {
+                //alert(e.feature.data.name);
+                WHERE = "(";
+                for(var i = 0; i < this.selectedFeatures.length; i++){
+                    WHERE += "'" +this.selectedFeatures[i].data.name + "',";
                 }
-            });
-        }
-    });
-
+                WHERE = WHERE.substring(0, WHERE.length - 1) + ")";
+                var uri = "getPieData.jsp?geo_column="+ geo_column + "&column=" + column_a + "&WHERE=" + WHERE + "&" + window.location.href.split("?")[1];
+                OpenLayers.loadURL(uri, "", this, function onComplete(response) {
+                    if (response.responseText.indexOf('EPIC FAIL!!!') == -1) {
+                        data = JSON.parse(response.responseText);
+                        createPopup(e.feature);
+                        setPie(e.feature.data.id);
+                    }
+                });
+            }
+        });
+    }
+    
     function createPopup(feature) {
         if(typeof popup != 'undefined' && Ext.get(popup.id) != null){
             if( typeof Ext.get(popup.id).select("div.x-tool-unpin").elements[0] != 'undefined'){
@@ -135,7 +144,7 @@ Ext.onReady(function() {
         }
         popup = new GeoExt.Popup({
             id: 'pie_window' + feature.data.id,
-            title: 'My Popup',
+            title: feature.data.name,
             location: feature,
             width:600,
             html: "<div id='pie" + feature.data.id + "'></div>",
@@ -156,10 +165,13 @@ Ext.onReady(function() {
             callbackKey: "callback"
         })
     })
+    
+
 
     map.addLayers([osm, hybrid, neighborhoods, vectors]);
     map.addControl(new OpenLayers.Control.LayerSwitcher());
-    
+    //map.addControl(new OpenLayers.Control.Attribution());
+    // 
     // create map panel
     mapPanel = new GeoExt.MapPanel({
         title: "Map",
@@ -258,14 +270,21 @@ function parseURLParams(url) {
 
 function setPie(id){
     var r = new Raphael("pie" + id)
-    var pie = r.piechart(90, 110, 80, data.values, 
+    var radio = 60;
+    var y = 0;
+    if(radio < data.values.length*10){
+        y = 10 + data.values.length*10 ;
+    } else {
+        y = radio + 30;
+    }
+    var pie = r.piechart(radio + 10, y, radio, data.values, 
     {
         legend: data.labels, 
         legendpos: "east"
     });
 
-    r.text(10, 10, "Pie").attr({
-        font: "20px sans-serif",
+    r.text(10, 10, capitalise(vars[index_a])).attr({
+        font: "16px sans-serif",
         "text-anchor" : "start"
     });
     pie.hover(function () {
@@ -296,4 +315,27 @@ function setPie(id){
         }
     });    
     popup.setSize(pie.getBBox().x2 + 30, pie.getBBox().y2 + 60);
+}
+
+function initializeColumns(columns){
+    columns = columns.substr(0, columns.length - 1)
+    vars = columns.split(',');
+    var flag = true;
+    for(var i = 0;i < vars.length; i++){
+        if(vars[i] == 'barrio' || vars[i] == 'comuna' || vars[i] == 'cuadrante'){
+            geo_column = 'column_' + (i+1);
+        } else {
+            if(flag){
+                column_a = 'column_' + (i+1);
+                index_a = i;
+                flag = false;
+            } else {
+                column_b = 'column_' + (i+1);
+            }
+        }
+    }
+}
+
+function capitalise(string){
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }

@@ -13,6 +13,8 @@
     int user_id = Integer.parseInt(request.getParameter("user_id"));
     String vars = request.getParameter("vars");
     String WHERE = request.getParameter("WHERE");
+    String geo_column = request.getParameter("geo_column");
+    String column = request.getParameter("column");
     HttpSession sessionOk = request.getSession();
     String db_user = sessionOk.getAttribute("db_user").toString();
     String db_pass = sessionOk.getAttribute("db_pass").toString();
@@ -21,7 +23,7 @@
     
     MyFeatureCollection f = new MyFeatureCollection(indicator_id, user_id, vars, null);
     f.setConnection(db_user, db_pass, db_host, db_name);
-    String toJson = f.getPieData(WHERE);
+    String toJson = f.getPieData(WHERE, geo_column, column);
     response.setContentType("application/json");
     response.setHeader("Content-Disposition", "inline");
     response.getWriter().write(toJson);
