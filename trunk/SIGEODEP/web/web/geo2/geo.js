@@ -13,44 +13,44 @@
  */
 
 var mapPanel, mainPanel;
-var bkey = "AnyGyd4GaAzToU0sDaA0NaXDD88yChcUh8ySoNc32_ddxkrxkl9K5SIATkA8EpMn"
+var bkey = "AnyGyd4GaAzToU0sDaA0NaXDD88yChcUh8ySoNc32_ddxkrxkl9K5SIATkA8EpMn";
 
-function createLegend(rf){
+function createLegend(rf) {
     var paper = Raphael(document.getElementById('legend'), 320, 320);
     var ranges = rf.split("<end>");
     var nranges = ranges.length - 1;
     var width = 0;
     var x = 15;
-    for(var i = 0; i < nranges; i++){
+    for (var i = 0; i < nranges; i++) {
         var range = ranges[i].split("<tab>");
         var y = 15 + (i * 25);
         paper.circle(x, y, 10).attr(
-        {
-            "fill": "#" + range[0],
-            "stroke":  "#000000"
-        });
+                {
+                    "fill": "#" + range[0],
+                    "stroke": "#000000"
+                });
         var range_text = paper.text(x + 25, y, range[2]).attr(
-        {
-            "fill": "#000", 
-            "font-size": 16, 
-            "text-anchor": "start",
-            "font-family": "Arial, Helvetica, sans-serif"
-        });
-        if(width < range_text.getBBox().width){
-            width = range_text.getBBox().width 
+                {
+                    "fill": "#000",
+                    "font-size": 16,
+                    "text-anchor": "start",
+                    "font-family": "Arial, Helvetica, sans-serif"
+                });
+        if (width < range_text.getBBox().width) {
+            width = range_text.getBBox().width;
         }
     }
-    paper.setSize(x + 30 + width, 10 + (nranges * 25))
+    paper.setSize(x + 30 + width, 10 + (nranges * 25));
 }
 
 Ext.onReady(function() {
     var params = parseURLParams(window.location.href);
     createLegend(params["rf"][0]);
-    vars = params["vars"][0]
-    if(vars.indexOf('cuadrante') != -1){
+    vars = params["vars"][0];
+    if (vars.indexOf('cuadrante') !== -1) {
         attribution = "<br>Policia Nacional";
     } else {
-        attribution ="<br>Universidad de Nari&ntilde;o";
+        attribution = "<br>Universidad de Nari&ntilde;o";
     }
     initializeColumns(vars);
     var url_data = "data.jsp?" + window.location.href.split("?")[1];
@@ -68,7 +68,7 @@ Ext.onReady(function() {
         type: "Aerial"
     });
     // My code
-                              
+
     initialStyles = new OpenLayers.StyleMap({
         "default": new OpenLayers.Style({
             fillColor: "#FFFFFF",
@@ -77,7 +77,7 @@ Ext.onReady(function() {
             graphicZIndex: 1
         })
     });
-                
+
     customStyles = new OpenLayers.StyleMap({
         "default": new OpenLayers.Style({
             fillColor: "\${colour}",
@@ -86,7 +86,7 @@ Ext.onReady(function() {
             graphicZIndex: 1
         })
     });
-                
+
     selectionStyles = new OpenLayers.StyleMap({
         "default": new OpenLayers.Style({
             fillColor: "#0000FF",
@@ -110,51 +110,86 @@ Ext.onReady(function() {
                 this.map.zoomToExtent(this.getDataExtent());
             }
         }
-    })
-    
-    if(vars.length > 1){
+    });
+
+    if (vars.length > 1) {
         vectors.events.on({
             featureselected: function(e) {
                 //alert(e.feature.data.name);
                 WHERE = "(";
-                for(var i = 0; i < this.selectedFeatures.length; i++){
-                    WHERE += "'" +this.selectedFeatures[i].data.name + "',";
+                for (var i = 0; i < this.selectedFeatures.length; i++) {
+                    WHERE += "'" + this.selectedFeatures[i].data.name + "',";
                 }
                 WHERE = WHERE.substring(0, WHERE.length - 1) + ")";
-                var uri = "getPieData.jsp?geo_column="+ geo_column + "&column=" + column_a + "&WHERE=" + WHERE + "&" + window.location.href.split("?")[1];
+                var uri = "getPieData.jsp?geo_column=" + geo_column + "&column=" + column_a + "&WHERE=" + WHERE + "&" + window.location.href.split("?")[1];
                 OpenLayers.loadURL(uri, "", this, function onComplete(response) {
-                    if (response.responseText.indexOf('EPIC FAIL!!!') == -1) {
-                        data = JSON.parse(response.responseText);
+                    if (response.responseText.indexOf('EPIC FAIL!!!') === -1) {
+                        var data_a = JSON.parse(response.responseText);
                         createPopup(e.feature);
-                        setPie(e.feature.data.id);
+                        setPie("piea_" + e.feature.data.id, data_a);
+                        if (typeof index_b !== 'undefined') {
+                            uri = "getPieData.jsp?geo_column=" + geo_column + "&column=" + column_b + "&WHERE=" + WHERE + "&" + window.location.href.split("?")[1];
+                            OpenLayers.loadURL(uri, "", this, function onComplete(response) {
+                                if (response.responseText.indexOf('EPIC FAIL!!!') === -1) {
+                                    var data_b = JSON.parse(response.responseText);
+                                    setPie("pieb_" + e.feature.data.id, data_b);
+                                }
+                            });
+                        }
                     }
                 });
+
             }
         });
     }
-    
+
     function createPopup(feature) {
-        if(typeof popup != 'undefined' && Ext.get(popup.id) != null){
-            if( typeof Ext.get(popup.id).select("div.x-tool-unpin").elements[0] != 'undefined'){
-                var flag = Ext.get(popup.id).select("div.x-tool-unpin").elements[0].style.display
-                if(flag != 'none'){
+        if (typeof popup !== 'undefined' && Ext.get(popup.id) !== null) {
+            if (typeof Ext.get(popup.id).select("div.x-tool-unpin").elements[0] !== 'undefined') {
+                var flag = Ext.get(popup.id).select("div.x-tool-unpin").elements[0].style.display;
+                if (flag !== 'none') {
                     popup.destroy();
                 }
             }
         }
+        _feature = feature;
+        _select = "<select id='sel_" + feature.data.id + "'>"
+                + "<option value='1' selected> " + capitalise(vars[index_a]) + "</option>";
+        if (typeof index_b !== 'undefined') {
+            _select += "<option value='2'>" + capitalise(vars[index_b]) + "</option>";
+        }
+        _select += "</select>";
         popup = new GeoExt.Popup({
             id: 'pie_window' + feature.data.id,
             title: feature.data.name,
             location: feature,
-            width:600,
-            html: "<div id='pie" + feature.data.id + "'></div>",
+            anchorPosition: "top-right",
+            width: 0,
+            html: _select + "<div id='piea_" + feature.data.id + "'></div><div id='pieb_" + feature.data.id + "'></div>",
             maximizable: true,
             collapsible: true,
             unpinnable: true
         });
         popup.show();
+        Ext.get('sel_' + feature.data.id).on('change', this.onChange, this, {});
+        Ext.get('piea_' + _feature.data.id).set({style: "position:absolute;top:'0px'"});
+        Ext.get('pieb_' + _feature.data.id).set({style: "position:absolute;top:'0px'"});
+        this.onChange();
     }
-    
+
+    onChange = function() {
+        value = Ext.get('sel_' + _feature.data.id).dom.value;
+        if (value === "1") {
+            Ext.get('piea_' + _feature.data.id).fadeIn();
+            Ext.get('pieb_' + _feature.data.id).fadeOut();
+        } else {
+            Ext.get('piea_' + _feature.data.id).fadeOut();
+            Ext.get('pieb_' + _feature.data.id).fadeIn();
+
+        }
+
+    };
+
     neighborhoods = new OpenLayers.Layer.Vector("Barrios", {
         styleMap: initialStyles,
         projection: new OpenLayers.Projection("EPSG:900913"),
@@ -164,8 +199,8 @@ Ext.onReady(function() {
             format: new OpenLayers.Format.GeoJSON(),
             callbackKey: "callback"
         })
-    })
-    
+    });
+
 
 
     map.addLayers([osm, hybrid, neighborhoods, vectors]);
@@ -179,19 +214,19 @@ Ext.onReady(function() {
         region: "center",
         map: map
     });
- 
+
     // create feature store, binding it to the vector layer
     var store = new GeoExt.data.FeatureStore({
         layer: vectors,
         fields: [
-        {
-            name: 'name', 
-            type: 'string'
-        },
-        {
-            name: 'value', 
-            type: 'float'
-        }
+            {
+                name: 'name',
+                type: 'string'
+            },
+            {
+                name: 'value',
+                type: 'float'
+            }
         ],
         autoLoad: true
     });
@@ -202,28 +237,27 @@ Ext.onReady(function() {
         region: "east",
         collapsible: true,
         store: store,
-        width: 320,        
+        width: 320,
         cm: new Ext.grid.ColumnModel([
-        {
-            id: "name", 
-            header: "Nombre", 
-            dataIndex: "name", 
-            sortable: true
-        },
-
-        {
-            id: "value", 
-            header: "Valor", 
-            dataIndex: "value", 
-            sortable: true,
-            direction: "desc"
-        }
+            {
+                id: "name",
+                header: "Nombre",
+                dataIndex: "name",
+                sortable: true
+            },
+            {
+                id: "value",
+                header: "Valor",
+                dataIndex: "value",
+                sortable: true,
+                direction: "desc"
+            }
         ]),
         sm: new GeoExt.grid.FeatureSelectionModel(),
         autoExpandColumn: "name"
     });
-    
-    
+
+
 
     // create a panel and add the map panel and grid panel
     // inside it
@@ -234,7 +268,7 @@ Ext.onReady(function() {
         height: 800,
         items: [mapPanel, gridPanel]
     });
-    
+
     legend = new Ext.Window({
         title: 'Legenda',
         collapsible: true,
@@ -248,19 +282,20 @@ Ext.onReady(function() {
 
 function parseURLParams(url) {
     var queryStart = url.indexOf("?") + 1;
-    var queryEnd   = url.indexOf("#") + 1 || url.length + 1;
-    var query      = url.slice(queryStart, queryEnd - 1);
+    var queryEnd = url.indexOf("#") + 1 || url.length + 1;
+    var query = url.slice(queryStart, queryEnd - 1);
 
-    if (query === url || query === "") return;
+    if (query === url || query === "")
+        return;
 
-    var params  = {};
+    var params = {};
     var nvPairs = query.replace(/\+/g, " ").split("&");
 
-    for (var i=0; i<nvPairs.length; i++) {
+    for (var i = 0; i < nvPairs.length; i++) {
         var nv = nvPairs[i].split("=");
-        var n  = decodeURIComponent(nv[0]);
-        var v  = decodeURIComponent(nv[1]);
-        if ( !(n in params) ) {
+        var n = decodeURIComponent(nv[0]);
+        var v = decodeURIComponent(nv[1]);
+        if (!(n in params)) {
             params[n] = [];
         }
         params[n].push(nv.length === 2 ? v : null);
@@ -268,26 +303,21 @@ function parseURLParams(url) {
     return params;
 }
 
-function setPie(id){
-    var r = new Raphael("pie" + id)
+function setPie(id, data) {
+    var r = new Raphael(id);
     var radio = 60;
     var y = 0;
-    if(radio < data.values.length*10){
-        y = 10 + data.values.length*10 ;
+    if (radio < data.values.length * 10) {
+        y = 10 + data.values.length * 10;
     } else {
         y = radio + 30;
     }
-    var pie = r.piechart(radio + 10, y, radio, data.values, 
-    {
-        legend: data.labels, 
-        legendpos: "east"
-    });
-
-    r.text(10, 10, capitalise(vars[index_a])).attr({
-        font: "16px sans-serif",
-        "text-anchor" : "start"
-    });
-    pie.hover(function () {
+    var pie = r.piechart(radio + 10, y, radio, data.values,
+            {
+                legend: data.labels,
+                legendpos: "east"
+            });
+    pie.hover(function() {
         this.sector.stop();
         this.sector.scale(1.1, 1.1, this.cx, this.cy);
 
@@ -300,7 +330,7 @@ function setPie(id){
                 "font-weight": 800
             });
         }
-    }, function () {
+    }, function() {
         this.sector.animate({
             transform: 's1 1 ' + this.cx + ' ' + this.cy
         }, 500, "bounce");
@@ -313,29 +343,49 @@ function setPie(id){
                 "font-weight": 400
             });
         }
-    });    
-    popup.setSize(pie.getBBox().x2 + 30, pie.getBBox().y2 + 60);
+    });
+    var width = popup.getSize().width;
+    if (width < pie.getBBox().x2 + 50) {
+        width = pie.getBBox().x2 + 50;
+    }
+    var height = popup.getSize().height;
+    if (height < pie.getBBox().y2 + 60) {
+        height = pie.getBBox().y2 + 60;
+    }
+    popup.setSize(width, height);
 }
 
-function initializeColumns(columns){
-    columns = columns.substr(0, columns.length - 1)
+function initializeColumns(columns) {
+    columns = columns.substr(0, columns.length - 1);
     vars = columns.split(',');
     var flag = true;
-    for(var i = 0;i < vars.length; i++){
-        if(vars[i] == 'barrio' || vars[i] == 'comuna' || vars[i] == 'cuadrante'){
-            geo_column = 'column_' + (i+1);
+    for (var i = 0; i < vars.length; i++) {
+        if (vars[i] === 'barrio' || vars[i] === 'comuna' || vars[i] === 'cuadrante') {
+            geo_column = 'column_' + (i + 1);
         } else {
-            if(flag){
-                column_a = 'column_' + (i+1);
+            if (flag) {
+                column_a = 'column_' + (i + 1);
                 index_a = i;
                 flag = false;
             } else {
-                column_b = 'column_' + (i+1);
+                column_b = 'column_' + (i + 1);
+                index_b = i;
             }
         }
     }
 }
 
-function capitalise(string){
+function getNorthPosition() {
+    bounds = _feature.geometry.getBounds();
+    var center = bounds.getCenterLonLat();
+    var height = bounds.getHeight() / 2;
+    north = new OpenLayers.Geometry.Point(center.lon - height, center.lat);
+    north2 = new OpenLayers.LonLat(center.lon - height, center.lat);
+    _the_north = new OpenLayers.Feature(vectors, north2, {});
+    bounds.extend(north);
+    return bounds;
+}
+
+function capitalise(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
