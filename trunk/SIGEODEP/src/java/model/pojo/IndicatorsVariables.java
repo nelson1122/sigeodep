@@ -23,6 +23,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "IndicatorsVariables.findByCategory", query = "SELECT i FROM IndicatorsVariables i WHERE i.category = :category"),
     @NamedQuery(name = "IndicatorsVariables.findByIndicatorId", query = "SELECT i FROM IndicatorsVariables i WHERE i.indicatorsVariablesPK.indicatorId = :indicatorId")})
 public class IndicatorsVariables implements Serializable {
+    @Size(max = 2147483647)
+    @Column(name = "source_table", length = 2147483647)
+    private String sourceTable;
     private static final long serialVersionUID = 1L;
     @EmbeddedId
     protected IndicatorsVariablesPK indicatorsVariablesPK;
@@ -101,6 +104,14 @@ public class IndicatorsVariables implements Serializable {
     @Override
     public String toString() {
         return "newpackage.IndicatorsVariables[ indicatorsVariablesPK=" + indicatorsVariablesPK + " ]";
+    }
+
+    public String getSourceTable() {
+        return sourceTable;
+    }
+
+    public void setSourceTable(String sourceTable) {
+        this.sourceTable = sourceTable;
     }
     
 }

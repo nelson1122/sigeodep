@@ -19,12 +19,13 @@ public class Variable {
     private String table;//tabla donde estan los datos
     private String field;//columna de la tabla donde estan los datos
     private String generic_table;//tabla donde se encuentra la categoria
+    private String source_table;//tabla donde se debe buscar el valor
     private List<String> values;//valores que puede tomar en la categoria
     private List<String> valuesId;//identificadores de los valores que puede tomar en la categoria
     private List<String> valuesConfigured;//valores que se configuraron(los mismos o menos valores que valuesId)
     private boolean configurable = false;//me dice si esta variable acepta o no realizarle configuracion (adicionar categoria)
 
-    public Variable(String name, String table, String field, String generic_table, boolean conf) {
+    public Variable(String name, String table, String field, String generic_table, boolean conf, String source_table) {
         this.name = name;
         this.table = table;
         this.field = field;
@@ -33,16 +34,19 @@ public class Variable {
         this.valuesId = new ArrayList<String>();
         this.valuesConfigured = new ArrayList<String>();
         this.configurable = conf;
+        this.source_table = source_table;
     }
-    public Variable(String name, String generic_table, boolean conf) {
+
+    public Variable(String name, String generic_table, boolean conf, String source_table) {
         this.name = name;
         this.generic_table = generic_table;
         this.values = new ArrayList<String>();
         this.valuesId = new ArrayList<String>();
         this.valuesConfigured = new ArrayList<String>();
         this.configurable = conf;
+        this.source_table = source_table;
     }
-    
+
     public Variable() {
         this.values = new ArrayList<String>();
     }
@@ -126,8 +130,8 @@ public class Variable {
 
     public void filterYear(Date initialDate, Date endDate) {
         //crear la lista de años que se encuentran entre dos fechas
-        int initialYear = initialDate.getYear()+1900;
-        int endYear = endDate.getYear()+1900;
+        int initialYear = initialDate.getYear() + 1900;
+        int endYear = endDate.getYear() + 1900;
         values = new ArrayList<String>();
         valuesId = new ArrayList<String>();
         valuesConfigured = new ArrayList<String>();
@@ -138,4 +142,14 @@ public class Variable {
         }
 
     }
+
+    public String getSource_table() {
+        return source_table;
+    }
+
+    public void setSource_table(String source_table) {
+        this.source_table = source_table;
+    }   
+    
+    
 }

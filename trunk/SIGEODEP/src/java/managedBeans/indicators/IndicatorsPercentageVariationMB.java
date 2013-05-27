@@ -6,6 +6,35 @@ package managedBeans.indicators;
 
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.VariablesEnum;
+import static beans.enumerators.VariablesEnum.accident_classes;
+import static beans.enumerators.VariablesEnum.accident_mechanisms;
+import static beans.enumerators.VariablesEnum.activities;
+import static beans.enumerators.VariablesEnum.aggressor_genders;
+import static beans.enumerators.VariablesEnum.alcohol_levels;
+import static beans.enumerators.VariablesEnum.alcohol_levels_counterparts;
+import static beans.enumerators.VariablesEnum.alcohol_levels_victim;
+import static beans.enumerators.VariablesEnum.boolean3;
+import static beans.enumerators.VariablesEnum.contexts;
+import static beans.enumerators.VariablesEnum.counterpart_service_type;
+import static beans.enumerators.VariablesEnum.destinations_of_patient;
+import static beans.enumerators.VariablesEnum.involved_vehicles;
+import static beans.enumerators.VariablesEnum.mechanisms;
+import static beans.enumerators.VariablesEnum.murder_contexts;
+import static beans.enumerators.VariablesEnum.non_fatal_places;
+import static beans.enumerators.VariablesEnum.places;
+import static beans.enumerators.VariablesEnum.precipitating_factors;
+import static beans.enumerators.VariablesEnum.protective_measures;
+import static beans.enumerators.VariablesEnum.related_events;
+import static beans.enumerators.VariablesEnum.relationships_to_victim;
+import static beans.enumerators.VariablesEnum.road_types;
+import static beans.enumerators.VariablesEnum.service_types;
+import static beans.enumerators.VariablesEnum.suicide_mechanisms;
+import static beans.enumerators.VariablesEnum.transport_counterparts;
+import static beans.enumerators.VariablesEnum.transport_types;
+import static beans.enumerators.VariablesEnum.transport_users;
+import static beans.enumerators.VariablesEnum.use_alcohol_drugs;
+import static beans.enumerators.VariablesEnum.victim_characteristics;
+import static beans.enumerators.VariablesEnum.weapon_types;
 import beans.util.Variable;
 import java.awt.Color;
 import java.awt.Font;
@@ -88,7 +117,6 @@ public class IndicatorsPercentageVariationMB {
     private Indicators currentIndicator;
     private StreamedContent chartImage;
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
-    //private OutputPanel dynamicDataTableGroup; // Placeholder.
     private FacesMessage message = null;
     private ConnectionJdbcMB connectionJdbcMB;
     private String titlePage = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
@@ -143,8 +171,6 @@ public class IndicatorsPercentageVariationMB {
     private ArrayList<Variable> variablesListData;//lista de variables que tiene el indicador
     private ArrayList<Variable> variablesCrossData = new ArrayList<Variable>();//lista de variables a cruzar
     private ArrayList<String> valuesCategoryList;//lista de valores para una categoria
-    //private ArrayList<SpanColumns> dynamicHeaders1;
-    //private ArrayList<TableGroup> listaDeGrupos;
     private ArrayList<String> columNames;//NOMBRES DE LAS COLUMNAS, (SI EL CRUCE ES DE TRES VARIABLES ESTA SEPARADO POR EL CARACTER: }  )
     private ArrayList<String> columNamesFinal;//NOMBRES DE LAS COLUMNAS, (SI EL CRUCE ES DE TRES VARIABLES ESTA SEPARADO POR EL CARACTER: }  )
     private ArrayList<String> rowNames;//NOMBRES DE LAS FILAS    
@@ -167,7 +193,9 @@ public class IndicatorsPercentageVariationMB {
     private boolean graphType1 = true;
     private boolean graphType2 = false;
     private boolean showCalculation = false;//mostrar la resta
+    private boolean btnExportDisabled = true;
     private boolean colorType = true;
+    private boolean showEmpty = false;
     DecimalFormat formateador = new DecimalFormat("0.00");
     private CopyManager cpManager;
     private StringBuilder sb;
@@ -342,6 +370,20 @@ public class IndicatorsPercentageVariationMB {
         connectionJdbcMB.non_query(sql);
     }
 
+    private void removeEmpty() {
+        //------------------------------------------------------------------
+        //SE ELIMINAN LOS VALORES VACIOS
+        //------------------------------------------------------------------
+        sql = ""
+                + " DELETE FROM \n\r"
+                + "    indicators_records \n\r"
+                + " WHERE \n\r"
+                + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                + "    indicator_id = " + currentIndicator.getIndicatorId() + " AND \n\r"
+                + "    count = 0 ";
+        connectionJdbcMB.non_query(sql);
+    }
+
     public void process() {
         message = null;
         variablesGraph = new ArrayList<String>();
@@ -422,13 +464,17 @@ public class IndicatorsPercentageVariationMB {
         if (continueProcess) {//AGRUPO LOS VALORES DEL RANGO B
             groupingOfValues(200, 100);//agrupa los datos de 200; actuliza los datos de 100;elimina los datos de 0
         }
+        if (!showEmpty) {
+            removeEmpty();
+        }
         if (continueProcess) {//CONSTRUYO LA MATRIZ RESULTANTE PARA B
             createMatrixDifference();//matriz de resultados diferencia
         }
         if (continueProcess) {
             dataTableHtmlA = createDataTableResult();
             loadValuesGraph();//creo el grafico
-            message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze de variacion realizado");
+            btnExportDisabled = false;
+            message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
         }
     }
 
@@ -686,6 +732,8 @@ public class IndicatorsPercentageVariationMB {
     private String createIndicatorConsult(String initialDateStr, String endDateStr) {
         String sqlReturn;
         sqlReturn = " SELECT  \n\r";
+        String sourceTable = "";//tabla adicional que se usara en la seccion "FROM" de la consulta sql
+        String filterSourceTable = "";//filtro adicional usado en la "WHERE" de la consulta sql
         for (int i = 0; i < variablesCrossData.size(); i++) {
             switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable 
                 case temporalDisaggregation://DETERMINAR LA DESAGREGACION TEMPORAL -----------------------                   
@@ -867,6 +915,590 @@ public class IndicatorsPercentageVariationMB {
                             + "    )"
                             + " END AS mes";
                     break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                case contexts://(interpersonale en comunidad)
+                    if (sourceTable.indexOf("non_fatal_interpersonal") == -1) {
+                        sourceTable = sourceTable + ", non_fatal_interpersonal ";
+                        filterSourceTable = filterSourceTable + " non_fatal_interpersonal.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          contexts.context_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.contexts \n\r"
+                            + "       WHERE \n\r"
+                            + "          context_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS contexto";
+                    break;
+                case aggressor_genders://(interpersonale en comunidad)
+                    if (sourceTable.indexOf("non_fatal_interpersonal") == -1) {
+                        sourceTable = sourceTable + ", non_fatal_interpersonal ";
+                        filterSourceTable = filterSourceTable + " non_fatal_interpersonal.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          aggressor_genders.gender_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.aggressor_genders \n\r"
+                            + "       WHERE \n\r"
+                            + "          gender_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS sexo_agresor";
+                    break;
+                case relationships_to_victim://(interpersonale en comunidad)
+                    if (sourceTable.indexOf("non_fatal_interpersonal") == -1) {
+                        sourceTable = sourceTable + ", non_fatal_interpersonal ";
+                        filterSourceTable = filterSourceTable + " non_fatal_interpersonal.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          relationships_to_victim.relationship_victim_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.relationships_to_victim \n\r"
+                            + "       WHERE \n\r"
+                            + "          relationship_victim_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS relacion_agresor_victima";
+                    break;
+                case precipitating_factors://(violencia autoinflingida)
+                    if (sourceTable.indexOf("non_fatal_self_inflicted") == -1) {
+                        sourceTable = sourceTable + ", non_fatal_self_inflicted ";
+                        filterSourceTable = filterSourceTable + " non_fatal_self_inflicted.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          precipitating_factors.precipitating_factor_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.precipitating_factors \n\r"
+                            + "       WHERE \n\r"
+                            + "          precipitating_factor_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS factor_precipitante";
+                    break;
+                case transport_users://(accidentes transito)
+                    if (sourceTable.indexOf("non_fatal_transport") == -1) {
+                        sourceTable = sourceTable + ", non_fatal_transport ";
+                        filterSourceTable = filterSourceTable + " non_fatal_transport.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          transport_users.transport_user_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.transport_users \n\r"
+                            + "       WHERE \n\r"
+                            + "          transport_user_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS tipo_usuario";
+                    break;
+                case transport_counterparts://(accidentes transito)
+                    if (sourceTable.indexOf("non_fatal_transport") == -1) {
+                        sourceTable = sourceTable + ", non_fatal_transport ";
+                        filterSourceTable = filterSourceTable + " non_fatal_transport.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          transport_counterparts.transport_counterpart_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.transport_counterparts \n\r"
+                            + "       WHERE \n\r"
+                            + "          transport_counterpart_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS tipo_transporte_contraparte";
+                    break;
+                case transport_types://(accidentes transito)
+                    if (sourceTable.indexOf("non_fatal_transport") == -1) {
+                        sourceTable = sourceTable + ", non_fatal_transport ";
+                        filterSourceTable = filterSourceTable + " non_fatal_transport.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          transport_types.transport_type_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.transport_types \n\r"
+                            + "       WHERE \n\r"
+                            + "          transport_type_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS tipo_transporte_victima";
+                    break;
+                case destinations_of_patient://(Violencia Interpersonal en Familia)(lesiones en transporte)
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          destinations_of_patient.destination_patient_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.destinations_of_patient \n\r"
+                            + "       WHERE \n\r"
+                            + "          destination_patient_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS destino_paciente";
+                    break;
+                case activities://(Violencia Interpersonal en Familia)(lesiones en transporte)
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          activities.activity_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.activities \n\r"
+                            + "       WHERE \n\r"
+                            + "          activity_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS actividad_realizada";
+                    break;
+                case non_fatal_places://(Violencia Interpersonal en Familia)(lesiones en transporte)(interpersonal en comunidad)
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          non_fatal_places.non_fatal_place_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.non_fatal_places \n\r"
+                            + "       WHERE \n\r"
+                            + "          non_fatal_place_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS lugar_hecho";
+                    break;
+                case use_alcohol_drugs://(Violencia Interpersonal en Familia)(lesiones en transporte)
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          use_alcohol_drugs.use_alcohol_drugs_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.use_alcohol_drugs \n\r"
+                            + "       WHERE \n\r"
+                            + "          use_alcohol_drugs_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )";
+                    if (variablesCrossData.get(i).getSource_table().indexOf("use_alcohol_id") != -1) {
+                        sqlReturn = sqlReturn + " END AS uso_alcohol";
+                    }
+                    if (variablesCrossData.get(i).getSource_table().indexOf("use_drugs_id") != -1) {
+                        sqlReturn = sqlReturn + " END AS uso_drogas";
+                    }
+                    break;
+                case mechanisms://(Violencia Interpersonal en Familia)(lesiones en transporte)
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          mechanisms.mechanism_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.mechanisms \n\r"
+                            + "       WHERE \n\r"
+                            + "          mechanism_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS mecanismo";
+                    break;
+                case protective_measures://(transito)
+                    if (sourceTable.indexOf("fatal_injury_traffic") == -1) {
+                        sourceTable = sourceTable + ", fatal_injury_traffic ";
+                        filterSourceTable = filterSourceTable + " fatal_injury_traffic.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          protective_measures.protective_measures_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.protective_measures \n\r"
+                            + "       WHERE \n\r"
+                            + "          protective_measures_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS medidas_proteccion";
+                    break;
+                case victim_characteristics://(transito)
+                    if (sourceTable.indexOf("fatal_injury_traffic") == -1) {
+                        sourceTable = sourceTable + ", fatal_injury_traffic ";
+                        filterSourceTable = filterSourceTable + " fatal_injury_traffic.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          victim_characteristics.characteristic_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.victim_characteristics \n\r"
+                            + "       WHERE \n\r"
+                            + "          characteristic_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS caracteristicas_victima";
+                    break;
+                case road_types://(transito)
+                    if (sourceTable.indexOf("fatal_injury_traffic") == -1) {
+                        sourceTable = sourceTable + ", fatal_injury_traffic ";
+                        filterSourceTable = filterSourceTable + " fatal_injury_traffic.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          road_types.road_type_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.road_types \n\r"
+                            + "       WHERE \n\r"
+                            + "          road_type_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS tipo_via";
+                    break;
+                case counterpart_service_type://(transito)
+                    sqlReturn = sqlReturn + "   CASE (SELECT service_type_id  FROM counterpart_service_type  WHERE fatal_injury_id=" + currentIndicator.getInjuryType() + ".fatal_injury_id LIMIT 1)  \n\r";
+                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
+                        sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+                    }
+                    sqlReturn = sqlReturn + "       ELSE 'SIN DATO' \n\r END AS servicio_contraparte";
+                    break;
+                case service_types://(transito)
+                    if (sourceTable.indexOf("fatal_injury_traffic") == -1) {
+                        sourceTable = sourceTable + ", fatal_injury_traffic ";
+                        filterSourceTable = filterSourceTable + " fatal_injury_traffic.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          service_types.service_type_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.service_types \n\r"
+                            + "       WHERE \n\r"
+                            + "          service_type_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS servicio_victima";
+                    break;
+                case involved_vehicles://(transito)
+                    //contraparte
+                    if (variablesCrossData.get(i).getSource_table().indexOf("counterpart_involved_vehicle.involved_vehicle_id") != -1) {
+                        sqlReturn = sqlReturn + "   CASE (SELECT involved_vehicle_id  FROM counterpart_involved_vehicle  WHERE fatal_injury_id=" + currentIndicator.getInjuryType() + ".fatal_injury_id LIMIT 1)  \n\r";
+                        for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
+                            sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+                        }
+                        sqlReturn = sqlReturn + "       ELSE 'SIN DATO' \n\r END AS vehiculo_contraparte";
+                    }
+                    //victima
+                    if (variablesCrossData.get(i).getSource_table().indexOf("fatal_injury_traffic.involved_vehicle_id") != -1) {
+                        if (sourceTable.indexOf("fatal_injury_traffic") == -1) {
+                            sourceTable = sourceTable + ", fatal_injury_traffic ";
+                            filterSourceTable = filterSourceTable + " fatal_injury_traffic.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                        }
+                        sqlReturn = sqlReturn + ""
+                                + " CASE \n\r"
+                                + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                                + "    ELSE \n\r"
+                                + "    ( \n\r"
+                                + "       SELECT \n\r"
+                                + "          involved_vehicles.involved_vehicle_name \n\r"
+                                + "       FROM \n\r"
+                                + "          public.involved_vehicles \n\r"
+                                + "       WHERE \n\r"
+                                + "          involved_vehicle_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                                + "    )"
+                                + " END AS vehiculo_victima";
+
+                    }
+                    break;
+                case accident_classes://(transito)
+                    if (sourceTable.indexOf("fatal_injury_traffic") == -1) {
+                        sourceTable = sourceTable + ", fatal_injury_traffic ";
+                        filterSourceTable = filterSourceTable + " fatal_injury_traffic.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          accident_classes.accident_class_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.accident_classes \n\r"
+                            + "       WHERE \n\r"
+                            + "          accident_class_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS clase_accidente";
+                    break;
+                case boolean3:
+                    //(suicidio)
+                    if (variablesCrossData.get(i).getSource_table().compareTo("fatal_injury_suicide.previous_attempt") == 0
+                            || variablesCrossData.get(i).getSource_table().compareTo("fatal_injury_suicide.mental_antecedent") == 0) {
+                        if (sourceTable.indexOf("fatal_injury_suicide") == -1) {
+                            sourceTable = sourceTable + ", fatal_injury_suicide ";
+                            filterSourceTable = filterSourceTable + " fatal_injury_suicide.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                        }
+                        sqlReturn = sqlReturn + ""
+                                + " CASE \n\r"
+                                + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                                + "    ELSE \n\r"
+                                + "    ( \n\r"
+                                + "       SELECT \n\r"
+                                + "          boolean3.boolean_name \n\r"
+                                + "       FROM \n\r"
+                                + "          public.boolean3 \n\r"
+                                + "       WHERE \n\r"
+                                + "          boolean_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                                + "    )";
+                        if (variablesCrossData.get(i).getSource_table().compareTo("fatal_injury_suicide.previous_attempt") == 0) {
+                            sqlReturn = sqlReturn + " END AS intento_previo";
+                        }
+                        if (variablesCrossData.get(i).getSource_table().compareTo("fatal_injury_suicide.mental_antecedent") == 0) {
+                            sqlReturn = sqlReturn + " END AS antecedentes_mentales";
+                        }
+
+                    }
+                    //(autoinflingida)
+                    if (variablesCrossData.get(i).getSource_table().compareTo("non_fatal_self_inflicted.previous_attempt") == 0
+                            || variablesCrossData.get(i).getSource_table().compareTo("non_fatal_self_inflicted.mental_antecedent") == 0) {
+                        if (sourceTable.indexOf("non_fatal_self_inflicted") == -1) {
+                            sourceTable = sourceTable + ", non_fatal_self_inflicted ";
+                            filterSourceTable = filterSourceTable + " non_fatal_self_inflicted.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+                        }
+                        sqlReturn = sqlReturn + ""
+                                + " CASE \n\r"
+                                + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                                + "    ELSE \n\r"
+                                + "    ( \n\r"
+                                + "       SELECT \n\r"
+                                + "          boolean3.boolean_name \n\r"
+                                + "       FROM \n\r"
+                                + "          public.boolean3 \n\r"
+                                + "       WHERE \n\r"
+                                + "          boolean_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                                + "    )";
+                        if (variablesCrossData.get(i).getSource_table().compareTo("non_fatal_self_inflicted.previous_attempt") == 0) {
+                            sqlReturn = sqlReturn + " END AS intento_previo";
+                        }
+                        if (variablesCrossData.get(i).getSource_table().compareTo("non_fatal_self_inflicted.mental_antecedent") == 0) {
+                            sqlReturn = sqlReturn + " END AS antecedentes_mentales";
+                        }
+                    }
+                    //(interpersonal en comunidad)
+                    if (variablesCrossData.get(i).getSource_table().compareTo("non_fatal_interpersonal.previous_antecedent") == 0) {
+                        if (sourceTable.indexOf("non_fatal_interpersonal") == -1) {
+                            sourceTable = sourceTable + ", non_fatal_interpersonal ";
+                            filterSourceTable = filterSourceTable + " non_fatal_interpersonal.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+                        }
+                        sqlReturn = sqlReturn + ""
+                                + " CASE \n\r"
+                                + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                                + "    ELSE \n\r"
+                                + "    ( \n\r"
+                                + "       SELECT \n\r"
+                                + "          boolean3.boolean_name \n\r"
+                                + "       FROM \n\r"
+                                + "          public.boolean3 \n\r"
+                                + "       WHERE \n\r"
+                                + "          boolean_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                                + "    )"
+                                + " END AS antecedente_previo";
+                    }
+                    break;
+                case related_events://EVENTOS RELACIONADOS (suicidio)
+                    if (sourceTable.indexOf("fatal_injury_suicide") == -1) {
+                        sourceTable = sourceTable + ", fatal_injury_suicide ";
+                        filterSourceTable = filterSourceTable + " fatal_injury_suicide.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          related_events.related_event_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.related_events \n\r"
+                            + "       WHERE \n\r"
+                            + "          related_event_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS eventos_relacionados";
+                    break;
+                case accident_mechanisms://MECANISMO (muerte accidental)                     
+                    if (sourceTable.indexOf("fatal_injury_accident") == -1) {
+                        sourceTable = sourceTable + ", fatal_injury_accident ";
+                        filterSourceTable = filterSourceTable + " fatal_injury_accident.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          accident_mechanisms.accident_mechanism_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.accident_mechanisms \n\r"
+                            + "       WHERE \n\r"
+                            + "          accident_mechanism_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS mecanismo_accidente";
+                    break;
+                case suicide_mechanisms://MECANISMO (suicidio)
+                    if (sourceTable.indexOf("fatal_injury_suicide") == -1) {
+                        sourceTable = sourceTable + ", fatal_injury_suicide ";
+                        filterSourceTable = filterSourceTable + " fatal_injury_suicide.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          suicide_mechanisms.suicide_mechanism_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.suicide_mechanisms \n\r"
+                            + "       WHERE \n\r"
+                            + "          suicide_mechanism_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS mecanismo_suicidio";
+
+                    break;
+                case murder_contexts://CONTEXTO (homicidios)
+                    if (sourceTable.indexOf("fatal_injury_murder") == -1) {
+                        sourceTable = sourceTable + ", fatal_injury_murder ";
+                        filterSourceTable = filterSourceTable + " fatal_injury_murder.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          murder_contexts.murder_context_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.murder_contexts \n\r"
+                            + "       WHERE \n\r"
+                            + "          murder_context_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS contexto";
+
+                    break;
+                case alcohol_levels://CONSUMO ALCOHOL                     
+                    if (variablesCrossData.get(i).getSource_table().compareTo("fatal_injury_traffic.alcohol_level_counterpart_id") == 0) {//(transito)
+                        if (sourceTable.indexOf("fatal_injury_traffic.alcohol_level_counterpart_id") == -1) {
+                            sourceTable = sourceTable + ", fatal_injury_traffic ";
+                            filterSourceTable = filterSourceTable + " fatal_injury_traffic.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                        }
+                        sqlReturn = sqlReturn + ""
+                                + " CASE \n\r"
+                                + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                                + "    ELSE \n\r"
+                                + "    ( \n\r"
+                                + "       SELECT \n\r"
+                                + "          alcohol_levels.alcohol_level_name \n\r"
+                                + "       FROM \n\r"
+                                + "          public.alcohol_levels \n\r"
+                                + "       WHERE \n\r"
+                                + "          alcohol_level_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                                + "    )"
+                                + " END AS consumo_alcohol";
+
+                    } else {//(homicidios)(suicidios)(muerte accidental)
+                        sqlReturn = sqlReturn + ""
+                                + " CASE \n\r"
+                                + "    WHEN " + currentIndicator.getInjuryType() + ".alcohol_level_victim_id is null THEN 'SIN DATO' \n\r"
+                                + "    ELSE \n\r"
+                                + "    ( \n\r"
+                                + "       SELECT \n\r"
+                                + "          alcohol_levels.alcohol_level_name \n\r"
+                                + "       FROM \n\r"
+                                + "          public.alcohol_levels \n\r"
+                                + "       WHERE \n\r"
+                                + "          alcohol_level_id = " + currentIndicator.getInjuryType() + ".alcohol_level_victim_id \n\r"
+                                + "    )"
+                                + " END AS consumo_alcohol";
+                    }
+                    break;
+                case places://SITIO EVENTO (homicidios)(muerte accidental)                   
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_place_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          places.place_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.places \n\r"
+                            + "       WHERE \n\r"
+                            + "          place_id = " + currentIndicator.getInjuryType() + ".injury_place_id \n\r"
+                            + "    )"
+                            + " END AS lugar_hecho";
+
+                    break;
+                case weapon_types://TIPO DE ARMA (homicidios)
+                    if (sourceTable.indexOf("fatal_injury_murder") == -1) {
+                        sourceTable = sourceTable + ", fatal_injury_murder ";
+                        filterSourceTable = filterSourceTable + " fatal_injury_murder.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+                    }
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + variablesCrossData.get(i).getSource_table() + " is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          weapon_types.weapon_type_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.weapon_types \n\r"
+                            + "       WHERE \n\r"
+                            + "          weapon_types.weapon_type_id = " + variablesCrossData.get(i).getSource_table() + " \n\r"
+                            + "    )"
+                            + " END AS tipo_arma";
+                    break;
             }
             if (i == variablesCrossData.size() - 1) {//si es la ultima instruccion se agrega salto de linea
                 sqlReturn = sqlReturn + " \n\r";
@@ -876,16 +1508,17 @@ public class IndicatorsPercentageVariationMB {
         }
         sqlReturn = sqlReturn + ""
                 + "   FROM  \n\r"
-                + "       " + currentIndicator.getInjuryType() + ", victims \n\r"
+                + "       " + currentIndicator.getInjuryType() + ", victims" + sourceTable + " \n\r"
                 + "   WHERE  \n\r"
                 + "       " + currentIndicator.getInjuryType() + ".victim_id = victims.victim_id AND \n\r";
+        sqlReturn = sqlReturn + "       " + filterSourceTable;
         if (currentIndicator.getIndicatorId() > 4) { //si no es general se filtra por tipo de lesion
             sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
         }
         sqlReturn = sqlReturn + ""
                 + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
                 + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy'); ";
-        //System.out.println("TODOS LOS DATOS \n " + sqlReturn);
+        System.out.println("CONSULTA (indicators percentage variatio) \n " + sqlReturn);
 
         return sqlReturn;
     }
@@ -1285,10 +1918,11 @@ public class IndicatorsPercentageVariationMB {
         btnRemoveVariableDisabled = true;
         currentVariablesSelected = null;
         currentVariablesCrossSelected = null;
+        btnExportDisabled = true;
     }
 
     private Variable createTemporalDisaggregationVariable(Date initialDate, Date endDate) {
-        Variable newVariable = new Variable("Desagregación temporal", "temporalDisaggregation", false);
+        Variable newVariable = new Variable("Desagregación temporal", "temporalDisaggregation", false, "");
         int diferenceRank;
         int daysMax;
         Calendar cal1 = Calendar.getInstance();
@@ -1371,9 +2005,9 @@ public class IndicatorsPercentageVariationMB {
         return newVariable;
     }
 
-    private Variable createVariable(String name, String generic_table, boolean conf) {
+    private Variable createVariable(String name, String generic_table, boolean conf, String source_table) {
         //conf me indica si es permitida la configuracion de esta variable
-        Variable newVariable = new Variable(name, generic_table, conf);
+        Variable newVariable = new Variable(name, generic_table, conf, source_table);
         //cargo la lista de valores posibles
         ArrayList<String> valuesName = new ArrayList<String>();//NOMBRE DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(NOMBRE EN LA CATEGORIA)
         ArrayList<String> valuesId = new ArrayList<String>();  //IDENTIFICADORES DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(ID EN LA CATEGORIA)
@@ -1505,6 +2139,37 @@ public class IndicatorsPercentageVariationMB {
             case genders://genero
             case days://dia semana
             case quadrants://cuadrante
+
+            case activities:
+            case boolean3:
+            case victim_characteristics:
+            case accident_classes:
+            case alcohol_levels:
+            case use_alcohol_drugs:
+            case alcohol_levels_counterparts:
+            case alcohol_levels_victim:
+            case murder_contexts:
+            case contexts:
+            case destinations_of_patient:
+            case related_events:
+            case precipitating_factors:
+            case aggressor_genders:
+            case places:
+            case non_fatal_places:
+            case mechanisms:
+            case accident_mechanisms:
+            case suicide_mechanisms:
+            case protective_measures:
+            case relationships_to_victim:
+            case weapon_types:
+            case counterpart_service_type:
+            case service_types:
+            case transport_counterparts:
+            case transport_types:
+            case transport_users:
+            case involved_vehicles:
+            case road_types:
+
             case NOVALUE://es una tabla categorica
                 try {
                     //ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
@@ -1532,7 +2197,8 @@ public class IndicatorsPercentageVariationMB {
                     createVariable(
                     currentIndicator.getIndicatorsVariablesList().get(i).getIndicatorsVariablesPK().getVariableName(),
                     currentIndicator.getIndicatorsVariablesList().get(i).getCategory(),
-                    currentIndicator.getIndicatorsVariablesList().get(i).getAddValues()));
+                    currentIndicator.getIndicatorsVariablesList().get(i).getAddValues(),
+                    currentIndicator.getIndicatorsVariablesList().get(i).getSourceTable()));
         }
         return arrayReturn;
     }
@@ -1841,7 +2507,7 @@ public class IndicatorsPercentageVariationMB {
                     totalA = Double.parseDouble(getMatrixValueA("countXY", i, j));
                     totalB = Double.parseDouble(getMatrixValueB("countXY", i, j));
                     if (showCalculation) {
-                        value = formateador.format(totalA - totalB) + "(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                        value = formateador.format(totalA - totalB) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
                     } else {
                         value = formateador.format(totalA - totalB);
                     }
@@ -3152,5 +3818,21 @@ public class IndicatorsPercentageVariationMB {
 
     public void setGraphType2(boolean graphType2) {
         this.graphType2 = graphType2;
+    }
+
+    public boolean isBtnExportDisabled() {
+        return btnExportDisabled;
+    }
+
+    public void setBtnExportDisabled(boolean btnExportDisabled) {
+        this.btnExportDisabled = btnExportDisabled;
+    }
+
+    public boolean isShowEmpty() {
+        return showEmpty;
+    }
+
+    public void setShowEmpty(boolean showEmpty) {
+        this.showEmpty = showEmpty;
     }
 }
