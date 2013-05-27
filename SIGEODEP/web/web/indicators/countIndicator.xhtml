@@ -11,68 +11,57 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />
-            <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.4.0/adapter/ext/ext-base.js"></script>
-            <script type="text/javascript" src="http://extjs.cachefly.net/ext-3.4.0/ext-all.js"></script>
-            <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-3.4.0/resources/css/ext-all.css" />
-            <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-3.4.0/examples/shared/examples.css" />
-            <script type="text/javascript" src="../../resources/js/OpenLayers.js"></script>
-            <script type="text/javascript" src="../../resources/js/GeoExt.js"></script>
-            <script type="text/javascript" src="../../resources/js/geo.js"></script>
+
             <script>
-                Ext.onReady(function() {
-
-                    alert("Congratulations! You have Ext configured correctly!");
-
-                });
-                fnAdjustTable = function(){
+                fnAdjustTable = function() {
                     var colCount = $('#firstTr>td').length; //get total number of column
                     var m = 0;
                     var n = 0;
-                    var brow = 'mozilla';  
+                    var brow = 'mozilla';
                     jQuery.each(jQuery.browser, function(i, val) {
-                        if(val == true){
+                        if (val == true) {
                             brow = i.toString();
                         }
                     });
-  
-                    $('.tableHeader').each(function(i){
-                        if (colCount > m){
-                            if (brow == 'mozilla'){
-                                $('#firstTd').css("width",$('.tableFirstCol').innerWidth());//for adjusting first td
-                                $(this).css('width',$('#table_div td:eq('+m+')').innerWidth());//for assigning width to table Header div
-                            }else if (brow == 'msie'){
-                                $('#firstTd').css("width",$('.tableFirstCol').width());
-                                $(this).css('width',$('#table_div td:eq('+m+')').width()-2);//In IE there is difference of 2 px
-                            }else if (brow == 'safari'){
-                                $('#firstTd').css("width",$('.tableFirstCol').width());
-                                $(this).css('width',$('#table_div td:eq('+m+')').width());
-                            }else {
-                                $('#firstTd').css("width",$('.tableFirstCol').width());
-                                $(this).css('width',$('#table_div td:eq('+m+')').innerWidth());
+
+                    $('.tableHeader').each(function(i) {
+                        if (colCount > m) {
+                            if (brow == 'mozilla') {
+                                $('#firstTd').css("width", $('.tableFirstCol').innerWidth());//for adjusting first td
+                                $(this).css('width', $('#table_div td:eq(' + m + ')').innerWidth());//for assigning width to table Header div
+                            } else if (brow == 'msie') {
+                                $('#firstTd').css("width", $('.tableFirstCol').width());
+                                $(this).css('width', $('#table_div td:eq(' + m + ')').width() - 2);//In IE there is difference of 2 px
+                            } else if (brow == 'safari') {
+                                $('#firstTd').css("width", $('.tableFirstCol').width());
+                                $(this).css('width', $('#table_div td:eq(' + m + ')').width());
+                            } else {
+                                $('#firstTd').css("width", $('.tableFirstCol').width());
+                                $(this).css('width', $('#table_div td:eq(' + m + ')').innerWidth());
                             }
                         }
                         m++;
                     });
-                    $('.tableFirstCol').each(function(i){
-                        if(brow == 'mozilla'){
-                            $(this).css('height',$('#table_div td:eq('+colCount*n+')').outerHeight());//for providing height using scrollable table column height
-                        }else if(brow == 'msie'){
-                            $(this).css('height',$('#table_div td:eq('+colCount*n+')').innerHeight()-2);
-                        }else {
-                            $(this).css('height',$('#table_div td:eq('+colCount*n+')').height());
+                    $('.tableFirstCol').each(function(i) {
+                        if (brow == 'mozilla') {
+                            $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').outerHeight());//for providing height using scrollable table column height
+                        } else if (brow == 'msie') {
+                            $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').innerHeight() - 2);
+                        } else {
+                            $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').height());
                         }
                         n++;
                     });
                 }
                 //function to support scrolling of title and first column
-                fnScroll = function(){
+                fnScroll = function() {
                     $('#divHeader').scrollLeft($('#table_div').scrollLeft());
                     $('#firstcol').scrollTop($('#table_div').scrollTop());
                 }
-                function showTableResult() {        
-                    document.getElementById('IdForm:IdTabView:IdPaint').click();
+                function showTableResult() {
+                    document.getElementById('IdTabView:IdForm:IdPaint').click();
                     fnAdjustTable();
-                } 
+                }
             </script>             
         </ui:define>
         <!--=================================================================-->
@@ -81,18 +70,18 @@
             #{indicatorsCountMB.titlePage}
         </ui:define>
         <ui:define name="title">
-            #{indicatorsCountMB.titleIndicator}
+            #{indicatorsCountMB.subTitleIndicator}
         </ui:define>
         <!--=================================================================-->
         <!--==============================CONTENIDO==========================-->
         <br/>
         <ui:define name="content">
-            <h:form enctype="multipart/form-data" id="IdForm"> 
-                <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
-                <!--===================================================================================-->
-                <br/>
-                <p:tabView id="IdTabView"  style=" width: 750px;  margin-left: -375px; left: 50%;" > 
-                    <p:tab id="tab1" title="#{indicatorsCountMB.subTitleIndicator}">  
+            <br/>
+            <p:tabView id="IdTabView"  style=" width: 750px;  margin-left: -375px; left: 50%;" > 
+                <p:tab id="tab1" title="#{indicatorsCountMB.subTitleIndicator}">  
+                    <h:form enctype="multipart/form-data" id="IdForm" style="alignment-adjust: center;"> 
+                        <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
+                        <!--===================================================================================-->                        
                         <br/>
                         <p:fieldset legend="RANGO DE FECHAS"> 
                             <br/>
@@ -148,7 +137,7 @@
                                             <f:ajax 
                                                 event="dblclick"
                                                 listener="#{indicatorsCountMB.addVariableClick}"                                                    
-                                                render="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/>
+                                                render="IdSelectOneListVariables IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/>
                                         </h:selectManyListbox> 
                                     </p:column>
                                     <p:column>
@@ -159,7 +148,7 @@
                                             icon="ui-icon-arrowthick-1-e"
                                             disabled="#{indicatorsCountMB.btnAddVariableDisabled}"
                                             actionListener="#{indicatorsCountMB.addVariableClick}"  
-                                            update="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
+                                            update="IdSelectOneListVariables IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
                                         <br/>
                                         <p:commandButton 
                                             value="Quitar" 
@@ -168,7 +157,7 @@
                                             icon="ui-icon-arrowthick-1-w"                                            
                                             disabled="#{indicatorsCountMB.btnRemoveVariableDisabled}"
                                             actionListener="#{indicatorsCountMB.removeVariableClick}"  
-                                            update="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
+                                            update="IdSelectOneListVariables IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
                                         <br/>
                                         <p:commandButton 
                                             value="Configuraciones" 
@@ -178,7 +167,7 @@
                                             disabled="#{indicatorsCountMB.btnRemoveVariableDisabled}"
                                             actionListener="#{indicatorsCountMB.btnLoadConfigurationClick}"
                                             oncomplete="configurationsDialog.show();"
-                                            update="IdSelectOneListVariables :IdForm2:IdConfigurationsList IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
+                                            update="IdSelectOneListVariables :IdForm2:IdConfigurationsList IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
                                     </p:column>
                                     <p:column>
                                         <h:selectManyListbox 
@@ -194,7 +183,7 @@
                                             <f:ajax 
                                                 event="dblclick"
                                                 listener="#{indicatorsCountMB.removeVariableClick}"                                                    
-                                                render="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/>
+                                                render="IdSelectOneListVariables IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/>
                                         </h:selectManyListbox> 
                                     </p:column>
                                 </p:row>
@@ -213,12 +202,15 @@
                                 id="IdBtnGenerate" 
                                 actionListener="#{indicatorsCountMB.process}"
                                 oncomplete="showTableResult()"                                                        
-                                update="IdImageChart IdPanelGraphConfig IdDataTableHtml :maps_form"/>
+                                update="IdImageChart IdPanelGraphConfig IdDataTableHtml IdBtnExport"/>
+                            &nbsp;&nbsp;
+                            <h:selectBooleanCheckbox value="#{indicatorsCountMB.showEmpty}" />
+                            &nbsp;Ver vacios
                             <p:commandButton
                                 id="IdPaint"
                                 value="paint"
                                 actionListener="#{indicatorsCountMB.showMessage}"
-                                update=":IdForm:message"                                                                                                    
+                                update=":IdTabView:IdForm:message"                                                                                                    
                                 style="display: none;">
                                 <f:ajax 
                                     event="blur"
@@ -243,42 +235,30 @@
                                 <p:column>                                                  
                                 </p:column>
                             </p:dataTable> 
-                            <h:commandLink rendered="false">  
-                                <p:graphicImage value="../../resources/img/excel.png"/>
-                                <p:dataExporter type="xls" target="IdOutFile" fileName="salidaXML" postProcessor="#{crossMB.postProcessXLS}"/>  
+                            <h:commandLink id="IdBtnExport" disabled="#{indicatorsCountMB.btnExportDisabled}">  
+                                <p:button  value="Exportar datos" />                                
+                                <p:dataExporter type="xls" target="IdOutFile" fileName="salida" postProcessor="#{indicatorsCountMB.postProcessXLS}"/>  
                             </h:commandLink>
-                            <h:commandLink rendered="false">  
-                                <p:graphicImage value="../../resources/img/pdf.png" />  
-                                <p:dataExporter type="pdf" target="IdOutFile" fileName="salidaPDF" preProcessor="#{crossMB.preProcessPDF}"/>  
-                            </h:commandLink>
+
                             <br/>
                             <br/>
                         </p:fieldset>
                         <br/>
                         <br/>                        
                         <p:fieldset legend="GRAFICOS">
-                            <br/>
+                            <br/> 
                             <p:panelGrid id="IdPanelGraphConfig">
-                                <!-- p:row>
-                                    <p:column>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
                                         Tipo de Gráfico
                                     </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdGraphType" value="# {indicatorsCountMB.currentGraphType}"> 
-                                            <f:selectItems value="# {indicatorsCountMB.graphTypes}"/>
-                                            <f:ajax 
-                                                event="change"
-                                                listener="# {indicatorsCountMB.createImage}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
-                                        </h:selectOneMenu>
-                                    </p:column>
-                                </p:row -->
-                                <p:row>
-                                    <p:column>
+                                    <p:column colspan="2">
+                                        Barras
+                                    </p:column>                                    
+                                    <p:column styleClass="ui-widget-header">
                                         Variable
                                     </p:column>
-                                    <p:column>
+                                    <p:column colspan="2">
                                         <h:selectOneMenu 
                                             id="IdVariableGraph" value="#{indicatorsCountMB.currentVariableGraph}"> 
                                             <f:selectItems value="#{indicatorsCountMB.variablesGraph}"/>
@@ -288,10 +268,23 @@
                                                 render="IdImageChart IdPanelGraphConfig"/>
                                         </h:selectOneMenu>
                                     </p:column>
-                                    <p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        Mostrar Items
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <h:selectBooleanCheckbox value="#{indicatorsCountMB.showItems}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsCountMB.createImage}"
+                                                render="IdVariableGraph IdValueGraph IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
+                                    </p:column>                                        
+                                    <p:column styleClass="ui-widget-header">
                                         Valor
                                     </p:column>
-                                    <p:column>
+                                    <p:column colspan="2">
                                         <h:selectOneMenu 
                                             id="IdValueGraph" value="#{indicatorsCountMB.currentValueGraph}"> 
                                             <f:selectItems value="#{indicatorsCountMB.valuesGraph}"/>
@@ -301,17 +294,6 @@
                                                 render="IdImageChart"/>
                                         </h:selectOneMenu>
                                     </p:column>
-                                    <p:column>
-                                        Mostrar Items
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectBooleanCheckbox value="#{indicatorsCountMB.showItems}" >
-                                            <f:ajax 
-                                                event="change"
-                                                listener="#{indicatorsCountMB.createImage}"
-                                                render="IdVariableGraph IdValueGraph IdImageChart"/>
-                                        </h:selectBooleanCheckbox>
-                                    </p:column>                                        
                                 </p:row>
                             </p:panelGrid>                                
                             <br/>
@@ -319,90 +301,108 @@
                             <br/>
                         </p:fieldset>
                         <br/>
-                        <br/>                        
-                        <p:fieldset legend="MAPAS"> 
-
-                        </p:fieldset>
                         <br/>
-                    </p:tab>
-                </p:tabView>
-            </h:form>            
-            <h:form target="_blank" id="maps_form">
-                <br/>
-                <p:spinner min="1" max="#{geoDBConnectionMB.gap}" value="#{geoDBConnectionMB.bins}" id="cat_spinner" >
-                    <f:ajax event="change" 
-                            listener="#{geoDBConnectionMB.createRanges}" 
-                            render="rangeTable" />
-                </p:spinner>
-                <p:selectOneMenu id="splitMethod" 
-                                 value="#{geoDBConnectionMB.splitMethod}" >
-                    <f:selectItem itemValue="2"
-                                  itemLabel="EqualFrequency"/>
-                    <f:selectItem itemValue="0"
-                                  itemLabel="EqualWidth"/>
-                    <f:selectItem itemValue="1"
-                                  itemLabel="Jenks"/>
-                    <f:selectItem itemValue="3"
-                                  itemLabel="KMeans"/>
-                    <f:ajax event="change" 
-                            listener="#{geoDBConnectionMB.createRanges}" 
-                            render="rangeTable" />
-                </p:selectOneMenu>
+                    </h:form>
+                    <!-- =========================FORMULARIO MAPAS============================= -->
+                    <h:form target="_blank" id="maps_form">                        
+                        <p:fieldset legend="MAPAS" > 
+                            <br/>
+                            <p:panelGrid>
+                                <p:row>                                    
+                                    <p:column styleClass="ui-widget-header">
+                                        Divisiones
+                                    </p:column>
+                                    <p:column>
+                                        <p:spinner min="1" max="#{geoDBConnectionMB.gap}" value="#{geoDBConnectionMB.bins}" id="cat_spinner" >
+                                            <f:ajax event="change" 
+                                                    listener="#{geoDBConnectionMB.createRanges}" 
+                                                    render="rangeTable" />
+                                        </p:spinner>
+                                    </p:column>
+                                    <p:column styleClass="ui-widget-header">
+                                        Método
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="splitMethod" 
+                                                         value="#{geoDBConnectionMB.splitMethod}" >
+                                            <f:selectItem itemValue="2"
+                                                          itemLabel="EqualFrequency"/>
+                                            <f:selectItem itemValue="0"
+                                                          itemLabel="EqualWidth"/>
+                                            <f:selectItem itemValue="1"
+                                                          itemLabel="Jenks"/>
+                                            <f:selectItem itemValue="3"
+                                                          itemLabel="KMeans"/>
+                                            <f:ajax event="change" 
+                                                    listener="#{geoDBConnectionMB.createRanges}" 
+                                                    render="rangeTable" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column styleClass="ui-widget-header">
+                                        Paleta
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="ramp"
+                                                         value="#{geoDBConnectionMB.selectedRamp}" 
+                                                         converter="#{rampConverter}"
+                                                         effect="fade" var="r">
+                                            <f:selectItems value="#{geoDBConnectionMB.ramps}" var="ramp" itemLabel="#{ramp.name}" itemValue="#{ramp}"/>
+                                            <p:column>
+                                                <p:graphicImage value="#{r.image}" />                     
+                                                <h:outputText value="#{r.name}" />
+                                            </p:column>
+                                            <f:ajax event="change" 
+                                                    listener="#{geoDBConnectionMB.createRanges}" 
+                                                    render="rangeTable" />                
+                                        </p:selectOneMenu>                
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <p:dataTable 
+                                id="rangeTable" 
+                                value="#{geoDBConnectionMB.ranges}" 
+                                var="range" 
+                                rowKey="#{range}" 
+                                editable="true">
+                                <p:column headerText="Color" style="width:5%">
+                                    <p:colorPicker id="cpRangeTable" value="#{range.hexcolor}"></p:colorPicker>
+                                </p:column>
 
-                <p:selectOneMenu id="ramp"
-                                 value="#{geoDBConnectionMB.selectedRamp}" 
-                                 converter="#{rampConverter}"
-                                 effect="fade" var="r">
-                    <f:selectItems value="#{geoDBConnectionMB.ramps}" var="ramp" itemLabel="#{ramp.name}" itemValue="#{ramp}"/>
-                    <p:column>
-                        <p:graphicImage value="#{r.image}" />                     
-                        <h:outputText value="#{r.name}" />
-                    </p:column>
-                    <f:ajax event="change" 
-                            listener="#{geoDBConnectionMB.createRanges}" 
-                            render="rangeTable" />                
-                </p:selectOneMenu>                
+                                <p:column headerText="Limite Inferior" style="width:10%">
+                                    <h:outputText value="#{range.start}" />
+                                </p:column>
+                                <p:column headerText="Limite Superior" style="width:10%">
+                                    <h:outputText value="#{range.end}" />
+                                </p:column>
+                                <p:column headerText="Etiqueta" style="width:50%">
+                                    <p:cellEditor>
+                                        <f:facet name="output">
+                                            <h:outputText value="#{range.label}" />
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:inputText value="#{range.label}" style="width:100%"/>
+                                        </f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+                                <p:column headerText="Conteo" style="width:10%">
+                                    <h:outputText value="#{range.count}" />
+                                </p:column>                    
+                                <p:column headerText="Editar" style="width:10%">
+                                    <p:rowEditor />
+                                </p:column>
 
-                <p:dataTable 
-                    id="rangeTable" 
-                    value="#{geoDBConnectionMB.ranges}" 
-                    var="range" 
-                    rowKey="#{range}" 
-                    editable="true">
-                    <p:column headerText="Color" style="width:5%">
-                        <p:colorPicker id="cpRangeTable" value="#{range.hexcolor}"></p:colorPicker>
-                    </p:column>
+                            </p:dataTable>
+                            <br/>
 
-                    <p:column headerText="Limite Inferior" style="width:10%">
-                        <h:outputText value="#{range.start}" />
-                    </p:column>
-                    <p:column headerText="Limite Superior" style="width:10%">
-                        <h:outputText value="#{range.end}" />
-                    </p:column>
-                    <p:column headerText="Etiqueta" style="width:50%">
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:outputText value="#{range.label}" />
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:inputText value="#{range.label}" style="width:100%"/>
-                            </f:facet>
-                        </p:cellEditor>
-                    </p:column>
-                    <p:column headerText="Conteo" style="width:10%">
-                        <h:outputText value="#{range.count}" />
-                    </p:column>                    
-                    <p:column headerText="Editar" style="width:10%">
-                        <p:rowEditor />
-                    </p:column>
-
-                </p:dataTable>
-
-                <h:commandButton value="Generar Mapa" action="#{geoDBConnectionMB.crearURL}" />
-                <br/>
-                <div id="mainpanel"></div>
-                <br/>
-            </h:form>
+                            <h:commandButton styleClass="ui-widget-header ui-corner-all" style="width: 140px; height: 30px;" value="Generar Mapa" action="#{geoDBConnectionMB.crearURL}" />
+                            <br/>
+                            <div id="mainpanel"></div>
+                            <br/>
+                        </p:fieldset>
+                    </h:form>
+                </p:tab>
+            </p:tabView>
         </ui:define>
 
         <ui:define name="dialogs">
@@ -427,7 +427,7 @@
                         style="margin:0;"
                         oncomplete="saveConfigurationDialog.hide()"
                         actionListener="#{indicatorsCountMB.btnSaveConfigurationClick}"
-                        update="IdConfigurationsList :IdForm:message"/>
+                        update="IdConfigurationsList :IdTabView:IdForm:message"/>
                     <br/>
                     <br/>
                 </p:dialog>
@@ -455,13 +455,13 @@
                         style="margin:0;"
                         oncomplete="openConfigurationDialog.hide()"
                         actionListener="#{indicatorsCountMB.btnOpenConfigurationClick}"
-                        update="IdSelectManyListCategoryValues IdConfigurationsList :IdForm:message"/>
+                        update="IdSelectManyListCategoryValues IdConfigurationsList :IdTabView:IdForm:message"/>
                     <p:commandButton                                                            
                         value="Eliminar"
                         style="margin:0;"
                         oncomplete="openConfigurationDialog.hide()"
                         actionListener="#{indicatorsCountMB.btnRemoveConfigurationClick}"
-                        update="IdSelectManyListCategoryValues IdConfigurationsList :IdForm:message"/>  
+                        update="IdSelectManyListCategoryValues IdConfigurationsList :IdTabView:IdForm:message"/>  
                     <br/>
                     <br/>
 
@@ -503,7 +503,7 @@
                                     style="margin:0;"
                                     disabled="#{indicatorsCountMB.btnAddCategoricalValueDisabled}"
                                     actionListener="#{indicatorsCountMB.btnAddCategoricalValueClick}"
-                                    update="IdSelectManyListCategoryValues :IdForm:message IdA IdB"/>  
+                                    update="IdSelectManyListCategoryValues :IdTabView:IdForm:message IdA IdB"/>  
 
                             </p:column>
                         </p:row>

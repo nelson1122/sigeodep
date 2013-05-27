@@ -73,7 +73,6 @@ public class RecordSetsHomicideMB implements Serializable {
     private String sql = "";
 
     public void onCompleteLoad() {
-        //progress = 0;
         System.out.println("Termino generacion de XLSX");
     }
 

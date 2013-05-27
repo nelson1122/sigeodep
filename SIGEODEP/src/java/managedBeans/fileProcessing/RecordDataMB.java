@@ -496,8 +496,6 @@ public class RecordDataMB implements Serializable {
          */
         String returnValue = null;
         try {
-
-
             for (int i = 0; i < arrayInJava.length; i++) {
                 String splitElement[] = arrayInJava[i].toString().split("<=>");
                 if (columnName.compareTo(splitElement[0]) == 0) {
@@ -702,6 +700,9 @@ public class RecordDataMB implements Serializable {
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
                                     }
                                     break;
+                            }
+                            if(value.compareTo("bn")==0){
+                                value = isCategorical(registryData, relationVar);
                             }
                         }
                     }
@@ -2836,9 +2837,10 @@ public class RecordDataMB implements Serializable {
 
                     continueProcces = false;
                     if (value != null) {
-//                        if (value.compareTo("2012") == 0 || value.compareTo("2013") == 0) {
-//                            System.out.print("aqui");
-//                        }
+                        if (value.compareTo("TRABAJO") == 0 || value.compareTo("2013") == 0) {
+                            System.out.print("aqui");
+                            value = isCategorical(splitColumnAndValue[1], relationVar);
+                        }
                         if (value.trim().length() != 0) {
                             continueProcces = true;
                         }
@@ -3374,6 +3376,7 @@ public class RecordDataMB implements Serializable {
                                 newNonFatalInjury.setIntentionalityId(intentionalitiesFacade.find(Short.parseShort(value)));
                                 break;
                             case lugar_ocurrio_lesion:
+                                
                                 newNonFatalInjury.setInjuryPlaceId(nonFatalPlacesFacade.find(Short.parseShort(value)));
                                 break;
                             case activida_que_realizaba:
@@ -3777,11 +3780,11 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                if (newNonFatalInjury.getInjuryDate() != null) {
-                    if (newNonFatalInjury.getInjuryDate().getYear() + 1900 != 2011) {
-                        System.out.print("aqui el error se guarda");
-                    }
-                }
+//                if (newNonFatalInjury.getInjuryDate() != null) {
+//                    if (newNonFatalInjury.getInjuryDate().getYear() + 1900 != 2011) {
+//                        System.out.print("aqui el error se guarda");
+//                    }
+//                }
 
                 //PERSISTO//////////////////////////////////////////////////////
                 try {
@@ -5474,7 +5477,7 @@ public class RecordDataMB implements Serializable {
          */
         if (f.trim().length() == 0) {
             return "";
-        }
+        }        
         try {
             DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
             DateTimeFormatter fmt2 = DateTimeFormat.forPattern(format);
@@ -5720,7 +5723,7 @@ public class RecordDataMB implements Serializable {
         }
         //se valida con respecto a los valores esperados
         if (relationVar.getComparisonForCode() == true) {
-            return connectionJdbcMB.findNameByCategoricalCode(remove_v(relationVar.getFieldType()), valueFound);
+            return valueFound;
         } else {
             return connectionJdbcMB.findCodeByCategoricalName(remove_v(relationVar.getFieldType()), valueFound);
         }

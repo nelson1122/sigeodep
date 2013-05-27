@@ -61,7 +61,7 @@
                     $('#firstcol').scrollTop($('#table_div').scrollTop());
                 }
                 function showTableResult() {
-                    document.getElementById('IdForm:IdTabView:IdPaint').click();
+                    document.getElementById('IdTabView:IdForm:IdPaint').click();
                     fnAdjustTable();
                 }
             </script>  
@@ -76,16 +76,14 @@
         </ui:define>
         <!--=================================================================-->
         <!--==============================CONTENIDO==========================-->
-
-
         <br/>
         <ui:define name="content">
-            <h:form enctype="multipart/form-data" id="IdForm"> 
-                <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
-                <!--===================================================================================-->
-                <br/>
-                <p:tabView id="IdTabView"  style=" width: 750px;  margin-left: -375px; left: 50%;" > 
-                    <p:tab id="tab1" title="#{indicatorsPercentageVariationMB.subTitleIndicator}">  
+            <br/>
+            <p:tabView id="IdTabView"  style=" width: 750px;  margin-left: -375px; left: 50%;" > 
+                <p:tab id="tab1" title="#{indicatorsPercentageVariationMB.subTitleIndicator}">  
+                    <h:form enctype="multipart/form-data" id="IdForm"> 
+                        <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
+                        <!--===================================================================================-->
                         <br/>
                         <p:fieldset legend="RANGO DE FECHAS"> 
                             <br/>
@@ -199,7 +197,7 @@
                                             <f:ajax 
                                                 event="dblclick"
                                                 listener="#{indicatorsPercentageVariationMB.addVariableClick}"                                                    
-                                                render="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/>
+                                                render="IdSelectOneListVariables IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/>
                                         </h:selectManyListbox> 
                                     </p:column>
                                     <p:column>
@@ -210,7 +208,7 @@
                                             icon="ui-icon-arrowthick-1-e"
                                             disabled="#{indicatorsPercentageVariationMB.btnAddVariableDisabled}"
                                             actionListener="#{indicatorsPercentageVariationMB.addVariableClick}"  
-                                            update="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
+                                            update="IdSelectOneListVariables IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
                                         <br/>
                                         <p:commandButton 
                                             value="Quitar" 
@@ -219,7 +217,7 @@
                                             icon="ui-icon-arrowthick-1-w"
                                             disabled="#{indicatorsPercentageVariationMB.btnRemoveVariableDisabled}"
                                             actionListener="#{indicatorsPercentageVariationMB.removeVariableClick}"  
-                                            update="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
+                                            update="IdSelectOneListVariables IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
                                         <br/>
                                         <p:commandButton 
                                             value="Configuraciones" 
@@ -229,7 +227,7 @@
                                             disabled="#{indicatorsPercentageVariationMB.btnRemoveVariableDisabled}"
                                             actionListener="#{indicatorsPercentageVariationMB.btnLoadConfigurationClick}"
                                             oncomplete="configurationsDialog.show();"
-                                            update="IdSelectOneListVariables :IdForm2:IdConfigurationsList IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
+                                            update="IdSelectOneListVariables :IdForm2:IdConfigurationsList IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/> 
                                     </p:column>
                                     <p:column>
                                         <h:selectManyListbox 
@@ -245,7 +243,7 @@
                                             <f:ajax 
                                                 event="dblclick"
                                                 listener="#{indicatorsPercentageVariationMB.removeVariableClick}"                                                    
-                                                render="IdSelectOneListVariables IdSelectOneListCrossVariables :IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/>
+                                                render="IdSelectOneListVariables IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/>
                                         </h:selectManyListbox> 
                                     </p:column>
                                 </p:row>
@@ -281,13 +279,16 @@
                                 id="IdBtnGenerate" 
                                 actionListener="#{indicatorsPercentageVariationMB.process}"
                                 oncomplete="showTableResult()"                                                                                                                    
-                                update="IdImageChart IdPanelGraphConfig IdDataTableHtml">
-                            </p:commandButton>                           
+                                update="IdImageChart IdPanelGraphConfig IdDataTableHtml IdBtnExport">
+                            </p:commandButton>  
+                            &nbsp;&nbsp;
+                            <h:selectBooleanCheckbox value="#{indicatorsPercentageVariationMB.showEmpty}" />
+                            &nbsp;Ver vacios
                             <p:commandButton
                                 id="IdPaint"
                                 value="paint"
                                 actionListener="#{indicatorsPercentageVariationMB.showMessage}"
-                                update=":IdForm:message"                                                                                                    
+                                update=":IdTabView:IdForm:message"                                                                                                    
                                 style="display: none;">
                                 <f:ajax 
                                     event="blur"
@@ -310,8 +311,8 @@
                                 </p:column>
                             </p:dataTable> 
                             <br/>
-                            <h:commandLink>  
-                                <p:button value="Exportar datos"/>                                
+                            <h:commandLink id="IdBtnExport" disabled="#{indicatorsPercentageVariationMB.btnExportDisabled}">  
+                                <p:button  value="Exportar datos" />                                
                                 <p:dataExporter type="xls" target="IdOutFile" fileName="salida" postProcessor="#{indicatorsPercentageVariationMB.postProcessXLS}"/>  
                             </h:commandLink>                             
                             <br/>
@@ -320,31 +321,15 @@
                         <br/>
                         <br/>                        
                         <p:fieldset legend="GRAFICOS">                            
-
                             <br/> 
                             <p:panelGrid id="IdPanelGraphConfig">
                                 <p:row>
                                     <p:column styleClass="ui-widget-header">
                                         Tipo de Gráfico
                                     </p:column>
-                                    <p:column colspan="2">                                        
-                                        <!-- h:selectBooleanCheckbox id="IdGraphType1" value="# {indicatorsPercentageVariationMB.graphType1}">                                            
-                                            <f:ajax 
-                                                event="change"
-                                                listener="# {indicatorsPercentageVariationMB.changeGraphType1}"
-                                                render="IdImageChart IdGraphType2"/>
-                                        </h:selectBooleanCheckbox -->                                        
+                                    <p:column colspan="2">
                                         Barras
                                     </p:column>
-                                    <!-- p:column>                                        
-                                        <h:selectBooleanCheckbox id="IdGraphType2" value="# {indicatorsPercentageVariationMB.graphType2}">                                            
-                                            <f:ajax 
-                                                event="change"
-                                                listener="# {indicatorsPercentageVariationMB.changeGraphType2}"
-                                                render="IdImageChart IdGraphType1"/>
-                                        </h:selectBooleanCheckbox>                                        
-                                        Barras
-                                    </p:column -->
                                     <p:column styleClass="ui-widget-header">
                                         Filtro 1
                                     </p:column>
@@ -393,17 +378,110 @@
                             <br/>
                         </p:fieldset>
                         <br/>
-                        <br/>                        
-                        <p:fieldset legend="MAPAS"> 
+                        <br/>                                                
+                    </h:form>                    
+                    <!-- =========================FORMULARIO MAPAS============================= -->
+                    <h:form target="_blank" id="maps_form">
+                     <h:form target="_blank" id="maps_form">                        
+                        <p:fieldset legend="MAPAS" > 
                             <br/>
-                            Mapas
+                            <p:panelGrid>
+                                <p:row>                                    
+                                    <p:column styleClass="ui-widget-header">
+                                        Divisiones
+                                    </p:column>
+                                    <p:column>
+                                        <p:spinner min="1" max="#{geoDBConnectionMB.gap}" value="#{geoDBConnectionMB.bins}" id="cat_spinner" >
+                                            <f:ajax event="change" 
+                                                    listener="#{geoDBConnectionMB.createRanges}" 
+                                                    render="rangeTable" />
+                                        </p:spinner>
+                                    </p:column>
+                                    <p:column styleClass="ui-widget-header">
+                                        Método
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="splitMethod" 
+                                                         value="#{geoDBConnectionMB.splitMethod}" >
+                                            <f:selectItem itemValue="2"
+                                                          itemLabel="EqualFrequency"/>
+                                            <f:selectItem itemValue="0"
+                                                          itemLabel="EqualWidth"/>
+                                            <f:selectItem itemValue="1"
+                                                          itemLabel="Jenks"/>
+                                            <f:selectItem itemValue="3"
+                                                          itemLabel="KMeans"/>
+                                            <f:ajax event="change" 
+                                                    listener="#{geoDBConnectionMB.createRanges}" 
+                                                    render="rangeTable" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column styleClass="ui-widget-header">
+                                        Paleta
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="ramp"
+                                                         value="#{geoDBConnectionMB.selectedRamp}" 
+                                                         converter="#{rampConverter}"
+                                                         effect="fade" var="r">
+                                            <f:selectItems value="#{geoDBConnectionMB.ramps}" var="ramp" itemLabel="#{ramp.name}" itemValue="#{ramp}"/>
+                                            <p:column>
+                                                <p:graphicImage value="#{r.image}" />                     
+                                                <h:outputText value="#{r.name}" />
+                                            </p:column>
+                                            <f:ajax event="change" 
+                                                    listener="#{geoDBConnectionMB.createRanges}" 
+                                                    render="rangeTable" />                
+                                        </p:selectOneMenu>                
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
                             <br/>
+                            <p:dataTable 
+                                id="rangeTable" 
+                                value="#{geoDBConnectionMB.ranges}" 
+                                var="range" 
+                                rowKey="#{range}" 
+                                editable="true">
+                                <p:column headerText="Color" style="width:5%">
+                                    <p:colorPicker id="cpRangeTable" value="#{range.hexcolor}"></p:colorPicker>
+                                </p:column>
+
+                                <p:column headerText="Limite Inferior" style="width:10%">
+                                    <h:outputText value="#{range.start}" />
+                                </p:column>
+                                <p:column headerText="Limite Superior" style="width:10%">
+                                    <h:outputText value="#{range.end}" />
+                                </p:column>
+                                <p:column headerText="Etiqueta" style="width:50%">
+                                    <p:cellEditor>
+                                        <f:facet name="output">
+                                            <h:outputText value="#{range.label}" />
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:inputText value="#{range.label}" style="width:100%"/>
+                                        </f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+                                <p:column headerText="Conteo" style="width:10%">
+                                    <h:outputText value="#{range.count}" />
+                                </p:column>                    
+                                <p:column headerText="Editar" style="width:10%">
+                                    <p:rowEditor />
+                                </p:column>
+
+                            </p:dataTable>
+                            <br/>
+
+                            <h:commandButton styleClass="ui-widget-header ui-corner-all" style="width: 140px; height: 30px;" value="Generar Mapa" action="#{geoDBConnectionMB.crearURL}" />
+                            <br/>
+                            <div id="mainpanel"></div>
                             <br/>
                         </p:fieldset>
-                        <br/>
-                    </p:tab>
-                </p:tabView>
-            </h:form>
+                    </h:form>
+                    </h:form>
+                </p:tab>
+            </p:tabView>
         </ui:define>
         <ui:define name="dialogs">
             <h:form id="IdForm2">
@@ -427,7 +505,7 @@
                         style="margin:0;"
                         oncomplete="saveConfigurationDialog.hide()"
                         actionListener="#{indicatorsPercentageVariationMB.btnSaveConfigurationClick}"
-                        update="IdConfigurationsList :IdForm:message"/>
+                        update="IdConfigurationsList :IdTabView:IdForm:message"/>
                     <br/>
                     <br/>
                 </p:dialog>
@@ -455,13 +533,13 @@
                         style="margin:0;"
                         oncomplete="openConfigurationDialog.hide()"
                         actionListener="#{indicatorsPercentageVariationMB.btnOpenConfigurationClick}"
-                        update="IdSelectManyListCategoryValues IdConfigurationsList :IdForm:message"/>
+                        update="IdSelectManyListCategoryValues IdConfigurationsList :IdTabView:IdForm:message"/>
                     <p:commandButton                                                            
                         value="Eliminar"
                         style="margin:0;"
                         oncomplete="openConfigurationDialog.hide()"
                         actionListener="#{indicatorsPercentageVariationMB.btnRemoveConfigurationClick}"
-                        update="IdSelectManyListCategoryValues IdConfigurationsList :IdForm:message"/>  
+                        update="IdSelectManyListCategoryValues IdConfigurationsList :IdTabView:IdForm:message"/>  
                     <br/>
                     <br/>
 
@@ -503,7 +581,7 @@
                                     style="margin:0;"
                                     disabled="#{indicatorsPercentageVariationMB.btnAddCategoricalValueDisabled}"
                                     actionListener="#{indicatorsPercentageVariationMB.btnAddCategoricalValueClick}"
-                                    update="IdSelectManyListCategoryValues :IdForm:message IdA IdB"/>  
+                                    update="IdSelectManyListCategoryValues :IdTabView:IdForm:message IdA IdB"/>  
 
                             </p:column>
                         </p:row>
