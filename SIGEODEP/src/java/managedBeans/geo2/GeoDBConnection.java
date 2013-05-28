@@ -571,7 +571,7 @@ public class GeoDBConnection implements Serializable {
                 + "FROM "
                 + "	indicators_records "
                 + "WHERE "
-                + "	" + geo_column +" IN " + WHERE + " "
+                + "	" + geo_column + " IN " + WHERE + " "
                 + "     AND user_id = " + user_id + " "
                 + "     AND indicator_id = " + indicator_id + ""
                 + "GROUP BY "
@@ -599,6 +599,23 @@ public class GeoDBConnection implements Serializable {
             Logger.getLogger(GeoDBConnection.class.getName()).log(Level.SEVERE, null, ex);
             return "EPIC FAIL!!!";
         }
+    }
+
+    public String getMapName(int indicator_id) {
+        try {
+            String query = "SELECT indicator_name FROM indicators WHERE indicator_id=" + indicator_id;
+            ResultSet records = this.consult(query);
+            JSONObject obj = new JSONObject();
+            while (records.next()) {
+                String map_name = records.getString("indicator_name");
+                obj.put("title", map_name);
+            }
+            return obj.toString();
+        } catch (JSONException | SQLException ex) {
+            Logger.getLogger(GeoDBConnection.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+
     }
 
     /**
