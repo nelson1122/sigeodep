@@ -15,34 +15,6 @@
 var mapPanel, mainPanel;
 var bkey = "AnyGyd4GaAzToU0sDaA0NaXDD88yChcUh8ySoNc32_ddxkrxkl9K5SIATkA8EpMn";
 
-function createLegend(rf) {
-    var paper = Raphael(document.getElementById('legend'), 320, 320);
-    var ranges = rf.split("<end>");
-    var nranges = ranges.length - 1;
-    var width = 0;
-    var x = 15;
-    for (var i = 0; i < nranges; i++) {
-        var range = ranges[i].split("<tab>");
-        var y = 15 + (i * 25);
-        paper.circle(x, y, 10).attr(
-        {
-            "fill": "#" + range[0],
-            "stroke": "#000000"
-        });
-        var range_text = paper.text(x + 25, y, range[2]).attr(
-        {
-            "fill": "#000",
-            "font-size": 16,
-            "text-anchor": "start",
-            "font-family": "Arial, Helvetica, sans-serif"
-        });
-        if (width < range_text.getBBox().width) {
-            width = range_text.getBBox().width;
-        }
-    }
-    paper.setSize(x + 30 + width, 10 + (nranges * 25));
-}
-
 Ext.onReady(function() {
     params = parseURLParams(window.location.href);
     createLegend(params["rf"][0]);
@@ -74,9 +46,61 @@ Ext.onReady(function() {
             fillColor: "#FFFFFF",
             'strokeWidth': 1,
             fillOpacity: 0.4,
-            graphicZIndex: 1
+            graphicZIndex: 1,
+            label : "${getLabel}",
+            fontColor: "#555555",
+            fontSize: "12px",
+            fontFamily: "Courier New, monospace",
+            fontWeight: "bold",
+            labelOutlineColor: "white",
+            labelOutlineWidth: 3
+        }, {
+            context: {
+                getLabel: function(feature) {
+                    if(feature.layer.map.getZoom() > 15) {
+                        if(feature.data.name !== null){
+                            return feature.data.name;
+                        } else {
+                            return ""
+                        }
+                    } else {
+                        return "";
+                    }
+                }
+            }
         })
     });
+
+    communeStyles = new OpenLayers.StyleMap({
+        "default": new OpenLayers.Style({
+            fillColor: "#FFFFFF",
+            'strokeWidth': 1,
+            fillOpacity: 0.4,
+            graphicZIndex: 1,
+            label : "${getLabel}",
+            fontColor: "#555555",
+            fontSize: "12px",
+            fontFamily: "Courier New, monospace",
+            fontWeight: "bold",
+            labelOutlineColor: "white",
+            labelOutlineWidth: 3
+        }, {
+            context: {
+                getLabel: function(feature) {
+                    if(feature.layer.map.getZoom() <= 15 && feature.layer.map.getZoom() > 10) {
+                        if(feature.data.name !== null){
+                            return feature.data.name;
+                        } else {
+                            return ""
+                        }
+                    } else {
+                        return "";
+                    }
+                }
+            }
+        })
+    });
+
 
     customStyles = new OpenLayers.StyleMap({
         "default": new OpenLayers.Style({
@@ -203,21 +227,47 @@ Ext.onReady(function() {
         }
 
     };
+    blank = new OpenLayers.Layer.OSM("En Blanco","images/default/s.gif"); 
 
-    neighborhoods = new OpenLayers.Layer.Vector("Barrios", {
-        styleMap: initialStyles,
-        projection: new OpenLayers.Projection("EPSG:900913"),
-        strategies: [new OpenLayers.Strategy.Fixed()],
-        protocol: new OpenLayers.Protocol.HTTP({
-            url: "neighborhoods.jsp",
-            format: new OpenLayers.Format.GeoJSON(),
-            callbackKey: "callback"
-        })
-    });
-
-
-
-    map.addLayers([osm, hybrid, neighborhoods, vectors]);
+    map.addLayers([osm, hybrid, vectors, blank]);
+    if(geo_vars[index_g] !== 'Cuadrantes'){
+        neighborhoods = new OpenLayers.Layer.Vector("Barrios", {
+            styleMap: initialStyles,
+            projection: new OpenLayers.Projection("EPSG:900913"),
+            strategies: [new OpenLayers.Strategy.Fixed()],
+            protocol: new OpenLayers.Protocol.HTTP({
+                url: "neighborhoods.jsp",
+                format: new OpenLayers.Format.GeoJSON(),
+                callbackKey: "callback"
+            })
+        });
+        map.addLayer(neighborhoods);
+    } else {
+        quadrant_polygons = new OpenLayers.Layer.Vector(geo_vars[index_g], {
+            styleMap: initialStyles,
+            projection: new OpenLayers.Projection("EPSG:900913"),
+            strategies: [new OpenLayers.Strategy.Fixed()],
+            protocol: new OpenLayers.Protocol.HTTP({
+                url: "features.jsp?features=" + geo_vars[index_g],
+                format: new OpenLayers.Format.GeoJSON(),
+                callbackKey: "callback"
+            })
+        });
+        map.addLayer(quadrant_polygons);        
+    }
+    if(geo_vars[index_g] === 'Comunas'){
+        commune_polygons = new OpenLayers.Layer.Vector(geo_vars[index_g], {
+            styleMap: communeStyles,
+            projection: new OpenLayers.Projection("EPSG:900913"),
+            strategies: [new OpenLayers.Strategy.Fixed()],
+            protocol: new OpenLayers.Protocol.HTTP({
+                url: "features.jsp?features=" + geo_vars[index_g],
+                format: new OpenLayers.Format.GeoJSON(),
+                callbackKey: "callback"
+            })
+        });
+        map.addLayer(commune_polygons);        
+    }
     map.addControl(new OpenLayers.Control.LayerSwitcher());
     map.addControl(new OpenLayers.Control.MousePosition());
     getTitle(params["indicator_id"][0]);
@@ -247,7 +297,7 @@ Ext.onReady(function() {
 
     // create grid panel configured with feature store
     gridPanel = new Ext.grid.GridPanel({
-        title: capitalise(vars[index_g]),
+        title: geo_vars[index_g],
         region: "east",
         collapsible: true,
         store: store,
@@ -372,11 +422,17 @@ function setPie(id, data) {
 function initializeColumns(columns) {
     columns = columns.substr(0, columns.length - 1);
     vars = columns.split(',');
+    geo_vars = [];
     var flag = true;
     for (var i = 0; i < vars.length; i++) {
         if (vars[i] === 'barrio' || vars[i] === 'comuna' || vars[i] === 'cuadrante' || vars[i] === 'corredor') {
             geo_column = 'column_' + (i + 1);
             index_g = i;
+            if(vars[i] === 'corredor'){
+                geo_vars[index_g] = capitalise(vars[i] + 'es');
+            } else {
+                geo_vars[index_g] = capitalise(vars[i] + 's');
+            }
         } else {
             if (flag) {
                 column_a = 'column_' + (i + 1);
@@ -405,4 +461,32 @@ function getTitle(indicator_id){
             return "Fail!!!"
         }
     });
+}
+
+function createLegend(rf) {
+    var paper = Raphael(document.getElementById('legend'), 320, 320);
+    var ranges = rf.split("<end>");
+    var nranges = ranges.length - 1;
+    var width = 0;
+    var x = 15;
+    for (var i = 0; i < nranges; i++) {
+        var range = ranges[i].split("<tab>");
+        var y = 15 + (i * 25);
+        paper.circle(x, y, 10).attr(
+        {
+            "fill": "#" + range[0],
+            "stroke": "#000000"
+        });
+        var range_text = paper.text(x + 25, y, range[2]).attr(
+        {
+            "fill": "#000",
+            "font-size": 16,
+            "text-anchor": "start",
+            "font-family": "Arial, Helvetica, sans-serif"
+        });
+        if (width < range_text.getBBox().width) {
+            width = range_text.getBBox().width;
+        }
+    }
+    paper.setSize(x + 30 + width, 10 + (nranges * 25));
 }
