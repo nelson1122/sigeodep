@@ -348,8 +348,8 @@
                                                          effect="fade" var="r">
                                             <f:selectItems value="#{geoDBConnectionMB.ramps}" var="ramp" itemLabel="#{ramp.name}" itemValue="#{ramp}"/>
                                             <p:column>
-                                                <p:graphicImage value="#{r.image}" />                     
-                                                <h:outputText value="#{r.name}" />
+                                                <p:graphicImage value="#{r.image}" height="15px" width="50px"/>                     
+                                                &nbsp;<h:outputText value="#{r.name}" />
                                             </p:column>
                                             <f:ajax event="change" 
                                                     listener="#{geoDBConnectionMB.createRanges}" 

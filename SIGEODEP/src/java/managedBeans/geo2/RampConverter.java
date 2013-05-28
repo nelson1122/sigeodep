@@ -21,16 +21,35 @@ import javax.faces.convert.ConverterException;
 @ManagedBean
 @SessionScoped
 public class RampConverter implements Converter {
+
     public static ArrayList<Ramp> rampDB;
 
     static {
         rampDB = new ArrayList<>();
-        Ramp ramp1 = new Ramp(1, "Semaforo", "../geo2/lib/img/down_16.png");
+        Ramp ramp1 = new Ramp(1, "Semaforo", "../geo2/images/semaforo.png");
         ramp1.setColors(Color.GREEN, Color.yellow, Color.RED);
         rampDB.add(ramp1);
-        Ramp ramp2 = new Ramp(2, "Amarillo-Rojo", "../geo2/lib/img/up_16.png");
+        Ramp ramp2 = new Ramp(2, "Amarillo-Rojo", "../geo2/images/amarillo-rojo.png");
         ramp2.setColors(Color.yellow, Color.RED);
         rampDB.add(ramp2);
+        Ramp ramp3 = new Ramp(2, "Azul-Rojo", "../geo2/images/azul-rojo.png");
+        ramp3.setColors(Color.BLUE, Color.RED);
+        rampDB.add(ramp3);
+        Ramp ramp = new Ramp(2, "Azules", "../geo2/images/azules.png");
+        ramp.setColors(Color.WHITE, Color.BLUE);
+        rampDB.add(ramp);
+        ramp = new Ramp(2, "Grises 1", "../geo2/images/grises1.png");
+        ramp.setColors(Color.WHITE, Color.BLACK);
+        rampDB.add(ramp);
+        ramp = new Ramp(2, "Grises 2", "../geo2/images/grises2.png");
+        ramp.setColors(Color.BLACK, Color.WHITE);
+        rampDB.add(ramp);
+        ramp = new Ramp(2, "Rojos", "../geo2/images/rojos.png");
+        ramp.setColors(Color.WHITE, Color.RED);
+        rampDB.add(ramp);
+        ramp = new Ramp(2, "Verdes", "../geo2/images/verdes.png");
+        ramp.setColors(Color.WHITE, Color.GREEN);
+        rampDB.add(ramp);
     }
 
     @Override
@@ -44,7 +63,7 @@ public class RampConverter implements Converter {
                         return r;
                     }
                 }
-            } catch(NumberFormatException exception) {
+            } catch (NumberFormatException exception) {
                 throw new ConverterException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "Conversion Error", "Not a valid Ramp"));
             }
         }
@@ -60,4 +79,3 @@ public class RampConverter implements Converter {
         }
     }
 }
-   
