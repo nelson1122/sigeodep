@@ -1227,7 +1227,7 @@ public class IndicatorsCountMB {
                     + " WHERE \n"
                     + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
                     + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
-            ResultSet rs;            
+            ResultSet rs;
             if (variablesCrossData.size() == 1) {
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
                 while (rs.next()) {
@@ -2585,6 +2585,11 @@ public class IndicatorsCountMB {
     //---------------------------------------------------------------------------------------------
 
     private void loadIndicator(int n) {
+        if (geoDBConnection.getRanges() != null) {
+            geoDBConnection.getRanges().clear();
+            geoDBConnection.setBins(0);
+            geoDBConnection.setGap(0);
+        }
         currentIndicator = indicatorsFacade.find(n);
         reset();
     }

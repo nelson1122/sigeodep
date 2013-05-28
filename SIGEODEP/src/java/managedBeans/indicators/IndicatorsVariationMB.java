@@ -2548,7 +2548,7 @@ public class IndicatorsVariationMB {
             while (rs.next()) {
                 rs2.next();
                 //if (rs != null && rs2 != null) {
-                totalInt = rs.getInt("count") - rs2.getInt("count");
+                totalInt = (rs.getInt("count") - rs2.getInt("count"))*-1;
                 if (increment < Math.sqrt(totalInt * totalInt)) {
                     increment = Math.sqrt(totalInt * totalInt);
                 }
@@ -2877,7 +2877,7 @@ public class IndicatorsVariationMB {
                                 totalA = Integer.parseInt(rs.getString("count"));
                                 totalB = Integer.parseInt(rs2.getString("count"));
                                 columNamesFinal.set(i, rs.getString("column_1") + " - " + rs2.getString("column_1"));
-                                matrixResult[i][j] = "<b>" + String.valueOf(totalA - totalB) + "</b><br/>(" + totalA + "-" + totalB + ")";
+                                matrixResult[i][j] = "<b>" + String.valueOf((totalA - totalB)*-1) + "</b><br/>(" + totalA + "-" + totalB + ")";
                                 find = true;
                             }
                         }
@@ -2886,7 +2886,7 @@ public class IndicatorsVariationMB {
                                 totalA = Integer.parseInt(rs.getString("count"));
                                 totalB = Integer.parseInt(rs2.getString("count"));
                                 columNamesFinal.set(i, rs.getString("column_1") + " - " + rs2.getString("column_1"));
-                                matrixResult[i][j] = "<b>" + String.valueOf(totalA - totalB) + "</b><br/>(" + totalA + "-" + totalB + ")";
+                                matrixResult[i][j] = "<b>" + String.valueOf((totalA - totalB)*-1) + "</b><br/>(" + totalA + "-" + totalB + ")";
                                 find = true;
                             }
                         }
@@ -2895,7 +2895,7 @@ public class IndicatorsVariationMB {
                                 totalA = Integer.parseInt(rs.getString("count"));
                                 totalB = Integer.parseInt(rs2.getString("count"));
                                 columNamesFinal.set(i, rs.getString("column_1") + " - " + rs2.getString("column_1") + "}" + rs.getString("column_2"));
-                                matrixResult[i][j] = "<b>" + String.valueOf(totalA - totalB) + "</b><br/>(" + totalA + "-" + totalB + ")";
+                                matrixResult[i][j] = "<b>" + String.valueOf((totalA - totalB)*-1) + "</b><br/>(" + totalA + "-" + totalB + ")";
                                 find = true;
                             }
                         }

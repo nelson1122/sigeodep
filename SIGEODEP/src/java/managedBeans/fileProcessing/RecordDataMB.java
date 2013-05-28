@@ -3614,7 +3614,6 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setCheckupTime(newNonFatalInjury.getInjuryTime());
                     }
                 }
-
                 //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
                 if (newNonFatalInjury.getInjuryDate() != null) {
                     if (newNonFatalInjury.getInjuryDayOfWeek() == null) {
