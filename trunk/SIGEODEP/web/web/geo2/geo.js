@@ -20,9 +20,9 @@ Ext.onReady(function() {
     createLegend(params["rf"][0]);
     vars = params["vars"][0];
     if (vars.indexOf('cuadrante') !== -1) {
-        attribution = "<br>Policia Nacional";
+        attribution = "<br>Policia Nacional de Colombia.<br>Plan Nacional de Vigilancia Comunitaria por Cuadrantes.<br>Sala CIEPS.";
     } else {
-        attribution = "<br>Universidad de Nari&ntilde;o";
+        attribution = "<br>Universidad de Nari&ntilde;o, Alcald&iacute;a Municipal de Pasto, Colciencias.";
     }
     initializeColumns(vars);
     var url_data = "data.jsp?" + window.location.href.split("?")[1];
