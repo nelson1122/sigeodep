@@ -199,25 +199,39 @@ public class IndicatorsVariationMB {
         Calendar c = Calendar.getInstance();
         currentYear = c.get(Calendar.YEAR);
         //-----------------------------------------------
+//        initialDateA.setDate(1);
+//        initialDateA.setMonth(0);
+//        initialDateA.setYear(2003 - 1900);
+//        endDateA.setDate(c.get(Calendar.DATE));
+//        endDateA.setMonth(c.get(Calendar.MONTH));
+//        endDateA.setYear(c.get(Calendar.YEAR) - 1900);
+//        //-----------------------------------------------
+//        initialDateB.setDate(1);
+//        initialDateB.setMonth(0);
+//        initialDateB.setYear(2003 - 1900);
+//        endDateB.setDate(c.get(Calendar.DATE));
+//        endDateB.setMonth(c.get(Calendar.MONTH));
+//        endDateB.setYear(c.get(Calendar.YEAR) - 1900);
         initialDateA.setDate(1);
         initialDateA.setMonth(0);
-        initialDateA.setYear(2003 - 1900);
-        endDateA.setDate(c.get(Calendar.DATE));
-        endDateA.setMonth(c.get(Calendar.MONTH));
-        endDateA.setYear(c.get(Calendar.YEAR) - 1900);
+        initialDateA.setYear(2012 - 1900);
+        endDateA.setDate(1);
+        endDateA.setMonth(0);
+        endDateA.setYear(2013 - 1900);
         //-----------------------------------------------
         initialDateB.setDate(1);
         initialDateB.setMonth(0);
-        initialDateB.setYear(2003 - 1900);
-        endDateB.setDate(c.get(Calendar.DATE));
-        endDateB.setMonth(c.get(Calendar.MONTH));
-        endDateB.setYear(c.get(Calendar.YEAR) - 1900);
+        initialDateB.setYear(2013 - 1900);
+        endDateB.setDate(1);
+        endDateB.setMonth(0);
+        endDateB.setYear(2014- 1900);
         //-----------------------------------------------
         temporalDisaggregationTypes = new ArrayList<String>();
         temporalDisaggregationTypes.add("Anual");
         temporalDisaggregationTypes.add("Mensual");
         //temporalDisaggregationTypes.add("Semanal");
         temporalDisaggregationTypes.add("Diaria");
+        currentTemporalDisaggregation="Mensual";
 
     }
 
@@ -392,7 +406,7 @@ public class IndicatorsVariationMB {
         btnExportDisabled = true;
         variablesCrossData = new ArrayList<Variable>();//lista de variables a cruzar            
         message = null;
-        boolean continueProcess = validateDateRange();//VALIDACION DE FECHAS
+        boolean continueProcess = true;//validateDateRange();//VALIDACION DE FECHAS
 
         if (continueProcess) {//ELIMINO DATOS DE UN PROCESO ANTERIOR
             removeIndicatorRecords();
@@ -2675,7 +2689,7 @@ public class IndicatorsVariationMB {
             int totalInt;
             while (rs.next()) {
                 rs2.next();
-                totalInt = rs.getInt("count") - rs2.getInt("count");
+                totalInt = (rs.getInt("count") - rs2.getInt("count"))*-1;
                 strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1") + " (" + String.valueOf(totalInt) + ")";
                 dataset.setValue(rs.getLong("count"), "Rango A", strDateName);
                 dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);

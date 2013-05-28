@@ -207,24 +207,39 @@ public class IndicatorsPercentageVariationMB {
         Calendar c = Calendar.getInstance();
         currentYear = c.get(Calendar.YEAR);
         //-----------------------------------------------
+//        initialDateA.setDate(1);
+//        initialDateA.setMonth(0);
+//        initialDateA.setYear(2003 - 1900);
+//        endDateA.setDate(c.get(Calendar.DATE));
+//        endDateA.setMonth(c.get(Calendar.MONTH));
+//        endDateA.setYear(c.get(Calendar.YEAR) - 1900);
+//        //-----------------------------------------------
+//        initialDateB.setDate(1);
+//        initialDateB.setMonth(0);
+//        initialDateB.setYear(2003 - 1900);
+//        endDateB.setDate(c.get(Calendar.DATE));
+//        endDateB.setMonth(c.get(Calendar.MONTH));
+//        endDateB.setYear(c.get(Calendar.YEAR) - 1900);
         initialDateA.setDate(1);
         initialDateA.setMonth(0);
-        initialDateA.setYear(2003 - 1900);
-        endDateA.setDate(c.get(Calendar.DATE));
-        endDateA.setMonth(c.get(Calendar.MONTH));
-        endDateA.setYear(c.get(Calendar.YEAR) - 1900);
+        initialDateA.setYear(2012 - 1900);
+        endDateA.setDate(1);
+        endDateA.setMonth(0);
+        endDateA.setYear(2013 - 1900);
         //-----------------------------------------------
         initialDateB.setDate(1);
         initialDateB.setMonth(0);
-        initialDateB.setYear(2003 - 1900);
-        endDateB.setDate(c.get(Calendar.DATE));
-        endDateB.setMonth(c.get(Calendar.MONTH));
-        endDateB.setYear(c.get(Calendar.YEAR) - 1900);
+        initialDateB.setYear(2013 - 1900);
+        endDateB.setDate(1);
+        endDateB.setMonth(0);
+        endDateB.setYear(2014- 1900);
+        
         //-----------------------------------------------
         temporalDisaggregationTypes = new ArrayList<String>();
         temporalDisaggregationTypes.add("Anual");
         temporalDisaggregationTypes.add("Mensual");
         temporalDisaggregationTypes.add("Diaria");
+        currentTemporalDisaggregation="Mensual";
     }
 
     public void changeDateB() {
@@ -390,7 +405,7 @@ public class IndicatorsPercentageVariationMB {
         valuesGraph = new ArrayList<String>();
         currentValueGraph = "";
         currentVariableGraph = "";
-        boolean continueProcess = validateDateRange();//VALIDACION DE FECHAS
+        boolean continueProcess = true;//validateDateRange();//VALIDACION DE FECHAS
         if (continueProcess) {//ELIMINO DATOS DE UN PROCESO ANTERIOR
             removeIndicatorRecords();
         }
@@ -2556,9 +2571,9 @@ public class IndicatorsPercentageVariationMB {
                     totalA = Double.parseDouble(getMatrixValueA("rowPercentageXY", i, j));
                     totalB = Double.parseDouble(getMatrixValueB("rowPercentageXY", i, j));
                     if (showCalculation) {
-                        value = formateador.format(totalA - totalB) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                        value = formateador.format((totalA - totalB)*-1) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
                     } else {
-                        value = formateador.format(totalA - totalB);
+                        value = formateador.format((totalA - totalB)*-1);
                     }
                     celda = fila.createCell((short) i + 2);// +2 por que faltal nombres de columnas               
                     celda.setCellValue(new HSSFRichTextString(value));
