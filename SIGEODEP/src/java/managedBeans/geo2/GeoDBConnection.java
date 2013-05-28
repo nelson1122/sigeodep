@@ -56,17 +56,21 @@ public class GeoDBConnection implements Serializable {
     private Color startColor;
     private Color middleColor;
     private Color endColor;
+    private boolean hasToRender;
 
     public GeoDBConnection() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         conn = connectionJdbcMB.getConn();
         bins = 3;
+        gap = bins;
         splitMethod = -1;
         this.selectedRamp = RampConverter.rampDB.get(0);
         this.startColor = Color.GREEN;
         this.middleColor = Color.YELLOW;
         this.endColor = Color.RED;
         ramps = RampConverter.rampDB;
+        numbers = new ArrayList<>();
+        hasToRender = false;
     }
 
     public GeoDBConnection(String user, String pass, String host, String name) {
@@ -160,11 +164,13 @@ public class GeoDBConnection implements Serializable {
     }
 
     public void createRanges() {
-        rf.setBins(this.bins);
-        rf.setSplitMethod(splitMethod);
-        rf.setSelectedRamp(selectedRamp);
-        rf.createRanges();
-        this.ranges = rf.getRanges();
+        if (this.rf != null) {
+            rf.setBins(this.bins);
+            rf.setSplitMethod(splitMethod);
+            rf.setSelectedRamp(selectedRamp);
+            rf.createRanges();
+            this.ranges = rf.getRanges();
+        }
     }
 
     public void onEdit(RowEditEvent event) {
@@ -462,11 +468,11 @@ public class GeoDBConnection implements Serializable {
     }
 
     public List<MfFeature> getFeaturesPolygons(String f) {
-        if(f.compareToIgnoreCase("comunas") == 0){
+        if (f.compareToIgnoreCase("comunas") == 0) {
             f = "commune";
-        } else if(f.compareToIgnoreCase("corredores") == 0){
+        } else if (f.compareToIgnoreCase("corredores") == 0) {
             f = "corridor";
-        }else if(f.compareToIgnoreCase("cuadrantes") == 0){
+        } else if (f.compareToIgnoreCase("cuadrantes") == 0) {
             f = "quadrant";
         }
         String query = ""
@@ -898,4 +904,23 @@ public class GeoDBConnection implements Serializable {
     public void setEndColor(Color endColor) {
         this.endColor = endColor;
     }
+
+    public ArrayList<Double> getNumbers() {
+        return numbers;
+    }
+
+    public void setNumbers(ArrayList<Double> numbers) {
+        this.numbers = numbers;
+    }
+
+    public boolean isHasToRender() {
+        return hasToRender;
+    }
+
+    public void setHasToRender(boolean hasToRender) {
+        this.hasToRender = hasToRender;
+    }
+    
+    
+    
 }
