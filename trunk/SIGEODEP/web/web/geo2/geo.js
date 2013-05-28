@@ -25,17 +25,17 @@ function createLegend(rf) {
         var range = ranges[i].split("<tab>");
         var y = 15 + (i * 25);
         paper.circle(x, y, 10).attr(
-                {
-                    "fill": "#" + range[0],
-                    "stroke": "#000000"
-                });
+        {
+            "fill": "#" + range[0],
+            "stroke": "#000000"
+        });
         var range_text = paper.text(x + 25, y, range[2]).attr(
-                {
-                    "fill": "#000",
-                    "font-size": 16,
-                    "text-anchor": "start",
-                    "font-family": "Arial, Helvetica, sans-serif"
-                });
+        {
+            "fill": "#000",
+            "font-size": 16,
+            "text-anchor": "start",
+            "font-family": "Arial, Helvetica, sans-serif"
+        });
         if (width < range_text.getBBox().width) {
             width = range_text.getBBox().width;
         }
@@ -121,24 +121,30 @@ Ext.onReady(function() {
                     WHERE += "'" + this.selectedFeatures[i].data.name + "',";
                 }
                 WHERE = WHERE.substring(0, WHERE.length - 1) + ")";
-                var uri = "getPieData.jsp?geo_column=" + geo_column + "&column=" + column_a + "&WHERE=" + WHERE + "&" + window.location.href.split("?")[1];
-                OpenLayers.loadURL(uri, "", this, function onComplete(response) {
-                    if (response.responseText.indexOf('EPIC FAIL!!!') === -1) {
-                        var data_a = JSON.parse(response.responseText);
-                        createPopup(e.feature);
-                        setPie("piea_" + e.feature.data.id, data_a);
-                        if (typeof index_b !== 'undefined') {
-                            uri = "getPieData.jsp?geo_column=" + geo_column + "&column=" + column_b + "&WHERE=" + WHERE + "&" + window.location.href.split("?")[1];
-                            OpenLayers.loadURL(uri, "", this, function onComplete(response) {
-                                if (response.responseText.indexOf('EPIC FAIL!!!') === -1) {
-                                    var data_b = JSON.parse(response.responseText);
-                                    setPie("pieb_" + e.feature.data.id, data_b);
-                                }
-                            });
+                if(Ext.get('pie_window' + e.feature.data.id) === null){
+                    var uri = "getPieData.jsp?geo_column=" + geo_column + "&column=" + column_a + "&WHERE=" + WHERE + "&" + window.location.href.split("?")[1];
+                    OpenLayers.loadURL(uri, "", this, function onComplete(response) {
+                        if (response.responseText.indexOf('EPIC FAIL!!!') === -1) {
+                            var data_a = JSON.parse(response.responseText);
+                            createPopup(e.feature);
+                            setPie("piea_" + e.feature.data.id, data_a);
+                            if (typeof index_b !== 'undefined') {
+                                uri = "getPieData.jsp?geo_column=" + geo_column + "&column=" + column_b + "&WHERE=" + WHERE + "&" + window.location.href.split("?")[1];
+                                OpenLayers.loadURL(uri, "", this, function onComplete(response) {
+                                    if (response.responseText.indexOf('EPIC FAIL!!!') === -1) {
+                                        var data_b = JSON.parse(response.responseText);
+                                        setPie("pieb_" + e.feature.data.id, data_b);
+                                    }
+                                });
+                            }
+                            var x = -25;
+                            var y = -75-legend.getSize().height;
+                            popup.alignTo('mappanel', 'br-br', [x, y]);
                         }
-                    }
-                });
-
+                    });
+                } else {
+                    popup.destroy();
+                }
             }
         });
     }
@@ -149,21 +155,24 @@ Ext.onReady(function() {
                 var flag = Ext.get(popup.id).select("div.x-tool-unpin").elements[0].style.display;
                 if (flag !== 'none') {
                     popup.destroy();
-                }
+                } 
             }
         }
+
         _feature = feature;
         _select = "<select id='sel_" + feature.data.id + "'>"
-                + "<option value='1' selected> " + capitalise(vars[index_a]) + "</option>";
+        + "<option value='1' selected> " + capitalise(vars[index_a]) + "</option>";
         if (typeof index_b !== 'undefined') {
             _select += "<option value='2'>" + capitalise(vars[index_b]) + "</option>";
         }
         _select += "</select>";
+
         popup = new GeoExt.Popup({
             id: 'pie_window' + feature.data.id,
             title: feature.data.name,
+            anchored: false,
             location: feature,
-            anchorPosition: "top-right",
+            anchorPosition: "bottom-right",
             width: 0,
             html: _select + "<div id='piea_" + feature.data.id + "'></div><div id='pieb_" + feature.data.id + "'></div>",
             maximizable: true,
@@ -172,9 +181,14 @@ Ext.onReady(function() {
         });
         popup.show();
         Ext.get('sel_' + feature.data.id).on('change', this.onChange, this, {});
-        Ext.get('piea_' + _feature.data.id).set({style: "position:absolute;top:'0px'"});
-        Ext.get('pieb_' + _feature.data.id).set({style: "position:absolute;top:'0px'"});
+        Ext.get('piea_' + _feature.data.id).set({
+            style: "position:absolute;top:'0px'"
+        });
+        Ext.get('pieb_' + _feature.data.id).set({
+            style: "position:absolute;top:'0px'"
+        });
         this.onChange();
+        
     }
 
     onChange = function() {
@@ -205,11 +219,11 @@ Ext.onReady(function() {
 
     map.addLayers([osm, hybrid, neighborhoods, vectors]);
     map.addControl(new OpenLayers.Control.LayerSwitcher());
-    //map.addControl(new OpenLayers.Control.Attribution());
-    // 
+    map.addControl(new OpenLayers.Control.MousePosition());
+    getTitle();
     // create map panel
     mapPanel = new GeoExt.MapPanel({
-        title: "Map",
+        title: "Map ",
         id: "mappanel",
         region: "center",
         map: map
@@ -219,39 +233,39 @@ Ext.onReady(function() {
     var store = new GeoExt.data.FeatureStore({
         layer: vectors,
         fields: [
-            {
-                name: 'name',
-                type: 'string'
-            },
-            {
-                name: 'value',
-                type: 'float'
-            }
+        {
+            name: 'name',
+            type: 'string'
+        },
+        {
+            name: 'value',
+            type: 'float'
+        }
         ],
         autoLoad: true
     });
 
     // create grid panel configured with feature store
     var gridPanel = new Ext.grid.GridPanel({
-        title: "Feature Grid",
+        title: capitalise(vars[index_g]),
         region: "east",
         collapsible: true,
         store: store,
         width: 320,
         cm: new Ext.grid.ColumnModel([
-            {
-                id: "name",
-                header: "Nombre",
-                dataIndex: "name",
-                sortable: true
-            },
-            {
-                id: "value",
-                header: "Valor",
-                dataIndex: "value",
-                sortable: true,
-                direction: "desc"
-            }
+        {
+            id: "name",
+            header: "Nombre",
+            dataIndex: "name",
+            sortable: true
+        },
+        {
+            id: "value",
+            header: "Valor",
+            dataIndex: "value",
+            sortable: true,
+            direction: "desc"
+        }
         ]),
         sm: new GeoExt.grid.FeatureSelectionModel(),
         autoExpandColumn: "name"
@@ -286,7 +300,7 @@ function parseURLParams(url) {
     var query = url.slice(queryStart, queryEnd - 1);
 
     if (query === url || query === "")
-        return;
+        return '';
 
     var params = {};
     var nvPairs = query.replace(/\+/g, " ").split("&");
@@ -308,15 +322,15 @@ function setPie(id, data) {
     var radio = 60;
     var y = 0;
     if (radio < data.values.length * 10) {
-        y = 10 + data.values.length * 10;
+        y = 5 + data.values.length * 10;
     } else {
-        y = radio + 30;
+        y = radio + 5;
     }
-    var pie = r.piechart(radio + 10, y, radio, data.values,
-            {
-                legend: data.labels,
-                legendpos: "east"
-            });
+    var pie = r.piechart(radio + 5, y, radio, data.values,
+    {
+        legend: data.labels,
+        legendpos: "east"
+    });
     pie.hover(function() {
         this.sector.stop();
         this.sector.scale(1.1, 1.1, this.cx, this.cy);
@@ -362,6 +376,7 @@ function initializeColumns(columns) {
     for (var i = 0; i < vars.length; i++) {
         if (vars[i] === 'barrio' || vars[i] === 'comuna' || vars[i] === 'cuadrante') {
             geo_column = 'column_' + (i + 1);
+            index_g = i;
         } else {
             if (flag) {
                 column_a = 'column_' + (i + 1);
@@ -375,17 +390,19 @@ function initializeColumns(columns) {
     }
 }
 
-function getNorthPosition() {
-    bounds = _feature.geometry.getBounds();
-    var center = bounds.getCenterLonLat();
-    var height = bounds.getHeight() / 2;
-    north = new OpenLayers.Geometry.Point(center.lon - height, center.lat);
-    north2 = new OpenLayers.LonLat(center.lon - height, center.lat);
-    _the_north = new OpenLayers.Feature(vectors, north2, {});
-    bounds.extend(north);
-    return bounds;
-}
-
 function capitalise(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function getTitle(){
+    Ext.Ajax.request({
+        url: 'getMapName.jsp?indicator_id=12',//replace with ajax call
+        success: function(response, opts) {
+            map_info = JSON.parse(response.responseText);
+            mapPanel.setTitle(map_info.title);
+        },
+        failure: function(response, opts){
+            return "Fail!!!"
+        }
+    });
 }
