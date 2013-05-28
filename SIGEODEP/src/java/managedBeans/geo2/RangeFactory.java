@@ -9,8 +9,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -46,14 +44,14 @@ public class RangeFactory {
         this.middleColor = Color.YELLOW;
         this.endColor = Color.RED;
         ramps = RampConverter.rampDB;
-        try {
-            this.setData();
-            ranges = this.createRanges();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(RangeFactory.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(RangeFactory.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            this.setData();
+//            ranges = this.createRanges();
+//        } catch (FileNotFoundException ex) {
+//            Logger.getLogger(RangeFactory.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (IOException ex) {
+//            Logger.getLogger(RangeFactory.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
     public RangeFactory(String params) {
