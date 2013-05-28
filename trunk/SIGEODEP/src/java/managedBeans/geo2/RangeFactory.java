@@ -36,7 +36,7 @@ public class RangeFactory {
 
     public RangeFactory() {
         this.bins = 3;
-        this.splitMethod = RangeFactory.JENKS_METHOD;
+        this.splitMethod = RangeFactory.FREQUENCY_METHOD;
         this.numbers = new ArrayList<>();
         this.ranges = new ArrayList<>();
         this.selectedRamp = RampConverter.rampDB.get(0);
@@ -44,14 +44,6 @@ public class RangeFactory {
         this.middleColor = Color.YELLOW;
         this.endColor = Color.RED;
         ramps = RampConverter.rampDB;
-//        try {
-//            this.setData();
-//            ranges = this.createRanges();
-//        } catch (FileNotFoundException ex) {
-//            Logger.getLogger(RangeFactory.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (IOException ex) {
-//            Logger.getLogger(RangeFactory.class.getName()).log(Level.SEVERE, null, ex);
-//        }
     }
 
     public RangeFactory(String params) {
@@ -70,19 +62,6 @@ public class RangeFactory {
             range.setCount(Integer.parseInt(txt_attr[3]));
             this.ranges.add(range);
         }
-    }
-
-    private void setData() throws FileNotFoundException, IOException {
-        File file = new File("/home/and/serie.csv");
-        FileReader reader = new FileReader(file);
-        try (BufferedReader br = new BufferedReader(reader)) {
-            String line;
-            numbers = new ArrayList<>();
-            while ((line = br.readLine()) != null) {
-                numbers.add(new Double(line));
-            }
-        }
-        Collections.sort(numbers);
     }
 
     public ArrayList<Range> createRanges() {
