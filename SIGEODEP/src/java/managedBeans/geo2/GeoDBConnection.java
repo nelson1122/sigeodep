@@ -133,6 +133,13 @@ public class GeoDBConnection implements Serializable {
                 this.getQuadrantsNumbers();
                 break;
             }
+            if (column.getName().equalsIgnoreCase("corredor")) {
+                column_order += order2;
+                this.setGeo_column(column_order);
+                this.bins = 3;
+                this.getCorridorsNumbers();
+                break;
+            }
             order2++;
         }
         this.calculateGap();
@@ -524,6 +531,117 @@ public class GeoDBConnection implements Serializable {
             while (records.next()) {
                 final int fid = records.getInt("record_id");
                 final String fname = records.getString("quadrant_name");
+                final Double fvalue = new Double(records.getInt("count"));
+                final String fcolour = "#" + rf.getColorByValue(fvalue);
+                String geom = records.getString("geom");
+                final MfGeometry fgeom = new MfGeometry(wktReader.read(geom));
+                MfFeature feature = new MfFeature() {
+                    String name = fname;
+                    private double value = fvalue;
+                    private String colour = fcolour;
+                    private Integer id = fid;
+
+                    @Override
+                    public String getFeatureId() {
+                        return id.toString();
+                    }
+
+                    @Override
+                    public MfGeometry getMfGeometry() {
+                        return fgeom;
+                    }
+
+                    @Override
+                    public void toJSON(JSONWriter writer) throws JSONException {
+                        writer.key("name");
+                        writer.value(name);
+                        writer.key("value");
+                        writer.value(value);
+                        writer.key("colour");
+                        writer.value(colour);
+                        writer.key("id");
+                        writer.value(id);
+                    }
+                };
+                polygons.add(feature);
+            }
+            return polygons;
+        } catch (ParseException | SQLException ex) {
+            Logger.getLogger(GeoDBConnection.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    public ArrayList<Double> getCorridorsNumbers() {
+        numbers = new ArrayList<>();
+        String query = "SELECT "
+                + "        count "
+                + " FROM "
+                + "         corridors "
+                + " INNER JOIN "
+                + "         (SELECT "
+                + "                 min(record_id) AS record_id, " + geo_column + ", sum(count) AS count "
+                + "         FROM "
+                + "                 indicators_records "
+                + "         WHERE "
+                + "                 count > 0 "
+                + "                 AND user_id = " + user_id + " "
+                + "                 AND indicator_id = " + indicator_id + " "
+                + "         GROUP BY "
+                + "                 " + geo_column + " "
+                + "         ORDER BY "
+                + "                 2) AS foo "
+                + " ON 	"
+                + "      (" + geo_column + " LIKE corridor_name)  "
+                + " WHERE "
+                + "         geom IS NOT NULL "
+                + " ORDER BY "
+                + "         count";
+        System.out.println(query);
+        ResultSet records = this.consult(query);
+        try {
+            while (records.next()) {
+                numbers.add(new Double(records.getString("count")));
+            }
+            return numbers;
+        } catch (SQLException ex) {
+            Logger.getLogger(GeoDBConnection.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public List<MfFeature> getCorridorsPolygons(RangeFactory rf) {
+        String query = "SELECT "
+                + "        record_id, corridor_name, count, geom "
+                + " FROM "
+                + "         corridors "
+                + " INNER JOIN "
+                + "         (SELECT "
+                + "                 min(record_id) AS record_id, " + geo_column + ", sum(count) AS count "
+                + "         FROM "
+                + "                 indicators_records "
+                + "         WHERE "
+                + "                 count > 0 "
+                + "                 AND user_id = " + user_id + " "
+                + "                 AND indicator_id = " + indicator_id + " "
+                + "         GROUP BY "
+                + "                 " + geo_column + " "
+                + "         ORDER BY "
+                + "                 2) AS foo "
+                + " ON 	"
+                + "      (" + geo_column + " LIKE corridor_name)  "
+                + " WHERE "
+                + "         geom IS NOT NULL "
+                + " ORDER BY "
+                + "         count DESC";
+        WKTReader wktReader = new WKTReader();
+        List<MfFeature> polygons = new ArrayList<>();
+        ResultSet records = this.consult(query);
+        try {
+            while (records.next()) {
+                final int fid = records.getInt("record_id");
+                final String fname = records.getString("corridor_name");
                 final Double fvalue = new Double(records.getInt("count"));
                 final String fcolour = "#" + rf.getColorByValue(fvalue);
                 String geom = records.getString("geom");

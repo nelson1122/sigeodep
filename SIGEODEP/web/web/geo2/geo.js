@@ -44,7 +44,7 @@ function createLegend(rf) {
 }
 
 Ext.onReady(function() {
-    var params = parseURLParams(window.location.href);
+    params = parseURLParams(window.location.href);
     createLegend(params["rf"][0]);
     vars = params["vars"][0];
     if (vars.indexOf('cuadrante') !== -1) {
@@ -220,7 +220,7 @@ Ext.onReady(function() {
     map.addLayers([osm, hybrid, neighborhoods, vectors]);
     map.addControl(new OpenLayers.Control.LayerSwitcher());
     map.addControl(new OpenLayers.Control.MousePosition());
-    getTitle();
+    getTitle(params["indicator_id"][0]);
     // create map panel
     mapPanel = new GeoExt.MapPanel({
         title: "Map ",
@@ -246,7 +246,7 @@ Ext.onReady(function() {
     });
 
     // create grid panel configured with feature store
-    var gridPanel = new Ext.grid.GridPanel({
+    gridPanel = new Ext.grid.GridPanel({
         title: capitalise(vars[index_g]),
         region: "east",
         collapsible: true,
@@ -374,7 +374,7 @@ function initializeColumns(columns) {
     vars = columns.split(',');
     var flag = true;
     for (var i = 0; i < vars.length; i++) {
-        if (vars[i] === 'barrio' || vars[i] === 'comuna' || vars[i] === 'cuadrante') {
+        if (vars[i] === 'barrio' || vars[i] === 'comuna' || vars[i] === 'cuadrante' || vars[i] === 'corredor') {
             geo_column = 'column_' + (i + 1);
             index_g = i;
         } else {
@@ -394,9 +394,9 @@ function capitalise(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function getTitle(){
+function getTitle(indicator_id){
     Ext.Ajax.request({
-        url: 'getMapName.jsp?indicator_id=12',//replace with ajax call
+        url: 'getMapName.jsp?indicator_id=' + indicator_id,//replace with ajax call
         success: function(response, opts) {
             map_info = JSON.parse(response.responseText);
             mapPanel.setTitle(map_info.title);
