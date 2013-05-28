@@ -77,7 +77,7 @@ public class MyFeatureCollection {
                     geo.setGeo_column(column_order);
                     polygons = geo.getQuadrantsPolygons(rf);
                     break;
-                }                
+                }
                 order++;
             }
             MfFeatureCollection collection = new MfFeatureCollection(polygons);
@@ -106,7 +106,11 @@ public class MyFeatureCollection {
     }
 
     public String getPieData(String WHERE, String geo_column, String column) {
-            return geo.getPieData(WHERE, geo_column, column, user_id, indicator_id);
+        return geo.getPieData(WHERE, geo_column, column, user_id, indicator_id);
+    }
+
+    public String getMapName() {
+        return geo.getMapName(indicator_id);
     }
 
     public ArrayList<Range> getRanges() {
