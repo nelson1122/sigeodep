@@ -188,7 +188,7 @@ public class IndicatorsVariationMB {
     private boolean graphType2 = false;
     private boolean showCalculation = false;//mostrar la resta
     private boolean colorType = true;
-    private boolean showEmpty = false;
+    private boolean showEmpty = true;
     private CopyManager cpManager;
     private StringBuilder sb;
     private int tuplesProcessed;
@@ -374,7 +374,7 @@ public class IndicatorsVariationMB {
                         + " WHERE \n\r"
                         + "    record_id = " + rs.getString("record_id") + " AND \n\r"
                         + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-                        + "    indicator_id = " + (currentIndicator.getIndicatorId()+100) + " \n\r");
+                        + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r");
             }
         } catch (Exception e) {
         }
@@ -2238,6 +2238,15 @@ public class IndicatorsVariationMB {
     }
 
     private String determineHeader(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) != '0' && value.charAt(i) != '1' && value.charAt(i) != '2'
+                    && value.charAt(i) != '3'&& value.charAt(i) != '4'&& value.charAt(i) != '5'
+                    && value.charAt(i) != '6'&& value.charAt(i) != '7'&& value.charAt(i) != '8'
+                    && value.charAt(i) != '9'&& value.charAt(i) != ' '&& value.charAt(i) != 'n'
+                    && value.charAt(i) != '-'&& value.charAt(i) != ':'&& value.charAt(i) != '/') {
+                return value;
+            }
+        }
         if (value.indexOf("SIN DATO") == -1) {
             if (value.indexOf("/") != -1) {
                 if (value.indexOf(":") != -1) {
@@ -2357,6 +2366,10 @@ public class IndicatorsVariationMB {
 
         headers1 = new ArrayList<SpanColumns>();
         headers2 = new String[columNamesFinal.size()];
+        String height = "height:20px;";
+        if (showCalculation) {
+            height = "height:30px;";
+        } 
 
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
@@ -2431,7 +2444,8 @@ public class IndicatorsVariationMB {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td class=\"tableFirstCol\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
+            //strReturn = strReturn + "                                <td class=\"tableFirstCol\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
+            strReturn = strReturn + "                                <td ><div style=\"overflow:hidden; " + height + " width:200px; \">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -2454,14 +2468,14 @@ public class IndicatorsVariationMB {
             for (int i = 0; i < columNames.size(); i++) {
                 String value;
                 if (showCalculation) {
-
                     value = matrixResult[i][j];
                 } else {
                     String[] splitColumn = matrixResult[i][j].split("<br/>");
                     value = splitColumn[0];
                 }
                 strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
-                strReturn = strReturn + "                                <div style=\"width:150px;\">" + value + "</div>\r\n";
+                //strReturn = strReturn + "                                <div style=\"width:150px;\">" + value + "</div>\r\n";
+                strReturn = strReturn + "                                <div style=\"width:150px;" + height +" \">" + value + "</div>\r\n";
                 strReturn = strReturn + "                                </td > \r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2481,10 +2495,11 @@ public class IndicatorsVariationMB {
 
     private JFreeChart createBarChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        String serieName = "";
+        String indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n";
         ResultSet rs;
         ResultSet rs2;
         double increment = 0;
+        String variablesName = "";
         try {
             sql = ""
                     + " SELECT \n"
@@ -2495,12 +2510,13 @@ public class IndicatorsVariationMB {
                     + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
                     + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
+                variablesName = "Desagregado por: " + currentVariableGraph1 + " = " + determineHeader(currentValueGraph1);
                 sql = sql + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
                 sql = sql + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+                variablesName = variablesName + ", " + currentVariableGraph2 + " = " + determineHeader(currentValueGraph2);
             }
 
             rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
@@ -2514,11 +2530,11 @@ public class IndicatorsVariationMB {
                     + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
                 sql = sql + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+                //serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
                 sql = sql + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+                //serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
             }
 //            if (serieName.length() == 0) {
 //                serieName = "Casos";
@@ -2544,12 +2560,18 @@ public class IndicatorsVariationMB {
             increment = increment * 0.005;//grosor linea
 
         } catch (SQLException ex) {
-            //System.out.println("Error: " + ex.toString());
             increment = increment * 0.005;//grosor linea
+
         }
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+
+        indicatorName = indicatorName + variablesName + "\n"
+                + "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\n"
+                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")";
+
 
         final JFreeChart chart = ChartFactory.createBarChart(
-                "Variación de casos", // chart title
+                indicatorName, // chart title
                 "Fecha", // domain axis label
                 "Value", // range axis label
                 dataset, // data
@@ -2560,14 +2582,18 @@ public class IndicatorsVariationMB {
                 );
 
         chart.setBackgroundPaint(Color.white);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
-        final TextTitle subtitle = new TextTitle(
-                "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\t\n"
-                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")" + serieName);
-        subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        subtitle.setPosition(RectangleEdge.TOP);
-        subtitle.setVerticalAlignment(VerticalAlignment.BOTTOM);
-        chart.addSubtitle(subtitle);
+        chart.getTitle().setPaint(new Color(50, 50, 50));
+        chart.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
+
+
+
+        //final TextTitle subtitle = new TextTitle("Municipio de Pasto. "+
+        //        "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")      "
+        //        + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")" + serieName);
+        //subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        //subtitle.setPosition(RectangleEdge.TOP);
+        //subtitle.setVerticalAlignment(VerticalAlignment.BOTTOM);
+        //chart.addSubtitle(subtitle);
 
         final CategoryPlot plot = chart.getCategoryPlot();
         plot.setForegroundAlpha(0.5f);
@@ -2585,21 +2611,6 @@ public class IndicatorsVariationMB {
 
         final CategoryAxis domainAxis = plot.getDomainAxis();
         domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-//        domainAxis.setLowerMargin(0.0);
-//        domainAxis.setUpperMargin(0.0);
-//        domainAxis.addCategoryLabelToolTip("Type 1", "The first type.");
-//        domainAxis.addCategoryLabelToolTip("Type 2", "The second type.");
-//        domainAxis.addCategoryLabelToolTip("Type 3", "The third type.");
-//
-//        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-//        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-//        rangeAxis.setLabelAngle(0 * Math.PI / 2.0);
-
-//        NumberAxis xAxis2 = new NumberAxis("Domain Axis 2");
-//        xAxis2.setAutoRangeIncludesZero(false);
-//        plot.setSecondaryDomainAxis(0, xAxis2);
-//        plot.setSecondaryDomainAxisLocation(0, AxisLocation.BOTTOM_OR_LEFT);
-
 
         if (showItems) {
             CategoryItemRenderer renderer = plot.getRenderer();
@@ -2613,7 +2624,9 @@ public class IndicatorsVariationMB {
 
     private JFreeChart createAreaChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        String serieName = "";
+        //String serieName = "";
+        String indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n";
+        String variablesName = "";
         ResultSet rs;
         ResultSet rs2;
         try {
@@ -2627,11 +2640,13 @@ public class IndicatorsVariationMB {
                     + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
                 sql = sql + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+                variablesName = "Desagregado por: " + currentVariableGraph1 + " = " + determineHeader(currentValueGraph1);
+                //serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
                 sql = sql + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+                variablesName = variablesName + ", " + currentVariableGraph2 + " = " + determineHeader(currentValueGraph2);
+                //serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
             }
 
             rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
@@ -2645,11 +2660,11 @@ public class IndicatorsVariationMB {
                     + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
                 sql = sql + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+                //serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
                 sql = sql + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+                //serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
             }
 //            if (serieName.length() == 0) {
 //                serieName = "Casos";
@@ -2670,8 +2685,14 @@ public class IndicatorsVariationMB {
             System.out.println("Error: " + ex.toString());
         }
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+
+        indicatorName = indicatorName + variablesName + "\n"
+                + "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\n"
+                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")";
+
         final JFreeChart chart = ChartFactory.createAreaChart(
-                "Variacion de casos", // chart title
+                indicatorName, // chart title
                 "Fecha", // domain axis label
                 "Value", // range axis label
                 dataset, // data
@@ -2682,15 +2703,8 @@ public class IndicatorsVariationMB {
                 );
 
         chart.setBackgroundPaint(Color.white);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
-        final TextTitle subtitle = new TextTitle(
-                "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\t\n"
-                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")" + serieName);
-        subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        subtitle.setPosition(RectangleEdge.TOP);
-        subtitle.setVerticalAlignment(VerticalAlignment.BOTTOM);
-        chart.addSubtitle(subtitle);
-
+        chart.getTitle().setPaint(new Color(50, 50, 50));
+        chart.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
         final CategoryPlot plot = chart.getCategoryPlot();
         plot.setForegroundAlpha(0.5f);
 

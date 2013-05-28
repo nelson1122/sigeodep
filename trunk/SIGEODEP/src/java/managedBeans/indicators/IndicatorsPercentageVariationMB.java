@@ -195,7 +195,7 @@ public class IndicatorsPercentageVariationMB {
     private boolean showCalculation = false;//mostrar la resta
     private boolean btnExportDisabled = true;
     private boolean colorType = true;
-    private boolean showEmpty = false;
+    private boolean showEmpty = true;
     DecimalFormat formateador = new DecimalFormat("0.00");
     private CopyManager cpManager;
     private StringBuilder sb;
@@ -2387,6 +2387,15 @@ public class IndicatorsPercentageVariationMB {
     }
 
     private String determineHeader(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) != '0' && value.charAt(i) != '1' && value.charAt(i) != '2'
+                    && value.charAt(i) != '3'&& value.charAt(i) != '4'&& value.charAt(i) != '5'
+                    && value.charAt(i) != '6'&& value.charAt(i) != '7'&& value.charAt(i) != '8'
+                    && value.charAt(i) != '9'&& value.charAt(i) != ' '&& value.charAt(i) != 'n'
+                    && value.charAt(i) != '-'&& value.charAt(i) != ':'&& value.charAt(i) != '/') {
+                return value;
+            }
+        }
         if (value.indexOf("SIN DATO") == -1) {
             if (value.indexOf("/") != -1) {
                 if (value.indexOf(":") != -1) {
@@ -2396,7 +2405,6 @@ public class IndicatorsPercentageVariationMB {
                     String newValue = value.replace("/", " a ");
                     return newValue + " Años";
                 }
-
             }
         }
         return value;
@@ -2563,6 +2571,10 @@ public class IndicatorsPercentageVariationMB {
 
         headers1 = new ArrayList<SpanColumns>();
         headers2 = new String[columNamesFinal.size()];
+        String height = "height:20px;";
+        if (showCalculation) {
+            height = "height:30px;";
+        }
 
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
@@ -2643,18 +2655,12 @@ public class IndicatorsPercentageVariationMB {
         //TABLA QUE CONTIENE LA PRIMER COLUMNA
         //-------------------------------------------------------------------        
         int rowsForRecord = 0;//filas a crear por registro(inicia en 1 por el rowspan cuenta desde 1)
-//        if (showColumnPercentage) {
-//            rowsForRecord++;
-//        }
         if (showRowPercentage) {
             rowsForRecord++;
         }
         if (showCount) {
             rowsForRecord++;
         }
-//        if (showTotalPercentage) {
-//            rowsForRecord++;
-//        }
 
         strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden;height:280px\">\r\n";//tamaño del div izquierdo
         strReturn = strReturn + "                        <table width=\"200px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
@@ -2668,13 +2674,14 @@ public class IndicatorsPercentageVariationMB {
             boolean showColumnPercentageAdd = false;
             boolean showTotalPercentageAdd = false;
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td rowspan=\"" + rowsForRecord + "\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
+            strReturn = strReturn + "                                <td rowspan=\"" + rowsForRecord + "\"><div style=\"overflow:hidden; "+ height + " width:150px; \">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
+            
             if (showCount && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\">Recuento</td>\r\n";
+                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:100px; height:20px;\">Recuento</div></td>\r\n";                
                 showCountAdd = true;
             }
             if (showRowPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% por fila</td>\r\n";
+                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:100px; height:20px;\">% por fila</div></td>\r\n";
                 showRowPercentageAdd = true;
             }
 //            if (showColumnPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
@@ -2741,7 +2748,8 @@ public class IndicatorsPercentageVariationMB {
                     } else {
                         value = formateador.format(totalA - totalB);
                     }
-                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"width:150px;" + height +"\">" + value + "</div></td>\r\n";
+                    
                 }
                 strReturn = strReturn + "                            </tr>\r\n";
             }
@@ -2761,7 +2769,8 @@ public class IndicatorsPercentageVariationMB {
                     } else {
                         value = formateador.format(totalA - totalB);
                     }
-                    strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + value + "</div></td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"width:150px;" + height +"\">" + value + "</div></td>\r\n";
+                    
                 }
                 strReturn = strReturn + "                            </tr>\r\n";
             }
@@ -2781,7 +2790,9 @@ public class IndicatorsPercentageVariationMB {
 
     private JFreeChart createBarChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        String serieName = "";
+        //String serieName = "";
+        String indicatorName = currentIndicator.getIndicatorName()+" - Municipo de Pasto.\n";
+        String variablesName = "";
         ResultSet rs;
         ResultSet rs2;
         ResultSet rs3;
@@ -2802,11 +2813,11 @@ public class IndicatorsPercentageVariationMB {
                     + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
                 sql1 = sql1 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
+                variablesName = "Desagregado por: " + currentVariableGraph1 + " = " + determineHeader(currentValueGraph1);
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
                 sql1 = sql1 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+                variablesName = variablesName+ ", " + currentVariableGraph2 + " = " + determineHeader(currentValueGraph2);
             }
             sql3 = ""
                     + " SELECT \n"
@@ -2818,11 +2829,9 @@ public class IndicatorsPercentageVariationMB {
                     + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
                 sql3 = sql3 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
                 sql3 = sql3 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
             }
 
             sql2 = ""
@@ -2835,11 +2844,9 @@ public class IndicatorsPercentageVariationMB {
                     + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
                 sql2 = sql2 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
                 sql2 = sql2 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
             }
 
             sql4 = ""
@@ -2852,15 +2859,11 @@ public class IndicatorsPercentageVariationMB {
                     + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
                 sql4 = sql4 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
                 sql4 = sql4 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
             }
-//            if (serieName.length() == 0) {
-//                serieName = "Casos";
-//            }
+            
             rs = connectionJdbcMB.consult(sql1 + " ORDER BY record_id");
             rs2 = connectionJdbcMB.consult(sql2 + " ORDER BY record_id");
             rs3 = connectionJdbcMB.consult(sql3);
@@ -2896,9 +2899,15 @@ public class IndicatorsPercentageVariationMB {
             //System.out.println("Error: " + ex.toString());
             increment = increment * 0.005;//grosor linea
         }
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");        
+        
+        indicatorName = indicatorName+ variablesName + "\n"
+                + "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\n"
+                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")";
 
         final JFreeChart chart = ChartFactory.createBarChart(
-                "Variación porcentual de casos", // chart title
+                indicatorName, // chart title
                 "Fecha", // domain axis label
                 "Value", // range axis label
                 dataset, // data
@@ -2909,17 +2918,10 @@ public class IndicatorsPercentageVariationMB {
                 );
 
         chart.setBackgroundPaint(Color.white);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
-        final TextTitle subtitle = new TextTitle(
-                "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\t\n"
-                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")" + serieName);
-        subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        subtitle.setPosition(RectangleEdge.TOP);
-        subtitle.setVerticalAlignment(VerticalAlignment.BOTTOM);
-        chart.addSubtitle(subtitle);
-
+        chart.getTitle().setPaint(new Color(50, 50, 50));
+        chart.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
         final CategoryPlot plot = chart.getCategoryPlot();
-        plot.setForegroundAlpha(0.5f);
+        plot.setForegroundAlpha(0.5f);        
         ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());//quitar gradiente
 
         IntervalMarker intervalmarker = new IntervalMarker(-1 * increment, increment, Color.yellow);

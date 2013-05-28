@@ -36,6 +36,8 @@ import static beans.enumerators.VariablesEnum.use_alcohol_drugs;
 import static beans.enumerators.VariablesEnum.victim_characteristics;
 import static beans.enumerators.VariablesEnum.weapon_types;
 import beans.util.Variable;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.StringReader;
@@ -68,6 +70,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.CellRangeAddress;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -75,12 +78,15 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 import org.primefaces.component.column.Column;
@@ -161,6 +167,8 @@ public class IndicatorsPercentageMB {
     private boolean showTotalPercentage = true;//mostrar porcentaje del total
     private boolean btnExportDisabled = true;
     private boolean showEmpty = false;
+    private boolean graphType1 = true;
+    private boolean graphType2 = false;
     boolean colorType = true;
     private Integer tuplesProcessed = 0;
     private StringBuilder sb;
@@ -1932,7 +1940,12 @@ public class IndicatorsPercentageMB {
 
     public void createImage() {
         try {//JFreeChart 
-            JFreeChart chart = createStackedBarChart();
+            JFreeChart chart = null;
+            if (graphType1) {
+                chart = createStackedBarChart();
+            } else {
+                chart = createPieChart();
+            }
             File chartFile = new File("dynamichart");
             ChartUtilities.saveChartAsPNG(chartFile, chart, 700, 500);
             chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
@@ -2273,6 +2286,15 @@ public class IndicatorsPercentageMB {
     }
 
     private String determineHeader(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) != '0' && value.charAt(i) != '1' && value.charAt(i) != '2'
+                    && value.charAt(i) != '3'&& value.charAt(i) != '4'&& value.charAt(i) != '5'
+                    && value.charAt(i) != '6'&& value.charAt(i) != '7'&& value.charAt(i) != '8'
+                    && value.charAt(i) != '9'&& value.charAt(i) != ' '&& value.charAt(i) != 'n'
+                    && value.charAt(i) != '-'&& value.charAt(i) != ':'&& value.charAt(i) != '/') {
+                return value;
+            }
+        }
         if (value.indexOf("SIN DATO") == -1) {
             if (value.indexOf("/") != -1) {
                 if (value.indexOf(":") != -1) {
@@ -2282,7 +2304,6 @@ public class IndicatorsPercentageMB {
                     String newValue = value.replace("/", " a ");
                     return newValue + " Años";
                 }
-
             }
         }
         return value;
@@ -2549,7 +2570,7 @@ public class IndicatorsPercentageMB {
 
     private String createDataTableResult() {
         headers1 = new ArrayList<SpanColumns>();
-        headers2 = new String[columNames.size()];
+        headers2 = new String[columNames.size()];        
 
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
@@ -2657,42 +2678,42 @@ public class IndicatorsPercentageMB {
             strReturn = strReturn + "                            <tr>\r\n";
             strReturn = strReturn + "                                <td rowspan=\"" + rowsForRecord + "\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
             if (showCount && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:160px; height:20px;\">Recuento</div></td>\r\n";
+                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:110px; height:20px;\">Recuento</div></td>\r\n";
                 showCountAdd = true;
             }
             if (showRowPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:160px; height:20px;\">% por fila</div></td>\r\n";
+                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:110px; height:20px;\">% por fila</div></td>\r\n";
                 showRowPercentageAdd = true;
             }
 
             if (showColumnPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:160px; height:20px;\">% por columna</div></td>\r\n";
+                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:110px; height:20px;\">% por columna</div></td>\r\n";
                 showColumnPercentageAdd = true;
             }
             if (showTotalPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:160px; height:20px;\">% del total</div></td>\r\n";
+                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:110px; height:20px;\">% del total</div></td>\r\n";
                 showTotalPercentageAdd = true;
             }
             strReturn = strReturn + "                            </tr>\r\n";
 
             if (showCount && !showCountAdd) {
                 strReturn = strReturn + "                            <tr>\r\n";
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:160px; height:20px;\">recuento</div></td>\r\n";
+                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:110px; height:20px;\">recuento</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             if (showRowPercentage && !showRowPercentageAdd) {
                 strReturn = strReturn + "                            <tr>\r\n";
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:160px; height:20px;\">% por fila</div></td>\r\n";
+                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:110px; height:20px;\">% por fila</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             if (showColumnPercentage && !showColumnPercentageAdd) {
                 strReturn = strReturn + "                            <tr>\r\n";
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:160px; height:20px;\">% por columna</div></td>\r\n";
+                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:110px; height:20px;\">% por columna</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             if (showTotalPercentage && !showTotalPercentageAdd) {
                 strReturn = strReturn + "                            <tr>\r\n";
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:160px; height:20px;\">% del total</div></td>\r\n";
+                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:110px; height:20px;\">% del total</div></td>\r\n";
 
                 strReturn = strReturn + "                            </tr>\r\n";
             }
@@ -2819,8 +2840,9 @@ public class IndicatorsPercentageMB {
 
     public JFreeChart createStackedBarChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        String indicatorName = currentIndicator.getIndicatorName();
+        String indicatorName = currentIndicator.getIndicatorName()+" - Municipo de Pasto.\n";
         String categoryAxixLabel = "";
+        String variablesName = "";
         int pos = 0;
         try {
             sql = ""
@@ -2833,15 +2855,17 @@ public class IndicatorsPercentageMB {
                     + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
             ResultSet rs;
             if (variablesCrossData.size() == 1) {
+                variablesName = "Desagregado por: " + variablesCrossData.get(0).getName();
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
                 while (rs.next()) {
-                    dataset.setValue(rs.getLong("count"), rs.getString("column_1"), "-");
+                    dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_1")), "-");
                 }
             }
             if (variablesCrossData.size() == 2) {
+                variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(1).getName();
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
                 while (rs.next()) {
-                    dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_2"));
+                    dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_1")), determineHeader(rs.getString("column_2")));
                 }
             }
             if (variablesCrossData.size() == 3) {
@@ -2856,29 +2880,33 @@ public class IndicatorsPercentageMB {
                 sql = sql + " AND column_" + String.valueOf(pos + 1) + " LIKE '" + currentValueGraph + "' ";
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
                 if (pos == 0) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(1).getName() + ", " + variablesCrossData.get(2).getName() + ", " + variablesCrossData.get(0).getName() + " = " + determineHeader(currentValueGraph);
                     while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString("column_2"), rs.getString("column_3"));
+                        dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_2")), determineHeader(rs.getString("column_3")));
                     }
                     categoryAxixLabel = variablesCrossData.get(2).getName();
                 }
                 if (pos == 1) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(2).getName() + ", " + variablesCrossData.get(1).getName() + " = " + determineHeader(currentValueGraph);
                     while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_3"));
+                        dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_1")), determineHeader(rs.getString("column_3")));
                     }
                     categoryAxixLabel = variablesCrossData.get(2).getName();
                 }
                 if (pos == 2) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(1).getName() + ", " + variablesCrossData.get(2).getName() + " = " + determineHeader(currentValueGraph);
                     while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_2"));
+                        dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_1")), determineHeader(rs.getString("column_2")));
                     }
                     categoryAxixLabel = variablesCrossData.get(1).getName();
-                }
-                indicatorName = currentIndicator.getIndicatorName() + "\n(" + currentVariableGraph + " es " + currentValueGraph + ")";
+                }                
             }
         } catch (SQLException ex) {
             System.out.println("Error: " + ex.toString());
         }
 
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+        indicatorName = indicatorName + variablesName + "\nPeriodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);
         JFreeChart chartReturn = ChartFactory.createStackedBarChart(
                 indicatorName,
                 categoryAxixLabel,
@@ -2889,6 +2917,10 @@ public class IndicatorsPercentageMB {
                 true, // tooltips
                 false // urls
                 );
+
+        chartReturn.setBackgroundPaint(Color.white);
+        chartReturn.getTitle().setPaint(new Color(50, 50, 50));
+        chartReturn.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
 
         CategoryPlot plot = (CategoryPlot) chartReturn.getPlot();
 
@@ -2904,15 +2936,103 @@ public class IndicatorsPercentageMB {
             renderer.setDrawBarOutline(false);
             renderer.setBaseItemLabelsVisible(true);
             renderer.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator("{3}", NumberFormat.getIntegerInstance(), new DecimalFormat("0.00%")));
-
-
-
-//            CategoryItemRenderer renderer2 = plot.getRenderer();
-//            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00"));//DecimalFormat("0.00"));
-//            renderer2.setItemLabelGenerator(generator);
-//            renderer2.setItemLabelsVisible(true);
         }
 
+        return chartReturn;
+    }
+
+    public JFreeChart createPieChart() {
+        //DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        String indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n";
+        String categoryAxixLabel = "";
+        String variablesName = "";
+        int pos = 0;
+        try {
+            sql = ""
+                    + " SELECT \n"
+                    + "    * \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
+            ResultSet rs;
+            if (variablesCrossData.size() == 1) {
+                variablesName = "Desagregado por: " + variablesCrossData.get(0).getName();
+                rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
+                while (rs.next()) {
+                    dataset.setValue(determineHeader(rs.getString("column_1")), new Double(rs.getString("count")));
+                }
+            }
+            if (variablesCrossData.size() == 2) {
+                variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(1).getName();
+                rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
+                while (rs.next()) {
+                    dataset.setValue(determineHeader(rs.getString("column_1")), new Double(rs.getString("count")));
+                }
+            }
+            if (variablesCrossData.size() == 3) {
+                //determino el numero de columna a filtrar (variable en variableCrossData                
+                for (int i = 0; i < variablesCrossData.size(); i++) {
+                    if (variablesCrossData.get(i).getName().compareTo(currentVariableGraph) == 0) {
+                        pos = i;
+                        break;
+                    }
+                }
+                //adiciono la instruccion WHERE a la consulta
+                sql = sql + " AND column_" + String.valueOf(pos + 1) + " LIKE '" + currentValueGraph + "' ";
+                rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
+                if (pos == 0) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(1).getName() + ", " + variablesCrossData.get(2).getName() + ", " + variablesCrossData.get(0).getName() + " = " + determineHeader(currentValueGraph);
+                    while (rs.next()) {
+                        dataset.setValue(determineHeader(rs.getString("column_1")), new Double(rs.getString("count")));
+                    }
+                    categoryAxixLabel = variablesCrossData.get(2).getName();
+                }
+                if (pos == 1) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(2).getName() + ", " + variablesCrossData.get(1).getName() + " = " + determineHeader(currentValueGraph);
+                    while (rs.next()) {
+                        dataset.setValue(determineHeader(rs.getString("column_1")), new Double(rs.getString("count")));
+                    }
+                    categoryAxixLabel = variablesCrossData.get(2).getName();
+                }
+                if (pos == 2) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(1).getName() + ", " + variablesCrossData.get(2).getName() + " = " + determineHeader(currentValueGraph);
+                    while (rs.next()) {
+                        dataset.setValue(determineHeader(rs.getString("column_1")), new Double(rs.getString("count")));
+                    }
+                    categoryAxixLabel = variablesCrossData.get(1).getName();
+                }                
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error: " + ex.toString());
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+        indicatorName = indicatorName + variablesName + "\nPeriodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);
+
+
+        JFreeChart chartReturn = ChartFactory.createPieChart(
+                indicatorName,
+                dataset, // data
+                true, // legend
+                true, // tooltips
+                false // urls
+                );
+
+        chartReturn.setBackgroundPaint(Color.white);
+        chartReturn.getTitle().setPaint(new Color(50, 50, 50));
+        chartReturn.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
+
+        if (showItems) {
+            PiePlot plot = (PiePlot) chartReturn.getPlot();
+            plot.setLabelFont(new Font("SansSerif", Font.PLAIN, 12));
+            plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}={2}", NumberFormat.getNumberInstance(), new DecimalFormat("0.00%")));
+            plot.setNoDataMessage("No data available");
+            plot.setCircular(false);
+            plot.setLabelGap(0.02);
+        }
         return chartReturn;
     }
 
@@ -2931,6 +3051,24 @@ public class IndicatorsPercentageMB {
     private void loadIndicator(int n) {
         currentIndicator = indicatorsFacade.find(n);
         reset();
+    }
+
+    public void changeGraphType1() {
+        if (graphType1 == false) {
+            graphType2 = true;
+        } else {
+            graphType2 = false;
+        }
+        createImage();
+    }
+
+    public void changeGraphType2() {
+        if (graphType2 == false) {
+            graphType1 = true;
+        } else {
+            graphType1 = false;
+        }
+        createImage();
     }
 
     //---------------------------------------------------------------------------------------------
@@ -3151,27 +3289,22 @@ public class IndicatorsPercentageMB {
         this.initialValue = initialValue;
     }
 
-//    public boolean isShowAll() {
-//        return showAll;
-//    }
-//
-//    public void setShowAll(boolean showAll) {
-//        this.showAll = showAll;
-//    }
-//    public OutputPanel getDynamicDataTableGroup() {
-//        return dynamicDataTableGroup;
-//    }
-//
-//    public void setDynamicDataTableGroup(OutputPanel dynamicDataTableGroup) {
-//        this.dynamicDataTableGroup = dynamicDataTableGroup;
-//    }
-//    public boolean isRenderedDynamicDataTable() {
-//        return renderedDynamicDataTable;
-//    }
-//
-//    public void setRenderedDynamicDataTable(boolean renderedDynamicDataTable) {
-//        this.renderedDynamicDataTable = renderedDynamicDataTable;
-//    }
+    public boolean isGraphType1() {
+        return graphType1;
+    }
+
+    public void setGraphType1(boolean graphType1) {
+        this.graphType1 = graphType1;
+    }
+
+    public boolean isGraphType2() {
+        return graphType2;
+    }
+
+    public void setGraphType2(boolean graphType2) {
+        this.graphType2 = graphType2;
+    }
+
     public String getCurrentValueGraph() {
         return currentValueGraph;
     }

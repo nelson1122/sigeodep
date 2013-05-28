@@ -2066,10 +2066,24 @@ public class IndicatorsSpecifiedRateMB {
     }
 
     private String determineHeader(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) != '0' && value.charAt(i) != '1' && value.charAt(i) != '2'
+                    && value.charAt(i) != '3'&& value.charAt(i) != '4'&& value.charAt(i) != '5'
+                    && value.charAt(i) != '6'&& value.charAt(i) != '7'&& value.charAt(i) != '8'
+                    && value.charAt(i) != '9'&& value.charAt(i) != ' '&& value.charAt(i) != 'n'
+                    && value.charAt(i) != '-'&& value.charAt(i) != ':'&& value.charAt(i) != '/') {
+                return value;
+            }
+        }
         if (value.indexOf("SIN DATO") == -1) {
             if (value.indexOf("/") != -1) {
-                String newValue = value.replace("/", " a ");
-                return newValue + " Años";
+                if (value.indexOf(":") != -1) {
+                    String newValue = value.replace("/", " a ");
+                    return newValue + " Horas";
+                } else {
+                    String newValue = value.replace("/", " a ");
+                    return newValue + " Años";
+                }
             }
         }
         return value;
@@ -2177,6 +2191,10 @@ public class IndicatorsSpecifiedRateMB {
         headers1 = new ArrayList<SpanColumns>();
         headers2 = new String[columNames.size()];
 
+        String height = "height:20px;";
+        if (showCalculation) {
+            height = "height:30px;";
+        }
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
         strReturn = strReturn + "            <tr>\r\n";
@@ -2265,7 +2283,7 @@ public class IndicatorsSpecifiedRateMB {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td class=\"tableFirstCol\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
+            strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"overflow:hidden; width:150px;" + height +"\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -2305,7 +2323,7 @@ public class IndicatorsSpecifiedRateMB {
                     value = splitColumn[0];
                 }
                 strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
-                strReturn = strReturn + "                                <div style=\"width:150px;\">" + value + "</div>\r\n";
+                strReturn = strReturn + "                                <div style=\"width:150px;" + height +"\">" + value + "</div>\r\n";
                 strReturn = strReturn + "                                </td> \r\n";
             }
             //strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + totalsVertical.get(j) + "</div></td>\r\n";
@@ -2326,7 +2344,8 @@ public class IndicatorsSpecifiedRateMB {
 
     public JFreeChart createLineChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        String indicatorName = currentIndicator.getIndicatorName();
+        String variablesName = "";
+        String indicatorName = currentIndicator.getIndicatorName()+" - Municipo de Pasto.\n";
         String categoryAxixLabel = "";
         try {
             int pos = 0;
@@ -2348,7 +2367,8 @@ public class IndicatorsSpecifiedRateMB {
                     if (rs.getString("count").compareTo("0") != 0 && rs.getInt("population") != 0) {
                         value = Double.parseDouble(formateador.format((Double.parseDouble(rs.getString("count")) / rs.getInt("population")) * multiplierK).replace(",", "."));
                     }
-                    dataset.setValue(value, rs.getString("column_2"), rs.getString("column_1"));
+                    dataset.setValue(value, determineHeader(rs.getString("column_2")), determineHeader(rs.getString("column_1")));
+                    variablesName = "Desagregado por: " + variablesCrossData.get(1).getName();
                 }
             }
             if (variablesCrossData.size() == 3) {
@@ -2362,45 +2382,49 @@ public class IndicatorsSpecifiedRateMB {
                 //adiciono la instruccion WHERE a la consulta
                 sql = sql + " AND column_" + String.valueOf(pos + 1) + " LIKE '" + currentValueGraph + "' ";
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
-                if (pos == 0) {
-                    while (rs.next()) {
-                        value = Double.parseDouble(formateador.format(Double.parseDouble("0")).replace(",", "."));
-                        if (rs.getString("count").compareTo("0") != 0 && rs.getInt("population") != 0) {
-                            value = Double.parseDouble(formateador.format((Double.parseDouble(rs.getString("count")) / rs.getInt("population")) * multiplierK).replace(",", "."));
-                        }
-                        dataset.setValue(value, rs.getString("column_2"), rs.getString("column_1"));
-                        //dataset.setValue(rs.getLong("count"), rs.getString("column_2"), rs.getString("column_3"));
-                    }
-                    categoryAxixLabel = variablesCrossData.get(2).getName();
-                }
+//                if (pos == 0) {
+//                    variablesName = "Desagregado por: " + variablesCrossData.get(1).getName() + ", " + variablesCrossData.get(2).getName() + ", " + variablesCrossData.get(0).getName() + " = " + determineHeader(currentValueGraph);
+//                    while (rs.next()) {
+//                        value = Double.parseDouble(formateador.format(Double.parseDouble("0")).replace(",", "."));
+//                        if (rs.getString("count").compareTo("0") != 0 && rs.getInt("population") != 0) {
+//                            value = Double.parseDouble(formateador.format((Double.parseDouble(rs.getString("count")) / rs.getInt("population")) * multiplierK).replace(",", "."));
+//                        }
+//                        dataset.setValue(value, rs.getString("column_2"), rs.getString("column_1"));
+//                        
+//                    }
+//                    categoryAxixLabel = variablesCrossData.get(2).getName();
+//                }
                 if (pos == 1) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(2).getName() + ", " + variablesCrossData.get(1).getName() + " = " + determineHeader(currentValueGraph);
                     while (rs.next()) {
                         value = Double.parseDouble(formateador.format(Double.parseDouble("0")).replace(",", "."));
                         if (rs.getString("count").compareTo("0") != 0 && rs.getInt("population") != 0) {
                             value = Double.parseDouble(formateador.format((Double.parseDouble(rs.getString("count")) / rs.getInt("population")) * multiplierK).replace(",", "."));
                         }
-                        dataset.setValue(value, rs.getString("column_3"), rs.getString("column_1"));
+                        dataset.setValue(value, determineHeader(rs.getString("column_3")), determineHeader(rs.getString("column_1")));
                         //dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_3"));
                     }
                     categoryAxixLabel = variablesCrossData.get(2).getName();
                 }
                 if (pos == 2) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(1).getName() + ", " + variablesCrossData.get(2).getName() + " = " + determineHeader(currentValueGraph);
                     while (rs.next()) {
                         value = Double.parseDouble(formateador.format(Double.parseDouble("0")).replace(",", "."));
                         if (rs.getString("count").compareTo("0") != 0 && rs.getInt("population") != 0) {
                             value = Double.parseDouble(formateador.format((Double.parseDouble(rs.getString("count")) / rs.getInt("population")) * multiplierK).replace(",", "."));
                         }
-                        dataset.setValue(value, rs.getString("column_2"), rs.getString("column_1"));
+                        dataset.setValue(value, determineHeader(rs.getString("column_2")), determineHeader(rs.getString("column_1")));
                         //dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_2"));
                     }
                     categoryAxixLabel = variablesCrossData.get(1).getName();
                 }
-                indicatorName = currentIndicator.getIndicatorName() + "\n(" + currentVariableGraph + " es " + currentValueGraph + ")";
+                //indicatorName = currentIndicator.getIndicatorName() + "\n(" + currentVariableGraph + " es " + currentValueGraph + ")";
             }
         } catch (SQLException ex) {
             System.out.println("Error: " + ex.toString());
         }
-        indicatorName = indicatorName + "\n Cifras por " + currentMultipler + " habitantes";
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");        
+        indicatorName = indicatorName + variablesName + "\nPeriodo "+sdf.format(initialDate)+" a "+sdf.format(endDate)+ " - Cifras por " + currentMultipler + " habitantes";
         final JFreeChart chartReturn = ChartFactory.createLineChart(
                 indicatorName, // chart title
                 categoryAxixLabel, // domain axis label
@@ -2413,7 +2437,7 @@ public class IndicatorsSpecifiedRateMB {
                 );
         //JFreeChart chartReturn = ChartFactory.createLineChart(indicatorName, categoryAxixLabel, "Conteo", dataset, PlotOrientation.VERTICAL, true, true, false);
         //COLORES DE FONDO Y TITULO----------------------------
-        chartReturn.setBackgroundPaint(new Color(200, 200, 200));
+        chartReturn.setBackgroundPaint(Color.white);
         chartReturn.getTitle().setPaint(new Color(50, 50, 50));
         chartReturn.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
         //COLOCAR LABELS A LOS GRAFICOS----------------------------

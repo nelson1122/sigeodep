@@ -260,12 +260,34 @@
                         <br/>                        
                         <p:fieldset legend="GRAFICOS">
                             <br/>
-                            <p:panelGrid id="IdPanelGraphConfig">                                
+                            <p:panelGrid id="IdPanelGraphConfig">
                                 <p:row>
-                                    <p:column>
-                                        Variable
+                                    <p:column styleClass="ui-widget-header">
+                                        Tipo de Gráfico
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:selectBooleanCheckbox id="IdGraphType1" value="#{indicatorsPercentageMB.graphType1}">                                            
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsPercentageMB.changeGraphType1}"
+                                                render="IdImageChart IdGraphType2"/>
+                                        </h:selectBooleanCheckbox>                                        
+                                        Barras apiladas
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:selectBooleanCheckbox id="IdGraphType2" value="#{indicatorsPercentageMB.graphType2}">                                            
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsPercentageMB.changeGraphType2}"
+                                                render="IdImageChart IdGraphType1"/>
+                                        </h:selectBooleanCheckbox>                                        
+                                        Pastel
+                                    </p:column>
+                                    <p:column styleClass="ui-widget-header">
+                                        Filtro 1
                                     </p:column>
                                     <p:column>
+                                        <p:column>
                                         <h:selectOneMenu 
                                             id="IdVariableGraph" value="#{indicatorsPercentageMB.currentVariableGraph}"> 
                                             <f:selectItems value="#{indicatorsPercentageMB.variablesGraph}"/>
@@ -275,10 +297,8 @@
                                                 render="IdImageChart IdPanelGraphConfig"/>
                                         </h:selectOneMenu>
                                     </p:column>
-                                    <p:column>
-                                        Valor
-                                    </p:column>
-                                    <p:column>
+                                        
+                                        
                                         <h:selectOneMenu 
                                             id="IdValueGraph" value="#{indicatorsPercentageMB.currentValueGraph}"> 
                                             <f:selectItems value="#{indicatorsPercentageMB.valuesGraph}"/>
@@ -287,19 +307,20 @@
                                                 listener="#{indicatorsPercentageMB.createImage}"
                                                 render="IdImageChart"/>
                                         </h:selectOneMenu>
-                                    </p:column>                                        
-                                    <p:column>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
                                         Mostrar Items
                                     </p:column>
-                                    <p:column>
+                                    <p:column colspan="2">
                                         <h:selectBooleanCheckbox value="#{indicatorsPercentageMB.showItems}" >
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsPercentageMB.createImage}"
                                                 render="IdVariableGraph IdValueGraph IdImageChart"/>
                                         </h:selectBooleanCheckbox>
-
-                                    </p:column>                                        
+                                    </p:column>                                    
                                 </p:row>
                             </p:panelGrid>                                
                             <br/>
@@ -311,7 +332,7 @@
                     </h:form>
                     <!-- =========================FORMULARIO MAPAS============================= -->
                    <h:form target="_blank" id="maps_form">                        
-                        <p:fieldset legend="MAPAS" > 
+                        <p:fieldset legend="MAPAS" rendered="false" > 
                             <br/>
                             <p:panelGrid>
                                 <p:row>                                    
