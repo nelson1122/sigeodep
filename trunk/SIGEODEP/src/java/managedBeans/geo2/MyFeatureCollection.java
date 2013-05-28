@@ -78,6 +78,12 @@ public class MyFeatureCollection {
                     polygons = geo.getQuadrantsPolygons(rf);
                     break;
                 }
+                if (column.equalsIgnoreCase("corredor")) {
+                    column_order += order;
+                    geo.setGeo_column(column_order);
+                    polygons = geo.getCorridorsPolygons(rf);
+                    break;
+                }
                 order++;
             }
             MfFeatureCollection collection = new MfFeatureCollection(polygons);
