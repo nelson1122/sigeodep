@@ -371,325 +371,12 @@ public class IndicatorsAverageMB {
                 }
             }
 
-            //---------------------------------------------------------            
-            //DETERMINO LOS VECTORES TOTALES DE FILAS Y TOTALES DE COLUMNAS
-            //---------------------------------------------------------            
-            //System.out.println("INICIA DETERMINO LOS VECTORES TOTALES DE FILAS Y TOTALES DE COLUMNAS xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-//            totalsHorizontal = new ArrayList<String>();
-//            totalsVertical = new ArrayList<String>();
-//            for (int i = 0; i < columNames.size(); i++) {
-//                totalsHorizontal.add("0");
-//            }
-//            int total;
-//            for (int j = 0; j < rowNames.size(); j++) {
-//                //AGREGO LOS DATOS DE LA FILA
-//                total = 0;
-//                for (int i = 0; i < columNames.size(); i++) {
-//                    totalsHorizontal.set(i, String.valueOf(Integer.parseInt(totalsHorizontal.get(i)) + Integer.parseInt(matrixResult[i][j])));
-//                    total = total + Integer.parseInt(matrixResult[i][j]);
-//                }
-//                totalsVertical.add(String.valueOf(total));
-//            }
-//            //determino general total
-//            grandTotal = 0;
-//            for (int i = 0; i < totalsVertical.size(); i++) {
-//                grandTotal = grandTotal + Integer.parseInt(totalsVertical.get(i));
-//            }
         } catch (Exception e) {
             System.out.println("Error: " + e.toString());
         }
     }
 
-//    public void createMatrixResult1() {
-//        //se usa pa crear una matriz que usada en: promedio por dia en semana, promedio por mes
-//        try {
-//            ArrayList<String> columnNamesPivot = new ArrayList<String>();
-//            columNames = new ArrayList<String>();
-//            rowNames = new ArrayList<String>();
-//            //---------------------------------------------------------
-//            //DETEMINO LOS NOMBRES DE LAS COLUMNAS DE TABLA PIVOT()
-//            //---------------------------------------------------------
-//            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
-//            int ncol = rs.getMetaData().getColumnCount();
-//            for (int i = 1; i <= ncol; i++) {
-//                columnNamesPivot.add(rs.getMetaData().getColumnName(i));
-//            }
-//            //---------------------------------------------------------            
-//            //DETERMINO NOMBRES DE COLUMNAS PARA MATIRZ SALIDA
-//            //---------------------------------------------------------            
-//            if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
-//                rs = connectionJdbcMB.consult(
-//                        "SELECT " + columnNamesPivot.get(0)
-//                        + " FROM " + pivotTableName
-//                        + " GROUP BY " + columnNamesPivot.get(0)
-//                        + " order by MIN(id);");
-//            }
-//            if (variablesCrossData.size() == 3) {
-//                sql =
-//                        "SELECT "
-//                        + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
-//                        + " FROM " + pivotTableName
-//                        + " group by "
-//                        + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
-//                        + " order by "
-//                        + " MIN(id); ";
-//                rs = connectionJdbcMB.consult(sql);
-//            }
-//            while (rs.next()) {
-//                columNames.add(rs.getString(1));
-//            }
-//            //---------------------------------------------------------            
-//            //DETERMINO NOMBRES DE FILAS PARA MATIRZ SALIDA
-//            //---------------------------------------------------------            
-//            if (variablesCrossData.size() == 1) {
-//                rowNames.add("Valor");
-//            }
-//            if (variablesCrossData.size() == 2) {
-//                rs = connectionJdbcMB.consult(
-//                        "SELECT " + columnNamesPivot.get(1)
-//                        + " FROM " + pivotTableName
-//                        + " GROUP BY " + columnNamesPivot.get(1)
-//                        + " order by MIN(id);");
-//            }
-//            if (variablesCrossData.size() == 3) {
-//                rs = connectionJdbcMB.consult(
-//                        "SELECT " + columnNamesPivot.get(2)
-//                        + " FROM " + pivotTableName
-//                        + " GROUP BY " + columnNamesPivot.get(2)
-//                        + " order by MIN(id);");
-//            }
-//            while (rs.next()) {
-//                rowNames.add(rs.getString(1));
-//            }
-//
-//            //---------------------------------------------------------            
-//            //SE CREA LA MATRIZ DE RESULTADOS (iniciada en 0 )
-//            //---------------------------------------------------------
-//            matrixResult = new String[columNames.size()][rowNames.size()];
-//            for (int i = 0; i < columNames.size(); i++) {
-//                for (int j = 0; j < rowNames.size(); j++) {
-//                    matrixResult[i][j] = "0";
-//                }
-//            }
-//
-//            rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
-//            String divisor;
-//            double resultDouble;
-//
-//            while (rs.next()) {
-//                boolean find = false;
-//                for (int i = 0; i < columNames.size(); i++) {
-//                    for (int j = 0; j < rowNames.size(); j++) {
-//                        if (variablesCrossData.size() == 1) {//ES UNA VARIABLE                            
-//                            if (rs.getString(1).compareTo(columNames.get(i)) == 0) {
-//                                divisor = "0";
-//                                //busco cual es divisor(vector q)
-//                                for (int k = 0; k < countAppearsStr.size(); k++) {
-//                                    String[] splitValues = countAppearsStr.get(k).split("}");
-//                                    if (rs.getString(1).compareTo(splitValues[0]) == 0) {
-//                                        divisor = splitValues[1];
-//                                        break;
-//                                    }
-//                                }
-//                                if (divisor.compareTo("0") != 0) {
-//                                    resultDouble = Double.parseDouble(rs.getString("count")) / Double.parseDouble(divisor);
-//                                } else {
-//                                    resultDouble = (double) 0;
-//                                }
-//                                matrixResult[i][j] = formateador.format(resultDouble) + "<br/>(" + rs.getString("count") + "/" + String.valueOf(divisor) + ")";
-//
-//                                //matrixResult[i][j] = String.valueOf(resultDouble) + "<br/>("+rs.getString("count")+"/"+String.valueOf(divisor)+")";
-//                                find = true;
-//                            }
-//                        }
-//                        if (variablesCrossData.size() == 2) {//SON DOS VARIABLES                            
-//                            if (rs.getString(1).compareTo(columNames.get(i)) == 0 && rs.getString(2).compareTo(rowNames.get(j)) == 0) {
-//                                divisor = "0";
-//                                //busco cual es divisor(vector q)
-//                                for (int k = 0; k < countAppearsStr.size(); k++) {
-//                                    String[] splitValues = countAppearsStr.get(k).split("}");
-//                                    if (rs.getString(1).compareTo(splitValues[0]) == 0) {
-//                                        divisor = splitValues[1];
-//                                        break;
-//                                    }
-//                                }
-//                                if (divisor.compareTo("0") != 0) {
-//                                    resultDouble = Double.parseDouble(rs.getString("count")) / Double.parseDouble(divisor);
-//                                } else {
-//                                    resultDouble = (double) 0;
-//                                }
-//                                matrixResult[i][j] = formateador.format(resultDouble) + "<br/>(" + rs.getString("count") + "/" + String.valueOf(divisor) + ")";
-//
-//                                //matrixResult[i][j] = rs.getString("count");
-//                                find = true;
-//                            }
-//                        }
-//                        if (variablesCrossData.size() == 3) {//SON TRES VARIABLES                            
-//                            if (columNames.get(i).compareTo(rs.getString(1) + "}" + rs.getString(2)) == 0 && rs.getString(3).compareTo(rowNames.get(j)) == 0) {
-//                                divisor = "0";
-//                                //busco cual es divisor(vector q)
-//                                for (int k = 0; k < countAppearsStr.size(); k++) {
-//                                    String[] splitValues = countAppearsStr.get(k).split("}");
-//                                    if (rs.getString(1).compareTo(splitValues[0]) == 0) {
-//                                        divisor = splitValues[1];
-//                                        break;
-//                                    }
-//                                }
-//                                if (divisor.compareTo("0") != 0) {
-//                                    resultDouble = Double.parseDouble(rs.getString("count")) / Double.parseDouble(divisor);
-//                                } else {
-//                                    resultDouble = (double) 0;
-//                                }
-//                                matrixResult[i][j] = formateador.format(resultDouble) + "<br/>(" + rs.getString("count") + "/" + String.valueOf(divisor) + ")";
-//
-//                                //matrixResult[i][j] = rs.getString("count");
-//                                find = true;
-//                            }
-//                        }
-//                        if (find) {
-//                            break;
-//                        }
-//                    }
-//                    if (find) {
-//                        break;
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Error: " + e.toString());
-//        }
-//    }
-//
-//    public void createMatrixResult2(int divisor) {
-//        //se usa para crear una matriz que usada en promedio: diario mensual anual
-//        //divisor me indica por cuanto hay que dividir
-//        try {
-//            ArrayList<String> columnNamesPivot = new ArrayList<String>();
-//            columNames = new ArrayList<String>();
-//            rowNames = new ArrayList<String>();
-//            //---------------------------------------------------------
-//            //DETEMINO LOS NOMBRES DE LAS COLUMNAS DE TABLA PIVOT()
-//            //---------------------------------------------------------
-//            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
-//            int ncol = rs.getMetaData().getColumnCount();
-//            for (int i = 1; i <= ncol; i++) {
-//                columnNamesPivot.add(rs.getMetaData().getColumnName(i));
-//            }
-//            //---------------------------------------------------------            
-//            //DETERMINO NOMBRES DE COLUMNAS PARA MATIRZ SALIDA
-//            //---------------------------------------------------------            
-//            if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
-//                rs = connectionJdbcMB.consult(
-//                        "SELECT " + columnNamesPivot.get(0)
-//                        + " FROM " + pivotTableName
-//                        + " GROUP BY " + columnNamesPivot.get(0)
-//                        + " order by MIN(id);");
-//            }
-//            if (variablesCrossData.size() == 3) {
-//                sql =
-//                        "SELECT "
-//                        + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
-//                        + " FROM " + pivotTableName
-//                        + " group by "
-//                        + columnNamesPivot.get(0) + "||'}'||" + columnNamesPivot.get(1)
-//                        + " order by "
-//                        + " MIN(id); ";
-//                rs = connectionJdbcMB.consult(sql);
-//            }
-//            while (rs.next()) {
-//                columNames.add(rs.getString(1));
-//            }
-//            //---------------------------------------------------------            
-//            //DETERMINO NOMBRES DE FILAS PARA MATIRZ SALIDA
-//
-//            //---------------------------------------------------------            
-//            if (variablesCrossData.size() == 1) {
-//                rowNames.add("Valor");
-//            }
-//            if (variablesCrossData.size() == 2) {
-//                rs = connectionJdbcMB.consult(
-//                        "SELECT " + columnNamesPivot.get(1)
-//                        + " FROM " + pivotTableName
-//                        + " GROUP BY " + columnNamesPivot.get(1)
-//                        + " order by MIN(id);");
-//            }
-//            if (variablesCrossData.size() == 3) {
-//                rs = connectionJdbcMB.consult(
-//                        "SELECT " + columnNamesPivot.get(2)
-//                        + " FROM " + pivotTableName
-//                        + " GROUP BY " + columnNamesPivot.get(2)
-//                        + " order by MIN(id);");
-//            }
-//            while (rs.next()) {
-//                rowNames.add(rs.getString(1));
-//            }
-//
-//            //---------------------------------------------------------            
-//            //SE CREA LA MATRIZ DE RESULTADOS (iniciada en 0 )
-//            //---------------------------------------------------------
-//            matrixResult = new String[columNames.size()][rowNames.size()];
-//            for (int i = 0; i < columNames.size(); i++) {
-//                for (int j = 0; j < rowNames.size(); j++) {
-//                    matrixResult[i][j] = "0";
-//                }
-//            }
-//
-//            rs = connectionJdbcMB.consult("SELECT * FROM " + pivotTableName);
-//            double resultDouble;
-//
-//            while (rs.next()) {
-//                boolean find = false;
-//                for (int i = 0; i < columNames.size(); i++) {
-//                    for (int j = 0; j < rowNames.size(); j++) {
-//                        if (variablesCrossData.size() == 1) {//ES UNA VARIABLE                            
-//                            if (rs.getString(1).compareTo(columNames.get(i)) == 0) {
-//                                if (divisor != 0) {
-//                                    resultDouble = Double.parseDouble(rs.getString("count")) / (double) divisor;
-//                                } else {
-//                                    resultDouble = (double) 0;
-//                                }
-//                                matrixResult[i][j] = formateador.format(resultDouble) + "<br/>(" + rs.getString("count") + "/" + String.valueOf(divisor) + ")";
-//                                //matrixResult[i][j] = String.valueOf(resultDouble) + "<br/>("+rs.getString("count")+"/"+String.valueOf(divisor)+")";
-//                                find = true;
-//                            }
-//                        }
-//                        if (variablesCrossData.size() == 2) {//SON DOS VARIABLES                            
-//                            if (rs.getString(1).compareTo(columNames.get(i)) == 0 && rs.getString(2).compareTo(rowNames.get(j)) == 0) {
-//                                if (divisor != 0) {
-//                                    resultDouble = Double.parseDouble(rs.getString("count")) / (double) divisor;
-//                                } else {
-//                                    resultDouble = (double) 0;
-//                                }
-//                                matrixResult[i][j] = formateador.format(resultDouble) + "<br/>(" + rs.getString("count") + "/" + String.valueOf(divisor) + ")";
-//                                //matrixResult[i][j] = rs.getString("count");
-//                                find = true;
-//                            }
-//                        }
-//                        if (variablesCrossData.size() == 3) {//SON TRES VARIABLES                            
-//                            if (columNames.get(i).compareTo(rs.getString(1) + "}" + rs.getString(2)) == 0 && rs.getString(3).compareTo(rowNames.get(j)) == 0) {
-//                                if (divisor != 0) {
-//                                    resultDouble = Double.parseDouble(rs.getString("count")) / (double) divisor;
-//                                } else {
-//                                    resultDouble = (double) 0;
-//                                }
-//                                matrixResult[i][j] = formateador.format(resultDouble) + "<br/>(" + rs.getString("count") + "/" + String.valueOf(divisor) + ")";
-//                                //matrixResult[i][j] = rs.getString("count");
-//                                find = true;
-//                            }
-//                        }
-//                        if (find) {
-//                            break;
-//                        }
-//                    }
-//                    if (find) {
-//                        break;
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Error: " + e.toString());
-//        }
-//    }
+
     private Variable createTemporalDisaggregationVariable(Date initialDate, Date endDate) {
         Variable newVariable = new Variable("Desagregación temporal", "temporalDisaggregation", false, "");
         int diferenceRank;
@@ -2598,6 +2285,15 @@ public class IndicatorsAverageMB {
     }
 
     private String determineHeader(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) != '0' && value.charAt(i) != '1' && value.charAt(i) != '2'
+                    && value.charAt(i) != '3'&& value.charAt(i) != '4'&& value.charAt(i) != '5'
+                    && value.charAt(i) != '6'&& value.charAt(i) != '7'&& value.charAt(i) != '8'
+                    && value.charAt(i) != '9'&& value.charAt(i) != ' '&& value.charAt(i) != 'n'
+                    && value.charAt(i) != '-'&& value.charAt(i) != ':'&& value.charAt(i) != '/') {
+                return value;
+            }
+        }
         if (value.indexOf("SIN DATO") == -1) {
             if (value.indexOf("/") != -1) {
                 if (value.indexOf(":") != -1) {
@@ -2607,7 +2303,6 @@ public class IndicatorsAverageMB {
                     String newValue = value.replace("/", " a ");
                     return newValue + " Años";
                 }
-
             }
         }
         return value;
@@ -2709,6 +2404,8 @@ public class IndicatorsAverageMB {
     private String createDataTableResult() {
         headers1 = new ArrayList<SpanColumns>();
         headers2 = new String[columNames.size()];
+        String height = "height:20px;";
+        
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
         strReturn = strReturn + "            <tr>\r\n";
@@ -2781,7 +2478,8 @@ public class IndicatorsAverageMB {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td class=\"tableFirstCol\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
+            //strReturn = strReturn + "                                <td class=\"tableFirstCol\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
+            strReturn = strReturn + "                                <td height=\"20px\" ><div style=\"overflow:hidden; height:20px; width:200px; \">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -2806,7 +2504,8 @@ public class IndicatorsAverageMB {
                 String value;
                 value = matrixResult[i][j];
                 strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
-                strReturn = strReturn + "                                <div style=\"width:150px;\">" + value + "</div>\r\n";
+//                strReturn = strReturn + "                                <div style=\"width:150px;\">" + value + "</div>\r\n";
+                strReturn = strReturn + "                                <div style=\"width:150px; height:20px;\">" + value + "</div>\r\n";
                 strReturn = strReturn + "                                </td> \r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2826,9 +2525,9 @@ public class IndicatorsAverageMB {
 
     public JFreeChart createBarChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        String indicatorName = currentIndicator.getIndicatorName();
-        String categoryAxixLabel = "";
-        String serieName = "";
+        String variablesName = "";
+        String indicatorName ="";
+        String categoryAxixLabel = "";        
         ResultSet rs;
         double average = 0;
         int divisor = 0;
@@ -2844,19 +2543,17 @@ public class IndicatorsAverageMB {
                     + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
                 sql = sql + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-                serieName = currentVariableGraph1 + " es " + currentValueGraph1;
+                
+                variablesName = "Desagregado por: " + currentVariableGraph1 + " = " + determineHeader(currentValueGraph1);
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
                 sql = sql + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
+                variablesName = variablesName+ ", " + currentVariableGraph2 + " = " + determineHeader(currentValueGraph2);
             }
 
-            if (serieName.length() == 0) {
-                serieName = "Casos";
-            }
             rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
             while (rs.next()) {
-                dataset.setValue(rs.getLong("count"), serieName, rs.getString("column_1"));
+                dataset.setValue(rs.getLong("count"), "-", rs.getString("column_1"));
                 average = average + rs.getLong("count");
                 if (increment < rs.getLong("count")) {
                     increment = rs.getLong("count");
@@ -2867,17 +2564,20 @@ public class IndicatorsAverageMB {
                 average = average / divisor;
             }
             increment = increment * 0.005;//grosor linea
-            indicatorName = indicatorName + "\n Promedio: " + formateador.format(average);
-            //                categoryAxixLabel = "Fecha";
-
+            indicatorName = currentIndicator.getIndicatorName()+"("+formateador.format(average)+") - Municipo de Pasto.\n";
+            //indicatorName = indicatorName + "\n Promedio: " + formateador.format(average);
         } catch (SQLException ex) {
             System.out.println("Error: " + ex.toString());
         }
-        JFreeChart chartReturn = ChartFactory.createBarChart(indicatorName, categoryAxixLabel, "Conteo", dataset, PlotOrientation.VERTICAL, true, true, false);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");        
+        indicatorName = indicatorName + variablesName + "\nPeriodo "+sdf.format(initialDate)+" a "+sdf.format(endDate);        
+        
+        JFreeChart chartReturn = ChartFactory.createBarChart(indicatorName, categoryAxixLabel, "Conteo", dataset, PlotOrientation.VERTICAL, false, true, false);
         //COLORES DE FONDO Y TITULO----------------------------
-        chartReturn.setBackgroundPaint(new Color(200, 200, 200));
+        chartReturn.setBackgroundPaint(Color.white);
         chartReturn.getTitle().setPaint(new Color(50, 50, 50));
-        chartReturn.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
+        chartReturn.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));        
+        
         //COLOCAR LABELS A LOS GRAFICOS----------------------------
         CategoryPlot plot = (CategoryPlot) chartReturn.getPlot();
         ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());//quitar gradiente

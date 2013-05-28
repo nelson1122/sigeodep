@@ -154,6 +154,7 @@ public class IndicatorsCountMB {
     public IndicatorsCountMB() {
         //-------------------------------------------------
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        geoDBConnection = (GeoDBConnection) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{geoDBConnectionMB}", GeoDBConnection.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         geoDBConnection = (GeoDBConnection) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{geoDBConnectionMB}", GeoDBConnection.class);
         Calendar c = Calendar.getInstance();
@@ -307,11 +308,11 @@ public class IndicatorsCountMB {
             geoDBConnection.refreshIndicatorData(loginMB.getCurrentUser().getUserId(), currentIndicator.getIndicatorId(), variablesCrossData);
             indicator_id = currentIndicator.getIndicatorId();
             vars = "";
-            for(Variable var : variablesCrossData){
+            for (Variable var : variablesCrossData) {
                 vars += var.getName() + ",";
             }
         }
-        
+
     }
     private int indicator_id;
     private String vars;
@@ -331,7 +332,7 @@ public class IndicatorsCountMB {
     public void setVars(String vars) {
         this.vars = vars;
     }
-    
+
     public void changeCategoticalList() {
         if (!currentCategoricalValuesSelected.isEmpty()) {
             //btnRemoveCategoricalValueDisabled = false;
@@ -941,34 +942,16 @@ public class IndicatorsCountMB {
         }
     }
 
-    private String determineHeader(String type, String value) {
-
-        if (value.indexOf("SIN DATO") == -1) {
-            if (type.indexOf("años") != -1) {
-                return "Año " + value;
-            }
-            if (type.indexOf("comuna") != -1) {
-                return "Comuna " + value;
-            }
-            if (type.indexOf("corredor") != -1) {
-                return "Corredor " + value;
-            }
-            if (type.indexOf("edad") != -1) {
-                String newValue = value.replace("/", " a ");
-                return newValue + " Años";
-            }
-            if (type.indexOf("hora") != -1) {
-                String newValue = value.replace("/", " a ");
-                return newValue + " Horas";
-            }
-            if (type.indexOf("cuadrante") != -1) {
-                return "Cuadrante " + value;
+    private String determineHeader(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) != '0' && value.charAt(i) != '1' && value.charAt(i) != '2'
+                    && value.charAt(i) != '3' && value.charAt(i) != '4' && value.charAt(i) != '5'
+                    && value.charAt(i) != '6' && value.charAt(i) != '7' && value.charAt(i) != '8'
+                    && value.charAt(i) != '9' && value.charAt(i) != ' ' && value.charAt(i) != 'n'
+                    && value.charAt(i) != '-' && value.charAt(i) != ':' && value.charAt(i) != '/') {
+                return value;
             }
         }
-        return value;
-    }
-
-    private String determineHeader(String value) {
         if (value.indexOf("SIN DATO") == -1) {
             if (value.indexOf("/") != -1) {
                 if (value.indexOf(":") != -1) {
@@ -978,7 +961,6 @@ public class IndicatorsCountMB {
                     String newValue = value.replace("/", " a ");
                     return newValue + " Años";
                 }
-
             }
         }
         return value;
@@ -1231,9 +1213,11 @@ public class IndicatorsCountMB {
 
     public JFreeChart createBarChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        String indicatorName = currentIndicator.getIndicatorName();
+        String variablesName = "";
+        String indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n";
         String categoryAxixLabel = "";
         int pos = 0;
+        int filas, columnas;
         try {
             sql = ""
                     + " SELECT \n"
@@ -1243,17 +1227,23 @@ public class IndicatorsCountMB {
                     + " WHERE \n"
                     + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
                     + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
-            ResultSet rs;
+            ResultSet rs;            
             if (variablesCrossData.size() == 1) {
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
                 while (rs.next()) {
-                    dataset.setValue(rs.getLong("count"), rs.getString("column_1"), "-");
+                    dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_1")), "-");
+                    columnas = dataset.getColumnCount();
+                    filas = dataset.getRowCount();
                 }
+                variablesName = "Desagregado por: " + variablesCrossData.get(0).getName();
             }
             if (variablesCrossData.size() == 2) {
+                variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(1).getName();
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
                 while (rs.next()) {
-                    dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_2"));
+                    dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_1")), determineHeader(rs.getString("column_2")));
+                    columnas = dataset.getColumnCount();
+                    filas = dataset.getRowCount();
                 }
             }
             if (variablesCrossData.size() == 3) {
@@ -1268,31 +1258,41 @@ public class IndicatorsCountMB {
                 sql = sql + " AND column_" + String.valueOf(pos + 1) + " LIKE '" + currentValueGraph + "' ";
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
                 if (pos == 0) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(1).getName() + ", " + variablesCrossData.get(2).getName() + ", " + variablesCrossData.get(0).getName() + " = " + determineHeader(currentValueGraph);
                     while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString("column_2"), rs.getString("column_3"));
+                        dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_2")), determineHeader(rs.getString("column_3")));
+                        columnas = dataset.getColumnCount();
+                        filas = dataset.getRowCount();
                     }
                     categoryAxixLabel = variablesCrossData.get(2).getName();
                 }
                 if (pos == 1) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(2).getName() + ", " + variablesCrossData.get(1).getName() + " = " + determineHeader(currentValueGraph);
                     while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_3"));
+                        dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_1")), determineHeader(rs.getString("column_3")));
+                        columnas = dataset.getColumnCount();
+                        filas = dataset.getRowCount();
                     }
                     categoryAxixLabel = variablesCrossData.get(2).getName();
                 }
                 if (pos == 2) {
+                    variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(1).getName() + ", " + variablesCrossData.get(2).getName() + " = " + determineHeader(currentValueGraph);
                     while (rs.next()) {
-                        dataset.setValue(rs.getLong("count"), rs.getString("column_1"), rs.getString("column_2"));
+                        dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_1")), determineHeader(rs.getString("column_2")));
+                        columnas = dataset.getColumnCount();
+                        filas = dataset.getRowCount();
                     }
                     categoryAxixLabel = variablesCrossData.get(1).getName();
                 }
-                indicatorName = currentIndicator.getIndicatorName() + "\n(" + currentVariableGraph + " es " + currentValueGraph + ")";
             }
         } catch (SQLException ex) {
             System.out.println("Error: " + ex.toString());
         }
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+        indicatorName = indicatorName + variablesName + "\nPeriodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);
         JFreeChart chartReturn = ChartFactory.createBarChart(indicatorName, categoryAxixLabel, "Conteo", dataset, PlotOrientation.VERTICAL, true, true, false);
         //COLORES DE FONDO Y TITULO----------------------------
-        chartReturn.setBackgroundPaint(new Color(200, 200, 200));
+        chartReturn.setBackgroundPaint(Color.white);
         chartReturn.getTitle().setPaint(new Color(50, 50, 50));
         chartReturn.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
         //COLOCAR LABELS A LOS GRAFICOS----------------------------
@@ -1312,7 +1312,7 @@ public class IndicatorsCountMB {
         LegendTitle legend = chartReturn.getLegend();
         legend.setWidth(400);//setPosition(RectangleEdge.TOP);
         legend.setHeight(200);
-        legend.setPosition(RectangleEdge.RIGHT);
+        //legend.setPosition(RectangleEdge.RIGHT);
         legend.setItemFont(new Font("Arial", Font.BOLD, 9));
         return chartReturn;
 

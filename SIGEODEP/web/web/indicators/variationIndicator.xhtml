@@ -239,7 +239,11 @@
                                 </p:row>
                             </p:panelGrid>
                             <br/>
-
+                            
+                            <h:selectBooleanCheckbox value="#{indicatorsVariationMB.showEmpty}" />
+                            &nbsp;Ver vacios<br/>
+                            <h:selectBooleanCheckbox id="IdTotals" value="#{indicatorsVariationMB.showCalculation}" />
+                            &nbsp;Ver Cálculo<br/>
                             <p:commandButton 
                                 value="Reiniciar" 
                                 style="width: 100px;"
@@ -255,9 +259,7 @@
                                 oncomplete="showTableResult()"
                                 update="IdImageChart IdDataTableHtml IdPanelGraphConfig IdBtnExport">
                             </p:commandButton> 
-                            &nbsp;&nbsp;
-                            <h:selectBooleanCheckbox value="#{indicatorsVariationMB.showEmpty}" />
-                            &nbsp;Ver vacios
+                            
                             <p:commandButton
                                 id="IdPaint"
                                 value="paint"
@@ -271,8 +273,8 @@
 
                                     render="IdImageChart"/>
                             </p:commandButton>
-                            Ver Cálculo
-                            <h:selectBooleanCheckbox id="IdTotals" value="#{indicatorsVariationMB.showCalculation}" />
+                            
+                            
                             <br/>
                             <br/>
                         </p:fieldset>
@@ -365,12 +367,6 @@
                                         </h:selectOneMenu>
                                     </p:column>
                                 </p:row>
-
-
-
-
-
-
                             </p:panelGrid>                                
                             <br/>
                             <p:graphicImage id="IdImageChart" value="#{indicatorsVariationMB.chartImage}"/>
@@ -381,7 +377,7 @@
                     </h:form>
                     <!-- =========================FORMULARIO MAPAS============================= -->
                    <h:form target="_blank" id="maps_form">                        
-                        <p:fieldset legend="MAPAS" > 
+                        <p:fieldset legend="MAPAS" rendered="false" > 
                             <br/>
                             <p:panelGrid>
                                 <p:row>                                    
