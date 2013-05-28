@@ -461,6 +461,59 @@ public class GeoDBConnection implements Serializable {
         }
     }
 
+    public List<MfFeature> getFeaturesPolygons(String f) {
+        if(f.compareToIgnoreCase("comunas") == 0){
+            f = "commune";
+        } else if(f.compareToIgnoreCase("corredores") == 0){
+            f = "corridor";
+        }else if(f.compareToIgnoreCase("cuadrantes") == 0){
+            f = "quadrant";
+        }
+        String query = ""
+                + "SELECT "
+                + "	" + f + "_id AS id, " + f + "_name AS name, geom "
+                + "FROM "
+                + "	" + f + "s";
+        WKTReader wktReader = new WKTReader();
+        List<MfFeature> polygons = new ArrayList<>();
+        ResultSet records = this.consult(query);
+        try {
+            while (records.next()) {
+                final int fid = records.getInt("id");
+                final String fname = records.getString("name");
+                String geom = records.getString("geom");
+                final MfGeometry fgeom = new MfGeometry(wktReader.read(geom));
+                MfFeature feature = new MfFeature() {
+                    String name = fname;
+                    private Integer id = fid;
+
+                    @Override
+                    public String getFeatureId() {
+                        return id.toString();
+                    }
+
+                    @Override
+                    public MfGeometry getMfGeometry() {
+                        return fgeom;
+                    }
+
+                    @Override
+                    public void toJSON(JSONWriter writer) throws JSONException {
+                        writer.key("name");
+                        writer.value(name);
+                        writer.key("id");
+                        writer.value(id);
+                    }
+                };
+                polygons.add(feature);
+            }
+            return polygons;
+        } catch (ParseException | SQLException ex) {
+            Logger.getLogger(GeoDBConnection.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
     public ArrayList<Double> getQuadrantsNumbers() {
         numbers = new ArrayList<>();
         String query = "SELECT "

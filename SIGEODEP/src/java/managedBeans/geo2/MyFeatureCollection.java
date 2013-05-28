@@ -111,6 +111,20 @@ public class MyFeatureCollection {
         return w;
     }
 
+    public Writer getFeaturesGeoJSON(String features) {
+        try {
+            Collection<MfFeature> polygons = geo.getFeaturesPolygons(features);
+            MfFeatureCollection collection = new MfFeatureCollection(polygons);
+            w = new StringWriter();
+            JSONWriter writer = new JSONWriter(w);
+            MfGeoJSONWriter gjw = new MfGeoJSONWriter(writer);
+            gjw.encodeFeatureCollection(collection, 0, 0.0, 0.0);
+        } catch (JSONException ex) {
+            Logger.getLogger(MyFeatureCollection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return w;
+    }
+
     public String getPieData(String WHERE, String geo_column, String column) {
         return geo.getPieData(WHERE, geo_column, column, user_id, indicator_id);
     }
