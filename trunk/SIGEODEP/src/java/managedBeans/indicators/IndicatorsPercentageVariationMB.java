@@ -2515,9 +2515,9 @@ public class IndicatorsPercentageVariationMB {
                     totalA = Double.parseDouble(getMatrixValueA("countXY", i, j));
                     totalB = Double.parseDouble(getMatrixValueB("countXY", i, j));
                     if (showCalculation) {
-                        value = formateador.format(totalA - totalB) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                        value = formateador.format((totalA - totalB)*-1) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
                     } else {
-                        value = formateador.format(totalA - totalB);
+                        value = formateador.format((totalA - totalB)*-1);
                     }
                     celda = fila.createCell((short) i + 2);// +2 por que faltal nombres de filas
                     celda.setCellValue(new HSSFRichTextString(value));
@@ -2533,9 +2533,9 @@ public class IndicatorsPercentageVariationMB {
                     totalA = Double.parseDouble(getMatrixValueA("rowPercentageXY", i, j));
                     totalB = Double.parseDouble(getMatrixValueB("rowPercentageXY", i, j));
                     if (showCalculation) {
-                        value = formateador.format(totalA - totalB) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                        value = formateador.format((totalA - totalB)*-1) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
                     } else {
-                        value = formateador.format(totalA - totalB);
+                        value = formateador.format((totalA - totalB)*-1);
                     }
                     celda = fila.createCell((short) i + 2);// +2 por que faltal nombres de filas                            
                     celda.setCellValue(new HSSFRichTextString(value));
@@ -2744,9 +2744,9 @@ public class IndicatorsPercentageVariationMB {
                     totalA = Double.parseDouble(getMatrixValueA("countXY", i, j));
                     totalB = Double.parseDouble(getMatrixValueB("countXY", i, j));
                     if (showCalculation) {
-                        value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                        value = "<b>" + formateador.format((totalA - totalB)*-1) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
                     } else {
-                        value = formateador.format(totalA - totalB);
+                        value = formateador.format((totalA - totalB)*-1);
                     }
                     strReturn = strReturn + "                                <td><div style=\"width:150px;" + height +"\">" + value + "</div></td>\r\n";
                     
@@ -2765,9 +2765,9 @@ public class IndicatorsPercentageVariationMB {
                     totalA = Double.parseDouble(getMatrixValueA("rowPercentageXY", i, j));
                     totalB = Double.parseDouble(getMatrixValueB("rowPercentageXY", i, j));
                     if (showCalculation) {
-                        value = "<b>" + formateador.format(totalA - totalB) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                        value = "<b>" + formateador.format((totalA - totalB)*-1) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
                     } else {
-                        value = formateador.format(totalA - totalB);
+                        value = formateador.format((totalA - totalB)*-1);
                     }
                     strReturn = strReturn + "                                <td><div style=\"width:150px;" + height +"\">" + value + "</div></td>\r\n";
                     
@@ -2884,7 +2884,7 @@ public class IndicatorsPercentageVariationMB {
                 valor = (double) (rs.getInt("count") * 100) / (double) totalA;
                 valor2 = (double) (rs2.getInt("count") * 100) / (double) totalB;
 
-                valor = valor - valor2;
+                valor = (valor - valor2)*-1;
                 if (increment < Math.sqrt(valor * valor)) {
                     increment = Math.sqrt(valor * valor);
                 }
@@ -3052,7 +3052,7 @@ public class IndicatorsPercentageVariationMB {
                 valor = (double) (rs.getInt("count") * 100) / (double) totalA;
                 valor2 = (double) (rs2.getInt("count") * 100) / (double) totalB;
 
-                valor = valor - valor2;
+                valor = (valor - valor2)*-1;
                 if (increment < Math.sqrt(valor * valor)) {
                     increment = Math.sqrt(valor * valor);
                 }
