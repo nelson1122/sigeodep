@@ -161,7 +161,7 @@ public class IndicatorsCountMB {
         currentYear = c.get(Calendar.YEAR);
         initialDate.setDate(1);
         initialDate.setMonth(0);
-        initialDate.setYear(2003 - 1900);
+        initialDate.setYear(2012 - 1900);
         endDate.setDate(c.get(Calendar.DATE));
         endDate.setMonth(c.get(Calendar.MONTH));
         endDate.setYear(c.get(Calendar.YEAR) - 1900);

@@ -224,14 +224,14 @@ public class IndicatorsVariationMB {
         initialDateB.setYear(2013 - 1900);
         endDateB.setDate(1);
         endDateB.setMonth(0);
-        endDateB.setYear(2014- 1900);
+        endDateB.setYear(2014 - 1900);
         //-----------------------------------------------
         temporalDisaggregationTypes = new ArrayList<String>();
         temporalDisaggregationTypes.add("Anual");
         temporalDisaggregationTypes.add("Mensual");
         //temporalDisaggregationTypes.add("Semanal");
         temporalDisaggregationTypes.add("Diaria");
-        currentTemporalDisaggregation="Mensual";
+        currentTemporalDisaggregation = "Mensual";
 
     }
 
@@ -406,7 +406,7 @@ public class IndicatorsVariationMB {
         btnExportDisabled = true;
         variablesCrossData = new ArrayList<Variable>();//lista de variables a cruzar            
         message = null;
-        boolean continueProcess = true;//validateDateRange();//VALIDACION DE FECHAS
+        boolean continueProcess = validateDateRange();//VALIDACION DE FECHAS
 
         if (continueProcess) {//ELIMINO DATOS DE UN PROCESO ANTERIOR
             removeIndicatorRecords();
@@ -2254,10 +2254,10 @@ public class IndicatorsVariationMB {
     private String determineHeader(String value) {
         for (int i = 0; i < value.length(); i++) {
             if (value.charAt(i) != '0' && value.charAt(i) != '1' && value.charAt(i) != '2'
-                    && value.charAt(i) != '3'&& value.charAt(i) != '4'&& value.charAt(i) != '5'
-                    && value.charAt(i) != '6'&& value.charAt(i) != '7'&& value.charAt(i) != '8'
-                    && value.charAt(i) != '9'&& value.charAt(i) != ' '&& value.charAt(i) != 'n'
-                    && value.charAt(i) != '-'&& value.charAt(i) != ':'&& value.charAt(i) != '/') {
+                    && value.charAt(i) != '3' && value.charAt(i) != '4' && value.charAt(i) != '5'
+                    && value.charAt(i) != '6' && value.charAt(i) != '7' && value.charAt(i) != '8'
+                    && value.charAt(i) != '9' && value.charAt(i) != ' ' && value.charAt(i) != 'n'
+                    && value.charAt(i) != '-' && value.charAt(i) != ':' && value.charAt(i) != '/') {
                 return value;
             }
         }
@@ -2383,7 +2383,7 @@ public class IndicatorsVariationMB {
         String height = "height:20px;";
         if (showCalculation) {
             height = "height:30px;";
-        } 
+        }
 
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
@@ -2489,7 +2489,7 @@ public class IndicatorsVariationMB {
                 }
                 strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
                 //strReturn = strReturn + "                                <div style=\"width:150px;\">" + value + "</div>\r\n";
-                strReturn = strReturn + "                                <div style=\"width:150px;" + height +" \">" + value + "</div>\r\n";
+                strReturn = strReturn + "                                <div style=\"width:150px;" + height + " \">" + value + "</div>\r\n";
                 strReturn = strReturn + "                                </td > \r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2562,7 +2562,7 @@ public class IndicatorsVariationMB {
             while (rs.next()) {
                 rs2.next();
                 //if (rs != null && rs2 != null) {
-                totalInt = (rs.getInt("count") - rs2.getInt("count"))*-1;
+                totalInt = (rs.getInt("count") - rs2.getInt("count")) * -1;
                 if (increment < Math.sqrt(totalInt * totalInt)) {
                     increment = Math.sqrt(totalInt * totalInt);
                 }
@@ -2689,7 +2689,7 @@ public class IndicatorsVariationMB {
             int totalInt;
             while (rs.next()) {
                 rs2.next();
-                totalInt = (rs.getInt("count") - rs2.getInt("count"))*-1;
+                totalInt = (rs.getInt("count") - rs2.getInt("count")) * -1;
                 strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1") + " (" + String.valueOf(totalInt) + ")";
                 dataset.setValue(rs.getLong("count"), "Rango A", strDateName);
                 dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);
@@ -2891,7 +2891,7 @@ public class IndicatorsVariationMB {
                                 totalA = Integer.parseInt(rs.getString("count"));
                                 totalB = Integer.parseInt(rs2.getString("count"));
                                 columNamesFinal.set(i, rs.getString("column_1") + " - " + rs2.getString("column_1"));
-                                matrixResult[i][j] = "<b>" + String.valueOf((totalA - totalB)*-1) + "</b><br/>(" + totalA + "-" + totalB + ")";
+                                matrixResult[i][j] = "<b>" + String.valueOf((totalA - totalB) * -1) + "</b><br/>(" + totalA + "-" + totalB + ")";
                                 find = true;
                             }
                         }
@@ -2900,7 +2900,7 @@ public class IndicatorsVariationMB {
                                 totalA = Integer.parseInt(rs.getString("count"));
                                 totalB = Integer.parseInt(rs2.getString("count"));
                                 columNamesFinal.set(i, rs.getString("column_1") + " - " + rs2.getString("column_1"));
-                                matrixResult[i][j] = "<b>" + String.valueOf((totalA - totalB)*-1) + "</b><br/>(" + totalA + "-" + totalB + ")";
+                                matrixResult[i][j] = "<b>" + String.valueOf((totalA - totalB) * -1) + "</b><br/>(" + totalA + "-" + totalB + ")";
                                 find = true;
                             }
                         }
@@ -2909,7 +2909,7 @@ public class IndicatorsVariationMB {
                                 totalA = Integer.parseInt(rs.getString("count"));
                                 totalB = Integer.parseInt(rs2.getString("count"));
                                 columNamesFinal.set(i, rs.getString("column_1") + " - " + rs2.getString("column_1") + "}" + rs.getString("column_2"));
-                                matrixResult[i][j] = "<b>" + String.valueOf((totalA - totalB)*-1) + "</b><br/>(" + totalA + "-" + totalB + ")";
+                                matrixResult[i][j] = "<b>" + String.valueOf((totalA - totalB) * -1) + "</b><br/>(" + totalA + "-" + totalB + ")";
                                 find = true;
                             }
                         }
