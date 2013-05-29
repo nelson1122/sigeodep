@@ -190,6 +190,7 @@ public class IndicatorsAverageMB {
         temporalDisaggregationTypes.add("Mensual");
         //temporalDisaggregationTypes.add("Semanal");
         temporalDisaggregationTypes.add("Diaria");
+        currentTemporalDisaggregation="Mensual";
     }
 
     public void showMessage() {
