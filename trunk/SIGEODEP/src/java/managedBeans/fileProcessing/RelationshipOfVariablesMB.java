@@ -93,7 +93,34 @@ public class RelationshipOfVariablesMB implements Serializable {
     public void refresh() {
         loadVarsExpectedAndFound();//recargo listas de variables esperadas y encontradas                       
         changeVarExpected();
-        changeVarFound();
+        changeVarFound();        
+    }
+    
+    public void convertAllIdSivigila(){
+        /*
+         * realiza las conversiones necesarias para pasar de archivo a sivigila
+         */
+        if (projectsMB.getCurrentFormName().compareTo("SIVIGILA-VIF") == 0) {//ES FORMULARIO SIVIGILA-VIF
+            try {
+                ResultSet rs;                
+                sql = ""
+                        + " SELECT \n"
+                        + "    relation_variables.name_expected, \n"
+                        + "    relation_variables.name_found \n"
+                        + " FROM \n"
+                        + "    public.relation_group, \n"
+                        + "    public.relation_variables \n"
+                        + " WHERE \n"
+                        + "    relation_variables.id_relation_group = relation_group.id_relation_group AND \n"
+                        + "    relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "' \n";
+                rs = connectionJdbcMB.consult(sql);
+                while (rs.next()) {                    
+                    convertIdToNameSIVIGILA(rs.getString(1), rs.getString(2), projectsFacade.find(projectsMB.getCurrentProjectId()));
+                }
+            } catch (Exception e) {
+                System.out.println("Error 13 en " + this.getClass().getName() + ":" + e.toString());
+            }            
+        }
     }
 
     public void reset() {//@PostConstruct ejecutar despues de el constructor
@@ -113,7 +140,7 @@ public class RelationshipOfVariablesMB implements Serializable {
     //----------------------------------------------------------------------
     private void loadExpectedVariables() {
         try {
-            possibleVariableFound="";
+            possibleVariableFound = "";
             filterConsult = "";
             if (expectedVariablesFilter != null && expectedVariablesFilter.trim().length() != 0) {
                 filterConsult = "fields.field_name ILIKE '%" + expectedVariablesFilter + "%' AND \n";
@@ -161,12 +188,9 @@ public class RelationshipOfVariablesMB implements Serializable {
                     + " SELECT \n"
                     + "	   project_columns.column_name \n"
                     + " FROM \n"
-                    + "	   public.project_columns, \n"
-                    + "	   public.projects \n"
-                    + " WHERE \n"+filterConsult                    
-                    + "	   project_columns.column_id >= projects.start_column_id AND \n"
-                    + "	   project_columns.column_id <= projects.end_column_id AND \n"                    
-                    + "	   projects.project_id = " + projectsMB.getCurrentProjectId() + " AND \n"
+                    + "	   public.project_columns \n"
+                    + " WHERE \n" + filterConsult
+                    + "	   project_columns.project_id = " + projectsMB.getCurrentProjectId() + " AND \n"
                     + "	   project_columns.column_name NOT IN \n"
                     + "	   (SELECT \n"
                     + "		relation_variables.name_found \n"
@@ -177,9 +201,6 @@ public class RelationshipOfVariablesMB implements Serializable {
                     + "		relation_variables.id_relation_group = relation_group.id_relation_group AND \n"
                     + "		relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "' \n"
                     + "	   ) \n"
-                    //+ " GROUP BY \n"
-                    //+ "	   project_columns.column_name, \n"
-                    //+ "	   project_columns.column_id \n"
                     + " ORDER BY \n"
                     + "	   project_columns.column_id \n";
             rs = connectionJdbcMB.consult(sql);            //System.out.println("A002\n" + sql);
@@ -253,7 +274,7 @@ public class RelationshipOfVariablesMB implements Serializable {
         }
         return strReturn;
     }
-    
+
     private String findPossibleVariableFound() {
         //buscar la posible variable encontrada para ser relacionada
         String strReturn = "";
@@ -689,7 +710,7 @@ public class RelationshipOfVariablesMB implements Serializable {
         }
         if (nextStep) {
             if (projectsMB.getCurrentFormName().compareTo("SIVIGILA-VIF") == 0) {//ES FORMULARIO SIVIGILA-VIF
-                convertIdToNameSIVIGILA(currentVariableExpected.get(0), currentVariableFound.get(0), projectsFacade.find(projectsMB.getCurrentProjectId()));                
+                convertIdToNameSIVIGILA(currentVariableExpected.get(0), currentVariableFound.get(0), projectsFacade.find(projectsMB.getCurrentProjectId()));
             }
             selectDateFormatDisabled = true;
 
@@ -750,7 +771,7 @@ public class RelationshipOfVariablesMB implements Serializable {
                     if (projectsMB.getCurrentFormName().compareTo("SIVIGILA-VIF") == 0) {//ES FORMULARIO SIVIGILA-VIF
                         convertNameToIdSIVIGILA(splitVarRelated[0], splitVarRelated[1], projectsFacade.find(projectsMB.getCurrentProjectId()));
                         compareForCode = false;
-                    }                    
+                    }
                     int relationVariablesId = getRelationVariablesId(splitVarRelated[0], splitVarRelated[1]);
                     connectionJdbcMB.remove("relations_discarded_values", "id_relation_variables = " + relationVariablesId);
                     connectionJdbcMB.remove("relation_values", "id_relation_variables = " + relationVariablesId);
@@ -882,7 +903,6 @@ public class RelationshipOfVariablesMB implements Serializable {
 //    public void setVariableDescription(String variableDescription) {
 //        this.variableDescription = variableDescription;
 //    }
-
     public void setProjectsMB(ProjectsMB projectsMB) {
         this.projectsMB = projectsMB;
     }
@@ -960,7 +980,7 @@ public class RelationshipOfVariablesMB implements Serializable {
     }
 
     public void changeExpectedVariablesFilter() {
-        
+
         loadExpectedVariables();
     }
 
@@ -971,6 +991,4 @@ public class RelationshipOfVariablesMB implements Serializable {
     public void setPossibleVariableFound(String possibleVariableFound) {
         this.possibleVariableFound = possibleVariableFound;
     }
-    
-    
 }

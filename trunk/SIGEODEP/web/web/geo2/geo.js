@@ -356,7 +356,7 @@ function parseURLParams(url) {
     var nvPairs = query.replace(/\+/g, " ").split("&");
 
     for (var i = 0; i < nvPairs.length; i++) {
-        var nv = nvPairs[i].split("=");
+        var nv = nvPairs[i].replace("%E1","&aacute").replace("%E9","&eacute").replace("%ED","&iacute").replace("%F3","&oacute").replace("%FA","&uacute").replace("%F1","&ntilde").split("=");
         var n = decodeURIComponent(nv[0]);
         var v = decodeURIComponent(nv[1]);
         if (!(n in params)) {

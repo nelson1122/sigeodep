@@ -105,6 +105,7 @@ public class ConnectionJdbcMB implements Serializable {
 //            connectionNotConfigured = true;
 //        }
     }
+
     @PreDestroy
     private void destroySession() {
         try {
@@ -2655,8 +2656,7 @@ public class ConnectionJdbcMB implements Serializable {
 
     public RowDataTable loadSivigilaVifRecord(String idVIctim) {
         //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
-        //btnEditDisabled = true;
-        //btnRemoveDisabled = true;
+
         NonFatalDomesticViolence currentNonFatalDomesticV = nonFatalDomesticViolenceFacade.findByIdVictim(idVIctim);
         RowDataTable newRowDataTable = new RowDataTable();
         //------------------------------------------------------------
@@ -2736,17 +2736,9 @@ public class ConnectionJdbcMB implements Serializable {
         //SE CARGAN VALORES PARA SIVIGILA VICTIM
         //------------------------------------------------------------               
         //******sivigila_victim.health_category
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getHealthCategory() != null) {
             newRowDataTable.setColumn17(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getHealthCategory().getSivigilaTipSsName());
-//                String sql = "SELECT sivigila_tip_ss_name FROM sivigila_tip_ss WHERE sivigila_tip_ss_id=" + currentNonFatalDomesticV.getSivigilaEvent().getZone();
-//                rs = consult(sql);
-//                if (rs.next()) {
-//                    newRowDataTable.setColumn17(rs.getString(1));
-//                }
         }
-        //} catch (Exception e) {
-        //}
         //escolaridad victima
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getEducationalLevelId() != null) {
             newRowDataTable.setColumn18(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getEducationalLevelId().getSivigilaEducationalLevelName());
@@ -2762,13 +2754,7 @@ public class ConnectionJdbcMB implements Serializable {
         //antecedentes de hecho similar        
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getAntecedent() != null) {
             newRowDataTable.setColumn21(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getAntecedent().getBooleanName());
-//            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaVictimId().getAntecedent() == true) {
-//                newRowDataTable.setColumn21("SI");
-//            } else {
-//                newRowDataTable.setColumn21("NO");
-//            }
         }
-
         //------------------------------------------------------------
         //SE CARGAN VALORES PARA LA LESION
         //------------------------------------------------------------       
@@ -2825,63 +2811,40 @@ public class ConnectionJdbcMB implements Serializable {
         }
         //cargo la lista de abusos(tipos de maltrato)-----------------------------------
         try {
-            if (currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalDomesticViolence() != null) {
-                if (currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalDomesticViolence().getAbuseTypesList() != null) {
-                    List<AbuseTypes> abuseTypesList = currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalDomesticViolence().getAbuseTypesList();
-                    for (int i = 0; i < abuseTypesList.size(); i++) {
-                        int caso = (int) abuseTypesList.get(i).getAbuseTypeId();
-                        String sql = "SELECT abuse_type_name FROM abuse_types WHERE abuse_type_id=" + caso;
-                        rs = consult(sql);
-                        if (rs.next()) {
-                            newRowDataTable.setColumn29(rs.getString(1));
-                        }
+            if (currentNonFatalDomesticV.getAbuseTypesList() != null) {
+                List<AbuseTypes> abuseTypesList = currentNonFatalDomesticV.getAbuseTypesList();
+                for (int i = 0; i < abuseTypesList.size(); i++) {
+                    int caso = (int) abuseTypesList.get(i).getAbuseTypeId();
+                    String sql = "SELECT abuse_type_name FROM abuse_types WHERE abuse_type_id=" + caso;
+                    rs = consult(sql);
+                    if (rs.next()) {
+                        newRowDataTable.setColumn29(rs.getString(1));
                     }
                 }
             }
+
         } catch (Exception e) {
             //System.out.println("no se cargo tipos de maltrato"+e.toString());
         }
-
-
-
         //******injury_place_id
-        //try {
         if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryPlaceId() != null) {
             newRowDataTable.setColumn39(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryPlaceId().getNonFatalPlaceName());
         }
-        //} catch (Exception e) {
-        //}
-
         //uso de alcohol victima
-        //try {
         if (currentNonFatalDomesticV.getNonFatalInjuries().getUseAlcoholId() != null) {
             newRowDataTable.setColumn41(currentNonFatalDomesticV.getNonFatalInjuries().getUseAlcoholId().getUseAlcoholDrugsName());
         }
-        //} catch (Exception e) {
-        //}
         //******non_fatal_data_source_id
-        //try {
         if (currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalDataSourceId() != null) {
             newRowDataTable.setColumn42(currentNonFatalDomesticV.getNonFatalInjuries().getNonFatalDataSourceId().getNonFatalDataSourceName());
         }
-        //} catch (Exception e) {
-        //}
-
         //------------------------------------------------------------
         //SE CARGAN VALORES PARA SIVIGILA EVENT
         //------------------------------------------------------------               
         //******sivigila_event.area
-//        try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getArea() != null) {
-//                String sql = "SELECT area_name FROM areas WHERE area_id=" + currentNonFatalDomesticV.getSivigilaEvent().getZone();
-//                rs = consult(sql);
-//                if (rs.next()) {
-//                    newRowDataTable.setColumn43(rs.getString(1));
-//                }
             newRowDataTable.setColumn43(currentNonFatalDomesticV.getSivigilaEvent().getArea().getAreaName());
         }
-//        } catch (Exception e) {
-//        }
         //edad agresor
         try {
             if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getAge() != null) {
@@ -2890,140 +2853,71 @@ public class ConnectionJdbcMB implements Serializable {
         } catch (Exception e) {
         }
         //genero agresor
-//        try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender() != null) {
-//                String sql = "SELECT gender_name FROM genders WHERE gender_id=" + currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender();
-//                rs = consult(sql);
-//                if (rs.next()) {
-//                    newRowDataTable.setColumn45(rs.getString(1));
-//                }
             newRowDataTable.setColumn45(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGender().getGenderName());
         }
-//        } catch (Exception e) {
-//        }
         //ocupacion agresor
         try {
             if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOccupation() != null) {
-//                String sql = "SELECT job_name FROM jobs WHERE job_id=" + currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOccupation();
-//                rs = consult(sql);
-//                if (rs.next()) {
-//                    newRowDataTable.setColumn46(rs.getString(1));
-//                }
                 newRowDataTable.setColumn46(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOccupation().getJobName());
             }
         } catch (Exception e) {
         }
         //escolaridad agresor
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getEducationalLevelId() != null) {
             newRowDataTable.setColumn47(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getEducationalLevelId().getSivigilaEducationalLevelName());
         }
-        //} catch (Exception e) {
-        //}
         //relacion familiar victima
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getRelativeId() != null) {
             newRowDataTable.setColumn48(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getRelativeId().getAggressorTypeName());
         }
-        //} catch (Exception e) {
-        //}
         //otra relacion familiar victima
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherRelative() != null) {
             newRowDataTable.setColumn49(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherRelative());
         }
-        //} catch (Exception e) {
-        //}
         //convive con agresor
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getLiveTogether() != null) {
             newRowDataTable.setColumn50(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getLiveTogether().getBooleanName());
-//            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getLiveTogether() == true) {
-//                newRowDataTable.setColumn50("SI");
-//            } else {
-//                newRowDataTable.setColumn50("NO");
-//            }
         }
-        //} catch (Exception e) {
-        //}
-
         //relacion no familiar victima
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getNoRelativeId() != null) {
             newRowDataTable.setColumn51(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getNoRelativeId().getSivigilaNoRelativeName());
         }
-        //} catch (Exception e) {
-        //}
         //otra relacion no familiar victima
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherNoRelative() != null) {
             newRowDataTable.setColumn52(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherNoRelative());
         }
-        //} catch (Exception e) {
-        //}
         //grupo agresor
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGroupId() != null) {
             newRowDataTable.setColumn53(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getGroupId().getSivigilaGroupName());
         }
-        //} catch (Exception e) {
-        //}
         //OTRO grupo agresor
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherGroup() != null) {
             newRowDataTable.setColumn54(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getOtherGroup());
         }
-        //} catch (Exception e) {
-        //}
         //precencia alcohol agresor
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getAlcoholOrDrugs() != null) {
             newRowDataTable.setColumn55(currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getAlcoholOrDrugs().getBooleanName());
-//            if (currentNonFatalDomesticV.getSivigilaEvent().getSivigilaAgresorId().getAlcoholOrDrugs() == true) {
-//                newRowDataTable.setColumn55("SI");
-//            } else {
-//                newRowDataTable.setColumn55("NO");
-//            }
         }
-        //} catch (Exception e) {
-        //}
         //armas utilizadas
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getMechanismId() != null) {
             newRowDataTable.setColumn56(currentNonFatalDomesticV.getSivigilaEvent().getMechanismId().getSivigilaMechanismName());
         }
-        //} catch (Exception e) {
-        //}
         //sustancia intoxicacion
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getIntoxication() != null) {
             newRowDataTable.setColumn57(currentNonFatalDomesticV.getSivigilaEvent().getIntoxication());
         }
-        //} catch (Exception e) {
-        // }
-        //otra arma
-        //try {
+        //otra arma        
         if (currentNonFatalDomesticV.getSivigilaEvent().getOthers() != null) {
             newRowDataTable.setColumn58(currentNonFatalDomesticV.getSivigilaEvent().getOthers());
         }
-        //} catch (Exception e) {
-        //}
         //otro mecanismo
-        //try {
         if (currentNonFatalDomesticV.getSivigilaEvent().getOtherMechanismId() != null) {
             newRowDataTable.setColumn59(currentNonFatalDomesticV.getSivigilaEvent().getOtherMechanismId().getSivigilaOtherMechanismName());
         }
-        //} catch (Exception e) {
-        //}
-
         //zona conflicto
         if (currentNonFatalDomesticV.getSivigilaEvent().getConflictZone() != null) {
             newRowDataTable.setColumn60(currentNonFatalDomesticV.getSivigilaEvent().getConflictZone().getBooleanName());
-//            if (currentNonFatalDomesticV.getSivigilaEvent().getConflictZone() == true) {
-//                newRowDataTable.setColumn60("SI");
-//            } else {
-//                newRowDataTable.setColumn60("NO");
-//            }
         }
         //CARGO ACCIONES EN SALUD------
         try {
@@ -3064,20 +2958,10 @@ public class ConnectionJdbcMB implements Serializable {
         //recomienda proteccion
         if (currentNonFatalDomesticV.getSivigilaEvent().getRecommendedProtection() != null) {
             newRowDataTable.setColumn69(currentNonFatalDomesticV.getSivigilaEvent().getRecommendedProtection().getBooleanName());
-//            if (currentNonFatalDomesticV.getSivigilaEvent().getRecommendedProtection() == true) {
-//                newRowDataTable.setColumn69("SI");
-//            } else {
-//                newRowDataTable.setColumn69("NO");
-//            }
         }
         //trabajo de campo
         if (currentNonFatalDomesticV.getSivigilaEvent().getFurtherFieldwork() != null) {
             newRowDataTable.setColumn70(currentNonFatalDomesticV.getSivigilaEvent().getFurtherFieldwork().getBooleanName());
-//            if (currentNonFatalDomesticV.getSivigilaEvent().getFurtherFieldwork() == true) {
-//                newRowDataTable.setColumn70("SI");
-//            } else {
-//                newRowDataTable.setColumn70("NO");
-//            }
         }
 
         return newRowDataTable;

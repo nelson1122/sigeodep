@@ -53,6 +53,7 @@ public class LoginMB {
     FacesContext context;
     ConnectionJdbcMB connectionJdbcMB;
     ProjectsMB projectsMB;
+    FilterMB filterMB;
     RelationshipOfVariablesMB relationshipOfVariablesMB;
     RelationshipOfValuesMB relationshipOfValuesMB;
     ApplicationControlMB applicationControlMB;
@@ -115,6 +116,7 @@ public class LoginMB {
         relationshipOfValuesMB.reset();
         recordDataMB.reset();
         errorsControlMB.reset();
+        filterMB.reset();
     }
     private boolean autenticado = false;
 
@@ -174,6 +176,7 @@ public class LoginMB {
         if (connectionJdbcMB.connectToDb()) {
             connectionJdbcMB.setCurrentUser(currentUser);
             projectsMB = (ProjectsMB) context.getApplication().evaluateExpressionGet(context, "#{projectsMB}", ProjectsMB.class);
+            filterMB = (FilterMB) context.getApplication().evaluateExpressionGet(context, "#{filterMB}", FilterMB.class);
             relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
             relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
             recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
@@ -193,10 +196,14 @@ public class LoginMB {
             errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
             errorsControlMB.setProjectsMB(projectsMB);
             projectsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-
+            
             if (currentUser.getProjectId() != null) {
                 projectsMB.openProject(currentUser.getProjectId());
             }
+            
+            filterMB.setProjectsMB(projectsMB);
+            filterMB.reset();
+            
             autenticado = true;
 
             ResultSet rs = connectionJdbcMB.consult("SELECT * FROM configurations");
@@ -416,3 +423,4 @@ public class LoginMB {
         this.disableAdministratorSection = disableAdministratorSection;
     }
 }
+
