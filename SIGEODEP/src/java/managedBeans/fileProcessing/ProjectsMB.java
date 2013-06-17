@@ -120,6 +120,7 @@ public class ProjectsMB implements Serializable {
     private List<String> variablesFound;
     private List<String> variablesExpected;
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
+    private FilterMB filterMB;
     private RelationshipOfValuesMB relationshipOfValuesMB;
     private List<RowDataTable> rowProjectsTableList;
     private RowDataTable selectedProjectTable;
@@ -215,6 +216,7 @@ public class ProjectsMB implements Serializable {
         errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
         recordDataMB = (RecordDataMB) context.getApplication().evaluateExpressionGet(context, "#{recordDataMB}", RecordDataMB.class);
         loginMB = (LoginMB) context.getApplication().evaluateExpressionGet(context, "#{loginMB}", LoginMB.class);
+        filterMB = (FilterMB) context.getApplication().evaluateExpressionGet(context, "#{filterMB}", FilterMB.class);
         //nameTableTemp = "temp" + loginMB.getLoginname();
         //connectionJdbcMB.setTableName(nameTableTemp);
 
@@ -897,7 +899,8 @@ public class ProjectsMB implements Serializable {
                 max++;
                 sb2.
                         append(max).append("\t").
-                        append(headerFileNames.get(i)).append("\n");
+                        append(headerFileNames.get(i)).append("\t").
+                        append(currentProjectId).append("\n");
                 headerFileIds.add(max);
                 endColumnId = max;
             }
@@ -1262,10 +1265,12 @@ public class ProjectsMB implements Serializable {
                 usersFacade.edit(currentUser);
                 inactiveTabs = false;//activo las pestañas
                 relationshipOfVariablesMB.refresh();
+                filterMB.reset();
+                relationshipOfVariablesMB.convertAllIdSivigila();//SI EL PROYECTO ES SIVIGILA SE DEBE REALIZAR LA CONVERSION DE COLUMNAS
                 configurationLoaded = true;
                 copyMB.refresh();//actualizo pestaña (filtros)                
                 copyMB.cleanBackupTables();
-                errorsList.add("Proyecto creado correctamente, se cargaron " + tuplesProcessed + " registros.");
+                errorsList.add("Proyecto creado correctamente, se cargaron " + String.valueOf(tuplesProcessed - 1) + " registros.");
             } else {
                 errorsList.add("Ocurrió un error procesando el archivo, " + error);
             }
@@ -1310,6 +1315,7 @@ public class ProjectsMB implements Serializable {
                     //activo las pestañas
                     inactiveTabs = false;
                     relationshipOfVariablesMB.refresh();
+                    filterMB.reset();
                     configurationLoaded = true;
                     //actualizo pestaña (filtros)                
                     copyMB.refresh();
@@ -1360,6 +1366,7 @@ public class ProjectsMB implements Serializable {
                 //activo las pestañas
                 inactiveTabs = false;
                 relationshipOfVariablesMB.refresh();
+                filterMB.reset();
                 configurationLoaded = true;
                 //actualizo pestaña (filtros)                
                 copyMB.refresh();
@@ -1383,7 +1390,7 @@ public class ProjectsMB implements Serializable {
                     String nameProjet = openProject.getProjectName();
                     //---------------------------------------------------------
                     try {
-                        //determino e inicio de la columnas
+                        //determino el inicio de la columnas
                         sql = " \n"
                                 + " SELECT \n"
                                 + "    start_column_id, \n"
@@ -1507,7 +1514,7 @@ public class ProjectsMB implements Serializable {
                         + " WHERE "
                         + "  relation_group_name ILIKE '" + currentRelationsGroupNameInLoad + "'");
                 if (rs.next()) {
-                    printMessage(FacesMessage.SEVERITY_ERROR, "Error", "El proyecto que desea eliminar se esta utilizando en otro proyecto");
+                    printMessage(FacesMessage.SEVERITY_ERROR, "Error", "El grupo de relaciones que desea eliminar se esta utilizando en otro proyecto");
                 } else {
                     //encuentro el id de la relacio
                     rs = connectionJdbcMB.consult(""

@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -277,7 +278,7 @@ public class ErrorsControlMB implements Serializable {
                 if (value.length() == 0) {//el valor nulo no es aceptado
                     strReturn = "El valor es obligatorio, ingrese una fecha segun el formato indicado.";
                 } else {
-                    strReturn = "El valor (" + value + ") no cumple con el formato (" + relationVar.getDateFormat() + ") válido para esta fecha";
+                    strReturn = "El valor (" + value + ") debe tener el formato (" + relationVar.getDateFormat() + ") y debe estar entre el 2002 al " + String.valueOf(new Date().getYear() + 1900);
                 }
                 break;
             case day:
@@ -450,10 +451,14 @@ public class ErrorsControlMB implements Serializable {
                         correction = true;
                     }
                     break;
-                case date:
+                case date:                    
                     if (isDate(currentNewValue, selectedErrorRowTable.getColumn9())) {
-                        //System.out.println("SE determino que: " + currentNewValue + "con formato " + currentDateFormat + " es válido");
-                        correction = true;
+                        correction = true;//valor es aceptado como fecha
+                        if (selectedErrorRowTable.getColumn6().compareTo("fecha_evento") == 0 || selectedErrorRowTable.getColumn6().compareTo("fecha_consulta") == 0) {
+                            if (!validYear(currentNewValue, selectedErrorRowTable.getColumn9())) {//si se trata de una fecha de evento o consulta debe estar del 2003 al año actual
+                                correction = false;
+                            }
+                        }
                     }
                     break;
                 case military:
@@ -763,6 +768,28 @@ public class ErrorsControlMB implements Serializable {
             return true;
         } catch (NumberFormatException nfe) {
             return false;
+        }
+    }
+
+    private boolean validYear(String f, String format) {
+        /*
+         *  determinar si una fecha se encuentra desde el año 2002 hasta el año actual
+         */
+        boolean booleanreturn = false;
+        if (f.trim().length() == 0) {
+            return false;
+        }
+        try {
+            //DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
+            DateTimeFormatter fmt2 = DateTimeFormat.forPattern(format);
+            DateTime the_date = DateTime.parse(f, fmt2);//trata de convertir al formato "format"(me llega por parametro)
+            if (the_date.getYear() >= 2002 && the_date.getYear() < new Date().getYear() + 1901) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Throwable ex) {
+            return false;//invalida
         }
     }
 

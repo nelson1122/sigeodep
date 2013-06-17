@@ -9,6 +9,7 @@ package beans.enumerators;
  * @author SANTOS
  */
 public enum VariablesEnum {
+
     day,//dia,
     age,//edad
     neighborhoods,//barrio,
@@ -34,7 +35,7 @@ public enum VariablesEnum {
     alcohol_levels,
     use_alcohol_drugs,
     alcohol_levels_counterparts,
-    alcohol_levels_victim,    
+    alcohol_levels_victim,
     murder_contexts,
     contexts,
     destinations_of_patient,
@@ -55,8 +56,31 @@ public enum VariablesEnum {
     transport_types,
     transport_users,
     involved_vehicles,
-    road_types,    
+    road_types,
+    
+    abuse_types,    
+    aggressor_types,
+    degree,
+    ethnic_groups,
+    insurance,
+    jobs,
+    public_health_actions,
+    sivigila_educational_level,
+    sivigila_group,
+    sivigila_mechanism,
+    sivigila_no_relative,
+    sivigila_tip_ss,
+    sivigila_vulnerability,
+    //string,
+    vulnerable_groups,    
+    kinds_of_injury,
+    anatomical_locations,
+    //abuse_types,
+    //aggressor_types,
+    actions_to_take,
+    security_elements,
     NOVALUE;
+
     public static VariablesEnum convert(String str) {
         try {
             return valueOf(str);

@@ -26,7 +26,6 @@ import org.primefaces.model.LazyDataModel;
 @ManagedBean(name = "copyMB")
 @SessionScoped
 public class CopyMB{
-
     RelationshipOfVariablesMB relationshipOfVariablesMB;
     ErrorsControlMB errorsControlMB;
     RecordDataMB recordDataMB;

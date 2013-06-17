@@ -13,17 +13,17 @@
             <style type="text/css">
                 .bla div { width: 125px; white-space:nowrap;}
             </style>
-            <script type="text/javascript">  
-                
+            <script type="text/javascript">
+
                 $('*').live("keypress", function(e) {    //NO TOME CONTROL
-                    if (e.keyCode == 17) {                        
+                    if (e.keyCode == 17) {
                         return false;
                     }
                 });
-                function clickSeeDialog() {                                          
+                function clickSeeDialog() {
                     //alert('aqui 001');
                     //es mejor colocar el boton al inicio de IdForm
-                    document.getElementById('IdForm:IdBtnSeeDialog').click();                    
+                    document.getElementById('IdForm:IdBtnSeeDialog').click();
                 }
                 //function clickSeeDialog2() {                                          
                 //    alert('aqui 002');
@@ -247,10 +247,20 @@
                         <p:accordionPanel id="IdAccordionPanel2" activeIndex="-1">
                             <!--======================== Copiar Columnas ======================-->
                             <p:tab title="COPIAR COLUMNAS">
+                                <br/>
                                 <p:panelGrid >
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
                                             <h:outputLabel value="VARIABLE A COPIAR"/>  
+                                            <h:inputText 
+                                                id="IdVariableNameToCopyFilter"                                                                                         
+                                                value="#{filterMB.variableNameToCopyFilter}"
+                                                size="20">
+                                                <f:ajax 
+                                                    event="keyup"
+                                                    listener="#{filterMB.changeVariableNameToCopyFilter}"
+                                                    render="IdVariablesFoundToCopy IdValuesFoundToCopy IdCopyPrefix"/>
+                                            </h:inputText>
                                         </p:column>
                                         <p:column styleClass="ui-widget-header">
                                             <h:outputLabel value="VALORES DE LA VARIABLE"/>  
@@ -259,93 +269,78 @@
                                     <p:row>
                                         <p:column>
                                             <p:selectOneListbox 
-                                                id="copyFieldsListBox" 
+                                                id="IdVariablesFoundToCopy" 
                                                 style="height:200px; width: 300px; " 
-                                                value="#{copyMB.copy_field}">
-                                                <f:selectItems value="#{copyMB.fields}"/>    
+                                                value="#{filterMB.variableNameToCopy}">
+                                                <f:selectItems value="#{filterMB.variablesFoundToCopy}"/>    
                                                 <f:ajax                                             
                                                     event="change" 
-                                                    listener="#{copyMB.changeFieldCopy}"                                                                   
-                                                    render="copyValuesListBox copyPrefix"/>
+                                                    listener="#{filterMB.changeVariableFoundToCopy}"                                                                   
+                                                    render="IdValuesFoundToCopy IdCopyPrefix"/>
                                             </p:selectOneListbox>
                                         </p:column>
                                         <p:column>
                                             <p:selectOneListbox 
-                                                id="copyValuesListBox" 
+                                                id="IdValuesFoundToCopy" 
                                                 style="height:200px; width: 300px;" >
-                                                <f:selectItems value="#{copyMB.values}"/>    
+                                                <f:selectItems value="#{filterMB.valuesFoundToCopy}"/>    
                                             </p:selectOneListbox>
                                         </p:column>
                                     </p:row>
                                     <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="NUMERO DE COPIAS"/>  
-                                        </p:column>
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="PREFIJO"/>  
-                                        </p:column>                
-                                    </p:row>
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            <p:spinner id="copyNCopies" 
-                                                       value="#{copyMB.copy_ncopies}"
-                                                       min="1" max="20" /> 
-                                        </p:column>
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:inputText 
-                                                id="copyPrefix"                       
-                                                value="#{copyMB.copy_prefix}"/> 
-                                        </p:column>                
-                                    </p:row>
-                                    <p:row>
                                         <p:column colspan="2">
-                                            <p:commandButton 
+                                            N&uacute;mero de copias
+                                            <p:spinner 
+                                                id="IdNumberOfCopies"
+                                                value="#{filterMB.numberOfCopies}"
+                                                min="1" max="20" 
+                                                size="5"/> 
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            Prefijo
+                                            <h:inputText 
+                                                id="IdCopyPrefix"                       
+                                                value="#{filterMB.copyPrefix}"/> 
+                                        
+                                            <!--p:commandButton 
                                                 id="copyUndo"                                   
-                                                actionListener="#{copyMB.undoCopy}"
+                                                actionListener="# {copyMB.undoCopy}"
                                                 value="DESHACER" 
-                                                disabled="#{copyMB.btnCopyDisable}"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet copyUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
+                                                disabled="# {copyMB.btnCopyDisable}"
+                                                update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet copyUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/-->
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                             <p:commandButton 
-                                                id="copyButtonSave"                                   
-                                                actionListener="#{copyMB.saveCopies}"
+                                                id="IdCopyColumns"                                   
+                                                actionListener="#{filterMB.copyColumnsClick}"
                                                 value="COPIAR" 
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet copyUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
+                                                update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
                                         </p:column>
                                     </p:row>
                                 </p:panelGrid>
+                                <br/>
                             </p:tab>
                             <!--======================== Eliminar Columnas ======================-->
                             <p:tab title="ELIMINAR COLUMNAS" >
-                                <p:panelGrid>
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header" colspan="2">
-                                            <h:outputLabel value="VARIABLES A ELIMINAR"/>  
-                                        </p:column>              
-                                    </p:row>                                        
-                                    <p:row>
-                                        <p:column colspan="2">
-                                            <p:pickList id="deletePickList" value="#{copyMB.delete_pickfields}" 
-                                                        var="field"
-                                                        itemLabel="#{field}" itemValue="#{field}" 
-                                                        showTargetControls="true" />
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column colspan="2">
-                                            <p:commandButton 
-                                                id="undoDelete"                                 
-                                                actionListener="#{copyMB.undoDelete}"
-                                                value="DESHACER"
-                                                disabled="#{copyMB.btnDeleteDisable}"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoDelete renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>   
-                                            <p:commandButton 
-                                                id="deleteButton"                                 
-                                                actionListener="#{copyMB.deleteFields}"
-                                                value="ELIMINAR"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoDelete renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
-                                        </p:column>                
-                                    </p:row>
-                                </p:panelGrid>
+                                <br/>
+                                <p:pickList 
+                                    id="deletePickList" 
+                                    value="#{filterMB.variablesPickToDelete}" 
+                                    var="field"
+                                    itemLabel="#{field}" itemValue="#{field}" 
+                                    showTargetControls="true" />
+                                <br/>
+                                <!--p:commandButton 
+                                    id="undoDelete"                                 
+                                    actionListener="# {copyMB.undoDelete}"
+                                    value="DESHACER"
+                                    disabled="# {copyMB.btnDeleteDisable}"
+                                    update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/-->                                   
+                                <p:commandButton 
+                                    id="deleteButton"                                 
+                                    actionListener="#{filterMB.deleteVariables}"
+                                    value="ELIMINAR"
+                                    update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
+                                <!-- update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoDelete renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4" -->
+                                <br/><br/>
                             </p:tab>
                             <!--======================== Filtrar registros ======================-->
                             <p:tab title="FILTRAR REGISTROS">
@@ -356,47 +351,42 @@
                                         </p:column>              
                                     </p:row>  
                                     <p:row>
-                                        <p:column colspan="2">
+                                        <p:column colspan="2">                                                             
                                             <p:selectOneListbox 
                                                 id="filterFieldsListBox" 
                                                 style="height:200px; width: 400px; " 
-                                                value="#{copyMB.filter_field}"                                                            >
-                                                <f:selectItems value="#{copyMB.fields}"/>    
+                                                value="#{filterMB.filter_field}">
+                                                <f:selectItems value="#{filterMB.variablesFoundToFilterRecords}"/>    
                                                 <f:ajax                                             
                                                     event="change" 
-                                                    listener="#{copyMB.changeFieldFilter}"                                                                   
+                                                    listener="#{filterMB.changeVariablesFoundToFilterRecords}"                                                                   
                                                     render="filterDataTable"/>
                                             </p:selectOneListbox>
                                         </p:column>
                                     </p:row>
                                     <p:row>
-                                        <p:column>
+                                        <p:column>                                                                    
                                             <p:dataTable 
                                                 id="filterDataTable" 
-                                                value="#{copyMB.filter_queryModel}" 
+                                                value="#{filterMB.filter_queryModel}" 
                                                 var="fields" 
                                                 rowKey="#{fields}" 
                                                 rows="10" 
                                                 paginator="true"
                                                 emptyMessage="Vacio"
-                                                selection="#{copyMB.filter_selected}">
+                                                selection="#{filterMB.filter_selected}">
                                                 <p:column selectionMode="multiple" />
-                                                <p:columns value="#{copyMB.filter_headers}" var="headers" columnIndexVar="index">
+                                                <p:columns value="#{filterMB.filter_headers}" var="headers" columnIndexVar="index">
                                                     <f:facet name="header">
-                                                        <h:outputText value="#{copyMB.filter_field_names.get(index)}"/>
+                                                        <h:outputText value="#{filterMB.filter_field_names.get(index)}"/>
                                                     </f:facet>
                                                     <h:outputText value="#{fields[headers]}"/>
                                                 </p:columns>
                                                 <f:facet name="footer">  
                                                     <p:commandButton 
-                                                        value="DESHACER" icon="ui-icon-search"
-                                                        actionListener="#{copyMB.redoFilter}"
-                                                        update="filterDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"
-                                                        disabled="#{copyMB.btnFilterDisable}"/>  
-                                                    <p:commandButton 
-                                                        value="FILTRAR" icon="ui-icon-search"
-                                                        actionListener="#{copyMB.deleteRecords}"
-                                                        update="filterDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>  
+                                                        value="FILTRAR"
+                                                        actionListener="#{filterMB.filterRecordsClick}"
+                                                        update=":IdForm:IdTabView:IdAccordionPanel2:filterFieldsListBox filterDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>  
                                                 </f:facet>                              
                                             </p:dataTable>
                                         </p:column>
@@ -405,7 +395,8 @@
                             </p:tab>
                             <!--======================== Dividir Columna ======================-->
                             <p:tab title="DIVIDIR COLUMNA">
-                                <p:panelGrid >
+                                <br/>
+                                <p:panelGrid style="margin-left: -20px;" >
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
                                             <h:outputLabel value="COLUMNAS ACTUALES"/>  
@@ -418,170 +409,135 @@
                                         <p:column>
                                             <p:selectOneListbox 
                                                 id="splitFieldsListBox" 
-                                                style="height:200px; width: 300px; " 
-                                                value="#{copyMB.split_field}"                                                            >
-                                                <f:selectItems value="#{copyMB.fields}"/>    
+                                                style="height:200px; width: 320px; " 
+                                                value="#{filterMB.variableNameToSplit}"                                                            >
+                                                <f:selectItems value="#{filterMB.variablesFoundToSplit}"/>    
                                                 <f:ajax                                             
                                                     event="change" 
-                                                    listener="#{copyMB.changeFieldSplit()}"                                                                   
+                                                    listener="#{filterMB.changeVariableFoundToSplit}"                                                                   
                                                     render="splitValuesListBox"/>
                                             </p:selectOneListbox>
                                         </p:column>
                                         <p:column>
                                             <p:selectOneListbox 
                                                 id="splitValuesListBox" 
-                                                style="height:200px; width: 300px;"                                                   >
-                                                <f:selectItems value="#{copyMB.values}"/>    
+                                                style="height:200px; width: 320px;"                                                   >
+                                                <f:selectItems value="#{filterMB.valuesFoundToSplit}"/>    
                                             </p:selectOneListbox>
                                         </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="NUEVOS NOMBRES DE COLUMNA"/>  
-                                        </p:column>
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="SEPARADOR"/>  
-                                        </p:column>                
-                                    </p:row>
-                                    <p:row>
-                                        <p:column>
-                                            <h:inputText 
-                                                id="splitFieldName1"                       
-                                                value="#{copyMB.split_field_name1}"/>
-                                            <h:inputText 
-                                                id="splitFieldName2"                       
-                                                value="#{copyMB.split_field_name2}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:inputText 
-                                                id="splitDelimiter"                                
-                                                value="#{copyMB.split_delimiter}">
-                                                <p:ajax event="keyup" listener="#{copyMB.setRenders}"
-                                                        update="splitWrapper" /> 
-                                            </h:inputText>
-                                            <h:panelGroup id="splitWrapper">
-                                                <h:outputText 
-                                                    id="splitOutput" 
-                                                    rendered="#{copyMB.split_rendered}" 
-                                                    value="INCLUIR DIGITOS: " />  
-                                                <p:selectBooleanCheckbox 
-                                                    id="splitCheck" 
-                                                    rendered="#{copyMB.split_rendered}" />
-                                            </h:panelGroup>
-                                        </p:column>
-                                    </p:row>
+                                    </p:row>                                    
                                     <p:row>
                                         <p:column colspan="2">
-                                            <p:commandButton 
+                                            <h:outputLabel value="Nuevos Nombres: "/>  
+                                            <h:inputText 
+                                                id="splitFieldName1"                       
+                                                value="#{filterMB.splitFieldName1}"
+                                                size="18"/>
+                                            <h:inputText 
+                                                id="splitFieldName2"                       
+                                                value="#{filterMB.splitFieldName2}"
+                                                size="18"/>
+                                            &nbsp;&nbsp;
+                                            <h:outputLabel value="Separador: "/>  
+                                            <h:inputText 
+                                                id="splitDelimiter"                                
+                                                value="#{filterMB.splitDelimiter}"
+                                                size="5">
+                                                <p:ajax 
+                                                    event="keyup"                                                     
+                                                    listener="#{filterMB.setRenders}"
+                                                    update="splitWrapper"/> 
+                                            </h:inputText>
+                                            
+                                            <h:panelGroup id="splitWrapper"  >
+                                                &nbsp;&nbsp;
+                                                <h:outputLabel 
+                                                    id="splitOutput" 
+                                                    rendered="#{filterMB.splitRendered}"
+                                                    value="Incluir digitos: "/>                                                  
+                                                <p:selectBooleanCheckbox 
+                                                    id="splitCheck" 
+                                                    rendered="#{filterMB.splitRendered}"
+                                                    value="#{filterMB.splitInclude}"/>
+                                            </h:panelGroup>
+                                            &nbsp;&nbsp;
+                                            <!--p:commandButton 
                                                 id="splitUndo"                                   
-                                                actionListener="#{copyMB.undoSplit}"
+                                                actionListener="# {copyMB.undoSplit}"
                                                 value="DESHACER" 
-                                                disabled="#{copyMB.btnSplitDisable}"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox splitDataTable mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet splitUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>                                            
+                                                disabled="# {copyMB.btnSplitDisable}"
+                                                update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet splitUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/-->                                            
                                             <p:commandButton 
                                                 id="splitButtonSplit"                                   
-                                                actionListener="#{copyMB.divideAField}"
+                                                actionListener="#{filterMB.splitColumnsClick}"
                                                 value="DIVIDIR" 
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox splitDataTable mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet splitUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
+                                                update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
                                         </p:column>
                                     </p:row>
-                                    <p:row>
+                                    <!-- p:row>
                                         <p:column colspan="2">
                                             <p:dataTable 
                                                 id="splitDataTable" 
-                                                value="#{copyMB.split_newfields}" 
+                                                value="# {copyMB.split_newfields}" 
                                                 var="newfields" 
                                                 paginator="true" 
                                                 rows="10"
                                                 emptyMessage="Vacio"
                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                 rowsPerPageTemplate="5,10,15">
-                                                <p:columns value="#{copyMB.split_newheaders}" var="newheaders" columnIndexVar="split_index">
+                                                <p:columns value="# {copyMB.split_newheaders}" var="newheaders" columnIndexVar="split_index">
                                                     <f:facet name="header">
-                                                        <h:outputText value="#{newheaders}"/>
+                                                        <h:outputText value="# {newheaders}"/>
                                                     </f:facet>
-                                                    <h:outputText value="#{newfields.get(split_index)}"/>
+                                                    <h:outputText value="# {newfields.get(split_index)}"/>
                                                 </p:columns>
                                             </p:dataTable>
                                         </p:column>
-                                    </p:row>
+                                    </p:row -->
                                 </p:panelGrid>
+                                <br/>
                             </p:tab>
                             <!--======================== Unir Columna ======================-->
                             <p:tab title="UNIR COLUMNAS">
-                                <p:panelGrid >
-                                    <p:row>
-                                        <p:column colspan="2" styleClass="ui-widget-header">
-                                            <h:outputLabel value="VARIABLES A UNIR"/>  
-                                        </p:column>             
-                                    </p:row>
-                                    <p:row>
-                                        <p:column colspan="2">
-                                            <p:pickList 
-                                                id="mergePickList" value="#{copyMB.merge_pickfields}" 
-                                                var="field"
-                                                itemLabel="#{field}" itemValue="#{field}" 
-                                                showTargetControls="true" />
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="NOMBRE DE LA NUEVA COLUMNA"/>  
-                                        </p:column>
-                                        <p:column styleClass="ui-widget-header">
-                                            <h:outputLabel value="SEPARADOR"/>  
-                                        </p:column>                
-                                    </p:row>
-                                    <p:row>
-                                        <p:column>
-                                            <h:inputText 
-                                                id="mergeFieldName"                                
-                                                value="#{copyMB.merge_fieldname}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:inputText 
-                                                id="mergeDelimiter"                                
-                                                value="#{copyMB.merge_delimiter}"/>
-                                        </p:column>                
-                                    </p:row>
-                                    <p:row>
-                                        <p:column colspan="2">
-                                            <p:commandButton 
-                                                id="undoMerge"                                   
-                                                actionListener="#{copyMB.undoMerge}"
-                                                value="DESHACER"
-                                                disabled="#{copyMB.btnMergeDisable}"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList mergeDataTable replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoMerge renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                id="mergeButtonMerge"                                   
-                                                actionListener="#{copyMB.mergeFields}"
-                                                value="UNIR"
-                                                update="copyFieldsListBox copyValuesListBox deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList mergeDataTable replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoMerge renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4">                     
-                                            </p:commandButton>
-                                        </p:column>                
-                                    </p:row>
-                                    <p:row>
-                                        <p:column colspan="2">
-                                            <p:dataTable 
-                                                id="mergeDataTable" 
-                                                value="#{copyMB.merge_newfields}" 
-                                                var="newfields" 
-                                                paginator="true" 
-                                                rows="10"
-                                                emptyMessage="Vacio"
-                                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                rowsPerPageTemplate="5,10,15">
-                                                <p:columns value="#{copyMB.merge_newheaders}" var="newheaders" columnIndexVar="index">
-                                                    <f:facet name="header">
-                                                        <h:outputText value="#{newheaders}"/>
-                                                    </f:facet>
-                                                    <h:outputText value="#{newfields.get(index)}"/>
-                                                </p:columns>
-                                            </p:dataTable>
-                                        </p:column>
-                                    </p:row>
-                                </p:panelGrid>
+                                <p:pickList 
+                                    id="mergePickList" value="#{filterMB.variablesPickToMerge}" 
+                                    var="field"
+                                    itemLabel="#{field}" itemValue="#{field}" 
+                                    showTargetControls="true" />
+                                <h:outputLabel value="Nombre nueva columna"/>  
+                                <h:inputText 
+                                    id="mergeFieldName"                                
+                                    value="#{filterMB.variableNameToMerge}"/>
+                                <h:outputLabel value="Separador"/>  
+                                <h:inputText 
+                                    id="mergeDelimiter"                                
+                                    value="#{filterMB.mergeDelimiter}"/>
+                                <p:commandButton 
+                                    id="mergeButtonMerge"                                   
+                                    actionListener="#{filterMB.mergeFieldsClick}"
+                                    value="UNIR"
+                                    update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4">                     
+                                </p:commandButton>
+                                <!-- p:row>
+                                    <p:column colspan="2">
+                                        <p:dataTable 
+                                            id="mergeDataTable" 
+                                            value="# {copyMB.merge_newfields}" 
+                                            var="newfields" 
+                                            paginator="true" 
+                                            rows="10"
+                                            emptyMessage="Vacio"
+                                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                            rowsPerPageTemplate="5,10,15">
+                                            <p:columns value="# {copyMB.merge_newheaders}" var="newheaders" columnIndexVar="index">
+                                                <f:facet name="header">
+                                                    <h:outputText value="# {newheaders}"/>
+                                                </f:facet>
+                                                <h:outputText value="# {newfields.get(index)}"/>
+                                            </p:columns>
+                                        </p:dataTable>
+                                    </p:column>
+                                </p:row -->
                             </p:tab>
                             <!--======================== Renombrar Valores ======================-->
                             <p:tab title="RENOMBRAR VALORES">
@@ -591,11 +547,11 @@
                                             <p:selectOneListbox 
                                                 id="renameValuesFieldsListBox" 
                                                 style="height:200px; width: 400px; " 
-                                                value="#{copyMB.the_field}"                                                            >
-                                                <f:selectItems value="#{copyMB.fields}"/>    
+                                                value="#{filterMB.the_field}"                                                            >
+                                                <f:selectItems value="#{filterMB.variablesFoundToRename}"/>    
                                                 <f:ajax                                             
                                                     event="change" 
-                                                    listener="#{copyMB.changeFieldRename}"                                                                   
+                                                    listener="#{filterMB.changeFieldRename}"                                                                   
                                                     render="renameValuesDataTable"/>
                                             </p:selectOneListbox>
                                         </p:column>
@@ -604,7 +560,7 @@
                                         <p:column>
                                             <p:dataTable 
                                                 id="renameValuesDataTable" 
-                                                value="#{copyMB.rename_model}" 
+                                                value="#{filterMB.rename_model}" 
                                                 var="fields" 
                                                 rowKey="#{fields}" 
                                                 emptyMessage="Vacio"
@@ -631,15 +587,15 @@
                                                     <p:rowEditor />
                                                 </p:column>
                                                 <f:facet name="footer">  
-                                                    <p:commandButton 
+                                                    <!-- p:commandButton 
                                                         value="DESHACER" icon="ui-icon-search"
-                                                        actionListener="#{copyMB.redoRename}"
+                                                        actionListener="# {copyMB.redoRename}"
                                                         update="renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"
-                                                        disabled="#{copyMB.btnRenameDisable}"/>  
+                                                        disabled="# {copyMB.btnRenameDisable}"/ -->  
                                                     <p:commandButton 
-                                                        value="RENOMBRAR" icon="ui-icon-search"
-                                                        actionListener="#{copyMB.renameRecords}"
-                                                        update="renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>  
+                                                        value="RENOMBRAR"
+                                                        actionListener="#{filterMB.renameRecordsClick}"
+                                                        update=":IdForm:IdTabView:IdAccordionPanel2:filterDataTable :IdForm:IdTabView:IdAccordionPanel2:filterFieldsListBox renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>  
                                                 </f:facet>                              
                                             </p:dataTable>
                                         </p:column>
@@ -661,33 +617,33 @@
                                         <p:column>
                                             <h:selectManyMenu 
                                                 id="replicateFieldsListBox1" 
-                                                value="#{copyMB.replicate_source}"
+                                                value="#{filterMB.replicate_source}"
                                                 style="height:200px; width: 250px;">
-                                                <f:selectItems value="#{copyMB.fields}"/> 
+                                                <f:selectItems value="#{filterMB.replicateFields}"/> 
                                             </h:selectManyMenu>
                                         </p:column>
                                         <p:column>
                                             <h:selectManyMenu 
                                                 id="replicateFieldsListBox2" 
-                                                value="#{copyMB.replicate_target}"
+                                                value="#{filterMB.replicate_target}"
                                                 style="height:200px; width: 250px;">
-                                                <f:selectItems value="#{copyMB.fields}"/> 
+                                                <f:selectItems value="#{filterMB.replicateFields}"/> 
                                             </h:selectManyMenu>
                                         </p:column>
                                     </p:row>
                                     <p:row>
                                         <p:column colspan="2">
-                                            <p:commandButton 
+                                            <!--p:commandButton 
                                                 id="replicateUndo"                                   
-                                                actionListener="#{copyMB.undoReplicate}"
+                                                actionListener="# {copyMB.undoReplicate}"
                                                 value="DESHACER..." 
                                                 update="replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet replicateUndo :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"
-                                                disabled="#{copyMB.btnReplicateDisable}"/>
+                                                disabled="# {copyMB.btnReplicateDisable}"/ -->
                                             <p:commandButton 
                                                 id="replicateReplicate"                                   
-                                                actionListener="#{copyMB.replicate}"
-                                                value="REPLICAR" 
-                                                update="replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet replicateUndo :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
+                                                actionListener="#{filterMB.replicateClick}"
+                                                value="Replicar" 
+                                                update="replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
                                         </p:column>
                                     </p:row>
                                     <p:row>
@@ -1129,7 +1085,7 @@
                                     </p:panelGrid>    
                                 </div>
                             </p:tab>
-                            
+
                         </p:accordionPanel>
                     </p:tab> 
                     <!--===================================================================================-->
@@ -1173,7 +1129,8 @@
                                             <p:commandButton 
                                                 value="INICIAR VALIDACION" 
                                                 actionListener="#{recordDataMB.btnValidateClick}" 
-                                                onclick="pbAjaxValidate.start(); startButton.disable();"  
+                                                onclick="pbAjaxValidate.start();
+                    startButton.disable();"  
                                                 widgetVar="startButton"/>
                                         </p:column>
                                     </p:row>
@@ -1258,7 +1215,8 @@
                                                 value="VER REGISTRO"
                                                 style="width: 130px;"
                                                 disabled="#{errorsControlMB.btnSolveDisabled}"
-                                                onclick="seeRecordDialog.hide(); seeRecordDialog.show();"/>
+                                                onclick="seeRecordDialog.hide();
+                    seeRecordDialog.show();"/>
                                         </p:column>
                                     </p:row>
                                     <p:row>
@@ -1374,7 +1332,8 @@
                                                 value="REGISTRAR DATOS" 
                                                 disabled="#{recordDataMB.btnRegisterDataDisabled}"
                                                 actionListener="#{recordDataMB.btnRegisterDataClick}" 
-                                                onclick="pbAjax.start(); startButton2.disable();"  
+                                                onclick="pbAjax.start();
+                    startButton2.disable();"  
                                                 widgetVar="startButton2" />                                              
                                         </p:column>
                                     </p:row>

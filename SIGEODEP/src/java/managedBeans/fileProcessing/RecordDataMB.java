@@ -214,28 +214,17 @@ public class RecordDataMB implements Serializable {
     private ArrayList<String> columnsNames;
     private String nameForm = "";
     private boolean isValidate = false;//se ha realizado la validacion de los datos
-    //private ConnectionJDBC conx = null;//conexion sin persistencia a postgres   
     private RelationVariables relationVar;
     private int tuplesNumber;
     private int tuplesProcessed;
     private boolean btnRegisterDataDisabled = true;
-    //private boolean btnValidateDisabled = true;
-    //private Victims newVictim;
-    //private int MaxId;
-    //private NonFatalInjuries newNonFatalInjury;
-    //private FatalInjuries newFatalInjurie;
     private FatalInjuryMurder newFatalInjuryMurder;
     private FatalInjurySuicide newFatalInjurySuicide;
     private FatalInjuryTraffic newFatalInjuryTraffic;
-    //private FatalInjuryAccident newFatalInjuryAccident;
-    //private NonFatalDomesticViolence newNonFatalDomesticViolence;
     private Injuries selectInjuryFile;//tipo de lesion que me dice el archivo
-    //private Injuries selectInjuryDetermined;//tipo de lesion que detemino por campos
     private NonFatalTransport newNonFatalTransport;
     private NonFatalInterpersonal newNonFatalInterpersonal;
     private NonFatalSelfInflicted newNonFatalSelfInflicted;
-    //private List<SecurityElements> securityElementList;
-    //private List<KindsOfInjury> kindsOfInjurysList;
     CounterpartInvolvedVehicle newCounterpartInvolvedVehicle;
     CounterpartServiceType newCounterpartServiceType;
     List<CounterpartServiceType> serviceTypesList;
@@ -272,10 +261,8 @@ public class RecordDataMB implements Serializable {
     private ResultSet resultSetFileData;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private Date currentDate;
-    //private int maxTag;
     private Tags newTag;
     private UngroupedTags newUngroupedTags;
-    //private String nameTableTemp = "temp";
     String fieldType = "";
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -599,17 +586,31 @@ public class RecordDataMB implements Serializable {
                                     }
                                     break;
                                 case date:
+
                                     value = isDate(registryData, relationVar.getDateFormat());
                                     //System.out.println("Validando fecha: " + registryData + "   Resultado: " + value);
-                                    if (relationVar.getNameExpected().compareTo("fecha_evento") == 0) {
-                                        fechaev = value;
-                                    }
-                                    if (relationVar.getNameExpected().compareTo("fecha_consulta") == 0) {
-                                        fechacon = value;
-                                    }
+
                                     if (value == null) {
                                         errorsNumber++;//error = "dia_evento no corresponde al formato";
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
+                                    } else {
+                                        if (relationVar.getNameExpected().compareTo("fecha_evento") == 0) {
+                                            fechaev = value;
+                                            if (!validYear(registryData, relationVar.getDateFormat())) {
+                                                errorsNumber++;//error = "dia_evento no corresponde al formato";                                                
+                                                errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
+                                                //errorsControlMB.addError(errorsNumber, null, "Fecha de ecento inválida", "La fecha: " + fechaev + " debe estar dentro del rango del 2002 hasta: " + String.valueOf(new Date().getYear() + 1901));
+                                            }
+
+                                        }
+                                        if (relationVar.getNameExpected().compareTo("fecha_consulta") == 0) {
+                                            fechacon = value;
+                                            if (!validYear(registryData, relationVar.getDateFormat())) {
+                                                errorsNumber++;//error = "dia_evento no corresponde al formato";
+                                                errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
+                                                //errorsControlMB.addError(errorsNumber, null, "Fecha de consulta inválida", "La fecha: " + fechaev + " debe estar dentro del rango del 2002 hasta: " + String.valueOf(new Date().getYear() + 1901));
+                                            }
+                                        }
                                     }
 
                                     break;
@@ -701,9 +702,9 @@ public class RecordDataMB implements Serializable {
                                     }
                                     break;
                             }
-                            if(value.compareTo("bn")==0){
-                                value = isCategorical(registryData, relationVar);
-                            }
+                            //if (value.compareTo("bn") == 0) {
+                            //    value = isCategorical(registryData, relationVar);
+                            //}
                         }
                     }
 
@@ -798,24 +799,24 @@ public class RecordDataMB implements Serializable {
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
             resultSetFileData = determineRecords();//resulset con los registros a procesar
-            
-            newUngroupedTags= new UngroupedTags();            
-            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
-            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+
+            newUngroupedTags = new UngroupedTags();
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
-            newUngroupedTags.setFormId(nameForm);            
+            newUngroupedTags.setFormId(nameForm);
             ungroupedTagsFacade.create(newUngroupedTags);
-            
+
             newTag = new Tags();
             newTag.setTagId(ungroupedTagsFacade.findMax());
             newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
-            newTag.setFormId(formsFacade.find(nameForm));            
+            newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
-            
+
             lastTagNameCreated = newTag.getTagName();
-            
+
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -1284,24 +1285,24 @@ public class RecordDataMB implements Serializable {
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
             resultSetFileData = determineRecords();//resulset con los registros a procesar
-            
-            newUngroupedTags= new UngroupedTags();            
-            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
-            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+
+            newUngroupedTags = new UngroupedTags();
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
-            newUngroupedTags.setFormId(nameForm);            
+            newUngroupedTags.setFormId(nameForm);
             ungroupedTagsFacade.create(newUngroupedTags);
-            
+
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(ungroupedTagsFacade.findMax());
-            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));            
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
-            
+
             lastTagNameCreated = newTag.getTagName();
-            
+
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -1771,14 +1772,14 @@ public class RecordDataMB implements Serializable {
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
             resultSetFileData = determineRecords();//resulset con los registros a procesar
-            
-            newUngroupedTags= new UngroupedTags();            
-            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
-            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+
+            newUngroupedTags = new UngroupedTags();
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
-            newUngroupedTags.setFormId(nameForm);            
+            newUngroupedTags.setFormId(nameForm);
             ungroupedTagsFacade.create(newUngroupedTags);
-            
+
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(ungroupedTagsFacade.findMax());
             newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
@@ -1786,9 +1787,9 @@ public class RecordDataMB implements Serializable {
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
-            
+
             lastTagNameCreated = newTag.getTagName();
-            
+
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -2248,24 +2249,24 @@ public class RecordDataMB implements Serializable {
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
             resultSetFileData = determineRecords();//resulset con los registros a procesar
-            
-            newUngroupedTags= new UngroupedTags();            
-            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
-            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+
+            newUngroupedTags = new UngroupedTags();
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
-            newUngroupedTags.setFormId(nameForm);            
+            newUngroupedTags.setFormId(nameForm);
             ungroupedTagsFacade.create(newUngroupedTags);
-            
+
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(ungroupedTagsFacade.findMax());
-            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));            
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
-            
+
             lastTagNameCreated = newTag.getTagName();
-            
+
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -2724,24 +2725,24 @@ public class RecordDataMB implements Serializable {
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
             resultSetFileData = determineRecords();//resulset con los registros a procesar
-            
-            newUngroupedTags= new UngroupedTags();            
-            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
-            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+
+            newUngroupedTags = new UngroupedTags();
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
-            newUngroupedTags.setFormId(nameForm);            
+            newUngroupedTags.setFormId(nameForm);
             ungroupedTagsFacade.create(newUngroupedTags);
-            
+
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(ungroupedTagsFacade.findMax());
-            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));            
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
-            
+
             lastTagNameCreated = newTag.getTagName();
-            
+
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -3376,7 +3377,7 @@ public class RecordDataMB implements Serializable {
                                 newNonFatalInjury.setIntentionalityId(intentionalitiesFacade.find(Short.parseShort(value)));
                                 break;
                             case lugar_ocurrio_lesion:
-                                
+
                                 newNonFatalInjury.setInjuryPlaceId(nonFatalPlacesFacade.find(Short.parseShort(value)));
                                 break;
                             case activida_que_realizaba:
@@ -3690,7 +3691,7 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                
+
                 //AGREGO LAS LISTAS NO VACIAS///////////////////////////////////
                 if (!anatomicalLocationsList.isEmpty()) {
                     newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
@@ -3728,7 +3729,7 @@ public class RecordDataMB implements Serializable {
                 if (newNonFatalInjury.getInjuryId().getInjuryId() == (short) 53) {//53 ES POR QUE ES VIF 
                     newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 55));//CAMBIA A 55 PARA SER VIF INGRESADA DESDE LCENF
                 }
-                
+
                 if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
@@ -3853,22 +3854,22 @@ public class RecordDataMB implements Serializable {
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
             resultSetFileData = determineRecords();//resulset con los registros a procesar
-            
-            newUngroupedTags= new UngroupedTags();            
-            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
-            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+
+            newUngroupedTags = new UngroupedTags();
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
-            newUngroupedTags.setFormId(nameForm);            
+            newUngroupedTags.setFormId(nameForm);
             ungroupedTagsFacade.create(newUngroupedTags);
-            
+
             newTag = new Tags();//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
             newTag.setTagId(ungroupedTagsFacade.findMax());
             newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
-            newTag.setFormId(formsFacade.find(nameForm));            
+            newTag.setFormId(formsFacade.find(nameForm));
             lastTagNameCreated = newTag.getTagName();
-            
+
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
@@ -4651,7 +4652,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                
+
                 //CORRESPONDENCIA ENTRE EDAD Y TIPO DE IDENTIFICACION
                 if (newVictim.getTypeId() != null) {//no hay tipo de identificacion
                     if (newVictim.getVictimAge() != null) {//HAY EDAD Y HAY tipo de edad
@@ -4739,24 +4740,24 @@ public class RecordDataMB implements Serializable {
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
             resultSetFileData = determineRecords();//resulset con los registros a procesar
-            
-            newUngroupedTags= new UngroupedTags();            
-            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);            
-            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));                        
+
+            newUngroupedTags = new UngroupedTags();
+            newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);
+            newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
-            newUngroupedTags.setFormId(nameForm);            
+            newUngroupedTags.setFormId(nameForm);
             ungroupedTagsFacade.create(newUngroupedTags);
-            
+
             newTag = new Tags();//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
             newTag.setTagId(ungroupedTagsFacade.findMax());
-            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));            
+            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
-            
+
             lastTagNameCreated = newTag.getTagName();
-            
+
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -4778,7 +4779,7 @@ public class RecordDataMB implements Serializable {
                 value = "";
                 name = "";
                 surname = "";
-                
+
                 Object[] arrayInJava = (Object[]) resultSetFileData.getArray(3).getArray();
                 for (int posCol = 0; posCol < arrayInJava.length; posCol++) {
                     value = null;
@@ -5091,7 +5092,7 @@ public class RecordDataMB implements Serializable {
                     if (newNonFatalInjury.getInjuryTime() != null) {
                         newNonFatalInjury.setCheckupTime(newNonFatalInjury.getInjuryTime());
                     }
-                }                
+                }
 
                 //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
                 if (newNonFatalInjury.getInjuryDate() != null) {
@@ -5158,7 +5159,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                
+
                 //agrego las listas las listas
                 if (!publicHealthActionsList.isEmpty()) {
                     newSivigilaEvent.setPublicHealthActionsList(publicHealthActionsList);
@@ -5166,9 +5167,9 @@ public class RecordDataMB implements Serializable {
                 if (!abuseTypesList.isEmpty()) {
                     newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
                 }
-                
+
                 newNonFatalInjury.setInjuryId(injuriesFacade.find(Short.parseShort("56")));
-                
+
                 if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
                     newVictim.setVictimClass((short) 2);//nn
@@ -5256,7 +5257,7 @@ public class RecordDataMB implements Serializable {
         nameForm = projectsMB.getCurrentFormId();
         currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());//tomo el grupos_vulnerables de relaciones de valores y de variables
         continueProcces = false;
-        btnRegisterDataDisabled=true;
+        btnRegisterDataDisabled = true;
         if (errorsControlMB.getErrorsList() != null && errorsControlMB.getErrorsList().isEmpty()) {
             continueProcces = true;
         } else {
@@ -5470,13 +5471,35 @@ public class RecordDataMB implements Serializable {
         }
     }
 
+    private boolean validYear(String f, String format) {
+        /*
+         *  determinar si una fecha se encuentra desde el año 2002 hasta el año actual
+         */
+        boolean booleanreturn = false;
+        if (f.trim().length() == 0) {
+            return false;
+        }
+        try {
+            //DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
+            DateTimeFormatter fmt2 = DateTimeFormat.forPattern(format);
+            DateTime the_date = DateTime.parse(f, fmt2);//trata de convertir al formato "format"(me llega por parametro)
+            if (the_date.getYear() >= 2002 && the_date.getYear() < new Date().getYear() + 1901) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Throwable ex) {
+            return false;//invalida
+        }
+    }
+
     private String isDate(String f, String format) {
         /*
          *  null=invalido ""=aceptado pero vacio "valor"=aceptado (valor para db)
          */
         if (f.trim().length() == 0) {
             return "";
-        }        
+        }
         try {
             DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
             DateTimeFormatter fmt2 = DateTimeFormat.forPattern(format);

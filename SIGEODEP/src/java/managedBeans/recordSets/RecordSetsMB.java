@@ -125,13 +125,13 @@ public class RecordSetsMB implements Serializable {
         Calendar c2 = Calendar.getInstance();
         initialDateView.setDate(1);
         initialDateView.setMonth(0);
-        initialDateView.setYear(2003 - 1900);
+        initialDateView.setYear(2002 - 1900);
         endDateView.setDate(c.get(Calendar.DATE));
         endDateView.setMonth(c.get(Calendar.MONTH));
         endDateView.setYear(c.get(Calendar.YEAR) - 1900);
         initialDateDuplicate.setDate(1);
         initialDateDuplicate.setMonth(0);
-        initialDateDuplicate.setYear(2003 - 1900);
+        initialDateDuplicate.setYear(2002 - 1900);
         endDateDuplicate.setDate(c.get(Calendar.DATE));
         endDateDuplicate.setMonth(c.get(Calendar.MONTH));
         endDateDuplicate.setYear(c.get(Calendar.YEAR) - 1900);
