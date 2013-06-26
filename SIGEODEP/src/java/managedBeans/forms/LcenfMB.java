@@ -1701,7 +1701,7 @@ public class LcenfMB implements Serializable {
 
         try {
             currentTransportUser = currentNonFatalInjury.getNonFatalTransport().getTransportUserId().getTransportUserId();
-            changeTransportType();
+            changeTransportUser();
         } catch (Exception e) {
             otherTransportUserTypeDisabled = true;
             currentTransportUser = 0;

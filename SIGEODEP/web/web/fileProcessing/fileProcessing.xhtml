@@ -16,7 +16,7 @@
             <script type="text/javascript">
 
                 $('*').live("keypress", function(e) {    //NO TOME CONTROL
-                    if (e.keyCode == 17) {
+                    if (e.keyCode === 17) {
                         return false;
                     }
                 });
@@ -166,17 +166,17 @@
                                     style="width: 200px;">
                                 </h:inputText>
                                 <p:commandButton                                    
-                                    onclick="dialogNewRelationGroup.show()"
+                                    onclick="dialogNewRelationGroup.show();"
                                     actionListener="#{projectsMB.clearRelationGroup}"
                                     update="IdNewRelationsGroupName"
                                     value="Nuevo"/> 
                                 <p:commandButton
-                                    onclick="dialogLoadRelationGroup.show()"
+                                    onclick="dialogLoadRelationGroup.show();"
                                     actionListener="#{projectsMB.clearRelationGroup}"
                                     update="IdNewRelationsGroupName"
                                     value="Cargar/Eliminar"/> 
                                 <p:commandButton
-                                    onclick="dialogCopyRelationGroup.show()"
+                                    onclick="dialogCopyRelationGroup.show();"
                                     actionListener="#{projectsMB.clearRelationGroup}"
                                     update="IdNewRelationsGroupName"
                                     value="Copia"/> 
@@ -300,7 +300,7 @@
                                             <h:inputText 
                                                 id="IdCopyPrefix"                       
                                                 value="#{filterMB.copyPrefix}"/> 
-                                        
+
                                             <!--p:commandButton 
                                                 id="copyUndo"                                   
                                                 actionListener="# {copyMB.undoCopy}"
@@ -312,7 +312,7 @@
                                                 id="IdCopyColumns"                                   
                                                 actionListener="#{filterMB.copyColumnsClick}"
                                                 value="COPIAR" 
-                                                update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
+                                                update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
                                         </p:column>
                                     </p:row>
                                 </p:panelGrid>
@@ -338,60 +338,48 @@
                                     id="deleteButton"                                 
                                     actionListener="#{filterMB.deleteVariables}"
                                     value="ELIMINAR"
-                                    update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
+                                    update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
                                 <!-- update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoDelete renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4" -->
                                 <br/><br/>
                             </p:tab>
                             <!--======================== Filtrar registros ======================-->
                             <p:tab title="FILTRAR REGISTROS">
-                                <p:panelGrid>
-                                    <p:row>
-                                        <p:column styleClass="ui-widget-header" colspan="2">
-                                            <h:outputLabel value="VARIABLE A FILTRAR"/>  
-                                        </p:column>              
-                                    </p:row>  
-                                    <p:row>
-                                        <p:column colspan="2">                                                             
-                                            <p:selectOneListbox 
-                                                id="filterFieldsListBox" 
-                                                style="height:200px; width: 400px; " 
-                                                value="#{filterMB.filter_field}">
-                                                <f:selectItems value="#{filterMB.variablesFoundToFilterRecords}"/>    
-                                                <f:ajax                                             
-                                                    event="change" 
-                                                    listener="#{filterMB.changeVariablesFoundToFilterRecords}"                                                                   
-                                                    render="filterDataTable"/>
-                                            </p:selectOneListbox>
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column>                                                                    
-                                            <p:dataTable 
-                                                id="filterDataTable" 
-                                                value="#{filterMB.filter_queryModel}" 
-                                                var="fields" 
-                                                rowKey="#{fields}" 
-                                                rows="10" 
-                                                paginator="true"
-                                                emptyMessage="Vacio"
-                                                selection="#{filterMB.filter_selected}">
-                                                <p:column selectionMode="multiple" />
-                                                <p:columns value="#{filterMB.filter_headers}" var="headers" columnIndexVar="index">
-                                                    <f:facet name="header">
-                                                        <h:outputText value="#{filterMB.filter_field_names.get(index)}"/>
-                                                    </f:facet>
-                                                    <h:outputText value="#{fields[headers]}"/>
-                                                </p:columns>
-                                                <f:facet name="footer">  
-                                                    <p:commandButton 
-                                                        value="FILTRAR"
-                                                        actionListener="#{filterMB.filterRecordsClick}"
-                                                        update=":IdForm:IdTabView:IdAccordionPanel2:filterFieldsListBox filterDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>  
-                                                </f:facet>                              
-                                            </p:dataTable>
-                                        </p:column>
-                                    </p:row>
-                                </p:panelGrid>
+
+                                <p:selectOneListbox 
+                                    id="filterFieldsListBox" 
+                                    style="height:200px; width: 400px; " 
+                                    value="#{filterMB.filter_field}">
+                                    <f:selectItems value="#{filterMB.variablesFoundToFilterRecords}"/>    
+                                    <f:ajax                                             
+                                        event="change" 
+                                        listener="#{filterMB.changeVariablesFoundToFilterRecords}"                                                                   
+                                        render="filterDataTable"/>
+                                </p:selectOneListbox>
+                                <br/>
+                                <p:dataTable 
+                                    id="filterDataTable" 
+                                    value="#{filterMB.filter_queryModel}" 
+                                    var="fields" 
+                                    rowKey="#{fields}" 
+                                    rows="10" 
+                                    paginator="true"
+                                    emptyMessage="Vacio"
+                                    selection="#{filterMB.filter_selected}">
+                                    <p:column selectionMode="multiple" />
+                                    <p:columns value="#{filterMB.filter_headers}" var="headers" columnIndexVar="index">
+                                        <f:facet name="header">
+                                            <h:outputText value="#{filterMB.filter_field_names.get(index)}"/>
+                                        </f:facet>
+                                        <h:outputText value="#{fields[headers]}"/>
+                                    </p:columns>
+
+                                </p:dataTable>
+                                <br/>
+                                <p:commandButton 
+                                    value="FILTRAR"
+                                    actionListener="#{filterMB.filterRecordsClick}"
+                                    update="IdHistorialFilters :IdForm:IdTabView:IdAccordionPanel2:filterFieldsListBox filterDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>  
+                                <br/>
                             </p:tab>
                             <!--======================== Dividir Columna ======================-->
                             <p:tab title="DIVIDIR COLUMNA">
@@ -448,7 +436,7 @@
                                                     listener="#{filterMB.setRenders}"
                                                     update="splitWrapper"/> 
                                             </h:inputText>
-                                            
+
                                             <h:panelGroup id="splitWrapper"  >
                                                 &nbsp;&nbsp;
                                                 <h:outputLabel 
@@ -461,49 +449,25 @@
                                                     value="#{filterMB.splitInclude}"/>
                                             </h:panelGroup>
                                             &nbsp;&nbsp;
-                                            <!--p:commandButton 
-                                                id="splitUndo"                                   
-                                                actionListener="# {copyMB.undoSplit}"
-                                                value="DESHACER" 
-                                                disabled="# {copyMB.btnSplitDisable}"
-                                                update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet splitUndo renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/-->                                            
                                             <p:commandButton 
                                                 id="splitButtonSplit"                                   
                                                 actionListener="#{filterMB.splitColumnsClick}"
                                                 value="DIVIDIR" 
-                                                update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
+                                                update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
                                         </p:column>
                                     </p:row>
-                                    <!-- p:row>
-                                        <p:column colspan="2">
-                                            <p:dataTable 
-                                                id="splitDataTable" 
-                                                value="# {copyMB.split_newfields}" 
-                                                var="newfields" 
-                                                paginator="true" 
-                                                rows="10"
-                                                emptyMessage="Vacio"
-                                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                rowsPerPageTemplate="5,10,15">
-                                                <p:columns value="# {copyMB.split_newheaders}" var="newheaders" columnIndexVar="split_index">
-                                                    <f:facet name="header">
-                                                        <h:outputText value="# {newheaders}"/>
-                                                    </f:facet>
-                                                    <h:outputText value="# {newfields.get(split_index)}"/>
-                                                </p:columns>
-                                            </p:dataTable>
-                                        </p:column>
-                                    </p:row -->
                                 </p:panelGrid>
                                 <br/>
                             </p:tab>
                             <!--======================== Unir Columna ======================-->
                             <p:tab title="UNIR COLUMNAS">
+                                <br/>
                                 <p:pickList 
                                     id="mergePickList" value="#{filterMB.variablesPickToMerge}" 
                                     var="field"
                                     itemLabel="#{field}" itemValue="#{field}" 
                                     showTargetControls="true" />
+                                <br/>
                                 <h:outputLabel value="Nombre nueva columna"/>  
                                 <h:inputText 
                                     id="mergeFieldName"                                
@@ -516,91 +480,61 @@
                                     id="mergeButtonMerge"                                   
                                     actionListener="#{filterMB.mergeFieldsClick}"
                                     value="UNIR"
-                                    update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4">                     
+                                    update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4">                     
                                 </p:commandButton>
-                                <!-- p:row>
-                                    <p:column colspan="2">
-                                        <p:dataTable 
-                                            id="mergeDataTable" 
-                                            value="# {copyMB.merge_newfields}" 
-                                            var="newfields" 
-                                            paginator="true" 
-                                            rows="10"
-                                            emptyMessage="Vacio"
-                                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                            rowsPerPageTemplate="5,10,15">
-                                            <p:columns value="# {copyMB.merge_newheaders}" var="newheaders" columnIndexVar="index">
-                                                <f:facet name="header">
-                                                    <h:outputText value="# {newheaders}"/>
-                                                </f:facet>
-                                                <h:outputText value="# {newfields.get(index)}"/>
-                                            </p:columns>
-                                        </p:dataTable>
-                                    </p:column>
-                                </p:row -->
+                                <br/>
+                                <br/>
                             </p:tab>
                             <!--======================== Renombrar Valores ======================-->
                             <p:tab title="RENOMBRAR VALORES">
-                                <p:panelGrid>
-                                    <p:row>
-                                        <p:column colspan="2">
-                                            <p:selectOneListbox 
-                                                id="renameValuesFieldsListBox" 
-                                                style="height:200px; width: 400px; " 
-                                                value="#{filterMB.the_field}"                                                            >
-                                                <f:selectItems value="#{filterMB.variablesFoundToRename}"/>    
-                                                <f:ajax                                             
-                                                    event="change" 
-                                                    listener="#{filterMB.changeFieldRename}"                                                                   
-                                                    render="renameValuesDataTable"/>
-                                            </p:selectOneListbox>
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column>
-                                            <p:dataTable 
-                                                id="renameValuesDataTable" 
-                                                value="#{filterMB.rename_model}" 
-                                                var="fields" 
-                                                rowKey="#{fields}" 
-                                                emptyMessage="Vacio"
-                                                rows="10" 
-                                                paginator="true" 
-                                                editable="true">
-                                                <p:column>
-                                                    <f:facet name="header">
-                                                        Valor Actual
-                                                    </f:facet>
-                                                    <h:outputText value="#{fields.oldValue}" />
-                                                </p:column>
-                                                <p:column headerText="NUEVO VALOR" style="width:125px">
-                                                    <p:cellEditor>
-                                                        <f:facet name="output">
-                                                            <h:outputText value="#{fields.newValue}" />
-                                                        </f:facet>
-                                                        <f:facet name="input">
-                                                            <p:inputText value="#{fields.newValue}" style="width:100%"/>
-                                                        </f:facet>
-                                                    </p:cellEditor>
-                                                </p:column>
-                                                <p:column headerText="EDICION" style="width:50px">
-                                                    <p:rowEditor />
-                                                </p:column>
-                                                <f:facet name="footer">  
-                                                    <!-- p:commandButton 
-                                                        value="DESHACER" icon="ui-icon-search"
-                                                        actionListener="# {copyMB.redoRename}"
-                                                        update="renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"
-                                                        disabled="# {copyMB.btnRenameDisable}"/ -->  
-                                                    <p:commandButton 
-                                                        value="RENOMBRAR"
-                                                        actionListener="#{filterMB.renameRecordsClick}"
-                                                        update=":IdForm:IdTabView:IdAccordionPanel2:filterDataTable :IdForm:IdTabView:IdAccordionPanel2:filterFieldsListBox renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>  
-                                                </f:facet>                              
-                                            </p:dataTable>
-                                        </p:column>
-                                    </p:row>
-                                </p:panelGrid>
+                                <br/>
+                                <p:selectOneListbox 
+                                    id="renameValuesFieldsListBox" 
+                                    style="height:200px; width: 400px; " 
+                                    value="#{filterMB.the_field}"                                                            >
+                                    <f:selectItems value="#{filterMB.variablesFoundToRename}"/>    
+                                    <f:ajax                                             
+                                        event="change" 
+                                        listener="#{filterMB.changeFieldRename}"                                                                   
+                                        render="renameValuesDataTable"/>
+                                </p:selectOneListbox>
+                                <br/>
+                                <p:dataTable 
+                                    id="renameValuesDataTable" 
+                                    value="#{filterMB.rename_model}" 
+                                    var="fields" 
+                                    rowKey="#{fields}" 
+                                    emptyMessage="Vacio"
+                                    rows="10" 
+                                    paginator="true" 
+                                    editable="true">
+                                    <p:column>
+                                        <f:facet name="header">
+                                            Valor Actual
+                                        </f:facet>
+                                        <h:outputText value="#{fields.oldValue}" />
+                                    </p:column>
+                                    <p:column headerText="NUEVO VALOR" style="width:125px">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{fields.newValue}" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText value="#{fields.newValue}" style="width:100%"/>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                    <p:column headerText="EDICION" style="width:50px">
+                                        <p:rowEditor />
+                                    </p:column>
+
+                                </p:dataTable>
+                                <br/>
+                                <p:commandButton 
+                                    value="RENOMBRAR"
+                                    actionListener="#{filterMB.renameRecordsClick}"
+                                    update="IdHistorialFilters :IdForm:IdTabView:IdAccordionPanel2:filterDataTable :IdForm:IdTabView:IdAccordionPanel2:filterFieldsListBox renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>  
+
                             </p:tab>
                             <!--======================== Replicar Registros ======================-->
                             <p:tab title="REPLICAR REGISTROS">
@@ -618,7 +552,8 @@
                                             <h:selectManyMenu 
                                                 id="replicateFieldsListBox1" 
                                                 value="#{filterMB.replicate_source}"
-                                                style="height:200px; width: 250px;">
+                                                style="height:200px; width: 250px;"
+                                                styleClass="ui-state-focus ui-widget-header">
                                                 <f:selectItems value="#{filterMB.replicateFields}"/> 
                                             </h:selectManyMenu>
                                         </p:column>
@@ -633,48 +568,77 @@
                                     </p:row>
                                     <p:row>
                                         <p:column colspan="2">
-                                            <!--p:commandButton 
-                                                id="replicateUndo"                                   
-                                                actionListener="# {copyMB.undoReplicate}"
-                                                value="DESHACER..." 
-                                                update="replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet replicateUndo :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"
-                                                disabled="# {copyMB.btnReplicateDisable}"/ -->
                                             <p:commandButton 
                                                 id="replicateReplicate"                                   
                                                 actionListener="#{filterMB.replicateClick}"
                                                 value="Replicar" 
-                                                update="replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column colspan="2">
-                                            <p:dataTable 
-                                                id="replicateSheet" 
-                                                value="#{copyMB.replicate_model2}" 
-                                                var="table" 
-                                                paginator="true" 
-                                                rows="10" 
-                                                paginatorPosition="bottom"
-                                                emptyMessage="Vacio"
-                                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                rowsPerPageTemplate="5,10,15" 
-                                                rowKey="#{table.get(0)}" 
-                                                rowIndexVar="rowIndex"
-                                                scrollable="true" 
-                                                scrollWidth="600"
-                                                resizableColumns="true" >
-                                                <p:columns 
-                                                    styleClass="bla" 
-                                                    value="#{copyMB.replicate_columns2}" var="columns" columnIndexVar="index">
-                                                    <f:facet name="header" >
-                                                        <h:outputText styleClass="bla" value="#{columns}" />
-                                                    </f:facet>
-                                                    <h:outputText styleClass="bla" value="#{table.get(index)}" />
-                                                </p:columns>
-                                            </p:dataTable>
+                                                update="IdHistorialFilters replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
                                         </p:column>
                                     </p:row>
                                 </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="DATOS ACTUALES">
+                                <p:dataTable 
+                                    id="replicateSheet" 
+                                    var="table"                                     
+                                    value="#{filterMB.replicate_model2}"
+                                    rowKey="#{table.get(0)}" 
+                                    scrollWidth="650"
+                                    lazy="true"
+                                    resizableColumns="true"
+                                    paginator="true" 
+                                    rows="10" 
+                                    pageLinks="5"
+                                    paginatorPosition="bottom"
+                                    emptyMessage="Vacio"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15"                                     
+                                    rowIndexVar="rowIndex"
+                                    scrollable="true">
+                                    <p:columns 
+                                        styleClass="bla" 
+                                        value="#{filterMB.replicate_columns2}" var="columns" columnIndexVar="index">
+                                        <f:facet name="header" >
+                                            <h:outputText styleClass="bla" value="#{columns}" />
+                                        </f:facet>
+                                        <h:outputText styleClass="bla" value="#{table.get(index)}" />
+                                    </p:columns>
+                                </p:dataTable>
+                            </p:tab>
+                            <p:tab title="HISTORIAL DE FILTROS APLICADOS">                                
+                                <br/>
+                                <p:dataTable 
+                                    id="IdHistorialFilters" 
+                                    var="rowX" 
+                                    value="#{filterMB.filtersAppliedList}" 
+                                    rowKey="#{rowX.column1}"  
+                                    selection="#{filterMB.selectedFiltersAppliedRow}" 
+                                    paginator="true"
+                                    rows="10"                                    
+                                    paginatorPosition="bottom" 
+                                    emptyMessage="No se ha aplicado ningún filtro"
+                                    scrollable="true"                                    
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15"
+                                    pageLinks="5"
+                                    selectionMode="single"
+
+                                    resizableColumns="true">
+                                    <p:column headerText="#" width="50">  
+                                        #{rowX.column2}  
+                                    </p:column>  
+                                    <p:column headerText="FLITRO" width="149">  
+                                        #{rowX.column3}
+                                    </p:column>  
+                                    <p:column headerText="DESCRIPCION" width="400">  
+                                        #{rowX.column4}
+                                    </p:column>
+                                </p:dataTable>
+                                <br/>
+                                <p:commandButton
+                                    actionListener="#{filterMB.btnUndoFilterClick}"                                    
+                                    value="DESHACER"
+                                    update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>                                            
                             </p:tab>
                         </p:accordionPanel>
                     </p:tab>  
@@ -1129,7 +1093,7 @@
                                             <p:commandButton 
                                                 value="INICIAR VALIDACION" 
                                                 actionListener="#{recordDataMB.btnValidateClick}" 
-                                                onclick="pbAjaxValidate.start();
+                                                onclick=" pbAjaxValidate.start();
                     startButton.disable();"  
                                                 widgetVar="startButton"/>
                                         </p:column>
@@ -1354,8 +1318,7 @@
                     id="IdCopyRelationsDialog"  
                     modal="true"
                     header="COPIAR RELACIONES DE"         
-                    resizable="false"             
-
+                    resizable="false"
                     widgetVar="copyRelationsDialog">  
                     <p:ajax
                         event="close"                         
@@ -1684,7 +1647,7 @@
                         update=":IdForm"/>  
                     <p:commandButton                        
                         value="Cancelar" 
-                        onclick="openProjectDialog.hide()"
+                        onclick="openProjectDialog.hide();"
                         type="button"/>   
                 </p:dialog>
                 <!-- /////////////////////////////////// ELIMINAR PROYECTO /////////////////////////////////// -->
@@ -1709,7 +1672,7 @@
                         update=":IdForm :IdForm2"/>  
                     <p:commandButton                        
                         value="Cancelar" 
-                        onclick="removeProjectDialog.hide()"
+                        onclick="removeProjectDialog.hide();"
                         type="button"/>   
                 </p:dialog>
                 <!-- /////////////////////////////////// TOOLTIP /////////////////////////////////// -->

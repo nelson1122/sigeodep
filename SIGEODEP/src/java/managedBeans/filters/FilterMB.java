@@ -2,23 +2,22 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package managedBeans.fileProcessing;
+package managedBeans.filters;
 
 import beans.connection.ConnectionJdbcMB;
+import beans.util.RowDataTable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import managedBeans.filters.FieldCount;
-import managedBeans.filters.FilterConnection;
-import managedBeans.filters.QueryDataModel;
-import managedBeans.filters.ValueNewValue;
+import managedBeans.fileProcessing.ErrorsControlMB;
+import managedBeans.fileProcessing.ProjectsMB;
+import managedBeans.fileProcessing.RecordDataMB;
+import managedBeans.fileProcessing.RelationshipOfVariablesMB;
 import org.primefaces.model.DualListModel;
 import org.primefaces.model.LazyDataModel;
 
@@ -70,7 +69,7 @@ public class FilterMB {
     //rename
     private List<ValueNewValue> rename_model;
     private List<String> rename_headers;
-    private List<String> rename_field_names;    
+    private List<String> rename_field_names;
     private int redoRename;
     private String the_field;
     private List<String> variablesFoundToRename;
@@ -78,9 +77,31 @@ public class FilterMB {
     private List<String> replicate_source;
     private List<String> replicate_target;
     private List<String> replicateFields;
-    //private List<String> replicate_columns2;
-    //private LazyDataModel<List> replicate_model2;
-    
+    //current data
+    private LazyDataModel<List> replicate_model2;
+    private List<String> replicate_columns2;
+    //historial filters
+    private List<RowDataTable> filtersAppliedList = new ArrayList<>();
+    private RowDataTable selectedFiltersAppliedRow;
+    private String sqlUndo = "";
+    private String filterDescription = "";
+    private String filterName = "";
+
+    public void btnUndoFilterClick() {
+        if (selectedFiltersAppliedRow != null) {
+            try {
+                System.out.println("CONSULTA \n "+selectedFiltersAppliedRow.getColumn5()+"");
+                connectionJdbcMB.non_query(selectedFiltersAppliedRow.getColumn5().replaceAll("\"","'"));
+                connectionJdbcMB.non_query("DELETE FROM project_history_filters WHERE history_id = " + selectedFiltersAppliedRow.getColumn2());
+                reset();
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El filtro se ha revertido."));
+            } catch (Exception e) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se pudo deshacer el filtro."));
+            }
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un filtro aplicado."));
+        }
+    }
 
     /**
      * Creates a new instance of FilterMB
@@ -139,15 +160,19 @@ public class FilterMB {
         rename_field_names.add("# de Registros");
         //-----replicate-----
         replicateFields = loadFoundVariables(null);
-        replicate_source= new ArrayList<String>();
-        replicate_target= new ArrayList<String>();
-
+        replicate_source = new ArrayList<String>();
+        replicate_target = new ArrayList<String>();
+        //-----current data------
+        replicate_columns2 = connectionJdbcMB.getColumns(projectsMB.getCurrentProjectId());
+        replicate_model2 = new LazyQueryDataModel(projectsMB.getCurrentProjectId());
+        //---- history filters ----
+        refreshHistoryList();
 
     }
 
     //--------------------------------------------------------------------------
     //-------------------------- FUNCIONES GENERALES ---------------------------
-    //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------    
     private boolean haveSpaces(String text) {
         boolean returnBoolean = false;
         for (int i = 0; i < text.length(); i++) {
@@ -353,15 +378,24 @@ public class FilterMB {
                         + "    project_columns \n");
                 rs.next();
                 int maxColumnId = rs.getInt(1);
+                String newColumn;
                 for (int i = 0; i < numberOfCopies; i++) {
                     maxColumnId++;
-                    //inserto una nueva columna en project_columns                       
+                    //inserto una nueva columna en project_columns          
+                    newColumn = determineColumnName(copyPrefix);
                     sql = ""
                             + " INSERT INTO project_columns VALUES ("
                             + String.valueOf(maxColumnId) + ",'"
-                            + String.valueOf(determineColumnName(copyPrefix)) + "',"
+                            + String.valueOf(newColumn) + "',"
                             + String.valueOf(projectsMB.getCurrentProjectId()) + ")";
                     connectionJdbcMB.non_query(sql);
+
+                    if (filterDescription.length() == 0) {
+                        filterDescription = "" + newColumn;
+                    } else {
+                        filterDescription = filterDescription + ", " + newColumn;
+                    }
+                    sqlUndo = sqlUndo + " DELETE FROM project_columns WHERE column_id = " + String.valueOf(maxColumnId) + " AND project_id = " + String.valueOf(projectsMB.getCurrentProjectId()) + ";\n ";
 
                     //realizo la copia de la columna
                     rs = connectionJdbcMB.consult(""
@@ -389,7 +423,11 @@ public class FilterMB {
                                 + rs.getString("data_value") + "')";
                         connectionJdbcMB.non_query(sql);
                     }
+                    sqlUndo = " DELETE FROM project_records WHERE column_id = " + String.valueOf(maxColumnId) + " AND project_id = " + String.valueOf(projectsMB.getCurrentProjectId()) + ";\n " + sqlUndo;
                 }
+                filterDescription = "Se realizó la copia de (" + variableNameToCopy + ") en (" + filterDescription + ")";
+                filterName = "COPIAR COLUMNAS";
+                insertingFilterInHistory(filterName, filterDescription, sqlUndo);
                 reset();//limpiar 
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la copia de columnas"));
             } catch (SQLException ex) {
@@ -413,8 +451,9 @@ public class FilterMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Agrege a la segunda lista las variables a eliminar"));
         } else {
             try {
-                ResultSet rs;
+                ResultSet rs, rs2;
                 for (int i = 0; i < variablesPickToDelete.getTarget().size(); i++) {
+                    //determino el identificador de la columna
                     rs = connectionJdbcMB.consult(""
                             + " SELECT \n"
                             + "    * \n"
@@ -431,24 +470,65 @@ public class FilterMB {
                             + "         project_columns.project_id = " + projectsMB.getCurrentProjectId() + " AND \n"
                             + "         project_columns.column_name LIKE '" + variablesPickToDelete.getTarget().get(i) + "' "
                             + "    )");
-                    while (rs.next()) {
-                        sql = ""
+                    if (rs.next()) {
+                        //genero el sql para deshacer eliminaciones en project_records
+                        rs2 = connectionJdbcMB.consult(""
+                                + " SELECT \n"
+                                + "    * \n"
+                                + " FROM \n"
+                                + "    project_records \n"
+                                + " WHERE \n"
+                                + "    column_id = " + rs.getString("column_id") + " AND \n"
+                                + "    project_id = " + projectsMB.getCurrentProjectId() + " \n");
+                        sqlUndo = sqlUndo + "INSERT INTO project_records VALUES ";
+                        boolean first = true;
+                        while (rs2.next()) {
+                            if (first) {
+                                first = false;
+                            } else {
+                                sqlUndo = sqlUndo + ",";
+                            }
+                            sqlUndo = sqlUndo
+                                    + "(" + rs2.getString(1)
+                                    + "," + rs2.getString(2)
+                                    + "," + rs2.getString(3)
+                                    + ",'" + rs2.getString(4)
+                                    + "')\n";
+                        }
+                        sqlUndo = sqlUndo + ";\n";
+
+                        //elimino lol registros de esta columna
+                        connectionJdbcMB.non_query(""
                                 + " DELETE FROM \n"
                                 + "    project_records \n"
                                 + " WHERE \n"
                                 + "    column_id = " + rs.getString("column_id") + " AND \n"
-                                + "    project_id = " + projectsMB.getCurrentProjectId() + " \n";
-                        connectionJdbcMB.non_query(sql);
+                                + "    project_id = " + projectsMB.getCurrentProjectId() + " \n");
                     }
-                    sql = ""
+                    //genero el sql para deshacer eliminaciones en project_columns
+                    sqlUndo = "INSERT INTO project_columns VALUES ("
+                            + rs.getString("column_id") + ",'"
+                            + variablesPickToDelete.getTarget().get(i) + "',"
+                            + projectsMB.getCurrentProjectId() + ");\n" + sqlUndo;
+                    if (filterDescription.length() == 0) {
+                        filterDescription = variablesPickToDelete.getTarget().get(i);
+                    } else {
+                        filterDescription = filterDescription + ", " + variablesPickToDelete.getTarget().get(i);
+                    }
+
+                    //elimino la columna
+                    connectionJdbcMB.non_query(""
                             + " DELETE FROM \n"
                             + "    project_columns \n"
                             + " WHERE \n"
                             + "    project_columns.project_id = " + projectsMB.getCurrentProjectId() + " AND \n"
-                            + "    project_columns.column_name LIKE '" + variablesPickToDelete.getTarget().get(i) + "' ";
-                    connectionJdbcMB.non_query(sql);
+                            + "    project_columns.column_name LIKE '" + variablesPickToDelete.getTarget().get(i) + "' ");
                 }
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La eliminacion de las columnas se ha realizado correctamente"));
+
+                filterDescription = "Se realizo la eliminacion de (" + filterDescription + ")";
+                filterName = "ELIMINAR COLUMNAS";
+                insertingFilterInHistory(filterName, filterDescription, sqlUndo);
                 reset();
                 relationshipOfVariablesMB.refresh();
             } catch (Exception e) {
@@ -522,18 +602,20 @@ public class FilterMB {
 
                 maxColumnId++;
                 //inserto una nueva columna en project_columns
-                sql = ""
+                connectionJdbcMB.non_query(""
                         + " INSERT INTO project_columns VALUES ("
                         + String.valueOf(maxColumnId) + ",'"
                         + String.valueOf(splitFieldName1) + "',"
-                        + String.valueOf(projectsMB.getCurrentProjectId()) + ")";
-                connectionJdbcMB.non_query(sql);
-                sql = ""
+                        + String.valueOf(projectsMB.getCurrentProjectId()) + ")");
+
+                sqlUndo = sqlUndo + " DELETE FROM project_columns WHERE column_id = " + String.valueOf(maxColumnId) + " AND project_id = " + String.valueOf(projectsMB.getCurrentProjectId()) + ";\n ";
+
+                connectionJdbcMB.non_query(""
                         + " INSERT INTO project_columns VALUES ("
                         + String.valueOf(maxColumnId + 1) + ",'"
                         + String.valueOf(splitFieldName2) + "',"
-                        + String.valueOf(projectsMB.getCurrentProjectId()) + ")";
-                connectionJdbcMB.non_query(sql);
+                        + String.valueOf(projectsMB.getCurrentProjectId()) + ")");
+                sqlUndo = sqlUndo + " DELETE FROM project_columns WHERE column_id = " + String.valueOf(maxColumnId + 1) + " AND project_id = " + String.valueOf(projectsMB.getCurrentProjectId()) + ";\n ";
 
                 //realizo la copia de la columna
                 rs = connectionJdbcMB.consult(""
@@ -574,6 +656,13 @@ public class FilterMB {
                         connectionJdbcMB.non_query(sql);
                     }
                 }
+                sqlUndo = sqlUndo + " DELETE FROM project_records WHERE column_id = " + String.valueOf(maxColumnId) + " AND project_id = " + String.valueOf(projectsMB.getCurrentProjectId()) + ";\n " + sqlUndo;
+                sqlUndo = sqlUndo + " DELETE FROM project_records WHERE column_id = " + String.valueOf(maxColumnId + 1) + " AND project_id = " + String.valueOf(projectsMB.getCurrentProjectId()) + ";\n " + sqlUndo;
+
+
+                filterDescription = "Se realizo la división de la columna (" + variableNameToSplit + ") en (" + splitFieldName1 + ", " + splitFieldName2 + ")";
+                filterName = "DIVIDIR COLUMNAS";
+                insertingFilterInHistory(filterName, filterDescription, sqlUndo);
                 reset();
                 relationshipOfVariablesMB.refresh();
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la división de columnas"));
@@ -642,7 +731,7 @@ public class FilterMB {
     }
 
     //--------------------------------------------------------------------------
-    //---------------------- MERGE -------------------------------
+    //---------------------------- MERGE ---------------------------------------
     //--------------------------------------------------------------------------
     public void mergeFieldsClick() {
         boolean continueProcess = true;
@@ -700,6 +789,7 @@ public class FilterMB {
                         + String.valueOf(variableNameToMerge) + "',"
                         + String.valueOf(projectsMB.getCurrentProjectId()) + ")";
                 connectionJdbcMB.non_query(sql);
+                sqlUndo = sqlUndo + " DELETE FROM project_columns WHERE column_id = " + String.valueOf(maxColumnId) + " AND project_id = " + String.valueOf(projectsMB.getCurrentProjectId()) + ";\n " + sqlUndo;
                 ArrayList<String> dataRecords = new ArrayList<String>();
 
                 //determinamos las variables(column_id)
@@ -713,6 +803,11 @@ public class FilterMB {
                             + " WHERE \n"
                             + "    project_columns.project_id = " + projectsMB.getCurrentProjectId() + " AND "
                             + "    project_columns.column_name LIKE '" + variablesPickToMerge.getTarget().get(i) + "' ");
+                    if (filterDescription.length() == 0) {
+                        filterDescription = variablesPickToMerge.getTarget().get(i);
+                    } else {
+                        filterDescription = filterDescription + ", " + variablesPickToMerge.getTarget().get(i);
+                    }
                     if (rs.next()) {
                         columns_id.add(rs.getString(1));
                     }
@@ -770,6 +865,10 @@ public class FilterMB {
                         connectionJdbcMB.non_query(sql);
                     }
                 }
+                sqlUndo = sqlUndo + " DELETE FROM project_records WHERE column_id = " + String.valueOf(maxColumnId) + " AND project_id = " + String.valueOf(projectsMB.getCurrentProjectId()) + ";\n " + sqlUndo;
+                filterDescription = "Se realizo en (" + variableNameToMerge + ") la unión de las columnas (" + filterDescription + ")";
+                filterName = "ELIMINAR COLUMNAS";
+                insertingFilterInHistory(filterName, filterDescription, sqlUndo);
                 reset();
                 relationshipOfVariablesMB.refresh();
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la división de columnas"));
@@ -782,7 +881,7 @@ public class FilterMB {
     }
 
     //--------------------------------------------------------------------------
-    //---------------------- FILTER RECORDS -------------------------------
+    //---------------------- FILTER RECORDS ------------------------------------
     //--------------------------------------------------------------------------
     public void changeVariablesFoundToFilterRecords() {
         filter_queryModel = new QueryDataModel(getFieldCounts(filter_field));
@@ -820,7 +919,7 @@ public class FilterMB {
             }
             return data;
         } catch (SQLException ex) {
-            Logger.getLogger(FilterConnection.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(FilterConnection.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
     }
@@ -844,10 +943,15 @@ public class FilterMB {
         if (continueProcess) {
             try {
                 for (FieldCount record : filter_selected) {
-                    System.out.println("Deleted " + record.getField());
 
+                    if (filterDescription.length() == 0) {
+                        filterDescription = record.getField();
+                    } else {
+                        filterDescription = filterDescription + "," + record.getField();
+                    }
+                    //System.out.println("Deleted " + record.getField());
                     sql = ""
-                            + " DELETE "
+                            + " SELECT record_id "
                             + " FROM "
                             + "   project_records "
                             + " WHERE \n"
@@ -863,8 +967,47 @@ public class FilterMB {
                             + "    ) AND "
                             + "    project_id = " + projectsMB.getCurrentProjectId() + " AND "
                             + "    data_value LIKE '" + record.getField() + "'";
-                    connectionJdbcMB.non_query(sql);
+                    ResultSet rs = connectionJdbcMB.consult(sql);
+                    ResultSet rs2;
+                    sqlUndo = sqlUndo + " INSERT INTO project_records VALUES ";
+                    boolean first = true;
+                    if (rs.next()) {
+                        rs2 = connectionJdbcMB.consult(""
+                                + " SELECT "
+                                + "    * "
+                                + " FROM "
+                                + "    project_records "
+                                + " WHERE "
+                                + "    record_id = " + rs.getString(1) + " AND "
+                                + "    project_id = " + projectsMB.getCurrentProjectId());
+                        while (rs2.next()) {
+                            if (first) {
+                                first = false;
+                            } else {
+                                sqlUndo = sqlUndo + ",";
+                            }
+                            sqlUndo = sqlUndo
+                                    + "(" + rs2.getString(1)
+                                    + "," + rs2.getString(2)
+                                    + "," + rs2.getString(3)
+                                    + ",'" + rs2.getString(4)
+                                    + "')";
+                        }
+                        sql = ""
+                                + " DELETE "
+                                + " FROM "
+                                + "   project_records "
+                                + " WHERE \n"
+                                + "    record_id = " + rs.getString(1) + " AND "
+                                + "    project_id = " + projectsMB.getCurrentProjectId();
+                        connectionJdbcMB.non_query(sql);
+                    }
+                    sqlUndo = sqlUndo + "; \n";
                 }
+                filterDescription = "De la columna: (" + filter_field + ") Se filtraron los valores: (" + filterDescription + ")";
+                filterName = "FILTRAR REGISTROS";
+                insertingFilterInHistory(filterName, filterDescription, sqlUndo);
+
                 reset();
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Error", "Se han filtrado los valores seleccionados"));
             } catch (Exception e) {
@@ -906,7 +1049,7 @@ public class FilterMB {
             }
             return values;
         } catch (SQLException ex) {
-            Logger.getLogger(FilterConnection.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(FilterConnection.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
     }
@@ -928,56 +1071,336 @@ public class FilterMB {
         }
         if (continueProcess) {
             try {
-                for (ValueNewValue values : rename_model) {
+                for (ValueNewValue values : rename_model) {//recorro cada una de las filas de la tabla
                     if (values.getNewValue() != null && values.getNewValue().length() != 0) {
-                        sql = ""
-                                + " UPDATE "
-                                + "   project_records "
-                                + " SET "
-                                + " data_value = '"+values.getNewValue()+"'"                                
-                                + " WHERE \n"
-                                + "    column_id IN "
-                                + "    ( "
+                        ResultSet rs = connectionJdbcMB.consult(""
                                 + "      SELECT \n"
                                 + "         column_id \n"
                                 + "      FROM \n"
                                 + "         project_columns \n"
                                 + "      WHERE \n"
                                 + "         project_columns.project_id = " + projectsMB.getCurrentProjectId() + " AND "
-                                + "         project_columns.column_name LIKE '" + the_field + "' "
-                                + "    ) AND "
+                                + "         project_columns.column_name LIKE '" + the_field + "' ");
+                        String columnId = "";
+                        if (rs.next()) {
+                            columnId = rs.getString(1);
+                        }
+
+                        if (filterDescription.length() == 0) {
+                            filterDescription = values.getNewValue() + "->" + values.getOldValue();
+                        } else {
+                            filterDescription = filterDescription + ", " + values.getNewValue() + "->" + values.getOldValue();
+                        }
+
+                        sqlUndo = sqlUndo + ""
+                                + " UPDATE "
+                                + "    project_records "
+                                + " SET "
+                                + "    data_value = '" + values.getOldValue() + "'"
+                                + " WHERE \n"
+                                + "    column_id = " + columnId + " AND "
+                                + "    project_id = " + projectsMB.getCurrentProjectId() + " AND "
+                                + "    data_value LIKE '" + values.getNewValue() + "' ;";
+                        sql = ""
+                                + " UPDATE "
+                                + "    project_records "
+                                + " SET "
+                                + "    data_value = '" + values.getNewValue() + "'"
+                                + " WHERE \n"
+                                + "    column_id = " + columnId + " AND "
                                 + "    project_id = " + projectsMB.getCurrentProjectId() + " AND "
                                 + "    data_value LIKE '" + values.getOldValue() + "'";
                         connectionJdbcMB.non_query(sql);
-                    }                    
+                    }
                 }
+                filterDescription = "De la columna: (" + the_field + ") Se renombro: (" + filterDescription + ")";
+                filterName = "FILTRAR REGISTROS";
+                insertingFilterInHistory(filterName, filterDescription, sqlUndo);
                 reset();
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Error", "Se han renombrado los valores indicados"));
             } catch (Exception e) {
             }
         }
     }
-    
+
     //--------------------------------------------------------------------------
     //---------------------- REPLICATE -------------------------------
     //--------------------------------------------------------------------------
-    public  void replicateClick(){
-        if (replicate_source.size() % replicate_target.size() != 0) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, "Error",
-                    "El número de variables correspondientes debería ser factor del "
-                    + "número de variables a replicar."));
-            return;
+    private Object[] realizeOperations(Object[] arrayInJava, String[] splitOperations) {
+        /*
+         * arrayInJava      representa un registro
+         * splitOperations  son los cambios que se realizan sobre este registro
+         */
+        Object[] arrayReturn = arrayInJava;
+        boolean haveInserts = false;
+        String source;
+        String target;
+        String newValue;
+        for (int i = 0; i < splitOperations.length; i++) {
+            source = splitOperations[i].split("->")[0];// == source
+            target = splitOperations[i].split("->")[1];// == target                                
+            newValue = searchValueAcoordinColumn(arrayReturn, source);
+            if (newValue != null && newValue.length() != 0) {
+                //se asigna el nuevo valor
+                for (int j = 0; j < arrayReturn.length; j++) {//Ciclo para cada uno de los registros
+                    String[] splitElement = arrayReturn[j].toString().split("<=>"); //splitElement[0]=columnId splitElement[1]=columnName splitElement[2]=datavalue
+                    if (splitElement[1].compareTo(target) == 0) {
+                        arrayReturn[j] = splitElement[0] + "<=>" + splitElement[1] + "<=>" + newValue;
+                        haveInserts = true;
+                    }
+                }
+            }
         }
-        //executeReplication(replicateFields, replicate_target, replicate_source);
+        if (haveInserts) {
+            return arrayReturn;
+        } else {
+            return null;
+        }
+    }
+
+    private String searchValueAcoordinColumn(Object[] arrayInJava, String columnName) {
+        for (int i = 0; i < arrayInJava.length; i++) {//Ciclo para cada uno de los registros
+            String[] splitElement = arrayInJava[i].toString().split("<=>"); //splitElement[0]=columnId splitElement[1]=columnName splitElement[2]=datavalue
+            if (splitElement[1].compareTo(columnName) == 0) {
+                return splitElement[2];
+            }
+        }
+        return null;
+    }
+
+    public void replicateClick() {
+        boolean continueProcess = true;
+        String fieldsSource = "";
+        String fieldsTarget = "";
+        if (continueProcess) {
+            if (replicate_source == null || replicate_source.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado las variables a replicar"));
+                continueProcess = false;
+            }
+        }
+        if (continueProcess) {
+            if (replicate_target == null || replicate_target.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado las variables correspondientes"));
+                continueProcess = false;
+            }
+        }
+        if (continueProcess) {
+            if (replicate_source.size() % replicate_target.size() != 0) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR, "Error",
+                        "El número de variables correspondientes debería ser factor del "
+                        + "número de variables a replicar."));
+                continueProcess = false;
+            }
+        }
+        if (continueProcess) {
+
+            //cadena con las variables origen a replicar
+            for (int r = 0; r < replicate_source.size(); r++) {
+                if (r == 0) {
+                    fieldsSource = replicate_source.get(r);
+                } else {
+                    fieldsSource = fieldsSource + ", " + replicate_source.get(r);
+                }
+            }
+            //cadena con las variables destino a replicar
+            for (int r = 0; r < replicate_target.size(); r++) {
+                if (r == 0) {
+                    fieldsTarget = replicate_target.get(r);
+                } else {
+                    fieldsTarget = fieldsTarget + ", " + replicate_target.get(r);
+                }
+            }
+
+            try {
+                int maxRecordId;
+                //--------------------------------------------------------------------
+                //creo un arreglo con las operaciones que se realizaran por registro
+                //--------------------------------------------------------------------
+                ArrayList operationsTmp = new ArrayList<String>();
+                int posTarget = 0;
+                for (int r = 0; r < replicate_source.size(); r++) {
+                    operationsTmp.add(replicate_source.get(r) + "->" + replicate_target.get(posTarget));//columnaOrigen->columnaDestino                
+                    posTarget++;
+                    if (posTarget == replicate_target.size()) {
+                        posTarget = 0;
+                    }
+                }
+                //--------------------------------------------------------------------            
+                // operations.size() = # nuevos registros
+                // operations.get = "cod_pre->semana;cod_pre->semana" = cambios del nuevo registro
+                //--------------------------------------------------------------------
+                posTarget = 0;
+                ArrayList operations = new ArrayList<String>();
+                String op = "";
+                for (int i = 0; i < operationsTmp.size(); i++) {
+                    if (op.length() == 0) {
+                        op = operationsTmp.get(i).toString();
+                    } else {
+                        op = op + ";" + operationsTmp.get(i).toString();//agrupo las operaciones para un registro
+                    }
+                    posTarget++;
+                    if (posTarget == replicate_target.size()) {
+                        operations.add(op);
+                        posTarget = 0;
+                        op = "";
+                    }
+                }
+
+                for (int i = 0; i < operations.size(); i++) {
+                    System.out.println(operations.get(i).toString());
+                }
+
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " SELECT \n"
+                        + "    MAX(record_id) \n"
+                        + " FROM \n"
+                        + "    project_records \n"
+                        + " WHERE \n"
+                        + "    project_id = " + projectsMB.getCurrentProjectId());
+                rs.next();
+                maxRecordId = rs.getInt(1);
+
+                //realizo la consulta que me determina todos los registros
+                rs = connectionJdbcMB.consult(""
+                        + " SELECT "
+                        + "    project_records.project_id, "
+                        + "    project_records.record_id, "
+                        + "    array_agg(project_columns.column_id|| '<=>' ||project_columns.column_name || '<=>' || project_records.data_value) "
+                        + " FROM "
+                        + "    project_records,project_columns "
+                        + " WHERE "
+                        + "    project_records.project_id = " + projectsMB.getCurrentProjectId() + " AND "
+                        + "    project_columns.column_id = project_records.column_id  "
+                        + " GROUP BY "
+                        + "    project_records.project_id, "
+                        + "    project_records.record_id ");
+
+                Object[] arrayResult;
+                String[] splitElement;
+                String registerOut;
+                while (rs.next()) {//Ciclo para cada registro                
+                    registerOut = "";
+                    Object[] arrayInJava = (Object[]) rs.getArray(3).getArray();
+                    for (int i = 0; i < operations.size(); i++) {
+                        String[] splitOperations = operations.get(i).toString().split(";");
+                        arrayResult = realizeOperations(arrayInJava, splitOperations);
+                        if (arrayResult != null) {//insertar nuevo registro                        
+                            maxRecordId++;
+                            for (int x = 0; x < arrayResult.length; x++) {
+                                splitElement = arrayResult[x].toString().split("<=>"); //splitElement[0]=columnId splitElement[1]=columnName splitElement[2]=datavalue
+                                if (splitElement[2] != null && splitElement[2].length() != 0) {
+                                    sql = ""
+                                            + " INSERT INTO project_records VALUES ("
+                                            + String.valueOf(projectsMB.getCurrentProjectId()) + "," //project_id
+                                            + String.valueOf(maxRecordId) + "," //record_id
+                                            + splitElement[0] + ",'" //column_id
+                                            + splitElement[2] + "')";           //new data value
+                                    connectionJdbcMB.non_query(sql);//System.out.println("nuevo: " + sql);
+                                    if (registerOut.length() == 0) {
+                                        registerOut = splitElement[2];
+                                    } else {
+                                        registerOut = registerOut + "," + splitElement[2];
+                                    }
+                                } else {
+                                    registerOut = registerOut + ",null";
+                                }
+                            }
+                        }
+                    }//System.out.println("REGISTRO: " + registerOut);
+                }
+                //elimino los de la columna source
+                String columnId = "";
+                for (int i = 0; i < replicate_source.size(); i++) {
+                    rs = connectionJdbcMB.consult(""
+                            + "    SELECT "
+                            + "       column_id "
+                            + "    FROM "
+                            + "       project_columns "
+                            + "    WHERE "
+                            + "       column_name LIKE '" + replicate_source.get(i) + "' AND"
+                            + "       project_id = " + projectsMB.getCurrentProjectId() + " ");
+                    if (rs.next()) {
+                        columnId = rs.getString(1);
+                        //genero sql para revertir
+
+
+                        sql = ""
+                                + " DELETE FROM project_records "
+                                + " WHERE "
+                                + " column_id = " + columnId + " AND "
+                                + " project_id = " + projectsMB.getCurrentProjectId();
+                        connectionJdbcMB.non_query(sql);
+                    }
+                }
+
+            } catch (Exception e) {
+            }
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Replicación realizada correctamente"));
+        }
+        filterDescription = "Se replico: (" + fieldsSource + ") en: (" + fieldsTarget + ")";
+        filterName = "REPLICAR REGISTROS";
+        insertingFilterInHistory(filterName, filterDescription, sqlUndo);
         reset();
-        //fields = connection.getTempFields();
-        
-        replicate_source = new ArrayList<String>();
-        replicate_target = new ArrayList<String>();
-        //this.refreshReplicate();
-        //btnReplicateDisable = false;
-        //undoReplicate++;
+    }
+
+    //--------------------------------------------------------------------------
+    //---------------------- FILTER HISTORY ------------------------------------
+    //--------------------------------------------------------------------------
+    private void insertingFilterInHistory(String filterName_, String filterDescription_, String sqlUndo_) {
+        try {
+            sqlUndo_ = sqlUndo_.replaceAll("'", "\"");
+            //determino maximo de historial 
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + " SELECT \n"
+                    + "    MAX(history_id) \n"
+                    + " FROM \n"
+                    + "    project_history_filters \n"
+                    + " WHERE \n"
+                    + "    project_id = " + projectsMB.getCurrentProjectId());
+            rs.next();
+            int maxhistoryId = rs.getInt(1);
+            maxhistoryId++;
+            sql = ""
+                    + " INSERT INTO project_history_filters VALUES ("
+                    + String.valueOf(projectsMB.getCurrentProjectId()) + ","
+                    + String.valueOf(maxhistoryId) + ",'"
+                    + filterName_ + "','"
+                    + filterDescription_ + "','"
+                    + sqlUndo_ + "')";
+            connectionJdbcMB.non_query(sql);
+            refreshHistoryList();
+
+        } catch (Exception e) {
+        }
+        filterName = "";
+        filterDescription = "";
+        sqlUndo = "";
+    }
+
+    private void refreshHistoryList() {
+        filtersAppliedList = new ArrayList<>();
+        selectedFiltersAppliedRow = null;
+        try {
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + " SELECT "
+                    + "    * "
+                    + " FROM "
+                    + "    project_history_filters "
+                    + " WHERE "
+                    + "    project_id = " + projectsMB.getCurrentProjectId() + ""
+                    + " ORDER BY "
+                    + "    history_id DESC");
+            while (rs.next()) {//Ciclo para cada registro                
+                filtersAppliedList.add(new RowDataTable(
+                        rs.getString(1), //       column1 ==> identificador del proyecto
+                        rs.getString(2), //       column2 ==> identificador del historial
+                        rs.getString(3), //       column3 ==> nombre del filtro
+                        rs.getString(4), //       column4 ==> descripcion
+                        rs.getString(5))); //       column6 ==> sql para deshacer
+            }
+        } catch (Exception e) {
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -1255,22 +1678,6 @@ public class FilterMB {
         this.replicate_target = replicate_target;
     }
 
-//    public List<String> getReplicate_columns2() {
-//        return replicate_columns2;
-//    }
-//
-//    public void setReplicate_columns2(List<String> replicate_columns2) {
-//        this.replicate_columns2 = replicate_columns2;
-//    }
-//
-//    public LazyDataModel<List> getReplicate_model2() {
-//        return replicate_model2;
-//    }
-//
-//    public void setReplicate_model2(LazyDataModel<List> replicate_model2) {
-//        this.replicate_model2 = replicate_model2;
-//    }
-
     public List<String> getReplicateFields() {
         return replicateFields;
     }
@@ -1278,6 +1685,36 @@ public class FilterMB {
     public void setReplicateFields(List<String> replicateFields) {
         this.replicateFields = replicateFields;
     }
-    
-    
+
+    public LazyDataModel<List> getReplicate_model2() {
+        return replicate_model2;
+    }
+
+    public void setReplicate_model2(LazyDataModel<List> replicate_model2) {
+        this.replicate_model2 = replicate_model2;
+    }
+
+    public List<String> getReplicate_columns2() {
+        return replicate_columns2;
+    }
+
+    public void setReplicate_columns2(List<String> replicate_columns2) {
+        this.replicate_columns2 = replicate_columns2;
+    }
+
+    public List<RowDataTable> getFiltersAppliedList() {
+        return filtersAppliedList;
+    }
+
+    public void setFiltersAppliedList(List<RowDataTable> filtersAppliedList) {
+        this.filtersAppliedList = filtersAppliedList;
+    }
+
+    public RowDataTable getSelectedFiltersAppliedRow() {
+        return selectedFiltersAppliedRow;
+    }
+
+    public void setSelectedFiltersAppliedRow(RowDataTable selectedFiltersAppliedRow) {
+        this.selectedFiltersAppliedRow = selectedFiltersAppliedRow;
+    }
 }

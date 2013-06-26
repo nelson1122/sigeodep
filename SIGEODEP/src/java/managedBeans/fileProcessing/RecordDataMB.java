@@ -517,7 +517,7 @@ public class RecordDataMB implements Serializable {
          */
         //int pos = 0;
         isValidate = false;
-        int currentNumberOfRow = 1;
+        //int currentNumberOfRow = 1;
         columnsNames = new ArrayList<String>();
         progressValidate = 0;
         continueProcces = true;
@@ -754,7 +754,7 @@ public class RecordDataMB implements Serializable {
                     }
 
                     //..........................................................
-                    currentNumberOfRow++;
+                    //currentNumberOfRow++;
                     tuplesProcessed++;
                     progressValidate = (int) (tuplesProcessed * 100) / tuplesNumber;
                     //System.out.println("PROGRESO VALIDANDO: " + String.valueOf(progressValidate));
@@ -2838,10 +2838,10 @@ public class RecordDataMB implements Serializable {
 
                     continueProcces = false;
                     if (value != null) {
-                        if (value.compareTo("TRABAJO") == 0 || value.compareTo("2013") == 0) {
-                            System.out.print("aqui");
-                            value = isCategorical(splitColumnAndValue[1], relationVar);
-                        }
+//                        if (value.compareTo("TRABAJO") == 0 || value.compareTo("2013") == 0) {
+//                            System.out.print("aqui");
+//                            value = isCategorical(splitColumnAndValue[1], relationVar);
+//                        }
                         if (value.trim().length() != 0) {
                             continueProcces = true;
                         }
@@ -3804,7 +3804,8 @@ public class RecordDataMB implements Serializable {
                     } else if (newNonFatalInjury.getInjuryId().getInjuryId().compareTo((short) 52) == 0) {//INTENCIONAL AUTOINFLINGIDA 
                         newNonFatalSelfInflicted.setNonFatalInjuries(nonFatalInjuriesFacade.find(newNonFatalInjury.getNonFatalInjuryId()));
                         nonFatalSelfInflictedFacade.create(newNonFatalSelfInflicted);
-                    } else if (newNonFatalInjury.getInjuryId().getInjuryId().compareTo((short) 53) == 0) {//VIOLENCIA INTRAFAMILIAR
+                    } else if (newNonFatalInjury.getInjuryId().getInjuryId().compareTo((short) 53) == 0
+                            || newNonFatalInjury.getInjuryId().getInjuryId().compareTo((short) 55) == 0) {//VIOLENCIA INTRAFAMILIAR
                         newNonFatalDomesticViolence.setNonFatalInjuries(nonFatalInjuriesFacade.find(newNonFatalInjury.getNonFatalInjuryId()));
                         nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
                     } else if (newNonFatalInjury.getInjuryId().getInjuryId().compareTo((short) 54) == 0) {//NO INTENCIONAL 
@@ -5512,8 +5513,8 @@ public class RecordDataMB implements Serializable {
 
     private String isMilitary(String strIn) {
         /*
-         * validacion de si un string es un hora_evento miitar null=invalido
-         * ""=aceptado pero vacio "valor"=aceptado y me dice el valor
+         * validacion de si un string es un hora_evento militar null=invalido
+         * ""=aceptado pero vacio "valor"=aceptado y me dice el valor en formato militar
          */
         String str = strIn;
 
@@ -5526,24 +5527,32 @@ public class RecordDataMB implements Serializable {
 
         //----------------------------------------------
         //quitar " AM A.M.
+        boolean incrementPM = false;
         str = str.toUpperCase();
-        if (str.indexOf("AM") != -1) {
-            int a = 0;
-            a++;
+        if (str.indexOf("PM") != -1) {
+            incrementPM = true;
 
         }
         str = str.replace(" ", "");
-        str = str.replace("AM", "");
-        str = str.replace("A.M.", "");
-        str = str.replace("\"", "");
+        str = str.replace("AM", "").replace("A.M.", "").replace("\"", "");
+        str = str.replace("PM", "").replace("P.M.", "");
 
         //determinar si es un timestamp
-        if (str.trim().length() == 12 || str.trim().length() == 8) {
+        if (str.trim().length() == 12 || str.trim().length() == 8 || str.trim().length() == 7) {
             String[] splitMilitary = str.split(":");
             if (splitMilitary.length == 3) {
                 try {
                     int h = Integer.parseInt(splitMilitary[0]);
                     int m = Integer.parseInt(splitMilitary[1]);
+                    if (incrementPM) {
+                        h = h + 12;
+                        if (h == 24) {
+                            h = 0;
+                        }
+                    }
+                    splitMilitary[0] = String.valueOf(h);
+
+
                     if (splitMilitary[0].length() == 1) {
                         splitMilitary[0] = "0" + splitMilitary[0];
                     }
@@ -5587,6 +5596,15 @@ public class RecordDataMB implements Serializable {
             try {
                 int h = Integer.parseInt(splitMilitary[0]);
                 int m = Integer.parseInt(splitMilitary[1]);
+                if (incrementPM) {
+                    h = h + 12;
+                    if (h == 24) {
+                        h = 0;
+                    }
+                }
+                splitMilitary[0] = String.valueOf(h);
+
+
                 if (splitMilitary[0].length() == 1) {
                     splitMilitary[0] = "0" + splitMilitary[0];
                 }
@@ -5640,6 +5658,15 @@ public class RecordDataMB implements Serializable {
             try {
                 int h = Integer.parseInt(str.substring(0, 2));
                 int m = Integer.parseInt(str.substring(2, 4));
+                
+                if (incrementPM) {
+                        h = h + 12;
+                        if (h == 24) {
+                            h = 0;
+                            str="00"+str.substring(2, 4);
+                        }
+                    }
+                
                 if (h > 24 || h < 0) {
                     return null;
                     //return "La hora_evento debe estar entre 0 y 23";
@@ -5657,9 +5684,8 @@ public class RecordDataMB implements Serializable {
             }
         } else {
             return null;
-            //return "Una hora_evento militar debe tener menos de 4 digitos";
+            //return "Una hora_evento militar debe tener menos de 5 digitos";
         }
-
         return null;
         //return "Valor no aceptado como hora_evento militar";
     }
