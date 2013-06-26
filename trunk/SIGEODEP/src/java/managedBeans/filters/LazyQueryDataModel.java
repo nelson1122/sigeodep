@@ -8,6 +8,7 @@ import beans.connection.ConnectionJdbcMB;
 import java.util.List;
 import java.util.Map;
 import javax.faces.context.FacesContext;
+import model.pojo.Projects;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
@@ -19,10 +20,12 @@ public class LazyQueryDataModel extends LazyDataModel<List> {
 
     private List<List> datasource;
     private ConnectionJdbcMB connection;
+    private int pojectId = -1;
 
-    public LazyQueryDataModel() {
+    public LazyQueryDataModel(int pojectId) {
+        this.pojectId = pojectId;
         connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        //datasource = connection.getListFromQuery(0, 10);
+        datasource = connection.getListFromQuery(0, 10, pojectId);
     }
 
     @Override
@@ -56,11 +59,10 @@ public class LazyQueryDataModel extends LazyDataModel<List> {
 
     @Override
     public List<List> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, String> filters) {
-        datasource = connection.getListFromQuery(first, pageSize);
-        //rowCount
-        int dataSize = connection.getTempRowCount();
-        this.setRowCount(dataSize);
 
+        datasource = connection.getListFromQuery(first, pageSize, this.pojectId);
+        int dataSize = connection.getTempRowCount(this.pojectId);
+        this.setRowCount(dataSize);
         return datasource;
     }
 }

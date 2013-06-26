@@ -40,7 +40,7 @@
                         <br/><br/>
                         <p:graphicImage value="../../resources/img/logo2.png"/>
                         <br/><br/>
-                        
+
                         <p:accordionPanel  activeIndex="#{loginMB.activeIndexAcoordion1}" >                            
                             <p:tab title="REGISTRO DE DATOS">
                                 <p:menu style="width: 200px; z-index:23; overflow: no-display;">
@@ -163,7 +163,7 @@
                                         actionListener="#{backupsMB.reset}"
                                         action="backups" 
                                         ajax="false"/>  
-                                    
+
                                 </p:menu> 
                             </p:tab>
                             <p:tab title="GENERAL">
@@ -192,14 +192,13 @@
                 </p:layoutUnit>  
                 <!-- ****************************** CONTENIDO (PARTE CENTRAL) ************************ -->
                 <p:layoutUnit position="center" > 
-
                     <p:ajaxStatus 
                         style=" position:fixed; 
                         top: 5px; 
                         right:35px; 
                         width:17px;
                         height:17px; 
-                        z-index: 21;" 
+                        z-index: 21;"                        
                         id="ajaxStatusPanel">  
                         <f:facet name="start">  
                             <h:graphicImage value="../../resources/img/ajaxloading.gif" />                      
@@ -208,6 +207,11 @@
                             <h:outputText value="&nbsp;" />  
                         </f:facet>  
                     </p:ajaxStatus>
+                    <!-- p:ajaxStatus onstart="statusDialog.show();" onsuccess="statusDialog.hide();"/> 
+                    <p:dialog modal="true" widgetVar="statusDialog" header="procesando.." 
+                              draggable="false" closable="false" resizable="false" > 
+                        <h:graphicImage value="../../resources/img/ajaxloading.gif" />
+                    </p:dialog-->
                     <div id="welcome">
                         <h1>
                             <ui:insert name="title" >   

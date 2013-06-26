@@ -4,6 +4,7 @@
  */
 package managedBeans.fileProcessing;
 
+import managedBeans.filters.FilterMB;
 import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.*;
@@ -25,7 +26,6 @@ import javax.faces.model.SelectItem;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import managedBeans.filters.CopyMB;
 import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
@@ -129,7 +129,7 @@ public class ProjectsMB implements Serializable {
     private RecordDataMB recordDataMB;
     //private StoredRelationsMB storedRelationsMB;
     private ConnectionJdbcMB connectionJdbcMB;
-    private CopyMB copyMB;
+    //private CopyMB copyMB;
     //private List<Tags> tagsList;
     private boolean inactiveTabs = true;
     private int currentProjectId = -1;//identificador de proyecto actual
@@ -210,7 +210,7 @@ public class ProjectsMB implements Serializable {
          */
         FacesContext context = FacesContext.getCurrentInstance();
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
+        //copyMB = (CopyMB) context.getApplication().evaluateExpressionGet(context, "#{copyMB}", CopyMB.class);
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
         relationshipOfValuesMB = (RelationshipOfValuesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfValuesMB}", RelationshipOfValuesMB.class);
         errorsControlMB = (ErrorsControlMB) context.getApplication().evaluateExpressionGet(context, "#{errorsControlMB}", ErrorsControlMB.class);
@@ -794,20 +794,14 @@ public class ProjectsMB implements Serializable {
                 int rowNumber = 0;
                 ResultSet rs = connectionJdbcMB.consult(""
                         + " SELECT "
-                        + " 	project_columns.column_name, "
-                        + "     project_columns.column_id "
+                        + " 	column_name, "
+                        + "     column_id "
                         + " FROM "
-                        + " 	public.project_columns, "
-                        + "     public.projects "
+                        + " 	project_columns "
                         + " WHERE "
-                        + "     project_columns.column_id >= projects.start_column_id AND "
-                        + "     project_columns.column_id <= projects.end_column_id AND "
-                        + "     projects.project_id = " + currentProjectId + " "
-                        + " GROUP BY "
-                        + "     project_columns.column_name, "
-                        + "     project_columns.column_id "
+                        + "     project_id = " + currentProjectId + " "
                         + " ORDER BY "
-                        + "     project_columns.column_id ");
+                        + "     column_id ");
                 while (rs.next()) {
                     titles.add(rs.getString(1));
                 }
@@ -1268,8 +1262,8 @@ public class ProjectsMB implements Serializable {
                 filterMB.reset();
                 relationshipOfVariablesMB.convertAllIdSivigila();//SI EL PROYECTO ES SIVIGILA SE DEBE REALIZAR LA CONVERSION DE COLUMNAS
                 configurationLoaded = true;
-                copyMB.refresh();//actualizo pestaña (filtros)                
-                copyMB.cleanBackupTables();
+                //copyMB.refresh();//actualizo pestaña (filtros)                
+                //copyMB.cleanBackupTables();
                 errorsList.add("Proyecto creado correctamente, se cargaron " + String.valueOf(tuplesProcessed - 1) + " registros.");
             } else {
                 errorsList.add("Ocurrió un error procesando el archivo, " + error);
@@ -1318,8 +1312,8 @@ public class ProjectsMB implements Serializable {
                     filterMB.reset();
                     configurationLoaded = true;
                     //actualizo pestaña (filtros)                
-                    copyMB.refresh();
-                    copyMB.cleanBackupTables();
+                    //copyMB.refresh();
+                    //copyMB.cleanBackupTables();
 
 
                     printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El proyecto " + currentProjectName + " ha sido cargado");
@@ -1366,11 +1360,12 @@ public class ProjectsMB implements Serializable {
                 //activo las pestañas
                 inactiveTabs = false;
                 relationshipOfVariablesMB.refresh();
+                filterMB.setProjectsMB(this);
                 filterMB.reset();
                 configurationLoaded = true;
                 //actualizo pestaña (filtros)                
-                copyMB.refresh();
-                copyMB.cleanBackupTables();
+                //copyMB.refresh();
+                //copyMB.cleanBackupTables();
                 //recargo los combos                
                 printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El proyecto " + currentProjectName + " ha sido cargado");
             } else {

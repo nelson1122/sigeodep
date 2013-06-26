@@ -4,6 +4,7 @@
  */
 package managedBeans.login;
 
+import managedBeans.filters.FilterMB;
 import beans.connection.ConnectionJdbcMB;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -67,7 +68,11 @@ public class LoginMB {
     private void destroySession() {
         try {
             applicationControlMB.removeSession(idSession);
+            //elimino datos que este usuario tenga por realizacion de indicadores
             connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());
+            //Elimino historial de filtros para este ususario
+            connectionJdbcMB.non_query("DELETE FROM project_history_filters WHERE project_id IN "
+                    + "(SELECT project_id FROM projects WHERE user_id = " + currentUser.getUserId() + ")");
             //System.out.println("Eliminadas variables de session para: "+currentUser.getUserLogin());
         } catch (Exception e) {
             //System.out.println("Termina session por inactividad 003 " + e.toString());
@@ -83,7 +88,6 @@ public class LoginMB {
 //        } catch (Exception ex) {//System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
 //        }
 //    }
-
     public void logout1() {//fin de session por que se inicio una nueva session en otro equipo      
         applicationControlMB.removeSession(idSession);
         try {
@@ -196,14 +200,14 @@ public class LoginMB {
             errorsControlMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
             errorsControlMB.setProjectsMB(projectsMB);
             projectsMB.setRelationshipOfVariablesMB(relationshipOfVariablesMB);
-            
+
             if (currentUser.getProjectId() != null) {
                 projectsMB.openProject(currentUser.getProjectId());
             }
-            
+
             filterMB.setProjectsMB(projectsMB);
             filterMB.reset();
-            
+
             autenticado = true;
 
             ResultSet rs = connectionJdbcMB.consult("SELECT * FROM configurations");
@@ -423,4 +427,3 @@ public class LoginMB {
         this.disableAdministratorSection = disableAdministratorSection;
     }
 }
-

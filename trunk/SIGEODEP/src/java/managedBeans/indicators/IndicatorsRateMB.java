@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -261,6 +262,11 @@ public class IndicatorsRateMB {
         if (continueProcess) {//ALMACENO EN BASE DE DATOS LOS REGISTROS DE ESTE CRUCE
             saveIndicatorRecords(createIndicatorConsult());
         }
+        if (continueProcess) {//DE SER NECESARIO SEPARO LOS REGISTROS(cuando son variables con relaciones de uno a muchos)
+            if (separateRecords) {
+                separateRecordsFunction();
+            }
+        }
 //        if (continueProcess) {//ELIMINO LOS VALORES QUE SEAN CONFIGURADOS POR EL USUARIO
 //            removeValuesConfigured();
 //        }
@@ -440,6 +446,106 @@ public class IndicatorsRateMB {
             sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
         } catch (Exception e) {
             System.out.println("EXCEPTION--------------------------" + e.toString());
+        }
+    }
+    
+    private void separateRecordsFunction() {
+        ResultSet rs;
+        ResultSet rs2;
+        String valueColumn;
+        String[] splitRegisters;
+        String[] splitForSql;
+        try {
+            //determinar el maximo
+            sql = ""
+                    + " SELECT  \n\r"
+                    + "	MAX(record_id) \n\r"
+                    + " FROM \n\r"
+                    + "	indicators_records \n\r"
+                    + " WHERE \n\r"
+                    + "     user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                    + "     indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
+            rs = connectionJdbcMB.consult(sql);
+            rs.next();
+            tuplesProcessed = rs.getInt(1);
+            sql = ""
+                    + " SELECT  \n\r"
+                    + "	* \n\r"
+                    + " FROM \n\r"
+                    + "	indicators_records \n\r"
+                    + " WHERE \n\r"
+                    + "     user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                    + "     indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
+            cpManager = new CopyManager((BaseConnection) connectionJdbcMB.getConn());
+            for (int col = 1; col < 4; col++) {//se repite tres veces por cada una de las columnas
+                sb = new StringBuilder();
+                rs = connectionJdbcMB.consult(sql);
+                while (rs.next()) {
+                    if (rs.getString("column_" + col).indexOf("<=>") != -1) {
+                        valueColumn = rs.getString("column_" + col);
+                        valueColumn = valueColumn.substring(1, valueColumn.length() - 1);
+                        splitRegisters = valueColumn.split(",");
+                        for (int i = 0; i < splitRegisters.length; i++) {
+                            splitForSql = splitRegisters[i].split("<=>");
+                            if (splitForSql.length == 4) {
+                                tuplesProcessed++;
+                                rs2 = connectionJdbcMB.consult("SELECT " + splitForSql[0] + " FROM " + splitForSql[1] + " WHERE " + splitForSql[2] + " = " + splitForSql[3]);
+                                rs2.next();
+                                if (col == 1) {
+                                    sb.
+                                            append(rs.getInt("user_id")).append("\t"). //  user_id integer NOT NULL, -- usuario que genera el indicador
+                                            append(rs.getInt("indicator_id")).append("\t"). //  indicator_id integer NOT NULL, -- identificador del indicador
+                                            append(tuplesProcessed).append("\t"). //  record_id integer NOT NULL, -- identificador del registro para ordenamiento
+                                            append(rs2.getString(1)).append("\t"). //  column_1 text, -- valor de la primer variable cruzada
+                                            append(rs.getString("column_2")).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
+                                            append(rs.getString("column_3")).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
+                                            append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
+                                            append(rs.getString("population")).append("\n");                             //  population integer,
+                                }
+                                if (col == 2) {
+                                    sb.
+                                            append(rs.getInt("user_id")).append("\t"). //  user_id integer NOT NULL, -- usuario que genera el indicador
+                                            append(rs.getInt("indicator_id")).append("\t"). //  indicator_id integer NOT NULL, -- identificador del indicador
+                                            append(tuplesProcessed).append("\t"). //  record_id integer NOT NULL, -- identificador del registro para ordenamiento
+                                            append(rs.getString("column_1")).append("\t"). //  column_1 text, -- valor de la primer variable cruzada
+                                            append(rs2.getString(1)).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
+                                            append(rs.getString("column_3")).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
+                                            append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
+                                            append(rs.getString("population")).append("\n");                             //  population integer,
+                                }
+                                if (col == 3) {
+                                    sb.
+                                            append(rs.getInt("user_id")).append("\t"). //  user_id integer NOT NULL, -- usuario que genera el indicador
+                                            append(rs.getInt("indicator_id")).append("\t"). //  indicator_id integer NOT NULL, -- identificador del indicador
+                                            append(tuplesProcessed).append("\t"). //  record_id integer NOT NULL, -- identificador del registro para ordenamiento
+                                            append(rs.getString("column_1")).append("\t"). //  column_1 text, -- valor de la primer variable cruzada
+                                            append(rs.getString("column_2")).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
+                                            append(rs2.getString(1)).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
+                                            append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
+                                            append(rs.getString("population")).append("\n");                             //  population integer,
+                                }
+                            }
+                        }
+                    }
+                }
+                //REALIZO LA INSERCION
+                cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
+                sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
+                //elimino registro que contengan 
+                String sqlRemove = ""
+                        + " DELETE  \n\r"
+                        + " FROM \n\r"
+                        + "	    indicators_records \n\r"
+                        + " WHERE \n\r"
+                        + "     user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                        + "     indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " AND \n\r"
+                        + "     ( column_" + col + " like '%<=>%')";
+                connectionJdbcMB.non_query(sqlRemove);
+            }
+
+
+        } catch (SQLException | IOException e) {
+            System.out.println("Error: " + e.toString());
         }
     }
 
@@ -1978,7 +2084,6 @@ public class IndicatorsRateMB {
             case genders://genero,
             case days://dia semana
             case quadrants://cuadrante
-
             case activities:
             case boolean3:
             case victim_characteristics:
@@ -2001,7 +2106,7 @@ public class IndicatorsRateMB {
             case protective_measures:
             case relationships_to_victim:
             case weapon_types:
-            case counterpart_service_type:
+            case degree:
             case service_types:
             case transport_counterparts:
             case transport_types:
@@ -2009,6 +2114,23 @@ public class IndicatorsRateMB {
             case involved_vehicles:
             case road_types:
 
+            case abuse_types:
+            case aggressor_types:
+            case ethnic_groups:
+            case insurance:
+            case jobs:
+            case public_health_actions:
+            case sivigila_educational_level:
+            case sivigila_group:
+            case sivigila_mechanism:
+            case sivigila_no_relative:
+            case sivigila_tip_ss:
+            case sivigila_vulnerability:
+            case vulnerable_groups:
+            case kinds_of_injury:
+            case anatomical_locations:
+            case actions_to_take:
+            case security_elements:                
             case NOVALUE://es una tabla categorica
                 try {
                     //ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
