@@ -24,6 +24,7 @@ Ext.onReady(function() {
     } else {
         attribution = "<br>Universidad de Nari&ntilde;o, Alcald&iacute;a Municipal de Pasto, Colciencias.";
     }
+
     initializeColumns(vars);
     var url_data = "data.jsp?" + window.location.href.split("?")[1];
 
@@ -139,7 +140,6 @@ Ext.onReady(function() {
     if (vars.length > 1) {
         vectors.events.on({
             featureselected: function(e) {
-                //alert(e.feature.data.name);
                 WHERE = "(";
                 for (var i = 0; i < this.selectedFeatures.length; i++) {
                     WHERE += "'" + this.selectedFeatures[i].data.name + "',";
@@ -169,6 +169,12 @@ Ext.onReady(function() {
                 } else {
                     popup.destroy();
                 }
+            }
+        });
+    } else {
+        vectors.events.on({
+            featureselected: function(e) {
+                Ext.getCmp('infopanel').update(e.feature.data.suburb + '<br>' + e.feature.data.quadrant);
             }
         });
     }
@@ -298,7 +304,7 @@ Ext.onReady(function() {
     // create grid panel configured with feature store
     gridPanel = new Ext.grid.GridPanel({
         title: geo_vars[index_g],
-        region: "east",
+        region: "center",
         collapsible: true,
         store: store,
         width: 320,
@@ -320,9 +326,20 @@ Ext.onReady(function() {
         sm: new GeoExt.grid.FeatureSelectionModel(),
         autoExpandColumn: "name"
     });
-
-
-
+    
+    infoPanel = new Ext.Panel({
+        region: "south",
+        id: 'infopanel',
+        height: 70
+    });
+    
+    eastPanel = new Ext.Panel({
+        layout: 'border',
+        region: 'east',
+        width: 320,
+        items: [gridPanel, infoPanel]   
+    });
+    
     // create a panel and add the map panel and grid panel
     // inside it
     mainPanel = new Ext.Viewport({
@@ -330,7 +347,7 @@ Ext.onReady(function() {
         layout: "border",
         width: 1000,
         height: 800,
-        items: [mapPanel, gridPanel]
+        items: [mapPanel, eastPanel]
     });
 
     legend = new Ext.Window({
@@ -342,6 +359,10 @@ Ext.onReady(function() {
         },
         contentEl: 'legend'
     }).show().alignTo('mappanel', 'br-br', [-50, -50]);
+    
+    Ext.get('infopanel').set({
+        style: "font-size: 14;font-weight:bold;"
+    });
 });
 
 function parseURLParams(url) {
