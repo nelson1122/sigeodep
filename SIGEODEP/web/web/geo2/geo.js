@@ -166,9 +166,28 @@ Ext.onReady(function() {
         }
     });
 
-    if (vars.length > 1) {
-        vectors.events.on({
-            featureselected: function(e) {
+    vectors.events.on({
+        featureselected: function(e) {
+            var html;
+            if(geo_vars[index_g] === 'Barrios'){
+                html = e.feature.data.suburb + '<br>' + e.feature.data.quadrant;
+                if(e.feature.data.corridor !== 'SIN DATO'){
+                    html += '<br>' + e.feature.data.corridor;
+                }
+                Ext.get('infopanel').set({
+                    style: "font-size: 14;font-weight:bold;"
+                });
+                Ext.getCmp('infopanel').update(html);
+            }
+            if(geo_vars[index_g] === 'Cuadrantes'){
+                html = e.feature.data.neighborhoods;
+                html = html.replace('{','').replace('}','').replace(',',', ');
+                Ext.get('infopanel').set({
+                    style: "font-size: 12;"
+                });
+                Ext.getCmp('infopanel').update(html);
+            }
+            if (vars.length > 1) {
                 WHERE = "(";
                 for (var i = 0; i < this.selectedFeatures.length; i++) {
                     WHERE += "'" + this.selectedFeatures[i].data.name + "',";
@@ -199,32 +218,8 @@ Ext.onReady(function() {
                     popup.destroy();
                 }
             }
-        });
-    } else {
-        vectors.events.on({
-            featureselected: function(e) {
-                var html;
-                if(geo_vars[index_g] === 'Barrios'){
-                    html = e.feature.data.suburb + '<br>' + e.feature.data.quadrant;
-                    if(e.feature.data.corridor !== 'SIN DATO'){
-                        html += '<br>' + e.feature.data.corridor;
-                    }
-                    Ext.get('infopanel').set({
-                        style: "font-size: 14;font-weight:bold;"
-                    });
-                    Ext.getCmp('infopanel').update(html);
-                }
-                if(geo_vars[index_g] === 'Cuadrantes'){
-                    html = e.feature.data.neighborhoods;
-                    html = html.replace('{','').replace('}','').replace(',',', ');
-                    Ext.get('infopanel').set({
-                        style: "font-size: 12;"
-                    });
-                    Ext.getCmp('infopanel').update(html);
-                }
-            }
-        });
-    }
+        }
+    });
 
     function createPopup(feature) {
         if (typeof popup !== 'undefined' && Ext.get(popup.id) !== null) {
