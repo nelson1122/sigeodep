@@ -102,6 +102,35 @@ Ext.onReady(function() {
         })
     });
 
+    quadrantStyles = new OpenLayers.StyleMap({
+        "default": new OpenLayers.Style({
+            fillColor: "#FFFFFF",
+            'strokeWidth': 1,
+            fillOpacity: 0.4,
+            graphicZIndex: 1,
+            label : "${getLabel}",
+            fontColor: "#555555",
+            fontSize: "10px",
+            fontFamily: "Courier New, monospace",
+            fontWeight: "bold",
+            labelOutlineColor: "white",
+            labelOutlineWidth: 3
+        }, {
+            context: {
+                getLabel: function(feature) {
+                    if(feature.layer.map.getZoom() > 14) {
+                        if(feature.data.name !== null){
+                            return feature.data.name;
+                        } else {
+                            return ""
+                        }
+                    } else {
+                        return "";
+                    }
+                }
+            }
+        })
+    });
 
     customStyles = new OpenLayers.StyleMap({
         "default": new OpenLayers.Style({
@@ -174,7 +203,25 @@ Ext.onReady(function() {
     } else {
         vectors.events.on({
             featureselected: function(e) {
-                Ext.getCmp('infopanel').update(e.feature.data.suburb + '<br>' + e.feature.data.quadrant);
+                var html;
+                if(geo_vars[index_g] === 'Barrios'){
+                    html = e.feature.data.suburb + '<br>' + e.feature.data.quadrant;
+                    if(e.feature.data.corridor !== 'SIN DATO'){
+                        html += '<br>' + e.feature.data.corridor;
+                    }
+                    Ext.get('infopanel').set({
+                        style: "font-size: 14;font-weight:bold;"
+                    });
+                    Ext.getCmp('infopanel').update(html);
+                }
+                if(geo_vars[index_g] === 'Cuadrantes'){
+                    html = e.feature.data.neighborhoods;
+                    html = html.replace('{','').replace('}','').replace(',',', ');
+                    Ext.get('infopanel').set({
+                        style: "font-size: 12;"
+                    });
+                    Ext.getCmp('infopanel').update(html);
+                }
             }
         });
     }
@@ -250,7 +297,7 @@ Ext.onReady(function() {
         map.addLayer(neighborhoods);
     } else {
         quadrant_polygons = new OpenLayers.Layer.Vector(geo_vars[index_g], {
-            styleMap: initialStyles,
+            styleMap: quadrantStyles,
             projection: new OpenLayers.Projection("EPSG:900913"),
             strategies: [new OpenLayers.Strategy.Fixed()],
             protocol: new OpenLayers.Protocol.HTTP({
@@ -329,6 +376,7 @@ Ext.onReady(function() {
     
     infoPanel = new Ext.Panel({
         region: "south",
+        autoScroll: true,
         id: 'infopanel',
         height: 70
     });
@@ -359,10 +407,7 @@ Ext.onReady(function() {
         },
         contentEl: 'legend'
     }).show().alignTo('mappanel', 'br-br', [-50, -50]);
-    
-    Ext.get('infopanel').set({
-        style: "font-size: 14;font-weight:bold;"
-    });
+
 });
 
 function parseURLParams(url) {
