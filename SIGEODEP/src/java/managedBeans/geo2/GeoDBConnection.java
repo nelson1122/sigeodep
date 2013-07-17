@@ -201,7 +201,8 @@ public class GeoDBConnection implements Serializable {
     public List<MfFeature> getPolygons(RangeFactory rf) {
         String query = "SELECT "
                 + "         record_id, "
-                + "         neighborhood_name, commune_name, quadrant_name, "
+                + "         neighborhood_name, commune_name, "
+                + "         quadrant_name, corridor_name, "
                 + "         count, n.geom "
                 + " FROM "
                 + "         neighborhoods n "
@@ -213,6 +214,10 @@ public class GeoDBConnection implements Serializable {
                 + "         quadrants "
                 + " ON "
                 + "         (neighborhood_quadrant = quadrant_id) "
+                + " JOIN "
+                + "         corridors "
+                + " ON "
+                + "         (neighborhood_corridor = corridor_id) "
                 + " INNER JOIN "
                 + "         (SELECT "
                 + "                 min(record_id) AS record_id, " + geo_column + ", sum(count) AS count "
@@ -241,6 +246,7 @@ public class GeoDBConnection implements Serializable {
                 final String fname = records.getString("neighborhood_name");
                 final String fsuburb = records.getString("commune_name");
                 final String fquadrant = records.getString("quadrant_name");
+                final String fcorridor = records.getString("corridor_name");
                 final Double fvalue = new Double(records.getInt("count"));
                 final String fcolour = "#" + rf.getColorByValue(fvalue);
                 String geom = records.getString("geom");
@@ -249,6 +255,7 @@ public class GeoDBConnection implements Serializable {
                     String name = fname;
                     String suburb = fsuburb;
                     String quadrant = fquadrant;
+                    String corridor = fcorridor;
                     private double value = fvalue;
                     private String colour = fcolour;
                     private Integer id = fid;
@@ -271,6 +278,8 @@ public class GeoDBConnection implements Serializable {
                         writer.value(suburb);
                         writer.key("quadrant");
                         writer.value(quadrant);
+                        writer.key("corridor");
+                        writer.value(corridor);
                         writer.key("value");
                         writer.value(value);
                         writer.key("colour");
@@ -496,7 +505,9 @@ public class GeoDBConnection implements Serializable {
                 + "SELECT "
                 + "	" + f + "_id AS id, " + f + "_name AS name, geom "
                 + "FROM "
-                + "	" + f + "s";
+                + "	" + f + "s "
+                + "WHERE "
+                + "     geom IS NOT NULL";
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
         ResultSet records = this.consult(query);
@@ -577,29 +588,38 @@ public class GeoDBConnection implements Serializable {
     }
 
     public List<MfFeature> getQuadrantsPolygons(RangeFactory rf) {
-        String query = "SELECT "
-                + "        record_id, quadrant_name, count, geom "
+        String query = ""
+                + " SELECT "
+                + "     record_id, quadrant_name, count, q.geom, "
+                + "     REPLACE(CAST(array_agg(neighborhood_name) AS TEXT),'\"','') AS neighborhoods "
                 + " FROM "
-                + "         quadrants "
+                + "     quadrants  q"
+                + " JOIN "
+                + "	neighborhoods "
+                + " ON "
+                + "	(neighborhood_quadrant = quadrant_id)"
                 + " INNER JOIN "
-                + "         (SELECT "
-                + "                 min(record_id) AS record_id, " + geo_column + ", sum(count) AS count "
-                + "         FROM "
-                + "                 indicators_records "
-                + "         WHERE "
-                + "                 count > 0 "
-                + "                 AND user_id = " + user_id + " "
-                + "                 AND indicator_id = " + indicator_id + " "
-                + "         GROUP BY "
-                + "                 " + geo_column + " "
-                + "         ORDER BY "
-                + "                 2) AS foo "
+                + "     (SELECT "
+                + "             min(record_id) AS record_id, " + geo_column + ", sum(count) AS count "
+                + "     FROM "
+                + "             indicators_records "
+                + "     WHERE "
+                + "             count > 0 "
+                + "             AND user_id = " + user_id + " "
+                + "             AND indicator_id = " + indicator_id + " "
+                + "     GROUP BY "
+                + "             " + geo_column + " "
+                + "     ORDER BY "
+                + "             2) AS foo "
                 + " ON 	"
-                + "      (" + geo_column + " LIKE quadrant_name)  "
+                + "     (" + geo_column + " LIKE quadrant_name)  "
                 + " WHERE "
-                + "         geom IS NOT NULL "
+                + "     q.geom IS NOT NULL "
+                + " GROUP BY "
+                + "     record_id, quadrant_name, count, q.geom "
                 + " ORDER BY "
-                + "         count DESC";
+                + "     count DESC";
+        System.out.println(query);
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
         ResultSet records = this.consult(query);
@@ -607,12 +627,14 @@ public class GeoDBConnection implements Serializable {
             while (records.next()) {
                 final int fid = records.getInt("record_id");
                 final String fname = records.getString("quadrant_name");
+                final String fneighborhoods = records.getString("neighborhoods");
                 final Double fvalue = new Double(records.getInt("count"));
                 final String fcolour = "#" + rf.getColorByValue(fvalue);
                 String geom = records.getString("geom");
                 final MfGeometry fgeom = new MfGeometry(wktReader.read(geom));
                 MfFeature feature = new MfFeature() {
                     String name = fname;
+                    String neighborhoods = fneighborhoods;
                     private double value = fvalue;
                     private String colour = fcolour;
                     private Integer id = fid;
@@ -631,6 +653,8 @@ public class GeoDBConnection implements Serializable {
                     public void toJSON(JSONWriter writer) throws JSONException {
                         writer.key("name");
                         writer.value(name);
+                        writer.key("neighborhoods");
+                        writer.value(neighborhoods);
                         writer.key("value");
                         writer.value(value);
                         writer.key("colour");
