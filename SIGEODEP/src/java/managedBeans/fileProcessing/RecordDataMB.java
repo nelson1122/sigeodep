@@ -222,7 +222,6 @@ public class RecordDataMB implements Serializable {
     private FatalInjuryMurder newFatalInjuryMurder;
     private FatalInjurySuicide newFatalInjurySuicide;
     private FatalInjuryTraffic newFatalInjuryTraffic;
-    private Injuries selectInjuryFile;//tipo de lesion que me dice el archivo
     private NonFatalTransport newNonFatalTransport;
     private NonFatalInterpersonal newNonFatalInterpersonal;
     private NonFatalSelfInflicted newNonFatalSelfInflicted;
@@ -783,7 +782,7 @@ public class RecordDataMB implements Serializable {
                                             domesticViolenceValues = domesticViolenceValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
                                         }
                                         break;
-                                    //guardar campos otros--------------------------------      
+                                    //campos otros--------------------------------      
                                     case otro_factor_precipitante://para autoinflingida intencional
                                         selftInflictedValues = selftInflictedValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
                                         break;
@@ -840,22 +839,20 @@ public class RecordDataMB implements Serializable {
 
                     switch (FormsEnum.convert(nameForm.replace("-", "_"))) {//tipo de relacion                        
                         case SCC_F_032:
-                            //RELACION PARA LA INTENCIONALIDAD
-                            if (intencionality == null) {
+                            if (intencionality == null || intencionality.length() == 0) {//RELACION PARA LA INTENCIONALIDAD
                                 relationVar = currentRelationsGroup.findRelationVarByNameExpected("intencionalidad");//determino la relacion de variables
                                 errorsNumber++;
                                 errorsControlMB.addError(errorsNumber, relationVar, "", resultSetFileData.getString("record_id"));
+                            } else {//VALIDACION DE TIPO DE INTENCIONALIDAD->MECANISMO->DATOS ESPECIFICOS EVENTO
+                                validateIntentionalityMechanismAndDataEvent(
+                                        resultSetFileData.getString("record_id"),
+                                        intencionality,
+                                        mechanism,
+                                        traficValues,
+                                        interpersonalValues,
+                                        selftInflictedValues,
+                                        domesticViolenceValues);
                             }
-                            //VALIDACION DE TIPO DE INTENCIONALIDAD->MECANISMO->DATOS ESPECIFICOS EVENTO
-
-                            validateIntentionalityMechanismAndDataEvent(
-                                    resultSetFileData.getString("record_id"),
-                                    intencionality,
-                                    mechanism,
-                                    traficValues,
-                                    interpersonalValues,
-                                    selftInflictedValues,
-                                    domesticViolenceValues);
 
                         case SCC_F_028:
                         case SCC_F_029:
@@ -871,7 +868,6 @@ public class RecordDataMB implements Serializable {
                             }
                             break;
                     }
-
                     //..........................................................
                     //currentNumberOfRow++;
                     tuplesProcessed++;
@@ -924,10 +920,10 @@ public class RecordDataMB implements Serializable {
                     errorsNumber++;
                     errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' el mecanismo no puede ser 'MORDEDURA DE PERSONA' ", rowId);
                 }
-                if (traficValues.length() != 0) {
-                    errorsNumber++;
-                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' no pueden haber datos de LESION DE TRANSPORTE: (" + traficValues + ")", rowId);
-                }
+//                if (traficValues.length() != 0) {
+//                    errorsNumber++;
+//                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' no pueden haber datos de LESION DE TRANSPORTE: (" + traficValues + ")", rowId);
+//                }
                 if (interpersonalValues.length() != 0) {
                     errorsNumber++;
                     errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' no pueden haber datos de VIOLENCIA INTERPERSONAL: (" + interpersonalValues + ")", rowId);
@@ -2958,7 +2954,7 @@ public class RecordDataMB implements Serializable {
         }
     }
 
-    public void registerSCC_F_032() throws ParseException {
+    public void registerSCC_F_032() {
         /**
          * *********************************************************************
          * CARGA DE REGISTROS DE LA FICHA LCENF
@@ -2996,7 +2992,7 @@ public class RecordDataMB implements Serializable {
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
                 newNonFatalDomesticViolence.setNonFatalInjuryId(newNonFatalInjury.getNonFatalInjuryId());
                 newNonFatalDomesticViolence.setNonFatalInjuries(newNonFatalInjury);
-                selectInjuryFile = null;
+
                 Injuries selectInjuryDetermined = null;
                 newNonFatalInjury.setInputTimestamp(new Date());
                 newNonFatalTransport = new NonFatalTransport();//nuevo non_fatal_transport
@@ -3198,9 +3194,11 @@ public class RecordDataMB implements Serializable {
                                 selectInjuryDetermined = injuriesFacade.find((short) 51);
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_interpersonal
-                            case antecedentes_previos_agresion://boleano->previous_antecedent                                    
+                            case antecedentes_previos_agresion://boleano->previous_antecedent 
                                 newNonFatalInterpersonal.setPreviousAntecedent(boolean3Facade.find(Short.parseShort(value)));
-                                selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                if (value.equals("1")) {//SI
+                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                }
                                 break;
                             case relacion_agresor_victima://categorico->relationships_to_victim                                    
                                 newNonFatalInterpersonal.setRelationshipVictimId(relationshipsToVictimFacade.find(Short.parseShort(value)));
@@ -3217,15 +3215,21 @@ public class RecordDataMB implements Serializable {
                             // ************************************************DATOS PARA LA TABLA non_fatal_selft-inflicted
                             case intento_previo_autoinflingida:
                                 newNonFatalSelfInflicted.setPreviousAttempt(boolean3Facade.find(Short.parseShort(value)));//si                                    
-                                selectInjuryDetermined = injuriesFacade.find((short) 52);
+                                if (value.equals("1")) {//SI
+                                    selectInjuryDetermined = injuriesFacade.find((short) 52);
+                                }
                                 break;
                             case antecedentes_transtorno_mental:
                                 newNonFatalSelfInflicted.setMentalAntecedent(boolean3Facade.find(Short.parseShort(value)));//si                                    
-                                selectInjuryDetermined = injuriesFacade.find((short) 52);
+                                if (value.equals("1")) {//SI
+                                    selectInjuryDetermined = injuriesFacade.find((short) 52);
+                                }
                                 break;
                             case factores_precipitantes:
                                 newNonFatalSelfInflicted.setPrecipitatingFactorId(precipitatingFactorsFacade.find(Short.parseShort(value)));
-                                selectInjuryDetermined = injuriesFacade.find((short) 52);
+                                if (value.equals("1")) {//SI
+                                    selectInjuryDetermined = injuriesFacade.find((short) 52);
+                                }
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_transport_security_element
                             case uso_elementos_seguridad:
@@ -3695,36 +3699,43 @@ public class RecordDataMB implements Serializable {
 //                            case oanimal://cual animal 8
 //                                break;
                             case otro_factor_precipitante://otro factor precipitante
+                                selectInjuryDetermined = injuriesFacade.find((short) 52);//autoinflingida intencional
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 9));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
                             case cual_otro_tipo_agresor://otro tipo de agresor(vif)
+                                selectInjuryDetermined = injuriesFacade.find((short) 53);//intrafamiliar
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 10));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
-                            case cual_otro_tipo_maltrato://otro tipo de maltrato(vif)                                    
+                            case cual_otro_tipo_maltrato://otro tipo de maltrato(vif)  
+                                selectInjuryDetermined = injuriesFacade.find((short) 53);//intrafamiliar
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 11));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
                             case otro_tipo_relacion_victima:
+                                selectInjuryDetermined = injuriesFacade.find((short) 50);//interpersonal
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 12));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
                             case otro_tipo_transporte_usuario:
+                                selectInjuryDetermined = injuriesFacade.find((short) 51);//transito
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 13));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
                             case otro_tipo_transporte_contraparte:
+                                selectInjuryDetermined = injuriesFacade.find((short) 51);//transito
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 14));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
                             case otro_tipo_de_usuario:
+                                selectInjuryDetermined = injuriesFacade.find((short) 51);//transito
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 15));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
@@ -3773,8 +3784,11 @@ public class RecordDataMB implements Serializable {
                     if (dia1 != null && mes1 != null && ao1 != null) {
                         SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
                         Date fechaI;
-                        fechaI = formato.parse(dia1 + "/" + mes1 + "/" + ao1);
-                        newNonFatalInjury.setCheckupDate(fechaI);
+                        try {
+                            fechaI = formato.parse(dia1 + "/" + mes1 + "/" + ao1);
+                            newNonFatalInjury.setCheckupDate(fechaI);
+                        } catch (Exception e) {
+                        }
                     }
                 }
                 //SI NO HAY HORA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES hora_evento,minuto_evento,am_pm
@@ -3807,8 +3821,11 @@ public class RecordDataMB implements Serializable {
                     if (dia != null && mes != null && ao != null) {
                         SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
                         Date fechaI;
-                        fechaI = formato.parse(dia + "/" + mes + "/" + ao);
-                        newNonFatalInjury.setInjuryDate(fechaI);
+                        try {
+                            fechaI = formato.parse(dia + "/" + mes + "/" + ao);
+                            newNonFatalInjury.setInjuryDate(fechaI);
+                        } catch (Exception e) {
+                        }
                     }
                 }
 
@@ -3969,14 +3986,10 @@ public class RecordDataMB implements Serializable {
                 }
 
                 //DETERMINO TIPO DE LESION//////////////////////////////////////
-                if (selectInjuryFile == null) {
-                    if (selectInjuryDetermined == null) {//no se pudo determinar se coloca por defecto //54. No intencional
-                        newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 54));
-                    } else {//se determino segun los datos que llegaron                        
-                        newNonFatalInjury.setInjuryId(selectInjuryDetermined);
-                    }
-                } else {//se detrmino por archivo
-                    newNonFatalInjury.setInjuryId(selectInjuryFile);
+                if (selectInjuryDetermined == null) {//no se pudo determinar se coloca por defecto //54. No intencional
+                    newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 54));
+                } else {//se determino segun los datos que llegaron                        
+                    newNonFatalInjury.setInjuryId(selectInjuryDetermined);
                 }
 
                 if (newNonFatalInjury.getInjuryId().getInjuryId() == (short) 53) {//53 ES POR QUE ES VIF 

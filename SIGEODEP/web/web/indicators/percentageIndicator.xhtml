@@ -125,6 +125,7 @@
                                 <p:row>
                                     <p:column>
                                         <h:selectManyListbox 
+                                            lang="es"
                                             id="IdSelectOneListVariables" 
                                             value="#{indicatorsPercentageMB.currentVariablesSelected}"
                                             style="height:110px; width: 200px;"
@@ -218,7 +219,7 @@
                                 id="IdBtnGenerate" 
                                 actionListener="#{indicatorsPercentageMB.process}"
                                 oncomplete="showTableResult(); pageActive();"  
-                                onclick="pageInactive();"                                                                                                                    
+                                onclick="pageInactive();" 
                                 update="IdImageChart IdPanelGraphConfig IdDataTableHtml IdBtnExport">
                             </p:commandButton>  
                             &nbsp;&nbsp;
@@ -254,7 +255,7 @@
 
                             <h:commandLink id="IdBtnExport" disabled="#{indicatorsPercentageMB.btnExportDisabled}">  
                                 <p:button  value="Exportar datos" />                                
-                                <p:dataExporter type="xls" target="IdOutFile" fileName="salida" postProcessor="#{indicatorsPercentageMB.postProcessXLS}"/>  
+                                <p:dataExporter encoding="UTF8" type="xls" target="IdOutFile" fileName="salida" postProcessor="#{indicatorsPercentageMB.postProcessXLS}"/>  
                             </h:commandLink>
                             <br/>
                             <br/>

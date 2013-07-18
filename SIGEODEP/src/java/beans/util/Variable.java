@@ -132,15 +132,14 @@ public class Variable {
         //crear la lista de años que se encuentran entre dos fechas
         int initialYear = initialDate.getYear() + 1900;
         int endYear = endDate.getYear() + 1900;
-        values = new ArrayList<String>();
-        valuesId = new ArrayList<String>();
-        valuesConfigured = new ArrayList<String>();
+        values = new ArrayList<>();
+        valuesId = new ArrayList<>();
+        valuesConfigured = new ArrayList<>();
         for (int i = initialYear; i <= endYear; i++) {
             values.add(String.valueOf(i));
             valuesId.add(String.valueOf(i));
             valuesConfigured.add(String.valueOf(i));
         }
-
     }
 
     public String getSource_table() {

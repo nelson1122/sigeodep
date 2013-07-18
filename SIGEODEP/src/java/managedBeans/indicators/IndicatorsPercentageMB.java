@@ -617,6 +617,18 @@ public class IndicatorsPercentageMB {
             btnExportDisabled = false;
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
         }
+
+//        if (currentVariablesCrossSelected != null) {
+//            System.err.println("currentVariablesCrossSelected:" + currentVariablesCrossSelected.toString());
+//        } else {
+//            System.err.println("currentVariablesCrossSelected es null");
+//        }
+//        if (variablesCrossList != null) {
+//            System.err.println("variablesCrossList" + variablesCrossList.toString());
+//        } else {
+//            System.err.println("variablesCrossList es null");
+//        }
+        currentVariablesCrossSelected = new ArrayList<>();;
     }
 
     private void groupingOfValues() {
@@ -1950,31 +1962,35 @@ public class IndicatorsPercentageMB {
     }
 
     public void changeCrossVariable() {
-        btnRemoveVariableDisabled = true;
-        btnRemoveCategoricalValueDisabled = true;
-        currentCategoricalValuesSelected = new ArrayList<>();
-        currentVariableConfiguring = null;
-        initialValue = "";
-        endValue = "";
-        //cargo la lista de valores categoricos para la variable
-        if (!currentVariablesCrossSelected.isEmpty()) {
+        try {
+            btnRemoveVariableDisabled = true;
             btnRemoveCategoricalValueDisabled = true;
-            btnRemoveVariableDisabled = false;
-            firstVariablesCrossSelected = currentVariablesCrossSelected.get(0);
-            //filtro los años segun la fecha
-
             currentCategoricalValuesSelected = new ArrayList<>();
-            for (int i = 0; i < variablesListData.size(); i++) {
-                if (variablesListData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
-                    if (variablesListData.get(i).getGeneric_table().compareTo("year") == 0) {
-                        variablesListData.get(i).filterYear(initialDate, endDate);
+            currentVariableConfiguring = null;
+            initialValue = "";
+            endValue = "";
+            //cargo la lista de valores categoricos para la variable
+            if (currentVariablesCrossSelected != null && !currentVariablesCrossSelected.isEmpty()) {
+                btnRemoveCategoricalValueDisabled = true;
+                btnRemoveVariableDisabled = false;
+                firstVariablesCrossSelected = currentVariablesCrossSelected.get(0);
+                //filtro los años segun la fecha
+                for (int i = 0; i < variablesListData.size(); i++) {
+                    if (variablesListData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
+                        //if (variablesListData.get(i).getGeneric_table().compareTo("year") == 0) {
+                            //variablesListData.get(i).filterYear(initialDate, endDate);
+                        //}
+                        currentCategoricalValuesList = variablesListData.get(i).getValuesConfigured();
+                        currentVariableConfiguring = variablesListData.get(i);
+                        btnAddCategoricalValueDisabled = !currentVariableConfiguring.isConfigurable();
+                        break;
                     }
-                    currentCategoricalValuesList = variablesListData.get(i).getValuesConfigured();
-                    currentVariableConfiguring = variablesListData.get(i);
-                    btnAddCategoricalValueDisabled = !currentVariableConfiguring.isConfigurable();
-                    break;
                 }
             }
+            //System.out.println("Aqui salio bien: ");
+        } catch (Exception e) {
+            System.out.println("Error: "+e.getMessage());
+                    
         }
     }
 
@@ -2092,7 +2108,7 @@ public class IndicatorsPercentageMB {
     private Color getColorById(int id) {
         switch (id) {
             case 2:
-                return Color.RED;           
+                return Color.RED;
             case 3:
                 return Color.YELLOW;
             case 4:
@@ -2137,10 +2153,10 @@ public class IndicatorsPercentageMB {
             case 6:
                 return new Color(0, 140, 0);//VERDE OSCURO
             case 7:
-                return new Color(255,130, 0);//NARANJA                
+                return new Color(255, 130, 0);//NARANJA                
             case 8:
                 return new Color(128, 0, 128);//MORADO                
-            case 9:                
+            case 9:
                 return new Color(160, 0, 0);//ROJO OSCURO
             case 10:
                 return new Color(0, 0, 160);//AZUL OSCURO
@@ -2212,7 +2228,7 @@ public class IndicatorsPercentageMB {
                             li.setFillPaint(c);
                             li.setLinePaint(c);
                             li.setOutlinePaint(Color.BLACK);
-                            li.setShape(new Rectangle2D.Float(0,0,10,10));
+                            li.setShape(new Rectangle2D.Float(0, 0, 10, 10));
                             plot.getRenderer().setSeriesPaint(posLeyend, c);//cambio color
                             itemsLeyendaNuevo.add(li);
                         }
@@ -2262,7 +2278,7 @@ public class IndicatorsPercentageMB {
                             li = itemsLeyendaAnterior.get(posLeyend);
                             li.setFillPaint(c);
                             li.setLinePaint(c);
-                            li.setShape(new Rectangle2D.Float(0,0,10,10));
+                            li.setShape(new Rectangle2D.Float(0, 0, 10, 10));
                             li.setOutlinePaint(c);
                             plot.setSectionPaint(posLeyend, c);//cambio color
                             itemsLeyendaNuevo.add(li);
@@ -2695,6 +2711,20 @@ public class IndicatorsPercentageMB {
     }
 
     public void postProcessXLS(Object document) {
+
+
+//        if (currentVariablesCrossSelected != null) {
+//            System.err.println("currentVariablesCrossSelected:" + currentVariablesCrossSelected.toString());
+//        } else {
+//            System.err.println("currentVariablesCrossSelected es null");
+//        }
+//        if (variablesCrossList != null) {
+//            System.err.println("variablesCrossList" + variablesCrossList.toString());
+//        } else {
+//            System.err.println("variablesCrossList es null");
+//        }
+
+
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
         HSSFRow fila;
@@ -3332,9 +3362,9 @@ public class IndicatorsPercentageMB {
                     dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_1")), "-");
                 }
             }
-            
+
             //IdSelectOneListCrossVariables: Error de validación: el valor no es válido
-            
+
             if (variablesCrossData.size() == 2) {
                 variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(1).getName();
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
@@ -3346,8 +3376,8 @@ public class IndicatorsPercentageMB {
                 sql = sql + " AND column_3 LIKE '" + currentValueGraph1 + "' ";
                 variablesName = "Desagregado por: " + variablesCrossData.get(0).getName() + ", " + variablesCrossData.get(1).getName() + ", " + variablesCrossData.get(2).getName() + " = " + determineHeader(currentValueGraph1);
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
-                
-                
+
+
 
                 while (rs.next()) {
                     dataset.setValue(rs.getLong("count"), determineHeader(rs.getString("column_1")), determineHeader(rs.getString("column_2")));
