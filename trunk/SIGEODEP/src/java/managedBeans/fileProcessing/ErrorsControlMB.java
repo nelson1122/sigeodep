@@ -176,6 +176,47 @@ public class ErrorsControlMB implements Serializable {
     }
 
     public void updateRecordClick() {
+
+
+
+        if (selectedErrorRowTable != null) {
+            ResultSet rs;
+            try {
+                //se elimina los registros que correspondan a este registro                
+                String sql = ""
+                        + " DELETE "
+                        + " FROM "
+                        + "   project_records "
+                        + " WHERE \n"
+                        + "    record_id = " + selectedErrorRowTable.getColumn2() + " AND "
+                        + "    project_id = " + projectsMB.getCurrentProjectId();
+                connectionJdbcMB.non_query(sql);
+                //se almacenan los campos que contenga este registro 
+                String values = "";
+                boolean first = true;
+                for (ValueNewValue fields : moreInfoModel) {//recorro cada una de las filas de la tabla
+                    if (fields.getOldValue() != null && fields.getOldValue().trim().length() != 0) {
+                        if (first) {
+                            first = false;
+                        } else {
+                            values = values + ",";
+                        }
+                        values = values
+                                + "(" + projectsMB.getCurrentProjectId()
+                                + "," + selectedErrorRowTable.getColumn2()
+                                + "," + fields.getNewValue()
+                                + ",'" + fields.getOldValue()
+                                + "')";
+                    }
+                }
+                if(values.length()!=0){//existen datos para registrar                    
+                    connectionJdbcMB.non_query("INSERT INTO project_records VALUES " + values + ";");                    
+                }
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El registro ha sido actualizado"));
+            } catch (Exception e) {
+                System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
+            }
+        }
     }
 
     public final void createDynamicTable() {
@@ -185,7 +226,8 @@ public class ErrorsControlMB implements Serializable {
         ResultSet rs;
         //moreInfoDataTableList = new ArrayList<RowDataTable>();
         moreInfoModel = new ArrayList<>();
-        ArrayList<String> titles = new ArrayList<>();
+        ArrayList<String> column_names = new ArrayList<>();
+        ArrayList<String> column_identifiers = new ArrayList<>();
         try {
             rs = connectionJdbcMB.consult(""
                     + " SELECT "
@@ -203,7 +245,8 @@ public class ErrorsControlMB implements Serializable {
                     + " ORDER BY "
                     + "    project_columns.column_id");
             while (rs.next()) {
-                titles.add(rs.getString(1));
+                column_names.add(rs.getString("column_name"));
+                column_identifiers.add(rs.getString("column_id"));
             }
             rs = connectionJdbcMB.consult(""
                     + " SELECT "
@@ -221,12 +264,12 @@ public class ErrorsControlMB implements Serializable {
                     + "    project_records.record_id ");
             if (rs.next()) {
                 //en la tercer columna esta definido un arreglo con id_columna <=> valor encontrado
-                String[] newRow = new String[titles.size()];
+                String[] newRow = new String[column_names.size()];
                 Object[] arrayInJava = (Object[]) rs.getArray(3).getArray();
                 for (int i = 0; i < arrayInJava.length; i++) {
                     String splitElement[] = arrayInJava[i].toString().split("<=>");
-                    for (int j = 0; j < titles.size(); j++) {
-                        if (titles.get(j).compareTo(splitElement[0]) == 0) {
+                    for (int j = 0; j < column_names.size(); j++) {
+                        if (column_names.get(j).compareTo(splitElement[0]) == 0) {
                             newRow[j] = splitElement[1];
                             break;
                         }
@@ -235,9 +278,9 @@ public class ErrorsControlMB implements Serializable {
                 ArrayList<String> newRow2 = new ArrayList<>();
                 newRow2.addAll(Arrays.asList(newRow));
 
-                for (int i = 0; i < titles.size(); i++) {
+                for (int i = 0; i < column_names.size(); i++) {
                     //moreInfoDataTableList.add(new RowDataTable(titles.get(i), newRow2.get(i)));
-                    moreInfoModel.add(new ValueNewValue(titles.get(i), newRow2.get(i), ""));
+                    moreInfoModel.add(new ValueNewValue(column_names.get(i), newRow2.get(i), column_identifiers.get(i)));//en new value quedara el id de la columna
                 }
             }
         } catch (SQLException ex) {
@@ -444,22 +487,10 @@ public class ErrorsControlMB implements Serializable {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error"));
                 return 0;
             } catch (Exception e) {
+                System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "ALERTA", "no se realizo por: " + e.toString()));
                 return 0;
             }
-//            String sqlUpdate = errorControlArrayList.get(i).getRelationVar().getNameFound() + "=''";
-//            String sqlId = "id=" + errorControlArrayList.get(i).getRowId();
-//            connectionJdbcMB.update(nameTableTemp, sqlUpdate, sqlId);
-//            //quitamos el error de la lista
-//            errorControlArrayList.get(i).setNewValue(currentNewValue);
-//            errorCorrectionArrayList.add(errorControlArrayList.get(i));
-//            errorControlArrayList.remove(i);
-//            sizeErrorsList--;
-//            btnSolveDisabled = true;
-//            btnViewDisabled =true;              
-//            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
-//            FacesContext.getCurrentInstance().addMessage(null, msg);
-//            return 0;
         }
         return 0;
     }
@@ -633,6 +664,7 @@ public class ErrorsControlMB implements Serializable {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error"));
                     return 0;
                 } catch (Exception e) {
+                    System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "ALERTA", "no se realizo por: " + e.toString()));
                     return 0;
                 }

@@ -83,7 +83,7 @@
                                 <br/>
                                 <br/>
                                 <h:commandLink >                                              
-                                    <p:button value="Exportar datos"
+                                    <p:button value="Exportar Archivo cargado"
                                               disabled="#{projectsMB.exportFileNameDisabled}"/>
                                     <p:dataExporter type="xls" target="IdSearchTable" fileName="#{projectsMB.exportFileName}" postProcessor="#{projectsMB.postProcessXLS}"/>  
                                 </h:commandLink>                                
@@ -1206,7 +1206,7 @@
                                             <h:outputText value="VALORES ACEPTADOS" />
                                         </p:column>
                                         <p:column>
-                                            <p:selectOneListbox 
+                                            <h:selectOneListbox 
                                                 value="#{errorsControlMB.currentAceptedValue}" 
                                                 id="IdAcceptedValuesList" 
                                                 style="height:100px; width: 370px; " >
@@ -1215,7 +1215,7 @@
                                                     event="change" 
                                                     listener="#{errorsControlMB.changeAcceptedValuesList}" 
                                                     render="IdNewValue IdBtnSeeErrorRecord IdBtnDiscardErrorValue IdBtnSolve" />
-                                            </p:selectOneListbox>                                                        
+                                            </h:selectOneListbox>                                                        
                                         </p:column>
                                     </p:row>
                                 </p:panelGrid>
