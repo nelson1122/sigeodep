@@ -38,8 +38,13 @@ import static beans.enumerators.VariablesEnum.weapon_types;
 import beans.util.Variable;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Paint;
+import java.awt.TexturePaint;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -70,6 +75,8 @@ import org.apache.poi.hssf.util.CellRangeAddress;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.labels.CategoryItemLabelGenerator;
@@ -80,6 +87,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -105,7 +113,7 @@ public class IndicatorsAverageMB {
     @EJB
     IndicatorsConfigurationsFacade indicatorsConfigurationsFacade;
     private String currentConfigurationSelected = "";
-    private List<String> configurationsList = new ArrayList<String>();
+    private List<String> configurationsList = new ArrayList<>();
     private String newConfigurationName = "";
     private Indicators currentIndicator;
     private StreamedContent chartImage;
@@ -136,23 +144,23 @@ public class IndicatorsAverageMB {
     private String currentVariableGraph2;
     private String currentValueGraph1;
     private String currentValueGraph2;
-    private List<String> valuesGraph1 = new ArrayList<String>();
-    private List<String> valuesGraph2 = new ArrayList<String>();
-    private List<String> temporalDisaggregationTypes = new ArrayList<String>();
-    private List<String> variablesList = new ArrayList<String>();//lista de nombres de variables disponibles que sepueden cruzar(se visualizan en pagina)
-    private List<String> variablesCrossList = new ArrayList<String>();//ista de nombres de variables que se van a cruzar(se visualizan en pagina)
-    private List<String> currentVariablesSelected = new ArrayList<String>();//lista de nombres seleccionados en la lista de variables disponibles
-    private List<String> currentVariablesCrossSelected = new ArrayList<String>();//lista de nombres seleccionados en la lista de variables a cruzar    
-    private List<String> currentCategoricalValuesList = new ArrayList<String>();
+    private List<String> valuesGraph1 = new ArrayList<>();
+    private List<String> valuesGraph2 = new ArrayList<>();
+    private List<String> temporalDisaggregationTypes = new ArrayList<>();
+    private List<String> variablesList = new ArrayList<>();//lista de nombres de variables disponibles que sepueden cruzar(se visualizan en pagina)
+    private List<String> variablesCrossList = new ArrayList<>();//ista de nombres de variables que se van a cruzar(se visualizan en pagina)
+    private List<String> currentVariablesSelected = new ArrayList<>();//lista de nombres seleccionados en la lista de variables disponibles
+    private List<String> currentVariablesCrossSelected = new ArrayList<>();//lista de nombres seleccionados en la lista de variables a cruzar    
+    private List<String> currentCategoricalValuesList = new ArrayList<>();
     private List<String> currentCategoricalValuesSelected;
     private ArrayList<SpanColumns> headers1;//CABECERA 1 CUANDO EL CRUCE SE REALIZA SOBRE 3 VARIABLES
     private ArrayList<Variable> variablesListData;//lista de variables que tiene el indicador
-    private ArrayList<Variable> variablesCrossData = new ArrayList<Variable>();//lista de variables a cruzar
+    private ArrayList<Variable> variablesCrossData = new ArrayList<>();//lista de variables a cruzar
     private ArrayList<String> valuesCategoryList;//lista de valores para una categoria
     private ArrayList<String> columNames;//NOMBRES DE LAS COLUMNAS, (SI EL CRUCE ES DE TRES VARIABLES ESTA SEPARADO POR EL CARACTER: }  )
     private ArrayList<String> rowNames;//NOMBRES DE LAS FILAS    
     DecimalFormat formateador = new DecimalFormat("0.00");
-    ArrayList<String> countAppearsStr = new ArrayList<String>();//arreglo para cada dia
+    ArrayList<String> countAppearsStr = new ArrayList<>();//arreglo para cada dia
     private LoginMB loginMB;
     private Variable currentVariableConfiguring;
     private int numberCross = 2;//maximo numero de variables a cruzar
@@ -172,6 +180,10 @@ public class IndicatorsAverageMB {
     private String sourceTable = "";//tabla adicional que se usara en la seccion "FROM" de la consulta sql
     private String filterSourceTable = "";//filtro adicional usado en la "WHERE" de la consulta sql
     private boolean separateRecords = false;
+    private int heightGraph = 460;
+    private int widthGraph = 660;
+    private List<String> typesGraph = new ArrayList<>();
+    private String currentTypeGraph;
 
     public IndicatorsAverageMB() {
         //-------------------------------------------------
@@ -180,20 +192,21 @@ public class IndicatorsAverageMB {
         Calendar c = Calendar.getInstance();
         currentYear = c.get(Calendar.YEAR);
 
-        initialDate.setDate(c.get(Calendar.DATE));
-        initialDate.setMonth(c.get(Calendar.MONTH));
-        initialDate.setYear(2002 - 1900);
-
-        endDate.setDate(c.get(Calendar.DATE));
-        endDate.setMonth(c.get(Calendar.MONTH));
+                
+        initialDate.setDate(1);
+        initialDate.setMonth(0);
+        initialDate.setYear(c.get(Calendar.YEAR) - 1900);
+        
+        endDate.setDate(31);
+        endDate.setMonth(11);
         endDate.setYear(c.get(Calendar.YEAR) - 1900);
 
-        temporalDisaggregationTypes = new ArrayList<String>();
+        temporalDisaggregationTypes = new ArrayList<>();
         temporalDisaggregationTypes.add("Anual");
         temporalDisaggregationTypes.add("Mensual");
         //temporalDisaggregationTypes.add("Semanal");
         temporalDisaggregationTypes.add("Diaria");
-        currentTemporalDisaggregation="Mensual";
+        currentTemporalDisaggregation = "Mensual";
     }
 
     public void showMessage() {
@@ -203,8 +216,8 @@ public class IndicatorsAverageMB {
     }
 
     public void loadValuesGraph() {
-        valuesGraph1 = new ArrayList<String>();
-        valuesGraph2 = new ArrayList<String>();
+        valuesGraph1 = new ArrayList<>();
+        valuesGraph2 = new ArrayList<>();
         currentVariableGraph1 = "";
         currentVariableGraph2 = "";
         currentValueGraph1 = null;
@@ -228,18 +241,18 @@ public class IndicatorsAverageMB {
     }
 
     private int getDateDifference(Date date1, Date date2, String typeDifference) {
-        Interval interval = new Interval(new DateTime(date1), new DateTime(date2));
+        Interval interval = new Interval(new DateTime(date1), (new DateTime(date2)).plusDays(1));
         if (typeDifference.compareTo("anual") == 0) {
             Years years34 = Years.yearsIn(interval);
-            System.out.println("Años" + years34.getYears());
+            //System.out.println("Años" + years34.getYears());
             return years34.getYears();
         } else if (typeDifference.compareTo("mensual") == 0) {
             Months months11 = Months.monthsIn(interval);
-            System.out.println("Meses" + months11.getMonths());
+            //System.out.println("Meses" + months11.getMonths());
             return months11.getMonths();
         } else if (typeDifference.compareTo("diaria") == 0) {
             Days days15 = Days.daysIn(interval);
-            System.out.println("Dias" + days15.getDays());
+            //System.out.println("Dias" + days15.getDays());
             return days15.getDays();
         }
         return 0;
@@ -247,84 +260,84 @@ public class IndicatorsAverageMB {
 
     public void createMatrixResult() {
         try {//System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");     
-            columNames = new ArrayList<String>();
-            rowNames = new ArrayList<String>();
+            //columNames = new ArrayList<>();
+            //rowNames = new ArrayList<>();
             ResultSet rs = null;
-            //---------------------------------------------------------            
-            //DETERMINO NOMBRES DE COLUMNAS PARA MATIRZ SALIDA
-            //---------------------------------------------------------            
-            if (variablesCrossData.size() < 3) { //una o dos variables
-                sql = ""
-                        + " SELECT \n"
-                        + "    column_1 \n"
-                        + " FROM \n"
-                        + "    indicators_records \n"
-                        + " WHERE \n"
-                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
-                        + " GROUP BY \n"
-                        + "    column_1 \n"
-                        + " ORDER BY \n"
-                        + "    MIN(record_id) \n";
-                rs = connectionJdbcMB.consult(sql);
-            }
-            if (variablesCrossData.size() == 3) {
-                sql = ""
-                        + " SELECT "
-                        + "    column_1 ||'}'|| column_2 "
-                        + " FROM \n"
-                        + "    indicators_records \n"
-                        + " WHERE \n"
-                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
-                        + " GROUP BY \n"
-                        + "    column_1 ||'}'|| column_2 "
-                        + " ORDER BY \n"
-                        + "    MIN(record_id) \n";
-                rs = connectionJdbcMB.consult(sql);
-            }
-            while (rs.next()) {
-                columNames.add(rs.getString(1));
-            }
-            //---------------------------------------------------------            
-            //DETERMINO NOMBRES DE FILAS PARA MATIRZ SALIDA
-            //---------------------------------------------------------            
-            if (variablesCrossData.size() == 1) {
-                rowNames.add("Valor");
-            }
-            if (variablesCrossData.size() == 2) {
-                sql = ""
-                        + " SELECT \n"
-                        + "    column_2 \n"
-                        + " FROM \n"
-                        + "    indicators_records \n"
-                        + " WHERE \n"
-                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
-                        + " GROUP BY \n"
-                        + "    column_2 \n"
-                        + " ORDER BY \n"
-                        + "    MIN(record_id) \n";
-                rs = connectionJdbcMB.consult(sql);
-            }
-            if (variablesCrossData.size() == 3) {
-                sql = ""
-                        + " SELECT \n"
-                        + "    column_3 \n"
-                        + " FROM \n"
-                        + "    indicators_records \n"
-                        + " WHERE \n"
-                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
-                        + " GROUP BY \n"
-                        + "    column_3 \n"
-                        + " ORDER BY \n"
-                        + "    MIN(record_id) \n";
-                rs = connectionJdbcMB.consult(sql);
-            }
-            while (rs.next()) {
-                rowNames.add(rs.getString(1));
-            }
+//            //---------------------------------------------------------            
+//            //DETERMINO NOMBRES DE COLUMNAS PARA MATIRZ SALIDA
+//            //---------------------------------------------------------            
+//            if (variablesCrossData.size() < 3) { //una o dos variables
+//                sql = ""
+//                        + " SELECT \n"
+//                        + "    column_1 \n"
+//                        + " FROM \n"
+//                        + "    indicators_records \n"
+//                        + " WHERE \n"
+//                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+//                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
+//                        + " GROUP BY \n"
+//                        + "    column_1 \n"
+//                        + " ORDER BY \n"
+//                        + "    MIN(record_id) \n";
+//                rs = connectionJdbcMB.consult(sql);
+//            }
+//            if (variablesCrossData.size() == 3) {
+//                sql = ""
+//                        + " SELECT "
+//                        + "    column_1 ||'}'|| column_2 "
+//                        + " FROM \n"
+//                        + "    indicators_records \n"
+//                        + " WHERE \n"
+//                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+//                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
+//                        + " GROUP BY \n"
+//                        + "    column_1 ||'}'|| column_2 "
+//                        + " ORDER BY \n"
+//                        + "    MIN(record_id) \n";
+//                rs = connectionJdbcMB.consult(sql);
+//            }
+//            while (rs.next()) {
+//                columNames.add(rs.getString(1));
+//            }
+//            //---------------------------------------------------------            
+//            //DETERMINO NOMBRES DE FILAS PARA MATIRZ SALIDA
+//            //---------------------------------------------------------            
+//            if (variablesCrossData.size() == 1) {
+//                rowNames.add("Valor");
+//            }
+//            if (variablesCrossData.size() == 2) {
+//                sql = ""
+//                        + " SELECT \n"
+//                        + "    column_2 \n"
+//                        + " FROM \n"
+//                        + "    indicators_records \n"
+//                        + " WHERE \n"
+//                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+//                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
+//                        + " GROUP BY \n"
+//                        + "    column_2 \n"
+//                        + " ORDER BY \n"
+//                        + "    MIN(record_id) \n";
+//                rs = connectionJdbcMB.consult(sql);
+//            }
+//            if (variablesCrossData.size() == 3) {
+//                sql = ""
+//                        + " SELECT \n"
+//                        + "    column_3 \n"
+//                        + " FROM \n"
+//                        + "    indicators_records \n"
+//                        + " WHERE \n"
+//                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+//                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
+//                        + " GROUP BY \n"
+//                        + "    column_3 \n"
+//                        + " ORDER BY \n"
+//                        + "    MIN(record_id) \n";
+//                rs = connectionJdbcMB.consult(sql);
+//            }
+//            while (rs.next()) {
+//                rowNames.add(rs.getString(1));
+//            }
             //---------------------------------------------------------            
             //SE CREA LA MATRIZ DE RESULTADOS (iniciada en 0 )
             //---------------------------------------------------------
@@ -380,24 +393,22 @@ public class IndicatorsAverageMB {
         }
     }
 
-
     private Variable createTemporalDisaggregationVariable(Date initialDate, Date endDate) {
         Variable newVariable = new Variable("Desagregación temporal", "temporalDisaggregation", false, "");
         int diferenceRank;
         int daysMax;
         Calendar cal1 = Calendar.getInstance();
-        ArrayList<String> valuesName = new ArrayList<String>();//NOMBRE DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(NOMBRE EN LA CATEGORIA)
-        ArrayList<String> valuesId = new ArrayList<String>();  //IDENTIFICADORES DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(ID EN LA CATEGORIA)
-        ArrayList<String> valuesConf = new ArrayList<String>();//NOMBRE DE LOS VALORES CONFIGURADOS POR EL USUARIO QUE PUEDE TOMAR LA VARIABLE        
+        ArrayList<String> valuesName = new ArrayList<>();//NOMBRE DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(NOMBRE EN LA CATEGORIA)
+        ArrayList<String> valuesId = new ArrayList<>();  //IDENTIFICADORES DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(ID EN LA CATEGORIA)
+        ArrayList<String> valuesConf = new ArrayList<>();//NOMBRE DE LOS VALORES CONFIGURADOS POR EL USUARIO QUE PUEDE TOMAR LA VARIABLE        
         String iniDateString;
         String endDateString;
         SimpleDateFormat sdf;
 
         if (currentTemporalDisaggregation.compareTo("Diaria") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "diaria");
-            //System.out.println("(DIFERENCIA EN DIAS) :" + diferenceRank);
             sdf = new SimpleDateFormat("dd MMM yyyy");
-            for (int i = 0; i < diferenceRank; i++) {//+1 por que la difrencia no toma el ultimo dia
+            for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.add(Calendar.DATE, i);
                 iniDateString = formato.format(cal1.getTime());
@@ -406,26 +417,10 @@ public class IndicatorsAverageMB {
                 valuesConf.add(sdf.format(cal1.getTime()));
             }
         }
-//        if (currentTemporalDisaggregation.compareTo("Semanal") == 0) {
-//            diferenceRank = getDateDifference(initialDate, endDate, "semanal");
-//            //System.out.println("(SEMANAS EN DIAS) :" + diferenceRank);
-//            //sdf = new SimpleDateFormat("dd MMM yyyy");
-//            for (int i = 0; i < diferenceRank; i++) {//+1 por que la difrencia no toma el ultimo dia
-//                cal1.setTime(initialDate);
-//                cal1.add(Calendar.DATE, i * 7);//se aumentan i*7 dias (una semana)
-//                iniDateString = formato.format(cal1.getTime());
-//                cal1.add(Calendar.DATE, 6);
-//                endDateString = formato.format(cal1.getTime());
-//                valuesName.add(iniDateString + " a " + endDateString);//agrego el dia en formato: 14 Junio 2013
-//                valuesId.add(iniDateString + "}" + endDateString);
-//                valuesConf.add(iniDateString + " a " + endDateString);
-//            }
-//        }
         if (currentTemporalDisaggregation.compareTo("Mensual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "mensual");
-            //System.out.println("(DIFERENCIA EN MESES) :" + diferenceRank);
             sdf = new SimpleDateFormat("MMM yyyy");
-            for (int i = 0; i < diferenceRank; i++) {//+1 por que la difrencia no toma el ultimo mes
+            for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
                 cal1.add(Calendar.MONTH, i);//fecha inicial se la aumenta i meses                
@@ -440,9 +435,8 @@ public class IndicatorsAverageMB {
         }
         if (currentTemporalDisaggregation.compareTo("Anual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "anual");
-            //System.out.println("(DIFERENCIA EN AÑOS) :" + diferenceRank);
             sdf = new SimpleDateFormat("yyyy");
-            for (int i = 0; i < diferenceRank; i++) {//+1 por que la difrencia no toma el ultimo dia
+            for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
                 cal1.set(Calendar.MONTH, 0);//coloco el mes en enero(0)
@@ -459,9 +453,6 @@ public class IndicatorsAverageMB {
         newVariable.setValues(valuesName);
         newVariable.setValuesId(valuesId);
         newVariable.setValuesConfigured(valuesConf);
-//        for (int i = 0; i < newVariable.getValues().size(); i++) {
-//            System.out.println(newVariable.getValues().get(i)+"\t:\t"+newVariable.getValuesId().get(i));
-//        }
         return newVariable;
     }
 
@@ -496,12 +487,6 @@ public class IndicatorsAverageMB {
                 return false;
             }
         }
-//        if (currentTemporalDisaggregation.compareTo("Semanal") == 0) {
-//            if (getDateDifference(initialDate, endDate, "semanal") < 1) {
-//                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "En el rango seleccionado deben haber como mínimo 1 semana");
-//                return false;
-//            }
-//        }
         if (currentTemporalDisaggregation.compareTo("Mensual") == 0) {
             if (getDateDifference(initialDate, endDate, "mensual") < 1) {
                 message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "En el rango seleccionado deben haber como mínimo 1 mes");
@@ -529,13 +514,97 @@ public class IndicatorsAverageMB {
                 + "    indicator_id = " + currentIndicator.getIndicatorId() + " AND \n\r"
                 + "    count = 0 ";
         connectionJdbcMB.non_query(sql);
+        //---------------------------------------------------------            
+        //ELIMINO LOS NOMBRES DE COLUMNAS NO NECESARIOS
+        //---------------------------------------------------------            
+        ResultSet rs = null;
+        if (variablesCrossData.size() < 3) { //una o dos variables
+            sql = ""
+                    + " SELECT column_1 FROM  indicators_records \n"
+                    + " WHERE  user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "        indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
+                    + " GROUP BY column_1  ORDER BY MIN(record_id) \n";
+
+        }
+        if (variablesCrossData.size() == 3) {
+            sql = ""
+                    + " SELECT column_1 ||'}'|| column_2 FROM indicators_records \n"
+                    + " WHERE  user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "        indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
+                    + " GROUP BY  column_1 ||'}'|| column_2  ORDER BY MIN(record_id) \n";
+        }
+        try {
+            rs = connectionJdbcMB.consult(sql);
+            ArrayList<String> columnNamesFound = new ArrayList<>();
+            while (rs.next()) {
+                columnNamesFound.add(rs.getString(1));
+            }
+            int columnFound;
+            for (int i = 0; i < columNames.size(); i++) {
+                columnFound = -1;
+                for (int j = 0; j < columnNamesFound.size(); j++) {
+                    if (columNames.get(i).compareTo(columnNamesFound.get(j)) == 0) {
+                        columnFound = j;
+                        break;
+                    }
+                }
+                if (columnFound == -1) {
+                    columNames.remove(i);
+                    i = -1;//vuelvo a empezar
+                }
+            }
+        } catch (Exception e) {
+        }
+        //---------------------------------------------------------            
+        //ELIMINO LOS NOMBRES DE FILAS NO NECESARIOS
+        //---------------------------------------------------------            
+        sql = "";
+        if (variablesCrossData.size() == 2) {
+            sql = ""
+                    + " SELECT column_2 FROM indicators_records \n"
+                    + " WHERE user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "       indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
+                    + " GROUP BY column_2 ORDER BY MIN(record_id) \n";
+        }
+        if (variablesCrossData.size() == 3) {
+            sql = ""
+                    + " SELECT column_3 FROM indicators_records \n"
+                    + " WHERE user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "       indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
+                    + " GROUP BY column_3 ORDER BY MIN(record_id) \n";
+
+        }
+        if (sql.length() != 0) {
+            try {
+                rs = connectionJdbcMB.consult(sql);
+                ArrayList<String> rowsNamesFound = new ArrayList<>();
+                while (rs.next()) {
+                    rowsNamesFound.add(rs.getString(1));
+                }
+                int rowFound;
+                for (int i = 0; i < rowNames.size(); i++) {
+                    rowFound = -1;
+                    for (int j = 0; j < rowsNamesFound.size(); j++) {
+                        if (rowNames.get(i).compareTo(rowsNamesFound.get(j)) == 0) {
+                            rowFound = j;
+                            break;
+                        }
+                    }
+                    if (rowFound == -1) {
+                        rowNames.remove(i);
+                        i = -1;//vuelvo a empezar
+                    }
+                }
+            } catch (Exception e) {
+            }
+        }
     }
 
     public void process() {
         btnExportDisabled = true;
-        variablesCrossData = new ArrayList<Variable>();//lista de variables a cruzar            
+        variablesCrossData = new ArrayList<>();//lista de variables a cruzar            
         message = null;
-
+        //categoryAxixLabel="";
         boolean continueProcess = validateDateRange();//VALIDACION DE FECHAS        
 
         if (continueProcess) {
@@ -599,98 +668,100 @@ public class IndicatorsAverageMB {
         //---------------------------------------------------------
         //FORMAR POSIBLES COMBINACIONES PARA QUE LOS DATOS QUEDEN ORDENADOS SEGUN COMO SE ENCUENTRE LA CONFIGURACION
         //---------------------------------------------------------
-        columNames = new ArrayList<String>();
-        rowNames = new ArrayList<String>();
+        columNames = new ArrayList<>();
+        rowNames = new ArrayList<>();
         //columnTypeName = new ArrayList<String>();
         try {
-            //---------------------------------------------------------
-            //CREO NUEVOS VECTORES DE VALORES POR QUE PUEDE SER QUE HAYA QUE AGREGAR EL VALOR 'SIN DATO' QUE NO VIENE POR DEFECTO EN LOS VALORES                        
-            //---------------------------------------------------------
-            ArrayList<String> values1 = new ArrayList<String>();
-            ResultSet rs;
-            boolean addNoData;
-            if (variablesCrossData.size() > 0) {
-                addNoData = true;
-                for (int i = 0; i < variablesCrossData.get(0).getValuesConfigured().size(); i++) {
-                    values1.add(variablesCrossData.get(0).getValuesConfigured().get(i));
-                    if (variablesCrossData.get(0).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
-                        addNoData = false;//la categoria contiene un valor sin dato
-                    }
-                }
-                if (addNoData) {
-                    sql = ""
-                            + " SELECT "
-                            + "    * "
-                            + " FROM "
-                            + "    indicators_records "
-                            + " WHERE "
-                            + "    column_1 like 'SIN DATO' AND "
-                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
-                    rs = connectionJdbcMB.consult(sql);
-                    if (rs.next()) {
-                        values1.add("SIN DATO");
-                    }
-                }
-            }
-            ArrayList<String> values2 = new ArrayList<String>();
-            if (variablesCrossData.size() > 1) {
-                addNoData = true;
-                for (int i = 0; i < variablesCrossData.get(1).getValuesConfigured().size(); i++) {
-                    values2.add(variablesCrossData.get(1).getValuesConfigured().get(i));
-                    if (variablesCrossData.get(1).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
-                        addNoData = false;//la categoria contiene un valor sin dato
-                    }
-                }
-                if (addNoData) {
-                    sql = ""
-                            + " SELECT "
-                            + "    * "
-                            + " FROM "
-                            + "    indicators_records "
-                            + " WHERE "
-                            + "    column_2 like 'SIN DATO' AND "
-                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
-                    rs = connectionJdbcMB.consult(sql);
-                    if (rs.next()) {
-                        values2.add("SIN DATO");
-                    }
-                }
-            }
-            ArrayList<String> values3 = new ArrayList<String>();
-            if (variablesCrossData.size() > 2) {
-                addNoData = true;
-                for (int i = 0; i < variablesCrossData.get(2).getValuesConfigured().size(); i++) {
-                    values3.add(variablesCrossData.get(2).getValuesConfigured().get(i));
-                    if (variablesCrossData.get(2).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
-                        addNoData = false;//la categoria contiene un valor sin dato
-                    }
-                }
-                if (addNoData) {
-                    sql = ""
-                            + " SELECT "
-                            + "    * "
-                            + " FROM "
-                            + "    indicators_records "
-                            + " WHERE "
-                            + "    column_3 like 'SIN DATO' AND "
-                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
-                    rs = connectionJdbcMB.consult(sql);
-                    if (rs.next()) {
-                        values3.add("SIN DATO");
-                    }
-                }
-            }
+//            //---------------------------------------------------------
+//            //CREO NUEVOS VECTORES DE VALORES POR QUE PUEDE SER QUE HAYA QUE AGREGAR EL VALOR 'SIN DATO' QUE NO VIENE POR DEFECTO EN LOS VALORES                        
+//            //---------------------------------------------------------
+//            ArrayList<String> values1 = new ArrayList<>();
+//            ResultSet rs;
+//            boolean addNoData;
+//            if (variablesCrossData.size() > 0) {
+//                addNoData = true;
+//                for (int i = 0; i < variablesCrossData.get(0).getValuesConfigured().size(); i++) {
+//                    values1.add(variablesCrossData.get(0).getValuesConfigured().get(i));
+//                    if (variablesCrossData.get(0).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
+//                        addNoData = false;//la categoria contiene un valor sin dato
+//                    }
+//                }
+//                if (addNoData) {
+//                    sql = ""
+//                            + " SELECT "
+//                            + "    * "
+//                            + " FROM "
+//                            + "    indicators_records "
+//                            + " WHERE "
+//                            + "    column_1 like 'SIN DATO' AND "
+//                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+//                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
+//                    rs = connectionJdbcMB.consult(sql);
+//                    if (rs.next()) {
+//                        values1.add("SIN DATO");
+//                    }
+//                }
+//            }
+//            ArrayList<String> values2 = new ArrayList<>();
+//            if (variablesCrossData.size() > 1) {
+//                addNoData = true;
+//                for (int i = 0; i < variablesCrossData.get(1).getValuesConfigured().size(); i++) {
+//                    values2.add(variablesCrossData.get(1).getValuesConfigured().get(i));
+//                    if (variablesCrossData.get(1).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
+//                        addNoData = false;//la categoria contiene un valor sin dato
+//                    }
+//                }
+//                if (addNoData) {
+//                    sql = ""
+//                            + " SELECT "
+//                            + "    * "
+//                            + " FROM "
+//                            + "    indicators_records "
+//                            + " WHERE "
+//                            + "    column_2 like 'SIN DATO' AND "
+//                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+//                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
+//                    rs = connectionJdbcMB.consult(sql);
+//                    if (rs.next()) {
+//                        values2.add("SIN DATO");
+//                    }
+//                }
+//            }
+//            ArrayList<String> values3 = new ArrayList<>();
+//            if (variablesCrossData.size() > 2) {
+//                addNoData = true;
+//                for (int i = 0; i < variablesCrossData.get(2).getValuesConfigured().size(); i++) {
+//                    values3.add(variablesCrossData.get(2).getValuesConfigured().get(i));
+//                    if (variablesCrossData.get(2).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
+//                        addNoData = false;//la categoria contiene un valor sin dato
+//                    }
+//                }
+//                if (addNoData) {
+//                    sql = ""
+//                            + " SELECT "
+//                            + "    * "
+//                            + " FROM "
+//                            + "    indicators_records "
+//                            + " WHERE "
+//                            + "    column_3 like 'SIN DATO' AND "
+//                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+//                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
+//                    rs = connectionJdbcMB.consult(sql);
+//                    if (rs.next()) {
+//                        values3.add("SIN DATO");
+//                    }
+//                }
+//            }
             //---------------------------------------------------------
             //REALIZO LAS POSIBLES COMBINACIONES
             //---------------------------------------------------------            
+            ArrayList<String> values1, values2, values3;
             cpManager = new CopyManager((BaseConnection) connectionJdbcMB.getConn());
             sb = new StringBuilder();
             tuplesProcessed = 0;
             int id = 0;
             if (variablesCrossData.size() == 1) {
+                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
                 for (int i = 0; i < values1.size(); i++) {
                     columNames.add(values1.get(i));
                     sb.
@@ -704,20 +775,22 @@ public class IndicatorsAverageMB {
                             append(0).append("\n");
                     id++;
                 }
-                rowNames.add("Cantidad");
+                rowNames.add("Valor");
             } else if (variablesCrossData.size() == 2) {
-                for (int i = 0; i < values1.size(); i++) {
-                    columNames.add(values1.get(i));
-                    for (int j = 0; j < values2.size(); j++) {
+                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
+                values2 = (ArrayList<String>) variablesCrossData.get(1).getValuesConfigured();
+                for (int i = 0; i < values2.size(); i++) {
+                    rowNames.add(values2.get(i));
+                    for (int j = 0; j < values1.size(); j++) {
                         if (i == 0) {
-                            rowNames.add(values2.get(j));
+                            columNames.add(values1.get(j));
                         }
                         sb.
                                 append(loginMB.getCurrentUser().getUserId()).append("\t").
                                 append(currentIndicator.getIndicatorId()).append("\t").
                                 append(id).append("\t").
-                                append(values1.get(i)).append("\t").
-                                append(values2.get(j)).append("\t").
+                                append(values1.get(j)).append("\t").
+                                append(values2.get(i)).append("\t").
                                 append("-").append("\t").
                                 append(0).append("\t").
                                 append(0).append("\n");
@@ -725,9 +798,12 @@ public class IndicatorsAverageMB {
                     }
                 }
             } else if (variablesCrossData.size() == 3) {
-                for (int i = 0; i < values1.size(); i++) {
-                    for (int j = 0; j < values2.size(); j++) {
-                        columNames.add(values1.get(i) + "}" + values2.get(j));
+                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
+                values2 = (ArrayList<String>) variablesCrossData.get(1).getValuesConfigured();
+                values3 = (ArrayList<String>) variablesCrossData.get(2).getValuesConfigured();
+                for (int i = 0; i < values2.size(); i++) {
+                    for (int j = 0; j < values1.size(); j++) {
+                        columNames.add(values1.get(j) + "}" + values2.get(i));
                         for (int k = 0; k < values3.size(); k++) {
                             if (i == 0 && j == 0) {
                                 rowNames.add(values3.get(k));
@@ -736,8 +812,8 @@ public class IndicatorsAverageMB {
                                     append(loginMB.getCurrentUser().getUserId()).append("\t").
                                     append(currentIndicator.getIndicatorId()).append("\t").
                                     append(id).append("\t").
-                                    append(values1.get(i)).append("\t").
-                                    append(values2.get(j)).append("\t").
+                                    append(values1.get(j)).append("\t").
+                                    append(values2.get(i)).append("\t").
                                     append(values3.get(k)).append("\t").
                                     append(0).append("\t").
                                     append(0).append("\n");
@@ -749,8 +825,8 @@ public class IndicatorsAverageMB {
             //REALIZO LA INSERCION
             cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
             sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
-        } catch (Exception e) {
-            System.out.println("EXCEPTION--------------------------" + e.toString());
+        } catch (SQLException | IOException e) {
+            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -791,7 +867,7 @@ public class IndicatorsAverageMB {
             //REALIZO LA INSERCION
             cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
             sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
-        } catch (Exception e) {
+        } catch (SQLException | IOException e) {
             System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
@@ -970,17 +1046,19 @@ public class IndicatorsAverageMB {
                         sqlReturn = sqlReturn + "   CASE \n\r";
                         sqlReturn = sqlReturn + "       WHEN (victims.victim_age is null)  THEN 'SIN DATO' \n\r";
                         for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
-                            String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
-                            if (splitAge[1].compareTo("n") == 0) {
-                                splitAge[1] = "200";
+                            if (variablesCrossData.get(i).getValuesConfigured().get(j).compareTo("SIN DATO") != 0) {
+                                String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
+                                if (splitAge[1].compareTo("n") == 0) {
+                                    splitAge[1] = "200";
+                                }
+                                sqlReturn = sqlReturn + ""
+                                        + "       WHEN (( \n\r"
+                                        + "           CASE \n\r"
+                                        + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r"
+                                        + "               WHEN (victims.age_type_id = 1) THEN victims.victim_age \n\r"
+                                        + "           END \n\r"
+                                        + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                             }
-                            sqlReturn = sqlReturn + ""
-                                    + "       WHEN (( \n\r"
-                                    + "           CASE \n\r"
-                                    + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r"
-                                    + "               WHEN (victims.age_type_id = 1) THEN victims.victim_age \n\r"
-                                    + "           END \n\r"
-                                    + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                         }
                         sqlReturn = sqlReturn + "   END AS edad";
                     }
@@ -990,12 +1068,14 @@ public class IndicatorsAverageMB {
                         sqlReturn = sqlReturn + "   CASE \n\r";
                         sqlReturn = sqlReturn + "       WHEN (sivigila_aggresor.age is null)  THEN 'SIN DATO' \n\r";
                         for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
-                            String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
-                            if (splitAge[1].compareTo("n") == 0) {
-                                splitAge[1] = "200";
+                            if (variablesCrossData.get(i).getValuesConfigured().get(j).compareTo("SIN DATO") != 0) {
+                                String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
+                                if (splitAge[1].compareTo("n") == 0) {
+                                    splitAge[1] = "200";
+                                }
+                                sqlReturn = sqlReturn + ""
+                                        + "       WHEN ( sivigila_aggresor.age between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                             }
-                            sqlReturn = sqlReturn + ""
-                                    + "       WHEN ( sivigila_aggresor.age between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                         }
                         sqlReturn = sqlReturn + "   END AS edad_agresor";
                     }
@@ -1005,12 +1085,14 @@ public class IndicatorsAverageMB {
                             + "   CASE \n\r"
                             + "       WHEN (" + currentIndicator.getInjuryType() + ".injury_time is null)  THEN 'SIN DATO' \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
-                        String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
-                        String[] splitAge2 = splitAge[0].split(":");
-                        String[] splitAge3 = splitAge[1].split(":");
-                        sqlReturn = sqlReturn + ""
-                                + "       WHEN (extract(hour from " + currentIndicator.getInjuryType() + ".injury_time) \n\r"
-                                + "       between " + splitAge2[0] + " and " + splitAge3[0] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
+                        if (variablesCrossData.get(i).getValuesConfigured().get(j).compareTo("SIN DATO") != 0) {
+                            String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
+                            String[] splitAge2 = splitAge[0].split(":");
+                            String[] splitAge3 = splitAge[1].split(":");
+                            sqlReturn = sqlReturn + ""
+                                    + "       WHEN (extract(hour from " + currentIndicator.getInjuryType() + ".injury_time) \n\r"
+                                    + "       between " + splitAge2[0] + " and " + splitAge3[0] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
+                        }
                     }
                     sqlReturn = sqlReturn + "   END AS hora";
                     break;
@@ -1018,8 +1100,8 @@ public class IndicatorsAverageMB {
                     sqlReturn = sqlReturn + ""
                             + "   CASE \n\r"
                             + "      WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
-                            + "      ELSE (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id = " + currentIndicator.getInjuryType() + ".injury_neighborhood_id"
-                            + "           AND neighborhood_area != 2) \n\r"
+                            + "      ELSE (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id = " + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r"
+                            //                            + "           AND neighborhood_area != 2) \n\r"
                             + "   END AS barrio";
                     break;
                 case communes://COMUNA -----------------------
@@ -1474,6 +1556,8 @@ public class IndicatorsAverageMB {
                 + "       " + currentIndicator.getInjuryType() + ", victims" + sourceTable + " \n\r"
                 + "   WHERE  \n\r"
                 + "       " + currentIndicator.getInjuryType() + ".victim_id = victims.victim_id AND \n\r"
+//                + "       " + currentIndicator.getInjuryType() + ".injury_neighborhood_id IN "//filtro por area urbana
+//                + "       ( SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_area = 1 ) AND"//filtro por area urbana
                 + "       " + filterSourceTable;
 
         if (currentIndicator.getIndicatorId() > 4) { //si no es general se filtra por tipo de lesion
@@ -1516,7 +1600,7 @@ public class IndicatorsAverageMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
             return 0;
         }
-        currentCategoricalValuesList = new ArrayList<String>();
+        currentCategoricalValuesList = new ArrayList<>();
         IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected);
 
         if (firstVariablesCrossSelected.compareTo(indicatorsConfigurationsSelected.getVariableName()) != 0) {
@@ -1553,7 +1637,7 @@ public class IndicatorsAverageMB {
         //recargar las configuraciones existentes
         //System.out.println("inicia carga de configuraciones");
         currentConfigurationSelected = "";
-        configurationsList = new ArrayList<String>();
+        configurationsList = new ArrayList<>();
         List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
         for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
             if (currentVariablesCrossSelected.get(0).compareTo(indicatorsConfigurationsList.get(i).getVariableName()) == 0) {
@@ -1683,7 +1767,7 @@ public class IndicatorsAverageMB {
                 endValue = "0" + endValue;
             }
             currentVariableConfiguring.getValuesConfigured().add(initialValue + "/" + endValue);
-            currentCategoricalValuesList = new ArrayList<String>();
+            currentCategoricalValuesList = new ArrayList<>();
             for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
                 currentCategoricalValuesList.add(currentVariableConfiguring.getValuesConfigured().get(j));
             }
@@ -1708,7 +1792,7 @@ public class IndicatorsAverageMB {
                 }
             }
             //recargo la lista de valores de la categoria
-            currentCategoricalValuesList = new ArrayList<String>();
+            currentCategoricalValuesList = new ArrayList<>();
             for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
                 currentCategoricalValuesList.add(currentVariableConfiguring.getValuesConfigured().get(j));
             }
@@ -1716,7 +1800,7 @@ public class IndicatorsAverageMB {
     }
 
     public void btnResetCategoryListClick() {
-        currentCategoricalValuesSelected = new ArrayList<String>();
+        currentCategoricalValuesSelected = new ArrayList<>();
         //btnRemoveCategoricalValueDisabled = false;
         if (currentVariableConfiguring != null) {
             //paso los elementos de la lista: values a valuesConfiguration
@@ -1725,7 +1809,7 @@ public class IndicatorsAverageMB {
                 currentVariableConfiguring.getValuesConfigured().add(currentVariableConfiguring.getValues().get(j));
             }
             //recargo la lista de valores de la categoria
-            currentCategoricalValuesList = new ArrayList<String>();
+            currentCategoricalValuesList = new ArrayList<>();
             for (int j = 0; j < currentVariableConfiguring.getValues().size(); j++) {
                 currentCategoricalValuesList.add(currentVariableConfiguring.getValues().get(j));
             }
@@ -1750,7 +1834,7 @@ public class IndicatorsAverageMB {
     public void changeCrossVariable() {
         btnRemoveVariableDisabled = true;
         btnRemoveCategoricalValueDisabled = true;
-        currentCategoricalValuesSelected = new ArrayList<String>();
+        currentCategoricalValuesSelected = new ArrayList<>();
         currentVariableConfiguring = null;
         initialValue = "";
         endValue = "";
@@ -1760,7 +1844,7 @@ public class IndicatorsAverageMB {
             btnRemoveVariableDisabled = false;
             firstVariablesCrossSelected = currentVariablesCrossSelected.get(0);
             //filtro los años segun la fecha
-            currentCategoricalValuesSelected = new ArrayList<String>();
+            currentCategoricalValuesSelected = new ArrayList<>();
             for (int i = 0; i < variablesListData.size(); i++) {
                 if (variablesListData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
                     if (variablesListData.get(i).getGeneric_table().compareTo("year") == 0) {
@@ -1828,18 +1912,17 @@ public class IndicatorsAverageMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
         }
     }
-
+    
     public void createImage() {
-        //if (currentGraphType.compareTo("barras vertical") == 0) {
-        try {
-            JFreeChart chart = createBarChart();
-            //JFreeChart chart = createChart();
-            File chartFile = new File("dynamichart");
-            ChartUtilities.saveChartAsPNG(chartFile, chart, 700, 500);
-            chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
-        } catch (Exception e) {
+        if (currentTypeGraph.compareTo("barras") == 0) {
+            try {
+                JFreeChart chart = createBarChart();
+                File chartFile = new File("grafico");
+                ChartUtilities.saveChartAsPNG(chartFile, chart, widthGraph, heightGraph);
+                chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
+            } catch (Exception e) {
+            }
         }
-        // }
     }
 
     public void reset() {
@@ -1847,30 +1930,33 @@ public class IndicatorsAverageMB {
         dataTableHtml = "";
         chartImage = null;
         currentVariableConfiguring = null;
-        variablesCrossList = new ArrayList<String>();
-        currentVariablesSelected = new ArrayList<String>();
-        currentVariablesCrossSelected = new ArrayList<String>();
+        variablesCrossList = new ArrayList<>();
+        currentVariablesSelected = new ArrayList<>();
+        currentVariablesCrossSelected = new ArrayList<>();
         firstVariablesCrossSelected = null;
-        currentCategoricalValuesList = new ArrayList<String>();
-        currentCategoricalValuesSelected = new ArrayList<String>();
+        currentCategoricalValuesList = new ArrayList<>();
+        currentCategoricalValuesSelected = new ArrayList<>();
         titlePage = currentIndicator.getIndicatorGroup();
         titleIndicator = currentIndicator.getIndicatorGroup();
         subTitleIndicator = currentIndicator.getIndicatorName();
         variablesListData = getVariablesIndicator();
         currentVariableGraph1 = "";
         currentVariableGraph2 = "";
-        valuesGraph1 = new ArrayList<String>();
-        valuesGraph2 = new ArrayList<String>();
+        valuesGraph1 = new ArrayList<>();
+        valuesGraph2 = new ArrayList<>();
         currentValueGraph1 = "";
         currentValueGraph2 = "";
         numberCross = currentIndicator.getNumberCross();
-        variablesList = new ArrayList<String>();//SelectItem[variablesListData.size()];
+        typesGraph = new ArrayList<>();
+        typesGraph.add("barras");
+
+        variablesList = new ArrayList<>();//SelectItem[variablesListData.size()];        
         for (int i = 0; i < variablesListData.size(); i++) {
             variablesList.add(variablesListData.get(i).getName());
         }
         dynamicDataTableGroup = new OutputPanel();//creo el panel grid
 
-        variablesCrossList = new ArrayList<String>();//SelectItem[variablesListData.size()];
+        variablesCrossList = new ArrayList<>();//SelectItem[variablesListData.size()];
         btnAddVariableDisabled = true;
         btnRemoveVariableDisabled = true;
         currentVariablesSelected = null;
@@ -1881,9 +1967,9 @@ public class IndicatorsAverageMB {
         //conf me indica si es permitida la configuracion de esta variable
         Variable newVariable = new Variable(name, generic_table, conf, source_table);
         //cargo la lista de valores posibles
-        ArrayList<String> valuesName = new ArrayList<String>();//NOMBRE DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(NOMBRE EN LA CATEGORIA)
-        ArrayList<String> valuesId = new ArrayList<String>();  //IDENTIFICADORES DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(ID EN LA CATEGORIA)
-        ArrayList<String> valuesConf = new ArrayList<String>();//NOMBRE DE LOS VALORES CONFIGURADOS POR EL USUARIO QUE PUEDE TOMAR LA VARIABLE        
+        ArrayList<String> valuesName = new ArrayList<>();//NOMBRE DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(NOMBRE EN LA CATEGORIA)
+        ArrayList<String> valuesId = new ArrayList<>();  //IDENTIFICADORES DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(ID EN LA CATEGORIA)
+        ArrayList<String> valuesConf = new ArrayList<>();//NOMBRE DE LOS VALORES CONFIGURADOS POR EL USUARIO QUE PUEDE TOMAR LA VARIABLE        
         int infInt;
         int supInt;
         String infStr;
@@ -2069,6 +2155,22 @@ public class IndicatorsAverageMB {
                 }
                 break;
         }
+        //agregar valor "SIN DATO"
+        if (generic_table.compareTo("injuries_fatal") != 0 && generic_table.compareTo("injuries_non_fatal") != 0) {
+            //detemino si ya existe "SIN DATO" el los valores
+            boolean existNoData = false;
+            for (int i = 0; i < valuesName.size(); i++) {
+                if (valuesName.get(i).compareTo("SIN DATO") == 0) {
+                    existNoData = true;
+                    break;
+                }
+            }
+            if (!existNoData) {
+                valuesName.add("SIN DATO");
+                valuesConf.add("SIN DATO");
+                valuesId.add("SIN DATO");
+            }
+        }
         newVariable.setValues(valuesName);
         newVariable.setValuesId(valuesId);
         newVariable.setValuesConfigured(valuesConf);
@@ -2076,7 +2178,7 @@ public class IndicatorsAverageMB {
     }
 
     public ArrayList<Variable> getVariablesIndicator() {
-        ArrayList<Variable> arrayReturn = new ArrayList<Variable>();
+        ArrayList<Variable> arrayReturn = new ArrayList<>();
         currentIndicator = indicatorsFacade.find(currentIndicator.getIndicatorId());
         for (int i = 0; i < currentIndicator.getIndicatorsVariablesList().size(); i++) {
             arrayReturn.add(
@@ -2120,10 +2222,10 @@ public class IndicatorsAverageMB {
     private String determineHeader(String value) {
         for (int i = 0; i < value.length(); i++) {
             if (value.charAt(i) != '0' && value.charAt(i) != '1' && value.charAt(i) != '2'
-                    && value.charAt(i) != '3'&& value.charAt(i) != '4'&& value.charAt(i) != '5'
-                    && value.charAt(i) != '6'&& value.charAt(i) != '7'&& value.charAt(i) != '8'
-                    && value.charAt(i) != '9'&& value.charAt(i) != ' '&& value.charAt(i) != 'n'
-                    && value.charAt(i) != '-'&& value.charAt(i) != ':'&& value.charAt(i) != '/') {
+                    && value.charAt(i) != '3' && value.charAt(i) != '4' && value.charAt(i) != '5'
+                    && value.charAt(i) != '6' && value.charAt(i) != '7' && value.charAt(i) != '8'
+                    && value.charAt(i) != '9' && value.charAt(i) != ' ' && value.charAt(i) != 'n'
+                    && value.charAt(i) != '-' && value.charAt(i) != ':' && value.charAt(i) != '/') {
                 return value;
             }
         }
@@ -2148,7 +2250,7 @@ public class IndicatorsAverageMB {
         HSSFCell celda;
         HSSFRichTextString texto;
 
-        headers1 = new ArrayList<SpanColumns>();
+        headers1 = new ArrayList<>();
         headers2 = new String[columNames.size()];
         int posRow = 0;
         int posF;
@@ -2175,6 +2277,9 @@ public class IndicatorsAverageMB {
             String[] splitVars;
             for (int i = 0; i < columNames.size(); i++) {
                 splitVars = columNames.get(i).split("\\}");//separo las dos variables
+                String first=splitVars[0];//invierto el orden de llegada
+                splitVars[0]=splitVars[1];
+                splitVars[1]=first;
                 if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
                     int num = headers1.get(headers1.size() - 1).getColumns();
                     headers1.get(headers1.size() - 1).setColumns(num + 1);
@@ -2191,7 +2296,6 @@ public class IndicatorsAverageMB {
             fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja
             posRow++;
             posF = 0;
-            posI = 1;
             for (int j = 0; j < headers1.size(); j++) {
                 posI = posF + 1;
                 for (int i = 0; i < headers1.get(j).getColumns(); i++) {
@@ -2235,10 +2339,10 @@ public class IndicatorsAverageMB {
     }
 
     private String createDataTableResult() {
-        headers1 = new ArrayList<SpanColumns>();
+        headers1 = new ArrayList<>();
         headers2 = new String[columNames.size()];
         String height = "height:20px;";
-        
+
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
         strReturn = strReturn + "            <tr>\r\n";
@@ -2267,6 +2371,9 @@ public class IndicatorsAverageMB {
             String[] splitVars;
             for (int i = 0; i < columNames.size(); i++) {
                 splitVars = columNames.get(i).split("\\}");//separo las dos variables
+                String first=splitVars[0];//invierto el orden de llegada
+                splitVars[0]=splitVars[1];
+                splitVars[1]=first;
                 if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
                     int num = headers1.get(headers1.size() - 1).getColumns();
                     headers1.get(headers1.size() - 1).setColumns(num + 1);
@@ -2359,8 +2466,8 @@ public class IndicatorsAverageMB {
     public JFreeChart createBarChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         String variablesName = "";
-        String indicatorName ="";
-        String categoryAxixLabel = "";        
+        String indicatorName = "";
+        String categoryAxixLabel = "";
         ResultSet rs;
         double average = 0;
         int divisor = 0;
@@ -2376,12 +2483,11 @@ public class IndicatorsAverageMB {
                     + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
             if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
                 sql = sql + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-                
                 variablesName = "Desagregado por: " + currentVariableGraph1 + " = " + determineHeader(currentValueGraph1);
             }
             if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
                 sql = sql + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-                variablesName = variablesName+ ", " + currentVariableGraph2 + " = " + determineHeader(currentValueGraph2);
+                variablesName = variablesName + ", " + currentVariableGraph2 + " = " + determineHeader(currentValueGraph2);
             }
 
             rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
@@ -2397,32 +2503,37 @@ public class IndicatorsAverageMB {
                 average = average / divisor;
             }
             increment = increment * 0.005;//grosor linea
-            indicatorName = currentIndicator.getIndicatorName()+"("+formateador.format(average)+") - Municipo de Pasto.\n";
+            indicatorName = currentIndicator.getIndicatorName() + "(" + formateador.format(average) + ") - Municipo de Pasto.\n";
             //indicatorName = indicatorName + "\n Promedio: " + formateador.format(average);
         } catch (SQLException ex) {
             System.out.println("Error: " + ex.toString());
         }
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");        
-        indicatorName = indicatorName + variablesName + "\nPeriodo "+sdf.format(initialDate)+" a "+sdf.format(endDate);        
-        
-        JFreeChart chartReturn = ChartFactory.createBarChart(indicatorName, categoryAxixLabel, "Conteo", dataset, PlotOrientation.VERTICAL, false, true, false);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+        indicatorName = indicatorName + variablesName + "\nPeriodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);
+
+        JFreeChart chartReturn = ChartFactory.createBarChart(indicatorName, categoryAxixLabel, "Promedio", dataset, PlotOrientation.VERTICAL, false, true, false);
+
         //COLORES DE FONDO Y TITULO----------------------------
+        //chartReturn.getLegend().visible = false;//no mostrar leyenda
         chartReturn.setBackgroundPaint(Color.white);
         chartReturn.getTitle().setPaint(new Color(50, 50, 50));
-        chartReturn.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));        
-        
-        //COLOCAR LABELS A LOS GRAFICOS----------------------------
+        chartReturn.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
+        //-----FONDO BLNCO DEL GRAFICO--------------
         CategoryPlot plot = (CategoryPlot) chartReturn.getPlot();
+        plot.setBackgroundPaint(Color.white);
+        plot.setOutlineVisible(false);
+        //-----QUITAR GRADIENTE-------------
         ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());//quitar gradiente
-        plot.setRangeGridlinePaint(Color.BLUE);//malla color blanco
-        //adicionar raya
-        IntervalMarker intervalmarker = new IntervalMarker(average - increment, average + increment, Color.yellow);
+        plot.setRangeGridlinePaint(Color.LIGHT_GRAY);//malla color gris claro
+        //ADICION RAYA DIVISORIA----------------------------
+        IntervalMarker intervalmarker = new IntervalMarker(average - increment, average + increment, Color.black);
         plot.addRangeMarker(intervalmarker);
-
+        //COLOCAR LABELS A LOS GRAFICOS----------------------------
         if (showItems) {
             CategoryItemRenderer renderer = plot.getRenderer();
             CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0"));//DecimalFormat("0.00"));
             renderer.setItemLabelGenerator(generator);
+            renderer.setItemLabelFont(new Font("arial", Font.BOLD, 12));
             renderer.setItemLabelsVisible(true);
         }
         //ROTAR LASETIQUETAS DEL EJE X-----------------------------
@@ -2808,5 +2919,37 @@ public class IndicatorsAverageMB {
 
     public void setShowEmpty(boolean showEmpty) {
         this.showEmpty = showEmpty;
+    }
+
+    public int getHeightGraph() {
+        return heightGraph;
+    }
+
+    public void setHeightGraph(int heightGraph) {
+        this.heightGraph = heightGraph;
+    }
+
+    public int getWidthGraph() {
+        return widthGraph;
+    }
+
+    public void setWidthGraph(int widthGraph) {
+        this.widthGraph = widthGraph;
+    }
+
+    public List<String> getTypesGraph() {
+        return typesGraph;
+    }
+
+    public void setTypesGraph(List<String> typesGraph) {
+        this.typesGraph = typesGraph;
+    }
+
+    public String getCurrentTypeGraph() {
+        return currentTypeGraph;
+    }
+
+    public void setCurrentTypeGraph(String currentTypeGraph) {
+        this.currentTypeGraph = currentTypeGraph;
     }
 }

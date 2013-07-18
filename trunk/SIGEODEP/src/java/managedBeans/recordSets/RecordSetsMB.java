@@ -358,7 +358,7 @@ public class RecordSetsMB implements Serializable {
         if (selectedRowsDataTable != null) {
             //SI ALGUNO DE LOS SELECCIONADOS ES GENERAL NO REALIZAR ELIMINACION
             for (int i = 0; i < selectedRowsDataTable.length; i++) {//verificar si esta seleccionado uno de las cargas por defecto
-                if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 7) {
+                if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 8) {
                     btnRemoveDisabled = true;
                     btnEditDisabled = true;
                 }
@@ -403,142 +403,348 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
-    private void removeVIF(Tags currentTagRemove) {
-        List<NonFatalDomesticViolence> nonFatalDomesticViolenceList = nonFatalDomesticViolenceFacade.findFromTag(currentTagRemove.getTagId());
-        if (nonFatalDomesticViolenceList != null) {
-            for (int j = 0; j < nonFatalDomesticViolenceList.size(); j++) {
-                NonFatalInjuries auxNonFatalInjuries = nonFatalDomesticViolenceList.get(j).getNonFatalInjuries();
-                Victims auxVictims = nonFatalDomesticViolenceList.get(j).getNonFatalInjuries().getVictimId();
-                nonFatalDomesticViolenceFacade.remove(nonFatalDomesticViolenceList.get(j));
-                nonFatalInjuriesFacade.remove(auxNonFatalInjuries);
-                victimsFacade.remove(auxVictims);
-            }
-        }
-        //tagsFacade.remove(currentTag);
-    }
-
-    private void removeSivigilaVif(Tags currentTagRemove) {
-        List<NonFatalInjuries> nonFatalInjuriesList = nonFatalInjuriesFacade.findFromTag(currentTagRemove.getTagId());
-        if (nonFatalInjuriesList != null) {
-            for (int j = 0; j < nonFatalInjuriesList.size(); j++) {
-                NonFatalInjuries auxNonFatalInjury = nonFatalInjuriesList.get(j);
-                Victims auxVictim = nonFatalInjuriesList.get(j).getVictimId();
-                NonFatalDomesticViolence auxDomesticViolence = nonFatalInjuriesList.get(j).getNonFatalDomesticViolence();
-                SivigilaEvent auxSivigilaEvent = auxDomesticViolence.getSivigilaEvent();
-                SivigilaVictim auxSivigilaVictim = auxSivigilaEvent.getSivigilaVictimId();
-                SivigilaAggresor auxSivigilaAggresor = auxSivigilaEvent.getSivigilaAgresorId();
-
-                sivigilaEventFacade.remove(auxSivigilaEvent);
-                nonFatalDomesticViolenceFacade.remove(auxDomesticViolence);
-                nonFatalInjuriesFacade.remove(auxNonFatalInjury);
-                victimsFacade.remove(auxVictim);
-
-                sivigilaVictimFacade.remove(auxSivigilaVictim);
-                sivigilaAggresorFacade.remove(auxSivigilaAggresor);
-            }
-        }
-        //tagsFacade.remove(currentTag);
-    }
-
     private void removeMurder(Tags currentTagRemove) {
-        List<FatalInjuryMurder> fatalInjuryMurderList = fatalInjuryMurderFacade.findFromTag(currentTagRemove.getTagId());
-        if (fatalInjuryMurderList != null) {
-            for (int j = 0; j < fatalInjuryMurderList.size(); j++) {
-                FatalInjuries auxFatalInjuries = fatalInjuryMurderList.get(j).getFatalInjuries();
-                Victims auxVictims = fatalInjuryMurderList.get(j).getFatalInjuries().getVictimId();
-                fatalInjuryMurderFacade.remove(fatalInjuryMurderList.get(j));
-                fatalInjuriesFacade.remove(auxFatalInjuries);
-                victimsFacade.remove(auxVictims);
-                totalProcess++;
-                if (totalRegisters != 0) {
-                    progressDelete = (int) (totalProcess * 100) / totalRegisters;
-                }
-            }
+        try {
+            //FATAL INJURY MURDER
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM fatal_injury_murder where fatal_injury_id IN \n"
+                    + "(select fatal_injury_id from fatal_injuries where victim_id IN \n"
+                    + "(select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 30;
+            //FATAL INJURY
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM fatal_injuries where victim_id IN \n"
+                    + "(select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")");
+            progressDelete = 60;
+            //VICTIMS
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM victims where tag_id=" + currentTagRemove.getTagId() + "");
+            progressDelete = 95;
+        } catch (Exception e) {
         }
-        //tagsFacade.remove(currentTag);
     }
 
     private void removeAccident(Tags currentTagRemove) {
-        List<FatalInjuryAccident> fatalInjuryAccidentList = fatalInjuryAccidentFacade.findFromTag(currentTagRemove.getTagId());
-        if (fatalInjuryAccidentList != null) {
-            for (int j = 0; j < fatalInjuryAccidentList.size(); j++) {
-                FatalInjuries auxFatalInjuries = fatalInjuryAccidentList.get(j).getFatalInjuries();
-                Victims auxVictims = fatalInjuryAccidentList.get(j).getFatalInjuries().getVictimId();
-                fatalInjuryAccidentFacade.remove(fatalInjuryAccidentList.get(j));
-                fatalInjuriesFacade.remove(auxFatalInjuries);
-                victimsFacade.remove(auxVictims);
-                totalProcess++;
-                if (totalRegisters != 0) {
-                    progressDelete = (int) (totalProcess * 100) / totalRegisters;
-                }
-            }
+        try {
+            //FATAL INJURY ACCIDENT
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM fatal_injury_accident where fatal_injury_id IN \n"
+                    + "(select fatal_injury_id from fatal_injuries where victim_id IN \n"
+                    + "(select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 30;
+            //FATAL INJURY
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM fatal_injuries where victim_id IN \n"
+                    + "(select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")");
+            progressDelete = 60;
+            //VICTIMS
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM victims where tag_id=" + currentTagRemove.getTagId() + "");
+            progressDelete = 95;
+        } catch (Exception e) {
         }
-        //tagsFacade.remove(currentTag);
     }
 
     private void removeSuicide(Tags currentTagRemove) {
-        List<FatalInjurySuicide> fatalInjurySuicideList = fatalInjurySuicideFacade.findFromTag(currentTagRemove.getTagId());
-        if (fatalInjurySuicideList != null) {
-            for (int j = 0; j < fatalInjurySuicideList.size(); j++) {
-                FatalInjuries auxFatalInjuries = fatalInjurySuicideList.get(j).getFatalInjuries();
-                Victims auxVictims = fatalInjurySuicideList.get(j).getFatalInjuries().getVictimId();
-                fatalInjurySuicideFacade.remove(fatalInjurySuicideList.get(j));
-                fatalInjuriesFacade.remove(auxFatalInjuries);
-                victimsFacade.remove(auxVictims);
-                totalProcess++;
-                if (totalRegisters != 0) {
-                    progressDelete = (int) (totalProcess * 100) / totalRegisters;
-                }
-            }
+        try {
+            //FATAL INJURY SUICIDE
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM fatal_injury_suicide where fatal_injury_id IN \n"
+                    + "(select fatal_injury_id from fatal_injuries where victim_id IN \n"
+                    + "(select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 30;
+            //FATAL INJURY
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM fatal_injuries where victim_id IN \n"
+                    + "(select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")");
+            progressDelete = 60;
+            //VICTIMS
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM victims where tag_id=" + currentTagRemove.getTagId() + "");
+            progressDelete = 95;
+        } catch (Exception e) {
         }
-        //tagsFacade.remove(currentTag);
     }
 
     private void removeTransit(Tags currentTagRemove) {
-        List<FatalInjuryTraffic> fatalInjuryTrafficList = fatalInjuryTrafficFacade.findFromTag(currentTagRemove.getTagId());
-        if (fatalInjuryTrafficList != null) {
-            for (int j = 0; j < fatalInjuryTrafficList.size(); j++) {
-                FatalInjuries auxFatalInjuries = fatalInjuryTrafficList.get(j).getFatalInjuries();
-                Victims auxVictims = fatalInjuryTrafficList.get(j).getFatalInjuries().getVictimId();
-                fatalInjuryTrafficFacade.remove(fatalInjuryTrafficList.get(j));
-                fatalInjuriesFacade.remove(auxFatalInjuries);
-                victimsFacade.remove(auxVictims);
-                totalProcess++;
-                if (totalRegisters != 0) {
-                    progressDelete = (int) (totalProcess * 100) / totalRegisters;
-                }
-            }
+        try {
+            //counterpart_involved_vehicle
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM counterpart_service_type where fatal_injury_id IN \n"
+                    + "(select fatal_injury_id from fatal_injuries where victim_id IN \n"
+                    + "(select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 10;
+            //counterpart_involved_vehicle
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM counterpart_involved_vehicle where fatal_injury_id IN \n"
+                    + "(select fatal_injury_id from fatal_injuries where victim_id IN \n"
+                    + "(select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 20;
+
+            //FATAL INJURY SUICIDE
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM fatal_injury_traffic where fatal_injury_id IN \n"
+                    + "(select fatal_injury_id from fatal_injuries where victim_id IN \n"
+                    + "(select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 30;
+            //FATAL INJURY
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM fatal_injuries where victim_id IN \n"
+                    + "(select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")");
+            progressDelete = 60;
+
+            //VICTIMS
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM victims where tag_id=" + currentTagRemove.getTagId() + "");
+            progressDelete = 95;
+
+        } catch (Exception e) {
         }
-        //tagsFacade.remove(currentTag);
     }
 
     private void removeLCENF(Tags currentTagRemove) {
-        List<NonFatalInjuries> nonFatalInjuriesList = nonFatalInjuriesFacade.findFromTag(currentTagRemove.getTagId());
-        if (nonFatalInjuriesList != null) {
-            for (int j = 0; j < nonFatalInjuriesList.size(); j++) {
+        try {
+            //OTHERS
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM others where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ") ");
+            progressDelete = 5;
 
-                if (nonFatalInjuriesList.get(j).getNonFatalDomesticViolence() != null) {
-                    nonFatalDomesticViolenceFacade.remove(nonFatalInjuriesList.get(j).getNonFatalDomesticViolence());
-                }
-                if (nonFatalInjuriesList.get(j).getNonFatalInterpersonal() != null) {
-                    nonFatalInterpersonalFacade.remove(nonFatalInjuriesList.get(j).getNonFatalInterpersonal());
-                }
-                if (nonFatalInjuriesList.get(j).getNonFatalSelfInflicted() != null) {
-                    nonFatalSelfInflictedFacade.remove(nonFatalInjuriesList.get(j).getNonFatalSelfInflicted());
-                }
-                if (nonFatalInjuriesList.get(j).getNonFatalTransport() != null) {
-                    nonFatalTransportFacade.remove(nonFatalInjuriesList.get(j).getNonFatalTransport());
-                }
-                nonFatalInjuriesFacade.remove(nonFatalInjuriesList.get(j));
-                victimsFacade.remove(nonFatalInjuriesList.get(j).getVictimId());
-                totalProcess++;
-                if (totalRegisters != 0) {
-                    progressDelete = (int) (totalProcess * 100) / totalRegisters;
-                    System.out.print("PROGRESO ELIMINANDO: " + String.valueOf(progressDelete));
-                }
-            }
+            //victim_vulnerable_group
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM victim_vulnerable_group where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ") ");
+            progressDelete = 10;
+
+            //domestic_violence_aggressor_type
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM domestic_violence_aggressor_type where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 15;
+
+            //domestic_violence_action_to_take
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM domestic_violence_action_to_take where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 20;
+
+            //domestic_violence_abuse_type
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM domestic_violence_abuse_type where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 25;
+
+            //domestic_violence_aggressor_type
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM domestic_violence_aggressor_type where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 30;
+
+            //non_fatal_domestic_violence
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM non_fatal_domestic_violence where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 35;
+
+            //non_fatal_anatomical_location
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM non_fatal_anatomical_location where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 40;
+
+            //non_fatal_diagnosis
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM non_fatal_diagnosis where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 45;
+
+            //non_fatal_interpersonal
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM non_fatal_interpersonal where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")) ");
+            progressDelete = 50;
+
+            //non_fatal_kind_of_injury
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM non_fatal_kind_of_injury where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")) ");
+            progressDelete = 55;
+
+            //non_fatal_self_inflicted
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM non_fatal_self_inflicted where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")) ");
+            progressDelete = 60;
+
+            //non_fatal_transport_security_element
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM non_fatal_transport_security_element where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+            progressDelete = 65;
+
+            //non_fatal_transport
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM non_fatal_transport where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")) ");
+            progressDelete = 70;
+
+            //non_fatal_transport_security_element
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM non_fatal_transport_security_element where non_fatal_injury_id IN "
+                    + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")) ");
+            progressDelete = 75;
+
+            //NON FATAL INJURY
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM non_fatal_injuries where victim_id IN "
+                    + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ") ");
+            progressDelete = 80;
+            //VICTIMS
+            connectionJdbcMB.non_query(""
+                    + " DELETE FROM victims where tag_id=" + currentTagRemove.getTagId() + " ");
+            progressDelete = 95;
+        } catch (Exception e) {
         }
-        //tagsFacade.remove(currentTag);
+    }
+
+    private void removeVIF(Tags currentTagRemove) {
+
+        //OTHERS
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM others where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ") ");
+        progressDelete = 10;
+
+        //victim_vulnerable_group
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM victim_vulnerable_group where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ") ");
+        progressDelete = 15;
+
+        //domestic_violence_aggressor_type
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM domestic_violence_aggressor_type where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 20;
+
+        //domestic_violence_action_to_take
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM domestic_violence_action_to_take where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 25;
+
+        //domestic_violence_abuse_type
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM domestic_violence_abuse_type where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 30;
+        //non_fatal_domestic_violence
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM non_fatal_domestic_violence where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 35;
+
+        //NON FATAL INJURY
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ") ");
+        progressDelete = 80;
+
+        //VICTIMS
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM victims where tag_id=" + currentTagRemove.getTagId() + " ");
+        progressDelete = 95;
+    }
+
+    private void removeSivigilaVif(Tags currentTagRemove) {
+        //victim_vulnerable_group
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM victim_vulnerable_group where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ") ");
+        progressDelete = 10;
+
+        //domestic_violence_aggressor_type
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM domestic_violence_aggressor_type where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 50;
+
+        //domestic_violence_action_to_take
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM domestic_violence_action_to_take where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 60;
+
+        //domestic_violence_abuse_type
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM domestic_violence_abuse_type where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 70;
+
+        //sivigila_event_public_health
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM sivigila_event_public_health where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 10;
+
+        //sivigila_event
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM sivigila_event where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")) ");
+        progressDelete = 20;
+
+        //sivigila_aggresor
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM sivigila_aggresor where sivigila_agresor_id NOT IN "
+                + " (select sivigila_agresor_id from sivigila_event) ");
+        progressDelete = 30;
+
+        //sivigila_victim
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM sivigila_victim where sivigila_victim_id NOT IN "
+                + " (select sivigila_victim_id from sivigila_event) ");
+        progressDelete = 40;
+        
+        //non_fatal_domestic_violence
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM non_fatal_domestic_violence where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 80;
+        
+        
+
+        //NON FATAL INJURY
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ") ");
+        progressDelete = 90;
+        //VICTIMS
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM victims where tag_id=" + currentTagRemove.getTagId() + " ");
+        progressDelete = 95;
     }
 
     private String determineTagName(String name) {
@@ -623,7 +829,7 @@ public class RecordSetsMB implements Serializable {
     public void splitTags() {
         System.out.print("ENTRANDO EN UNION DE CONJUNTOS");
         currentTag = null;
-        List<Tags> tagsListAux = new ArrayList<Tags>();
+        List<Tags> tagsListAux = new ArrayList<>();
         boolean continueProcess = true;
         //EXISTAN FILAS SELECCIONADAS
         if (selectedRowsDataTable == null) {
@@ -638,7 +844,7 @@ public class RecordSetsMB implements Serializable {
         if (continueProcess) {
 
             //CREO LA LISTA DE TAGS SELECCIONADOS
-            tagsList = new ArrayList<Tags>();
+            tagsList = new ArrayList<>();
             for (int i = 0; i < selectedRowsDataTable.length; i++) {
                 if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 7) {
                     //si es general lo coloco de primero
@@ -680,12 +886,12 @@ public class RecordSetsMB implements Serializable {
         if (selectedRowsDataTable != null) {
             //CREO LA LISTA DE TAGS SELECCIONADOS
             boolean defaultSetSelected = false;
-            tagsList = new ArrayList<Tags>();
+            tagsList = new ArrayList<>();
             for (int i = 0; i < selectedRowsDataTable.length; i++) {
-                if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 7) {
+                if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 8) {
                     defaultSetSelected = true;
                 } else {
-                    tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
+                tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
                 }
             }
             if (defaultSetSelected) {//SE SELECCIONO UN CONJUNTO POR DEFECTO DEL SISTEMA
@@ -695,24 +901,6 @@ public class RecordSetsMB implements Serializable {
             } else {
                 //DETERMINO EL NUMERO DE REGISTROS 
                 totalProcess = 0;
-                totalRegisters = 0;
-                for (int i = 0; i < tagsList.size(); i++) {
-                    if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-028") == 0) {
-                        totalRegisters = totalRegisters + fatalInjuryMurderFacade.countFromTag(tagsList.get(i).getTagId());
-                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-029") == 0) {
-                        totalRegisters = totalRegisters + fatalInjuryTrafficFacade.countFromTag(tagsList.get(i).getTagId());
-                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-030") == 0) {
-                        totalRegisters = totalRegisters + fatalInjurySuicideFacade.countFromTag(tagsList.get(i).getTagId());
-                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-031") == 0) {
-                        totalRegisters = totalRegisters + fatalInjuryAccidentFacade.countFromTag(tagsList.get(i).getTagId());
-                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-032") == 0) {
-                        totalRegisters = totalRegisters + nonFatalInjuriesFacade.countFromTag(tagsList.get(i).getTagId());
-                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-033") == 0) {
-                        totalRegisters = totalRegisters + nonFatalInjuriesFacade.countFromTag(tagsList.get(i).getTagId());
-                    } else if (tagsList.get(i).getFormId().getFormId().compareTo("SIVIGILA-VIF") == 0) {
-                        totalRegisters = totalRegisters + nonFatalInjuriesFacade.countFromTag(tagsList.get(i).getTagId());
-                    }
-                }
 
                 for (int i = 0; i < tagsList.size(); i++) {
                     //ELIMINACION DE CONJUNTOS AGRUPADOS
@@ -750,12 +938,7 @@ public class RecordSetsMB implements Serializable {
                     } else if (tagsList.get(i).getFormId().getFormId().compareTo("SIVIGILA-VIF") == 0) {
                         removeSivigilaVif(tagsList.get(i));
                     }
-                    //ELIMINACION DE CONJUNTOS
-//                    try {                        
-//                        connectionJdbcMB.remove("tags", "tag_id = " + tagsList.get(i).getTagId().toString());
-//                        connectionJdbcMB.remove("ungrouped_tags", "ungrouped_tag_id = " + tagsList.get(i).getTagId().toString());
-//                    } catch (Exception e) {
-//                    }
+
                     tagsFacade.remove(tagsList.get(i));
                     ungroupedTagsFacade.remove(ungroupedTagsFacade.find(tagsList.get(i).getTagId()));
                 }
@@ -835,9 +1018,9 @@ public class RecordSetsMB implements Serializable {
         btnRemoveDisabled = true;
         btnViewDisabled = true;
         currentSearchValue = currentSearchValue.toUpperCase();
-        rowDataTableList = new ArrayList<RowDataTable>();
-        if (currentSearchValue.trim().length() == 0) {
-            tagsList = tagsFacade.findAll();
+        rowDataTableList = new ArrayList<>();
+        if (currentSearchValue.trim().length() == 0) {            
+            tagsList = tagsFacade.findCriteria(0,null);
         } else {
             tagsList = tagsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
         }
@@ -845,6 +1028,7 @@ public class RecordSetsMB implements Serializable {
             msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
+        
         for (int i = 0; i < tagsList.size(); i++) {
             rowDataTableList.add(new RowDataTable(
                     tagsList.get(i).getTagId().toString(),
@@ -857,7 +1041,7 @@ public class RecordSetsMB implements Serializable {
     public final void createDynamicTable2() {
         selectedRowsDataTable2 = null;
         currentSearchValue2 = currentSearchValue2.toUpperCase();
-        rowDataTableList2 = new ArrayList<RowDataTable>();
+        rowDataTableList2 = new ArrayList<>();
         try {
             ResultSet rs2;
             ResultSet rs = connectionJdbcMB.consult(""

@@ -16,6 +16,14 @@
                 type="text/css" />
             <ui:insert name="head">  
             </ui:insert>
+            <script type="text/javascript">
+                function pageInactive() {//muestra la pagina deshabilitada
+                    document.getElementById('capa').style.display = "block";
+                }
+                function pageActive() {//muestra la pagina habilitada
+                    document.getElementById('capa').style.display = "none";
+                }
+            </script> 
             <title>
                 <ui:insert name="titlePage">
                 </ui:insert>
@@ -23,6 +31,7 @@
         </h:head>
         <!-- h:body onload="setInterval('contador()',2000);" -->
         <h:body>
+            <div class="capa1" id="capa">Procesando...</div>
             <p:panelGrid rendered="#{!loginMB.autenticado}" style="margin-top: 160px; margin-left: 210px; ">
                 <p:row>
                     <p:column>
@@ -40,7 +49,6 @@
                         <br/><br/>
                         <p:graphicImage value="../../resources/img/logo2.png"/>
                         <br/><br/>
-
                         <p:accordionPanel  activeIndex="#{loginMB.activeIndexAcoordion1}" >                            
                             <p:tab title="REGISTRO DE DATOS">
                                 <p:menu style="width: 200px; z-index:23; overflow: no-display;">
@@ -157,7 +165,6 @@
                                         action="users" 
                                         ajax="false"/>  
                                     <p:menuitem
-                                        rendered="false"
                                         icon="ui-icon-disk"
                                         value="Copias de seguridad" 
                                         actionListener="#{backupsMB.reset}"

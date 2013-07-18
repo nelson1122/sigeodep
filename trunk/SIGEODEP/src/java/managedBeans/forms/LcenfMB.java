@@ -738,7 +738,7 @@ public class LcenfMB implements Serializable {
             searchCriteriaList[1] = new SelectItem(2, "NOMBRE");
             searchCriteriaList[2] = new SelectItem(3, "CODIGO INTERNO");
 
-            rowDataTableList = new ArrayList<RowDataTable>();
+            rowDataTableList = new ArrayList<>();
             //createDynamicTable();
 
             determinePosition();
@@ -1757,7 +1757,7 @@ public class LcenfMB implements Serializable {
     }
 
     private boolean validateFields() {
-        validationsErrors = new ArrayList<String>();
+        validationsErrors = new ArrayList<>();
         //---------VALIDAR EL USUARIO TENGA PERMISMOS SUFIENTES
         if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentNonFatalInjury.getUserId().getUserId()) {
             validationsErrors.add("Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
@@ -1938,7 +1938,7 @@ public class LcenfMB implements Serializable {
                 //}
 
                 //informacion de grupos vunerables
-                List<VulnerableGroups> vulnerableGroupsList = new ArrayList<VulnerableGroups>();
+                List<VulnerableGroups> vulnerableGroupsList = new ArrayList<>();
                 if (isHandicapped) {
                     VulnerableGroups vg = vulnerableGroupsFacade.find(Short.parseShort("2"));//discapacitado
                     vulnerableGroupsList.add(vg);
@@ -2070,7 +2070,7 @@ public class LcenfMB implements Serializable {
                 newNonFatalInjuries.setVictimId(newVictim);
 
                 //---LISTA DE SITIOS ANATOMICOS---------------------------------------
-                List<AnatomicalLocations> anatomicalLocationList = new ArrayList<AnatomicalLocations>();
+                List<AnatomicalLocations> anatomicalLocationList = new ArrayList<>();
 
                 if (isAnatomicalSite1) {
                     anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 1));
@@ -2111,7 +2111,7 @@ public class LcenfMB implements Serializable {
                 newNonFatalInjuries.setAnatomicalLocationsList(anatomicalLocationList);
 
                 //---NATURALEZA DE LA LESION--------------------------------------------
-                List<KindsOfInjury> kindsOfInjuryList = new ArrayList<KindsOfInjury>();
+                List<KindsOfInjury> kindsOfInjuryList = new ArrayList<>();
 
                 if (isNatureOfInjurye1) {
                     kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 1));
@@ -2150,7 +2150,7 @@ public class LcenfMB implements Serializable {
                 newNonFatalInjuries.setKindsOfInjuryList(kindsOfInjuryList);
 
                 //---CODIGO CIE10---------------------------------
-                List<Diagnoses> diagnosesesList = new ArrayList<Diagnoses>();
+                List<Diagnoses> diagnosesesList = new ArrayList<>();
                 Diagnoses d;
                 boolean addDiagnose;
                 if (idCIE10_1.trim().length() != 0) {
@@ -2269,7 +2269,7 @@ public class LcenfMB implements Serializable {
                             //newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(domesticViolenceDataSourcesFacade.find(currentDomesticViolenceDataSource));
                             newNonFatalDomesticViolence.setNonFatalInjuries(newNonFatalInjuries);
                             //---LISTA DE AGRESORES-----------------------------------
-                            List<AggressorTypes> aggressorTypesList = new ArrayList<AggressorTypes>();
+                            List<AggressorTypes> aggressorTypesList = new ArrayList<>();
 
                             if (isAG1) {
                                 aggressorTypesList.add(aggressorTypesFacade.find((short) 1));
@@ -2304,7 +2304,7 @@ public class LcenfMB implements Serializable {
                             newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
 
                             //----LISTA DE TIPOS DE MALTRATO-----------------------------------
-                            List<AbuseTypes> abuseTypesList = new ArrayList<AbuseTypes>();
+                            List<AbuseTypes> abuseTypesList = new ArrayList<>();
 
                             if (isMA1) {
                                 abuseTypesList.add(abuseTypesFacade.find((short) 1));
@@ -2353,7 +2353,7 @@ public class LcenfMB implements Serializable {
                     if (currentTransportUser != 0) {
                         newNonFatalTransport.setTransportUserId(transportUsersFacade.find(currentTransportUser));
                     }
-                    List<SecurityElements> securityElementsList = new ArrayList<SecurityElements>();
+                    List<SecurityElements> securityElementsList = new ArrayList<>();
                     if (currentSecurityElements.compareTo("SI") == 0) {
                         if (isBeltUse) {
                             securityElementsList.add(securityElementsFacade.find((short) 1));
@@ -2383,7 +2383,7 @@ public class LcenfMB implements Serializable {
                 }
 
                 //-----GUARDAR CAMPOS OTROS----------------
-                List<Others> othersList = new ArrayList<Others>();
+                List<Others> othersList = new ArrayList<>();
                 Others newOther;
                 OthersPK newOtherPK;
                 if (otherEthnicGroup.trim().length() != 0) {//1.	Cual otro grupo etnico
@@ -2725,7 +2725,7 @@ public class LcenfMB implements Serializable {
 
                 }
                 return true;
-            } catch (Exception e) {
+            } catch (NumberFormatException | ParseException e) {
                 System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
                 FacesContext.getCurrentInstance().addMessage(null, msg);
@@ -3286,7 +3286,7 @@ public class LcenfMB implements Serializable {
     public void clearSearch() {
         currentSearchValue = "";
         currentSearchCriteria = 1;
-        rowDataTableList = new ArrayList<RowDataTable>();
+        rowDataTableList = new ArrayList<>();
 
     }
 
@@ -3299,7 +3299,7 @@ public class LcenfMB implements Serializable {
         }
         if (s) {
             try {
-                rowDataTableList = new ArrayList<RowDataTable>();
+                rowDataTableList = new ArrayList<>();
                 String sql = "";
                 sql = sql + "SELECT ";
                 sql = sql + "non_fatal_injuries.non_fatal_injury_id, ";
@@ -3359,7 +3359,7 @@ public class LcenfMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public List<String> suggestInsurances(String entered) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             ResultSet rs;
             String sql = ""
@@ -3380,7 +3380,7 @@ public class LcenfMB implements Serializable {
     }
 
     public List<String> suggestJobs(String entered) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             ResultSet rs;
             String sql = ""
@@ -3401,7 +3401,7 @@ public class LcenfMB implements Serializable {
     }
 
     public List<String> suggestNeighborhoods(String entered) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             ResultSet rs;
             String sql = ""
@@ -3422,7 +3422,7 @@ public class LcenfMB implements Serializable {
     }
 
     public List<String> suggestCIE10(String entered) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             ResultSet rs;
             String sql = ""
@@ -3443,7 +3443,7 @@ public class LcenfMB implements Serializable {
     }
 
     public List<String> suggestHealthProfessionals(String entered) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             ResultSet rs;
             String sql = ""
@@ -4385,7 +4385,7 @@ public class LcenfMB implements Serializable {
                 //System.out.println("2");
                 displayIntentional = "block";
                 //recargo los mecanismos
-                auxMechanismsList = new ArrayList<Mechanisms>();
+                auxMechanismsList = new ArrayList<>();
                 for (int i = 0; i < mechanismsList.size(); i++) {
                     if (mechanismsList.get(i).getMechanismId() != 2 //no listar Agresion sexual
                             && mechanismsList.get(i).getMechanismId() != 1 //no listar lesion de transito
@@ -4419,7 +4419,7 @@ public class LcenfMB implements Serializable {
                         break;
                 }
                 //recargo los mecanismos
-                auxMechanismsList = new ArrayList<Mechanisms>();
+                auxMechanismsList = new ArrayList<>();
                 for (int i = 0; i < mechanismsList.size(); i++) {
                     if (mechanismsList.get(i).getMechanismId() != 1 //no listar lesion de transito
                             && mechanismsList.get(i).getMechanismId() != 24 //no listar mordedura de animal
@@ -4436,7 +4436,7 @@ public class LcenfMB implements Serializable {
 
                 break;
             case 1: //01. No intencional (accidentes)                                
-                auxMechanismsList = new ArrayList<Mechanisms>();
+                auxMechanismsList = new ArrayList<>();
                 for (int i = 0; i < mechanismsList.size(); i++) {
                     if (mechanismsList.get(i).getMechanismId() != 2 //no listar Agresion sexual
                             && mechanismsList.get(i).getMechanismId() != 23) //no listar mordedura de persona

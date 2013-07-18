@@ -19,20 +19,20 @@
                     var n = 0;
                     var brow = 'mozilla';
                     jQuery.each(jQuery.browser, function(i, val) {
-                        if (val == true) {
+                        if (val === true) {
                             brow = i.toString();
                         }
                     });
 
                     $('.tableHeader').each(function(i) {
                         if (colCount > m) {
-                            if (brow == 'mozilla') {
+                            if (brow === 'mozilla') {
                                 $('#firstTd').css("width", $('.tableFirstCol').innerWidth());//for adjusting first td
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').innerWidth());//for assigning width to table Header div
-                            } else if (brow == 'msie') {
+                            } else if (brow === 'msie') {
                                 $('#firstTd').css("width", $('.tableFirstCol').width());
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').width() - 2);//In IE there is difference of 2 px
-                            } else if (brow == 'safari') {
+                            } else if (brow === 'safari') {
                                 $('#firstTd').css("width", $('.tableFirstCol').width());
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').width());
                             } else {
@@ -43,21 +43,21 @@
                         m++;
                     });
                     $('.tableFirstCol').each(function(i) {
-                        if (brow == 'mozilla') {
+                        if (brow === 'mozilla') {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').outerHeight());//for providing height using scrollable table column height
-                        } else if (brow == 'msie') {
+                        } else if (brow === 'msie') {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').innerHeight() - 2);
                         } else {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').height());
                         }
                         n++;
                     });
-                }
+                };
                 //function to support scrolling of title and first column
                 fnScroll = function() {
                     $('#divHeader').scrollLeft($('#table_div').scrollLeft());
                     $('#firstcol').scrollTop($('#table_div').scrollTop());
-                }
+                };
                 function showTableResult() {
                     document.getElementById('IdTabView:IdForm:IdPaint').click();
                     fnAdjustTable();
@@ -211,7 +211,8 @@
                                 style="width: 100px;"
                                 id="IdBtnGenerate" 
                                 actionListener="#{indicatorsAverageMB.process}"
-                                oncomplete="showTableResult()"                                                        
+                                oncomplete="showTableResult(); pageActive();"  
+                                onclick="pageInactive();"                                                        
                                 update="IdImageChart IdPanelGraphConfig IdDataTableHtml IdBtnExport">
                             </p:commandButton> 
                             &nbsp;&nbsp;
@@ -263,7 +264,14 @@
                                         Tipo de Gráfico
                                     </p:column>
                                     <p:column colspan="2">
-                                        Barras
+                                        <h:selectOneMenu 
+                                            id="IdTypeGraph" value="#{indicatorsAverageMB.currentTypeGraph}"> 
+                                            <f:selectItems value="#{indicatorsAverageMB.typesGraph}"/>
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsAverageMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectOneMenu>                                        
                                     </p:column>
                                     <p:column styleClass="ui-widget-header">
                                         Filtro 1
@@ -307,10 +315,42 @@
                                         </h:selectOneMenu>
                                     </p:column>
                                 </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        Tamaño
+                                    </p:column>
+                                    <p:column colspan="4">
+                                        Alto: 
+                                        <p:spinner 
+                                            value="#{indicatorsAverageMB.heightGraph}"
+                                            min="1"
+                                            stepFactor="100"
+                                            size="5">
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsAverageMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </p:spinner> 
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        Largo: 
+                                        <p:spinner 
+                                            value="#{indicatorsAverageMB.widthGraph}"
+                                            min="1"
+                                            stepFactor="100"
+                                            size="5">
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsAverageMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </p:spinner> 
+                                    </p:column>
+                                </p:row>
                             </p:panelGrid>     
                             <br/>
-                            <p:graphicImage id="IdImageChart" value="#{indicatorsAverageMB.chartImage}"/>
-                            <br/>
+                            <div style="width: 680px; height: 480px; overflow: scroll">
+                                <p:graphicImage id="IdImageChart" value="#{indicatorsAverageMB.chartImage}"/>
+                            </div>
+                            <br/>                            
                         </p:fieldset>
                         <br/>
                         <br/>                                                

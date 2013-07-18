@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
-import javax.faces.FacesException;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -78,16 +77,7 @@ public class LoginMB {
             //System.out.println("Termina session por inactividad 003 " + e.toString());
         }
     }
-
-//    public void newWindow2() {
-//        try {
-//            ExternalContext ext = FacesContext.getCurrentInstance().getExternalContext();
-//            String ctxPath = ((ServletContext) ext.getContext()).getContextPath();
-//            //return ctxPath + "/index.html?v=timeout";//System.out.println("enviado a: " + ctxPath + "/index.html?v=timeout");        
-//            ext.redirect(ctxPath + "/index.html?v=close");
-//        } catch (Exception ex) {//System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
-//        }
-//    }
+    
     public void logout1() {//fin de session por que se inicio una nueva session en otro equipo      
         applicationControlMB.removeSession(idSession);
         try {
@@ -217,7 +207,6 @@ public class LoginMB {
                 FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("db_pass", rs.getString("password_db"));
                 FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("db_host", rs.getString("server_db"));
                 FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("db_name", rs.getString("name_db"));
-
             } catch (SQLException ex) {
                 Logger.getLogger(LoginMB.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -257,7 +246,7 @@ public class LoginMB {
         applicationControlMB = (ApplicationControlMB) contexto.getApplicationMap().get("applicationControlMB");
         //determino si el usuario tiene una session alctiva
         if (applicationControlMB.hasLogged(currentUser.getUserId())) {//System.out.println("Ingreso rechazado, ya tiene otra session activa");
-            closeSessionDialog = "closeSessionDialog.show()";//permitir terminar sesion de otra terminal
+            closeSessionDialog = "closeSessionDialog.show()";//dialog que permite terminar sesion desde otra terminal
             return "";//no dirigir a ninguna pagina
         } else {
             return continueLogin();

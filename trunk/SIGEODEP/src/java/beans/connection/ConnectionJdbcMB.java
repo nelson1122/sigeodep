@@ -35,20 +35,12 @@ public class ConnectionJdbcMB implements Serializable {
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     @EJB
     CountriesFacade countriesFacade;
-    //@EJB
-    //NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
-    //@EJB
-    //NonFatalSelfInflictedFacade nonFatalSelfInflictedFacade;
-    //@EJB
-    //NonFatalTransportFacade nonFatalTransportFacade;
     @EJB
     AgeTypesFacade ageTypesFacade;
     @EJB
     MunicipalitiesFacade municipalitiesFacade;
     @EJB
     DepartamentsFacade departamentsFacade;
-    //@EJB
-    //VictimsFacade victimsFacade;
     @EJB
     FatalInjuryMurderFacade fatalInjuryMurderFacade;
     @EJB
@@ -61,8 +53,6 @@ public class ConnectionJdbcMB implements Serializable {
     InjuriesFacade injuriesFacade;
     @EJB
     NeighborhoodsFacade neighborhoodsFacade;
-    //@EJB
-    //FatalInjuriesFacade fatalInjuriesFacade;
     @EJB
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
     private String hours = "";
@@ -82,6 +72,7 @@ public class ConnectionJdbcMB implements Serializable {
     private boolean connectionIsConfigured = true;
     private boolean connectionNotConfigured = false;
     private Users currentUser;
+    private boolean showMessages = true;//determinar si mostrar o no los mensajes de error
 
     /**
      * Creates a new instance of ConnectionJdbcMB
@@ -245,7 +236,9 @@ public class ConnectionJdbcMB implements Serializable {
             }
 
         } catch (SQLException e) {
-            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+            if (showMessages) {
+                System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+            }
             msj = "ERROR: " + e.getMessage();
         }
         return reg;
@@ -3266,15 +3259,15 @@ public class ConnectionJdbcMB implements Serializable {
          */
         try {
             ArrayList<String> fields = new ArrayList<>();
-            
+
             //funciona---funciona-----funciona
 //            String query = "SELECT column_name FROM information_schema.columns "
 //                    + " WHERE table_name = 'temp'"
 //                    + " ORDER BY ordinal_position";
 //            ResultSet field_names = consult(query);
             //funciona---funciona-----funciona           
-            
-            
+
+
             String query = ""
                     + " SELECT "
                     + "    column_name, "
@@ -3418,5 +3411,13 @@ public class ConnectionJdbcMB implements Serializable {
 
     public void setCurrentUser(Users currentUser) {
         this.currentUser = currentUser;
+    }
+
+    public boolean isShowMessages() {
+        return showMessages;
+    }
+
+    public void setShowMessages(boolean showMessages) {
+        this.showMessages = showMessages;
     }
 }
