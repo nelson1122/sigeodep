@@ -6,6 +6,7 @@ package managedBeans.fileProcessing;
 
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.*;
+import static beans.enumerators.SCC_F_032Enum.usaba_cinturon;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -428,7 +429,7 @@ public class RecordDataMB implements Serializable {
     }
 
     private ArrayList<String> determineColumnNames() {
-        ArrayList<String> listReturn = new ArrayList<String>();
+        ArrayList<String> listReturn = new ArrayList<>();
         try {
             sql = ""
                     + " SELECT     "
@@ -518,7 +519,7 @@ public class RecordDataMB implements Serializable {
         //int pos = 0;
         isValidate = false;
         //int currentNumberOfRow = 1;
-        columnsNames = new ArrayList<String>();
+        columnsNames = new ArrayList<>();
         progressValidate = 0;
         continueProcces = true;
         nameForm = projectsMB.getCurrentFormId();
@@ -552,26 +553,25 @@ public class RecordDataMB implements Serializable {
                     ao1 = "";
                     intencionality = "";
 
+                    //String intencionalityValue = "";
+                    String mechanism = "";
+                    String traficValues = "";
+                    String interpersonalValues = "";
+                    String selftInflictedValues = "";
+                    String domesticViolenceValues = "";
+
                     for (int i = 0; i < columnsNames.size(); i++) {//recorro cada una de las columnas de cada registro                                            
-//                        if (columnsNames.get(i).compareTo("num_id_") == 0) {
-////                                columnsNames.get(i).compareTo("tip_ss_") == 0||
-////                                columnsNames.get(i).compareTo("cod_ase_") == 0||
-////                                columnsNames.get(i).compareTo("fec_hecho") == 0||
-////                                columnsNames.get(i).compareTo("nom_upgd") == 0) 
-//                            intencionality = "";
-//                        }
                         registryData = determineRegistryData((Object[]) resultSetFileData.getArray(3).getArray(), columnsNames.get(i));
                         relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames.get(i));//determino la relacion de variables
-
+                        value = null;
                         if (relationVar != null && registryData != null) {
-                            value = "";
+
                             fieldType = remove_v(relationVar.getFieldType());
                             switch (DataTypeEnum.convert(fieldType)) {//tipo de relacion
                                 case text:
                                     break;
                                 case integer:
                                     value = isNumeric(registryData);
-                                    //System.out.println("Validando Entero: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//error = "No es entero";
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
@@ -694,7 +694,8 @@ public class RecordDataMB implements Serializable {
                                     //System.out.println("Validando Categoria: " + registryData + "   Resultado: " + value);
                                     //}
                                     if (relationVar.getNameExpected().compareTo("intencionalidad") == 0) {
-                                        intencionality = registryData;
+                                        //intencionality = registryData;
+                                        intencionality = value;
                                     }
                                     if (value == null) {
                                         errorsNumber++;//error = "no esta en la categoria ni es un valor descartado";
@@ -702,10 +703,117 @@ public class RecordDataMB implements Serializable {
                                     }
                                     break;
                             }
-                            //if (value.compareTo("bn") == 0) {
-                            //    value = isCategorical(registryData, relationVar);
-                            //}
                         }
+
+                        //(((((((((((((((((((((((((((((((((((((((((((((((((((((((
+                        //(((((((((((((((((((((((((((((((((((((((((((((((((((((((
+                        //(((((((((((((((((((((((((((((((((((((((((((((((((((((((
+                        if (nameForm.replace("-", "_").compareTo("SCC_F_032") == 0) {
+
+                            continueProcces = false;
+                            if (value != null) {
+                                if (value.trim().length() != 0) {
+                                    continueProcces = true;
+                                }
+                            }
+                            if (continueProcces) {
+                                switch (SCC_F_032Enum.convert(relationVar.getNameExpected())) {
+                                    case mecanismo_objeto_lesion:
+                                        mechanism = value;
+                                        break;
+                                    // ************************************************DATOS PARA LA TABLA non_fatal_transport
+                                    case tipo_transporte_lesionado:
+                                    case tipo_transporte_contraparte:
+                                    case tipo_usuario_transporte:
+                                        traficValues = traficValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        break;
+                                    // ************************************************DATOS PARA LA TABLA non_fatal_interpersonal                                        
+                                    case antecedentes_previos_agresion://boleano->previous_antecedent                             
+                                        if (value.equals("1")) {//SI
+                                            interpersonalValues = interpersonalValues + " antecedentes_previos_agresion='" + value + "',";
+                                        }
+                                        break;
+                                    case relacion_agresor_victima://categorico->relationships_to_victim
+                                    case contexto_en_violencia_interpersonal:
+                                    case sexo_agresores:
+                                        interpersonalValues = interpersonalValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        break;
+                                    // ************************************************DATOS PARA LA TABLA non_fatal_selft-inflicted
+                                    case intento_previo_autoinflingida:
+                                    case antecedentes_transtorno_mental:
+                                    case factores_precipitantes:
+                                        if (value.equals("1")) {//SI
+                                            selftInflictedValues = selftInflictedValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        }
+                                        break;
+                                    // ************************************************DATOS PARA LA TABLA non_fatal_transport_security_element
+                                    case uso_elementos_seguridad:
+                                    case usaba_cinturon:
+                                    case usaba_casco_motocicleta:
+                                    case usaba_casco_bicicleta:
+                                    case usaba_chaleco:
+                                    case otro_elemento_seguridad:
+                                        if (value.equals("1")) {//SI
+                                            traficValues = traficValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        }
+                                        break;
+                                    // ************************************************DATOS PARA LA TABLA domestic_violence_abuse_type
+                                    case maltrato_fisico:
+                                    case maltrato_psicologico:
+                                    case maltrato_abuso_sexual:
+                                    case maltrato_negligencia:
+                                    case maltrato_abandono:
+                                    case maltrato_institucional:
+                                    case maltrato_sin_dato:
+                                        if (value.equals("1")) {//SI
+                                            domesticViolenceValues = domesticViolenceValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        }
+                                        break;
+                                    // ************************************************DATOS PARA LA TABLA domestic_violence_aggressor_type
+                                    case agresor_padre:
+                                    case agresor_madre:
+                                    case agresor_padrastro:
+                                    case agresor_madrastra:
+                                    case agresor_conyuge:
+                                    case agresor_hermano:
+                                    case agresor_hijo:
+                                    case agresor_otro:
+                                    case agresor_sin_dato:
+                                        if (value.equals("1")) {//SI
+                                            domesticViolenceValues = domesticViolenceValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        }
+                                        break;
+                                    //guardar campos otros--------------------------------      
+                                    case otro_factor_precipitante://para autoinflingida intencional
+                                        selftInflictedValues = selftInflictedValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        break;
+                                    case otro_tipo_relacion_victima://violencia interpersonal
+                                        interpersonalValues = interpersonalValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        break;
+                                    case cual_otro_tipo_agresor://otro tipo de agresor(vif)
+                                        domesticViolenceValues = domesticViolenceValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        break;
+                                    case cual_otro_tipo_maltrato://otro tipo de maltrato(vif)                                    
+                                        domesticViolenceValues = domesticViolenceValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        break;
+                                    case otro_tipo_transporte_usuario://(otro tipo de transporte)
+                                        traficValues = traficValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        break;
+                                    case otro_tipo_transporte_contraparte://(otro tipo de transporte contraparte)                                    
+                                        traficValues = traficValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        break;
+                                    case otro_tipo_de_usuario://(otro tipo de usuario)
+                                        traficValues = traficValues + " " + relationVar.getNameFound() + "='" + registryData + "',";
+                                        break;
+                                    default:
+                                }
+                            }
+                        }
+                        //)))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+                        //)))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+                        //)))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+
+
                     }
 
                     //..........................................................
@@ -738,6 +846,17 @@ public class RecordDataMB implements Serializable {
                                 errorsNumber++;
                                 errorsControlMB.addError(errorsNumber, relationVar, "", resultSetFileData.getString("record_id"));
                             }
+                            //VALIDACION DE TIPO DE INTENCIONALIDAD->MECANISMO->DATOS ESPECIFICOS EVENTO
+
+                            validateIntentionalityMechanismAndDataEvent(
+                                    resultSetFileData.getString("record_id"),
+                                    intencionality,
+                                    mechanism,
+                                    traficValues,
+                                    interpersonalValues,
+                                    selftInflictedValues,
+                                    domesticViolenceValues);
+
                         case SCC_F_028:
                         case SCC_F_029:
                         case SCC_F_030:
@@ -771,6 +890,133 @@ public class RecordDataMB implements Serializable {
 //            if(!errorsControlMB.getErrorControlArrayList().isEmpty()){
 //                
 //            }
+        }
+    }
+
+    private void validateIntentionalityMechanismAndDataEvent(String rowId, String intencionality1, String mechanism, String traficValues, String interpersonalValues, String selftInflictedValues, String domesticViolenceValues) {
+        /*
+         * determina si existen incoherencias entre las variables INTENCIONALIDAD <-> MECANISMO <-> DATOS ESPECIFICOS DEL EVENTO
+         */
+        if (traficValues.length() != 0) {
+            traficValues = traficValues.substring(0, traficValues.length() - 1);
+        }
+        if (interpersonalValues.length() != 0) {
+            interpersonalValues = interpersonalValues.substring(0, interpersonalValues.length() - 1);
+        }
+        if (selftInflictedValues.length() != 0) {
+            selftInflictedValues = selftInflictedValues.substring(0, selftInflictedValues.length() - 1);
+        }
+        if (domesticViolenceValues.length() != 0) {
+            domesticViolenceValues = domesticViolenceValues.substring(0, domesticViolenceValues.length() - 1);
+        }
+
+        //------------------------------------------------------------------
+        //---------------- VALIDACION ENTRE INTENCIONALIDAD Y MECANISMO ----
+        //------------------------------------------------------------------
+        if (intencionality1 != null && mechanism.length() != 0) {
+            if (intencionality1.compareTo("1") == 0) {//NO INTENCIONAL (ACCIDENTES)
+                //--------------------------------------------------------------
+                if (mechanism.compareTo("2") == 0) {//VIOLENCIA SEXUAL
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' el mecanismo no puede ser 'VIOLENCIA SEXUAL' ", rowId);
+                }
+                if (mechanism.compareTo("23") == 0) {//MORDEDURA DE PERSONA
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' el mecanismo no puede ser 'MORDEDURA DE PERSONA' ", rowId);
+                }
+                if (traficValues.length() != 0) {
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' no pueden haber datos de LESION DE TRANSPORTE: (" + traficValues + ")", rowId);
+                }
+                if (interpersonalValues.length() != 0) {
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' no pueden haber datos de VIOLENCIA INTERPERSONAL: (" + interpersonalValues + ")", rowId);
+                }
+                if (selftInflictedValues.length() != 0) {
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' no pueden haber datos de VIOLENCIA INTENCIONAL AUTOINFLINGIDA: (" + selftInflictedValues + ")", rowId);
+                }
+                if (domesticViolenceValues.length() != 0) {
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' no pueden haber datos de VIOLENCIA INRAFAMILIAR: (" + domesticViolenceValues + ")", rowId);
+                }
+            } else if (intencionality1.compareTo("2") == 0) {//AUTOINFLINGIDA INTENCIONAL (SUICIDIO)
+                //--------------------------------------------------------------
+                if (mechanism.compareTo("2") == 0) {//VIOLENCIA SEXUAL
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' el mecanismo no puede ser 'VIOLENCIA SEXUAL' ", rowId);
+                }
+                if (mechanism.compareTo("1") == 0) {//LESION DE TRANSPORTE
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' el mecanismo no puede ser 'LESION DE TRANSPORTE' ", rowId);
+                }
+                if (mechanism.compareTo("3") == 0) {//CAIDA PROPIA ALTURA
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' el mecanismo no puede ser 'CAIDA PROPIA ALTURA' ", rowId);
+                }
+                if (mechanism.compareTo("16") == 0) {//LESION POR CUERPO EXTRAÑO
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' el mecanismo no puede ser 'LESION POR CUERPO EXTRAÑO' ", rowId);
+                }
+                if (mechanism.compareTo("21") == 0) {//MINAS / MUNICION SIN EXPLOTAR
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' el mecanismo no puede ser 'MINAS / MUNICION SIN EXPLOTAR' ", rowId);
+                }
+                if (mechanism.compareTo("22") == 0) {//OTRO ARTEFACTO EXPLOSIVO
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' el mecanismo no puede ser 'OTRO ARTEFACTO EXPLOSIVO' ", rowId);
+                }
+                if (mechanism.compareTo("23") == 0) {//MORDEDURA DE PERSONA
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' el mecanismo no puede ser 'MORDEDURA DE PERSONA' ", rowId);
+                }
+                if (mechanism.compareTo("24") == 0) {//ANIMAL, CUAL?
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' el mecanismo no puede ser 'ANIMAL, CUAL?' ", rowId);
+                }
+                if (mechanism.compareTo("26") == 0) {//DESASTRE NATURAL, CUAL?
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' el mecanismo no puede ser 'DESASTRE NATURAL, CUAL?' ", rowId);
+                }
+                if (traficValues.length() != 0) {
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' no pueden haber datos de LESION DE TRANSPORTE: (" + traficValues + ")", rowId);
+                }
+                if (interpersonalValues.length() != 0) {
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' no pueden haber datos de VIOLENCIA INTERPERSONAL: (" + interpersonalValues + ")", rowId);
+                }
+                if (domesticViolenceValues.length() != 0) {
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' no pueden haber datos de VIOLENCIA INRAFAMILIAR: (" + domesticViolenceValues + ")", rowId);
+                }
+            } else if (intencionality1.compareTo("3") == 0) {//VIOLENCIA / AGRESION O SOSPECHA
+                //------------------------------------------------------------------                
+                if (mechanism.compareTo("1") == 0) {//LESION DE TRANSPORTE
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'VIOLENCIA / AGRESION O SOSPECHA' el mecanismo no puede ser 'LESION DE TRANSPORTE' ", rowId);
+                }
+                if (mechanism.compareTo("24") == 0) {//ANIMAL, CUAL?
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'VIOLENCIA / AGRESION O SOSPECHA' el mecanismo no puede ser 'ANIMAL, CUAL?' ", rowId);
+                }
+                if (mechanism.compareTo("26") == 0) {//DESASTRE NATURAL, CUAL?
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'VIOLENCIA / AGRESION O SOSPECHA' el mecanismo no puede ser 'DESASTRE NATURAL, CUAL?' ", rowId);
+                }
+                if (traficValues.length() != 0) {
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'VIOLENCIA / AGRESION O SOSPECHA' no pueden haber datos de LESION DE TRANSPORTE: (" + traficValues + ")", rowId);
+                }
+                if (selftInflictedValues.length() != 0) {
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'VIOLENCIA / AGRESION O SOSPECHA' no pueden haber datos de VIOLENCIA INTENCIONAL AUTOINFLINGIDA: (" + selftInflictedValues + ")", rowId);
+                }
+                if (interpersonalValues.length() != 0 && domesticViolenceValues.length() != 0) {
+                    errorsNumber++;
+                    errorsControlMB.addError(errorsNumber * -1, null, "No pueden Haber datos de VIOLENCIA INTERPERSONAL Y VIOLENCIA INTRAFAMILIAR en el mismo registro; INTERPERSONAL: (" + interpersonalValues + "), INTRAFAMILIAR: (" + domesticViolenceValues + ")", rowId);
+                }
+            }
         }
     }
 
@@ -1317,8 +1563,8 @@ public class RecordDataMB implements Serializable {
                 newFatalInjuryTraffic.setFatalInjuryId(newFatalInjurie.getFatalInjuryId());
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
                 newVictim.setFirstTagId(newVictim.getTagId().getTagId());
-                serviceTypesList = new ArrayList<CounterpartServiceType>();
-                involvedVehiclesList = new ArrayList<CounterpartInvolvedVehicle>();
+                serviceTypesList = new ArrayList<>();
+                involvedVehiclesList = new ArrayList<>();
                 value = "";
                 name = "";
                 surname = "";
@@ -2725,14 +2971,12 @@ public class RecordDataMB implements Serializable {
         try {
             tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
             resultSetFileData = determineRecords();//resulset con los registros a procesar
-
             newUngroupedTags = new UngroupedTags();
             newUngroupedTags.setUngroupedTagId(ungroupedTagsFacade.findMax() + 1);
             newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
             newUngroupedTags.setFormId(nameForm);
             ungroupedTagsFacade.create(newUngroupedTags);
-
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(ungroupedTagsFacade.findMax());
             newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
@@ -2740,9 +2984,7 @@ public class RecordDataMB implements Serializable {
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
-
             lastTagNameCreated = newTag.getTagName();
-
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(victimsFacade.findMax() + 1);
@@ -2763,14 +3005,14 @@ public class RecordDataMB implements Serializable {
                 newNonFatalInterpersonal.setNonFatalInjuryId(newNonFatalInjury.getNonFatalInjuryId());
                 newNonFatalSelfInflicted = new NonFatalSelfInflicted();//nuevo non_fatal_Self-Inflicted
                 newNonFatalSelfInflicted.setNonFatalInjuryId(newNonFatalInjury.getNonFatalInjuryId());
-                List<SecurityElements> securityElementList = new ArrayList<SecurityElements>();//lista non_fatal_transport_security_element                
-                List<AbuseTypes> abuseTypesList = new ArrayList<AbuseTypes>();//lista domestic_violence_abuse_type
-                List<AggressorTypes> aggressorTypesList = new ArrayList<AggressorTypes>();//lista domestic_violence_aggressor_type                
-                List<AnatomicalLocations> anatomicalLocationsList = new ArrayList<AnatomicalLocations>();//lista non_fatal_anatomical_location
-                List<KindsOfInjury> kindsOfInjurysList = new ArrayList<KindsOfInjury>();//lista non_fatal_kind_of_injury
-                List<Diagnoses> diagnosesList = new ArrayList<Diagnoses>();//lista non_fatal_diagnosis
-                List<VulnerableGroups> vulnerableGroupList = new ArrayList<VulnerableGroups>();// lista vector victim_vulnerable_group
-                List<Others> othersList = new ArrayList<Others>();
+                List<SecurityElements> securityElementList = new ArrayList<>();//lista non_fatal_transport_security_element                
+                List<AbuseTypes> abuseTypesList = new ArrayList<>();//lista domestic_violence_abuse_type
+                List<AggressorTypes> aggressorTypesList = new ArrayList<>();//lista domestic_violence_aggressor_type                
+                List<AnatomicalLocations> anatomicalLocationsList = new ArrayList<>();//lista non_fatal_anatomical_location
+                List<KindsOfInjury> kindsOfInjurysList = new ArrayList<>();//lista non_fatal_kind_of_injury
+                List<Diagnoses> diagnosesList = new ArrayList<>();//lista non_fatal_diagnosis
+                List<VulnerableGroups> vulnerableGroupList = new ArrayList<>();// lista vector victim_vulnerable_group
+                List<Others> othersList = new ArrayList<>();
                 value = "";
                 name = "";
                 surname = "";
@@ -2794,8 +3036,10 @@ public class RecordDataMB implements Serializable {
                     value = null;
                     String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
                     relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
-                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
+//                        if(relationVar.getNameExpected().compareTo("tipo_transporte_lesionado")==0||relationVar.getNameExpected().compareTo("tipo_transporte_contraparte")==0||relationVar.getNameExpected().compareTo("tipo_usuario_transporte")==0){
+//                            System.out.print("aqui3");
+//                        }                        
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
                                 value = splitColumnAndValue[1];
@@ -2838,15 +3082,25 @@ public class RecordDataMB implements Serializable {
 
                     continueProcces = false;
                     if (value != null) {
-//                        if (value.compareTo("TRABAJO") == 0 || value.compareTo("2013") == 0) {
+//                        if (value.compareTo("12950805") == 0 
+//                                //|| value.compareTo("1802058") == 0
+//                                //|| value.compareTo("1840600") == 0
+//                                //|| value.compareTo("4871203") == 0
+//                                //|| value.compareTo("5194128") == 0
+//                                //|| value.compareTo("5199446") == 0
+//                                //|| value.compareTo("5207257") == 0
+//                                ) {
 //                            System.out.print("aqui");
-//                            value = isCategorical(splitColumnAndValue[1], relationVar);
-//                        }
+//                        
+//                        }                        
                         if (value.trim().length() != 0) {
                             continueProcces = true;
                         }
                     }
                     if (continueProcces) {
+//                        if(relationVar.getNameExpected().compareTo("tipo_transporte_lesionado")==0||relationVar.getNameExpected().compareTo("tipo_transporte_contraparte")==0||relationVar.getNameExpected().compareTo("tipo_usuario_transporte")==0){
+//                            System.out.print("aqui2");
+//                        }
                         switch (SCC_F_032Enum.convert(relationVar.getNameExpected())) {
                             // ************************************************DATOS PARA LA TABLA victims                                
                             case primer_nombre:
@@ -3112,140 +3366,140 @@ public class RecordDataMB implements Serializable {
                             case sitio_anatomico_sistemico:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 1));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_craneo:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 2));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_afectado_ojos:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 3));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_maxilofacial:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 4));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_cuello:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 5));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_torax:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 6));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_abdomen:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 7));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_columna:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 8));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_pelvis:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 9));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_miembros_superiores:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 10));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_miembros_inferiores:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 11));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_otro:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 98));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_kind_of_injury
                             case naturaleza_lesion_laceracion:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 1));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_cortada:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 2));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_profunda:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 3));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_esgince:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 4));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_fractura:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 5));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_quemadura:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 6));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_contusion:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 7));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_organo_sitemica:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 8));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_trauma_craneoencefalico:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 9));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_otro_tipo:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 98));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_no_se_sabe:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 99));
-                                    selectInjuryDetermined = injuriesFacade.find((short) 50);
+                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_diagnosis
@@ -3438,38 +3692,44 @@ public class RecordDataMB implements Serializable {
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
-//                          case oanimal://cual animal 8
-//                          break;
+//                            case oanimal://cual animal 8
+//                                break;
                             case otro_factor_precipitante://otro factor precipitante
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 9));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
-                            //case cual_otro_tipo_agresor://otro tipo_identificacion_victima de agresor 10
-                            //    break;
-                            //case cual_otro_tipo_maltrato://otro tipo_identificacion_victima de maltrato 11
-                            //    break;                                
-                            case otro_tipo_relacion_victima://otro tipo_identificacion_victima de relacion con la victima
+                            case cual_otro_tipo_agresor://otro tipo de agresor(vif)
+                                newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 10));
+                                newOther.setValueText(value);
+                                othersList.add(newOther);
+                                break;
+                            case cual_otro_tipo_maltrato://otro tipo de maltrato(vif)                                    
+                                newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 11));
+                                newOther.setValueText(value);
+                                othersList.add(newOther);
+                                break;
+                            case otro_tipo_relacion_victima:
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 12));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
-                            case otro_tipo_transporte_usuario://otro tipo_identificacion_victima de transporte
+                            case otro_tipo_transporte_usuario:
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 13));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
-                            case otro_tipo_transporte_contraparte://otro tipo_identificacion_victima de contraparte
+                            case otro_tipo_transporte_contraparte:
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 14));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
-                            case otro_tipo_de_usuario://otro tipo_identificacion_victima de usuario
+                            case otro_tipo_de_usuario:
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 15));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
-                            case sitio_anatomico_cual_otro://cual otro_tipo_mecanismo_objeto_lesion sitio anatomico
+                            case sitio_anatomico_cual_otro://cual otro_tipo_sitio anatomico
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 16));
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
@@ -3495,16 +3755,16 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-//                if (newNonFatalInjury.getInjuryDate() == null) {
-//                    if (tuplesProcessed == 2417
-//                            || tuplesProcessed == 2420
-//                            || tuplesProcessed == 2421
-//                            || tuplesProcessed == 2438
-//                            || tuplesProcessed == 2453
-//                            || tuplesProcessed == 2455) {
-//                        System.out.print("");
-//                    }
-//                }
+////                if (newNonFatalInjury.getInjuryDate() == null) {
+////                    if (tuplesProcessed == 2417
+////                            || tuplesProcessed == 2420
+////                            || tuplesProcessed == 2421
+////                            || tuplesProcessed == 2438
+////                            || tuplesProcessed == 2453
+////                            || tuplesProcessed == 2455) {
+////                        System.out.print("");
+////                    }
+////                }
                 //SI NO HAY FECHA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
                 if (newNonFatalInjury.getCheckupDate() == null) {
                     dia1 = haveData(dia1);
@@ -3677,13 +3937,6 @@ public class RecordDataMB implements Serializable {
                                 }
                                 newVictim.setVictimAge((short) ageYears);
                                 newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
-//                                if (newVictim.getTypeId() == null) {
-//                                    if (ageYears >= 18) {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-//                                    } else {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-//                                    }
-//                                }
                             }
                         } catch (Exception ex) {
                             System.out.println("Error 21 en " + this.getClass().getName() + ":" + ex.toString());
@@ -3779,16 +4032,13 @@ public class RecordDataMB implements Serializable {
 
                     }
                 }
-
 //                if (newNonFatalInjury.getInjuryDate() != null) {
 //                    if (newNonFatalInjury.getInjuryDate().getYear() + 1900 != 2011) {
 //                        System.out.print("aqui el error se guarda");
 //                    }
 //                }
-
                 //PERSISTO//////////////////////////////////////////////////////
                 try {
-
                     if (!othersList.isEmpty()) {
                         newVictim.setOthersList(othersList);
                     }
@@ -3817,17 +4067,14 @@ public class RecordDataMB implements Serializable {
 
                 tuplesProcessed++;
                 progress = (int) (tuplesProcessed * 100) / tuplesNumber;
-                //System.out.println("PROGRESO INGRESANDO LCENF: " + String.valueOf(progress));
-                ResultSet rs = connectionJdbcMB.consult("select count(*) from victims where tag_id = " + newVictim.getTagId().getTagId());
-                if (rs.next()) {
-                    if (tuplesProcessed != rs.getInt(1)) {
-                        System.out.println("FALLO " + String.valueOf(progress) + "% registros:" + tuplesProcessed);
-                    } else {
-                        System.out.println(String.valueOf(progress) + "% registros:" + tuplesProcessed);
-                    }
-                }
-//                if (tuplesProcessed > 2460) {
-//                    break;
+                System.out.println("PROGRESO INGRESANDO LCENF: " + String.valueOf(progress));
+//                ResultSet rs = connectionJdbcMB.consult("select count(*) from victims where tag_id = " + newVictim.getTagId().getTagId());
+//                if (rs.next()) {
+//                    if (tuplesProcessed != rs.getInt(1)) {
+//                        System.out.println("FALLO " + String.valueOf(progress) + "% registros:" + tuplesProcessed);
+//                    } else {
+//                        System.out.println(String.valueOf(progress) + "% registros:" + tuplesProcessed);
+//                    }
 //                }
             }
             progress = 100;
@@ -3836,10 +4083,6 @@ public class RecordDataMB implements Serializable {
         } catch (SQLException ex) {
             System.out.println("Error 23 en " + this.getClass().getName() + ":" + ex.toString());
         }
-//        catch (Exception ex2) {
-//            System.out.println("EXCEPTION INGRESANDO LCENF: " + ex2.toString() + "  " + " " + String.valueOf(tuplesProcessed));
-//        }
-
     }
 
     public void registerSCC_F_033() {
@@ -3882,13 +4125,13 @@ public class RecordDataMB implements Serializable {
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
                 newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
                 newNonFatalInjury.setInputTimestamp(new Date());
-                List<ActionsToTake> actionsToTakeList = new ArrayList<ActionsToTake>();
-                List<AnatomicalLocations> anatomicalLocationsList = new ArrayList<AnatomicalLocations>();
-                List<AbuseTypes> abuseTypesList = new ArrayList<AbuseTypes>();
-                List<AggressorTypes> aggressorTypesList = new ArrayList<AggressorTypes>();
-                List<Others> othersList = new ArrayList<Others>();
+                List<ActionsToTake> actionsToTakeList = new ArrayList<>();
+                List<AnatomicalLocations> anatomicalLocationsList = new ArrayList<>();
+                List<AbuseTypes> abuseTypesList = new ArrayList<>();
+                List<AggressorTypes> aggressorTypesList = new ArrayList<>();
+                List<Others> othersList = new ArrayList<>();
                 //diagnosesList = new ArrayList<Diagnoses>();//lista non_fatal_diagnosis
-                List<VulnerableGroups> vulnerableGroupList = new ArrayList<VulnerableGroups>();// lista vector victim_vulnerable_group
+                List<VulnerableGroups> vulnerableGroupList = new ArrayList<>();// lista vector victim_vulnerable_group
 
                 value = "";
                 name = "";
@@ -3950,7 +4193,8 @@ public class RecordDataMB implements Serializable {
                                 value = isPercentage(splitColumnAndValue[1]);
                                 break;
                             case NOVALUE:
-                                value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
+                                value = isCategorical(splitColumnAndValue[1], relationVar);
+                                //value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
                                 break;
                         }
                     }
@@ -4773,9 +5017,9 @@ public class RecordDataMB implements Serializable {
                 SivigilaVictim newSivigilaVictim = new SivigilaVictim(sivigilaVictimFacade.findMax() + 1);
                 SivigilaAggresor newSivigilaAggresor = new SivigilaAggresor(sivigilaAggresorFacade.findMax() + 1);
                 newNonFatalInjury.setInputTimestamp(new Date());
-                List<AbuseTypes> abuseTypesList = new ArrayList<AbuseTypes>();
-                List<PublicHealthActions> publicHealthActionsList = new ArrayList<PublicHealthActions>();
-                List<VulnerableGroups> vulnerableGroupList = new ArrayList<VulnerableGroups>();// lista vector victim_vulnerable_group
+                List<AbuseTypes> abuseTypesList = new ArrayList<>();
+                List<PublicHealthActions> publicHealthActionsList = new ArrayList<>();
+                List<VulnerableGroups> vulnerableGroupList = new ArrayList<>();// lista vector victim_vulnerable_group
 
                 value = "";
                 name = "";
@@ -5658,15 +5902,15 @@ public class RecordDataMB implements Serializable {
             try {
                 int h = Integer.parseInt(str.substring(0, 2));
                 int m = Integer.parseInt(str.substring(2, 4));
-                
+
                 if (incrementPM) {
-                        h = h + 12;
-                        if (h == 24) {
-                            h = 0;
-                            str="00"+str.substring(2, 4);
-                        }
+                    h = h + 12;
+                    if (h == 24) {
+                        h = 0;
+                        str = "00" + str.substring(2, 4);
                     }
-                
+                }
+
                 if (h > 24 || h < 0) {
                     return null;
                     //return "La hora_evento debe estar entre 0 y 23";

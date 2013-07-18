@@ -311,6 +311,8 @@
                                             <p:commandButton 
                                                 id="IdCopyColumns"                                   
                                                 actionListener="#{filterMB.copyColumnsClick}"
+                                                onclick="pageInactive();"
+                                                oncomplete="pageActive();"
                                                 value="COPIAR" 
                                                 update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
                                         </p:column>
@@ -328,18 +330,13 @@
                                     itemLabel="#{field}" itemValue="#{field}" 
                                     showTargetControls="true" />
                                 <br/>
-                                <!--p:commandButton 
-                                    id="undoDelete"                                 
-                                    actionListener="# {copyMB.undoDelete}"
-                                    value="DESHACER"
-                                    disabled="# {copyMB.btnDeleteDisable}"
-                                    update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/-->                                   
                                 <p:commandButton 
                                     id="deleteButton"                                 
                                     actionListener="#{filterMB.deleteVariables}"
+                                    onclick="pageInactive();"
+                                    oncomplete="pageActive();"
                                     value="ELIMINAR"
-                                    update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
-                                <!-- update="IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet undoDelete renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4" -->
+                                    update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>                                
                                 <br/><br/>
                             </p:tab>
                             <!--======================== Filtrar registros ======================-->
@@ -378,6 +375,8 @@
                                 <p:commandButton 
                                     value="FILTRAR"
                                     actionListener="#{filterMB.filterRecordsClick}"
+                                    onclick="pageInactive();"
+                                    oncomplete="pageActive();"
                                     update="IdHistorialFilters :IdForm:IdTabView:IdAccordionPanel2:filterFieldsListBox filterDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>  
                                 <br/>
                             </p:tab>
@@ -452,6 +451,8 @@
                                             <p:commandButton 
                                                 id="splitButtonSplit"                                   
                                                 actionListener="#{filterMB.splitColumnsClick}"
+                                                onclick="pageInactive();"
+                                                oncomplete="pageActive();"
                                                 value="DIVIDIR" 
                                                 update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
                                         </p:column>
@@ -479,6 +480,8 @@
                                 <p:commandButton 
                                     id="mergeButtonMerge"                                   
                                     actionListener="#{filterMB.mergeFieldsClick}"
+                                    onclick="pageInactive();"
+                                    oncomplete="pageActive();"
                                     value="UNIR"
                                     update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4">                     
                                 </p:commandButton>
@@ -533,8 +536,9 @@
                                 <p:commandButton 
                                     value="RENOMBRAR"
                                     actionListener="#{filterMB.renameRecordsClick}"
+                                    onclick="pageInactive();"
+                                    oncomplete="pageActive();"
                                     update="IdHistorialFilters :IdForm:IdTabView:IdAccordionPanel2:filterDataTable :IdForm:IdTabView:IdAccordionPanel2:filterFieldsListBox renameValuesDataTable :IdForm:IdTabView:IdAccordionPanel2:replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>  
-
                             </p:tab>
                             <!--======================== Replicar Registros ======================-->
                             <p:tab title="REPLICAR REGISTROS">
@@ -571,6 +575,8 @@
                                             <p:commandButton 
                                                 id="replicateReplicate"                                   
                                                 actionListener="#{filterMB.replicateClick}"
+                                                onclick="pageInactive();"
+                                                oncomplete="pageActive();"
                                                 value="Replicar" 
                                                 update="IdHistorialFilters replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>
                                         </p:column>
@@ -605,14 +611,13 @@
                                     </p:columns>
                                 </p:dataTable>
                             </p:tab>
-                            <p:tab title="HISTORIAL DE FILTROS APLICADOS">                                
+                            <p:tab title="HISTORIAL DE FILTROS APLICADOS"> 
                                 <br/>
-                                <p:dataTable 
+                                <p:dataTable
                                     id="IdHistorialFilters" 
                                     var="rowX" 
                                     value="#{filterMB.filtersAppliedList}" 
-                                    rowKey="#{rowX.column1}"  
-                                    selection="#{filterMB.selectedFiltersAppliedRow}" 
+                                    rowKey="#{rowX.column2}"  
                                     paginator="true"
                                     rows="10"                                    
                                     paginatorPosition="bottom" 
@@ -621,16 +626,11 @@
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
                                     pageLinks="5"
-                                    selectionMode="single"
-
                                     resizableColumns="true">
-                                    <p:column headerText="#" width="50">  
-                                        #{rowX.column2}  
-                                    </p:column>  
-                                    <p:column headerText="FLITRO" width="149">  
+                                    <p:column headerText="FLITRO" width="150">  
                                         #{rowX.column3}
                                     </p:column>  
-                                    <p:column headerText="DESCRIPCION" width="400">  
+                                    <p:column headerText="DESCRIPCION" width="470">  
                                         #{rowX.column4}
                                     </p:column>
                                 </p:dataTable>
@@ -638,7 +638,10 @@
                                 <p:commandButton
                                     actionListener="#{filterMB.btnUndoFilterClick}"                                    
                                     value="DESHACER"
-                                    update="IdHistorialFilters IdVariablesFoundToCopy IdValuesFoundToCopy deletePickList filterDataTable filterFieldsListBox splitFieldsListBox splitValuesListBox mergePickList replicateFieldsListBox1 replicateFieldsListBox2 replicateSheet renameValuesFieldsListBox :IdForm:IdTabView:IdAccordionPanel :IdForm:IdTabView:IdAccordionPanel4"/>                                            
+                                    onclick="pageInactive();"
+                                    oncomplete="pageActive();"
+                                    update="@form"/>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;La opci&oacute;n deshacer permite revertir el &uacute;ltimo filtro que se aplic&oacute;
                             </p:tab>
                         </p:accordionPanel>
                     </p:tab>  
@@ -1094,7 +1097,9 @@
                                                 value="INICIAR VALIDACION" 
                                                 actionListener="#{recordDataMB.btnValidateClick}" 
                                                 onclick=" pbAjaxValidate.start();
-                    startButton.disable();"  
+                    startButton.disable();
+                    pageInactive();"  
+                                                oncomplete="pageActive();"
                                                 widgetVar="startButton"/>
                                         </p:column>
                                     </p:row>
@@ -1178,7 +1183,7 @@
                                                 id="IdBtnSeeErrorRecord"
                                                 value="VER REGISTRO"
                                                 style="width: 130px;"
-                                                disabled="#{errorsControlMB.btnSolveDisabled}"
+                                                disabled="#{errorsControlMB.btnViewDisabled}"
                                                 onclick="seeRecordDialog.hide();
                     seeRecordDialog.show();"/>
                                         </p:column>
@@ -1294,10 +1299,12 @@
                                             <p:commandButton 
                                                 id="IdBtnRegisterData"
                                                 value="REGISTRAR DATOS" 
-                                                disabled="#{recordDataMB.btnRegisterDataDisabled}"
+
                                                 actionListener="#{recordDataMB.btnRegisterDataClick}" 
                                                 onclick="pbAjax.start();
-                    startButton2.disable();"  
+                    startButton2.disable();
+                    pageInactive();"  
+                                                oncomplete="pageActive();"
                                                 widgetVar="startButton2" />                                              
                                         </p:column>
                                     </p:row>
@@ -1393,11 +1400,11 @@
                     widgetVar="seeRecordDialog" 
                     resizable="false"
                     modal="true" >                    
-                    <p:dataTable 
+                    <!-- p:dataTable 
                         id="IdDataTableR" 
                         var="rowX" 
-                        value="#{errorsControlMB.moreInfoDataTableList}" 
-                        rowKey="#{rowX.column1}"  
+                        value="# {errorsControlMB.moreInfoDataTableList}" 
+                        rowKey="# {rowX.column1}"  
                         paginatorPosition="bottom"                  
                         emptyMessage="Vacio"
                         scrollable="true"
@@ -1405,12 +1412,54 @@
                         scrollHeight="330"
                         resizableColumns="true">                                                                
                         <p:column headerText="COLUMNA" width="100" style="background-color: #ebf4fb">  
-                            #{rowX.column1}
+                            # {rowX.column1}
                         </p:column>  
                         <p:column headerText="VALOR" width="470">  
-                            #{rowX.column2}  
+                            # {rowX.column2}  
                         </p:column>                                                                  
-                    </p:dataTable>                            
+                    </p:dataTable -->                            
+                    <p:dataTable 
+                        id="IdDataTableR" 
+                        value="#{errorsControlMB.moreInfoModel}" 
+                        var="fields" 
+                        rowKey="#{fields}" 
+                        scrollable="true"
+                        scrollWidth="630"                                 
+                        scrollHeight="330"
+                        emptyMessage="Vacio"
+                        editable="true">
+                        <p:column style="background-color: #ebf4fb; width:125px;">
+                            <f:facet name="header">
+                                Columna
+                            </f:facet>
+                            <h:outputText value="#{fields.columnName}" />
+                        </p:column>
+                        <!-- p:column style="width:250px;">
+                            <f:facet name="header">
+                                Valor Actual
+                            </f:facet>
+                            <h:outputText value="# {fields.oldValue}" />
+                        </p:column -->
+                        <p:column headerText="VALOR" style="width:400px">
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{fields.oldValue}" />
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText value="#{fields.oldValue}" style="width:100%"/>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>
+                        <p:column headerText="Editar" style="width:60px">
+                            <p:rowEditor />
+                        </p:column>
+                    </p:dataTable>
+                    <br/>
+                    <p:commandButton 
+                        value="ACTUALIZAR"
+                        actionListener="#{errorsControlMB.updateRecordClick}"
+                        onclick="pageInactive();"
+                        oncomplete="pageActive();"/>
                 </p:dialog>
                 <!-- /////////////////////////////////// MAS INFORMACION /////////////////////////////////// -->
                 <p:dialog 
@@ -1720,4 +1769,3 @@
         </ui:define>
     </ui:composition>
 </html>
-

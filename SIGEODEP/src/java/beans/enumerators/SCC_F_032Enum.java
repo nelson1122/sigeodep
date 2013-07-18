@@ -81,6 +81,8 @@ public enum SCC_F_032Enum {
   usaba_chaleco,
   otro_elemento_seguridad,
   cual_otro_elemento,
+  cual_otro_tipo_agresor,
+  cual_otro_tipo_maltrato,
   antecedentes_previos_agresion,
   relacion_agresor_victima,
   contexto_en_violencia_interpersonal,

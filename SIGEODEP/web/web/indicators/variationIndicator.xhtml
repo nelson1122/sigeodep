@@ -18,20 +18,20 @@
                     var n = 0;
                     var brow = 'mozilla';
                     jQuery.each(jQuery.browser, function(i, val) {
-                        if (val == true) {
+                        if (val === true) {
                             brow = i.toString();
                         }
                     });
 
                     $('.tableHeader').each(function(i) {
                         if (colCount > m) {
-                            if (brow == 'mozilla') {
+                            if (brow === 'mozilla') {
                                 $('#firstTd').css("width", $('.tableFirstCol').innerWidth());//for adjusting first td
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').innerWidth());//for assigning width to table Header div
-                            } else if (brow == 'msie') {
+                            } else if (brow === 'msie') {
                                 $('#firstTd').css("width", $('.tableFirstCol').width());
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').width() - 2);//In IE there is difference of 2 px
-                            } else if (brow == 'safari') {
+                            } else if (brow === 'safari') {
                                 $('#firstTd').css("width", $('.tableFirstCol').width());
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').width());
                             } else {
@@ -42,23 +42,21 @@
                         m++;
                     });
                     $('.tableFirstCol').each(function(i) {
-                        if (brow == 'mozilla') {
+                        if (brow === 'mozilla') {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').outerHeight());//for providing height using scrollable table column height
-                        } else if (brow == 'msie') {
+                        } else if (brow === 'msie') {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').innerHeight() - 2);
                         } else {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').height());
                         }
                         n++;
                     });
-                }
-
-
+                };
                 //function to support scrolling of title and first column
                 fnScroll = function() {
                     $('#divHeader').scrollLeft($('#table_div').scrollLeft());
                     $('#firstcol').scrollTop($('#table_div').scrollTop());
-                }
+                };
                 function showTableResult() {
                     document.getElementById('IdTabView:IdForm:IdPaint').click();
                     fnAdjustTable();
@@ -239,7 +237,7 @@
                                 </p:row>
                             </p:panelGrid>
                             <br/>
-                            
+
                             <h:selectBooleanCheckbox value="#{indicatorsVariationMB.showEmpty}" />
                             &nbsp;Ver vacios<br/>
                             <h:selectBooleanCheckbox id="IdTotals" value="#{indicatorsVariationMB.showCalculation}" />
@@ -256,10 +254,11 @@
                                 style="width: 100px;"
                                 id="IdBtnGenerate" 
                                 actionListener="#{indicatorsVariationMB.process}"
-                                oncomplete="showTableResult()"
+                                oncomplete="showTableResult(); pageActive();"  
+                                onclick="pageInactive();"
                                 update="IdImageChart IdDataTableHtml IdPanelGraphConfig IdBtnExport">
                             </p:commandButton> 
-                            
+
                             <p:commandButton
                                 id="IdPaint"
                                 value="paint"
@@ -273,8 +272,8 @@
 
                                     render="IdImageChart"/>
                             </p:commandButton>
-                            
-                            
+
+
                             <br/>
                             <br/>
                         </p:fieldset>
@@ -307,30 +306,25 @@
                                     <p:column styleClass="ui-widget-header">
                                         Tipo de Gráfico
                                     </p:column>
-                                    <p:column>                                        
-                                        <h:selectBooleanCheckbox id="IdGraphType1" value="#{indicatorsVariationMB.graphType1}">                                            
+                                    <p:column>  
+                                        <h:selectOneMenu 
+                                            id="IdTypeGraph" value="#{indicatorsVariationMB.currentTypeGraph}"> 
+                                            <f:selectItems value="#{indicatorsVariationMB.typesGraph}"/>
                                             <f:ajax 
                                                 event="change"
-                                                listener="#{indicatorsVariationMB.changeGraphType1}"
-                                                render="IdImageChart IdGraphType2"/>
-                                        </h:selectBooleanCheckbox>                                        
-                                        Por Areas
-                                    </p:column>
-                                    <p:column>                                        
-                                        <h:selectBooleanCheckbox id="IdGraphType2" value="#{indicatorsVariationMB.graphType2}">                                            
-                                            <f:ajax 
-                                                event="change"
-                                                listener="#{indicatorsVariationMB.changeGraphType2}"
-                                                render="IdImageChart IdGraphType1"/>
-                                        </h:selectBooleanCheckbox>                                        
-                                        Barras
+                                                listener="#{indicatorsVariationMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectOneMenu>                                        
                                     </p:column>
                                     <p:column styleClass="ui-widget-header">
                                         Filtro 1
                                     </p:column>
                                     <p:column>
-                                        #{indicatorsVariationMB.currentVariableGraph1}
+                                        <h:outputText
+                                            id="IdVariableGraph1"
+                                            value="#{indicatorsVariationMB.currentVariableGraph1}"/>
                                         <h:selectOneMenu
+                                            id="IdValueGraph1"
                                             value="#{indicatorsVariationMB.currentValueGraph1}"> 
                                             <f:selectItems value="#{indicatorsVariationMB.valuesGraph1}"/>
                                             <f:ajax 
@@ -344,7 +338,7 @@
                                     <p:column styleClass="ui-widget-header">
                                         Mostrar Items
                                     </p:column>
-                                    <p:column colspan="2">
+                                    <p:column>
                                         <h:selectBooleanCheckbox value="#{indicatorsVariationMB.showItems}" >
                                             <f:ajax 
                                                 event="change"
@@ -353,30 +347,64 @@
                                         </h:selectBooleanCheckbox>
                                     </p:column>
                                     <p:column styleClass="ui-widget-header">
-                                        Filtro 2
+                                        Tamaño
                                     </p:column>
-                                    <p:column>
-                                        #{indicatorsVariationMB.currentVariableGraph2}
-                                        <h:selectOneMenu
-                                            value="#{indicatorsVariationMB.currentValueGraph2}"> 
-                                            <f:selectItems value="#{indicatorsVariationMB.valuesGraph2}"/>
+                                    <p:column >
+                                        Alto: 
+                                        <p:spinner 
+                                            value="#{indicatorsVariationMB.heightGraph}"
+                                            min="1"
+                                            stepFactor="100"
+                                            size="5">
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsVariationMB.createImage}"
                                                 render="IdImageChart"/>
-                                        </h:selectOneMenu>
+                                        </p:spinner> 
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        Largo: 
+                                        <p:spinner 
+                                            value="#{indicatorsVariationMB.widthGraph}"
+                                            min="1"
+                                            stepFactor="100"
+                                            size="5">
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsVariationMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </p:spinner> 
                                     </p:column>
+                                    <!-- p:column styleClass="ui-widget-header">
+                                        Filtro 2
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText
+                                            id="IdVariableGraph2"
+                                            value="# {indicatorsVariationMB.currentVariableGraph2}"/>
+                                        <h:selectOneMenu
+                                            id="IdValueGraph2"
+                                            value="# {indicatorsVariationMB.currentValueGraph2}"> 
+                                            <f:selectItems value="# {indicatorsVariationMB.valuesGraph2}"/>
+                                            <f:ajax 
+                                                event="change"
+                                                listener="# {indicatorsVariationMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectOneMenu>
+                                    </p:column -->
                                 </p:row>
+                                
                             </p:panelGrid>                                
                             <br/>
-                            <p:graphicImage id="IdImageChart" value="#{indicatorsVariationMB.chartImage}"/>
+                            <div style="width: 680px; height: 480px; overflow: scroll">
+                                <p:graphicImage id="IdImageChart" value="#{indicatorsVariationMB.chartImage}"/>
+                            </div>
                             <br/>
                         </p:fieldset>
                         <br/>
                         <br/>
                     </h:form>
                     <!-- =========================FORMULARIO MAPAS============================= -->
-                   <h:form target="_blank" id="maps_form">                        
+                    <h:form target="_blank" id="maps_form">                        
                         <p:fieldset legend="MAPAS" rendered="false" > 
                             <br/>
                             <p:panelGrid>
@@ -615,7 +643,7 @@
                                 <p:commandButton                                                            
                                     value="Guardar"
                                     style="margin:0;"
-                                    onclick="saveConfigurationDialog.show()"/>  
+                                    onclick="saveConfigurationDialog.show();"/>  
                                 <p:commandButton                                                            
                                     value="Cargar/Eliminar"
                                     style="margin:0;"                    

@@ -21,6 +21,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.filters.ValueNewValue;
 import model.dao.ProjectsFacade;
 import model.dao.RelationGroupFacade;
 import model.pojo.Projects;
@@ -44,10 +45,10 @@ public class ErrorsControlMB implements Serializable {
     @EJB
     ProjectsFacade projectsFacade;
     private boolean btnSolveDisabled = true;
-    //private boolean btnUndoDisabled = true;
+    private boolean btnViewDisabled = true;
     private String currentAceptedValue = "";
     private SelectItem[] aceptedValues;
-    private List<RowDataTable> moreInfoDataTableList;
+    //private List<RowDataTable> moreInfoDataTableList;
     private int sizeErrorsList = 0;
     private String currentDateFormat = "dd/MM/yyyy";
     private String currentDateFormatAcepted;
@@ -61,9 +62,10 @@ public class ErrorsControlMB implements Serializable {
     ConnectionJdbcMB connectionJdbcMB;
     //private LoginMB loginMB;
     private RowDataTable selectedErrorRowTable;
-    private List<RowDataTable> errorsList = new ArrayList<RowDataTable>();
+    private List<RowDataTable> errorsList = new ArrayList<>();
     private RowDataTable selectedCorrectionRowTable;
-    private List<RowDataTable> correctionList = new ArrayList<RowDataTable>();
+    private List<RowDataTable> correctionList = new ArrayList<>();
+    private List<ValueNewValue> moreInfoModel;
 
     //private SelectItem[] correctionList;
     //private String currentCorrection;
@@ -87,77 +89,93 @@ public class ErrorsControlMB implements Serializable {
         /*
          * se selecciona una fila de la tabla e errores
          */
-        //        updateErrorsArrayList();                
 
-        if (selectedErrorRowTable != null && selectedErrorRowTable.getColumn2().compareTo("-") != 0) {
-            switch (DataTypeEnum.convert(selectedErrorRowTable.getColumn7())) {//tipo de relacion()
-                case text:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Cualquier texto"),};
-                    break;
-                case integer:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Número entero"),};
-                    break;
-                case age:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Número entero"),};
-                    break;
-                case military:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Hora militar"),};
-                    break;
-                case date:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Fecha segun el formato"),};
-                    break;
-                case day:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 31"),};
-                    break;
-                case month:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 12"),};
-                    break;
-                case year:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Entero de 4 cifras"),};
-                    break;
-                case minute:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 0 a 59"),};
-                    break;
-                case hour:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 0 a 24"),};
-                    break;
+        if (selectedErrorRowTable != null) {
+            if (selectedErrorRowTable.getColumn2().compareTo("-") == 0) {
+                //NO EXISTE NUMERO DE LINEA, POR QUE ES UN ERROR POR QUE FALTA RELACION DE VARIABLES
+                btnSolveDisabled = true;
+                btnViewDisabled = true;
+                valueFound = "";//valor actual
+                currentNewValue = "";
+                currentDateFormatAcepted = "";
+                aceptedValues = new SelectItem[0];
+                currentAceptedValue = "";
+            } else if (selectedErrorRowTable.getColumn3().compareTo("-") == 0 && selectedErrorRowTable.getColumn3().compareTo("-") == 0) {
+                //SE TRATA DE UN ERROR POR INCONSISTENCIA (ej: llegan datos de intrafamiliar y transito al mismo tiempo)
+                btnSolveDisabled = true;
+                btnViewDisabled = false;
+                valueFound = "";//valor actual
+                currentNewValue = "";
+                currentDateFormatAcepted = "";
+                aceptedValues = new SelectItem[0];
+                currentAceptedValue = "";
+                createDynamicTable();
+            } else {
+                //SE TRATA DE UN ERROR POR QUE UN VALOR ESTA PRESENTANDO CONFLICTO
+                switch (DataTypeEnum.convert(selectedErrorRowTable.getColumn7())) {//tipo de relacion()
+                    case text:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Cualquier texto"),};
+                        break;
+                    case integer:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Número entero"),};
+                        break;
+                    case age:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Número entero"),};
+                        break;
+                    case military:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Hora militar"),};
+                        break;
+                    case date:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Fecha segun el formato"),};
+                        break;
+                    case day:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 31"),};
+                        break;
+                    case month:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 12"),};
+                        break;
+                    case year:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Entero de 4 cifras"),};
+                        break;
+                    case minute:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 0 a 59"),};
+                        break;
+                    case hour:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 0 a 24"),};
+                        break;
 //                    case degree:
 //                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero 1, 2, 3"),};
 //                        break;
-                case percentage:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 100"),};
-                    break;
-                case error:
-                    aceptedValues = new SelectItem[]{new SelectItem("1", " "),};
-                    break;
-                case NOVALUE:
-                    ArrayList<String> categoricalList;
-                    if (Boolean.parseBoolean(selectedErrorRowTable.getColumn8())) {//tipo de comparacion
-                        categoricalList = connectionJdbcMB.categoricalCodeList(selectedErrorRowTable.getColumn7(), 0);
-                    } else {
-                        categoricalList = connectionJdbcMB.categoricalNameList(selectedErrorRowTable.getColumn7(), 0);
-                    }
-                    aceptedValues = new SelectItem[categoricalList.size()];
-                    for (int j = 0; j < categoricalList.size(); j++) {
-                        aceptedValues[j] = new SelectItem(categoricalList.get(j));
-                    }
-                    break;
+                    case percentage:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", "Numero de 1 a 100"),};
+                        break;
+                    case error:
+                        aceptedValues = new SelectItem[]{new SelectItem("1", " "),};
+                        break;
+                    case NOVALUE:
+                        ArrayList<String> categoricalList;
+                        if (Boolean.parseBoolean(selectedErrorRowTable.getColumn8())) {//tipo de comparacion
+                            categoricalList = connectionJdbcMB.categoricalCodeList(selectedErrorRowTable.getColumn7(), 0);
+                        } else {
+                            categoricalList = connectionJdbcMB.categoricalNameList(selectedErrorRowTable.getColumn7(), 0);
+                        }
+                        aceptedValues = new SelectItem[categoricalList.size()];
+                        for (int j = 0; j < categoricalList.size(); j++) {
+                            aceptedValues[j] = new SelectItem(categoricalList.get(j));
+                        }
+                        break;
+                }
+                createDynamicTable();
+                btnSolveDisabled = false;
+                btnViewDisabled = false;
+                valueFound = selectedErrorRowTable.getColumn4();//valor actual
+                currentNewValue = "";
+                currentDateFormatAcepted = selectedErrorRowTable.getColumn9();
             }
-            createDynamicTable();
-            btnSolveDisabled = false;
-            valueFound = selectedErrorRowTable.getColumn4();//valor actual
-            currentNewValue = "";
-            currentDateFormatAcepted = selectedErrorRowTable.getColumn9();
-        } else {
-            //el error no so se puede corregir desde esta seccion(falta una relacion de variables)
-            btnSolveDisabled = true;
-            valueFound = "";//valor actual
-            currentNewValue = "";
-            currentDateFormatAcepted = "";
-            aceptedValues = new SelectItem[0];
-            currentAceptedValue = "";
         }
+    }
 
+    public void updateRecordClick() {
     }
 
     public final void createDynamicTable() {
@@ -165,8 +183,9 @@ public class ErrorsControlMB implements Serializable {
          * crea una tabla con los datos del registro que presenta el conflicto
          */
         ResultSet rs;
-        moreInfoDataTableList = new ArrayList<RowDataTable>();
-        ArrayList<String> titles = new ArrayList<String>();
+        //moreInfoDataTableList = new ArrayList<RowDataTable>();
+        moreInfoModel = new ArrayList<>();
+        ArrayList<String> titles = new ArrayList<>();
         try {
             rs = connectionJdbcMB.consult(""
                     + " SELECT "
@@ -213,11 +232,12 @@ public class ErrorsControlMB implements Serializable {
                         }
                     }
                 }
-                ArrayList<String> newRow2 = new ArrayList<String>();
+                ArrayList<String> newRow2 = new ArrayList<>();
                 newRow2.addAll(Arrays.asList(newRow));
 
                 for (int i = 0; i < titles.size(); i++) {
-                    moreInfoDataTableList.add(new RowDataTable(titles.get(i), newRow2.get(i)));
+                    //moreInfoDataTableList.add(new RowDataTable(titles.get(i), newRow2.get(i)));
+                    moreInfoModel.add(new ValueNewValue(titles.get(i), newRow2.get(i), ""));
                 }
             }
         } catch (SQLException ex) {
@@ -227,18 +247,29 @@ public class ErrorsControlMB implements Serializable {
 
     public void reset() {
         //correctionList = new ArrayList<RowDataTable>();
-        errorsList = new ArrayList<RowDataTable>();
+        moreInfoModel = null;
+        errorsList = new ArrayList<>();
         aceptedValues = new SelectItem[0];
         selectedErrorRowTable = null;
         sizeErrorsList = 0;
         btnSolveDisabled = true;
+        btnViewDisabled = true;
         valueFound = "";//valor actual
         currentNewValue = "";
         currentDateFormatAcepted = "";
     }
 
     public void addError(int errorsNumber, RelationVariables relationVar, String value, String rowId) {
-        if (relationVar == null) {//error cuando falta relacion oblicatoria
+        if (errorsNumber < 0) {//error cuando existe incoherencia en el registro(ejem: vienen datos de transito y Vif al mismo tiempo)
+            errorsList.add(new RowDataTable(
+                    String.valueOf(errorsNumber * -1), //  column1 ==> numero del error 
+                    rowId, //                         column2 ==> identificador del registro
+                    "-", //                            column3 ==> columna (nombre encontrado)
+                    "-", //                            column4 ==> valor que presenta el conflicto
+                    value //                          column5 ==> descripcion de error(como corregir)
+                    ));
+
+        } else if (relationVar == null) {//error cuando falta relacion oblicatoria
             errorsList.add(new RowDataTable(
                     String.valueOf(errorsNumber), //                    column1 ==> numero del error 
                     "-", //no rowId (problema en toda columna)          column2 ==> identificador del registro
@@ -402,6 +433,7 @@ public class ErrorsControlMB implements Serializable {
                         //reseteo variables
                         selectedErrorRowTable = null;
                         btnSolveDisabled = true;
+                        btnViewDisabled = true;
                         valueFound = "";//valor actual
                         currentNewValue = "";
                         currentDateFormatAcepted = "";
@@ -424,6 +456,7 @@ public class ErrorsControlMB implements Serializable {
 //            errorControlArrayList.remove(i);
 //            sizeErrorsList--;
 //            btnSolveDisabled = true;
+//            btnViewDisabled =true;              
 //            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El valor solucionó el error");
 //            FacesContext.getCurrentInstance().addMessage(null, msg);
 //            return 0;
@@ -451,7 +484,7 @@ public class ErrorsControlMB implements Serializable {
                         correction = true;
                     }
                     break;
-                case date:                    
+                case date:
                     if (isDate(currentNewValue, selectedErrorRowTable.getColumn9())) {
                         correction = true;//valor es aceptado como fecha
                         if (selectedErrorRowTable.getColumn6().compareTo("fecha_evento") == 0 || selectedErrorRowTable.getColumn6().compareTo("fecha_consulta") == 0) {
@@ -588,6 +621,7 @@ public class ErrorsControlMB implements Serializable {
                             //reseteo variables
                             selectedErrorRowTable = null;
                             btnSolveDisabled = true;
+                            btnViewDisabled = true;
                             valueFound = "";//valor actual
                             currentNewValue = "";
                             currentDateFormatAcepted = "";
@@ -1041,6 +1075,7 @@ public class ErrorsControlMB implements Serializable {
     public void changeAcceptedValuesList() {
         currentNewValue = currentAceptedValue;
         btnSolveDisabled = false;
+        btnViewDisabled = false;
     }
 
     //----------------------------------------------------------------------
@@ -1186,11 +1221,26 @@ public class ErrorsControlMB implements Serializable {
         this.errorsList = errorsList;
     }
 
-    public List<RowDataTable> getMoreInfoDataTableList() {
-        return moreInfoDataTableList;
+//    public List<RowDataTable> getMoreInfoDataTableList() {
+//        return moreInfoDataTableList;
+//    }
+//
+//    public void setMoreInfoDataTableList(List<RowDataTable> moreInfoDataTableList) {
+//        this.moreInfoDataTableList = moreInfoDataTableList;
+//    }
+    public List<ValueNewValue> getMoreInfoModel() {
+        return moreInfoModel;
     }
 
-    public void setMoreInfoDataTableList(List<RowDataTable> moreInfoDataTableList) {
-        this.moreInfoDataTableList = moreInfoDataTableList;
+    public void setMoreInfoModel(List<ValueNewValue> moreInfoModel) {
+        this.moreInfoModel = moreInfoModel;
+    }
+
+    public boolean isBtnViewDisabled() {
+        return btnViewDisabled;
+    }
+
+    public void setBtnViewDisabled(boolean btnViewDisabled) {
+        this.btnViewDisabled = btnViewDisabled;
     }
 }

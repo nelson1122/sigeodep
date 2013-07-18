@@ -9,10 +9,17 @@ package managedBeans.filters;
  * @author and
  */
 public class ValueNewValue {
+    private String columnName;
     private String oldValue;
     private String newValue;
     
     public ValueNewValue(String oldValue, String newValue){
+        this.oldValue = oldValue;
+        this.newValue = newValue;
+    }
+    
+    public ValueNewValue(String columnName, String oldValue, String newValue){
+        this.columnName = columnName;
         this.oldValue = oldValue;
         this.newValue = newValue;
     }
@@ -32,6 +39,13 @@ public class ValueNewValue {
     public void setOldValue(String oldValue) {
         this.oldValue = oldValue;
     }
-    
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+    }
     
 }

@@ -19,20 +19,20 @@
                     var n = 0;
                     var brow = 'mozilla';
                     jQuery.each(jQuery.browser, function(i, val) {
-                        if (val == true) {
+                        if (val === true) {
                             brow = i.toString();
                         }
                     });
 
                     $('.tableHeader').each(function(i) {
                         if (colCount > m) {
-                            if (brow == 'mozilla') {
+                            if (brow === 'mozilla') {
                                 $('#firstTd').css("width", $('.tableFirstCol').innerWidth());//for adjusting first td
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').innerWidth());//for assigning width to table Header div
-                            } else if (brow == 'msie') {
+                            } else if (brow === 'msie') {
                                 $('#firstTd').css("width", $('.tableFirstCol').width());
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').width() - 2);//In IE there is difference of 2 px
-                            } else if (brow == 'safari') {
+                            } else if (brow === 'safari') {
                                 $('#firstTd').css("width", $('.tableFirstCol').width());
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').width());
                             } else {
@@ -43,21 +43,21 @@
                         m++;
                     });
                     $('.tableFirstCol').each(function(i) {
-                        if (brow == 'mozilla') {
+                        if (brow === 'mozilla') {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').outerHeight());//for providing height using scrollable table column height
-                        } else if (brow == 'msie') {
+                        } else if (brow === 'msie') {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').innerHeight() - 2);
                         } else {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').height());
                         }
                         n++;
                     });
-                }
+                };
                 //function to support scrolling of title and first column
                 fnScroll = function() {
                     $('#divHeader').scrollLeft($('#table_div').scrollLeft());
                     $('#firstcol').scrollTop($('#table_div').scrollTop());
-                }
+                };
                 function showTableResult() {
                     document.getElementById('IdTabView:IdForm:IdPaint').click();
                     fnAdjustTable();
@@ -79,11 +79,11 @@
             <br/>
             <p:tabView id="IdTabView"  style=" width: 750px;  margin-left: -375px; left: 50%;" > 
                 <p:tab id="tab1" title="#{indicatorsCountMB.subTitleIndicator}">  
-                    <h:form enctype="multipart/form-data" id="IdForm" style="alignment-adjust: center;"> 
+                    <h:form enctype="multipart/form-data" id="IdForm" style="alignment-adjust:central;"> 
                         <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
                         <!--===================================================================================-->                        
                         <br/>
-                        <p:fieldset legend="RANGO DE FECHAS"> 
+                        <p:fieldset legend="RANGO DE FECHAS" > 
                             <br/>
                             <h:outputText value="Fecha Inicial:" />
                             <p:calendar
@@ -201,7 +201,8 @@
                                 style="width: 100px;"
                                 id="IdBtnGenerate" 
                                 actionListener="#{indicatorsCountMB.process}"
-                                oncomplete="showTableResult()"                                                        
+                                oncomplete="showTableResult(); pageActive();"  
+                                onclick="pageInactive();"                                                        
                                 update="IdImageChart IdPanelGraphConfig IdDataTableHtml IdBtnExport :IdTabView:maps_form"/>
                             &nbsp;&nbsp;
                             <h:selectBooleanCheckbox value="#{indicatorsCountMB.showEmpty}" />
@@ -253,19 +254,29 @@
                                         Tipo de Gráfico
                                     </p:column>
                                     <p:column colspan="2">
-                                        Barras
-                                    </p:column>                                    
-                                    <p:column styleClass="ui-widget-header">
-                                        Variable
-                                    </p:column>
-                                    <p:column colspan="2">
                                         <h:selectOneMenu 
-                                            id="IdVariableGraph" value="#{indicatorsCountMB.currentVariableGraph}"> 
-                                            <f:selectItems value="#{indicatorsCountMB.variablesGraph}"/>
+                                            id="IdTypeGraph" value="#{indicatorsCountMB.currentTypeGraph}"> 
+                                            <f:selectItems value="#{indicatorsCountMB.typesGraph}"/>
                                             <f:ajax 
                                                 event="change"
-                                                listener="#{indicatorsCountMB.loadValuesGraph}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
+                                                listener="#{indicatorsCountMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectOneMenu>
+                                    </p:column>                                    
+                                    <p:column styleClass="ui-widget-header">
+                                        Filtro 1
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <h:outputText
+                                            id="IdVariableGraph"
+                                            value="#{indicatorsCountMB.currentVariableGraph}"/>
+                                        <h:selectOneMenu 
+                                            id="IdValueGraph" value="#{indicatorsCountMB.currentValueGraph}"> 
+                                            <f:selectItems value="#{indicatorsCountMB.valuesGraph}"/>
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsCountMB.createImage}"
+                                                render="IdImageChart"/>
                                         </h:selectOneMenu>
                                     </p:column>
                                 </p:row>
@@ -278,26 +289,43 @@
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsCountMB.createImage}"
-                                                render="IdVariableGraph IdValueGraph IdImageChart"/>
+                                                render="IdImageChart"/>
                                         </h:selectBooleanCheckbox>
                                     </p:column>                                        
                                     <p:column styleClass="ui-widget-header">
-                                        Valor
+                                        Tamaño
                                     </p:column>
                                     <p:column colspan="2">
-                                        <h:selectOneMenu 
-                                            id="IdValueGraph" value="#{indicatorsCountMB.currentValueGraph}"> 
-                                            <f:selectItems value="#{indicatorsCountMB.valuesGraph}"/>
+                                        Alto: 
+                                        <p:spinner 
+                                            value="#{indicatorsCountMB.heightGraph}"
+                                            min="1"
+                                            stepFactor="100"
+                                            size="5">
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsCountMB.createImage}"
                                                 render="IdImageChart"/>
-                                        </h:selectOneMenu>
+                                        </p:spinner> 
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        Largo: 
+                                        <p:spinner 
+                                            value="#{indicatorsCountMB.widthGraph}"
+                                            min="1"
+                                            stepFactor="100"
+                                            size="5">
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsCountMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </p:spinner> 
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>                                
                             <br/>
-                            <p:graphicImage id="IdImageChart" value="#{indicatorsCountMB.chartImage}"/>
+                            <div style="width: 680px; height: 480px; overflow: scroll">
+                                <p:graphicImage id="IdImageChart" value="#{indicatorsCountMB.chartImage}"/>
+                            </div>
                             <br/>
                         </p:fieldset>
                         <br/>
@@ -562,4 +590,5 @@
         </ui:define>
     </ui:composition>
 </html>
+
 

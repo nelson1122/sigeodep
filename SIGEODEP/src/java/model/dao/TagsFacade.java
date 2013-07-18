@@ -31,21 +31,27 @@ public class TagsFacade extends AbstractFacade<Tags> {
 
     public List<Tags> findCriteria(int variable, String value) {
         String hql;
-        try {
-            switch (variable) {
-                case 1:
-                    //hql = "Select x from Tags x where x.tagName like '" + value + "%'";
-                    return (List<Tags>) em.createNativeQuery("select * from tags where tag_id::text like '" + value + "%';", Tags.class).getResultList();                    
-                case 2:
-                    hql = "Select x from Tags x where x.tagName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-                case 3:
-                    hql = "Select x from Tags x where x.formId.formId like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
+
+        if (value == null) {//busco todos
+            hql = "Select x from Tags x order by x.tagId";
+                        return em.createQuery(hql).getResultList();
+        } else {
+            try {
+                switch (variable) {
+                    case 1:
+                        //hql = "Select x from Tags x where x.tagName like '" + value + "%'";
+                        return (List<Tags>) em.createNativeQuery("select * from tags where tag_id::text like '" + value + "%';", Tags.class).getResultList();
+                    case 2:
+                        hql = "Select x from Tags x where x.tagName like '%" + value + "%'";
+                        return em.createQuery(hql).getResultList();
+                    case 3:
+                        hql = "Select x from Tags x where x.formId.formId like '%" + value + "%'";
+                        return em.createQuery(hql).getResultList();
+                }
+            } catch (Exception e) {
+                System.out.println(e.toString() + "----------------------------------------------------");
+                return null;
             }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
         }
         return null;
     }
@@ -58,11 +64,11 @@ public class TagsFacade extends AbstractFacade<Tags> {
             return 0;
         }
     }
-    
+
     public Tags findByName(String name) {
         try {
             String hql = "Select x from Tags x where x.tagName=:name";
-            return (Tags)em.createQuery(hql).setParameter("name", name).getSingleResult();            
+            return (Tags) em.createQuery(hql).setParameter("name", name).getSingleResult();
         } catch (Exception e) {
             return null;
         }

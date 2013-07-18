@@ -12,7 +12,7 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
-            <script type="text/javascript">                  
+            <script type="text/javascript">
             </script> 
         </ui:define>
         <!--=================================================================-->
@@ -77,9 +77,7 @@
                                             </p:column>
                                         </p:row>                        
                                     </p:panelGrid>
-
                                     <br/>
-
                                     <p:dataTable 
                                         id="IdSearchTable" var="rowX" 
                                         value="#{recordSetsMB.rowDataTableList}" 
@@ -134,7 +132,7 @@
                                                     disabled="#{recordSetsMB.btnRemoveDisabled}"
                                                     oncomplete="dialogDelete.show()"                                            
                                                     update=":IdForm2:IdDialogDelete :IdForm1:message"/>
-                                                <!-- -->
+                                                
                                                 <p:commandButton 
                                                     id="IdView"                                            
                                                     actionListener="#{recordSetsMB.resetDates}"
@@ -464,8 +462,10 @@
                                 <p:commandButton
                                     action="#{recordSetsMB.openDuplicateSets}"
                                     actionListener="#{recordSetsMB.detectDuplicateClick}"                                    
-                                    onclick="pbAjaxValidate.start(); btnStarDetection.disable();"  
-                                    oncomplete="btnStarDetection.enable();"
+                                    onclick="pbAjaxValidate.start();
+                    btnStarDetection.disable();
+                pageInactive();"  
+                                    oncomplete="btnStarDetection.enable(); pageActive();"
                                     widgetVar="btnStarDetection"
                                     value="Iniciar detección"/>
                             </p:column>
@@ -496,14 +496,14 @@
                         <p:ajax 
                             event="complete" 
                             listener="#{recordSetsMB.onCompleteDelete}" 
-                            update=":IdForm1:IdTabRecordSets:IdSearchTable :IdForm1:IdTabRecordSets:IdControls :IdForm1:message IdProgresDelete"/>  
+                            update=":IdForm1:IdTabRecordSets:IdSearchTable :IdForm1:IdTabRecordSets:IdSearchTable2 :IdForm1:IdTabRecordSets:IdControls :IdForm1:message IdProgresDelete"/>  
                     </p:progressBar>
                     <br/>
 
                     <p:commandButton                                                           
-                        oncomplete="dialogDelete.hide()"
+                        oncomplete="dialogDelete.hide(); pageActive();"
                         actionListener="#{recordSetsMB.deleteTag}"
-                        onclick="pbAjaxDelete.start();btnDelete.disable();btnCancelDelete.disable();"  
+                        onclick="pbAjaxDelete.start(); pageInactive(); btnDelete.disable(); btnCancelDelete.disable();"  
                         value="Eliminar"                        
                         widgetVar="btnDelete"/>   
                     <p:commandButton

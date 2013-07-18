@@ -79,6 +79,7 @@ public enum VariablesEnum {
     //aggressor_types,
     actions_to_take,
     security_elements,
+    source_vif,
     NOVALUE;
 
     public static VariablesEnum convert(String str) {
