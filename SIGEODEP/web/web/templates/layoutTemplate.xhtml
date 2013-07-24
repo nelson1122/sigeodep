@@ -42,10 +42,12 @@
             <p:layout fullPage="true" rendered="#{loginMB.autenticado}" >  
                 <!-- ****************************** MENU LATERAL (PARTE IZQUIERDA) ************************ -->
                 <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
+
+                    <h:form target="_blank">
+                        <h:commandButton value="+" action="home" />
+                    </h:form>
                     <h:form id="IdForm0">                        
-                        <!--p:idleMonitor timeout="3600000">                        
-                            <p:ajax event="active" listener="# {loginMB.logout1}"/>
-                        </p:idleMonitor-->
+
                         <br/><br/>
                         <p:graphicImage value="../../resources/img/logo2.png"/>
                         <br/><br/>

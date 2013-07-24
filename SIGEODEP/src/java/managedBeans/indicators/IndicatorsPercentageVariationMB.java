@@ -3122,7 +3122,8 @@ public class IndicatorsPercentageVariationMB {
                         value = formateador.format((totalA - totalB) * -1);
                     }
                     celda = fila.createCell((short) i + 2);// +2 por que faltal nombres de filas
-                    celda.setCellValue(new HSSFRichTextString(value));
+                    //celda.setCellValue(new HSSFRichTextString(value));
+                    setValueCell(celda, value);
                 }
 
                 fila = sheet.createRow(posRow);
@@ -3140,7 +3141,8 @@ public class IndicatorsPercentageVariationMB {
                         value = formateador.format((totalA - totalB) * -1);
                     }
                     celda = fila.createCell((short) i + 2);// +2 por que faltal nombres de filas                            
-                    celda.setCellValue(new HSSFRichTextString(value));
+                    //celda.setCellValue(new HSSFRichTextString(value));
+                    setValueCell(celda, value);
                 }
 
             } else {
@@ -3163,12 +3165,24 @@ public class IndicatorsPercentageVariationMB {
                         value = formateador.format((totalA - totalB) * -1);
                     }
                     celda = fila.createCell((short) i + 2);// +2 por que faltal nombres de columnas               
-                    celda.setCellValue(new HSSFRichTextString(value));
+                    //celda.setCellValue(new HSSFRichTextString(value));
+                    setValueCell(celda, value);
                 }
             }
         }
     }
 
+    private void setValueCell(HSSFCell celda, String strValue) {
+        /*determina si el valor a almacenar en una celda del 
+         archivo excell debe ser numerica o cadena*/
+        try {
+            double value = Double.parseDouble(strValue.replace(",", "."));
+            celda.setCellValue(value);
+        } catch (Exception e) {
+            celda.setCellValue(new HSSFRichTextString(strValue));
+        }        
+    }
+    
     private String createDataTableResult() {
 
         headers1 = new ArrayList<>();

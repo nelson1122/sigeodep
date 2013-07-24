@@ -4,6 +4,7 @@
  */
 package managedBeans.indicators;
 
+import beans.util.LineLegendItemSource;
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.VariablesEnum;
 import static beans.enumerators.VariablesEnum.accident_classes;
@@ -2549,16 +2550,31 @@ public class IndicatorsSpecifiedRateMB {
             posI = 1;// 1 por que faltal nombres de fila                               
             for (int i = 0; i < columNames.size(); i++) {
                 celda = fila.createCell((short) posI);
+                String value;
                 if (!showCalculation) {
-                    celda.setCellValue(matrixResult[i][j].split("<br/>")[0].replace("<b>", "").replace("</b>", ""));
+                    value=matrixResult[i][j].split("<br/>")[0].replace("<b>", "").replace("</b>", "");
+                    //celda.setCellValue(value);
                 } else {
-                    celda.setCellValue(matrixResult[i][j].replace("<br/>", " ").replace("<b>", "").replace("</b>", ""));
+                    value=matrixResult[i][j].replace("<br/>", " ").replace("<b>", "").replace("</b>", "");
+                    //celda.setCellValue(value);
                 }
+                setValueCell(celda, value);
                 posI++;
             }
         }
     }
 
+    private void setValueCell(HSSFCell celda, String strValue) {
+        /*determina si el valor a almacenar en una celda del 
+         archivo excell debe ser numerica o cadena*/
+        try {
+            double value = Double.parseDouble(strValue.replace(",", "."));
+            celda.setCellValue(value);
+        } catch (Exception e) {
+            celda.setCellValue(new HSSFRichTextString(strValue));
+        }        
+    }
+    
     private String createDataTableResult() {
         PanelGrid panelGrid = new PanelGrid();
         headers1 = new ArrayList<>();

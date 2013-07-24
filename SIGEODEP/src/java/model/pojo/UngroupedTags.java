@@ -41,6 +41,11 @@ public class UngroupedTags implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "ungrouped_tag_name", length = 2147483647)
     private String ungroupedTagName;
+    
+    @Column(name = "current_tag_id")
+    private Integer currentTagId;
+    
+    
     @Column(name = "ungrouped_tag_date")
     @Temporal(TemporalType.DATE)
     private Date ungroupedTagDate;
@@ -85,6 +90,14 @@ public class UngroupedTags implements Serializable {
 
     public void setFormId(String formId) {
         this.formId = formId;
+    }
+
+    public Integer getCurrentTagId() {
+        return currentTagId;
+    }
+
+    public void setCurrentTagId(Integer currentTagId) {
+        this.currentTagId = currentTagId;
     }
 
     @Override

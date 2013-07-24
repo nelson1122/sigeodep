@@ -702,26 +702,16 @@ public class FilterMB {
                 while (rs.next()) {
                     splitValue = splitByDigit(rs.getString("data_value"));
                     if (splitValue != null && splitValue.length > 0) {
-                        addTableProjectRecords(rs.getInt("project_id"), rs.getInt("record_id"), maxColumnId, splitValue[0]);
-                        currentNumberInserts++;
-//                        sql = ""
-//                                + " INSERT INTO project_records VALUES ("
-//                                + rs.getString("project_id") + ","
-//                                + rs.getString("record_id") + ","
-//                                + String.valueOf(maxColumnId) + ",'"
-//                                + splitValue[0] + "')";
-//                        connectionJdbcMB.non_query(sql);
+                        if (splitValue[0].trim().length() != 0) {
+                            addTableProjectRecords(rs.getInt("project_id"), rs.getInt("record_id"), maxColumnId, splitValue[0]);
+                            currentNumberInserts++;
+                        }
                     }
                     if (splitValue != null && splitValue.length > 1) {
+                        if (splitValue[1].trim().length() != 0) {
                         addTableProjectRecords(rs.getInt("project_id"), rs.getInt("record_id"), maxColumnId + 1, splitValue[1]);
                         currentNumberInserts++;
-//                        sql = ""
-//                                + " INSERT INTO project_records VALUES ("
-//                                + rs.getString("project_id") + ","
-//                                + rs.getString("record_id") + ","
-//                                + String.valueOf(maxColumnId + 1) + ",'"
-//                                + splitValue[1] + "')";
-//                        connectionJdbcMB.non_query(sql);
+                        }//                      
                     }
                 }
                 addTableProjectRecords(-1, -1, -1, "");//terminar de guardar los registros restantes

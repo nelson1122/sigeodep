@@ -20,9 +20,11 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.recordSets.RecordSetsMB;
 import model.dao.*;
+import model.pojo.FatalInjuries;
 import model.pojo.FatalInjuryMurder;
 import model.pojo.MunicipalitiesPK;
 import model.pojo.Tags;
+import model.pojo.Victims;
 
 /**
  *
@@ -53,6 +55,8 @@ public class DuplicateSetsHomicideMB implements Serializable {
     DepartamentsFacade departamentsFacade;
     @EJB
     VictimsFacade victimsFacade;
+    @EJB
+    FatalInjuriesFacade fatalInjuriesFacade;
     @EJB
     FatalInjuryMurderFacade fatalInjuryMurderFacade;
     @EJB
@@ -112,57 +116,64 @@ public class DuplicateSetsHomicideMB implements Serializable {
          */
         if (selectedRowDuplicatedTable != null) {
             try {
-                rowDataTableList = new ArrayList<RowDataTable>();
-                int id;
-                //cargo el registro con el que estoy comparando
-                ResultSet resultSet2 = connectionJdbcMB.consult(""
-                        + "SELECT "
-                        + "   fatal_injuries.fatal_injury_id "
-                        + "FROM "
-                        + "   fatal_injuries "
-                        + "WHERE"
-                        + "   fatal_injuries.victim_id = " + selectedRowDuplicatedTable.getColumn1() + "");
-                resultSet2.next();
-                id = Integer.parseInt(resultSet2.getString(1));
-                rowDataTableList.add(loadValues("", fatalInjuryMurderFacade.find(id)));
-
-
-                String sql = "";
-                sql = sql + "SELECT ";
-                sql = sql + "t1.victim_id ";
-                sql = sql + "FROM ";
-                sql = sql + "duplicate t1, duplicate t2 ";
-                sql = sql + "WHERE ";
-                sql = sql + "t2.victim_id = " + selectedRowDuplicatedTable.getColumn1() + " ";
-                sql = sql + "AND t1.victim_id != t2.victim_id ";
-                sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 4 ";
-                sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 4 ";
-                ResultSet resultSetCount = connectionJdbcMB.consult(sql);
-
-
-                id = -1;
-                int cont = 0;
-                //cargo los posibles duplicados 
-
-                while (resultSetCount.next()) {
-                    resultSet2 = connectionJdbcMB.consult(""
-                            + "SELECT "
-                            + "   fatal_injuries.fatal_injury_id "
-                            + "FROM "
-                            + "   fatal_injuries "
-                            + "WHERE"
-                            + "   fatal_injuries.victim_id = " + resultSetCount.getString("victim_id") + "");
-                    resultSet2.next();
-                    cont++;
-                    id = Integer.parseInt(resultSet2.getString(1));
-                    rowDataTableList.add(loadValues("", fatalInjuryMurderFacade.find(id)));
-                }
-                if (id == -1) {
-                    printMessage(FacesMessage.SEVERITY_WARN, "Sin datos", "La búsqueda no produjo resultados");
+                rowDataTableList = new ArrayList<>();
+                RowDataTable newRow = connectionJdbcMB.loadFatalInjuryMurderRecord(selectedRowDuplicatedTable.getColumn1());
+                if (newRow == null) {
+                    printMessage(FacesMessage.SEVERITY_WARN, "Registro eliminado", "Se ha eliminado el registro con el cual se estaba comparando");
                 } else {
-                    printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se encontraron " + String.valueOf(cont) + " posibles duplicados");
+                    rowDataTableList.add(newRow);
+//                int id;
+//                //cargo el registro con el que estoy comparando
+//                ResultSet resultSet2 = connectionJdbcMB.consult(""
+//                        + "SELECT "
+//                        + "   fatal_injuries.fatal_injury_id "
+//                        + "FROM "
+//                        + "   fatal_injuries "
+//                        + "WHERE"
+//                        + "   fatal_injuries.victim_id = " + selectedRowDuplicatedTable.getColumn1() + "");
+//                resultSet2.next();
+//                id = Integer.parseInt(resultSet2.getString(1));
+//                rowDataTableList.add(loadValues("", fatalInjuryMurderFacade.find(id)));
+
+
+                    String sql = "";
+                    sql = sql + "SELECT ";
+                    sql = sql + "t1.victim_id ";
+                    sql = sql + "FROM ";
+                    sql = sql + "duplicate t1, duplicate t2 ";
+                    sql = sql + "WHERE ";
+                    sql = sql + "t2.victim_id = " + selectedRowDuplicatedTable.getColumn1() + " ";
+                    sql = sql + "AND t1.victim_id != t2.victim_id ";
+                    sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 4 ";
+                    sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 4 ";
+                    ResultSet resultSetCount = connectionJdbcMB.consult(sql);
+
+
+                    //id = -1;
+                    int cont = 0;
+                    //cargo los posibles duplicados 
+
+                    while (resultSetCount.next()) {
+//                    resultSet2 = connectionJdbcMB.consult(""
+//                            + "SELECT "
+//                            + "   fatal_injuries.fatal_injury_id "
+//                            + "FROM "
+//                            + "   fatal_injuries "
+//                            + "WHERE"
+//                            + "   fatal_injuries.victim_id = " + resultSetCount.getString("victim_id") + "");
+//                    resultSet2.next();
+                        cont++;
+//                    id = Integer.parseInt(resultSet2.getString(1));
+//                    rowDataTableList.add(loadValues("", fatalInjuryMurderFacade.find(id)));
+                        rowDataTableList.add(connectionJdbcMB.loadFatalInjuryMurderRecord(resultSetCount.getString("victim_id")));
+                    }
+                    if (cont == 0) {
+                        printMessage(FacesMessage.SEVERITY_WARN, "Sin datos", "Este registro ya no tiene posibles duplicados");
+                    } else {
+                        printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se encontraron " + String.valueOf(cont) + " posibles duplicados");
+                    }
+                    selectedRowDataTable = null;
                 }
-                selectedRowDataTable = null;
             } catch (SQLException ex) {
                 //Logger.getLogger(DuplicateRecordsMB.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -256,7 +267,7 @@ public class DuplicateSetsHomicideMB implements Serializable {
                 tuplesNumber = rs.getInt(1);
             }
             //------------
-            
+
             rowDuplicatedTableList = new ArrayList<RowDataTable>();
             ResultSet resultSetFileData = connectionJdbcMB.consult("Select * from duplicate");
             ArrayList<String> addedRecords = new ArrayList<String>();
@@ -314,252 +325,9 @@ public class DuplicateSetsHomicideMB implements Serializable {
         }
     }
 
-    private RowDataTable loadValues(String c, FatalInjuryMurder currentFatalInjuryMurder) {
-        //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
-
-        btnRemoveDisabled = true;
-        RowDataTable newRowDataTable = new RowDataTable();
-        //------------------------------------------------------------
-        //SE CARGAN VALORES PARA LA NUEVA VICTIMA
-        //------------------------------------------------------------
-
-        //******non_fatal_injury_id
-        newRowDataTable.setColumn1(currentFatalInjuryMurder.getFatalInjuries().getFatalInjuryId().toString());
-
-        //******type_id
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getTypeId() != null) {
-                newRowDataTable.setColumn2(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getTypeId().getTypeName());
-            }
-        } catch (Exception e) {
-        }
-        //******victim_nid
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNid() != null) {
-                newRowDataTable.setColumn3(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNid());
-            }
-        } catch (Exception e) {
-        }
-        //******victim_name
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimName() != null) {
-                newRowDataTable.setColumn4(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimName());
-            }
-        } catch (Exception e) {
-        }
-        //******stranger
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getStranger() != null) {
-                newRowDataTable.setColumn5(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getStranger().toString());
-            }
-        } catch (Exception e) {
-        }
-        //******age_type_id
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getAgeTypeId() != null) {
-                newRowDataTable.setColumn6(ageTypesFacade.find(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getAgeTypeId()).getAgeTypeName());
-            }
-        } catch (Exception e) {
-        }
-        //******victim_age
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimAge() != null) {
-                newRowDataTable.setColumn7(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimAge().toString());
-            }
-        } catch (Exception e) {
-        }
-        //******gender_id
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getGenderId() != null) {
-                newRowDataTable.setColumn8(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getGenderId().getGenderName());
-            }
-        } catch (Exception e) {
-        }
-        //******job_id
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getJobId() != null) {
-                newRowDataTable.setColumn9(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getJobId().getJobName());
-            }
-        } catch (Exception e) {
-        }
-
-
-        //******vulnerable_group_id
-        //******ethnic_group_id        
-        //******victim_telephone
-        //******victim_address
-
-
-        //******victim_neighborhood_id
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
-                newRowDataTable.setColumn10(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId().getNeighborhoodName());
-            }
-        } catch (Exception e) {
-        }
-
-        //******victim_date_of_birth
-        //******eps_id
-        //******victim_class
-        //******victim_id       
-
-        //******residence_municipality
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment() != null && (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceMunicipality() != null)) {
-                short departamentId = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment();
-                short municipalityId = currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceMunicipality();
-                MunicipalitiesPK mPk = new MunicipalitiesPK(departamentId, municipalityId);
-                newRowDataTable.setColumn11(municipalitiesFacade.find(mPk).getMunicipalityName());
-            }
-        } catch (Exception e) {
-        }
-        //******residence_department
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment() != null) {
-                newRowDataTable.setColumn12(departamentsFacade.find(currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment()).getDepartamentName());
-            }
-        } catch (Exception e) {
-        }
-
-        //******insurance_id
-
-        //------------------------------------------------------------
-        //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
-        //------------------------------------------------------------
-        //******injury_id
-        //******injury_date
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryDate() != null) {
-                newRowDataTable.setColumn13(sdf.format(currentFatalInjuryMurder.getFatalInjuries().getInjuryDate()));
-            }
-        } catch (Exception e) {
-        }
-        //******injury_time
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryTime() != null) {
-                hours = String.valueOf(currentFatalInjuryMurder.getFatalInjuries().getInjuryTime().getHours());
-                minutes = String.valueOf(currentFatalInjuryMurder.getFatalInjuries().getInjuryTime().getMinutes());
-                if (hours.length() != 2) {
-                    hours = "0" + hours;
-                }
-                if (minutes.length() != 2) {
-                    minutes = "0" + minutes;
-                }
-                newRowDataTable.setColumn14(hours + minutes);
-            }
-        } catch (Exception e) {
-        }
-        //******injury_address
-        if (currentFatalInjuryMurder.getFatalInjuries().getInjuryAddress() != null) {
-            newRowDataTable.setColumn15(currentFatalInjuryMurder.getFatalInjuries().getInjuryAddress());
-        }
-        //******injury_neighborhood_id
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryNeighborhoodId() != null) {
-                newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryMurder.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
-            }
-        } catch (Exception e) {
-        }
-        //******injury_place_id
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryPlaceId() != null) {
-                newRowDataTable.setColumn17(currentFatalInjuryMurder.getFatalInjuries().getInjuryPlaceId().getPlaceName());
-            }
-        } catch (Exception e) {
-        }
-
-        //******victim_number
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimNumber() != null) {
-                newRowDataTable.setColumn18(currentFatalInjuryMurder.getFatalInjuries().getVictimNumber().toString());
-
-            }
-        } catch (Exception e) {
-        }
-        //******injury_description
-        if (currentFatalInjuryMurder.getFatalInjuries().getInjuryDescription() != null) {
-            newRowDataTable.setColumn19(currentFatalInjuryMurder.getFatalInjuries().getInjuryDescription());
-        }
-        //******user_id	
-        //******input_timestamp	
-        //******injury_day_of_week
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getInjuryDayOfWeek() != null) {
-                newRowDataTable.setColumn20(currentFatalInjuryMurder.getFatalInjuries().getInjuryDayOfWeek());
-            }
-        } catch (Exception e) {
-        }
-
-        //******victim_id
-        //******fatal_injury_id
-        //******alcohol_level_victim
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getAlcoholLevelVictim() != null) {
-                newRowDataTable.setColumn21(currentFatalInjuryMurder.getFatalInjuries().getAlcoholLevelVictim().toString());
-            }
-        } catch (Exception e) {
-        }
-        //******alcohol_level_victimId
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getAlcoholLevelVictimId() != null) {
-                newRowDataTable.setColumn22(currentFatalInjuryMurder.getFatalInjuries().getAlcoholLevelVictimId().getAlcoholLevelName());
-            }
-        } catch (Exception e) {
-        }
-        //******code
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getCode() != null) {
-                newRowDataTable.setColumn23(currentFatalInjuryMurder.getFatalInjuries().getCode());
-            }
-        } catch (Exception e) {
-        }
-        //******area_id
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getAreaId() != null) {
-                newRowDataTable.setColumn24(currentFatalInjuryMurder.getFatalInjuries().getAreaId().getAreaName());
-            }
-        } catch (Exception e) {
-        }
-        //******victim_place_of_origin
-        try {
-            if (currentFatalInjuryMurder.getFatalInjuries().getVictimPlaceOfOrigin() != null) {
-                String source = currentFatalInjuryMurder.getFatalInjuries().getVictimPlaceOfOrigin();
-                String[] sourceSplit = source.split("-");
-                //determino pais
-                newRowDataTable.setColumn25(countriesFacade.find(Short.parseShort(sourceSplit[0])).getName());
-                if (Short.parseShort(sourceSplit[0]) == 52) {//colombia
-                    newRowDataTable.setColumn26(departamentsFacade.find(Short.parseShort(sourceSplit[1])).getDepartamentName());
-                    MunicipalitiesPK municipalitiesPK = new MunicipalitiesPK(Short.parseShort(sourceSplit[1]), Short.parseShort(sourceSplit[2]));
-                    newRowDataTable.setColumn27(municipalitiesFacade.find(municipalitiesPK).getMunicipalityName());
-                }
-            }
-        } catch (Exception e) {
-        }
-        //------------------------------------------------------------
-        //SE CARGA DATOS PARA LA NUEVA LESION FATAL POR HOMICIDIOS
-        //------------------------------------------------------------
-
-        //******murder_context_id
-        try {
-            if (currentFatalInjuryMurder.getMurderContextId() != null) {
-                newRowDataTable.setColumn28(currentFatalInjuryMurder.getMurderContextId().getMurderContextName());
-            }
-        } catch (Exception e) {
-        }
-        //******weapon_type_id
-        try {
-            if (currentFatalInjuryMurder.getWeaponTypeId() != null) {
-                newRowDataTable.setColumn29(currentFatalInjuryMurder.getWeaponTypeId().getWeaponTypeName());
-            }
-        } catch (Exception e) {
-        }
-        //******fatal_injury_id
-        return newRowDataTable;
-    }
-
     public void rowDuplicatedTableListSelect() {
         selectedRowDataTable = null;
-        rowDataTableList = new ArrayList<RowDataTable>();
+        rowDataTableList = new ArrayList<>();
         btnViewDisabled = true;
         btnRemoveDisabled = true;
         if (selectedRowDuplicatedTable != null) {
@@ -579,6 +347,29 @@ public class DuplicateSetsHomicideMB implements Serializable {
     }
 
     public void deleteRegistry() {
+        if (selectedRowDataTable != null) {
+            FatalInjuryMurder fatalInjuryMurderSelect = fatalInjuryMurderFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
+            if (fatalInjuryMurderSelect != null) {
+                FatalInjuries auxFatalInjuries = fatalInjuryMurderSelect.getFatalInjuries();
+                Victims auxVictims = fatalInjuryMurderSelect.getFatalInjuries().getVictimId();
+                fatalInjuryMurderFacade.remove(fatalInjuryMurderSelect);
+                fatalInjuriesFacade.remove(auxFatalInjuries);
+                victimsFacade.remove(auxVictims);
+            }
+            //quito los elementos seleccionados de rowsDataTableList seleccion de 
+            for (int i = 0; i < rowDataTableList.size(); i++) {
+                if (selectedRowDataTable.getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
+                    rowDataTableList.remove(i);
+                    break;
+                }
+            }
+            //deselecciono los controles
+            selectedRowDataTable = null;
+            btnRemoveDisabled = true;
+            printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion del registro seleccionado");
+        } else {
+            printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
+        }
 //        if (selectedRowDataTable != null) {
 //            List<NonFatalInjuries> nonFatalInjuriesList = new ArrayList<NonFatalInjuries>();
 //            nonFatalInjuriesList.add(nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1())));
@@ -705,7 +496,7 @@ public class DuplicateSetsHomicideMB implements Serializable {
     public void setData(String data) {
         this.data = data;
     }
-    
+
     public String getInitialDateStr() {
         return initialDateStr;
     }
@@ -713,7 +504,7 @@ public class DuplicateSetsHomicideMB implements Serializable {
     public void setInitialDateStr(String initialDateStr) {
         this.initialDateStr = initialDateStr;
     }
-    
+
     public String getEndDateStr() {
         return endDateStr;
     }
@@ -721,5 +512,4 @@ public class DuplicateSetsHomicideMB implements Serializable {
     public void setEndDateStr(String endDateStr) {
         this.endDateStr = endDateStr;
     }
-
 }

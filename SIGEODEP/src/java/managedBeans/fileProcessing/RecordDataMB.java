@@ -1047,15 +1047,20 @@ public class RecordDataMB implements Serializable {
             newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
             newUngroupedTags.setFormId(nameForm);
+            newUngroupedTags.setCurrentTagId(ungroupedTagsFacade.findMax() + 1);
             ungroupedTagsFacade.create(newUngroupedTags);
 
             newTag = new Tags();
             newTag.setTagId(ungroupedTagsFacade.findMax());
-            newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
+            String tagName=determineTagName(projectsMB.getCurrentProjectName());
+            newTag.setTagName(tagName);
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
+            
+            
+                    
 
             lastTagNameCreated = newTag.getTagName();
 
@@ -1533,6 +1538,7 @@ public class RecordDataMB implements Serializable {
             newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
             newUngroupedTags.setFormId(nameForm);
+            newUngroupedTags.setCurrentTagId(ungroupedTagsFacade.findMax() + 1);
             ungroupedTagsFacade.create(newUngroupedTags);
 
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
@@ -2020,6 +2026,7 @@ public class RecordDataMB implements Serializable {
             newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
             newUngroupedTags.setFormId(nameForm);
+            newUngroupedTags.setCurrentTagId(ungroupedTagsFacade.findMax() + 1);
             ungroupedTagsFacade.create(newUngroupedTags);
 
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
@@ -2497,6 +2504,7 @@ public class RecordDataMB implements Serializable {
             newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
             newUngroupedTags.setFormId(nameForm);
+            newUngroupedTags.setCurrentTagId(ungroupedTagsFacade.findMax() + 1);
             ungroupedTagsFacade.create(newUngroupedTags);
 
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
@@ -2972,7 +2980,9 @@ public class RecordDataMB implements Serializable {
             newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
             newUngroupedTags.setFormId(nameForm);
+            newUngroupedTags.setCurrentTagId(ungroupedTagsFacade.findMax() + 1);
             ungroupedTagsFacade.create(newUngroupedTags);
+            
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(ungroupedTagsFacade.findMax());
             newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
@@ -4117,6 +4127,7 @@ public class RecordDataMB implements Serializable {
             newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
             newUngroupedTags.setFormId(nameForm);
+            newUngroupedTags.setCurrentTagId(ungroupedTagsFacade.findMax() + 1);
             ungroupedTagsFacade.create(newUngroupedTags);
 
             newTag = new Tags();//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());
@@ -4524,7 +4535,7 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case maltrato_fisico:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
-                                    abuseTypesList.add(new AbuseTypes((short) 17));
+                                    abuseTypesList.add(new AbuseTypes((short) 1));
                                 }
                                 break;
                             case maltrato_psicologico:
@@ -5004,6 +5015,7 @@ public class RecordDataMB implements Serializable {
             newUngroupedTags.setUngroupedTagName(determineTagName(projectsMB.getCurrentProjectName()));
             newUngroupedTags.setUngroupedTagDate(new Date());
             newUngroupedTags.setFormId(nameForm);
+            newUngroupedTags.setCurrentTagId(ungroupedTagsFacade.findMax() + 1);
             ungroupedTagsFacade.create(newUngroupedTags);
 
             newTag = new Tags();//(maxTag, projectsMB.getNameFile(), projectsMB.getNameFile());

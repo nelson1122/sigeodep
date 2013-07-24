@@ -34,33 +34,16 @@ import org.primefaces.model.LazyDataModel;
  */
 @ManagedBean(name = "recordSetsVifMB")
 @SessionScoped
-public class RecordSetsVifMB implements Serializable {
-
-    //--------------------
+public class RecordSetsVifMB implements Serializable {    
     @EJB
     TagsFacade tagsFacade;
     @EJB
-    NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
-    @EJB
-    NonFatalSelfInflictedFacade nonFatalSelfInflictedFacade;
-    @EJB
-    NonFatalTransportFacade nonFatalTransportFacade;
-    @EJB
-    AgeTypesFacade ageTypesFacade;
-    @EJB
-    MunicipalitiesFacade municipalitiesFacade;
-    @EJB
-    DepartamentsFacade departamentsFacade;
-    @EJB
     VictimsFacade victimsFacade;
     @EJB
-    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
+   NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     @EJB
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
-    @EJB
-    InjuriesFacade injuriesFacade;
     private List<Tags> tagsList;
-    private Tags currentTag;
     private NonFatalDomesticViolence currentNonFatalDomesticViolence;
     private RowDataTable[] selectedRowsDataTable;
     private int currentSearchCriteria = 0;

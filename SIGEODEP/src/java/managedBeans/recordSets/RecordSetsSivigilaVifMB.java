@@ -37,22 +37,9 @@ import org.primefaces.model.LazyDataModel;
 @ManagedBean(name = "recordSetsSivigilaVifMB")
 @SessionScoped
 public class RecordSetsSivigilaVifMB implements Serializable {
-
     //--------------------
     @EJB
     TagsFacade tagsFacade;
-    @EJB
-    NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
-    @EJB
-    NonFatalSelfInflictedFacade nonFatalSelfInflictedFacade;
-    @EJB
-    NonFatalTransportFacade nonFatalTransportFacade;
-    @EJB
-    AgeTypesFacade ageTypesFacade;
-    @EJB
-    MunicipalitiesFacade municipalitiesFacade;
-    @EJB
-    DepartamentsFacade departamentsFacade;
     @EJB
     VictimsFacade victimsFacade;
     @EJB
@@ -60,24 +47,18 @@ public class RecordSetsSivigilaVifMB implements Serializable {
     @EJB
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
     @EJB
-    InjuriesFacade injuriesFacade;
-    @EJB
     SivigilaEventFacade sivigilaEventFacade;
     @EJB
     SivigilaVictimFacade sivigilaVictimFacade;
     @EJB
     SivigilaAggresorFacade sivigilaAggresorFacade;
     private List<Tags> tagsList;
-//    private Tags currentTag;
-//    private NonFatalDomesticViolence currentNonFatalDomesticViolence;
     private RowDataTable[] selectedRowsDataTable;
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
     private String name = "";
     private String newName = "";    
-    //private boolean btnRemoveDisabled = true;
     private String data = "-";
-    //private VIFMB vifMB;
     private String exportFileName = "";
     private LazyDataModel<RowDataTable> table_model;
     private ArrayList<RowDataTable> rowsDataTableArrayList;
@@ -96,7 +77,7 @@ public class RecordSetsSivigilaVifMB implements Serializable {
     }
 
     public RecordSetsSivigilaVifMB() {
-        tagsList = new ArrayList<Tags>();
+        tagsList = new ArrayList<>();
         table_model = new LazyRecordSetsDataModel(0, "", FormsEnum.SCC_F_033);
         connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
@@ -113,7 +94,7 @@ public class RecordSetsSivigilaVifMB implements Serializable {
         try {
             //CREO LA LISTA DE TAGS SELECCIONADOS        
             exportFileName = "SIVIGILA VIF - " + initialDateStr + " - " + endDateStr;
-            tagsList = new ArrayList<Tags>();
+            tagsList = new ArrayList<>();
             data = "";
             for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
                 if (i == 0) {
@@ -192,7 +173,7 @@ public class RecordSetsSivigilaVifMB implements Serializable {
             progress = 0;
             tuplesNumber = Integer.parseInt(totalRecords);
             tuplesProcessed = 0;
-            rowsDataTableArrayList = new ArrayList<RowDataTable>();
+            rowsDataTableArrayList = new ArrayList<>();
             ResultSet resultSet = connection.consult(sql);
             while (resultSet.next()) {
                 rowsDataTableArrayList.add(connection.loadSivigilaVifRecord(resultSet.getString(1)));

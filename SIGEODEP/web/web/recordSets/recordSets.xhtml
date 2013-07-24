@@ -5,8 +5,6 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="http://java.sun.com/jsf/facelets">
-
-
     <ui:composition template="../templates/layoutTemplate.xhtml">
         <!--==================================================================-->
         <!--========================CABECERA SCRIPTS==========================-->                    
@@ -122,7 +120,7 @@
                                                     update=":IdForm2:IdDialogNew :IdForm1:message"/>                                           
                                                 <p:commandButton 
                                                     id="IdEdit" 
-                                                    value="Editar"
+                                                    value="Renombrar"
                                                     oncomplete="dialogEdit.show()"                                            
                                                     disabled="#{recordSetsMB.btnEditDisabled}"
                                                     update=":IdForm2:IdDialogEdit :IdForm1:message"/>
@@ -278,7 +276,7 @@
                     <br/>
                     <p:commandButton                                                           
                         oncomplete="dialogJoin.hide()"
-                        actionListener="#{recordSetsMB.splitTags}"                        
+                        actionListener="#{recordSetsMB.joinTags}"                        
                         value="Agrupar"                        
                         update=":IdForm1:IdTabRecordSets:IdSearchTable :IdForm1:IdTabRecordSets:IdSearchTable2 :IdForm1:IdTabRecordSets:IdControls :IdForm1:message"/>                       
                 </p:dialog>
@@ -328,7 +326,7 @@
                     id="IdDialogEdit"
                     modal="true"
                     resizable="false"
-                    header="EDICION DE CONJUNTO" 
+                    header="RENOMBRAR CONJUNTO" 
                     widgetVar="dialogEdit"> 
                     <p:panelGrid >                          
                         <p:row>
