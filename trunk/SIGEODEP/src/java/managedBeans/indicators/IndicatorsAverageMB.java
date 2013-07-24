@@ -2332,10 +2332,23 @@ public class IndicatorsAverageMB {
             posI = 1;// 1 por que faltal nombres de fila                               
             for (int i = 0; i < columNames.size(); i++) {
                 celda = fila.createCell((short) posI);
-                celda.setCellValue(new HSSFRichTextString(matrixResult[i][j]));
+                //celda.setCellValue(new HSSFRichTextString(matrixResult[i][j]));
+                setValueCell(celda,matrixResult[i][j]);
+                
                 posI++;
             }
         }
+    }
+    
+    private void setValueCell(HSSFCell celda, String strValue) {
+        /*determina si el valor a almacenar en una celda del 
+         archivo excell debe ser numerica o cadena*/
+        try {
+            double value = Double.parseDouble(strValue.replace(",", "."));
+            celda.setCellValue(value);
+        } catch (Exception e) {
+            celda.setCellValue(new HSSFRichTextString(strValue));
+        }        
     }
 
     private String createDataTableResult() {

@@ -37,38 +37,15 @@ import org.primefaces.model.LazyDataModel;
 public class RecordSetsSuicideMB implements Serializable {
 
     @EJB
-    NeighborhoodsFacade neighborhoodsFacade;
-    @EJB
-    CountriesFacade countriesFacade;
-    //--------------------
-    @EJB
     TagsFacade tagsFacade;
-    private List<Tags> tagsList;
-    private Tags currentTag;
-    private FatalInjurySuicide currentFatalInjurySuicide;
-    @EJB
-    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
-    @EJB
-    NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
-    @EJB
-    NonFatalSelfInflictedFacade nonFatalSelfInflictedFacade;
-    @EJB
-    NonFatalTransportFacade nonFatalTransportFacade;
-    @EJB
-    AgeTypesFacade ageTypesFacade;
-    @EJB
-    MunicipalitiesFacade municipalitiesFacade;
-    @EJB
-    DepartamentsFacade departamentsFacade;
     @EJB
     VictimsFacade victimsFacade;
     @EJB
     FatalInjurySuicideFacade fatalInjurySuicideFacade;
     @EJB
-    InjuriesFacade injuriesFacade;
-    @EJB
     FatalInjuriesFacade fatalInjuriesFacade;
-    //private RowDataTable selectedRowDataTable;
+    private List<Tags> tagsList;
+    private FatalInjurySuicide currentFatalInjurySuicide;
     private RowDataTable[] selectedRowsDataTable;
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
@@ -97,7 +74,7 @@ public class RecordSetsSuicideMB implements Serializable {
     }
 
     public RecordSetsSuicideMB() {
-        tagsList = new ArrayList<Tags>();
+        tagsList = new ArrayList<>();
         table_model = new LazyRecordSetsDataModel(0, "", FormsEnum.SCC_F_030);
         connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
@@ -122,7 +99,7 @@ public class RecordSetsSuicideMB implements Serializable {
         try {
             //CREO LA LISTA DE TAGS SELECCIONADOS        
             exportFileName = "SUICIDIOS - " + initialDateStr + " - " + endDateStr;
-            tagsList = new ArrayList<Tags>();
+            tagsList = new ArrayList<>();
             data = "";
             for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
                 if (i == 0) {
@@ -201,7 +178,7 @@ public class RecordSetsSuicideMB implements Serializable {
             progress = 0;
             tuplesNumber = Integer.parseInt(totalRecords);
             tuplesProcessed = 0;
-            rowsDataTableArrayList = new ArrayList<RowDataTable>();
+            rowsDataTableArrayList = new ArrayList<>();
             ResultSet resultSet = connection.consult(sql);
             while (resultSet.next()) {
                 rowsDataTableArrayList.add(connection.loadFatalInjurySuicideRecord(resultSet.getString(1)));
@@ -344,22 +321,21 @@ public class RecordSetsSuicideMB implements Serializable {
 
     public void deleteRegistry() {
         if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
-            List<FatalInjurySuicide> fatalInjurySuicideList = new ArrayList<FatalInjurySuicide>();
+            List<FatalInjurySuicide> fatalInjurySuicideList = new ArrayList<>();
             for (int j = 0; j < selectedRowsDataTable.length; j++) {
                 fatalInjurySuicideList.add(fatalInjurySuicideFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
             }
-            if (fatalInjurySuicideList != null) {
-                for (int j = 0; j < fatalInjurySuicideList.size(); j++) {
-                    FatalInjuries auxFatalInjuries = fatalInjurySuicideList.get(j).getFatalInjuries();
-                    Victims auxVictims = fatalInjurySuicideList.get(j).getFatalInjuries().getVictimId();
-                    fatalInjurySuicideFacade.remove(fatalInjurySuicideList.get(j));
-                    fatalInjuriesFacade.remove(auxFatalInjuries);
-                    victimsFacade.remove(auxVictims);
-                }
-            }//deselecciono los controles
+            for (int j = 0; j < fatalInjurySuicideList.size(); j++) {
+                FatalInjuries auxFatalInjuries = fatalInjurySuicideList.get(j).getFatalInjuries();
+                Victims auxVictims = fatalInjurySuicideList.get(j).getFatalInjuries().getVictimId();
+                fatalInjurySuicideFacade.remove(fatalInjurySuicideList.get(j));
+                fatalInjuriesFacade.remove(auxFatalInjuries);
+                victimsFacade.remove(auxVictims);
+            }
+            //deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
-            totalRecords=String.valueOf(Integer.parseInt(totalRecords)-1);
+            totalRecords = String.valueOf(Integer.parseInt(totalRecords) - 1);
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
         } else {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
@@ -428,7 +404,6 @@ public class RecordSetsSuicideMB implements Serializable {
 //    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
 //        this.btnRemoveDisabled = btnRemoveDisabled;
 //    }
-
     public String getData() {
         return data;
     }

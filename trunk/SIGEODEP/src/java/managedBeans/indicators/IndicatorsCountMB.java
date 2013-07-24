@@ -4,6 +4,7 @@
  */
 package managedBeans.indicators;
 
+import beans.util.LineLegendItemSource;
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.VariablesEnum;
 import beans.util.Variable;
@@ -47,6 +48,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.CellRangeAddress;
+import org.apache.poi.ss.usermodel.Cell;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -838,7 +840,7 @@ public class IndicatorsCountMB {
     private Color getColorById(int id) {
         switch (id) {
             case 2:
-                return Color.RED;           
+                return Color.RED;
             case 3:
                 return Color.YELLOW;
             case 4:
@@ -886,7 +888,7 @@ public class IndicatorsCountMB {
                 return new Color(255, 130, 0);//NARANJA                
             case 8:
                 return new Color(128, 0, 128);//MORADO                
-            case 9:                
+            case 9:
                 return new Color(160, 0, 0);//ROJO OSCURO
             case 10:
                 return new Color(0, 0, 160);//AZUL OSCURO
@@ -974,7 +976,7 @@ public class IndicatorsCountMB {
                         li = itemsLeyendaAnterior.get(posLeyend);
                         li.setFillPaint(c);
                         li.setLinePaint(c);
-                        li.setShape(new Rectangle2D.Float(0,0,10,10));
+                        li.setShape(new Rectangle2D.Float(0, 0, 10, 10));
                         li.setOutlinePaint(c);
                         plot.getRenderer().setSeriesPaint(posLeyend, c);//cambio color
                         itemsLeyendaNuevo.add(li);
@@ -1416,16 +1418,15 @@ public class IndicatorsCountMB {
             //nombre fila
             celda = fila.createCell(0);
             celda.setCellValue(new HSSFRichTextString(determineHeader(rowNames.get(j))));
-
             posI = 1;// 1 por que faltal nombres de fila                               
             for (int i = 0; i < columNames.size(); i++) {
                 celda = fila.createCell((short) posI);
-                celda.setCellValue(new HSSFRichTextString(matrixResult[i][j]));
+                setValueCell(celda,matrixResult[i][j]);
                 posI++;
             }
             //total Vertical
             celda = fila.createCell((short) posI);
-            celda.setCellValue(new HSSFRichTextString(totalsVertical.get(j)));
+            setValueCell(celda,totalsVertical.get(j));            
             posI++;
         }
         //nombre fila para totales horizontales
@@ -1435,13 +1436,25 @@ public class IndicatorsCountMB {
         posI = 1;// 1 por que faltal nombres de fila                               
         for (int i = 0; i < totalsHorizontal.size(); i++) {
             celda = fila.createCell((short) posI);
-            celda.setCellValue(new HSSFRichTextString(totalsHorizontal.get(i)));
+            
+            setValueCell(celda,totalsHorizontal.get(i));
             posI++;
         }
         //gran total
         celda = fila.createCell((short) posI);
-        celda.setCellValue(new HSSFRichTextString(String.valueOf(grandTotal)));
-
+        setValueCell(celda,String.valueOf(grandTotal));
+        //celda.setCellValue(new HSSFRichTextString(String.valueOf(grandTotal)));
+    }
+    
+    private void setValueCell(HSSFCell celda, String strValue) {
+        /*determina si el valor a almacenar en una celda del 
+         archivo excell debe ser numerica o cadena*/
+        try {
+            double value = Double.parseDouble(strValue.replace(",", "."));
+            celda.setCellValue(value);
+        } catch (Exception e) {
+            celda.setCellValue(new HSSFRichTextString(strValue));
+        }        
     }
 
     private String createDataTableResult() {
@@ -1936,7 +1949,7 @@ public class IndicatorsCountMB {
                     }
                     sqlReturn = sqlReturn + "       WHEN '55' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
                     sqlReturn = sqlReturn + "       WHEN '56' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
-                    
+
                     sqlReturn = sqlReturn + "   END AS tipo_lesion";
                     break;
                 case age://DETERMINAR EDAD -----------------------          

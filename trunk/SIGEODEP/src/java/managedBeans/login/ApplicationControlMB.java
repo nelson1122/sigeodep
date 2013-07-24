@@ -22,7 +22,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import javax.annotation.Resource;
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
 import javax.faces.context.FacesContext;
@@ -168,8 +167,7 @@ public class ApplicationControlMB {
 
     private void actionsPerHour() {
         /*
-         * Metodo que se ejecuta cada hora para determinar si la son las 1:00 AM
-         * realizar una copia de seguridad
+         * Metodo que se ejecuta cada hora, si es 1:00 AM realiza una copia de seguridad
          */
         Calendar a = new GregorianCalendar();
         TimeZone zonah = java.util.TimeZone.getTimeZone("GMT+1");
@@ -233,7 +231,6 @@ public class ApplicationControlMB {
         } catch (Exception e) {
             System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.getMessage());
         }
-
     }
 
     private boolean backupPGSQL(String serverPath, String fileName) {

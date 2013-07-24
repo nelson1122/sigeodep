@@ -36,32 +36,13 @@ import org.primefaces.model.LazyDataModel;
 @SessionScoped
 public class RecordSetsTransitMB implements Serializable {
 
-    @EJB
-    NeighborhoodsFacade neighborhoodsFacade;
-    @EJB
-    CountriesFacade countriesFacade;
+
     @EJB
     TagsFacade tagsFacade;
-    @EJB
-    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
-    @EJB
-    NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
-    @EJB
-    NonFatalSelfInflictedFacade nonFatalSelfInflictedFacade;
-    @EJB
-    NonFatalTransportFacade nonFatalTransportFacade;
-    @EJB
-    AgeTypesFacade ageTypesFacade;
-    @EJB
-    MunicipalitiesFacade municipalitiesFacade;
-    @EJB
-    DepartamentsFacade departamentsFacade;
     @EJB
     VictimsFacade victimsFacade;
     @EJB
     FatalInjuryTrafficFacade fatalInjuryTrafficFacade;
-    @EJB
-    InjuriesFacade injuriesFacade;
     @EJB
     FatalInjuriesFacade fatalInjuriesFacade;
     private List<Tags> tagsList;
@@ -362,22 +343,21 @@ public class RecordSetsTransitMB implements Serializable {
 
     public void deleteRegistry() {
         if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
-            List<FatalInjuryTraffic> fatalInjuryTrafficList = new ArrayList<FatalInjuryTraffic>();
+            List<FatalInjuryTraffic> fatalInjuryTrafficList = new ArrayList<>();
             for (int j = 0; j < selectedRowsDataTable.length; j++) {
                 fatalInjuryTrafficList.add(fatalInjuryTrafficFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
             }
-            if (fatalInjuryTrafficList != null) {
-                for (int j = 0; j < fatalInjuryTrafficList.size(); j++) {
-                    FatalInjuries auxFatalInjuries = fatalInjuryTrafficList.get(j).getFatalInjuries();
-                    Victims auxVictims = fatalInjuryTrafficList.get(j).getFatalInjuries().getVictimId();
-                    fatalInjuryTrafficFacade.remove(fatalInjuryTrafficList.get(j));
-                    fatalInjuriesFacade.remove(auxFatalInjuries);
-                    victimsFacade.remove(auxVictims);
-                }
-            }//deselecciono los controles
+            for (int j = 0; j < fatalInjuryTrafficList.size(); j++) {
+                FatalInjuries auxFatalInjuries = fatalInjuryTrafficList.get(j).getFatalInjuries();
+                Victims auxVictims = fatalInjuryTrafficList.get(j).getFatalInjuries().getVictimId();
+                fatalInjuryTrafficFacade.remove(fatalInjuryTrafficList.get(j));
+                fatalInjuriesFacade.remove(auxFatalInjuries);
+                victimsFacade.remove(auxVictims);
+            }
+            //deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
-            totalRecords=String.valueOf(Integer.parseInt(totalRecords)-1);
+            totalRecords = String.valueOf(Integer.parseInt(totalRecords) - 1);
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
         } else {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");

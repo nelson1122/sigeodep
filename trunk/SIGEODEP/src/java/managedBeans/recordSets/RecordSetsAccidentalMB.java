@@ -38,34 +38,15 @@ public class RecordSetsAccidentalMB implements Serializable {
 
     //--------------------
     @EJB
-    TagsFacade tagsFacade;
-    private List<Tags> tagsList;
-    private Tags currentTag;
-    private FatalInjuryAccident currentFatalInjuryAccident;
-    @EJB
-    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
-    @EJB
-    NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
-    @EJB
-    NonFatalSelfInflictedFacade nonFatalSelfInflictedFacade;
-    @EJB
-    NonFatalTransportFacade nonFatalTransportFacade;
-    @EJB
-    AgeTypesFacade ageTypesFacade;
-    @EJB
-    MunicipalitiesFacade municipalitiesFacade;
-    @EJB
-    DepartamentsFacade departamentsFacade;
+    TagsFacade tagsFacade;    
     @EJB
     VictimsFacade victimsFacade;
     @EJB
     FatalInjuryAccidentFacade fatalInjuryAccidentFacade;
     @EJB
     FatalInjuriesFacade fatalInjuriesFacade;
-    @EJB
-    NeighborhoodsFacade neighborhoodsFacade;
-    @EJB
-    CountriesFacade countriesFacade;
+    private List<Tags> tagsList;
+    private FatalInjuryAccident currentFatalInjuryAccident;
     private LazyDataModel<RowDataTable> table_model;
     private ArrayList<RowDataTable> rowsDataTableArrayList;
     private RowDataTable[] selectedRowsDataTable;
@@ -74,7 +55,6 @@ public class RecordSetsAccidentalMB implements Serializable {
     private String name = "";
     private String newName = "";
     private boolean btnEditDisabled = true;
-    //private boolean btnRemoveDisabled = true;
     private String data = "-";
     private AccidentalMB accidentalMB;
     private String openForm = "";
@@ -339,22 +319,21 @@ public class RecordSetsAccidentalMB implements Serializable {
 
     public void deleteRegistry() {
         if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
-            List<FatalInjuryAccident> fatalInjuryAccidentList = new ArrayList<FatalInjuryAccident>();
+            List<FatalInjuryAccident> fatalInjuryAccidentList = new ArrayList<>();
             for (int j = 0; j < selectedRowsDataTable.length; j++) {
                 fatalInjuryAccidentList.add(fatalInjuryAccidentFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
             }
-            if (fatalInjuryAccidentList != null) {
-                for (int j = 0; j < fatalInjuryAccidentList.size(); j++) {
-                    FatalInjuries auxFatalInjuries = fatalInjuryAccidentList.get(j).getFatalInjuries();
-                    Victims auxVictims = fatalInjuryAccidentList.get(j).getFatalInjuries().getVictimId();
-                    fatalInjuryAccidentFacade.remove(fatalInjuryAccidentList.get(j));
-                    fatalInjuriesFacade.remove(auxFatalInjuries);
-                    victimsFacade.remove(auxVictims);
-                }
+            for (int j = 0; j < fatalInjuryAccidentList.size(); j++) {
+                FatalInjuries auxFatalInjuries = fatalInjuryAccidentList.get(j).getFatalInjuries();
+                Victims auxVictims = fatalInjuryAccidentList.get(j).getFatalInjuries().getVictimId();
+                fatalInjuryAccidentFacade.remove(fatalInjuryAccidentList.get(j));
+                fatalInjuriesFacade.remove(auxFatalInjuries);
+                victimsFacade.remove(auxVictims);
+
             }//deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
-            totalRecords=String.valueOf(Integer.parseInt(totalRecords)-1);
+            totalRecords = String.valueOf(Integer.parseInt(totalRecords) - 1);
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
         } else {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
@@ -423,7 +402,6 @@ public class RecordSetsAccidentalMB implements Serializable {
 //    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
 //        this.btnRemoveDisabled = btnRemoveDisabled;
 //    }
-
     public String getData() {
         return data;
     }

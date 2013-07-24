@@ -327,6 +327,10 @@ public class ConnectionJdbcMB implements Serializable {
         //CARGO LOS DATOS DE UN REGISTRO DE LESION NO FATAL EN UNA FILA PARA LA TABLA
         FatalInjuryMurder currentFatalInjuryMurder = fatalInjuryMurderFacade.findByIdVictim(idVIctim);
 
+        if (currentFatalInjuryMurder == null) {
+            return null;
+        }
+
         RowDataTable newRowDataTable = new RowDataTable();
         //------------------------------------------------------------
         //SE CARGAN VALORES PARA LA NUEVA VICTIMA
@@ -578,6 +582,9 @@ public class ConnectionJdbcMB implements Serializable {
         //btnRemoveDisabled = true;
         FatalInjuryAccident currentFatalInjuryA = fatalInjuryAccidentFacade.findByIdVictim(idVIctim);
 
+        if (currentFatalInjuryA == null) {
+            return null;
+        }
         RowDataTable newRowDataTable = new RowDataTable();
         //------------------------------------------------------------
         //SE CARGAN VALORES PARA LA NUEVA VICTIMA
@@ -829,6 +836,9 @@ public class ConnectionJdbcMB implements Serializable {
         //btnEditDisabled = true;
         //btnRemoveDisabled = true;
         NonFatalInjuries currentNonFatalI = nonFatalInjuriesFacade.findByIdVictim(idVIctim);
+        if (currentNonFatalI == null) {
+            return null;
+        }
         RowDataTable newRowDataTable = new RowDataTable();
         //------------------------------------------------------------
         //SE CARGAN VALORES PARA LA NUEVA VICTIMA
@@ -1581,6 +1591,9 @@ public class ConnectionJdbcMB implements Serializable {
         //btnRemoveDisabled = true;
 
         FatalInjurySuicide currentFatalInjuryS = fatalInjurySuicideFacade.findByIdVictim(idVIctim);
+        if (currentFatalInjuryS == null) {
+            return null;
+        }
         RowDataTable newRowDataTable = new RowDataTable();
         //------------------------------------------------------------
         //SE CARGAN VALORES PARA LA NUEVA VICTIMA
@@ -1846,6 +1859,9 @@ public class ConnectionJdbcMB implements Serializable {
         //btnEditDisabled = true;
         //btnRemoveDisabled = true;
         FatalInjuryTraffic currentFatalInjuryT = fatalInjuryTrafficFacade.findByIdVictim(idVIctim);
+        if (currentFatalInjuryT == null) {
+            return null;
+        }
         RowDataTable newRowDataTable = new RowDataTable();
         //------------------------------------------------------------
         //SE CARGAN VALORES PARA LA NUEVA VICTIMA
@@ -2156,9 +2172,11 @@ public class ConnectionJdbcMB implements Serializable {
 
     public RowDataTable loadNonFatalDomesticViolenceRecord(String idVIctim) {
         //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
-        //btnEditDisabled = true;
-        //btnRemoveDisabled = true;
+
         NonFatalDomesticViolence currentNonFatalDomesticV = nonFatalDomesticViolenceFacade.findByIdVictim(idVIctim);
+        if (currentNonFatalDomesticV == null) {
+            return null;
+        }
         RowDataTable newRowDataTable = new RowDataTable();
         //------------------------------------------------------------
         //SE CARGAN VALORES PARA LA NUEVA VICTIMA
@@ -2641,6 +2659,9 @@ public class ConnectionJdbcMB implements Serializable {
         //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
 
         NonFatalDomesticViolence currentNonFatalDomesticV = nonFatalDomesticViolenceFacade.findByIdVictim(idVIctim);
+        if (currentNonFatalDomesticV == null) {
+            return null;
+        }
         RowDataTable newRowDataTable = new RowDataTable();
         //------------------------------------------------------------
         //SE CARGAN VALORES PARA LA VICTIMA
@@ -3293,8 +3314,10 @@ public class ConnectionJdbcMB implements Serializable {
      * Devuelve una lista con el resultado del query.
      */
     public List<List> getListFromQuery(int first, int pageSize, int pojectId) {
+        List<List> data = new ArrayList<>();
+        ArrayList<String> newRow;
+        List<String> titles;
         try {
-            List<List> data = new ArrayList<>();
             String query = ""
                     + " SELECT "
                     + "    project_records.project_id, "
@@ -3312,10 +3335,12 @@ public class ConnectionJdbcMB implements Serializable {
                     + "    project_records.record_id"
                     + " LIMIT " + pageSize + " OFFSET " + first;
             ResultSet records = this.consult(query);
-            List<String> titles = getColumns(pojectId);
+            titles = getColumns(pojectId);
+
+
             while (records.next()) {
                 //en la tercer columna esta definido un arreglo con id_columna <=> valor encontrado                
-                ArrayList<String> newRow = new ArrayList<>();
+                newRow = new ArrayList<>();
                 for (int j = 0; j < titles.size(); j++) {
                     newRow.add("");
                 }
@@ -3324,27 +3349,19 @@ public class ConnectionJdbcMB implements Serializable {
                     String splitElement[] = arrayInJava[i].toString().split("<=>");
                     for (int j = 0; j < titles.size(); j++) {
                         if (titles.get(j).compareTo(splitElement[0]) == 0) {
-                            newRow.set(j, splitElement[1]);
+                            if (splitElement.length > 1) {
+                                newRow.set(j, splitElement[1]);
+                            }
                             break;
                         }
                     }
                 }
                 data.add(newRow);
             }
-//            String query = "SELECT * FROM temp ORDER BY id "
-//                    + "LIMIT " + pageSize + " OFFSET " + first;
-//            ResultSet records = this.consult(query);
-//            int ncols = records.getMetaData().getColumnCount();
-//            while (records.next()) {
-//                List record = new ArrayList();
-//                for (int i = 1; i <= ncols; i++) {
-//                    record.add(records.getString(i));
-//                }
-//                data.add(record);
-//            }
             return data;
-        } catch (SQLException ex) {
-
+        } catch (Exception ex) {
+            System.out.println("Error 34 " + ex.getMessage());
+            //System.out.println("\nI:" + estai + "\nJ:" + estaj + "\nTITULOS(" + String.valueOf(titles.size()) + "):" + titles + "\nNEW ROW(" + String.valueOf(newRow.size()) + "):" + newRow);
             return null;
         }
     }

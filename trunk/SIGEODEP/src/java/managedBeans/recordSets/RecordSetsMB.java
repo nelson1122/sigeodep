@@ -34,36 +34,6 @@ public class RecordSetsMB implements Serializable {
 
     @EJB
     TagsFacade tagsFacade;
-    @EJB
-    UngroupedTagsFacade ungroupedTagsFacade;
-    @EJB
-    SivigilaEventFacade sivigilaEventFacade;
-    @EJB
-    SivigilaVictimFacade sivigilaVictimFacade;
-    @EJB
-    SivigilaAggresorFacade sivigilaAggresorFacade;
-    @EJB
-    NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
-    @EJB
-    NonFatalInterpersonalFacade nonFatalInterpersonalFacade;
-    @EJB
-    NonFatalSelfInflictedFacade nonFatalSelfInflictedFacade;
-    @EJB
-    NonFatalTransportFacade nonFatalTransportFacade;
-    @EJB
-    NonFatalInjuriesFacade nonFatalInjuriesFacade;
-    @EJB
-    FatalInjuriesFacade fatalInjuriesFacade;
-    @EJB
-    FatalInjuryTrafficFacade fatalInjuryTrafficFacade;
-    @EJB
-    FatalInjuryAccidentFacade fatalInjuryAccidentFacade;
-    @EJB
-    FatalInjurySuicideFacade fatalInjurySuicideFacade;
-    @EJB
-    FatalInjuryMurderFacade fatalInjuryMurderFacade;
-    @EJB
-    VictimsFacade victimsFacade;
     private RowDataTable[] selectedRowsDataTable;
     private RowDataTable selectedRowsDataTable2;
     private List<RowDataTable> rowDataTableList;
@@ -108,9 +78,8 @@ public class RecordSetsMB implements Serializable {
     private String editFormName = "";
     private int progress = 0;//PROGRESO AL ABRIR CONJUNTOS
     private int progressDelete = 0;//PROGRESO AL ELIMINAR CONJUNTOS
-    private int progressSplit = 0;//PROGRESO AL ELIMINAR CONJUNTOS
-    private int totalRegisters = 0;
-    private int totalProcess = 0;
+    private int progressSplit = 0;//PROGRESO AL ELIMINAR CONJUNTOS    
+    //private int totalProcess = 0;
     private Date initialDateView = new Date();
     private Date endDateView = new Date();
     private Date initialDateDuplicate = new Date();
@@ -159,74 +128,86 @@ public class RecordSetsMB implements Serializable {
 
     public void detectDuplicateClick() {
         FacesContext context = FacesContext.getCurrentInstance();
-        if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {
-            duplicateSetsHomicideMB = (DuplicateSetsHomicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsHomicideMB}", DuplicateSetsHomicideMB.class);
-            duplicateSetsHomicideMB.setInitialDateStr(formato.format(initialDateDuplicate));
-            duplicateSetsHomicideMB.setEndDateStr(formato.format(endDateDuplicate));
-            duplicateSetsHomicideMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsHomicide";
-            openDuplicateSets = "duplicateSetsHomicide";
-        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {
-            duplicateSetsTransitMB = (DuplicateSetsTransitMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsTransitMB}", DuplicateSetsTransitMB.class);
-            duplicateSetsTransitMB.setInitialDateStr(formato.format(initialDateDuplicate));
-            duplicateSetsTransitMB.setEndDateStr(formato.format(endDateDuplicate));
-            duplicateSetsTransitMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsTransit";
-            openDuplicateSets = "duplicateSetsTransit";
-        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {
-            duplicateSetsSuicideMB = (DuplicateSetsSuicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsSuicideMB}", DuplicateSetsSuicideMB.class);
-            duplicateSetsSuicideMB.setInitialDateStr(formato.format(initialDateDuplicate));
-            duplicateSetsSuicideMB.setEndDateStr(formato.format(endDateDuplicate));
-            duplicateSetsSuicideMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsSuicide";
-            openDuplicateSets = "duplicateSetsSuicide";
-        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {
-            duplicateSetsAccidentalMB = (DuplicateSetsAccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsAccidentalMB}", DuplicateSetsAccidentalMB.class);
-            duplicateSetsAccidentalMB.setInitialDateStr(formato.format(initialDateDuplicate));
-            duplicateSetsAccidentalMB.setEndDateStr(formato.format(endDateDuplicate));
-            duplicateSetsAccidentalMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsAccidental";
-            openDuplicateSets = "duplicateSetsAccidental";
-        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {
-            duplicateSetsLcenfMB = (DuplicateSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsLcenfMB}", DuplicateSetsLcenfMB.class);
-            duplicateSetsLcenfMB.setInitialDateStr(formato.format(initialDateDuplicate));
-            duplicateSetsLcenfMB.setEndDateStr(formato.format(endDateDuplicate));
-            duplicateSetsLcenfMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsLCENF";
-            openDuplicateSets = "duplicateSetsLCENF";
-        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0) {
-            duplicateSetsVifMB = (DuplicateSetsVifMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsVifMB}", DuplicateSetsVifMB.class);
-            duplicateSetsVifMB.setInitialDateStr(formato.format(initialDateDuplicate));
-            duplicateSetsVifMB.setEndDateStr(formato.format(endDateDuplicate));
-            duplicateSetsVifMB.loadValues(selectedRowsDataTable);
-            openRecordSets = "recordSetsVIF";
-            openDuplicateSets = "duplicateSetsVIF";
-        } else if (selectedRowsDataTable[0].getColumn3().compareTo("SIVIGILA-VIF") == 0) {
-            boolean enableControls = true;
-            for (int i = 0; i < selectedRowsDataTable.length; i++) {
-                if (selectedRowsDataTable[i].getColumn3().compareTo("SCC-F-033") == 0) {//es tipo vif
-                    duplicateSetsVifMB = (DuplicateSetsVifMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsVifMB}", DuplicateSetsVifMB.class);
-                    duplicateSetsVifMB.setInitialDateStr(formato.format(initialDateDuplicate));
-                    duplicateSetsVifMB.setEndDateStr(formato.format(endDateDuplicate));
-                    duplicateSetsVifMB.loadValues(selectedRowsDataTable);
-                    openRecordSets = "recordSetsVIF";
-                    openDuplicateSets = "duplicateSetsVIF";
-                    enableControls = false;
-                    break;
+        if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
+            if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {
+                duplicateSetsHomicideMB = (DuplicateSetsHomicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsHomicideMB}", DuplicateSetsHomicideMB.class);
+                duplicateSetsHomicideMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                duplicateSetsHomicideMB.setEndDateStr(formato.format(endDateDuplicate));
+                duplicateSetsHomicideMB.loadValues(selectedRowsDataTable);
+                openRecordSets = "recordSetsHomicide";
+                openDuplicateSets = "duplicateSetsHomicide";
+            } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {
+                duplicateSetsTransitMB = (DuplicateSetsTransitMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsTransitMB}", DuplicateSetsTransitMB.class);
+                duplicateSetsTransitMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                duplicateSetsTransitMB.setEndDateStr(formato.format(endDateDuplicate));
+                duplicateSetsTransitMB.loadValues(selectedRowsDataTable);
+                openRecordSets = "recordSetsTransit";
+                openDuplicateSets = "duplicateSetsTransit";
+            } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {
+                duplicateSetsSuicideMB = (DuplicateSetsSuicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsSuicideMB}", DuplicateSetsSuicideMB.class);
+                duplicateSetsSuicideMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                duplicateSetsSuicideMB.setEndDateStr(formato.format(endDateDuplicate));
+                duplicateSetsSuicideMB.loadValues(selectedRowsDataTable);
+                openRecordSets = "recordSetsSuicide";
+                openDuplicateSets = "duplicateSetsSuicide";
+            } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {
+                duplicateSetsAccidentalMB = (DuplicateSetsAccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsAccidentalMB}", DuplicateSetsAccidentalMB.class);
+                duplicateSetsAccidentalMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                duplicateSetsAccidentalMB.setEndDateStr(formato.format(endDateDuplicate));
+                duplicateSetsAccidentalMB.loadValues(selectedRowsDataTable);
+                openRecordSets = "recordSetsAccidental";
+                openDuplicateSets = "duplicateSetsAccidental";
+            } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {
+                duplicateSetsLcenfMB = (DuplicateSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsLcenfMB}", DuplicateSetsLcenfMB.class);
+                duplicateSetsLcenfMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                duplicateSetsLcenfMB.setEndDateStr(formato.format(endDateDuplicate));
+                duplicateSetsLcenfMB.loadValues(selectedRowsDataTable);
+                openRecordSets = "recordSetsLCENF";
+                openDuplicateSets = "duplicateSetsLCENF";
+            } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0 || selectedRowsDataTable[0].getColumn3().compareTo("SIVIGILA-VIF") == 0) {
+                int countTagsSivigila = 0;
+                int countTagsVif = 0;
+                for (int i = 0; i < selectedRowsDataTable.length; i++) {
+                    if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0) {
+                        countTagsVif++;
+                    }
+                    if (selectedRowsDataTable[0].getColumn3().compareTo("SIVIGILA-VIF") == 0) {
+                        countTagsSivigila++;
+                    }
                 }
-            }
-            if (enableControls) {//si solo son sivigila se abre duplicados de sivigila
-                duplicateSetsSivigilaVifMB = (DuplicateSetsSIvigilaVifMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsSivigilaVifMB}", DuplicateSetsSIvigilaVifMB.class);
-                duplicateSetsSivigilaVifMB.setInitialDateStr(formato.format(initialDateDuplicate));
-                duplicateSetsSivigilaVifMB.setEndDateStr(formato.format(endDateDuplicate));
-                duplicateSetsSivigilaVifMB.loadValues(selectedRowsDataTable);
-                openRecordSets = "recordSetsSivigilaVif";
-                openDuplicateSets = "duplicateSetsSivigilaVif";
+                int caso = 0;
+                if (countTagsVif == 0 && countTagsSivigila != 0) {//solo cargas de sivigila
+                    caso = 1;//abre sivigila
+                } else if (countTagsVif != 0 && countTagsSivigila == 0) {//solo cargas de vif
+                    caso = 2;//abre vif
+                } else if (countTagsVif != 0 && countTagsSivigila != 0) {//cargas de vif y de sivigila
+                    caso = 2;//abre vif para los dos
+                }
+                switch (caso) {
+                    case 1://abrir duplicados de SIVIGILA
+                        duplicateSetsSivigilaVifMB = (DuplicateSetsSIvigilaVifMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsSivigilaVifMB}", DuplicateSetsSIvigilaVifMB.class);
+                        duplicateSetsSivigilaVifMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                        duplicateSetsSivigilaVifMB.setEndDateStr(formato.format(endDateDuplicate));
+                        duplicateSetsSivigilaVifMB.loadValues(selectedRowsDataTable);
+                        openRecordSets = "recordSetsSivigilaVif";
+                        openDuplicateSets = "duplicateSetsSivigilaVif";
+                        break;
+                    case 2://abrir duplicados de VIF
+                        duplicateSetsVifMB = (DuplicateSetsVifMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsVifMB}", DuplicateSetsVifMB.class);
+                        duplicateSetsVifMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                        duplicateSetsVifMB.setEndDateStr(formato.format(endDateDuplicate));
+                        duplicateSetsVifMB.loadValues(selectedRowsDataTable);
+                        openRecordSets = "recordSetsVIF";
+                        openDuplicateSets = "duplicateSetsVIF";
+                        break;
+                }
+            } else {
+                openRecordSets = null;
+                openDuplicateSets = null;
+                printMessage(FacesMessage.SEVERITY_WARN, "Alerta", "no se pudo cargar ");
             }
         } else {
-            openRecordSets = null;
-            openDuplicateSets = null;
-            printMessage(FacesMessage.SEVERITY_ERROR, "Nada", "nada");
+            printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar uno o varios conjuntos para iniciar la detección");
         }
         progress = 0;
     }
@@ -726,15 +707,15 @@ public class RecordSetsMB implements Serializable {
                 + " DELETE FROM sivigila_victim where sivigila_victim_id NOT IN "
                 + " (select sivigila_victim_id from sivigila_event) ");
         progressDelete = 40;
-        
+
         //non_fatal_domestic_violence
         connectionJdbcMB.non_query(""
                 + " DELETE FROM non_fatal_domestic_violence where non_fatal_injury_id IN "
                 + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
                 + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
         progressDelete = 80;
-        
-        
+
+
 
         //NON FATAL INJURY
         connectionJdbcMB.non_query(""
@@ -778,20 +759,16 @@ public class RecordSetsMB implements Serializable {
 
     public void ungroupTags() {
         System.out.print("ENTRANDO EN DESAGRUPACION DE CONJUNTOS");
-        //currentTag = null;
-        //List<Tags> tagsListAux = new ArrayList<Tags>();
         boolean continueProcess = true;
         //EXISTAN FILAS SELECCIONADAS
         if (selectedRowsDataTable2 == null) {
             continueProcess = false;
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se deben el conjunto a desagrupar de la lista");
         }
-
         if (continueProcess) {
             try {
                 //crear un nuevo registro en tags
                 String newTagName = determineTagName(selectedRowsDataTable2.getColumn5());
-
                 connectionJdbcMB.non_query(""
                         + " INSERT INTO tags VALUES("
                         + selectedRowsDataTable2.getColumn4()
@@ -800,24 +777,27 @@ public class RecordSetsMB implements Serializable {
                         + ",'' "
                         + ",'" + selectedRowsDataTable2.getColumn6() + "')");
                 //actualizar las victimas                
-
                 connectionJdbcMB.update(
                         "victims",
                         "tag_id = " + selectedRowsDataTable2.getColumn4(),
                         "first_tag_id = " + selectedRowsDataTable2.getColumn4() + "");
-
+                //el nombre del conjunto pudo haber cambiado
                 connectionJdbcMB.update(
                         "ungrouped_tags",
                         "ungrouped_tag_name = '" + newTagName + "'",
                         "ungrouped_tag_id = " + selectedRowsDataTable2.getColumn4() + "");
-
+                //el conjunto ya no esta agrupado por lo cual tiene igual current_tag_id y ungrouped_tag_id
+                connectionJdbcMB.update(
+                        "ungrouped_tags",
+                        "current_tag_id = ungrouped_tag_id",
+                        "ungrouped_tag_id = " + selectedRowsDataTable2.getColumn4() + "");
                 printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Los conjuntos: \""
                         + selectedRowsDataTable2.getColumn2()
                         + "\" y \"" + newTagName + "\" se han desagrupado");
             } catch (Exception e) {
                 printMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
             }
-            totalProcess = 100;
+            //totalProcess = 100;
             selectedRowsDataTable = null;
             selectedRowsDataTable2 = null;
             currentTag = null;
@@ -826,23 +806,33 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
-    public void splitTags() {
+    public void joinTags() {
         System.out.print("ENTRANDO EN UNION DE CONJUNTOS");
         currentTag = null;
         List<Tags> tagsListAux = new ArrayList<>();
         boolean continueProcess = true;
-        //EXISTAN FILAS SELECCIONADAS
-        if (selectedRowsDataTable == null) {
+
+        if (selectedRowsDataTable == null) {//EXISTAN FILAS SELECCIONADAS
             continueProcess = false;
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se deben seleccionar mínimo dos conjuntos a agrupar");
         }
-        //DEBE ESCOGER DOS CONJUNTOS
-        if (continueProcess && selectedRowsDataTable.length < 2) {
+        if (continueProcess && selectedRowsDataTable.length < 2) {//DEBE ESCOGER DOS CONJUNTOS
             continueProcess = false;
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se deben seleccionar mínimo dos conjuntos a agrupar");
+        }
+        if (continueProcess) {//LOS CONJUNtOS SEAN DEL MISMO TIPO
+            String typeTag = selectedRowsDataTable[0].getColumn3();
+            for (int i = 0; i < selectedRowsDataTable.length; i++) {
+                if (selectedRowsDataTable[0].getColumn3().compareTo(typeTag) != 0) {
+                    continueProcess = false;
+                    break;
+                }
+            }
+            if (!continueProcess) {
+                printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los conjuntos deben corresponder a un mimo tipo");
+            }
         }
         if (continueProcess) {
-
             //CREO LA LISTA DE TAGS SELECCIONADOS
             tagsList = new ArrayList<>();
             for (int i = 0; i < selectedRowsDataTable.length; i++) {
@@ -862,16 +852,21 @@ public class RecordSetsMB implements Serializable {
             tagsList.remove(0);
 
             for (int i = 0; i < tagsList.size(); i++) {
-                //Modifico el tag
+                //Modifico tag_id de cada victima
                 connectionJdbcMB.update(
                         "victims",
                         "tag_id = " + String.valueOf(currentTag.getTagId()) + "",
                         "tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + "");
+                //Modifico ungruped_tags.current_tag_id
+                connectionJdbcMB.update(
+                        "ungrouped_tags",
+                        "current_tag_id = " + String.valueOf(currentTag.getTagId()) + "",
+                        "current_tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + "");
                 //elimino de la tabla tags
                 connectionJdbcMB.remove("tags", "tag_id = " + String.valueOf(tagsList.get(i).getTagId()) + "");
             }
             printMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Los conjuntos seleccionados fueron agrupados en uno solo");
-            totalProcess = 100;
+            //totalProcess = 100;
             selectedRowsDataTable = null;
             selectedRowsDataTable2 = null;
             currentTag = null;
@@ -891,37 +886,34 @@ public class RecordSetsMB implements Serializable {
                 if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 8) {
                     defaultSetSelected = true;
                 } else {
-                tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
+                    tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
                 }
             }
             if (defaultSetSelected) {//SE SELECCIONO UN CONJUNTO POR DEFECTO DEL SISTEMA
-                totalProcess = 100;
+                //totalProcess = 100;
                 msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Se ha seleccionado un conjunto por defecto del sistema "
                         + "por lo cual no se puede realizar la eliminación");
-            } else {
-                //DETERMINO EL NUMERO DE REGISTROS 
-                totalProcess = 0;
-
+            } else {    
                 for (int i = 0; i < tagsList.size(); i++) {
                     //ELIMINACION DE CONJUNTOS AGRUPADOS
-                    try {
-                        ResultSet rs = connectionJdbcMB.consult(""
-                                + " SELECT "
-                                + "    tag_id, first_tag_id "
-                                + " FROM "
-                                + "    victims "
-                                + " WHERE "
-                                + "	   tag_id != first_tag_id AND "
-                                + "	   tag_id = " + tagsList.get(i).getTagId().toString()
-                                + " GROUP BY "
-                                + "	   tag_id, first_tag_id "
-                                + " ORDER BY "
-                                + "    tag_id ");
-                        while (rs.next()) {
-                            connectionJdbcMB.remove("ungrouped_tags", "ungrouped_tag_id = " + rs.getString("first_tag_id"));
-                        }
-                    } catch (Exception e) {
-                    }
+//                    try {
+//                        ResultSet rs = connectionJdbcMB.consult(""
+//                                + " SELECT "
+//                                + "    tag_id, first_tag_id "
+//                                + " FROM "
+//                                + "    victims "
+//                                + " WHERE "
+//                                + "	   tag_id != first_tag_id AND "
+//                                + "	   tag_id = " + tagsList.get(i).getTagId().toString()
+//                                + " GROUP BY "
+//                                + "	   tag_id, first_tag_id "
+//                                + " ORDER BY "
+//                                + "    tag_id ");
+//                        while (rs.next()) {
+//                            connectionJdbcMB.remove("ungrouped_tags", "ungrouped_tag_id = " + rs.getString("first_tag_id"));
+//                        }
+//                    } catch (Exception e) {
+//                    }
                     //ELIMINACION DE REGISTROS
                     if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-028") == 0) {
                         removeMurder(tagsList.get(i));
@@ -938,13 +930,14 @@ public class RecordSetsMB implements Serializable {
                     } else if (tagsList.get(i).getFormId().getFormId().compareTo("SIVIGILA-VIF") == 0) {
                         removeSivigilaVif(tagsList.get(i));
                     }
-
-                    tagsFacade.remove(tagsList.get(i));
-                    ungroupedTagsFacade.remove(ungroupedTagsFacade.find(tagsList.get(i).getTagId()));
+                    
+                    connectionJdbcMB.remove("tags", "tag_id = " + tagsList.get(i).getTagId());
+                    connectionJdbcMB.remove("ungrouped_tags", "ungrouped_tag_id = " + tagsList.get(i).getTagId());
+                    connectionJdbcMB.remove("ungrouped_tags", "current_tag_id = " + tagsList.get(i).getTagId());
                 }
                 progressDelete = 100;
                 msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Los conjuntos seleccionados fueron eliminados");
-                totalProcess = 100;
+                //totalProcess = 100;
                 btnEditDisabled = false;
                 btnRemoveDisabled = false;
                 selectedRowsDataTable = null;
@@ -958,27 +951,35 @@ public class RecordSetsMB implements Serializable {
     }
 
     public void updateRegistry() {
-        //determinar consecutivo
-        if (currentTag != null) {
+
+
+        if (selectedRowsDataTable != null) {
             if (editGroupName.trim().length() != 0) {
-                if (tagsFacade.findByName(editGroupName.toUpperCase()) == null) {
-                    editGroupName = editGroupName.toUpperCase();
-                    currentTag.setTagName(editGroupName);
-                    tagsFacade.edit(currentTag);
-                    editGroupName = "";
-                    currentTag = null;
-                    selectedRowsDataTable = null;
-                    createDynamicTable();
-                    createDynamicTable2();
-                    btnEditDisabled = true;
-                    btnRemoveDisabled = true;
-                    btnViewDisabled = true;
-                    msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                } else {
-                    msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "NOMBRE EXISTE", "El nombre ingresado ya esta registrado");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                try {
+                    //deerminar si el nombre ingresado ya existe
+                    ResultSet rs = connectionJdbcMB.consult("SELECT * FROM tags where tag_name LIKE '" + editGroupName.trim().toUpperCase() + "'");
+                    if (rs.next()) {
+                        msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "NOMBRE EXISTE", "El nombre ingresado ya esta registrado");
+                        FacesContext.getCurrentInstance().addMessage(null, msg);
+                    } else {
+                        editGroupName = editGroupName.trim().toUpperCase();
+                        connectionJdbcMB.update("tags", "tag_name = '" + editGroupName + "'", "tag_id = " + selectedRowsDataTable[0].getColumn1());
+                        connectionJdbcMB.update("ungrouped_tags", "ungrouped_tag_name = '" + editGroupName + "'", "ungrouped_tag_id = " + selectedRowsDataTable[0].getColumn1());
+                        editGroupName = "";
+                        currentTag = null;
+                        selectedRowsDataTable = null;
+                        createDynamicTable();
+                        createDynamicTable2();
+                        btnEditDisabled = true;
+                        btnRemoveDisabled = true;
+                        btnViewDisabled = true;
+                        msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
+                        FacesContext.getCurrentInstance().addMessage(null, msg);
+                    }
+
+                } catch (Exception e) {
                 }
+
             } else {
                 msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
@@ -1019,8 +1020,8 @@ public class RecordSetsMB implements Serializable {
         btnViewDisabled = true;
         currentSearchValue = currentSearchValue.toUpperCase();
         rowDataTableList = new ArrayList<>();
-        if (currentSearchValue.trim().length() == 0) {            
-            tagsList = tagsFacade.findCriteria(0,null);
+        if (currentSearchValue.trim().length() == 0) {
+            tagsList = tagsFacade.findCriteria(0, null);
         } else {
             tagsList = tagsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
         }
@@ -1028,7 +1029,7 @@ public class RecordSetsMB implements Serializable {
             msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
-        
+
         for (int i = 0; i < tagsList.size(); i++) {
             rowDataTableList.add(new RowDataTable(
                     tagsList.get(i).getTagId().toString(),
@@ -1043,46 +1044,23 @@ public class RecordSetsMB implements Serializable {
         currentSearchValue2 = currentSearchValue2.toUpperCase();
         rowDataTableList2 = new ArrayList<>();
         try {
-            ResultSet rs2;
             ResultSet rs = connectionJdbcMB.consult(""
-                    + " SELECT "
-                    + "    tag_id, first_tag_id "
-                    + " FROM "
-                    + "    victims "
-                    + " WHERE "
-                    + "	   tag_id != first_tag_id "
-                    + " GROUP BY "
-                    + "	   tag_id, first_tag_id "
-                    + " ORDER BY "
-                    + "    tag_id ");
+                    + " SELECT \n"
+                    + "    *,(SELECT ungrouped_tag_name FROM ungrouped_tags WHERE ungrouped_tag_id = ut.current_tag_id) as current_name \n"
+                    + " FROM \n"
+                    + "    ungrouped_tags as ut\n"
+                    + " WHERE \n"
+                    + "   ut.ungrouped_tag_id != ut.current_tag_id \n"
+                    + " ORDER BY \n"
+                    + "   ut.ungrouped_tag_date DESC");
             while (rs.next()) {
                 RowDataTable newRowDataTable = new RowDataTable();
-                rs2 = connectionJdbcMB.consult(""
-                        + " SELECT "
-                        + "    ungrouped_tag_id, ungrouped_tag_name "
-                        + " FROM "
-                        + "    ungrouped_tags "
-                        + " WHERE "
-                        + "    ungrouped_tag_id = " + rs.getString("tag_id"));
-                rs2.next();
-
-                newRowDataTable.setColumn1(rs2.getString("ungrouped_tag_id"));
-                newRowDataTable.setColumn2(rs2.getString("ungrouped_tag_name"));
-
-
-                rs2 = connectionJdbcMB.consult(""
-                        + " SELECT "
-                        + "    ungrouped_tag_id, ungrouped_tag_name, ungrouped_tag_date, form_id "
-                        + " FROM "
-                        + "    ungrouped_tags "
-                        + " WHERE "
-                        + "    ungrouped_tag_id = " + rs.getString("first_tag_id"));
-                rs2.next();
-                newRowDataTable.setColumn3(rs2.getString("ungrouped_tag_date"));
-                newRowDataTable.setColumn4(rs2.getString("ungrouped_tag_id"));
-                newRowDataTable.setColumn5(rs2.getString("ungrouped_tag_name"));
-                newRowDataTable.setColumn6(rs2.getString("form_id"));
-
+                newRowDataTable.setColumn1(rs.getString("current_tag_id"));
+                newRowDataTable.setColumn2(rs.getString("current_name"));
+                newRowDataTable.setColumn3(rs.getString("ungrouped_tag_date"));
+                newRowDataTable.setColumn4(rs.getString("ungrouped_tag_id"));
+                newRowDataTable.setColumn5(rs.getString("ungrouped_tag_name"));
+                newRowDataTable.setColumn6(rs.getString("form_id"));
                 if (currentSearchValue2 != null && currentSearchValue2.trim().length() != 0) {
                     if (currentSearchCriteria2 == 2) {
                         if (newRowDataTable.getColumn2().toUpperCase().indexOf(currentSearchValue2.toUpperCase()) != -1) {

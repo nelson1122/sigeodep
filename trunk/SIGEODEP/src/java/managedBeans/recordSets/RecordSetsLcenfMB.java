@@ -37,8 +37,6 @@ public class RecordSetsLcenfMB implements Serializable {
     //--------------------
     @EJB
     TagsFacade tagsFacade;
-    private List<Tags> tagsList;
-    private NonFatalInjuries currentNonFatalInjury;
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     @EJB
@@ -48,19 +46,12 @@ public class RecordSetsLcenfMB implements Serializable {
     @EJB
     NonFatalTransportFacade nonFatalTransportFacade;
     @EJB
-    AgeTypesFacade ageTypesFacade;
-    @EJB
-    MunicipalitiesFacade municipalitiesFacade;
-    @EJB
-    DepartamentsFacade departamentsFacade;
-    @EJB
     VictimsFacade victimsFacade;
     @EJB
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
-    @EJB
-    InjuriesFacade injuriesFacade;
+    private List<Tags> tagsList;
+    private NonFatalInjuries currentNonFatalInjury;
     private LazyDataModel<RowDataTable> table_model;
-    //private RowDataTable selectedRowDataTable;
     private ArrayList<RowDataTable> rowsDataTableArrayList;
     private RowDataTable[] selectedRowsDataTable;
     private int currentSearchCriteria = 0;
@@ -68,7 +59,6 @@ public class RecordSetsLcenfMB implements Serializable {
     private String name = "";
     private String newName = "";
     private boolean btnEditDisabled = true;
-    //private boolean btnRemoveDisabled = true;
     private String data = "-";
     private LcenfMB lcenfMB;
     private String openForm = "";

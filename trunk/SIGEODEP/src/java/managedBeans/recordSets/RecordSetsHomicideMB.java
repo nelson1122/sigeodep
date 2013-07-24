@@ -39,7 +39,6 @@ import org.primefaces.model.LazyDataModel;
 @SessionScoped
 public class RecordSetsHomicideMB implements Serializable {
 
-    //--------------------
     @EJB
     TagsFacade tagsFacade;
     @EJB
@@ -56,7 +55,6 @@ public class RecordSetsHomicideMB implements Serializable {
     private String name = "";
     private String newName = "";
     private boolean btnEditDisabled = true;
-    //private boolean btnRemoveDisabled = true;
     private String data = "-";
     private HomicideMB homicideMB;
     private String openForm = "";
@@ -77,7 +75,7 @@ public class RecordSetsHomicideMB implements Serializable {
     }
 
     public RecordSetsHomicideMB() {
-        tagsList = new ArrayList<Tags>();
+        tagsList = new ArrayList<>();
         table_model = new LazyRecordSetsDataModel(0, "", FormsEnum.SCC_F_028);
         connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
@@ -103,7 +101,7 @@ public class RecordSetsHomicideMB implements Serializable {
         try {
             //CREO LA LISTA DE TAGS SELECCIONADOS     
             exportFileName = "HOMICIDIOS - " + initialDateStr + " - " + endDateStr;
-            tagsList = new ArrayList<Tags>();
+            tagsList = new ArrayList<>();
             data = "";
             for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
                 if (i == 0) {
@@ -182,7 +180,7 @@ public class RecordSetsHomicideMB implements Serializable {
             progress = 0;
             tuplesNumber = Integer.parseInt(totalRecords);
             tuplesProcessed = 0;
-            rowsDataTableArrayList = new ArrayList<RowDataTable>();
+            rowsDataTableArrayList = new ArrayList<>();
             ResultSet resultSet = connection.consult(sql);
             while (resultSet.next()) {
                 rowsDataTableArrayList.add(connection.loadFatalInjuryMurderRecord(resultSet.getString(1)));
@@ -319,22 +317,21 @@ public class RecordSetsHomicideMB implements Serializable {
 
     public void deleteRegistry() {
         if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
-            List<FatalInjuryMurder> fatalInjuryMurderList = new ArrayList<FatalInjuryMurder>();
+            List<FatalInjuryMurder> fatalInjuryMurderList = new ArrayList<>();
             for (int j = 0; j < selectedRowsDataTable.length; j++) {
                 fatalInjuryMurderList.add(fatalInjuryMurderFacade.find(Integer.parseInt(selectedRowsDataTable[j].getColumn1())));
             }
-            if (fatalInjuryMurderList != null) {
-                for (int j = 0; j < fatalInjuryMurderList.size(); j++) {
-                    FatalInjuries auxFatalInjuries = fatalInjuryMurderList.get(j).getFatalInjuries();
-                    Victims auxVictims = fatalInjuryMurderList.get(j).getFatalInjuries().getVictimId();
-                    fatalInjuryMurderFacade.remove(fatalInjuryMurderList.get(j));
-                    fatalInjuriesFacade.remove(auxFatalInjuries);
-                    victimsFacade.remove(auxVictims);
-                }
-            }//deselecciono los controles
+            for (int j = 0; j < fatalInjuryMurderList.size(); j++) {
+                FatalInjuries auxFatalInjuries = fatalInjuryMurderList.get(j).getFatalInjuries();
+                Victims auxVictims = fatalInjuryMurderList.get(j).getFatalInjuries().getVictimId();
+                fatalInjuryMurderFacade.remove(fatalInjuryMurderList.get(j));
+                fatalInjuriesFacade.remove(auxFatalInjuries);
+                victimsFacade.remove(auxVictims);
+            }
+            //deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
-            totalRecords=String.valueOf(Integer.parseInt(totalRecords)-1);
+            totalRecords = String.valueOf(Integer.parseInt(totalRecords) - 1);
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
         } else {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
@@ -396,7 +393,6 @@ public class RecordSetsHomicideMB implements Serializable {
 //    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
 //        this.btnRemoveDisabled = btnRemoveDisabled;
 //    }
-
     public String getData() {
         return data;
     }

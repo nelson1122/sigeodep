@@ -4,6 +4,7 @@
  */
 package managedBeans.indicators;
 
+import beans.util.LineLegendItemSource;
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.VariablesEnum;
 import beans.util.Variable;
@@ -11,7 +12,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Paint;
-import java.awt.Shape;
 import java.awt.TexturePaint;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -1978,7 +1978,7 @@ public class IndicatorsPercentageMB {
                 for (int i = 0; i < variablesListData.size(); i++) {
                     if (variablesListData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
                         //if (variablesListData.get(i).getGeneric_table().compareTo("year") == 0) {
-                            //variablesListData.get(i).filterYear(initialDate, endDate);
+                        //variablesListData.get(i).filterYear(initialDate, endDate);
                         //}
                         currentCategoricalValuesList = variablesListData.get(i).getValuesConfigured();
                         currentVariableConfiguring = variablesListData.get(i);
@@ -1989,8 +1989,8 @@ public class IndicatorsPercentageMB {
             }
             //System.out.println("Aqui salio bien: ");
         } catch (Exception e) {
-            System.out.println("Error: "+e.getMessage());
-                    
+            System.out.println("Error: " + e.getMessage());
+
         }
     }
 
@@ -2712,19 +2712,6 @@ public class IndicatorsPercentageMB {
 
     public void postProcessXLS(Object document) {
 
-
-//        if (currentVariablesCrossSelected != null) {
-//            System.err.println("currentVariablesCrossSelected:" + currentVariablesCrossSelected.toString());
-//        } else {
-//            System.err.println("currentVariablesCrossSelected es null");
-//        }
-//        if (variablesCrossList != null) {
-//            System.err.println("variablesCrossList" + variablesCrossList.toString());
-//        } else {
-//            System.err.println("variablesCrossList es null");
-//        }
-
-
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
         HSSFRow fila;
@@ -2737,10 +2724,10 @@ public class IndicatorsPercentageMB {
         int posF;
         int posI;
         int posCol;
-        String strReturn = " ";
-        String value;
-        double totalA;
-        double totalB;
+        //String strReturn = " ";
+        //String value;
+        //double totalA;
+        //double totalB;
         int rowsForRecord = 0;//filas a crear por registro(inicia en 1 por el rowspan cuenta desde 1)        
         boolean nameColumnAdd;
         //-------------------------------------------------------------------
@@ -2852,11 +2839,12 @@ public class IndicatorsPercentageMB {
                 celda = fila.createCell(posCol++);
                 celda.setCellValue("Recuento");
                 for (int i = 0; i < columNames.size(); i++) {
-                    celda = fila.createCell(posCol++);
-                    celda.setCellValue(getMatrixValue("countXY", i, j));
+                    celda = fila.createCell(posCol++);                    
+                    setValueCell(celda, getMatrixValue("countXY", i, j));//celda.setCellValue(getMatrixValue("countXY", i, j));
                 }
                 celda = fila.createCell(posCol++);
-                celda.setCellValue(getMatrixValue("rowTotal", -1, j));
+                setValueCell(celda, getMatrixValue("rowTotal", -1, j));//celda.setCellValue(getMatrixValue("rowTotal", -1, j));
+
             }
             if (showRowPercentage) {
                 fila = sheet.createRow(posRow++);// Se crea una fila dentro de la hoja            
@@ -2870,10 +2858,10 @@ public class IndicatorsPercentageMB {
                 celda.setCellValue("% por fila");
                 for (int i = 0; i < columNames.size(); i++) {
                     celda = fila.createCell(posCol++);
-                    celda.setCellValue(getMatrixValue("rowPercentageXY", i, j));
+                    setValueCell(celda, getMatrixValue("rowPercentageXY", i, j));//celda.setCellValue(getMatrixValue("rowPercentageXY", i, j));
                 }
                 celda = fila.createCell(posCol++);
-                celda.setCellValue(getMatrixValue("percentageOfTotalRowAccordingTotalRow", -1, j));
+                setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingTotalRow", -1, j));//celda.setCellValue(getMatrixValue("percentageOfTotalRowAccordingTotalRow", -1, j));
             }
             if (showColumnPercentage) {
                 fila = sheet.createRow(posRow++);// Se crea una fila dentro de la hoja            
@@ -2888,10 +2876,10 @@ public class IndicatorsPercentageMB {
 
                 for (int i = 0; i < columNames.size(); i++) {
                     celda = fila.createCell(posCol++);
-                    celda.setCellValue(getMatrixValue("columnPercentageXY", i, j));
+                    setValueCell(celda, getMatrixValue("columnPercentageXY", i, j));//celda.setCellValue(getMatrixValue("columnPercentageXY", i, j));
                 }
                 celda = fila.createCell(posCol++);
-                celda.setCellValue(getMatrixValue("percentageOfTotalRowAccordingGrandTotal", -1, j));
+                setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingGrandTotal", -1, j));//celda.setCellValue(getMatrixValue("percentageOfTotalRowAccordingGrandTotal", -1, j));
             }
             if (showTotalPercentage) {
                 fila = sheet.createRow(posRow++);// Se crea una fila dentro de la hoja            
@@ -2905,10 +2893,10 @@ public class IndicatorsPercentageMB {
                 celda.setCellValue("% del total");
                 for (int i = 0; i < columNames.size(); i++) {
                     celda = fila.createCell(posCol++);
-                    celda.setCellValue(getMatrixValue("totalPercentageXY", i, j));
+                    setValueCell(celda, getMatrixValue("totalPercentageXY", i, j));//celda.setCellValue(getMatrixValue("totalPercentageXY", i, j));
                 }
                 celda = fila.createCell(posCol++);
-                celda.setCellValue(getMatrixValue("percentageOfTotalRowAccordingGrandTotal", 0, j));
+                setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingGrandTotal", 0, j));//celda.setCellValue(getMatrixValue("percentageOfTotalRowAccordingGrandTotal", 0, j));
             }
         }
         //---------------------------------------------------------------
@@ -2928,10 +2916,10 @@ public class IndicatorsPercentageMB {
             celda.setCellValue("Recuento");
             for (int i = 0; i < totalsHorizontal.size(); i++) {
                 celda = fila.createCell(posI++);
-                celda.setCellValue(getMatrixValue("columnTotal", i, 0));
+                setValueCell(celda, getMatrixValue("columnTotal", i, 0));//celda.setCellValue(getMatrixValue("columnTotal", i, 0));
             }
             celda = fila.createCell(posI++);
-            celda.setCellValue(String.valueOf(grandTotal));
+            setValueCell(celda, String.valueOf(grandTotal));//celda.setCellValue(String.valueOf(grandTotal));
         }
         if (showRowPercentage) {
             fila = sheet.createRow(posRow++);// Se crea una fila dentro de la hoja            
@@ -2945,10 +2933,10 @@ public class IndicatorsPercentageMB {
             celda.setCellValue("% por fila ");
             for (int i = 0; i < totalsHorizontal.size(); i++) {
                 celda = fila.createCell(posI++);
-                celda.setCellValue(getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0));
+                setValueCell(celda, getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0));//celda.setCellValue(getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0));
             }
             celda = fila.createCell(posI++);
-            celda.setCellValue(getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+            setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));//celda.setCellValue(getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
         }
         if (showColumnPercentage) {
             fila = sheet.createRow(posRow++);// Se crea una fila dentro de la hoja            
@@ -2962,10 +2950,10 @@ public class IndicatorsPercentageMB {
             celda.setCellValue("% por columna");
             for (int i = 0; i < totalsHorizontal.size(); i++) {
                 celda = fila.createCell(posI++);
-                celda.setCellValue(getMatrixValue("percentageOfTotalColumnAccordingTotalColumn", i, 0));
+                setValueCell(celda, getMatrixValue("percentageOfTotalColumnAccordingTotalColumn", i, 0));//celda.setCellValue(getMatrixValue("percentageOfTotalColumnAccordingTotalColumn", i, 0));
             }
             celda = fila.createCell(posI++);
-            celda.setCellValue(getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+            setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));//celda.setCellValue(getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
         }
         if (showTotalPercentage) {
             fila = sheet.createRow(posRow++);// Se crea una fila dentro de la hoja            
@@ -2979,11 +2967,22 @@ public class IndicatorsPercentageMB {
             celda.setCellValue("% del total");
             for (int i = 0; i < totalsHorizontal.size(); i++) {
                 celda = fila.createCell(posI++);
-                celda.setCellValue(getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0));
+                setValueCell(celda, getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0));//celda.setCellValue(getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0));
             }
             celda = fila.createCell(posI++);
-            celda.setCellValue(getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+            setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));//celda.setCellValue(getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
         }
+    }
+
+    private void setValueCell(HSSFCell celda, String strValue) {
+        /*determina si el valor a almacenar en una celda del 
+         archivo excell debe ser numerica o cadena*/
+        try {
+            double value = Double.parseDouble(strValue.replace(",", "."));
+            celda.setCellValue(value);
+        } catch (Exception e) {
+            celda.setCellValue(new HSSFRichTextString(strValue));
+        }        
     }
 
     private String createDataTableResult() {
