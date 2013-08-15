@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -117,7 +118,7 @@ public class IndicatorsPercentageVariationMB {
     private String newConfigurationName = "";
     private Indicators currentIndicator;
     private StreamedContent chartImage;
-    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy",new Locale("ES"));
     private FacesMessage message = null;
     private ConnectionJdbcMB connectionJdbcMB;
     private String titlePage = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
@@ -213,7 +214,7 @@ public class IndicatorsPercentageVariationMB {
     String categoryAxixLabel = "";
     String indicatorName = "";
     DefaultCategoryDataset dataset = null;
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy",new Locale("ES"));
     String serieName = "";
     double increment = 0;
 
@@ -392,14 +393,6 @@ public class IndicatorsPercentageVariationMB {
         //------------------------------------------------------------------
         //SE ELIMINAN LOS VALORES VACIOS
         //------------------------------------------------------------------
-//        sql = ""
-//                + " DELETE FROM \n\r"
-//                + "    indicators_records \n\r"
-//                + " WHERE \n\r"
-//                + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-//                + "    indicator_id = " + currentIndicator.getIndicatorId() + " AND \n\r"
-//                + "    count = 0 ";
-//        connectionJdbcMB.non_query(sql);
         sql = ""
                 + " DELETE FROM \n"
                 + "    indicators_records \n"
@@ -782,7 +775,7 @@ public class IndicatorsPercentageVariationMB {
             cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
             sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
         } catch (SQLException | IOException e) {
-            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -824,7 +817,7 @@ public class IndicatorsPercentageVariationMB {
             cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
             sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
         } catch (SQLException | IOException e) {
-            System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -875,6 +868,7 @@ public class IndicatorsPercentageVariationMB {
                     + "    indicator_id = " + (currentIndicator.getIndicatorId() + incrementTarget) + " \n\r";
             connectionJdbcMB.non_query(sql);//elimino los valores del indicador incrementTarget
         } catch (Exception e) {
+            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -1905,133 +1899,10 @@ public class IndicatorsPercentageVariationMB {
             ChartUtilities.saveChartAsPNG(chartFile, chart, widthGraph, heightGraph);
             chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
         } catch (Exception e) {
+            System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-
-//    private DefaultCategoryDataset createAreaDataSet() {
-//        /*
-//         * creacion del conjunto de datos para generar grafico
-//         */
-//        DefaultCategoryDataset datSet = new DefaultCategoryDataset();
-//        serieName = "";
-//        ResultSet rs;
-//        ResultSet rs2;
-//        ResultSet rs3;
-//        ResultSet rs4;
-//        String sql1;
-//        String sql2;
-//        String sql3;
-//        String sql4;
-//        increment = 0;
-//        try {
-//            sql1 = ""
-//                    + " SELECT \n"
-//                    + "    * \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql1 = sql1 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql1 = sql1 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
-//            }
-//
-//            sql3 = ""
-//                    + " SELECT \n"
-//                    + "    SUM(count) \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql1 = sql1 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql1 = sql1 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
-//            }
-//
-//
-//            sql2 = ""
-//                    + " SELECT \n"
-//                    + "    * \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql2 = sql2 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql2 = sql2 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
-//            }
-//
-//            sql4 = ""
-//                    + " SELECT \n"
-//                    + "    SUM(count) \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql2 = sql2 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql2 = sql2 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
-//            }
-////            if (serieName.length() == 0) {
-////                serieName = "Casos";
-////            }
-//            rs = connectionJdbcMB.consult(sql1 + " ORDER BY record_id");
-//            rs2 = connectionJdbcMB.consult(sql2 + " ORDER BY record_id");
-//            rs3 = connectionJdbcMB.consult(sql3);
-//            rs4 = connectionJdbcMB.consult(sql4);
-//
-//            rs3.next();
-//            rs4.next();
-//
-//            String strDateName;
-//            double valor;
-//            double valor2;
-//            int totalA = rs3.getInt(1);
-//            int totalB = rs4.getInt(1);
-//
-//            while (rs.next()) {
-//                rs2.next();
-//                //if (rs != null && rs2 != null) {
-//                valor = (double) (rs.getInt("count") * 100) / (double) totalA;
-//                valor2 = (double) (rs2.getInt("count") * 100) / (double) totalB;
-//
-//                valor = (valor - valor2) * -1;
-//                if (increment < Math.sqrt(valor * valor)) {
-//                    increment = Math.sqrt(valor * valor);
-//                }
-//                strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1");
-//                datSet.setValue(valor, "-", strDateName);
-//                //}
-//                //dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);
-//            }
-//            increment = increment * 0.005;//grosor linea
-//
-//        } catch (SQLException ex) {
-//            //System.out.println("Error: " + ex.toString());
-//            increment = increment * 0.005;//grosor linea
-//        }
-//        return datSet;
-//    }
+    
     private DefaultCategoryDataset createDataSet() {
         /*
          * creacion del conjunto de datos para generar grafico
@@ -2124,7 +1995,6 @@ public class IndicatorsPercentageVariationMB {
 
             while (rs.next()) {
                 rs2.next();
-                //if (rs != null && rs2 != null) {
                 valor = (double) (rs.getInt("count") * 100) / (double) totalA;
                 valor2 = (double) (rs2.getInt("count") * 100) / (double) totalB;
 
@@ -2133,358 +2003,15 @@ public class IndicatorsPercentageVariationMB {
                     increment = Math.sqrt(valor * valor);
                 }
                 strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1");
-                datSet.setValue(valor, "-", strDateName);
-                //}
-                //dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);
+                datSet.setValue(valor, "-", strDateName);                
             }
             increment = increment * 0.005;//grosor linea
-
         } catch (SQLException ex) {
-            //System.out.println("Error: " + ex.toString());
             increment = increment * 0.005;//grosor linea
         }
         return datSet;
     }
 
-//    private JFreeChart createBarChart() {
-//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-//        serieName = "";
-//        String indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n";
-//        String variablesName = "";
-//        ResultSet rs;
-//        ResultSet rs2;
-//        ResultSet rs3;
-//        ResultSet rs4;
-//        String sql1;
-//        String sql2;
-//        String sql3;
-//        String sql4;
-//        //double increment = 0;
-//        try {
-//            sql1 = ""
-//                    + " SELECT \n"
-//                    + "    * \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql1 = sql1 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//                variablesName = "Desagregado por: " + currentVariableGraph1 + " = " + determineHeader(currentValueGraph1);
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql1 = sql1 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//                variablesName = variablesName + ", " + currentVariableGraph2 + " = " + determineHeader(currentValueGraph2);
-//            }
-//            sql3 = ""
-//                    + " SELECT \n"
-//                    + "    SUM(count) \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql3 = sql3 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql3 = sql3 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//            }
-//
-//            sql2 = ""
-//                    + " SELECT \n"
-//                    + "    * \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql2 = sql2 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql2 = sql2 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//            }
-//
-//            sql4 = ""
-//                    + " SELECT \n"
-//                    + "    SUM(count) \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql4 = sql4 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql4 = sql4 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//            }
-//
-//            rs = connectionJdbcMB.consult(sql1 + " ORDER BY record_id");
-//            rs2 = connectionJdbcMB.consult(sql2 + " ORDER BY record_id");
-//            rs3 = connectionJdbcMB.consult(sql3);
-//            rs4 = connectionJdbcMB.consult(sql4);
-//
-//            rs3.next();
-//            rs4.next();
-//
-//            String strDateName;
-//            double valor;
-//            double valor2;
-//            int totalA = rs3.getInt(1);
-//            int totalB = rs4.getInt(1);
-//
-//            while (rs.next()) {
-//                rs2.next();
-//                //if (rs != null && rs2 != null) {
-//                valor = (double) (rs.getInt("count") * 100) / (double) totalA;
-//                valor2 = (double) (rs2.getInt("count") * 100) / (double) totalB;
-//
-//                valor = (valor - valor2) * -1;
-//                if (increment < Math.sqrt(valor * valor)) {
-//                    increment = Math.sqrt(valor * valor);
-//                }
-//                strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1");
-//                dataset.setValue(valor, "-", strDateName);
-//                //}
-//                //dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);
-//            }
-//            increment = increment * 0.005;//grosor linea
-//
-//        } catch (SQLException ex) {
-//            //System.out.println("Error: " + ex.toString());
-//            increment = increment * 0.005;//grosor linea
-//        }
-//
-//        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
-//
-//        indicatorName = indicatorName + variablesName + "\n"
-//                + "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\n"
-//                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")";
-//
-//        final JFreeChart chart = ChartFactory.createBarChart(
-//                indicatorName, // chart title
-//                "Fecha", // domain axis label
-//                "Value", // range axis label
-//                dataset, // data
-//                PlotOrientation.VERTICAL, // orientation
-//                false, // include legend
-//                true, // tooltips
-//                false // urls
-//                );
-//
-//        chart.setBackgroundPaint(Color.white);
-//        chart.getTitle().setPaint(new Color(50, 50, 50));
-//        chart.getTitle().setFont(new Font("SanSerif", Font.BOLD, 15));
-//        final CategoryPlot plot = chart.getCategoryPlot();
-//        //plot.setForegroundAlpha(0.5f);
-//        ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());//quitar gradiente
-//
-//        IntervalMarker intervalmarker = new IntervalMarker(-1 * increment, increment, Color.yellow);
-//        plot.addRangeMarker(intervalmarker);
-//
-//        plot.setBackgroundPaint(Color.white);
-//        plot.setOutlineVisible(false);//grafico sin borde
-//        
-//        plot.setDomainGridlinesVisible(true);
-//        plot.setDomainGridlinePaint(Color.lightGray);
-//        plot.setRangeGridlinesVisible(true);
-//        plot.setRangeGridlinePaint(Color.lightGray);
-//        
-//
-//        final CategoryAxis domainAxis = plot.getDomainAxis();
-//        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-//
-//        if (showItems) {
-//            CategoryItemRenderer renderer = plot.getRenderer();
-//            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00"));//DecimalFormat("0.00"));
-//            //CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{3}", NumberFormat.getIntegerInstance(), new DecimalFormat("0.00%"));
-//
-//            renderer.setItemLabelGenerator(generator);
-//            renderer.setItemLabelsVisible(true);
-//        }
-//
-//        return chart;
-//    }
-//    private JFreeChart createAreaChart() {
-//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-//        String serieName = "";
-//        ResultSet rs;
-//        ResultSet rs2;
-//        ResultSet rs3;
-//        ResultSet rs4;
-//        String sql1;
-//        String sql2;
-//        String sql3;
-//        String sql4;
-//        double increment = 0;
-//        try {
-//            sql1 = ""
-//                    + " SELECT \n"
-//                    + "    * \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql1 = sql1 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql1 = sql1 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
-//            }
-//
-//            sql3 = ""
-//                    + " SELECT \n"
-//                    + "    SUM(count) \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql1 = sql1 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql1 = sql1 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
-//            }
-//
-//
-//            sql2 = ""
-//                    + " SELECT \n"
-//                    + "    * \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql2 = sql2 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql2 = sql2 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
-//            }
-//
-//            sql4 = ""
-//                    + " SELECT \n"
-//                    + "    SUM(count) \n"
-//                    + " FROM \n"
-//                    + "    indicators_records \n"
-//                    + " WHERE \n"
-//                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + "  \n";
-//            if (currentVariableGraph1 != null && currentVariableGraph1.length() != 0) {
-//                sql2 = sql2 + " AND column_2 LIKE '" + currentValueGraph1 + "' ";
-//                serieName = "\n" + currentVariableGraph1 + " es " + currentValueGraph1;
-//            }
-//            if (currentVariableGraph2 != null && currentVariableGraph2.length() != 0) {
-//                sql2 = sql2 + " AND column_3 LIKE '" + currentValueGraph2 + "' ";
-//                serieName = serieName + " - " + currentVariableGraph2 + " es " + currentValueGraph2;
-//            }
-////            if (serieName.length() == 0) {
-////                serieName = "Casos";
-////            }
-//            rs = connectionJdbcMB.consult(sql1 + " ORDER BY record_id");
-//            rs2 = connectionJdbcMB.consult(sql2 + " ORDER BY record_id");
-//            rs3 = connectionJdbcMB.consult(sql3);
-//            rs4 = connectionJdbcMB.consult(sql4);
-//
-//            rs3.next();
-//            rs4.next();
-//
-//            String strDateName;
-//            double valor;
-//            double valor2;
-//            int totalA = rs3.getInt(1);
-//            int totalB = rs4.getInt(1);
-//
-//            while (rs.next()) {
-//                rs2.next();
-//                //if (rs != null && rs2 != null) {
-//                valor = (double) (rs.getInt("count") * 100) / (double) totalA;
-//                valor2 = (double) (rs2.getInt("count") * 100) / (double) totalB;
-//
-//                valor = (valor - valor2) * -1;
-//                if (increment < Math.sqrt(valor * valor)) {
-//                    increment = Math.sqrt(valor * valor);
-//                }
-//                strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1");
-//                dataset.setValue(valor, "-", strDateName);
-//                //}
-//                //dataset.setValue(rs2.getLong("count"), "Rango B", strDateName);
-//            }
-//            increment = increment * 0.005;//grosor linea
-//
-//        } catch (SQLException ex) {
-//            //System.out.println("Error: " + ex.toString());
-//            increment = increment * 0.005;//grosor linea
-//        }
-//
-//        final JFreeChart chart = ChartFactory.createAreaChart(
-//                "Variacion de casos", // chart title
-//                "Fecha", // domain axis label
-//                "Value", // range axis label
-//                dataset, // data
-//                PlotOrientation.VERTICAL, // orientation
-//                true, // include legend
-//                true, // tooltips
-//                false // urls
-//                );
-//
-//        chart.setBackgroundPaint(Color.white);
-//        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
-//        final TextTitle subtitle = new TextTitle(
-//                "Rango A: (" + sdf.format(initialDateA) + " - " + sdf.format(endDateA) + ")\t\n"
-//                + "Rango B: (" + sdf.format(initialDateB) + " - " + sdf.format(endDateB) + ")" + serieName);
-//        subtitle.setFont(new Font("SansSerif", Font.PLAIN, 12));
-//        subtitle.setPosition(RectangleEdge.TOP);
-//        subtitle.setVerticalAlignment(VerticalAlignment.BOTTOM);
-//        chart.addSubtitle(subtitle);
-//
-//        final CategoryPlot plot = chart.getCategoryPlot();
-//        plot.setForegroundAlpha(0.5f);
-//
-//        plot.setBackgroundPaint(Color.lightGray);
-//        plot.setDomainGridlinesVisible(true);
-//        plot.setDomainGridlinePaint(Color.white);
-//        plot.setRangeGridlinesVisible(true);
-//        plot.setRangeGridlinePaint(Color.white);
-//
-//        final CategoryAxis domainAxis = plot.getDomainAxis();
-//        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-//        domainAxis.setLowerMargin(0.0);
-//        domainAxis.setUpperMargin(0.0);
-//        domainAxis.addCategoryLabelToolTip("Type 1", "The first type.");
-//        domainAxis.addCategoryLabelToolTip("Type 2", "The second type.");
-//        domainAxis.addCategoryLabelToolTip("Type 3", "The third type.");
-//
-//        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-//        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-//        rangeAxis.setLabelAngle(0 * Math.PI / 2.0);
-//
-////        NumberAxis xAxis2 = new NumberAxis("Domain Axis 2");
-////        xAxis2.setAutoRangeIncludesZero(false);
-////        plot.setSecondaryDomainAxis(0, xAxis2);
-////        plot.setSecondaryDomainAxisLocation(0, AxisLocation.BOTTOM_OR_LEFT);
-//
-//
-//        if (showItems) {
-//            CategoryItemRenderer renderer = plot.getRenderer();
-//            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00"));//DecimalFormat("0.00"));
-//            renderer.setItemLabelGenerator(generator);
-//            renderer.setItemLabelsVisible(true);
-//        }
-//
-//        return chart;
-//    }
     public void reset() {
         currentVariableConfiguring = null;
         variablesCrossList = new ArrayList<>();
@@ -2540,7 +2067,7 @@ public class IndicatorsPercentageVariationMB {
 
         if (currentTemporalDisaggregation.compareTo("Diaria") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "diaria");
-            sdf_s = new SimpleDateFormat("dd MMM yyyy");
+            sdf_s = new SimpleDateFormat("dd MMM yyyy",new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.add(Calendar.DATE, i);
@@ -2552,7 +2079,7 @@ public class IndicatorsPercentageVariationMB {
         }
         if (currentTemporalDisaggregation.compareTo("Mensual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "mensual");
-            sdf_s = new SimpleDateFormat("MMM yyyy");
+            sdf_s = new SimpleDateFormat("MMM yyyy",new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
@@ -2568,7 +2095,7 @@ public class IndicatorsPercentageVariationMB {
         }
         if (currentTemporalDisaggregation.compareTo("Anual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "anual");
-            sdf_s = new SimpleDateFormat("yyyy");
+            sdf_s = new SimpleDateFormat("yyyy",new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
@@ -2897,7 +2424,7 @@ public class IndicatorsPercentageVariationMB {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error sacando valores de la matriz: " + e.toString());
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.toString());
         }
         return strReturn;
     }
@@ -2981,7 +2508,7 @@ public class IndicatorsPercentageVariationMB {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error sacando valores de la matriz: " + e.toString());
+            System.out.println("Error 6 en " + this.getClass().getName() + ":" + e.toString());
         }
         return strReturn;
     }
@@ -3504,7 +3031,7 @@ public class IndicatorsPercentageVariationMB {
                 diferentTemporalWarning = "La comparacion solo se realizo hasta: " + lastCalculate + " por que el periodo de tiempo en el rangoB es mas largo";
             }
         } catch (SQLException | NumberFormatException e) {
-            System.out.println("Error: " + e.toString());
+            System.out.println("Error 7 en " + this.getClass().getName() + ":" + e.toString());
         }
 
         //---------------------------------------------------------            
@@ -3804,20 +3331,6 @@ public class IndicatorsPercentageVariationMB {
         this.initialValue = initialValue;
     }
 
-//    public boolean isShowTotals() {
-//        return showTotals;
-//    }
-//
-//    public void setShowTotals(boolean showTotals) {
-//        this.showTotals = showTotals;
-//    }
-//    public boolean isShowAll() {
-//        return showAll;
-//    }
-//
-//    public void setShowAll(boolean showAll) {
-//        this.showAll = showAll;
-//    }
     public boolean isRenderedDynamicDataTable() {
         return renderedDynamicDataTable;
     }

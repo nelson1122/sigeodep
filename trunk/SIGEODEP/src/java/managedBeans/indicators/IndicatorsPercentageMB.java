@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -96,7 +97,7 @@ public class IndicatorsPercentageMB {
     private String newConfigurationName = "";
     private Indicators currentIndicator;
     private StreamedContent chartImage;
-    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy",new Locale("ES"));
     private FacesMessage message = null;
     private ConnectionJdbcMB connectionJdbcMB;
     private String titlePage = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
@@ -141,9 +142,14 @@ public class IndicatorsPercentageMB {
     private boolean btnAddCategoricalValueDisabled = true;
     private boolean btnRemoveCategoricalValueDisabled = true;
     private boolean btnRemoveVariableDisabled = true;
-    private boolean showItems = true;
+    
+    int colorId = 0;
+    int typeFill = 0;
+    
     private String sql;//mostrar filas y columnas vacias
     private boolean showCount = false;//mostrar recuento
+    private boolean showFrames = true;
+    private boolean showItems = true;
     private boolean showRowPercentage = true;//mostrar porcentaje por fila
     private boolean showColumnPercentage = false;//mostrar porcentaje por columna
     private boolean showTotalPercentage = false;//mostrar porcentaje del total
@@ -171,7 +177,7 @@ public class IndicatorsPercentageMB {
     String variablesName = "";
     String categoryAxixLabel = "";
     String indicatorName = "";
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy",new Locale("ES"));
     DefaultCategoryDataset defaultDataSet = null;
     DefaultPieDataset pieDataSet = null;
 
@@ -194,19 +200,6 @@ public class IndicatorsPercentageMB {
         }
     }
 
-//    public void loadValuesGraph() {
-//        valuesGraph = new ArrayList<>();
-//        for (int i = 0; i < variablesCrossData.size(); i++) {
-//            if (variablesCrossData.get(i).getName().compareTo(currentVariableGraph) == 0) {
-//                for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {//cargo el combo de valores
-//                    valuesGraph.add(variablesCrossData.get(i).getValuesConfigured().get(j));
-//                    currentValueGraph = valuesGraph.get(0);
-//                }
-//                break;
-//            }
-//        }
-//        createImage();
-//    }
     public void loadValuesGraph() {
         valuesGraph1 = new ArrayList<>();
         valuesGraph2 = new ArrayList<>();
@@ -778,7 +771,7 @@ public class IndicatorsPercentageMB {
 
 
         } catch (SQLException | IOException e) {
-            System.out.println("Error: " + e.toString());
+            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -947,7 +940,7 @@ public class IndicatorsPercentageMB {
             cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
             sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
         } catch (SQLException | IOException e) {
-            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -992,7 +985,7 @@ public class IndicatorsPercentageMB {
             cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
             sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
         } catch (SQLException | IOException e) {
-            System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -1987,10 +1980,8 @@ public class IndicatorsPercentageMB {
                     }
                 }
             }
-            //System.out.println("Aqui salio bien: ");
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-
+            System.out.println("Error 6 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -2136,7 +2127,12 @@ public class IndicatorsPercentageMB {
          * determinar con que color pintar de 99 posibles
          */
         colorId++;
-        int modPos = colorId % 99;
+        int modPos = 0;
+        if (showFrames) {
+            modPos = colorId % 99;
+        }else{
+            modPos = colorId % 20;
+        }
         switch (modPos) {
             case 0:
                 return new Color(255, 0, 0);//ROJO                
@@ -2190,8 +2186,7 @@ public class IndicatorsPercentageMB {
                 return createTexturePaint(getColorById(color1), getColorById(color2));
         }
     }
-    int colorId = 0;
-    int typeFill = 0;
+    
 
     public void createImage() {
         try {//JFreeChart 
@@ -2303,7 +2298,7 @@ public class IndicatorsPercentageMB {
             ChartUtilities.saveChartAsPNG(chartFile, chart, widthGraph, heightGraph);
             chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
         } catch (Exception e) {
-            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 7 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -2548,7 +2543,7 @@ public class IndicatorsPercentageMB {
                         valuesId.add(rs.getString(1));
                     }
                 } catch (Exception e) {
-                    System.out.println("Error 6 en " + this.getClass().getName() + ":" + e.toString());
+                    System.out.println("Error 8 en " + this.getClass().getName() + ":" + e.toString());
                 }
                 break;
         }
@@ -2681,7 +2676,7 @@ public class IndicatorsPercentageMB {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error 7 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 9 en " + this.getClass().getName() + ":" + e.toString());
         }
         return strReturn;
     }
@@ -3333,7 +3328,7 @@ public class IndicatorsPercentageMB {
 //                }
 //            }
         } catch (SQLException ex) {
-            System.out.println("Error: " + ex.toString());
+            System.out.println("Error 10 en " + this.getClass().getName() + ":" + ex.toString());
         }
         return dataset;
     }
@@ -3385,7 +3380,7 @@ public class IndicatorsPercentageMB {
 
             }
         } catch (SQLException ex) {
-            System.out.println("Error: " + ex.toString());
+            System.out.println("Error 11 en " + this.getClass().getName() + ":" + ex.toString());
         }
         return dataset;
     }
@@ -3637,51 +3632,6 @@ public class IndicatorsPercentageMB {
         this.initialValue = initialValue;
     }
 
-//    public boolean isGraphType1() {
-//        return graphType1;
-//    }
-//
-//    public void setGraphType1(boolean graphType1) {
-//        this.graphType1 = graphType1;
-//    }
-//
-//    public boolean isGraphType2() {
-//        return graphType2;
-//    }
-//
-//    public void setGraphType2(boolean graphType2) {
-//        this.graphType2 = graphType2;
-//    }
-//    public String getCurrentValueGraph() {
-//        return currentValueGraph;
-//    }
-//
-//    public void setCurrentValueGraph(String currentValueGraph) {
-//        this.currentValueGraph = currentValueGraph;
-//    }
-//
-//    public String getCurrentVariableGraph() {
-//        return currentVariableGraph;
-//    }
-//
-//    public void setCurrentVariableGraph(String currentVariableGraph) {
-//        this.currentVariableGraph = currentVariableGraph;
-//    }
-//    public List<String> getValuesGraph() {
-//        return valuesGraph;
-//    }
-//
-//    public void setValuesGraph(List<String> valuesGraph) {
-//        this.valuesGraph = valuesGraph;
-//    }
-//
-//    public List<String> getVariablesGraph() {
-//        return variablesGraph;
-//    }
-//
-//    public void setVariablesGraph(List<String> variablesGraph) {
-//        this.variablesGraph = variablesGraph;
-//    }
     public boolean isShowCount() {
         return showCount;
     }
@@ -3848,5 +3798,12 @@ public class IndicatorsPercentageMB {
 
     public void setValuesGraph2(List<String> valuesGraph2) {
         this.valuesGraph2 = valuesGraph2;
+    }
+    public boolean isShowFrames() {
+        return showFrames;
+    }
+
+    public void setShowFrames(boolean showFrames) {
+        this.showFrames = showFrames;
     }
 }

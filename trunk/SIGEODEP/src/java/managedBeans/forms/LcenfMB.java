@@ -40,6 +40,11 @@ public class LcenfMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
 
+    //-------------------
+    @EJB
+    QuadrantsFacade quadrantsFacade;
+    private SelectItem[] quadrantsEvent;
+    private int currentQuadrantEvent = -1;
     //------------------------
     @EJB
     InsuranceFacade insuranceFacade;
@@ -417,10 +422,6 @@ public class LcenfMB implements Serializable {
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
     private LoginMB loginMB;
-    /*
-     * primer funcion que se ejecuta despues del constructor que inicializa
-     * variables y carga la conexion por jdbc
-     */
 
 //    @PostConstruct
 //    private void initialize() {
@@ -510,6 +511,11 @@ public class LcenfMB implements Serializable {
 
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
+        
+        quadrantsEvent = new SelectItem[1];
+        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        currentQuadrantEvent = 0;
+        
         loading = true;
         try {
             //cargo los conjuntos de registros
@@ -1129,6 +1135,30 @@ public class LcenfMB implements Serializable {
             if (currentNonFatalInjury.getInjuryNeighborhoodId() != null) {
                 currentNeighborhoodEventCode = String.valueOf(currentNonFatalInjury.getInjuryNeighborhoodId().getNeighborhoodId());
                 currentNeighborhoodEvent = neighborhoodsFacade.find(currentNonFatalInjury.getInjuryNeighborhoodId().getNeighborhoodId()).getNeighborhoodName();
+                //cargo cuadrantes
+                try {
+                    ResultSet rs = connectionJdbcMB.consult(""
+                            + " SELECT COUNT(*) FROM quadrants WHERE quadrant_id IN "
+                            + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                            + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                    if (rs.next()) {
+                        quadrantsEvent = new SelectItem[rs.getInt(1)];
+                        rs = connectionJdbcMB.consult(""
+                                + " SELECT * FROM quadrants WHERE quadrant_id IN "
+                                + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                                + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                        currentQuadrantEvent = -1;
+                        int pos = 0;
+                        while (rs.next()) {
+                            if (currentQuadrantEvent == -1 && currentNonFatalInjury.getQuadrantId()!=null) {
+                                currentQuadrantEvent = currentNonFatalInjury.getQuadrantId().getQuadrantId();
+                            }
+                            quadrantsEvent[pos] = new SelectItem(rs.getInt("quadrant_id"), rs.getString("quadrant_name"));
+                            pos++;
+                        }
+                    }
+                } catch (Exception e) {
+                }
             }
         } catch (Exception e) {
             currentNeighborhoodEventCode = "";
@@ -2005,11 +2035,17 @@ public class LcenfMB implements Serializable {
                     n.setSeconds(0);
                     newNonFatalInjuries.setInjuryTime(n);
                 }
+
                 if (currentDirectionEvent.trim().length() != 0) {
                     newNonFatalInjuries.setInjuryAddress(currentDirectionEvent);
                 }
+
                 if (currentNeighborhoodEventCode.trim().length() != 0) {
                     newNonFatalInjuries.setInjuryNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(currentNeighborhoodEventCode)));
+                }
+
+                if (currentQuadrantEvent != -1) {
+                    newNonFatalInjuries.setQuadrantId(quadrantsFacade.find(currentQuadrantEvent));
                 }
                 if (currentPlace != 0) {
                     newNonFatalInjuries.setInjuryPlaceId(nonFatalPlacesFacade.find(currentPlace));
@@ -2479,15 +2515,13 @@ public class LcenfMB implements Serializable {
 
                 newVictim.setOthersList(othersList);
 
-
-
-
                 //--------------------------------------------------------------
                 //--------------AUTOCOMPLETAR LOS FORMULARIOS-------------------
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newVictim.getVictimNeighborhoodId() == null) {
                     newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
                 }
+
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newNonFatalInjuries.getInjuryNeighborhoodId() == null) {
                     newNonFatalInjuries.setInjuryNeighborhoodId(neighborhoodsFacade.find((int) 52001));
@@ -2500,6 +2534,7 @@ public class LcenfMB implements Serializable {
                         newNonFatalInjuries.setCheckupDate(newNonFatalInjuries.getInjuryDate());
                     }
                 }
+
                 //SI NO HAY HORA DE CONSULTA PASAR LA DE EVENTO
                 if (newNonFatalInjuries.getCheckupTime() == null) {
                     if (newNonFatalInjuries.getInjuryTime() != null) {
@@ -2521,7 +2556,7 @@ public class LcenfMB implements Serializable {
                         newNonFatalInjuries.setInjuryTime(newNonFatalInjuries.getCheckupTime());
                     }
                 }
-                
+
                 //SI LA HORA DE LA CONSULTA ES 0000 PASAR LA HORA DEL EVENTO A LA DE LA CONSULTA
                 if (newNonFatalInjuries.getCheckupTime() != null) {
                     if (newNonFatalInjuries.getInjuryTime() != null) {
@@ -2534,6 +2569,7 @@ public class LcenfMB implements Serializable {
                         newNonFatalInjuries.setInjuryTime(newNonFatalInjuries.getCheckupTime());
                     }
                 }
+
                 //SI NO HAY DIA DE LA SEMANA DEL EVENTO SE CALCULA
                 if (newNonFatalInjuries.getInjuryDate() != null) {
                     if (newNonFatalInjuries.getInjuryDayOfWeek() == null) {
@@ -2542,7 +2578,6 @@ public class LcenfMB implements Serializable {
                         newNonFatalInjuries.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
                     }
                 }
-
 
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
@@ -2590,7 +2625,7 @@ public class LcenfMB implements Serializable {
                 }
                 //SI EXISTE EDAD Y NO HAY TIPO DE EDAD DETERMINARLA EN AÑOS
                 newVictim.setVictimClass((short) 1);
-                if(newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
+                if (newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
                     newVictim.setVictimNid(null);
                 }
                 //DETERMINAR EL NUMERO DE IDENTIFICACION
@@ -2598,8 +2633,8 @@ public class LcenfMB implements Serializable {
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
                     newVictim.setVictimClass((short) 2);//nn
                     newVictim.setTypeId(null);
-                    int newGenNnId = genNnFacade.findMax() + 1;                    
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = "+newGenNnId+" where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");                    
+                    int newGenNnId = genNnFacade.findMax() + 1;
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 }
 
 
@@ -2629,11 +2664,8 @@ public class LcenfMB implements Serializable {
                 openDialogNew = "";
                 openDialogDelete = "";
 
-
-
                 if (currentNonFatalInjuriId == -1) {//ES UN NUEVO REGISTRO SE DEBE PERSISTIR
                     //System.out.println("guardando nuevo registro");
-
                     newVictim.setTagId(tagsFacade.find(currentTag));
                     newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                     if (currentIntentionality == 1) {
@@ -2722,7 +2754,6 @@ public class LcenfMB implements Serializable {
                     stylePosition = "color: #1471B1;";
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "REGISTRO ACTUALIZADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
-
                 }
                 return true;
             } catch (NumberFormatException | ParseException e) {
@@ -2767,7 +2798,6 @@ public class LcenfMB implements Serializable {
     }
 
     public void saveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
-
         if (saveRegistry()) {
             newForm();
         }
@@ -2811,7 +2841,6 @@ public class LcenfMB implements Serializable {
         } else {
             last();
         }
-
     }
 
     public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
@@ -2996,6 +3025,10 @@ public class LcenfMB implements Serializable {
         currentUseAlcohol = 0;
         currentUseDrugs = 0;
 
+        quadrantsEvent = new SelectItem[1];
+        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        currentQuadrantEvent = 0;
+
         //LESION POR TRANSPOTE
         displayTransport = "none";
         currentTransportTypes = 0;
@@ -3171,7 +3204,7 @@ public class LcenfMB implements Serializable {
                 victimsFacade.remove(currentNonFatalInjury.getVictimId());
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha eliminado el registro");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
-                //System.out.println("registro eliminado");
+                // System.out.println("registro eliminado");
                 noSaveAndGoNew();
                 determinePosition();
             }
@@ -3209,25 +3242,21 @@ public class LcenfMB implements Serializable {
     public void setCIE_1() {
         //funcion para saber que se dio clik sobre la casilla txt de diagnostico 1
         CIE_selected = 1;
-        //loadDiagnoses();
     }
 
     public void setCIE_2() {
         //funcion para saber que se dio clik sobre la casilla txt de diagnostico 2
         CIE_selected = 2;
-        //loadDiagnoses();
     }
 
     public void setCIE_3() {
         //funcion para saber que se dio clik sobre la casilla txt de diagnostico 3
         CIE_selected = 3;
-        //loadDiagnoses();
     }
 
     public void setCIE_4() {
         //funcion para saber que se dio clik sobre la casilla txt de diagnostico 4
         CIE_selected = 4;
-        //loadDiagnoses();
     }
 
     public void determinePosition() {
@@ -3240,9 +3269,9 @@ public class LcenfMB implements Serializable {
             int position = nonFatalInjuriesFacade.findPosition(currentNonFatalInjury.getNonFatalInjuryId(), currentTag);
             currentIdForm = String.valueOf(currentNonFatalInjury.getNonFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
-            openDialogDelete = "dialogDelete.show();";
+            openDialogDelete = "dialogDelete.show();";            
         }
-        //System.out.println("POSICION DETERMINADA: " + currentPosition);
+        //System.out.println("POSICION DETERMINADA: " + currentPosition);        
     }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -3251,7 +3280,7 @@ public class LcenfMB implements Serializable {
     //----------------------------------------------------------------------
     private List<RowDataTable> rowDataTableList;
     private RowDataTable selectedRowDataTable;
-
+    
     public List<RowDataTable> getRowDataTableList() {
         return rowDataTableList;
     }
@@ -4074,6 +4103,30 @@ public class LcenfMB implements Serializable {
         Neighborhoods n = neighborhoodsFacade.findByName(currentNeighborhoodEvent);
         if (n != null) {
             currentNeighborhoodEventCode = String.valueOf(n.getNeighborhoodId());
+            //cargo cuadrantes
+            try {
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " SELECT COUNT(*) FROM quadrants WHERE quadrant_id IN "
+                        + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                        + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                if (rs.next()) {
+                    quadrantsEvent = new SelectItem[rs.getInt(1)];
+                    rs = connectionJdbcMB.consult(""
+                            + " SELECT * FROM quadrants WHERE quadrant_id IN "
+                            + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                            + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                    currentQuadrantEvent = -1;
+                    int pos = 0;
+                    while (rs.next()) {
+                        if (currentQuadrantEvent == -1) {
+                            currentQuadrantEvent = rs.getInt("quadrant_id");
+                        }
+                        quadrantsEvent[pos] = new SelectItem(rs.getInt("quadrant_id"), rs.getString("quadrant_name"));
+                        pos++;
+                    }
+                }
+            } catch (Exception e) {
+            }
         } else {
             currentNeighborhoodEventCode = "";
         }
@@ -6693,5 +6746,21 @@ public class LcenfMB implements Serializable {
 
     public void setTags(SelectItem[] tags) {
         this.tags = tags;
+    }
+
+    public SelectItem[] getQuadrantsEvent() {
+        return quadrantsEvent;
+    }
+
+    public void setQuadrantsEvent(SelectItem[] quadrantsEvent) {
+        this.quadrantsEvent = quadrantsEvent;
+    }
+
+    public int getCurrentQuadrantEvent() {
+        return currentQuadrantEvent;
+    }
+
+    public void setCurrentQuadrantEvent(int currentQuadrantEvent) {
+        this.currentQuadrantEvent = currentQuadrantEvent;
     }
 }

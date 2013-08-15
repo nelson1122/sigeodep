@@ -5137,7 +5137,7 @@ public class RecordDataMB implements Serializable {
                             case tipo_de_identificacion:
                                 newVictim.setTypeId(idTypesFacade.find(Short.parseShort(value)));
                                 break;
-                            case numero_identificacion_victima:
+                            case numero_de_identificacion:
                                 newVictim.setVictimNid(value);
                                 break;
                             case edad_de_la_victima:

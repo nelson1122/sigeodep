@@ -51,9 +51,9 @@ public class RelationshipOfValuesMB implements Serializable {
     private boolean newValueDisabled = true;
     private List<String> valuesDiscarded;
     private List<String> valuesExpected;
-    private List<String> valuesFoundSelectedInRelationValues = new ArrayList<String>();
-    private List<String> valuesRelatedSelectedInRelationValues = new ArrayList<String>();
-    private List<String> valuesDiscardedSelectedInRelationValues = new ArrayList<String>();
+    private List<String> valuesFoundSelectedInRelationValues = new ArrayList<>();
+    private List<String> valuesRelatedSelectedInRelationValues = new ArrayList<>();
+    private List<String> valuesDiscardedSelectedInRelationValues = new ArrayList<>();
     private List<String> valuesFound;
     private List<String> valuesRelated;
     private DamerauLevenshtein damerauLevenshtein = new DamerauLevenshtein();
@@ -64,8 +64,8 @@ public class RelationshipOfValuesMB implements Serializable {
     private RelationGroup currentRelationsGroup;
     private LoginMB loginMB;
     private String variableFoundToModify = "";//valor Encontrado para realizar modificacion en opcion "VER"
-    private List<String> currentValueExpected = new ArrayList<String>();
-    private List<String> currentCategoricalRelatedVariables = new ArrayList<String>();
+    private List<String> currentValueExpected = new ArrayList<>();
+    private List<String> currentCategoricalRelatedVariables = new ArrayList<>();
     private String coincidentNewValue = "";
     private String expectedValuesFilter = "";
     private String discardedValuesFilter = "";
@@ -79,7 +79,7 @@ public class RelationshipOfValuesMB implements Serializable {
     private DinamicTable dinamicTable = new DinamicTable();
     private ConnectionJdbcMB connectionJdbcMB;
     private ProjectsMB projectsMB;
-    private ArrayList<String> selectedRowDataTable = new ArrayList<String>();
+    private ArrayList<String> selectedRowDataTable = new ArrayList<>();
     private String nameTableTemp = "temp";
     private List<String> copyRelationGroupsList;
     private List<String> copyRelationGroup;
@@ -123,8 +123,8 @@ public class RelationshipOfValuesMB implements Serializable {
                 System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
             }
             //recargo la tabla de MoreInfo
-            moreInfoDataTableList = new ArrayList<RowDataTable>();
-            ArrayList<String> titles = new ArrayList<String>();
+            moreInfoDataTableList = new ArrayList<>();
+            ArrayList<String> titles = new ArrayList<>();
             try {
                 rs = connectionJdbcMB.consult(""
                         + " SELECT "
@@ -171,7 +171,7 @@ public class RelationshipOfValuesMB implements Serializable {
                             }
                         }
                     }
-                    ArrayList<String> newRow2 = new ArrayList<String>();
+                    ArrayList<String> newRow2 = new ArrayList<>();
                     newRow2.addAll(Arrays.asList(newRow));
 
                     for (int i = 0; i < titles.size(); i++) {
@@ -226,10 +226,10 @@ public class RelationshipOfValuesMB implements Serializable {
         nameOfValueExpected = "";
         String[] splitValuesRelated;
         currentValueExpected = null;
-        valuesFound = new ArrayList<String>();
-        valuesExpected = new ArrayList<String>();
-        valuesRelated = new ArrayList<String>();
-        valuesDiscarded = new ArrayList<String>();
+        valuesFound = new ArrayList<>();
+        valuesExpected = new ArrayList<>();
+        valuesRelated = new ArrayList<>();
+        valuesDiscarded = new ArrayList<>();
         currentRelationVariables = null;
         if (currentCategoricalRelatedVariables != null && !currentCategoricalRelatedVariables.isEmpty()) {
             splitValuesRelated = currentCategoricalRelatedVariables.get(0).split("->");
@@ -303,28 +303,28 @@ public class RelationshipOfValuesMB implements Serializable {
 
     public void loadCategoricalRelatedVariables() {
 
-        valuesFound = new ArrayList<String>();
-        valuesFoundSelectedInRelationValues = new ArrayList<String>();
+        valuesFound = new ArrayList<>();
+        valuesFoundSelectedInRelationValues = new ArrayList<>();
         foundValuesFilter = "";
 
-        valuesExpected = new ArrayList<String>();
+        valuesExpected = new ArrayList<>();
         expectedValuesFilter = "";
-        currentValueExpected = new ArrayList<String>();//valor esperado                
+        currentValueExpected = new ArrayList<>();//valor esperado                
         nameOfValueExpected = "";
 
-        valuesRelated = new ArrayList<String>();
-        valuesRelatedSelectedInRelationValues = new ArrayList<String>();
+        valuesRelated = new ArrayList<>();
+        valuesRelatedSelectedInRelationValues = new ArrayList<>();
         relatedValuesFilter = "";
 
-        valuesDiscarded = new ArrayList<String>();
-        valuesDiscardedSelectedInRelationValues = new ArrayList<String>();
+        valuesDiscarded = new ArrayList<>();
+        valuesDiscardedSelectedInRelationValues = new ArrayList<>();
         discardedValuesFilter = "";
 
-        currentCategoricalRelatedVariables = new ArrayList<String>();
+        currentCategoricalRelatedVariables = new ArrayList<>();
         currentRelationVariables = null;
         try {
             ResultSet rs;
-            categoricalRelatedVariables = new ArrayList<String>();
+            categoricalRelatedVariables = new ArrayList<>();
             sql = ""
                     + " SELECT \n"
                     + "    relation_variables.name_expected, \n"
@@ -371,16 +371,16 @@ public class RelationshipOfValuesMB implements Serializable {
         nameOfValueExpected = "";
         expectedValuesFilter = "";
         foundValuesFilter = "";
-        categoricalRelatedVariables = new ArrayList<String>();
+        categoricalRelatedVariables = new ArrayList<>();
         currentCategoricalRelatedVariables = null;
-        valuesExpected = new ArrayList<String>();
+        valuesExpected = new ArrayList<>();
         currentValueExpected = null;
-        valuesRelated = new ArrayList<String>();
-        valuesRelatedSelectedInRelationValues = new ArrayList<String>();
-        valuesFound = new ArrayList<String>();
-        valuesFoundSelectedInRelationValues = new ArrayList<String>();
-        valuesDiscarded = new ArrayList<String>();
-        valuesDiscardedSelectedInRelationValues = new ArrayList<String>();
+        valuesRelated = new ArrayList<>();
+        valuesRelatedSelectedInRelationValues = new ArrayList<>();
+        valuesFound = new ArrayList<>();
+        valuesFoundSelectedInRelationValues = new ArrayList<>();
+        valuesDiscarded = new ArrayList<>();
+        valuesDiscardedSelectedInRelationValues = new ArrayList<>();
     }
 
     //----------------------------------------------------------------------
@@ -389,8 +389,8 @@ public class RelationshipOfValuesMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     private void loadDiscardedValues() {
-        valuesDiscardedSelectedInRelationValues = new ArrayList<String>();
-        valuesDiscarded = new ArrayList<String>();
+        valuesDiscardedSelectedInRelationValues = new ArrayList<>();
+        valuesDiscarded = new ArrayList<>();
         try {
             ResultSet rs;
             if (currentRelationVariables != null) {
@@ -416,8 +416,8 @@ public class RelationshipOfValuesMB implements Serializable {
     }
 
     private void loadRelatedValues() {
-        valuesRelatedSelectedInRelationValues = new ArrayList<String>();
-        valuesRelated = new ArrayList<String>();
+        valuesRelatedSelectedInRelationValues = new ArrayList<>();
+        valuesRelated = new ArrayList<>();
         try {
             ResultSet rs;
             if (currentRelationVariables != null) {
@@ -466,7 +466,7 @@ public class RelationshipOfValuesMB implements Serializable {
         /*
          *RETORNA UNA LISTA DE VALORES ENCONTRADOS PARA UNA DETERMINADA RELACION CATEGORICA 
          */
-        ArrayList<String> returnList = new ArrayList<String>();
+        ArrayList<String> returnList = new ArrayList<>();
         if (currentRelationVariables != null) {
             try {
                 sql = ""
@@ -522,12 +522,12 @@ public class RelationshipOfValuesMB implements Serializable {
      * archivo con valores no repetidos
      */
     public void loadFoundValues() {
-        valuesFoundSelectedInRelationValues = new ArrayList<String>();
+        valuesFoundSelectedInRelationValues = new ArrayList<>();
         valuesFound = foundValuesList(true);
         dinamicTable = new DinamicTable();//elimino los datos del dialog coincidentes
         newValueDisabled = true;//elimino los datos del dialog coincidentes
         coincidentNewValue = "";//elimino los datos del dialog coincidentes
-        selectedRowDataTable = new ArrayList<String>();//elimino los datos del dialog coincidentes
+        selectedRowDataTable = new ArrayList<>();//elimino los datos del dialog coincidentes
     }
 
     public ArrayList<String> categoricalList(boolean limit) {
@@ -535,7 +535,7 @@ public class RelationshipOfValuesMB implements Serializable {
          * RETORNA UNA LISTA CON LOS VALORES ESPERADOS PARA UNA RELACION DE VARIABLES
          * CATEGORICA, LIMIT ME INDICA SI LA LISTA DEBE SER LIMITADA
          */
-        ArrayList<String> returnList = new ArrayList<String>();
+        ArrayList<String> returnList = new ArrayList<>();
         try {
             ResultSet resultSetCategory;
             fieldType = remove_v(currentRelationVariables.getFieldType());
@@ -596,7 +596,7 @@ public class RelationshipOfValuesMB implements Serializable {
                 if (limit) {
                     sql = sql + " LIMIT 200 \n";
                 } //System.out.println("030 \n" + sql);
-                returnList = new ArrayList<String>();
+                returnList = new ArrayList<>();
                 resultSetCategory = connectionJdbcMB.consult(sql);
                 String result;
                 while (resultSetCategory.next()) {
@@ -670,9 +670,9 @@ public class RelationshipOfValuesMB implements Serializable {
         /*
          * cargar los valores esperados dependiendo la variable esperada
          */
-        valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
+        valuesExpected = new ArrayList<>();//borro la lista de valores esperados 
         nameOfValueExpected = "";
-        currentValueExpected = new ArrayList<String>();
+        currentValueExpected = new ArrayList<>();
         if (currentRelationVariables != null) {
             fieldType = remove_v(currentRelationVariables.getFieldType());
             switch (DataTypeEnum.convert(fieldType)) {//tipo de relacion
@@ -688,7 +688,7 @@ public class RelationshipOfValuesMB implements Serializable {
          * crear una lista de valores de una determinada columna proveniente del
          * archivo
          */
-        ArrayList<String> array = new ArrayList<String>();
+        ArrayList<String> array = new ArrayList<>();
         try {
             //determino el nombre de la columna
             ResultSet rs = connectionJdbcMB.consult("SELECT " + column + " FROM " + nameTableTemp + "; ");
@@ -752,8 +752,8 @@ public class RelationshipOfValuesMB implements Serializable {
     }
 
     public final void createDynamicTable() {
-        ArrayList<String> titles = new ArrayList<String>();
-        ArrayList<ArrayList<String>> listOfRecords = new ArrayList<ArrayList<String>>();
+        ArrayList<String> titles = new ArrayList<>();
+        ArrayList<ArrayList<String>> listOfRecords = new ArrayList<>();
 
         try {
             if (currentRelationVariables != null) {
@@ -832,7 +832,7 @@ public class RelationshipOfValuesMB implements Serializable {
                                     }
                                 }
                             }
-                            ArrayList<String> newRow2 = new ArrayList<String>();
+                            ArrayList<String> newRow2 = new ArrayList<>();
                             newRow2.addAll(Arrays.asList(newRow));
                             listOfRecords.add(newRow2);
                         }
@@ -851,7 +851,7 @@ public class RelationshipOfValuesMB implements Serializable {
 
     public void changeCopyRelationGroup() {
         //SE CARGAN LAS RELACIONES DE VARIABLES PERTENECIENTES A ESTE CONJUNTO
-        copyRelationsVariablesList = new ArrayList<String>();
+        copyRelationsVariablesList = new ArrayList<>();
         copyRelationVariablesSelected = null;
         List<RelationGroup> relationGroupList = relationGroupFacade.findAll();//buscar si ya existe el nombre
         for (int i = 0; i < relationGroupList.size(); i++) {
@@ -874,10 +874,10 @@ public class RelationshipOfValuesMB implements Serializable {
 
     public void loadRelationsGroups() {
         //CARGAR GRUPO DE RELACIONES EXISTENTES
-        copyRelationGroupsList = new ArrayList<String>();
+        copyRelationGroupsList = new ArrayList<>();
         copyRelationGroup = null;
         copyRelationVariablesFilter = "";
-        copyRelationsVariablesList = new ArrayList<String>();
+        copyRelationsVariablesList = new ArrayList<>();
         copyRelationVariablesSelected = null;
         //btnCopyFrom2Disabled = true;
         if (currentCategoricalRelatedVariables != null && !currentCategoricalRelatedVariables.isEmpty()) {
@@ -1053,7 +1053,7 @@ public class RelationshipOfValuesMB implements Serializable {
                 }
                 loadFoundValues();
                 loadRelatedValues();
-                valuesFoundSelectedInRelationValues = new ArrayList<String>();
+                valuesFoundSelectedInRelationValues = new ArrayList<>();
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Relación de valores creada correctamente"));
             } else {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar uno o varios valores encontrados de la lista"));
@@ -1164,7 +1164,7 @@ public class RelationshipOfValuesMB implements Serializable {
             loadFoundValues();
             loadRelatedValues();
             loadDiscardedValues();
-            valuesRelatedSelectedInRelationValues = new ArrayList<String>();
+            valuesRelatedSelectedInRelationValues = new ArrayList<>();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se eliminaron los valores descartados seleccionados"));
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "SE deben seleccionar las relaciones de valores a eliminar"));

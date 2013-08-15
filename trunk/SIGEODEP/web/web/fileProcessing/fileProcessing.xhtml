@@ -14,7 +14,6 @@
                 .bla div { width: 125px; white-space:nowrap;}
             </style>
             <script type="text/javascript">
-
                 $('*').live("keypress", function(e) {    //NO TOME CONTROL
                     if (e.keyCode === 17) {
                         return false;
@@ -153,6 +152,8 @@
                                     uploadLabel="Subir"                                        
                                     label="Archivo"
                                     sizeLimit="50000000"
+                                    invalidFileMessage="Solo se aceptan archivos xlsx, csv y txt"
+                                    invalidSizeMessage="El tamaño del archivo debe ser inferior a 5MB"
                                     update=":IdForm:message IdNewNameFile"
                                     allowTypes="/(\.|\/)(xlsx|csv|txt)$/">                                        
                                 </p:fileUpload>
@@ -556,8 +557,7 @@
                                             <h:selectManyMenu 
                                                 id="replicateFieldsListBox1" 
                                                 value="#{filterMB.replicate_source}"
-                                                style="height:200px; width: 250px;"
-                                                styleClass="ui-state-focus ui-widget-header">
+                                                style="height:200px; width: 250px;">
                                                 <f:selectItems value="#{filterMB.replicateFields}"/> 
                                             </h:selectManyMenu>
                                         </p:column>
@@ -1295,11 +1295,11 @@
                                     </p:row>
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
-                                            <!-- disabled="# {recordDataMB.btnRegisterDataDisabled}" / -->  
+                                            
                                             <p:commandButton 
                                                 id="IdBtnRegisterData"
                                                 value="REGISTRAR DATOS" 
-
+                                                disabled="#{recordDataMB.btnRegisterDataDisabled}"
                                                 actionListener="#{recordDataMB.btnRegisterDataClick}" 
                                                 onclick="pbAjax.start();
                     startButton2.disable();
@@ -1428,19 +1428,13 @@
                         scrollHeight="330"
                         emptyMessage="Vacio"
                         editable="true">
-                        <p:column style="background-color: #ebf4fb; width:125px;">
+                        <p:column style="background-color: #ebf4fb; width:300px;">
                             <f:facet name="header">
                                 Columna
                             </f:facet>
-                            <h:outputText value="#{fields.columnName}" />
+                            <h:outputText value="#{fields.columnName}"/>
                         </p:column>
-                        <!-- p:column style="width:250px;">
-                            <f:facet name="header">
-                                Valor Actual
-                            </f:facet>
-                            <h:outputText value="# {fields.oldValue}" />
-                        </p:column -->
-                        <p:column headerText="VALOR" style="width:400px">
+                        <p:column headerText="VALOR" style="width:200px">
                             <p:cellEditor>
                                 <f:facet name="output">
                                     <h:outputText value="#{fields.oldValue}" />

@@ -78,6 +78,21 @@
                                 action="accidentClass"/>
                             <p:commandButton 
                                 style="width: 340px;" 
+                                value="COMUNAS" 
+                                actionListener="#{communesVariableMB.reset}"
+                                action="communes"/>
+                            <p:commandButton 
+                                style="width: 340px;" 
+                                value="CORREDORES" 
+                                actionListener="#{corridorsVariableMB.reset}"
+                                action="corridors"/>
+                            <p:commandButton 
+                                style="width: 340px;" 
+                                value="CUADRANTES" 
+                                actionListener="#{quadrantsVariableMB.reset}"
+                                action="quadrants"/>
+                            <p:commandButton 
+                                style="width: 340px;" 
                                 value="DEPARTAMENTOS" 
                                 actionListener="#{departamentsVariableMB.reset}"
                                 action="departaments"/>
@@ -91,6 +106,11 @@
                                 value="DIAGNOSTICO CIE-10" 
                                 actionListener="#{diagnosesVariableMB.reset}"
                                 action="diagnoses"/>
+                            <p:commandButton 
+                                style="width: 340px;" 
+                                value="ESTACIONES" 
+                                actionListener="#{stationsVariableMB.reset}"
+                                action="stations"/>
                             <p:commandButton 
                                 style="width: 340px;" 
                                 value="EVENTOS RELACIONADOS CON EL HECHO" 

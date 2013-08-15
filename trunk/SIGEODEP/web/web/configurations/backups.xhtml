@@ -52,13 +52,11 @@
                                 emptyMessage="No existen copias de seguridad creadas"
                                 scrollable="true"
                                 scrollWidth="730"                                    
-                                pageLinks="3"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                pageLinks="5"
                                 selectionMode="single"
-                                resizableColumns="true">                                
-                                <p:ajax
-                                    event="rowSelect"
-                                    listener="#{backupsMB.load}"                                    
-                                    update=":IdForm2:IdDialogEdit :IdForm1:message" />
+                                resizableColumns="true">                                                                
                                 <p:column headerText="CREACION" width="140">  
                                     #{rowX.column3}  
                                 </p:column>  

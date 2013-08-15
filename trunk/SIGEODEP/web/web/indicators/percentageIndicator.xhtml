@@ -18,20 +18,20 @@
                     var n = 0;
                     var brow = 'mozilla';
                     jQuery.each(jQuery.browser, function(i, val) {
-                        if (val == true) {
+                        if (val === true) {
                             brow = i.toString();
                         }
                     });
 
                     $('.tableHeader').each(function(i) {
                         if (colCount > m) {
-                            if (brow == 'mozilla') {
+                            if (brow === 'mozilla') {
                                 $('#firstTd').css("width", $('.tableFirstCol').innerWidth());//for adjusting first td
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').innerWidth());//for assigning width to table Header div
-                            } else if (brow == 'msie') {
+                            } else if (brow === 'msie') {
                                 $('#firstTd').css("width", $('.tableFirstCol').width());
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').width() - 2);//In IE there is difference of 2 px
-                            } else if (brow == 'safari') {
+                            } else if (brow === 'safari') {
                                 $('#firstTd').css("width", $('.tableFirstCol').width());
                                 $(this).css('width', $('#table_div td:eq(' + m + ')').width());
                             } else {
@@ -42,21 +42,21 @@
                         m++;
                     });
                     $('.tableFirstCol').each(function(i) {
-                        if (brow == 'mozilla') {
+                        if (brow === 'mozilla') {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').outerHeight());//for providing height using scrollable table column height
-                        } else if (brow == 'msie') {
+                        } else if (brow === 'msie') {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').innerHeight() - 2);
                         } else {
                             $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').height());
                         }
                         n++;
                     });
-                }
+                };
                 //function to support scrolling of title and first column
                 fnScroll = function() {
                     $('#divHeader').scrollLeft($('#table_div').scrollLeft());
                     $('#firstcol').scrollTop($('#table_div').scrollTop());
-                }
+                };
                 function showTableResult() {
                     document.getElementById('IdTabView:IdForm:IdPaint').click();
                     fnAdjustTable();
@@ -269,7 +269,7 @@
                                     <p:column styleClass="ui-widget-header">
                                         Tipo de Gráfico
                                     </p:column>
-                                    <p:column>                             
+                                    <p:column  colspan="3">                             
                                         <h:selectOneMenu 
                                             id="IdTypeGraph" value="#{indicatorsPercentageMB.currentTypeGraph}"> 
                                             <f:selectItems value="#{indicatorsPercentageMB.typesGraph}"/>
@@ -309,6 +309,17 @@
                                         </h:selectBooleanCheckbox>
                                     </p:column>
                                     <p:column styleClass="ui-widget-header">
+                                        Tramas
+                                    </p:column>
+                                    <p:column >
+                                        <h:selectBooleanCheckbox value="#{indicatorsPercentageMB.showFrames}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsPercentageMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
+                                    </p:column>
+                                    <p:column styleClass="ui-widget-header">
                                         Filtro 2
                                     </p:column>
                                     <p:column>
@@ -329,7 +340,7 @@
                                     <p:column styleClass="ui-widget-header">
                                         Tamaño
                                     </p:column>
-                                    <p:column colspan="3">
+                                    <p:column colspan="5">
                                         Alto: 
                                         <p:spinner 
                                             value="#{indicatorsPercentageMB.heightGraph}"
@@ -605,7 +616,7 @@
                                 <p:commandButton                                                            
                                     value="Guardar"
                                     style="margin:0;"
-                                    onclick="saveConfigurationDialog.show()"/>  
+                                    onclick="saveConfigurationDialog.show();"/>  
                                 <p:commandButton                                                            
                                     value="Cargar/Eliminar"
                                     style="margin:0;"                    

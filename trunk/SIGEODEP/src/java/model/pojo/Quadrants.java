@@ -5,16 +5,19 @@
 package model.pojo;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -35,7 +38,7 @@ public class Quadrants implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Column(name = "quadrant_id", nullable = false)
-    private Short quadrantId;
+    private Integer quadrantId;
     @Size(max = 2147483647)
     @Column(name = "quadrant_name", length = 2147483647)
     private String quadrantName;
@@ -44,19 +47,23 @@ public class Quadrants implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "geom", length = 2147483647)
     private String geom;
+    @OneToMany(mappedBy = "quadrantId")
+    private List<FatalInjuries> fatalInjuriesList;
+    @OneToMany(mappedBy = "quadrantId")
+    private List<NonFatalInjuries> nonFatalInjuriesList;
 
     public Quadrants() {
     }
 
-    public Quadrants(Short quadrantId) {
+    public Quadrants(Integer quadrantId) {
         this.quadrantId = quadrantId;
     }
 
-    public Short getQuadrantId() {
+    public Integer getQuadrantId() {
         return quadrantId;
     }
 
-    public void setQuadrantId(Short quadrantId) {
+    public void setQuadrantId(Integer quadrantId) {
         this.quadrantId = quadrantId;
     }
 
@@ -102,6 +109,24 @@ public class Quadrants implements Serializable {
             return false;
         }
         return true;
+    }
+    
+    @XmlTransient
+    public List<FatalInjuries> getFatalInjuriesList() {
+        return fatalInjuriesList;
+    }
+
+    public void setFatalInjuriesList(List<FatalInjuries> fatalInjuriesList) {
+        this.fatalInjuriesList = fatalInjuriesList;
+    }
+
+    @XmlTransient
+    public List<NonFatalInjuries> getNonFatalInjuriesList() {
+        return nonFatalInjuriesList;
+    }
+
+    public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
+        this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @Override

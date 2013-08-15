@@ -35,6 +35,11 @@ import model.pojo.*;
 @SessionScoped
 public class VIFMB implements Serializable {
 
+    //-------------------
+    @EJB
+    QuadrantsFacade quadrantsFacade;
+    private SelectItem[] quadrantsEvent;
+    private int currentQuadrantEvent = -1;
     //------------------    
     @EJB
     TagsFacade tagsFacade;
@@ -328,13 +333,18 @@ public class VIFMB implements Serializable {
     public void reset() {
 
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         currentUser = loginMB.getCurrentUser();
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         loading = true;
         save = true;
         stylePosition = "color: #1471B1;";
+        
+        quadrantsEvent = new SelectItem[1];
+        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        currentQuadrantEvent = 0;
+        
         try {
             //cargo los conjuntos de registros
             List<Tags> tagsList = tagsFacade.findAll();
@@ -462,7 +472,7 @@ public class VIFMB implements Serializable {
             searchCriteriaList[0] = new SelectItem(1, "IDENTIFICACION");
             searchCriteriaList[1] = new SelectItem(2, "NOMBRE");
             searchCriteriaList[2] = new SelectItem(3, "CODIGO INTERNO");
-            rowDataTableList = new ArrayList<RowDataTable>();
+            rowDataTableList = new ArrayList<>();
             determinePosition();
             openDialogFirst = "";
             openDialogNext = "";
@@ -835,9 +845,30 @@ public class VIFMB implements Serializable {
             if (currentNonFatalDomesticViolence.getNonFatalInjuries().getInjuryNeighborhoodId() != null) {
                 currentNeighborhoodEventCode = String.valueOf(currentNonFatalDomesticViolence.getNonFatalInjuries().getInjuryNeighborhoodId().getNeighborhoodId());
                 currentNeighborhoodEvent = neighborhoodsFacade.find(currentNonFatalDomesticViolence.getNonFatalInjuries().getInjuryNeighborhoodId().getNeighborhoodId()).getNeighborhoodName();
-            } else {
-                currentNeighborhoodEventCode = "";
-                currentNeighborhoodEvent = "";
+                //cargo cuadrantes
+                try {
+                    ResultSet rs = connectionJdbcMB.consult(""
+                            + " SELECT COUNT(*) FROM quadrants WHERE quadrant_id IN "
+                            + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                            + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                    if (rs.next()) {
+                        quadrantsEvent = new SelectItem[rs.getInt(1)];
+                        rs = connectionJdbcMB.consult(""
+                                + " SELECT * FROM quadrants WHERE quadrant_id IN "
+                                + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                                + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                        currentQuadrantEvent = -1;
+                        int pos = 0;
+                        while (rs.next()) {
+                            if (currentQuadrantEvent == -1 && currentNonFatalDomesticViolence.getNonFatalInjuries().getQuadrantId() != null) {
+                                currentQuadrantEvent = currentNonFatalDomesticViolence.getNonFatalInjuries().getQuadrantId().getQuadrantId();
+                            }
+                            quadrantsEvent[pos] = new SelectItem(rs.getInt("quadrant_id"), rs.getString("quadrant_name"));
+                            pos++;
+                        }
+                    }
+                } catch (Exception e) {
+                }
             }
         } catch (Exception e) {
             currentNeighborhoodEventCode = "";
@@ -1123,7 +1154,7 @@ public class VIFMB implements Serializable {
     }
 
     private boolean validateFields() {
-        validationsErrors = new ArrayList<String>();
+        validationsErrors = new ArrayList<>();
         //---------VALIDAR EL USUARIO TENGA PERMISMOS SUFIENTES
         if (currentNonFatalInjuriId != -1) {//SE ESTA ACTUALIZANDO UN REGISTRO
             if (!loginMB.isPermissionAdministrator()) {
@@ -1262,7 +1293,7 @@ public class VIFMB implements Serializable {
                 }
                 if (currentVulnerableGroup != 0) {
                     VulnerableGroups auxVulnerableGroups = vulnerableGroupsFacade.find(currentVulnerableGroup);
-                    List<VulnerableGroups> vulnerableGroupsList = new ArrayList<VulnerableGroups>();
+                    List<VulnerableGroups> vulnerableGroupsList = new ArrayList<>();
                     vulnerableGroupsList.add(auxVulnerableGroups);
                     newVictim.setVulnerableGroupsList(vulnerableGroupsList);
                     //newVictim.setVulnerableGroupId(vulnerableGroupsFacade.find(currentVulnerableGroup));
@@ -1339,6 +1370,10 @@ public class VIFMB implements Serializable {
                 if (currentNeighborhoodEventCode.trim().length() != 0) {
                     newNonFatalInjuries.setInjuryNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(currentNeighborhoodEventCode)));
                 }
+                //****quadrant_id
+                if (currentQuadrantEvent != -1) {
+                    newNonFatalInjuries.setQuadrantId(quadrantsFacade.find(currentQuadrantEvent));
+                }
                 if (currentPlace != 0) {
                     newNonFatalInjuries.setInjuryPlaceId(nonFatalPlacesFacade.find(currentPlace));
                 }
@@ -1358,9 +1393,9 @@ public class VIFMB implements Serializable {
                 if (currentPercentBurned.trim().length() != 0) {
                     newNonFatalInjuries.setBurnInjuryPercentage(Short.parseShort(currentPercentBurned));
                 }
-                
+
                 newNonFatalInjuries.setInputTimestamp(new Date());
-                
+
                 if (currentMechanisms != 0) {
                     newNonFatalInjuries.setMechanismId(mechanismsFacade.find(currentMechanisms));
                 }
@@ -1392,7 +1427,7 @@ public class VIFMB implements Serializable {
                     newNonFatalDomesticViolence.setSubmittedFormWhereId(nonFatalDataSourcesFromWhereFacade.find(currentFromWhere));
                 }
                 //creo la lista de agresores-----------------------------------
-                List<AggressorTypes> aggressorTypesList = new ArrayList<AggressorTypes>();
+                List<AggressorTypes> aggressorTypesList = new ArrayList<>();
 
                 if (isAG1) {
                     aggressorTypesList.add(aggressorTypesFacade.find((short) 1));
@@ -1427,7 +1462,7 @@ public class VIFMB implements Serializable {
                 newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
 
                 //creo la lista de abusos(tipos de maltrato)-----------------------------------
-                List<AbuseTypes> abuseTypesList = new ArrayList<AbuseTypes>();
+                List<AbuseTypes> abuseTypesList = new ArrayList<>();
 
                 if (isMA1) {
                     abuseTypesList.add(abuseTypesFacade.find((short) 1));
@@ -1456,7 +1491,7 @@ public class VIFMB implements Serializable {
                 newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
 
                 //creo la lista de acciones a realizar-----------------------------------
-                List<ActionsToTake> actionsToTakeList = new ArrayList<ActionsToTake>();
+                List<ActionsToTake> actionsToTakeList = new ArrayList<>();
 
                 if (isAction1) {
                     actionsToTakeList.add(actionsToTakeFacade.find((short) 1));
@@ -1501,7 +1536,7 @@ public class VIFMB implements Serializable {
                 newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
 
                 //-----GUARDAR CAMPOS OTROS----------------
-                List<Others> othersList = new ArrayList<Others>();
+                List<Others> othersList = new ArrayList<>();
                 Others newOther;
                 OthersPK newOtherPK;
 
@@ -1601,11 +1636,11 @@ public class VIFMB implements Serializable {
                 }
 
                 newVictim.setOthersList(othersList);
-                
+
                 //--------------------------------------------------------------
                 //--------------AUTOCOMPLETAR LOS FORMULARIOS-------------------
                 newVictim.setVictimClass((short) 1);
-                if(newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
+                if (newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
                     newVictim.setVictimNid(null);
                 }
                 //DETERMINAR EL NUMERO DE IDENTIFICACION
@@ -1613,8 +1648,8 @@ public class VIFMB implements Serializable {
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
                     newVictim.setVictimClass((short) 2);//nn
                     newVictim.setTypeId(null);
-                    int newGenNnId = genNnFacade.findMax() + 1;                    
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = "+newGenNnId+" where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");                    
+                    int newGenNnId = genNnFacade.findMax() + 1;
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 }
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newVictim.getVictimNeighborhoodId() == null) {
@@ -1667,7 +1702,7 @@ public class VIFMB implements Serializable {
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
                 return true;
-            } catch (Exception e) {
+            } catch (NumberFormatException | ParseException e) {
                 System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
                 FacesContext.getCurrentInstance().addMessage(null, msg);
@@ -1694,15 +1729,15 @@ public class VIFMB implements Serializable {
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setJobId(victim.getJobId());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVulnerableGroupsList(victim.getVulnerableGroupsList());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setEthnicGroupId(victim.getEthnicGroupId());
-            
+
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimTelephone(victim.getVictimTelephone());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimAddress(victim.getVictimAddress());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setVictimNeighborhoodId(victim.getVictimNeighborhoodId());
-                        
+
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setResidenceMunicipality(victim.getResidenceMunicipality());
             currentNonFatalDomesticViolence.getNonFatalInjuries().getVictimId().setResidenceDepartment(victim.getResidenceDepartment());
             //-----GUARDAR CAMPOS OTROS----------------
-            List<Others> othersList = new ArrayList<Others>();
+            List<Others> othersList = new ArrayList<>();
             Others newOther;
             OthersPK newOtherPK;
             for (int i = 0; i < victim.getOthersList().size(); i++) {
@@ -1730,6 +1765,7 @@ public class VIFMB implements Serializable {
 
             currentNonFatalDomesticViolence.getNonFatalInjuries().setInjuryAddress(nonFatalInjurie.getInjuryAddress());
             currentNonFatalDomesticViolence.getNonFatalInjuries().setInjuryNeighborhoodId(nonFatalInjurie.getInjuryNeighborhoodId());
+            currentNonFatalDomesticViolence.getNonFatalInjuries().setQuadrantId(nonFatalInjurie.getQuadrantId());
             currentNonFatalDomesticViolence.getNonFatalInjuries().setInjuryPlaceId(nonFatalInjurie.getInjuryPlaceId());
             currentNonFatalDomesticViolence.getNonFatalInjuries().setActivityId(nonFatalInjurie.getActivityId());
             //newNonFatalInjuries.setIntentionalityId();
@@ -1977,6 +2013,9 @@ public class VIFMB implements Serializable {
         currentMunicipalitie = 1;
         //municipalities = new SelectItem[1];
         //municipalities[0] = new SelectItem(0, "");
+        quadrantsEvent = new SelectItem[1];
+        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        currentQuadrantEvent = 0;
 
         currentDirectionHome = "";
         currentTelephoneHome = "";
@@ -2189,7 +2228,7 @@ public class VIFMB implements Serializable {
     public void clearSearch() {
         currentSearchValue = "";
         currentSearchCriteria = 1;
-        rowDataTableList = new ArrayList<RowDataTable>();
+        rowDataTableList = new ArrayList<>();
 
     }
 
@@ -2202,7 +2241,7 @@ public class VIFMB implements Serializable {
         }
         if (s) {
             try {
-                rowDataTableList = new ArrayList<RowDataTable>();
+                rowDataTableList = new ArrayList<>();
 
                 String sql = "";
                 sql = sql + "SELECT ";
@@ -2261,7 +2300,7 @@ public class VIFMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     public List<String> suggestNeighborhoods(String entered) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             ResultSet rs;
             String sql = ""
@@ -2282,7 +2321,7 @@ public class VIFMB implements Serializable {
     }
 
     public List<String> suggestInsurances(String entered) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             ResultSet rs;
             String sql = ""
@@ -2303,7 +2342,7 @@ public class VIFMB implements Serializable {
     }
 
     public List<String> suggestJobs(String entered) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             ResultSet rs;
             String sql = ""
@@ -2800,6 +2839,30 @@ public class VIFMB implements Serializable {
         Neighborhoods n = neighborhoodsFacade.findByName(currentNeighborhoodEvent);
         if (n != null) {
             currentNeighborhoodEventCode = String.valueOf(n.getNeighborhoodId());
+            //cargo cuadrantes
+            try {
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " SELECT COUNT(*) FROM quadrants WHERE quadrant_id IN "
+                        + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                        + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                if (rs.next()) {
+                    quadrantsEvent = new SelectItem[rs.getInt(1)];
+                    rs = connectionJdbcMB.consult(""
+                            + " SELECT * FROM quadrants WHERE quadrant_id IN "
+                            + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                            + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                    currentQuadrantEvent = -1;
+                    int pos = 0;
+                    while (rs.next()) {
+                        if (currentQuadrantEvent == -1) {
+                            currentQuadrantEvent = rs.getInt("quadrant_id");
+                        }
+                        quadrantsEvent[pos] = new SelectItem(rs.getInt("quadrant_id"), rs.getString("quadrant_name"));
+                        pos++;
+                    }
+                }
+            } catch (Exception e) {
+            }
         } else {
             currentNeighborhoodEventCode = "";
         }
@@ -4483,5 +4546,21 @@ public class VIFMB implements Serializable {
 
     public void setTags(SelectItem[] tags) {
         this.tags = tags;
+    }
+
+    public SelectItem[] getQuadrantsEvent() {
+        return quadrantsEvent;
+    }
+
+    public void setQuadrantsEvent(SelectItem[] quadrantsEvent) {
+        this.quadrantsEvent = quadrantsEvent;
+    }
+
+    public int getCurrentQuadrantEvent() {
+        return currentQuadrantEvent;
+    }
+
+    public void setCurrentQuadrantEvent(int currentQuadrantEvent) {
+        this.currentQuadrantEvent = currentQuadrantEvent;
     }
 }

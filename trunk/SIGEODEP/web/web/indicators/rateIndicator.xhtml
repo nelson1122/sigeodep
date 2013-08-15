@@ -292,7 +292,7 @@
                                     <p:column styleClass="ui-widget-header">
                                         Tipo de Gráfico
                                     </p:column>
-                                    <p:column colspan="2">
+                                    <p:column colspan="3">
                                         <h:selectOneMenu 
                                             id="IdTypeGraph" value="#{indicatorsRateMB.currentTypeGraph}"> 
                                             <f:selectItems value="#{indicatorsRateMB.typesGraph}"/>
@@ -331,14 +331,25 @@
                                     <p:column styleClass="ui-widget-header">
                                         Mostrar Items
                                     </p:column>
-                                    <p:column colspan="2">
+                                    <p:column>
                                         <h:selectBooleanCheckbox value="#{indicatorsRateMB.showItems}" >
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsRateMB.createImage}"
                                                 render="IdImageChart"/>
                                         </h:selectBooleanCheckbox>
-                                    </p:column>                                        
+                                    </p:column>      
+                                    <p:column styleClass="ui-widget-header">
+                                        Tramas
+                                    </p:column>
+                                    <p:column >
+                                        <h:selectBooleanCheckbox value="#{indicatorsRateMB.showFrames}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsRateMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
+                                    </p:column>
                                     <p:column styleClass="ui-widget-header">
                                         Tamaño
                                     </p:column>
@@ -658,7 +669,7 @@
                                 <p:commandButton                                                            
                                     value="Guardar"
                                     style="margin:0;"
-                                    onclick="saveConfigurationDialog.show()"/>  
+                                    onclick="saveConfigurationDialog.show();"/>  
                                 <p:commandButton                                                            
                                     value="Cargar/Eliminar"
                                     style="margin:0;"                    

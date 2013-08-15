@@ -29,9 +29,9 @@ import org.primefaces.model.UploadedFile;
  *
  * @author SANTOS
  */
-@ManagedBean(name = "neighborhoodsVariableMB")
+@ManagedBean(name = "stationsVariableMB")
 @SessionScoped
-public class NeighborhoodsVariableMB implements Serializable {
+public class StationsVariableMB implements Serializable {
 
     /*
      * BARRIOS
@@ -81,7 +81,7 @@ public class NeighborhoodsVariableMB implements Serializable {
     private String newPopuation = "0";
     private String popuation = "0";
 
-    public NeighborhoodsVariableMB() {
+    public StationsVariableMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
@@ -730,10 +730,9 @@ public class NeighborhoodsVariableMB implements Serializable {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
-                    
             for (int i = 0; i < neighborhoodsList.size(); i++) {
                 if (neighborhoodsList.get(i).getNeighborhoodArea() != null) {
-                    if (neighborhoodsList.get(i).getNeighborhoodArea() == 1) {
+                    if (neighborhoodsList.get(i).getNeighborhoodArea() == '1') {
                         type = "ZONA URBANA";
                     } else {
                         type = "ZONA RURAL";

@@ -34,6 +34,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "FatalInjuries.findByAlcoholLevelVictim", query = "SELECT f FROM FatalInjuries f WHERE f.alcoholLevelVictim = :alcoholLevelVictim"),
     @NamedQuery(name = "FatalInjuries.findByCode", query = "SELECT f FROM FatalInjuries f WHERE f.code = :code")})
 public class FatalInjuries implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Column(name = "injury_date")
     @Temporal(TemporalType.DATE)
@@ -67,18 +68,18 @@ public class FatalInjuries implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "code", length = 2147483647)
     private String code;
-    
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "fatalInjuryId")
     private List<CounterpartServiceType> counterpartServiceTypeList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "fatalInjuryId")
     private List<CounterpartInvolvedVehicle> counterpartInvolvedVehicleList;
-    
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "fatalInjuries")
     private FatalInjuryMurder fatalInjuryMurder;
+    @JoinColumn(name = "quadrant_id", referencedColumnName = "quadrant_id")
+    @ManyToOne
+    private Quadrants quadrantId;
     @JoinColumn(name = "victim_id", referencedColumnName = "victim_id")
     @ManyToOne
     private Victims victimId;
-    
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     @ManyToOne
     private Users userId;
@@ -103,198 +104,190 @@ public class FatalInjuries implements Serializable {
     @Size(max = 2147483647)
     @Column(name = "victim_place_of_origin", length = 2147483647)
     private String victimPlaceOfOrigin;
-    
-    
-    
-    
+
     public FatalInjuries() {
     }
 
     public FatalInjuries(Integer fatalInjuryId) {
-	this.fatalInjuryId = fatalInjuryId;
+        this.fatalInjuryId = fatalInjuryId;
     }
 
     public Date getInjuryDate() {
-	return injuryDate;
+        return injuryDate;
     }
 
     public void setInjuryDate(Date injuryDate) {
-	this.injuryDate = injuryDate;
+        this.injuryDate = injuryDate;
     }
 
     public Date getInjuryTime() {
-	return injuryTime;
+        return injuryTime;
     }
 
     public void setInjuryTime(Date injuryTime) {
-	this.injuryTime = injuryTime;
+        this.injuryTime = injuryTime;
     }
 
     public String getInjuryAddress() {
-	return injuryAddress;
+        return injuryAddress;
     }
 
     public void setInjuryAddress(String injuryAddress) {
-	this.injuryAddress = injuryAddress;
+        this.injuryAddress = injuryAddress;
     }
 
     public Integer getInjuryNeighborhoodId() {
-	return injuryNeighborhoodId;
+        return injuryNeighborhoodId;
     }
 
     public void setInjuryNeighborhoodId(Integer injuryNeighborhoodId) {
-	this.injuryNeighborhoodId = injuryNeighborhoodId;
+        this.injuryNeighborhoodId = injuryNeighborhoodId;
     }
 
     public Short getVictimNumber() {
-	return victimNumber;
+        return victimNumber;
     }
 
     public void setVictimNumber(Short victimNumber) {
-	this.victimNumber = victimNumber;
+        this.victimNumber = victimNumber;
     }
 
     public String getInjuryDescription() {
-	return injuryDescription;
+        return injuryDescription;
     }
 
     public void setInjuryDescription(String injuryDescription) {
-	this.injuryDescription = injuryDescription;
+        this.injuryDescription = injuryDescription;
     }
 
     public Date getInputTimestamp() {
-	return inputTimestamp;
+        return inputTimestamp;
     }
 
     public void setInputTimestamp(Date inputTimestamp) {
-	this.inputTimestamp = inputTimestamp;
+        this.inputTimestamp = inputTimestamp;
     }
 
     public String getInjuryDayOfWeek() {
-	return injuryDayOfWeek;
+        return injuryDayOfWeek;
     }
 
     public void setInjuryDayOfWeek(String injuryDayOfWeek) {
-	this.injuryDayOfWeek = injuryDayOfWeek;
+        this.injuryDayOfWeek = injuryDayOfWeek;
     }
 
     public Integer getFatalInjuryId() {
-	return fatalInjuryId;
+        return fatalInjuryId;
     }
 
     public void setFatalInjuryId(Integer fatalInjuryId) {
-	this.fatalInjuryId = fatalInjuryId;
+        this.fatalInjuryId = fatalInjuryId;
     }
 
     public Short getAlcoholLevelVictim() {
-	return alcoholLevelVictim;
+        return alcoholLevelVictim;
     }
 
     public void setAlcoholLevelVictim(Short alcoholLevelVictim) {
-	this.alcoholLevelVictim = alcoholLevelVictim;
+        this.alcoholLevelVictim = alcoholLevelVictim;
     }
 
     public String getCode() {
-	return code;
+        return code;
     }
 
     public void setCode(String code) {
-	this.code = code;
+        this.code = code;
     }
 
-    
-
     public FatalInjuryMurder getFatalInjuryMurder() {
-	return fatalInjuryMurder;
+        return fatalInjuryMurder;
     }
 
     public void setFatalInjuryMurder(FatalInjuryMurder fatalInjuryMurder) {
-	this.fatalInjuryMurder = fatalInjuryMurder;
+        this.fatalInjuryMurder = fatalInjuryMurder;
     }
 
     public Victims getVictimId() {
-	return victimId;
+        return victimId;
     }
 
     public void setVictimId(Victims victimId) {
-	this.victimId = victimId;
+        this.victimId = victimId;
     }
 
     public Users getUserId() {
-	return userId;
+        return userId;
     }
 
     public void setUserId(Users userId) {
-	this.userId = userId;
+        this.userId = userId;
     }
-    
-    
-    
+
     public Places getInjuryPlaceId() {
-	return injuryPlaceId;
+        return injuryPlaceId;
     }
 
     public void setInjuryPlaceId(Places injuryPlaceId) {
-	this.injuryPlaceId = injuryPlaceId;
+        this.injuryPlaceId = injuryPlaceId;
     }
 
     public Injuries getInjuryId() {
-	return injuryId;
+        return injuryId;
     }
 
     public void setInjuryId(Injuries injuryId) {
-	this.injuryId = injuryId;
+        this.injuryId = injuryId;
     }
 
     public Areas getAreaId() {
-	return areaId;
+        return areaId;
     }
 
     public void setAreaId(Areas areaId) {
-	this.areaId = areaId;
+        this.areaId = areaId;
     }
 
     public AlcoholLevels getAlcoholLevelVictimId() {
-	return alcoholLevelVictimId;
+        return alcoholLevelVictimId;
     }
 
     public void setAlcoholLevelVictimId(AlcoholLevels alcoholLevelVictimId) {
-	this.alcoholLevelVictimId = alcoholLevelVictimId;
+        this.alcoholLevelVictimId = alcoholLevelVictimId;
     }
 
     public FatalInjuryTraffic getFatalInjuryTraffic() {
-	return fatalInjuryTraffic;
+        return fatalInjuryTraffic;
     }
 
     public void setFatalInjuryTraffic(FatalInjuryTraffic fatalInjuryTraffic) {
-	this.fatalInjuryTraffic = fatalInjuryTraffic;
+        this.fatalInjuryTraffic = fatalInjuryTraffic;
     }
 
     public FatalInjuryAccident getFatalInjuryAccident() {
-	return fatalInjuryAccident;
+        return fatalInjuryAccident;
     }
 
     public void setFatalInjuryAccident(FatalInjuryAccident fatalInjuryAccident) {
-	this.fatalInjuryAccident = fatalInjuryAccident;
+        this.fatalInjuryAccident = fatalInjuryAccident;
     }
 
     public FatalInjurySuicide getFatalInjurySuicide() {
-	return fatalInjurySuicide;
+        return fatalInjurySuicide;
     }
 
     public void setFatalInjurySuicide(FatalInjurySuicide fatalInjurySuicide) {
-	this.fatalInjurySuicide = fatalInjurySuicide;
+        this.fatalInjurySuicide = fatalInjurySuicide;
     }
-    
-    
+
     public String getVictimPlaceOfOrigin() {
-	return victimPlaceOfOrigin;
+        return victimPlaceOfOrigin;
     }
 
     public void setVictimPlaceOfOrigin(String victimPlaceOfOrigin) {
-	this.victimPlaceOfOrigin = victimPlaceOfOrigin;
+        this.victimPlaceOfOrigin = victimPlaceOfOrigin;
     }
-    
+
     @XmlTransient
     public List<CounterpartServiceType> getCounterpartServiceTypeList() {
         return counterpartServiceTypeList;
@@ -303,7 +296,7 @@ public class FatalInjuries implements Serializable {
     public void setCounterpartServiceTypeList(List<CounterpartServiceType> counterpartServiceTypeList) {
         this.counterpartServiceTypeList = counterpartServiceTypeList;
     }
-    
+
     @XmlTransient
     public List<CounterpartInvolvedVehicle> getCounterpartInvolvedVehicleList() {
         return counterpartInvolvedVehicleList;
@@ -312,31 +305,37 @@ public class FatalInjuries implements Serializable {
     public void setCounterpartInvolvedVehicleList(List<CounterpartInvolvedVehicle> counterpartInvolvedVehicleList) {
         this.counterpartInvolvedVehicleList = counterpartInvolvedVehicleList;
     }
-    
 
     @Override
     public int hashCode() {
-	int hash = 0;
-	hash += (fatalInjuryId != null ? fatalInjuryId.hashCode() : 0);
-	return hash;
+        int hash = 0;
+        hash += (fatalInjuryId != null ? fatalInjuryId.hashCode() : 0);
+        return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-	// TODO: Warning - this method won't work in the case the id fields are not set
-	if (!(object instanceof FatalInjuries)) {
-	    return false;
-	}
-	FatalInjuries other = (FatalInjuries) object;
-	if ((this.fatalInjuryId == null && other.fatalInjuryId != null) || (this.fatalInjuryId != null && !this.fatalInjuryId.equals(other.fatalInjuryId))) {
-	    return false;
-	}
-	return true;
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof FatalInjuries)) {
+            return false;
+        }
+        FatalInjuries other = (FatalInjuries) object;
+        if ((this.fatalInjuryId == null && other.fatalInjuryId != null) || (this.fatalInjuryId != null && !this.fatalInjuryId.equals(other.fatalInjuryId))) {
+            return false;
+        }
+        return true;
+    }
+
+    public Quadrants getQuadrantId() {
+        return quadrantId;
+    }
+
+    public void setQuadrantId(Quadrants quadrantId) {
+        this.quadrantId = quadrantId;
     }
 
     @Override
     public String toString() {
-	return "model.pojo.FatalInjuries[ fatalInjuryId=" + fatalInjuryId + " ]";
+        return "model.pojo.FatalInjuries[ fatalInjuryId=" + fatalInjuryId + " ]";
     }
-    
 }

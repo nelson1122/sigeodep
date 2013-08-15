@@ -39,8 +39,14 @@ public class ApplicationControlMB {
 
     @Resource(name = "jdbc/od")
     private DataSource ds;//fuente de datos(es configurada por glassfish)
+    Timer timer = new Timer(3600000, new ActionListener() {//cada hora
+    //Timer timer = new Timer(60000, new ActionListener() {//cada minuto
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            actionsPerHour();
+        }
+    });
     private ResultSet rs;
-    private String msj;
     private Statement st;
     private String user;
     private String db;
@@ -52,108 +58,6 @@ public class ApplicationControlMB {
     private String value = "-";
     private String realPath = "";
     public Connection conn;
-    Timer timer = new Timer(3600000, new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            actionsPerHour();
-        }
-    });
-
-    public final boolean connectToDb() {
-        /*
-         * Nos conectamos a la base de datos atraves 
-         * de un DataSource = (conexion configurada por glassFish)
-         * y generamos una conexion normal por JDBC
-         */
-        boolean returnValue = true;
-        if (conn == null) {
-            returnValue = false;
-            try {
-                if (ds == null) {
-                    System.out.println("ERROR: No se obtubo data source");
-                } else {
-                    conn = ds.getConnection();
-                    if (conn == null) {
-                        System.out.println("Error: No se obtubo conexion");
-                    } else {
-                        ResultSet rs1 = consult("Select * from configurations");
-                        if (rs1.next()) {
-                            user = rs1.getString("user_db");
-                            db = rs1.getString("name_db");
-                            password = rs1.getString("password_db");
-                            server = rs1.getString("server_db");
-                            url = "jdbc:postgresql://" + server + "/" + db;
-                            try {
-                                Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
-                            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                                System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
-                                msj = "ERROR: " + e.getMessage();
-                            }
-                            conn.close();
-                            conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
-                            if (conn != null) {
-                                System.out.println("Conexion a base de datos " + url + " "+this.getClass().getName());
-                                returnValue = true;
-                            } else {
-                                System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
-                            }
-                        } else {
-                            System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("Error2: " + e.toString() + " --- Clase: " + this.getClass().getName());
-            }
-        }
-        return returnValue;
-    }
-
-    public ResultSet consult(String query) {
-        /*
-         * se encarga de procesar una consulta que retorne una o varias tuplas
-         * de la base de datos retornandolas en un ResultSet
-         */
-        msj = "";
-        try {
-            if (conn != null) {
-                st = conn.createStatement();
-                rs = st.executeQuery(query);
-                //System.out.println("---- CONSULTA: " + query);
-                return rs;
-            } else {
-                msj = "There don't exist connection";
-                return null;
-            }
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
-            msj = "ERROR: " + e.getMessage() + "---- CONSULTA:" + query;
-            return null;
-        }
-    }
-
-    public int non_query(String query) {
-        /*
-         * se encarga de procesar una consulta que no retorne tuplas
-         * ejemplo: INSERT, UPDATE, DELETE...
-         * retorna 0 si se realizo correctamente
-         * retorna 1 cuando la instuccion no pudo ejecutarse
-         */
-        msj = "";
-        int reg;
-        reg = 0;
-        try {
-            if (conn != null) {
-                try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                    reg = stmt.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
-            msj = "ERROR: " + e.getMessage();
-        }
-        return reg;
-    }
 
     public ApplicationControlMB() {
         /*
@@ -161,32 +65,46 @@ public class ApplicationControlMB {
          * inicia un timer que es llamado cada hora
          */
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
-        realPath = (String) servletContext.getRealPath("/"); 
+        realPath = (String) servletContext.getRealPath("/");
         timer.start();
     }
 
     private void actionsPerHour() {
         /*
-         * Metodo que se ejecuta cada hora, si es 1:00 AM realiza una copia de seguridad
+         * Metodo que se ejecuta cada hora, si no hay susuarios en el sistema realiza una copia de seguridad
          */
-        Calendar a = new GregorianCalendar();
-        TimeZone zonah = java.util.TimeZone.getTimeZone("GMT+1");
-        Calendar Calendario = java.util.GregorianCalendar.getInstance(zonah, new java.util.Locale("es"));
-        SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        SimpleDateFormat df2 = new java.text.SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+        try {
+            if (currentUserIdSessions.isEmpty()) {
+                Calendar a = new GregorianCalendar();
+                TimeZone zonah = java.util.TimeZone.getTimeZone("GMT+1");
+                Calendar Calendario = java.util.GregorianCalendar.getInstance(zonah, new java.util.Locale("es"));
+                SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                SimpleDateFormat df2 = new java.text.SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+                SimpleDateFormat df3 = new java.text.SimpleDateFormat("yyyy-MM-dd");
 
-        String dateStr = df.format(Calendario.getTime());
-        String fileName = "backup_" + df2.format(Calendario.getTime());
-
-        if (a.get(Calendar.HOUR_OF_DAY) == 1) {//realizar copia automatica a la 1 de la mañana
-            if (connectToDb()) {
-                backupPGSQL(realPath + "backups/", fileName);
-                saveBackupInfo(realPath + "backups/", fileName, dateStr);
+                if (connectToDb()) {
+                    //determinar si existe una copia de seguridad para el dia actual
+                    String sql="SELECT * FROM backups WHERE date_backup::date = to_date('" + df3.format(Calendario.getTime()) + "','yyyy-MM-dd') AND id_backup < 11";
+                    rs = consult(sql);
+                    if (rs.next()) {
+                        //System.out.println("Ya existe una copia de seguridad automatica para este dia");
+                    } else {
+                        String dateStr = df.format(Calendario.getTime());
+                        String fileName = "backup_" + df2.format(Calendario.getTime());
+                        if (backupPGSQL(realPath + "backups/", fileName)) {
+                            saveBackupInfo(realPath + "backups/", fileName, dateStr);
+                        }
+                    }
+                }
+            } else {
+                //System.out.println("no se realiza copia de seguridad por que existen usuarios en el sistema");
             }
+        } catch (Exception e) {
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.getMessage());
         }
     }
 
-    public void saveBackupInfo(String serverPath, String fileName, String dateStr) {
+    public boolean saveBackupInfo(String serverPath, String fileName, String dateStr) {
         /* 
          * almacena nombre, hubicacion y fecha de creacion de la copia de seguridad en la base de datos
          */
@@ -228,8 +146,10 @@ public class ApplicationControlMB {
                 max++;
                 non_query(" INSERT INTO backups VALUES (" + String.valueOf(max) + ",'" + fileName + "','" + dateStr + "','AUTOMATICO','" + serverPath + "')");
             }
+            return true;
         } catch (Exception e) {
-            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.getMessage());
+            System.out.println("Error 6 en " + this.getClass().getName() + ":" + e.getMessage());
+            return false;
         }
     }
 
@@ -239,7 +159,6 @@ public class ApplicationControlMB {
          * pg_dump de postgres, recibe como parametro la carpeta en el servidor
          * y el nombre que tendra la copia de seguridad
          */
-        boolean booleanReturn = false;
         try {
             Runtime r = Runtime.getRuntime();
             Process p;
@@ -271,18 +190,113 @@ public class ApplicationControlMB {
                     while ((ll = br.readLine()) != null) {
                         outString = ll;
                     }
+                    System.out.println("\nFinaliza creacion de copia de seguridad: " + fechafile.toString() + "   " + outString);
+                    return true;
                 } catch (IOException e) {
-                    System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.getMessage());
+                    System.out.println("Error 7 en " + this.getClass().getName() + ":" + e.getMessage());
+                    return false;
                 }
-                booleanReturn = true;
-                System.out.println("\nFinaliza creacion de copia de seguridad: " + fechafile.toString() + "   " + outString);
                 //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Correcto", "La copia de seguridad ha sido creada correctamente"));
+            } else {
+                System.out.println("No se encontro la carpeta backups en el servidor ");
+                return false;
             }
         } catch (IOException x) {
-            System.out.println("Error 2 en " + this.getClass().getName() + ":" + x.getMessage());
-
+            System.out.println("Error 8 en " + this.getClass().getName() + ":" + x.getMessage());
+            return false;
         }
-        return booleanReturn;
+    }
+
+    public final boolean connectToDb() {
+        /*
+         * Nos conectamos a la base de datos atraves 
+         * de un DataSource = (conexion configurada por glassFish)
+         * y generamos una conexion normal por JDBC
+         */
+        boolean returnValue = true;
+        if (conn == null) {
+            returnValue = false;
+            try {
+                if (ds == null) {
+                    System.out.println("ERROR: No se obtubo data source");
+                } else {
+                    conn = ds.getConnection();
+                    if (conn == null) {
+                        System.out.println("Error: No se obtubo conexion");
+                    } else {
+                        ResultSet rs1 = consult("Select * from configurations");
+                        if (rs1.next()) {
+                            user = rs1.getString("user_db");
+                            db = rs1.getString("name_db");
+                            password = rs1.getString("password_db");
+                            server = rs1.getString("server_db");
+                            url = "jdbc:postgresql://" + server + "/" + db;
+                            try {
+                                Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
+                            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                                System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.getMessage());
+                            }
+                            conn.close();
+                            conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
+                            if (conn != null) {
+                                System.out.println("Conexion a base de datos " + url + " " + this.getClass().getName());
+                                returnValue = true;
+                            } else {
+                                System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
+                            }
+                        } else {
+                            System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.getMessage());
+            }
+        }
+        return returnValue;
+    }
+
+    public ResultSet consult(String query) {
+        /*
+         * se encarga de procesar una consulta que retorne una o varias tuplas
+         * de la base de datos retornandolas en un ResultSet
+         */
+        //msj = "";
+        try {
+            if (conn != null) {
+                st = conn.createStatement();
+                rs = st.executeQuery(query);
+                //System.out.println("---- CONSULTA: " + query);
+                return rs;
+            } else {
+                System.out.println("There don't exist connection");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.getMessage() + "---- CONSULTA:" + query);
+            return null;
+        }
+    }
+
+    public int non_query(String query) {
+        /*
+         * se encarga de procesar una consulta que no retorne tuplas
+         * ejemplo: INSERT, UPDATE, DELETE...
+         * retorna 0 si se realizo correctamente
+         * retorna 1 cuando la instuccion no pudo ejecutarse
+         */
+        int reg;
+        reg = 0;
+        try {
+            if (conn != null) {
+                try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                    reg = stmt.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.getMessage());
+        }
+        return reg;
     }
 
     public boolean hasLogged(int idUser) {
@@ -322,6 +336,7 @@ public class ApplicationControlMB {
                 }
             }
         } catch (Exception e) {
+            System.out.println("Error 9 en " + this.getClass().getName() + ":" + e.getMessage());
         }
     }
 
@@ -338,6 +353,7 @@ public class ApplicationControlMB {
                 }
             }
         } catch (Exception e) {
+            System.out.println("Error 10 en " + this.getClass().getName() + ":" + e.getMessage());
         }
     }
 
