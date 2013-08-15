@@ -13,15 +13,15 @@
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
 
-            <script type="text/javascript">                 
-                $('*').live("keypress", function(e) {    
-                    if (e.keyCode == 13) {                        
+            <script type="text/javascript">
+                $('*').live("keypress", function(e) {
+                    if (e.keyCode === 13) {
                         return false;
                     }
                 });
                 function goNextFocus(current, next, len)
                 {
-                    if((current.value.length) == len){
+                    if ((current.value.length) === len) {
                         next.focus();
                         next.select();
                     }
@@ -486,13 +486,16 @@
                                                         <p:ajax 
                                                             event="itemSelect" 
                                                             listener="#{lcenfMB.changeNeighborhoodEvent}" 
-                                                            update="IdNeighborhoodsEventCode IdControls message" process="@this"/>                                                        
+                                                            update="IdNeighborhoodsEventCode IdControls message IdQuadrant" process="@this"/>                                                        
                                                         <f:ajax 
                                                             event="change"
                                                             listener="#{lcenfMB.changeForm}"/>
                                                     </p:autoComplete>
 
                                                 </p:column>
+                                                </p:row>
+
+                                            <p:row>
                                                 <p:column>CODIGO DEL BARRIO:&nbsp;</p:column>
                                                 <p:column>
                                                     <h:inputText 
@@ -501,9 +504,26 @@
                                                         value="#{lcenfMB.currentNeighborhoodEventCode}"/>
                                                 </p:column>
                                             </p:row>
-                                            <p:row>  
-                                                <p:column >DIRECCION DEL  EVENTO:&nbsp;</p:column>
-                                                <p:column>
+
+                                            <p:row>
+                                                <p:column>CUADRANTE:&nbsp;  </p:column>
+                                                <p:column colspan="3">
+                                                    <h:selectOneMenu
+                                                        id="IdQuadrant"
+                                                        value="#{lcenfMB.currentQuadrantEvent}"> 
+                                                        <f:selectItems value="#{lcenfMB.quadrantsEvent}"/>
+                                                        <f:ajax 
+                                                            event="change"                                                                                                            
+                                                            render="IdControls message"
+                                                            listener="#{lcenfMB.changeForm}"/>
+                                                    </h:selectOneMenu>
+                                                </p:column>
+                                                
+                                            </p:row>
+
+                                            <p:row>
+                                                <p:column>DIRECCION DEL  EVENTO:&nbsp;</p:column>
+                                                <p:column colspan="3">
                                                     <h:inputText 
                                                         id="IdDirectionEvent"
                                                         value="#{lcenfMB.currentDirectionEvent}" 
@@ -516,7 +536,6 @@
                                                             render="IdControls message"/>
                                                     </h:inputText>
                                                 </p:column>
-                                                <p:column colspan="2">&nbsp;</p:column>
                                             </p:row>
                                         </p:panelGrid>
                                         <br/>
@@ -561,7 +580,7 @@
                                                                     id="IdDayEvent"
                                                                     disabled="#{lcenfMB.currentDayEventDisabled}"
                                                                     value="#{lcenfMB.currentDayEvent}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMonthEvent'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMonthEvent'), 2);"
                                                                     maxlength="2"
                                                                     size="2">                                                                      
                                                                     <f:ajax 
@@ -578,7 +597,7 @@
                                                                     id="IdMonthEvent"
                                                                     disabled="#{lcenfMB.currentMonthEventDisabled}"
                                                                     value="#{lcenfMB.currentMonthEvent}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdYearEvent'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdYearEvent'), 2);"
                                                                     size="2"                                                                     
                                                                     maxlength="2">
                                                                     <f:ajax 
@@ -595,7 +614,7 @@
                                                                     id="IdYearEvent"
                                                                     disabled="#{lcenfMB.currentYearEventDisabled}"
                                                                     value="#{lcenfMB.currentYearEvent}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdHourEvent'), 4)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdHourEvent'), 4);"
                                                                     size="5" 
                                                                     maxlength="4">
                                                                     <f:ajax 
@@ -659,7 +678,7 @@
                                                                     id="IdHourEvent"
                                                                     disabled="#{lcenfMB.currentHourEventDisabled}"
                                                                     value="#{lcenfMB.currentHourEvent}"
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMinuteEvent'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMinuteEvent'), 2);"
                                                                     maxlength="2"
                                                                     size="2">
                                                                     <f:ajax 
@@ -676,7 +695,7 @@
                                                                     id="IdMinuteEvent"
                                                                     disabled="#{lcenfMB.currentMinuteEventDisabled}"
                                                                     value="#{lcenfMB.currentMinuteEvent}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdAmPmEvent'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdAmPmEvent'), 2);"
                                                                     maxlength="2"
                                                                     size="2">
                                                                     <f:ajax 
@@ -742,7 +761,7 @@
                                                                     id="IdDayConsult"
                                                                     disabled="#{lcenfMB.currentDayConsultDisabled}"
                                                                     value="#{lcenfMB.currentDayConsult}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMonthConsult'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMonthConsult'), 2);"
                                                                     maxlength="2"
                                                                     size="2">                                                                      
                                                                     <f:ajax 
@@ -759,7 +778,7 @@
                                                                     id="IdMonthConsult"
                                                                     disabled="#{lcenfMB.currentMonthConsultDisabled}"
                                                                     value="#{lcenfMB.currentMonthConsult}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdYearConsult'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdYearConsult'), 2);"
                                                                     size="2" 
                                                                     maxlength="2">
                                                                     <f:ajax 
@@ -775,7 +794,7 @@
                                                                 <h:inputText 
                                                                     id="IdYearConsult"
                                                                     value="#{lcenfMB.currentYearConsult}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdHourConsult'), 4)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdHourConsult'), 4);"
                                                                     disabled="#{lcenfMB.currentYearConsultDisabled}"
                                                                     size="5" 
                                                                     maxlength="4">
@@ -844,7 +863,7 @@
                                                                     id="IdHourConsult"
                                                                     disabled="#{lcenfMB.currentHourConsultDisabled}"
                                                                     value="#{lcenfMB.currentHourConsult}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMinuteConsult'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMinuteConsult'), 2);"
                                                                     maxlength="2"
                                                                     size="2">
                                                                     <f:ajax 
@@ -861,7 +880,7 @@
                                                                     id="IdMinuteConsult"
                                                                     disabled="#{lcenfMB.currentMinuteConsultDisabled}"
                                                                     value="#{lcenfMB.currentMinuteConsult}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdAmPmConsult'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdAmPmConsult'), 2);"
                                                                     maxlength="2"
                                                                     size="2">
                                                                     <f:ajax 
@@ -2665,7 +2684,7 @@
                         update="#{lcenfMB.idElements2}"/> 
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogFirst.hide()"/>                     
+                        onclick="dialogFirst.hide();"/>                     
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogPrevious"
@@ -2692,7 +2711,7 @@
                         update="#{lcenfMB.idElements2}"/> 
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogPrevious.hide()"/> 
+                        onclick="dialogPrevious.hide();"/> 
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogNext"
@@ -2719,7 +2738,7 @@
                         update="#{lcenfMB.idElements2}"/> 
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogNext.hide()"/> 
+                        onclick="dialogNext.hide();"/> 
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogLast"
@@ -2746,7 +2765,7 @@
                         update="#{lcenfMB.idElements2}"/> 
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogLast.hide()"/>
+                        onclick="dialogLast.hide();"/>
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogNew"
@@ -2773,7 +2792,7 @@
                         update="#{lcenfMB.idElements2}"/> 
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogNew.hide()"/> 
+                        onclick="dialogNew.hide();"/> 
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogDelete"
@@ -2795,7 +2814,7 @@
                         update="#{lcenfMB.idElements2}"/>   
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogDelete.hide()"/> 
+                        onclick="dialogDelete.hide();"/> 
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogCIE"

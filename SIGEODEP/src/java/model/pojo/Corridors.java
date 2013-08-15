@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Corridors.findAll", query = "SELECT c FROM Corridors c"),
     @NamedQuery(name = "Corridors.findByCorridorId", query = "SELECT c FROM Corridors c WHERE c.corridorId = :corridorId"),
     @NamedQuery(name = "Corridors.findByCorridorName", query = "SELECT c FROM Corridors c WHERE c.corridorName = :corridorName"),
-    @NamedQuery(name = "Corridors.findByPoupulation", query = "SELECT c FROM Corridors c WHERE c.poupulation = :poupulation"),
+    @NamedQuery(name = "Corridors.findByPopulation", query = "SELECT c FROM Corridors c WHERE c.population = :population"),
     @NamedQuery(name = "Corridors.findByGeom", query = "SELECT c FROM Corridors c WHERE c.geom = :geom")})
 public class Corridors implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -39,8 +39,8 @@ public class Corridors implements Serializable {
     @Size(max = 200)
     @Column(name = "corridor_name", length = 200)
     private String corridorName;
-    @Column(name = "poupulation")
-    private Integer poupulation;
+    @Column(name = "population")
+    private Integer population;
     @Size(max = 2147483647)
     @Column(name = "geom", length = 2147483647)
     private String geom;
@@ -68,12 +68,12 @@ public class Corridors implements Serializable {
         this.corridorName = corridorName;
     }
 
-    public Integer getPoupulation() {
-        return poupulation;
+    public Integer getPopulation() {
+        return population;
     }
 
-    public void setPoupulation(Integer poupulation) {
-        this.poupulation = poupulation;
+    public void setPopulation(Integer population) {
+        this.population = population;
     }
 
     public String getGeom() {

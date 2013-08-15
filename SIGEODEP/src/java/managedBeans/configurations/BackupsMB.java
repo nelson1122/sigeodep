@@ -182,7 +182,7 @@ public class BackupsMB {
             while (errors != 0) {
                 errors = 0;
                 for (int j = 0; j < tableNames.size(); j++) {
-                    connectionJdbcMB.non_query("DROP TABLE IF EXISTS " + tableNames.get(j));
+                    connectionJdbcMB.non_query("DROP TABLE IF EXISTS " + tableNames.get(j) + " CASCADE");
                     if (connectionJdbcMB.getMsj().startsWith("ERROR")) {
                         errors++;
                     } else {
@@ -199,22 +199,28 @@ public class BackupsMB {
 
     public void restoreBackupClick() {
         if (selectedRowDataTable != null) {
-            //reaizo la eliminacion de todas las tablas
-            removeAllTables();
-            //realizo la restauracion de la copia de seguridad
-            restorePGSQL(selectedRowDataTable.getColumn5(), selectedRowDataTable.getColumn2());
-            //finalizo todas las sessiones
-            applicationControlMB.closeAllSessions();
-            //me redirijo a la pagina inicial
-            try {
-                ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
-                String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
-                ((HttpSession) ctx.getSession(false)).invalidate();//System.out.println("se redirecciona");
-                ctx.redirect(ctxPath + "/index.html");
-            } catch (Exception ex) {
-                System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
-            }
+            //valido que el archivo exista
+            java.io.File ficherofile = new java.io.File(selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + ".backup");
 
+            if (!ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se encontro el archivo en el servidor"));
+            } else {
+                //reaizo la eliminacion de todas las tablas
+                removeAllTables();
+                //realizo la restauracion de la copia de seguridad
+                restorePGSQL(selectedRowDataTable.getColumn5(), selectedRowDataTable.getColumn2());
+                //finalizo todas las sessiones
+                applicationControlMB.closeAllSessions();
+                //me redirijo a la pagina inicial
+                try {
+                    ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+                    String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
+                    ((HttpSession) ctx.getSession(false)).invalidate();//System.out.println("se redirecciona");
+                    ctx.redirect(ctxPath + "/index.html");
+                } catch (Exception ex) {
+                    System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
+                }
+            }
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una copia de seguridad para realizar la restauración"));
         }
@@ -253,7 +259,7 @@ public class BackupsMB {
             } else {
                 System.err.println("No se encontro el archivo");
             }
-        } catch (IOException x) {            
+        } catch (IOException x) {
             System.err.println("Caught: " + x.getMessage());
         }
     }
@@ -265,16 +271,12 @@ public class BackupsMB {
             java.io.File ficherofile = new java.io.File(filePath);
             if (ficherofile.exists()) {
                 ficherofile.delete();//elimino el archivo
-                try {
-                    connectionJdbcMB.non_query("DELETE FROM backups WHERE id_backup = " + selectedRowDataTable.getColumn1());
-                    createDynamicTable();
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La copia de seguridad se ha eliminado correctamente"));
-                } catch (Exception e) {
-                    System.out.println("Error: " + e.getMessage());
-                }
             } else {
-                System.out.println("No se localizo el archivo: " + filePath);
+                //System.out.println("No se localizo el archivo: " + filePath);
             }
+            connectionJdbcMB.non_query("DELETE FROM backups WHERE id_backup = " + selectedRowDataTable.getColumn1());
+            createDynamicTable();
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La copia de seguridad se ha eliminado correctamente"));
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una copia de seguridad para realizar la eliminación"));
         }

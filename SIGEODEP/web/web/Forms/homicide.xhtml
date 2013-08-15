@@ -15,13 +15,13 @@
             <script type="text/javascript">  
                 $('*').live("keypress", function(e) 
                 {    
-                    if (e.keyCode == 13) {                        
+                    if (e.keyCode === 13) {                        
                         return false;
                     }
                 });
                 function goNextFocus(current, next, len)
                 {
-                    if((current.value.length) == len){
+                    if((current.value.length) === len){
                         next.focus();
                         next.select();
                     }
@@ -124,7 +124,7 @@
                                                                     id="IdDayEvent"
                                                                     disabled="#{homicideMB.currentDayEventDisabled}"
                                                                     value="#{homicideMB.currentDayEvent}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMonthEvent'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMonthEvent'), 2);"
                                                                     maxlength="2"
                                                                     size="2">                                                                      
                                                                     <f:ajax 
@@ -141,7 +141,7 @@
                                                                     id="IdMonthEvent"
                                                                     disabled="#{homicideMB.currentMonthEventDisabled}"
                                                                     value="#{homicideMB.currentMonthEvent}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdYearEvent'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdYearEvent'), 2);"
                                                                     size="2"                                                                     
                                                                     maxlength="2">
                                                                     <f:ajax 
@@ -158,7 +158,7 @@
                                                                     id="IdYearEvent"
                                                                     disabled="#{homicideMB.currentYearEventDisabled}"
                                                                     value="#{homicideMB.currentYearEvent}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdHourEvent'), 4)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdHourEvent'), 4);"
                                                                     size="5" 
                                                                     maxlength="4">                                                                    
                                                                     <f:ajax 
@@ -225,7 +225,7 @@
                                                                     id="IdHourEvent"
                                                                     disabled="#{homicideMB.currentHourEventDisabled}"
                                                                     value="#{homicideMB.currentHourEvent}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMinuteEvent'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdMinuteEvent'), 2);"
                                                                     maxlength="2"
                                                                     size="2">
                                                                     <f:ajax 
@@ -242,7 +242,7 @@
                                                                     id="IdMinuteEvent"
                                                                     disabled="#{homicideMB.currentMinuteEventDisabled}"
                                                                     value="#{homicideMB.currentMinuteEvent}" 
-                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdAmPmEvent'), 2)"
+                                                                    onkeyup="goNextFocus(this, document.getElementById('IdForm1:IdAmPmEvent'), 2);"
                                                                     maxlength="2"
                                                                     size="2">
                                                                     <f:ajax 
@@ -321,7 +321,7 @@
                                             <p:ajax 
                                                 event="itemSelect" 
                                                 listener="#{homicideMB.changeNeighborhoodEvent}" 
-                                                update="IdNeighborhoodsEventCode IdArea IdControls message" process="@this"/>                                            
+                                                update="IdNeighborhoodsEventCode IdArea IdControls message IdQuadrant"/>                                            
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{homicideMB.changeForm}"/>
@@ -335,6 +335,20 @@
                                             id="IdNeighborhoodsEventCode"
                                             disabled="true"
                                             value="#{homicideMB.currentNeighborhoodEventCode}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>CUADRANTE:&nbsp;  </p:column>
+                                    <p:column>
+                                        <h:selectOneMenu
+                                            id="IdQuadrant"
+                                            value="#{homicideMB.currentQuadrantEvent}"> 
+                                            <f:selectItems value="#{homicideMB.quadrantsEvent}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdControls message"
+                                                listener="#{homicideMB.changeForm}"/>
+                                        </h:selectOneMenu>
                                     </p:column>
                                 </p:row>
                                 <p:row>
@@ -963,7 +977,7 @@
                         update=":IdForm1"/> 
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogFirst.hide()"/> 
+                        onclick="dialogFirst.hide();"/> 
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogPrevious"
@@ -990,7 +1004,7 @@
                         update=":IdForm1"/> 
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogPrevious.hide()"/> 
+                        onclick="dialogPrevious.hide();"/> 
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogNext"
@@ -1017,7 +1031,7 @@
                         update=":IdForm1"/> 
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogNext.hide()"/> 
+                        onclick="dialogNext.hide();"/> 
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogLast"
@@ -1044,7 +1058,7 @@
                         update=":IdForm1"/> 
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogLast.hide()"/>
+                        onclick="dialogLast.hide();"/>
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogNew"
@@ -1070,7 +1084,7 @@
                         update=":IdForm1"/> 
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogNew.hide()"/> 
+                        onclick="dialogNew.hide();"/> 
                 </p:dialog>
                 <p:dialog                                                         
                     id="dialogDelete"
@@ -1092,7 +1106,7 @@
                         update=":IdForm1"/>   
                     <p:commandButton
                         value="Cancelar" 
-                        onclick="dialogDelete.hide()"/> 
+                        onclick="dialogDelete.hide();"/> 
                 </p:dialog>
             </h:form>
         </ui:define>

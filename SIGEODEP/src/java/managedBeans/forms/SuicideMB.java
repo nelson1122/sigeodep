@@ -40,6 +40,11 @@ public class SuicideMB implements Serializable {
     // DECLARACION DE VARIABLES --------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+    //-------------------
+    @EJB
+    QuadrantsFacade quadrantsFacade;
+    private SelectItem[] quadrantsEvent;
+    private int currentQuadrantEvent = -1;
     //------------------    
     @EJB
     TagsFacade tagsFacade;
@@ -239,10 +244,15 @@ public class SuicideMB implements Serializable {
     public void reset() {
 
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        LoginMB loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         currentUser = loginMB.getCurrentUser();
         loading = true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
+        
+        quadrantsEvent = new SelectItem[1];
+        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        currentQuadrantEvent = 0;
+        
         try {
 
             //cargo los conjuntos de registros
@@ -559,6 +569,30 @@ public class SuicideMB implements Serializable {
             if (currentFatalInjurySuicide.getFatalInjuries().getInjuryNeighborhoodId() != null) {
                 currentNeighborhoodEventCode = String.valueOf(currentFatalInjurySuicide.getFatalInjuries().getInjuryNeighborhoodId());
                 currentNeighborhoodEvent = neighborhoodsFacade.find(currentFatalInjurySuicide.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName();
+                //cargo cuadrantes
+                try {
+                    ResultSet rs = connectionJdbcMB.consult(""
+                            + " SELECT COUNT(*) FROM quadrants WHERE quadrant_id IN "
+                            + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                            + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                    if (rs.next()) {
+                        quadrantsEvent = new SelectItem[rs.getInt(1)];
+                        rs = connectionJdbcMB.consult(""
+                                + " SELECT * FROM quadrants WHERE quadrant_id IN "
+                                + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                                + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                        currentQuadrantEvent = -1;
+                        int pos = 0;
+                        while (rs.next()) {
+                            if (currentQuadrantEvent == -1 && currentFatalInjurySuicide.getFatalInjuries().getQuadrantId() != null) {
+                                currentQuadrantEvent = currentFatalInjurySuicide.getFatalInjuries().getQuadrantId().getQuadrantId();
+                            }
+                            quadrantsEvent[pos] = new SelectItem(rs.getInt("quadrant_id"), rs.getString("quadrant_name"));
+                            pos++;
+                        }
+                    }
+                } catch (Exception e) {
+                }
             }
         } catch (Exception e) {
             currentNeighborhoodEventCode = "";
@@ -857,6 +891,10 @@ public class SuicideMB implements Serializable {
                 if (currentNeighborhoodEventCode.trim().length() != 0) {
                     newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(currentNeighborhoodEventCode));
                 }
+                //****quadrant_id
+                if (currentQuadrantEvent != -1) {
+                    newFatalInjurie.setQuadrantId(quadrantsFacade.find(currentQuadrantEvent));
+                }
                 if (currentPlace != 0) {
                     newFatalInjurie.setInjuryPlaceId(placesFacade.find(currentPlace));
                 }
@@ -935,7 +973,7 @@ public class SuicideMB implements Serializable {
                 //--------------------------------------------------------------
                 //--------------AUTOCOMPLETAR LOS FORMULARIOS-------------------
                 newVictim.setVictimClass((short) 1);
-                if(newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
+                if (newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
                     newVictim.setVictimNid(null);
                 }
                 //DETERMINAR EL NUMERO DE IDENTIFICACION
@@ -943,8 +981,8 @@ public class SuicideMB implements Serializable {
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
                     newVictim.setVictimClass((short) 2);//nn
                     newVictim.setTypeId(null);
-                    int newGenNnId = genNnFacade.findMax() + 1;                    
-                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = "+newGenNnId+" where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");                    
+                    int newGenNnId = genNnFacade.findMax() + 1;
+                    connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 }
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newVictim.getVictimNeighborhoodId() == null) {
@@ -969,7 +1007,7 @@ public class SuicideMB implements Serializable {
                         }
                     }
                 }
-                
+
                 //-------------------------------------------------------------------------------
                 //-------------------GUARDAR----------------------------
                 //if (validationsErrors.isEmpty()) {
@@ -1055,6 +1093,7 @@ public class SuicideMB implements Serializable {
             currentFatalInjurySuicide.getFatalInjuries().setInjuryTime(fatalInjurie.getInjuryTime());
             currentFatalInjurySuicide.getFatalInjuries().setInjuryAddress(fatalInjurie.getInjuryAddress());
             currentFatalInjurySuicide.getFatalInjuries().setInjuryNeighborhoodId(fatalInjurie.getInjuryNeighborhoodId());
+            currentFatalInjurySuicide.getFatalInjuries().setQuadrantId(fatalInjurie.getQuadrantId());
             currentFatalInjurySuicide.getFatalInjuries().setInjuryPlaceId(fatalInjurie.getInjuryPlaceId());
             currentFatalInjurySuicide.getFatalInjuries().setVictimNumber(fatalInjurie.getVictimNumber());
             currentFatalInjurySuicide.getFatalInjuries().setInjuryDescription(fatalInjurie.getInjuryDescription());
@@ -1340,7 +1379,10 @@ public class SuicideMB implements Serializable {
         changeDepartamentHome();
         currentMunicipalitie = 1;
 
-
+        quadrantsEvent = new SelectItem[1];
+        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        currentQuadrantEvent = 0;
+        
         currentMunicipalitieDisabled = false;
         currentMentalAntecedents = 0;
         currentPreviousIntent = 0;
@@ -2032,6 +2074,30 @@ public class SuicideMB implements Serializable {
                 if (n != null) {
                     currentNeighborhoodEventCode = String.valueOf(n.getNeighborhoodId());
                     currentArea = Short.parseShort(n.getNeighborhoodArea().toString());
+                    //cargo cuadrantes
+                    try {
+                        ResultSet rs = connectionJdbcMB.consult(""
+                                + " SELECT COUNT(*) FROM quadrants WHERE quadrant_id IN "
+                                + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                                + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                        if (rs.next()) {
+                            quadrantsEvent = new SelectItem[rs.getInt(1)];
+                            rs = connectionJdbcMB.consult(""
+                                    + " SELECT * FROM quadrants WHERE quadrant_id IN "
+                                    + " (SELECT quadrant_id FROM neighborhood_quadrant "
+                                    + " WHERE neighborhood_id = " + currentNeighborhoodEventCode + ") ");
+                            currentQuadrantEvent = -1;
+                            int pos = 0;
+                            while (rs.next()) {
+                                if (currentQuadrantEvent == -1) {
+                                    currentQuadrantEvent = rs.getInt("quadrant_id");
+                                }
+                                quadrantsEvent[pos] = new SelectItem(rs.getInt("quadrant_id"), rs.getString("quadrant_name"));
+                                pos++;
+                            }
+                        }
+                    } catch (Exception e) {
+                    }
                 } else {
                     currentNeighborhoodEvent = "";
                     currentNeighborhoodEventCode = "";
@@ -2972,5 +3038,21 @@ public class SuicideMB implements Serializable {
 
     public void setHomeDepartaments(SelectItem[] homeDepartaments) {
         this.homeDepartaments = homeDepartaments;
+    }
+
+    public SelectItem[] getQuadrantsEvent() {
+        return quadrantsEvent;
+    }
+
+    public void setQuadrantsEvent(SelectItem[] quadrantsEvent) {
+        this.quadrantsEvent = quadrantsEvent;
+    }
+
+    public int getCurrentQuadrantEvent() {
+        return currentQuadrantEvent;
+    }
+
+    public void setCurrentQuadrantEvent(int currentQuadrantEvent) {
+        this.currentQuadrantEvent = currentQuadrantEvent;
     }
 }

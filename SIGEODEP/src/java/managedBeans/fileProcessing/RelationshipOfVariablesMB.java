@@ -46,9 +46,9 @@ public class RelationshipOfVariablesMB implements Serializable {
     private List<String> relatedVars;
     private String currentRelationGroupName = "";
     private String currentDateFormat = "dd/MM/yyyy";//tipo de formato de fecha actual
-    private List<String> currentVariableExpected = new ArrayList<String>();
-    private List<String> currentVariableFound = new ArrayList<String>();
-    private List<String> currentRelatedVariables = new ArrayList<String>();
+    private List<String> currentVariableExpected = new ArrayList<>();
+    private List<String> currentVariableFound = new ArrayList<>();
+    private List<String> currentRelatedVariables = new ArrayList<>();
     private String typeVarExepted;
     private String possibleVariableFound = "";//posible variable encontrada para un variable esperada
     private ProjectsMB projectsMB;
@@ -124,13 +124,13 @@ public class RelationshipOfVariablesMB implements Serializable {
     }
 
     public void reset() {//@PostConstruct ejecutar despues de el constructor
-        this.relatedVars = new ArrayList<String>();
-        this.valuesExpected = new ArrayList<String>();
-        this.valuesFound = new ArrayList<String>();
-        this.varsFound = new ArrayList<String>();
-        this.variablesExpected = new ArrayList<String>();
-        this.currentVariableFound = new ArrayList<String>();
-        this.currentVariableExpected = new ArrayList<String>();
+        this.relatedVars = new ArrayList<>();
+        this.valuesExpected = new ArrayList<>();
+        this.valuesFound = new ArrayList<>();
+        this.varsFound = new ArrayList<>();
+        this.variablesExpected = new ArrayList<>();
+        this.currentVariableFound = new ArrayList<>();
+        this.currentVariableExpected = new ArrayList<>();
     }
 
     //----------------------------------------------------------------------
@@ -166,7 +166,7 @@ public class RelationshipOfVariablesMB implements Serializable {
                     + "     )\n"
                     + " ORDER BY \n"
                     + "    fields.field_order;\n";//System.out.println("A001\n" + sql);
-            variablesExpected = new ArrayList<String>();
+            variablesExpected = new ArrayList<>();
             rs = connectionJdbcMB.consult(sql);
             while (rs.next()) {
                 variablesExpected.add(rs.getString(1));
@@ -179,7 +179,7 @@ public class RelationshipOfVariablesMB implements Serializable {
     private void loadFoundVariables() {
         try {
             ResultSet rs;
-            varsFound = new ArrayList<String>();//vaiables encontradas----------            
+            varsFound = new ArrayList<>();//vaiables encontradas----------            
             filterConsult = "";
             if (foundVariablesFilter != null && foundVariablesFilter.trim().length() != 0) {
                 filterConsult = "project_columns.column_name ILIKE '%" + foundVariablesFilter + "%' AND \n";
@@ -215,7 +215,7 @@ public class RelationshipOfVariablesMB implements Serializable {
     private void loadRelatedVariables() {
         try {
             ResultSet rs;
-            relatedVars = new ArrayList<String>();//variables relacionadas------
+            relatedVars = new ArrayList<>();//variables relacionadas------
             filterConsult = "";
             if (relatedVariablesFilter != null && relatedVariablesFilter.trim().length() != 0) {
                 filterConsult = " AND \n    (relation_variables.name_expected ILIKE '%" + relatedVariablesFilter + "%' OR \n";
@@ -250,8 +250,8 @@ public class RelationshipOfVariablesMB implements Serializable {
         loadExpectedVariables();
         loadFoundVariables();
         loadRelatedVariables();
-        valuesExpected = new ArrayList<String>();
-        valuesFound = new ArrayList<String>();
+        valuesExpected = new ArrayList<>();
+        valuesFound = new ArrayList<>();
     }
 
     private String getTypeVariableExpected() {
@@ -342,7 +342,7 @@ public class RelationshipOfVariablesMB implements Serializable {
         if (currentVariableExpected != null && !currentVariableExpected.isEmpty()) {
             typeVarExepted = getTypeVariableExpected();
             possibleVariableFound = findPossibleVariableFound();
-            valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
+            valuesExpected = new ArrayList<>();//borro la lista de valores esperados 
             selectDateFormatDisabled = true;
             fieldType = remove_v(typeVarExepted);
             switch (DataTypeEnum.convert(fieldType)) {//tipo de relacion
@@ -417,7 +417,7 @@ public class RelationshipOfVariablesMB implements Serializable {
                     + " 		) \n"
                     + " LIMIT 50 \n");
 
-            valuesFound = new ArrayList<String>();
+            valuesFound = new ArrayList<>();
             while (rs.next()) {
                 valuesFound.add(rs.getString(1));
             }
@@ -438,7 +438,7 @@ public class RelationshipOfVariablesMB implements Serializable {
     }
 
     public void changeVarExpected() {
-        valuesExpected = new ArrayList<String>();//borro la lista de valores esperados 
+        valuesExpected = new ArrayList<>();//borro la lista de valores esperados 
         if (currentVariableExpected != null && !currentVariableExpected.isEmpty()) {
             //variableDescription = getDescriptionVariableExpected();
             loadValuesExpected();
@@ -446,9 +446,9 @@ public class RelationshipOfVariablesMB implements Serializable {
     }
 
     public void changeVarFound() {
-        valuesFound = new ArrayList<String>();//borro la lista de valores esperados 
+        valuesFound = new ArrayList<>();//borro la lista de valores esperados 
         if (currentVariableFound != null && !currentVariableFound.isEmpty()) {
-            currentRelatedVariables = new ArrayList<String>();
+            currentRelatedVariables = new ArrayList<>();
             loadValuesFound(currentVariableFound.get(0));
         }
     }
@@ -781,7 +781,7 @@ public class RelationshipOfVariablesMB implements Serializable {
                 }
                 //relationVariablesFacade.remove(relationVariablesFacade.find(getRelationVariablesId(splitVarRelated[0], splitVarRelated[1])));
             }
-            currentRelatedVariables = new ArrayList<String>();
+            currentRelatedVariables = new ArrayList<>();
             loadVarsExpectedAndFound();//recargo lista de variables esperadas y encontradas
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Correcto!!", "Las relaciónes seleccionadas han sido eliminadas."));
         }

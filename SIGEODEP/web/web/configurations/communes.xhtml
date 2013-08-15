@@ -32,7 +32,7 @@
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
                             <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="BARRIOS"/>  
+                            <h:outputLabel value="COMUNAS"/>  
                         </p:column>                                       
                     </p:row>
                     <p:row>  
@@ -46,12 +46,11 @@
                                 </p:row>
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header ui-state-focus" colspan="1">
-                                        <h:outputLabel value="Variable"/>
+                                        <h:outputLabel value="Columna"/>
                                     </p:column>
                                     <p:column colspan="1">
-                                        <p:selectOneMenu id="IdSearchCriteria" value="#{neighborhoodsVariableMB.currentSearchCriteria}" > 
+                                        <p:selectOneMenu id="IdSearchCriteria" value="#{communesVariableMB.currentSearchCriteria}" > 
                                             <f:selectItem itemLabel="NOMBRE" itemValue="2" />
-                                            <f:selectItem itemLabel="CODIGO" itemValue="1" />
                                         </p:selectOneMenu>
                                     </p:column>                                                                        
                                     <p:column styleClass="ui-widget-header ui-state-focus" colspan="1">
@@ -60,13 +59,13 @@
                                     <p:column>
                                         <p:inputText 
                                             id="IdSearcValue"
-                                            value="#{neighborhoodsVariableMB.currentSearchValue}"/>
+                                            value="#{communesVariableMB.currentSearchValue}"/>
                                     </p:column>
                                     <p:column colspan="1" styleClass="ui-widget-header ui-state-focus">
                                         <p:commandButton 
                                             value="Buscar" 
                                             icon="ui-icon-search"                                                
-                                            actionListener="#{neighborhoodsVariableMB.createDynamicTable}"
+                                            actionListener="#{communesVariableMB.createDynamicTable}"
                                             update="IdSearchTable :IdForm1:message"/>                                                                        
                                     </p:column>
                                 </p:row>                        
@@ -74,9 +73,9 @@
                             <br/>
                             <p:dataTable 
                                 id="IdSearchTable" var="rowX" 
-                                value="#{neighborhoodsVariableMB.rowDataTableList}" 
+                                value="#{communesVariableMB.rowDataTableList}" 
                                 rowKey="#{rowX.column1}"  
-                                selection="#{neighborhoodsVariableMB.selectedRowDataTable}" 
+                                selection="#{communesVariableMB.selectedRowDataTable}" 
                                 paginator="true"
                                 rows="10"                                    
                                 paginatorPosition="bottom"                                
@@ -90,16 +89,16 @@
                                 resizableColumns="true">                                
                                 <p:ajax
                                     event="rowSelect"
-                                    listener="#{neighborhoodsVariableMB.loadRegistry}"                                    
+                                    listener="#{communesVariableMB.loadRegistry}"                                    
                                     update=":IdForm1:IdControls :IdForm2:IdDialogEdit :IdForm1:message" />
                                 <!--    -->
                                 <p:column headerText="CODIGO" width="140">  
                                     #{rowX.column1}  
                                 </p:column>  
-                                <p:column headerText="NOMBRE" width="386">  
+                                <p:column headerText="NOMBRE" width="390">  
                                     #{rowX.column2}  
                                 </p:column>  
-                                <p:column headerText="ZONA" width="140">  
+                                <p:column headerText="ZONA" width="136">  
                                     #{rowX.column3}  
                                 </p:column>  
                             </p:dataTable>          
@@ -108,29 +107,26 @@
                                 <p:row>  
                                     <p:column styleClass="ui-widget-header" colspan="5">
                                         <p:commandButton 
-                                            id="IdEdit"
-                                            disabled="#{neighborhoodsVariableMB.btnEditDisabled}"
+                                            disabled="#{communesVariableMB.btnEditDisabled}"
                                             value="Editar"                                 
                                             icon="ui-icon-pencil"                                            
                                             oncomplete="dialogEdit.show()"                                            
                                             update=":IdForm2:IdDialogEdit :IdForm1:message"/>
-                                        <p:commandButton 
-                                            id="IdRemove" 
-                                            disabled="#{neighborhoodsVariableMB.btnRemoveDisabled}"
+                                        <p:commandButton  
+                                            disabled="#{communesVariableMB.btnRemoveDisabled}"
                                             value="Eliminar" 
                                             icon="ui-icon-close"
                                             oncomplete="dialogDelete.show()"                                            
                                             update=":IdForm2:IdDialogDelete :IdForm1:message"/>
                                         <p:commandButton 
-                                            id="IdNew" 
                                             value="Nuevo" 
                                             icon="ui-icon-document"
-                                            actionListener="#{neighborhoodsVariableMB.newRegistry}"
+                                            actionListener="#{communesVariableMB.newRegistry}"
                                             oncomplete="dialogNew.show()"
                                             update=":IdForm2:displayNew"/>                                            
                                         <h:commandLink>                                              
                                             <p:button value="Exportar"/>
-                                            <p:dataExporter type="xls" target="IdSearchTable" fileName="BARRIOS" postProcessor="# {neighborhoodsVariableMB.postProcessXLS}"/>  
+                                            <p:dataExporter type="xls" target="IdSearchTable" fileName="CUADRANTES" postProcessor="#{communesVariableMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                     </p:column>                            
                                 </p:row>
@@ -144,7 +140,7 @@
         <ui:define name="dialogs">
             <h:form id="IdForm2">
                 <!--   DIALOGO EDITAR -->
-                <p:dialog id="IdDialogEdit" header="EDICION DE BARRIO" widgetVar="dialogEdit" resizable="false" modal="true">  
+                <p:dialog id="IdDialogEdit" header="EDICION DE COMUNA" widgetVar="dialogEdit" resizable="false" modal="true">  
                     <p:panelGrid id="display">  
                         <p:row>
                             <p:column>
@@ -152,7 +148,7 @@
 
                             </p:column>
                             <p:column colspan="3">
-                                <p:inputText size="70" value="#{neighborhoodsVariableMB.neighborhoodName}" /> 
+                                <p:inputText size="70" value="#{communesVariableMB.communeName}" /> 
                             </p:column>
                         </p:row>
                         <p:row>
@@ -161,102 +157,56 @@
                             </p:column>
                             <p:column>
                                 <p:inputText 
-                                    id="IdNeighborhoodCode2" 
                                     size="20" 
-                                    value="#{neighborhoodsVariableMB.neighborhoodId}" 
+                                    value="#{communesVariableMB.communeId}" 
                                     disabled="true">
-                                    <f:ajax 
-                                        event="change"                                                                                                            
-                                        render="IdNeighborhoodCode2"
-                                        listener="#{neighborhoodsVariableMB.changeCode}"/>                                            
                                 </p:inputText>
-                            </p:column>
+                            </p:column>                            
+                        </p:row> 
+                        <p:row>
                             <p:column>
                                 <h:outputText value="ZONA" />  
                             </p:column>
                             <p:column>
-                                <p:selectOneMenu value="#{neighborhoodsVariableMB.neighborhoodType}" > 
+                                <p:selectOneMenu value="#{communesVariableMB.communeType}" > 
                                     <f:selectItem itemLabel="ZONA URBANA" itemValue="1" />  
                                     <f:selectItem itemLabel="ZONA RURAL" itemValue="2" />                                                                                                                  
-                                    <f:ajax 
-                                        event="change"                                                                                                            
-                                        render="IdNeighborhoodCode2 IdNeighborhoodSuburb"                                        
-                                        listener="#{neighborhoodsVariableMB.changeArea}"/>                                            
                                 </p:selectOneMenu>
                             </p:column>                            
-                        </p:row>
-                        <p:row>
-                            <p:column>
-                                <h:outputText value="ESTRATO" />  
-                            </p:column>
-                            <p:column>
-                                <p:selectOneMenu value="#{neighborhoodsVariableMB.neighborhoodLevel}" > 
-                                    <f:selectItem itemLabel="1" itemValue="1" />  
-                                    <f:selectItem itemLabel="2" itemValue="2" />
-                                    <f:selectItem itemLabel="3" itemValue="3" />
-                                    <f:selectItem itemLabel="4" itemValue="4" />
-                                    <f:selectItem itemLabel="5" itemValue="5" />
-                                    <f:selectItem itemLabel="6" itemValue="6" />
-                                </p:selectOneMenu>
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="COMUNA" />
-                            </p:column>
-                            <p:column>                                
-                                <p:selectOneMenu 
-                                    id="IdNeighborhoodSuburb"
-                                    value="#{neighborhoodsVariableMB.neighborhoodSuburbId}" >                                     
-                                    <f:selectItems value="#{neighborhoodsVariableMB.communesList}"/>
-                                    <!--f:ajax 
-                                        event="change"                                                                                                            
-                                        render="IdNeighborhoodCode"
-                                        listener="# {neighborhoodsVariableMB.changeSuburb}"/ -->                                            
-                                </p:selectOneMenu>
-                            </p:column>
                         </p:row>
                         <p:row>
                             <p:column>
                                 <h:outputText value="POBLACION" />  
                             </p:column>
                             <p:column>                                
-                                <p:inputText id="IdPopulation" size="20" value="#{neighborhoodsVariableMB.popuation}" >
+                                <p:inputText id="IdPopulation" size="20" value="#{communesVariableMB.communePopuation}" >
                                     <f:ajax                                         
                                         event="change"                                                                                                            
                                         render="IdPopulation"
-                                        listener="#{neighborhoodsVariableMB.changePopulation}"/>                                            
+                                        listener="#{communesVariableMB.changePopulation}"/>                                            
                                 </p:inputText>
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="CORREDOR" />  
-                            </p:column>
-                            <p:column>
-                                <p:selectOneMenu                                     
-                                    value="#{neighborhoodsVariableMB.neighborhoodCorridor}" >                                     
-                                    <f:selectItems value="#{neighborhoodsVariableMB.corridorsList}"/>
-                                </p:selectOneMenu>
                             </p:column>
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:outputText value="CUADRANTE(S)" />
+                                <h:outputText value="BARRIO(S)" />
                             </p:column>
                             <p:column > 
                                 Disponibles
-                                <h:inputText 
-                                    id="IdQuadrantsFilter"                                                                                         
-                                    value="#{neighborhoodsVariableMB.quadrantsFilter}"
+                                <h:inputText
+                                    value="#{communesVariableMB.neighborhoodFilter}"
                                     size="20">
                                     <f:ajax 
                                         event="keyup"
-                                        listener="#{neighborhoodsVariableMB.changeQuadrantsFilter}"
-                                        render="IdCurrentQuadrants2"/>
+                                        listener="#{communesVariableMB.changeNeighborhoodFilter}"
+                                        render="IdCurrentNeighborhoods2"/>
                                 </h:inputText>
                                 <br/>
                                 <h:selectManyMenu 
-                                    id="IdCurrentQuadrants2"
-                                    value="#{neighborhoodsVariableMB.selectedAvailableQuadrants}"
+                                    id="IdCurrentNeighborhoods2"
+                                    value="#{communesVariableMB.selectedAvailableNeighborhoods}"
                                     style="height:120px; width: 200px;">                                    
-                                    <f:selectItems value="#{neighborhoodsVariableMB.availableQuadrants}"/>                                                                                        
+                                    <f:selectItems value="#{communesVariableMB.availableNeighborhoods}"/>                                                                                        
                                 </h:selectManyMenu> 
                             </p:column>
                             <p:column>
@@ -264,21 +214,21 @@
                                 <br/>
                                 <p:commandButton 
                                     value="+"                                    
-                                    actionListener="#{neighborhoodsVariableMB.addQuadrantInExistingNeighborhoodClick}"  
-                                    update="IdCurrentQuadrants2 IdAddQuadrants2 IdQuadrantsFilter"/> 
-                                
+                                    actionListener="#{communesVariableMB.addNeighborhoodInExistingQuadrantClick}"  
+                                    update="IdCurrentNeighborhoods2 IdAddNeighborhoods2"/> 
+
                                 <p:commandButton 
                                     value="-"
-                                    actionListener="#{neighborhoodsVariableMB.removeQuadrantInExistingNeighborhoodClick}"  
-                                    update="IdCurrentQuadrants2 IdAddQuadrants2 IdQuadrantsFilter"/> 
+                                    actionListener="#{communesVariableMB.removeNeighborhoodInExistingQuadrantClick}"  
+                                    update="IdCurrentNeighborhoods2 IdAddNeighborhoods2"/> 
                             </p:column>
                             <p:column>
                                 Agregados<br/>
                                 <h:selectManyMenu 
-                                    id="IdAddQuadrants2"
-                                    value="#{neighborhoodsVariableMB.selectedAvailableAddQuadrants}"
+                                    id="IdAddNeighborhoods2"
+                                    value="#{communesVariableMB.selectedAvailableAddNeighborhoods}"
                                     style="height:120px; width: 200px;">
-                                    <f:selectItems value="#{neighborhoodsVariableMB.availableAddQuadrants}"/>
+                                    <f:selectItems value="#{communesVariableMB.availableAddNeighborhoods}"/>
                                 </h:selectManyMenu> 
                             </p:column>
                         </p:row>
@@ -288,7 +238,7 @@
                             </p:column>
                             <p:column colspan="3">                                
                                 <p:fileUpload                                                                                 
-                                    fileUploadListener="#{neighborhoodsVariableMB.handleFileUpload}"                                                                                  
+                                    fileUploadListener="#{communesVariableMB.handleFileUpload}"                                                                                  
                                     mode="advanced"                                           
                                     cancelLabel="Cancelar"
                                     uploadLabel="Subir"                                        
@@ -307,7 +257,7 @@
                                     value="Guardar" 
                                     icon="ui-icon-disk"
                                     oncomplete="dialogEdit.hide()"
-                                    actionListener="#{neighborhoodsVariableMB.updateRegistry}"
+                                    actionListener="#{communesVariableMB.updateRegistry}"
                                     update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:IdControls :IdForm1:message"/>
                                 <p:commandButton 
                                     value="Cancelar" 
@@ -318,115 +268,73 @@
                     </p:panelGrid>                    
                 </p:dialog> 
                 <!--   DIALOGO NUEVO -->                
-                <p:dialog id="IdDialogNew" header="NUEVO BARRIO" widgetVar="dialogNew" resizable="false" modal="true">  
+                <p:dialog id="IdDialogNew" header="NUEVA COMUNA" widgetVar="dialogNew" resizable="false" modal="true">  
                     <p:panelGrid id="displayNew">  
                         <p:row>
                             <p:column>
-                                <h:outputText value="NOMBRE" />  
-
+                                <h:outputText value="NOMBRE"/>
                             </p:column>
                             <p:column colspan="3">
-                                <p:inputText size="70" value="#{neighborhoodsVariableMB.newNeighborhoodName}" /> 
+                                <p:inputText size="70" value="#{communesVariableMB.newCommuneName}" /> 
                             </p:column>
                         </p:row>
                         <p:row>
                             <p:column>
                                 <h:outputText value="CODIGO" />  
                             </p:column>
-                            <p:column>
-                                <p:inputText id="IdNeighborhoodCode" size="20" value="#{neighborhoodsVariableMB.newNeighborhoodId}" >
-                                    <f:ajax 
-                                        event="change"                                                                                                            
-                                        render="IdNeighborhoodCode"
-                                        listener="#{neighborhoodsVariableMB.changeNewCode}"/>                                            
-                                </p:inputText>
-                            </p:column>
+                            <p:column colspan="3">
+                                <p:inputText 
+                                    id="IdNeighborhoodCode" 
+                                    disabled="true"
+                                    size="20" 
+                                    value="#{communesVariableMB.newCommuneId}" />                                    
+                            </p:column>        
+                        </p:row>                        
+                        <p:row>
                             <p:column>
                                 <h:outputText value="ZONA" />  
                             </p:column>
                             <p:column>
-                                <p:selectOneMenu value="#{neighborhoodsVariableMB.newNeighborhoodType}" > 
+                                <p:selectOneMenu value="#{communesVariableMB.newCommuneType}" > 
                                     <f:selectItem itemLabel="ZONA URBANA" itemValue="1" />  
                                     <f:selectItem itemLabel="ZONA RURAL" itemValue="2" />                                                                                                                  
-                                    <f:ajax 
-                                        event="change"                                                                                                            
-                                        render="IdNeighborhoodCode IdNeighborhoodSuburb2"                                        
-                                        listener="#{neighborhoodsVariableMB.changeNewArea}"/>                                            
                                 </p:selectOneMenu>
                             </p:column>                            
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:outputText value="ESTRATO" />  
-                            </p:column>
-                            <p:column>
-                                <p:selectOneMenu value="#{neighborhoodsVariableMB.newNeighborhoodLevel}" > 
-                                    <f:selectItem itemLabel="1" itemValue="1" />  
-                                    <f:selectItem itemLabel="2" itemValue="2" />
-                                    <f:selectItem itemLabel="3" itemValue="3" />
-                                    <f:selectItem itemLabel="4" itemValue="4" />
-                                    <f:selectItem itemLabel="5" itemValue="5" />
-                                    <f:selectItem itemLabel="6" itemValue="6" />
-                                </p:selectOneMenu>
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="COMUNA" />
-                            </p:column>
-                            <p:column>                                
-                                <p:selectOneMenu 
-                                    id="IdNeighborhoodSuburb2"
-                                    value="#{neighborhoodsVariableMB.newNeighborhoodSuburbId}" >                                     
-                                    <f:selectItems value="#{neighborhoodsVariableMB.newCommunesList}"/>
-                                    <f:ajax 
-                                        event="change"                                                                                                            
-                                        render="IdNeighborhoodCode"
-                                        listener="#{neighborhoodsVariableMB.calculateCode}"/>                                            
-                                </p:selectOneMenu>
-                            </p:column>
-                        </p:row>
-                        <p:row>
-                            <p:column>
                                 <h:outputText value="POBLACION" />  
                             </p:column>
-                            <p:column>                                
-                                <p:inputText id="IdNewPopulation" size="20" value="#{neighborhoodsVariableMB.newPopuation}" >
+                            <p:column colspan="3">                                
+                                <p:inputText id="IdNewPopulation" size="20" value="#{communesVariableMB.newCommunePopuation}" >
                                     <f:ajax                                         
                                         event="change"                                                                                                            
                                         render="IdNewPopulation"
-                                        listener="#{neighborhoodsVariableMB.changeNewPopulation}"/>                                            
+                                        listener="#{communesVariableMB.changeNewPopulation}"/>                                            
                                 </p:inputText>
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="CORREDOR" />  
-                            </p:column>
-                            <p:column>
-                                <p:selectOneMenu                                     
-                                    value="#{neighborhoodsVariableMB.newNeighborhoodCorridor}" >                                     
-                                    <f:selectItems value="#{neighborhoodsVariableMB.corridorsList}"/>
-                                </p:selectOneMenu>
-                            </p:column>
+                            </p:column>                            
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:outputText value="CUADRANTE(S)" />
+                                <h:outputText value="BARRIO(S)" />
                             </p:column>
                             <p:column > 
                                 Disponibles
                                 <h:inputText 
                                     id="IdNewQuadrantsFilter"                                                                                         
-                                    value="#{neighborhoodsVariableMB.newQuadrantsFilter}"
+                                    value="#{communesVariableMB.newNeighborhoodFilter}"
                                     size="20">
                                     <f:ajax 
                                         event="keyup"
-                                        listener="#{neighborhoodsVariableMB.changeNewQuadrantsFilter}"
-                                        render="IdCurrentQuadrants"/>
+                                        listener="#{communesVariableMB.changeNewNeighborhoodFilter}"
+                                        render="IdCurrentNeighborhoods"/>
                                 </h:inputText>
                                 <br/>
                                 <h:selectManyMenu 
-                                    id="IdCurrentQuadrants"
-                                    value="#{neighborhoodsVariableMB.newSelectedAvailableQuadrants}"
+                                    id="IdCurrentNeighborhoods"
+                                    value="#{communesVariableMB.newSelectedAvailableNeighborhoods}"
                                     style="height:120px; width: 200px;">                                    
-                                    <f:selectItems value="#{neighborhoodsVariableMB.newAvailableQuadrants}"/>                                                                                        
+                                    <f:selectItems value="#{communesVariableMB.newAvailableNeighborhoods}"/>                                                                                        
                                 </h:selectManyMenu> 
                             </p:column>
                             <p:column>
@@ -434,21 +342,20 @@
                                 <br/>
                                 <p:commandButton 
                                     value="+"                                    
-                                    actionListener="#{neighborhoodsVariableMB.addQuadrantInNewNeighborhoodClick}"  
-                                    update="IdCurrentQuadrants IdAddQuadrants IdNewQuadrantsFilter"/> 
-                                
+                                    actionListener="#{communesVariableMB.addNeighborhoodInNewQuadrantClick}"  
+                                    update="IdCurrentNeighborhoods IdAddNeighborhoods"/> 
                                 <p:commandButton 
                                     value="-"
-                                    actionListener="#{neighborhoodsVariableMB.removeQuadrantInNewNeighborhoodClick}"  
-                                    update="IdCurrentQuadrants IdAddQuadrants IdNewQuadrantsFilter"/> 
+                                    actionListener="#{communesVariableMB.removeNeighborhoodInNewQuadrantClick}"  
+                                    update="IdCurrentNeighborhoods IdAddNeighborhoods"/> 
                             </p:column>
                             <p:column>
                                 Agregados<br/>
                                 <h:selectManyMenu 
-                                    id="IdAddQuadrants"
-                                    value="#{neighborhoodsVariableMB.newSelectedAvailableAddQuadrants}"
+                                    id="IdAddNeighborhoods"
+                                    value="#{communesVariableMB.newSelectedAvailableAddNeighborhoods}"
                                     style="height:120px; width: 200px;">
-                                    <f:selectItems value="#{neighborhoodsVariableMB.newAvailableAddQuadrants}"/>
+                                    <f:selectItems value="#{communesVariableMB.newAvailableAddNeighborhoods}"/>
                                 </h:selectManyMenu> 
                             </p:column>
 
@@ -460,7 +367,7 @@
                             <p:column colspan="3">                                
                                 <p:fileUpload                                             
 
-                                    fileUploadListener="#{neighborhoodsVariableMB.handleFileUpload}"                                                                                  
+                                    fileUploadListener="#{communesVariableMB.handleFileUpload}"                                                                                  
                                     mode="advanced"                                           
                                     cancelLabel="Cancelar"
                                     uploadLabel="Subir"                                        
@@ -479,7 +386,7 @@
                                 <p:commandButton 
                                     value="Guardar" 
                                     icon="ui-icon-disk"
-                                    actionListener="#{neighborhoodsVariableMB.saveRegistry}"
+                                    actionListener="#{communesVariableMB.saveRegistry}"
                                     update=":IdForm1:IdSearchTable displayNew :IdForm1:IdControls :IdForm1:message"/>
                             </p:column>
                         </p:row>
@@ -490,7 +397,7 @@
                     id="IdDialogDelete"
                     modal="true"
                     resizable="false"
-                    header="ELIMINAR BARRIO" 
+                    header="ELIMINAR COMUNA" 
                     widgetVar="dialogDelete"> 
                     <p:panelGrid id="displayDelete">
                         <p:row>  
@@ -502,7 +409,7 @@
                             <p:column styleClass="ui-widget-header">
                                 <p:commandButton                                                           
                                     oncomplete="dialogDelete.hide()"
-                                    actionListener="#{neighborhoodsVariableMB.deleteRegistry}"
+                                    actionListener="#{communesVariableMB.deleteRegistry}"
                                     value="Eliminar" 
                                     update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>   
                                 <p:commandButton

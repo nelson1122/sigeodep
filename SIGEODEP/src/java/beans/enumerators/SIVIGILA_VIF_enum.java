@@ -46,7 +46,7 @@ public enum SIVIGILA_VIF_enum {
     municipio_de_residencia,
     naturaleza_violencia,
     nombre_profesional_salud,
-    numero_identificacion_victima,
+    numero_de_identificacion,
     ocupacion_agresor,
     ocupacion_victima,
     otra_arma,

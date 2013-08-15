@@ -393,8 +393,7 @@
             <from-outcome>sivigilaVifIndicators</from-outcome>
             <to-view-id>/web/indicators/sivigilaVifIndicators.xhtml</to-view-id>
             <redirect/>
-        </navigation-case>     
-         
+        </navigation-case>              
         <navigation-case>
             <from-outcome>populations</from-outcome>
             <to-view-id>/web/configurations/populations.xhtml</to-view-id>
@@ -403,6 +402,26 @@
         <navigation-case>
             <from-outcome>backups</from-outcome>
             <to-view-id>/web/configurations/backups.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>     
+        <navigation-case>
+            <from-outcome>communes</from-outcome>
+            <to-view-id>/web/configurations/communes.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>                          
+        <navigation-case>
+            <from-outcome>corridors</from-outcome>
+            <to-view-id>/web/configurations/corridors.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>                       
+        <navigation-case>
+            <from-outcome>quadrants</from-outcome>
+            <to-view-id>/web/configurations/quadrants.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>                  
+        <navigation-case>
+            <from-outcome>stations</from-outcome>
+            <to-view-id>/web/configurations/stations.xhtml</to-view-id>
             <redirect/>
         </navigation-case>                  
     </navigation-rule>    

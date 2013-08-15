@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -95,7 +96,7 @@ public class IndicatorsVariationMB {
     private String newConfigurationName = "";
     private Indicators currentIndicator;
     private StreamedContent chartImage;
-    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy", new Locale("ES"));
     private String initialDateStrA = "";
     private String endDateStrA = "";
     private String initialDateStrB = "";
@@ -157,6 +158,9 @@ public class IndicatorsVariationMB {
     private String diferentTemporalWarning = "";//mensaje que indica si los rangos tiene diferente tamaño
     private boolean showCalculation = false;//mostrar la resta
     private boolean colorType = true;
+    int colorId = 0;
+    int typeFill = 0;
+    private boolean showFrames = true;
     private boolean showEmpty = true;
     private CopyManager cpManager;
     private StringBuilder sb;
@@ -172,7 +176,7 @@ public class IndicatorsVariationMB {
     String categoryAxixLabel = "";
     String indicatorName = "";
     DefaultCategoryDataset dataset = null;
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy", new Locale("ES"));
     double increment = 0;
 
     public IndicatorsVariationMB() {
@@ -484,8 +488,8 @@ public class IndicatorsVariationMB {
 
     public void process() {
         btnExportDisabled = true;
-        
-            diferentTemporalWarning = "";
+
+        diferentTemporalWarning = "";
         variablesCrossData = new ArrayList<>();//lista de variables a cruzar            
         message = null;
         categoryAxixLabel = "";
@@ -1891,7 +1895,12 @@ public class IndicatorsVariationMB {
          * determinar con que color pintar de 99 posibles
          */
         colorId++;
-        int modPos = colorId % 99;
+        int modPos = 0;
+        if (showFrames) {
+            modPos = colorId % 99;
+        }else{
+            modPos = colorId % 20;
+        }
         switch (modPos) {
             case 0:
                 return new Color(255, 0, 0);//ROJO                
@@ -1944,9 +1953,8 @@ public class IndicatorsVariationMB {
                 }
                 return createTexturePaint(getColorById(color1), getColorById(color2));
         }
-    }
-    int colorId = 0;
-    int typeFill = 0;
+    }    
+    
 
     public void createImage() {
         try {
@@ -2098,7 +2106,7 @@ public class IndicatorsVariationMB {
 
         if (currentTemporalDisaggregation.compareTo("Diaria") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "diaria");
-            sdf_s = new SimpleDateFormat("dd MMM yyyy");
+            sdf_s = new SimpleDateFormat("dd MMM yyyy", new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.add(Calendar.DATE, i);
@@ -2110,7 +2118,7 @@ public class IndicatorsVariationMB {
         }
         if (currentTemporalDisaggregation.compareTo("Mensual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "mensual");
-            sdf_s = new SimpleDateFormat("MMM yyyy");
+            sdf_s = new SimpleDateFormat("MMM yyyy", new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
@@ -2126,7 +2134,7 @@ public class IndicatorsVariationMB {
         }
         if (currentTemporalDisaggregation.compareTo("Anual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "anual");
-            sdf_s = new SimpleDateFormat("yyyy");
+            sdf_s = new SimpleDateFormat("yyyy", new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
@@ -2493,10 +2501,10 @@ public class IndicatorsVariationMB {
                 celda = fila.createCell((short) posI);
                 String value;
                 if (!showCalculation) {
-                    value=matrixResult[i][j].split("<br/>")[0].replace("<b>", "").replace("</b>", "");
+                    value = matrixResult[i][j].split("<br/>")[0].replace("<b>", "").replace("</b>", "");
                     //celda.setCellValue(value);
                 } else {
-                    value=matrixResult[i][j].replace("<br/>", " ").replace("<b>", "").replace("</b>", "");
+                    value = matrixResult[i][j].replace("<br/>", " ").replace("<b>", "").replace("</b>", "");
                     //celda.setCellValue(value);
                 }
                 setValueCell(celda, value);
@@ -2504,7 +2512,7 @@ public class IndicatorsVariationMB {
             }
         }
     }
-    
+
     private void setValueCell(HSSFCell celda, String strValue) {
         /*determina si el valor a almacenar en una celda del 
          archivo excell debe ser numerica o cadena*/
@@ -2513,7 +2521,7 @@ public class IndicatorsVariationMB {
             celda.setCellValue(value);
         } catch (Exception e) {
             celda.setCellValue(new HSSFRichTextString(strValue));
-        }        
+        }
     }
 
     private String createDataTableResult() {
@@ -2757,23 +2765,7 @@ public class IndicatorsVariationMB {
         reset();
     }
 
-//    public void changeGraphType1() {
-//        if (graphType1 == false) {
-//            graphType2 = true;
-//        } else {
-//            graphType2 = false;
-//        }
-//        createImage();
-//    }
-//
-//    public void changeGraphType2() {
-//        if (graphType2 == false) {
-//            graphType1 = true;
-//        } else {
-//            graphType1 = false;
-//        }
-//        createImage();
-//    }
+
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
@@ -3008,20 +3000,6 @@ public class IndicatorsVariationMB {
         this.renderedDynamicDataTable = renderedDynamicDataTable;
     }
 
-//    public List<String> getValuesGraph() {
-//        return valuesGraph;
-//    }
-//
-//    public void setValuesGraph(List<String> valuesGraph) {
-//        this.valuesGraph = valuesGraph;
-//    }
-//    public List<String> getVariablesGraph() {
-//        return variablesGraph;
-//    }
-//
-//    public void setVariablesGraph(List<String> variablesGraph) {
-//        this.variablesGraph = variablesGraph;
-//    }
     public String getDataTableHtmlA() {
         return dataTableHtmlA;
     }
@@ -3208,5 +3186,12 @@ public class IndicatorsVariationMB {
 
     public void setCurrentTypeGraph(String currentTypeGraph) {
         this.currentTypeGraph = currentTypeGraph;
+    }
+    public boolean isShowFrames() {
+        return showFrames;
+    }
+
+    public void setShowFrames(boolean showFrames) {
+        this.showFrames = showFrames;
     }
 }

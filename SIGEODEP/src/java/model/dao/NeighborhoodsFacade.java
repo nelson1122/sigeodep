@@ -70,7 +70,7 @@ public class NeighborhoodsFacade extends AbstractFacade<Neighborhoods> {
             switch (t) {
                 case 1://zona urbana
                     hql = "Select MAX(x.neighborhoodId) from Neighborhoods x where "
-                            + "x.neighborhoodType like '1' and x.suburbId = " + suburb + "";
+                            + "x.neighborhoodArea = 1 and x.neighborhoodSuburb = " + suburb + "";
                     valueInt = em.createQuery(hql, Integer.class).getSingleResult();
                     if (valueInt == 0) {
                         valueStr = "52";
@@ -84,7 +84,7 @@ public class NeighborhoodsFacade extends AbstractFacade<Neighborhoods> {
                     break;
                 case 2://zona rural
                     hql = "Select MAX(x.neighborhoodId) from Neighborhoods x where "
-                            + "x.neighborhoodType like '2'";
+                            + "x.neighborhoodArea = 2";
                     valueInt = em.createQuery(hql, Integer.class).getSingleResult();
                     if (valueInt == 0) {
                         valueStr = "52";                        

@@ -306,7 +306,7 @@
                                     <p:column styleClass="ui-widget-header">
                                         Tipo de Gráfico
                                     </p:column>
-                                    <p:column>  
+                                    <p:column colspan="3">  
                                         <h:selectOneMenu 
                                             id="IdTypeGraph" value="#{indicatorsVariationMB.currentTypeGraph}"> 
                                             <f:selectItems value="#{indicatorsVariationMB.typesGraph}"/>
@@ -340,6 +340,17 @@
                                     </p:column>
                                     <p:column>
                                         <h:selectBooleanCheckbox value="#{indicatorsVariationMB.showItems}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsVariationMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
+                                    </p:column>
+                                    <p:column styleClass="ui-widget-header">
+                                        Tramas
+                                    </p:column>
+                                    <p:column >
+                                        <h:selectBooleanCheckbox value="#{indicatorsVariationMB.showFrames}" >
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsVariationMB.createImage}"

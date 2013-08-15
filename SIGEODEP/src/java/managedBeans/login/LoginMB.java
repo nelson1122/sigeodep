@@ -62,10 +62,20 @@ public class LoginMB {
     @EJB
     UsersFacade usersFacade;
     private String closeSessionDialog = "";
+    private boolean autenticado = false;
+
+    public LoginMB() {
+    }
 
     @PreDestroy
-    private void destroySession() {
+    public void destroySession() {
+        /*
+         * antes de destruir esta clase se eliminan datos temporales a el usuario 
+         * que ingreso al sistema, esto ocurre si se para el servidor o la sesion es
+         * destruida por inactividad
+         */
         try {
+            //elimino de la lista de usuarios actuales en el sistema
             applicationControlMB.removeSession(idSession);
             //elimino datos que este usuario tenga por realizacion de indicadores
             connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());
@@ -77,8 +87,11 @@ public class LoginMB {
             //System.out.println("Termina session por inactividad 003 " + e.toString());
         }
     }
-    
-    public void logout1() {//fin de session por que se inicio una nueva session en otro equipo      
+
+    public void logout1() {
+        /*
+         * fin de session por que se inicio una nueva session en otro equipo      
+         */
         applicationControlMB.removeSession(idSession);
         try {
             ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
@@ -89,7 +102,10 @@ public class LoginMB {
         }
     }
 
-    public void logout2() {//fin de sesion al terminar session dada por el usuario
+    public void logout2() {
+        /*
+         * fin de sesion dada por el usuario: botón "cerrar cesion"
+         */
         applicationControlMB.removeSession(idSession);//System.out.println("Finaliza session "+loginname+" ID: "+idSession);
         try {
             ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
@@ -101,9 +117,6 @@ public class LoginMB {
         }
     }
 
-    public LoginMB() {
-    }
-
     public void reset() {
         projectsMB.reset();
         relationshipOfVariablesMB.reset();
@@ -112,28 +125,23 @@ public class LoginMB {
         errorsControlMB.reset();
         filterMB.reset();
     }
-    private boolean autenticado = false;
-
-    public boolean isAutenticado() {
-        return autenticado;
-    }
-
-    public void setAutenticado(boolean autenticado) {
-        this.autenticado = autenticado;
-    }
 
     public String closeSessionAndLogin() {
         /*
-         * cerrar una session abierta y continuar abriendo una nueva
+         * terminar una session iniciada y continuar abriendo una nueva;
+         * se usa cuando un mismo usuario intenta loguearse desde dos
+         * terminales distintas
          */
         applicationControlMB.removeSession(currentUser.getUserId());
         return continueLogin();
     }
 
     private String continueLogin() {
+        /*
+         * instanciar todas las variables necesarias para que un usario inicie una session
+         */
         context = FacesContext.getCurrentInstance();
         connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-
 
         FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", loginname);
         HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
@@ -223,6 +231,10 @@ public class LoginMB {
     }
 
     public String CheckValidUser() {
+        /*
+         * determinar si el usuario puede acceder al sistema determinando si exite
+         * el login, clave y la cuenta esta activa
+         */
         closeSessionDialog = "";
         currentUser = usersFacade.findUser(loginname, password);
 
@@ -251,9 +263,6 @@ public class LoginMB {
         } else {
             return continueLogin();
         }
-
-
-
     }
 
     public String getLoginname() {
@@ -414,5 +423,13 @@ public class LoginMB {
 
     public void setDisableAdministratorSection(boolean disableAdministratorSection) {
         this.disableAdministratorSection = disableAdministratorSection;
+    }
+
+    public boolean isAutenticado() {
+        return autenticado;
+    }
+
+    public void setAutenticado(boolean autenticado) {
+        this.autenticado = autenticado;
     }
 }

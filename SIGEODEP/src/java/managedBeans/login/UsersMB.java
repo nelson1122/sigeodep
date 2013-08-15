@@ -25,17 +25,12 @@ import model.pojo.Users;
 @SessionScoped
 public class UsersMB {
 
-    /**
-     * ACTIVIDADES DURANTE EL HECHO
-     */
     private List<RowDataTable> rowDataTableList;
     private RowDataTable selectedRowDataTable;
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
     @EJB
     UsersFacade usersFacade;
-//    @EJB
-//    UsersConfigurationFacade usersConfigurationFacade;
     private List<Users> usersList;
     private String stateUser = "Activa";
     private String newStateUser = "Activa";
@@ -80,6 +75,10 @@ public class UsersMB {
     }
 
     public void changePermission1() {
+        /*
+         * determinar automaticamente permisos aceptados seleccione o desseleccione
+         * las casillas de permisos 
+         */
         if (permission1 == false) {
             permission5 = false;
         } else if (permission1 && permission2 && permission3 && permission4) {
@@ -88,6 +87,10 @@ public class UsersMB {
     }
 
     public void changePermission2() {
+        /*
+         * determinar automaticamente permisos aceptados seleccione o desseleccione
+         * las casillas de permisos 
+         */
         if (permission2 == false) {
             permission5 = false;
         } else if (permission1 && permission2 && permission3 && permission4) {
@@ -122,7 +125,7 @@ public class UsersMB {
             permission5 = true;
         }
     }
-    //////////////
+
     public void changeNewPermission1() {
         if (newPermission1 == false) {
             newPermission5 = false;
@@ -130,6 +133,7 @@ public class UsersMB {
             newPermission5 = true;
         }
     }
+
     public void changeNewPermission2() {
         if (newPermission2 == false) {
             newPermission5 = false;
@@ -137,6 +141,7 @@ public class UsersMB {
             newPermission5 = true;
         }
     }
+
     public void changeNewPermission3() {
         if (newPermission3 == false) {
             newPermission5 = false;
@@ -144,6 +149,7 @@ public class UsersMB {
             newPermission5 = true;
         }
     }
+
     public void changeNewPermission4() {
         if (newPermission4 == false) {
             newPermission5 = false;
@@ -151,6 +157,7 @@ public class UsersMB {
             newPermission5 = true;
         }
     }
+
     public void changeNewPermission5() {
         if (newPermission5 == true) {
             newPermission1 = true;
@@ -162,7 +169,6 @@ public class UsersMB {
             newPermission5 = true;
         }
     }
-    //////////////
 
     public void load() {
         currentUser = null;

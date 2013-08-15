@@ -253,7 +253,7 @@
                                     <p:column styleClass="ui-widget-header">
                                         Tipo de Gráfico
                                     </p:column>
-                                    <p:column colspan="2">
+                                    <p:column colspan="3">
                                         <h:selectOneMenu 
                                             id="IdTypeGraph" value="#{indicatorsCountMB.currentTypeGraph}"> 
                                             <f:selectItems value="#{indicatorsCountMB.typesGraph}"/>
@@ -284,8 +284,19 @@
                                     <p:column styleClass="ui-widget-header">
                                         Mostrar Items
                                     </p:column>
-                                    <p:column colspan="2">
+                                    <p:column>
                                         <h:selectBooleanCheckbox value="#{indicatorsCountMB.showItems}" >
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsCountMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </h:selectBooleanCheckbox>
+                                    </p:column>                                        
+                                    <p:column styleClass="ui-widget-header">
+                                        Tramas
+                                    </p:column>
+                                    <p:column >
+                                        <h:selectBooleanCheckbox value="#{indicatorsCountMB.showFrames}" >
                                             <f:ajax 
                                                 event="change"
                                                 listener="#{indicatorsCountMB.createImage}"
@@ -572,7 +583,7 @@
                                 <p:commandButton                                                            
                                     value="Guardar"
                                     style="margin:0;"
-                                    onclick="saveConfigurationDialog.show()"/>  
+                                    onclick="saveConfigurationDialog.show();"/>  
                                 <p:commandButton                                                            
                                     value="Cargar/Eliminar"
                                     style="margin:0;"                    

@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -93,7 +94,7 @@ public class IndicatorsRateMB {
     private String newConfigurationName = "";
     private Indicators currentIndicator;
     private StreamedContent chartImage;
-    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy", new Locale("ES"));
     private OutputPanel dynamicDataTableGroup; // Placeholder.
     private FacesMessage message = null;
     private ConnectionJdbcMB connectionJdbcMB;
@@ -145,6 +146,9 @@ public class IndicatorsRateMB {
     private boolean renderedDynamicDataTable = true;
     private boolean showCalculation = false;//mostrar la division
     private boolean colorType = true;
+    int colorId = 0;
+    int typeFill = 0;
+    private boolean showFrames = true;
     private boolean showItems = true;
     private boolean showEmpty = false;
     private CopyManager cpManager;
@@ -162,7 +166,7 @@ public class IndicatorsRateMB {
     String variablesName = "";
     String categoryAxixLabel = "";
     String indicatorName = "";
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy", new Locale("ES"));
     DefaultCategoryDataset dataset = null;
 
     public IndicatorsRateMB() {
@@ -477,7 +481,7 @@ public class IndicatorsRateMB {
             cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
             sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
         } catch (SQLException | IOException e) {
-            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -577,7 +581,7 @@ public class IndicatorsRateMB {
 
 
         } catch (SQLException | IOException e) {
-            System.out.println("Error: " + e.toString());
+            System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -628,9 +632,10 @@ public class IndicatorsRateMB {
                     + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n";
             connectionJdbcMB.non_query(sql);//elimino los valores del indicador 100
         } catch (Exception e) {
+            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-    
+
     private void saveIndicatorRecords(String sqlConsult) {
         //------------------------------------------------------------------
         //AGEGAR UNA CONSULTA A LA TABLA indicators_records 
@@ -683,7 +688,7 @@ public class IndicatorsRateMB {
             cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
             sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
         } catch (SQLException | NumberFormatException | IOException e) {
-            System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -1788,7 +1793,7 @@ public class IndicatorsRateMB {
                 }
             }
         } catch (SQLException ex) {
-            System.out.println("Error: " + ex.toString());
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + ex.toString());
         }
         return datSet;
     }
@@ -1855,7 +1860,7 @@ public class IndicatorsRateMB {
     private Color getColorById(int id) {
         switch (id) {
             case 2:
-                return Color.RED;           
+                return Color.RED;
             case 3:
                 return Color.YELLOW;
             case 4:
@@ -1883,7 +1888,12 @@ public class IndicatorsRateMB {
          * determinar con que color pintar de 99 posibles
          */
         colorId++;
-        int modPos = colorId % 99;
+        int modPos = 0;
+        if (showFrames) {
+            modPos = colorId % 99;
+        }else{
+            modPos = colorId % 20;
+        }
         switch (modPos) {
             case 0:
                 return new Color(255, 0, 0);//ROJO                
@@ -1903,7 +1913,7 @@ public class IndicatorsRateMB {
                 return new Color(255, 130, 0);//NARANJA                
             case 8:
                 return new Color(128, 0, 128);//MORADO                
-            case 9:                
+            case 9:
                 return new Color(160, 0, 0);//ROJO OSCURO
             case 10:
                 return new Color(0, 0, 160);//AZUL OSCURO
@@ -1937,8 +1947,7 @@ public class IndicatorsRateMB {
                 return createTexturePaint(getColorById(color1), getColorById(color2));
         }
     }
-    int colorId = 0;
-    int typeFill = 0;
+    
 
     public void createImage() {
         if (!variablesCrossData.isEmpty()) {
@@ -1988,7 +1997,7 @@ public class IndicatorsRateMB {
                             li = itemsLeyendaAnterior.get(posLeyend);
                             li.setFillPaint(c);
                             li.setLinePaint(c);
-                            li.setShape(new Rectangle2D.Float(0,0,10,10));
+                            li.setShape(new Rectangle2D.Float(0, 0, 10, 10));
                             li.setOutlinePaint(c);
                             plot.getRenderer().setSeriesPaint(posLeyend, c);//cambio color
                             itemsLeyendaNuevo.add(li);
@@ -2021,15 +2030,8 @@ public class IndicatorsRateMB {
                 ChartUtilities.saveChartAsPNG(chartFile, chart, widthGraph, heightGraph);
                 chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
             } catch (Exception e) {
+                System.out.println("Error 6 en " + this.getClass().getName() + ":" + e.toString());
             }
-//            try {
-//                JFreeChart chart = createLineChart();
-//                File chartFile = new File("grafico");
-//                ChartUtilities.saveChartAsPNG(chartFile, chart, 700, 500);
-//                chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
-//            } catch (Exception e) {
-//                System.out.println("Error 21 en " + this.getClass().getName() + ":" + e.toString());
-//            }
         }
     }
 
@@ -2139,8 +2141,8 @@ public class IndicatorsRateMB {
         }
     }
 
-    private int getDateDifference(Date date1, Date date2, String typeDifference) {        
-        Interval interval = new Interval(new DateTime(date1), (new DateTime(date2)).plusDays(1));        
+    private int getDateDifference(Date date1, Date date2, String typeDifference) {
+        Interval interval = new Interval(new DateTime(date1), (new DateTime(date2)).plusDays(1));
         if (typeDifference.compareTo("anual") == 0) {
             Years years34 = Years.yearsIn(interval);
             System.out.println("Años" + years34.getYears());
@@ -2161,6 +2163,7 @@ public class IndicatorsRateMB {
         Variable newVariable = new Variable("Desagregación temporal", "temporalDisaggregation", false, "");
         int diferenceRank;
         int daysMax;
+
         Calendar cal1 = Calendar.getInstance();
         ArrayList<String> valuesName = new ArrayList<>();//NOMBRE DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(NOMBRE EN LA CATEGORIA)
         ArrayList<String> valuesId = new ArrayList<>();  //IDENTIFICADORES DE LOS VALORES QUE PUEDE TOMAR LA VARIABLE POR DEFECTO(ID EN LA CATEGORIA)
@@ -2171,8 +2174,8 @@ public class IndicatorsRateMB {
 
         if (currentTemporalDisaggregation.compareTo("Diaria") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "diaria");
-            sdf_s = new SimpleDateFormat("dd MMM yyyy");
-            for (int i = 0; i < diferenceRank ; i++) {
+            sdf_s = new SimpleDateFormat("dd MMM yyyy", new Locale("ES"));
+            for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.add(Calendar.DATE, i);
                 iniDateString = formato.format(cal1.getTime());
@@ -2183,8 +2186,8 @@ public class IndicatorsRateMB {
         }
         if (currentTemporalDisaggregation.compareTo("Mensual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "mensual");
-            sdf_s = new SimpleDateFormat("MMM yyyy");
-            for (int i = 0; i < diferenceRank ; i++) {
+            sdf_s = new SimpleDateFormat("MMM yyyy", new Locale("ES"));
+            for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
                 cal1.add(Calendar.MONTH, i);//fecha inicial se la aumenta i meses                
@@ -2199,7 +2202,7 @@ public class IndicatorsRateMB {
         }
         if (currentTemporalDisaggregation.compareTo("Anual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "anual");
-            sdf_s = new SimpleDateFormat("yyyy");
+            sdf_s = new SimpleDateFormat("yyyy", new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
@@ -2411,7 +2414,7 @@ public class IndicatorsRateMB {
                         valuesId.add(rs.getString(1));
                     }
                 } catch (Exception e) {
-                    System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
+                    System.out.println("Error 7 en " + this.getClass().getName() + ":" + e.toString());
                 }
                 break;
         }
@@ -2582,10 +2585,10 @@ public class IndicatorsRateMB {
                 celda = fila.createCell((short) posI);
                 String value;
                 if (!showCalculation) {
-                    value=matrixResult[i][j].split("<br/>")[0].replace("<b>", "").replace("</b>", "");
+                    value = matrixResult[i][j].split("<br/>")[0].replace("<b>", "").replace("</b>", "");
                     //celda.setCellValue(value);
                 } else {
-                    value=matrixResult[i][j].replace("<br/>", " ").replace("<b>", "").replace("</b>", "");
+                    value = matrixResult[i][j].replace("<br/>", " ").replace("<b>", "").replace("</b>", "");
                     //celda.setCellValue(value);
                 }
                 setValueCell(celda, value);
@@ -2602,9 +2605,9 @@ public class IndicatorsRateMB {
             celda.setCellValue(value);
         } catch (Exception e) {
             celda.setCellValue(new HSSFRichTextString(strValue));
-        }        
+        }
     }
-    
+
     private String createDataTableResult() {
         headers1 = new ArrayList<>();
         headers2 = new String[columNames.size()];
@@ -2759,7 +2762,7 @@ public class IndicatorsRateMB {
         //System.out.println(strReturn);
         return strReturn;
     }
-    
+
     public void createMatrixResult() {//System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         try {
             ResultSet rs;
@@ -2834,7 +2837,7 @@ public class IndicatorsRateMB {
                 }
             }
         } catch (SQLException | NumberFormatException e) {
-            System.out.println("Error 6 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 8 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -3116,13 +3119,6 @@ public class IndicatorsRateMB {
         this.valuesGraph = valuesGraph;
     }
 
-//    public List<String> getVariablesGraph() {
-//        return variablesGraph;
-//    }
-//
-//    public void setVariablesGraph(List<String> variablesGraph) {
-//        this.variablesGraph = variablesGraph;
-//    }
     public String getCurrentSpatialDisaggregation() {
         return currentSpatialDisaggregation;
     }
@@ -3257,5 +3253,12 @@ public class IndicatorsRateMB {
 
     public void setWidthGraph(int widthGraph) {
         this.widthGraph = widthGraph;
+    }
+    public boolean isShowFrames() {
+        return showFrames;
+    }
+
+    public void setShowFrames(boolean showFrames) {
+        this.showFrames = showFrames;
     }
 }

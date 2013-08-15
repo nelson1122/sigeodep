@@ -34,19 +34,26 @@ public class RecordSetsMB implements Serializable {
 
     @EJB
     TagsFacade tagsFacade;
+    @EJB
+    FormsFacade formsFacade;
     private RowDataTable[] selectedRowsDataTable;
     private RowDataTable selectedRowsDataTable2;
     private List<RowDataTable> rowDataTableList;
     private List<RowDataTable> rowDataTableList2;
     private List<Tags> tagsList;
     private Tags currentTag;
-    private UngroupedTags newUngroupedTags;
     private int currentSearchCriteria = 0;
     private int currentSearchCriteria2 = 0;
     private String currentSearchValue = "";
     private String currentSearchValue2 = "";
     private String name = "";
     private String newName = "";
+    private String openRecordSets;
+    private String openDuplicateSets;
+    private String formName = "";
+    private String groupName = "";
+    private String editGroupName = "";
+    private String editFormName = "";
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
     private boolean btnViewDisabled = true;
@@ -65,28 +72,19 @@ public class RecordSetsMB implements Serializable {
     private DuplicateSetsSuicideMB duplicateSetsSuicideMB;
     private DuplicateSetsTransitMB duplicateSetsTransitMB;
     private DuplicateSetsVifMB duplicateSetsVifMB;
-    private DuplicateSetsSIvigilaVifMB duplicateSetsSivigilaVifMB;
-    private String openRecordSets;
-    private String openDuplicateSets;
-    @EJB
-    FormsFacade formsFacade;
+    private DuplicateSetsSIvigilaVifMB duplicateSetsSivigilaVifMB;    
     private SelectItem[] forms;
-    private Short currentForm = 0;
-    private String formName = "";
-    private String groupName = "";
-    private String editGroupName = "";
-    private String editFormName = "";
+    private Short currentForm = 0;    
     private int progress = 0;//PROGRESO AL ABRIR CONJUNTOS
     private int progressDelete = 0;//PROGRESO AL ELIMINAR CONJUNTOS
     private int progressSplit = 0;//PROGRESO AL ELIMINAR CONJUNTOS    
-    //private int totalProcess = 0;
     private Date initialDateView = new Date();
     private Date endDateView = new Date();
     private Date initialDateDuplicate = new Date();
     private Date endDateDuplicate = new Date();
-    ConnectionJdbcMB connectionJdbcMB;
+    private ConnectionJdbcMB connectionJdbcMB;
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
-    FacesMessage msg;
+    private FacesMessage msg;
 
     public RecordSetsMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
@@ -385,6 +383,9 @@ public class RecordSetsMB implements Serializable {
     }
 
     private void removeMurder(Tags currentTagRemove) {
+        /*
+         * Eliminacion de registros que pertenecen a un conjunto de registros de homicidios
+         */
         try {
             //FATAL INJURY MURDER
             connectionJdbcMB.non_query(""
@@ -763,7 +764,7 @@ public class RecordSetsMB implements Serializable {
         //EXISTAN FILAS SELECCIONADAS
         if (selectedRowsDataTable2 == null) {
             continueProcess = false;
-            printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se deben el conjunto a desagrupar de la lista");
+            printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar el conjunto a desagrupar");
         }
         if (continueProcess) {
             try {
@@ -836,7 +837,7 @@ public class RecordSetsMB implements Serializable {
             //CREO LA LISTA DE TAGS SELECCIONADOS
             tagsList = new ArrayList<>();
             for (int i = 0; i < selectedRowsDataTable.length; i++) {
-                if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 7) {
+                if (Integer.parseInt(selectedRowsDataTable[i].getColumn1()) < 8) {
                     //si es general lo coloco de primero
                     tagsListAux.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTable[i].getColumn1())));
                     for (int j = 0; j < tagsList.size(); j++) {
@@ -895,25 +896,6 @@ public class RecordSetsMB implements Serializable {
                         + "por lo cual no se puede realizar la eliminación");
             } else {    
                 for (int i = 0; i < tagsList.size(); i++) {
-                    //ELIMINACION DE CONJUNTOS AGRUPADOS
-//                    try {
-//                        ResultSet rs = connectionJdbcMB.consult(""
-//                                + " SELECT "
-//                                + "    tag_id, first_tag_id "
-//                                + " FROM "
-//                                + "    victims "
-//                                + " WHERE "
-//                                + "	   tag_id != first_tag_id AND "
-//                                + "	   tag_id = " + tagsList.get(i).getTagId().toString()
-//                                + " GROUP BY "
-//                                + "	   tag_id, first_tag_id "
-//                                + " ORDER BY "
-//                                + "    tag_id ");
-//                        while (rs.next()) {
-//                            connectionJdbcMB.remove("ungrouped_tags", "ungrouped_tag_id = " + rs.getString("first_tag_id"));
-//                        }
-//                    } catch (Exception e) {
-//                    }
                     //ELIMINACION DE REGISTROS
                     if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-028") == 0) {
                         removeMurder(tagsList.get(i));
