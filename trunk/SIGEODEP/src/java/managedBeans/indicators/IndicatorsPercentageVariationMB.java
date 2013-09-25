@@ -113,12 +113,13 @@ public class IndicatorsPercentageVariationMB {
     IndicatorsFacade indicatorsFacade;
     @EJB
     IndicatorsConfigurationsFacade indicatorsConfigurationsFacade;
-    private String currentConfigurationSelected = "";
+    private List<String> currentConfigurationSelected = new ArrayList<>();
+    ;
     private List<String> configurationsList = new ArrayList<>();
     private String newConfigurationName = "";
     private Indicators currentIndicator;
     private StreamedContent chartImage;
-    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy",new Locale("ES"));
+    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy", new Locale("ES"));
     private FacesMessage message = null;
     private ConnectionJdbcMB connectionJdbcMB;
     private String titlePage = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
@@ -214,7 +215,7 @@ public class IndicatorsPercentageVariationMB {
     String categoryAxixLabel = "";
     String indicatorName = "";
     DefaultCategoryDataset dataset = null;
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy",new Locale("ES"));
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy", new Locale("ES"));
     String serieName = "";
     double increment = 0;
 
@@ -520,8 +521,8 @@ public class IndicatorsPercentageVariationMB {
         valuesGraph = new ArrayList<>();
         currentValueGraph = "";
         currentVariableGraph = "";
-        categoryAxixLabel = "";        
-            diferentTemporalWarning = "";
+        categoryAxixLabel = "";
+        diferentTemporalWarning = "";
         boolean continueProcess = validateDateRange();//VALIDACION DE FECHAS
 
         if (continueProcess) {//ELIMINO DATOS DE UN PROCESO ANTERIOR
@@ -619,89 +620,8 @@ public class IndicatorsPercentageVariationMB {
         //---------------------------------------------------------
         columNames = new ArrayList<>();
         rowNames = new ArrayList<>();
-        //columnTypeName = new ArrayList<String>();
         try {
-//            //---------------------------------------------------------
-//            //CREO NUEVOS VECTORES DE VALORES POR QUE PUEDE SER QUE HAYA QUE AGREGAR EL VALOR 'SIN DATO' QUE NO VIENE POR DEFECTO EN LOS VALORES                        
-//            //---------------------------------------------------------
-//            ArrayList<String> values1 = new ArrayList<>();
-//            ResultSet rs;
-//            boolean addNoData;
-//            if (variablesCrossData.size() > 0) {
-//                addNoData = true;
-//                for (int i = 0; i < variablesCrossData.get(0).getValuesConfigured().size(); i++) {
-//                    values1.add(variablesCrossData.get(0).getValuesConfigured().get(i));
-//                    if (variablesCrossData.get(0).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
-//                        addNoData = false;//la categoria contiene un valor sin dato
-//                    }
-//                }
-//                if (addNoData) {
-//                    sql = ""
-//                            + " SELECT "
-//                            + "    * "
-//                            + " FROM "
-//                            + "    indicators_records "
-//                            + " WHERE "
-//                            + "    column_1 like 'SIN DATO' AND "
-//                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-//                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + incrementTarget) + " \n\r";
-//                    rs = connectionJdbcMB.consult(sql);
-//                    if (rs.next()) {
-//                        values1.add("SIN DATO");
-//                    }
-//                }
-//            }
-//            ArrayList<String> values2 = new ArrayList<>();
-//            if (variablesCrossData.size() > 1) {
-//                addNoData = true;
-//                for (int i = 0; i < variablesCrossData.get(1).getValuesConfigured().size(); i++) {
-//                    values2.add(variablesCrossData.get(1).getValuesConfigured().get(i));
-//                    if (variablesCrossData.get(1).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
-//                        addNoData = false;//la categoria contiene un valor sin dato
-//                    }
-//                }
-//                if (addNoData) {
-//                    sql = ""
-//                            + " SELECT "
-//                            + "    * "
-//                            + " FROM "
-//                            + "    indicators_records "
-//                            + " WHERE "
-//                            + "    column_2 like 'SIN DATO' AND "
-//                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-//                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + incrementTarget) + " \n\r";
-//                    rs = connectionJdbcMB.consult(sql);
-//                    if (rs.next()) {
-//                        values2.add("SIN DATO");
-//                    }
-//                }
-//            }
-//            ArrayList<String> values3 = new ArrayList<>();
-//            if (variablesCrossData.size() > 2) {
-//                addNoData = true;
-//                for (int i = 0; i < variablesCrossData.get(2).getValuesConfigured().size(); i++) {
-//                    values3.add(variablesCrossData.get(2).getValuesConfigured().get(i));
-//                    if (variablesCrossData.get(2).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
-//                        addNoData = false;//la categoria contiene un valor sin dato
-//                    }
-//                }
-//                if (addNoData) {
-//                    sql = ""
-//                            + " SELECT "
-//                            + "    * "
-//                            + " FROM "
-//                            + "    indicators_records "
-//                            + " WHERE "
-//                            + "    column_3 like 'SIN DATO' AND "
-//                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-//                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + incrementTarget) + " \n\r";
-//                    rs = connectionJdbcMB.consult(sql);
-//                    if (rs.next()) {
-//                        values3.add("SIN DATO");
-//                    }
-//                }
-//            }
-            ArrayList<String> values1, values2, values3;
+            List<String> values1, values2, values3;
             //---------------------------------------------------------
             //REALIZO LAS POSIBLES COMBINACIONES
             //---------------------------------------------------------            
@@ -710,7 +630,7 @@ public class IndicatorsPercentageVariationMB {
             tuplesProcessed = 0;
             int id = 0;
             if (variablesCrossData.size() == 1) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
                 for (int i = 0; i < values1.size(); i++) {
                     columNames.add(values1.get(i));
                     sb.
@@ -726,8 +646,8 @@ public class IndicatorsPercentageVariationMB {
                 }
                 rowNames.add("Valor");
             } else if (variablesCrossData.size() == 2) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
-                values2 = (ArrayList<String>) variablesCrossData.get(1).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
+                values2 = variablesCrossData.get(1).getValuesConfigured();
                 for (int i = 0; i < values2.size(); i++) {
                     rowNames.add(values2.get(i));
                     for (int j = 0; j < values1.size(); j++) {
@@ -747,9 +667,9 @@ public class IndicatorsPercentageVariationMB {
                     }
                 }
             } else if (variablesCrossData.size() == 3) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
-                values2 = (ArrayList<String>) variablesCrossData.get(1).getValuesConfigured();
-                values3 = (ArrayList<String>) variablesCrossData.get(2).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
+                values2 = variablesCrossData.get(1).getValuesConfigured();
+                values3 = variablesCrossData.get(2).getValuesConfigured();
                 for (int i = 0; i < values2.size(); i++) {
                     for (int j = 0; j < values1.size(); j++) {
                         columNames.add(values1.get(j) + "}" + values2.get(i));
@@ -988,7 +908,7 @@ public class IndicatorsPercentageVariationMB {
                                         + "       WHEN (( \n\r"
                                         + "           CASE \n\r"
                                         + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r"
-                                        + "               WHEN (victims.age_type_id = 1) THEN victims.victim_age \n\r"
+                                        + "               WHEN (victims.age_type_id = 1 or victims.age_type_id is null) THEN victims.victim_age \n\r"
                                         + "           END \n\r"
                                         + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                             }
@@ -1511,17 +1431,19 @@ public class IndicatorsPercentageVariationMB {
 
     public int btnRemoveConfigurationClick() {
         //System.out.println("currentConfigurationSelected es " + currentConfigurationSelected);
-        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+        if (currentConfigurationSelected == null || currentConfigurationSelected.isEmpty()) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
             return 0;
         }
         List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
         for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
-            if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(currentConfigurationSelected) == 0) {
-                indicatorsConfigurationsFacade.remove(indicatorsConfigurationsList.get(i));
-                btnLoadConfigurationClick();
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La configuración ha sido eliminada"));
-                return 0;
+            for (int j = 0; j < currentConfigurationSelected.size(); j++) {
+                if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(currentConfigurationSelected.get(j)) == 0) {
+                    indicatorsConfigurationsFacade.remove(indicatorsConfigurationsList.get(i));
+                    btnLoadConfigurationClick();
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La configuración ha sido eliminada"));
+                    return 0;
+                }
             }
         }
         return 0;
@@ -1529,12 +1451,12 @@ public class IndicatorsPercentageVariationMB {
 
     public int btnOpenConfigurationClick() {
         //realizar la carga de la configuracion indicada
-        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+        if (currentConfigurationSelected == null || currentConfigurationSelected.isEmpty()) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
             return 0;
         }
         currentCategoricalValuesList = new ArrayList<>();
-        IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected);
+        IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected.get(0));
 
         if (firstVariablesCrossSelected.compareTo(indicatorsConfigurationsSelected.getVariableName()) != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La configuracion corresponde a la variable ("
@@ -1569,7 +1491,7 @@ public class IndicatorsPercentageVariationMB {
     public void btnLoadConfigurationClick() {
         //recargar las configuraciones existentes
         //System.out.println("inicia carga de configuraciones");
-        currentConfigurationSelected = "";
+        currentConfigurationSelected = new ArrayList<>();
         configurationsList = new ArrayList<>();
         List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
         for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
@@ -1902,7 +1824,7 @@ public class IndicatorsPercentageVariationMB {
             System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-    
+
     private DefaultCategoryDataset createDataSet() {
         /*
          * creacion del conjunto de datos para generar grafico
@@ -2003,7 +1925,7 @@ public class IndicatorsPercentageVariationMB {
                     increment = Math.sqrt(valor * valor);
                 }
                 strDateName = rs.getString("column_1") + " - " + rs2.getString("column_1");
-                datSet.setValue(valor, "-", strDateName);                
+                datSet.setValue(valor, "-", strDateName);
             }
             increment = increment * 0.005;//grosor linea
         } catch (SQLException ex) {
@@ -2035,7 +1957,7 @@ public class IndicatorsPercentageVariationMB {
         typesGraph.add("areas");
         typesGraph.add("lineas");
 
-        numberCross = currentIndicator.getNumberCross();
+        //numberCross = currentIndicator.getNumberCross();
         variablesList = new ArrayList<>();//SelectItem[variablesListData.size()];
         for (int i = 0; i < variablesListData.size(); i++) {
             variablesList.add(variablesListData.get(i).getName());
@@ -2067,7 +1989,7 @@ public class IndicatorsPercentageVariationMB {
 
         if (currentTemporalDisaggregation.compareTo("Diaria") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "diaria");
-            sdf_s = new SimpleDateFormat("dd MMM yyyy",new Locale("ES"));
+            sdf_s = new SimpleDateFormat("dd MMM yyyy", new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.add(Calendar.DATE, i);
@@ -2079,7 +2001,7 @@ public class IndicatorsPercentageVariationMB {
         }
         if (currentTemporalDisaggregation.compareTo("Mensual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "mensual");
-            sdf_s = new SimpleDateFormat("MMM yyyy",new Locale("ES"));
+            sdf_s = new SimpleDateFormat("MMM yyyy", new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
@@ -2095,7 +2017,7 @@ public class IndicatorsPercentageVariationMB {
         }
         if (currentTemporalDisaggregation.compareTo("Anual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "anual");
-            sdf_s = new SimpleDateFormat("yyyy",new Locale("ES"));
+            sdf_s = new SimpleDateFormat("yyyy", new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
@@ -2707,9 +2629,9 @@ public class IndicatorsPercentageVariationMB {
             celda.setCellValue(value);
         } catch (Exception e) {
             celda.setCellValue(new HSSFRichTextString(strValue));
-        }        
+        }
     }
-    
+
     private String createDataTableResult() {
 
         headers1 = new ArrayList<>();
@@ -3443,11 +3365,11 @@ public class IndicatorsPercentageVariationMB {
         this.newConfigurationName = newConfigurationName;
     }
 
-    public String getCurrentConfigurationSelected() {
+    public List<String> getCurrentConfigurationSelected() {
         return currentConfigurationSelected;
     }
 
-    public void setCurrentConfigurationSelected(String currentConfigurationSelected) {
+    public void setCurrentConfigurationSelected(List<String> currentConfigurationSelected) {
         this.currentConfigurationSelected = currentConfigurationSelected;
     }
 

@@ -72,9 +72,9 @@ public class RecordSetsMB implements Serializable {
     private DuplicateSetsSuicideMB duplicateSetsSuicideMB;
     private DuplicateSetsTransitMB duplicateSetsTransitMB;
     private DuplicateSetsVifMB duplicateSetsVifMB;
-    private DuplicateSetsSIvigilaVifMB duplicateSetsSivigilaVifMB;    
+    private DuplicateSetsSIvigilaVifMB duplicateSetsSivigilaVifMB;
     private SelectItem[] forms;
-    private Short currentForm = 0;    
+    private Short currentForm = 0;
     private int progress = 0;//PROGRESO AL ABRIR CONJUNTOS
     private int progressDelete = 0;//PROGRESO AL ELIMINAR CONJUNTOS
     private int progressSplit = 0;//PROGRESO AL ELIMINAR CONJUNTOS    
@@ -589,6 +589,8 @@ public class RecordSetsMB implements Serializable {
                     + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")) ");
             progressDelete = 75;
 
+
+
             //NON FATAL INJURY
             connectionJdbcMB.non_query(""
                     + " DELETE FROM non_fatal_injuries where victim_id IN "
@@ -642,6 +644,20 @@ public class RecordSetsMB implements Serializable {
                 + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
                 + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
         progressDelete = 35;
+
+        //non_fatal_anatomical_location
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM non_fatal_anatomical_location where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 40;
+
+        //non_fatal_kind_of_injury
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM non_fatal_kind_of_injury where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + ")) ");
+        progressDelete = 45;
 
         //NON FATAL INJURY
         connectionJdbcMB.non_query(""
@@ -714,9 +730,14 @@ public class RecordSetsMB implements Serializable {
                 + " DELETE FROM non_fatal_domestic_violence where non_fatal_injury_id IN "
                 + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
                 + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
+        progressDelete = 45;
+
+        //non_fatal_anatomical_location
+        connectionJdbcMB.non_query(""
+                + " DELETE FROM non_fatal_anatomical_location where non_fatal_injury_id IN "
+                + " (select non_fatal_injury_id from non_fatal_injuries where victim_id IN "
+                + " (select victim_id from victims where tag_id=" + currentTagRemove.getTagId() + "))");
         progressDelete = 80;
-
-
 
         //NON FATAL INJURY
         connectionJdbcMB.non_query(""
@@ -894,7 +915,7 @@ public class RecordSetsMB implements Serializable {
                 //totalProcess = 100;
                 msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "Se ha seleccionado un conjunto por defecto del sistema "
                         + "por lo cual no se puede realizar la eliminación");
-            } else {    
+            } else {
                 for (int i = 0; i < tagsList.size(); i++) {
                     //ELIMINACION DE REGISTROS
                     if (tagsList.get(i).getFormId().getFormId().compareTo("SCC-F-028") == 0) {
@@ -912,7 +933,7 @@ public class RecordSetsMB implements Serializable {
                     } else if (tagsList.get(i).getFormId().getFormId().compareTo("SIVIGILA-VIF") == 0) {
                         removeSivigilaVif(tagsList.get(i));
                     }
-                    
+
                     connectionJdbcMB.remove("tags", "tag_id = " + tagsList.get(i).getTagId());
                     connectionJdbcMB.remove("ungrouped_tags", "ungrouped_tag_id = " + tagsList.get(i).getTagId());
                     connectionJdbcMB.remove("ungrouped_tags", "current_tag_id = " + tagsList.get(i).getTagId());
@@ -1035,9 +1056,11 @@ public class RecordSetsMB implements Serializable {
                     + "   ut.ungrouped_tag_id != ut.current_tag_id \n"
                     + " ORDER BY \n"
                     + "   ut.ungrouped_tag_date DESC");
+            int count= 0;
             while (rs.next()) {
+                count++;
                 RowDataTable newRowDataTable = new RowDataTable();
-                newRowDataTable.setColumn1(rs.getString("current_tag_id"));
+                newRowDataTable.setColumn1(String.valueOf(count));
                 newRowDataTable.setColumn2(rs.getString("current_name"));
                 newRowDataTable.setColumn3(rs.getString("ungrouped_tag_date"));
                 newRowDataTable.setColumn4(rs.getString("ungrouped_tag_id"));

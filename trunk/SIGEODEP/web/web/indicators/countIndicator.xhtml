@@ -11,7 +11,6 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />
-
             <script>
                 fnAdjustTable = function() {
                     var colCount = $('#firstTr>td').length; //get total number of column
@@ -477,16 +476,13 @@
                     resizable="false"                    
                     widgetVar="openConfigurationDialog">  
                     <br/>
-                    Seleccione la configuración a cargar
-                    <br/>
-                    <br/>
-                    <h:selectOneListbox 
+                    <h:selectManyListbox 
                         id="IdConfigurationsList"
                         value="#{indicatorsCountMB.currentConfigurationSelected}"
                         style="height:110px; width: 360px;"
                         converterMessage="Fallo de comunicación, por favor intente nuevamente.">
                         <f:selectItems value="#{indicatorsCountMB.configurationsList}"/>
-                    </h:selectOneListbox>
+                    </h:selectManyListbox>
                     <br/>
                     <br/>
                     <p:commandButton                                                            
@@ -497,7 +493,7 @@
                         update="IdSelectManyListCategoryValues IdConfigurationsList :IdTabView:IdForm:message"/>
                     <p:commandButton                                                            
                         value="Eliminar"
-                        style="margin:0;"
+                        style="margin:0;"                        
                         oncomplete="openConfigurationDialog.hide()"
                         actionListener="#{indicatorsCountMB.btnRemoveConfigurationClick}"
                         update="IdSelectManyListCategoryValues IdConfigurationsList :IdTabView:IdForm:message"/>  
@@ -520,7 +516,7 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                Valor inicial &nbsp;                            
+                                Valor inicial &nbsp;
                                 <h:inputText 
                                     id="IdA" 
                                     disabled="#{indicatorsCountMB.btnAddCategoricalValueDisabled}"
@@ -580,12 +576,14 @@
                                     style="margin:0;"                                                
                                     actionListener="#{indicatorsCountMB.btnResetCategoryListClick}"                                                
                                     update="IdBtnRemoveCategory IdSelectManyListCategoryValues"/>  
-                                <p:commandButton                                                            
+                                <p:commandButton   
+                                    rendered="#{loginMB.userSystem}"
                                     value="Guardar"
                                     style="margin:0;"
                                     onclick="saveConfigurationDialog.show();"/>  
                                 <p:commandButton                                                            
                                     value="Cargar/Eliminar"
+                                    rendered="#{loginMB.userSystem}"
                                     style="margin:0;"                    
                                     oncomplete="openConfigurationDialog.show()"/>  
                                 <br/>

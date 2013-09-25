@@ -92,12 +92,13 @@ public class IndicatorsPercentageMB {
     IndicatorsFacade indicatorsFacade;
     @EJB
     IndicatorsConfigurationsFacade indicatorsConfigurationsFacade;
-    private String currentConfigurationSelected = "";
+    private List<String> currentConfigurationSelected = new ArrayList<>();
+    ;
     private List<String> configurationsList = new ArrayList<>();
     private String newConfigurationName = "";
     private Indicators currentIndicator;
     private StreamedContent chartImage;
-    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy",new Locale("ES"));
+    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy", new Locale("ES"));
     private FacesMessage message = null;
     private ConnectionJdbcMB connectionJdbcMB;
     private String titlePage = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
@@ -136,16 +137,14 @@ public class IndicatorsPercentageMB {
     private ArrayList<String> totalsVertical = new ArrayList<>();
     private Variable currentVariableConfiguring;
     private int grandTotal = 0;//total general de la matriz
-    private int numberCross = 2;//maximo numero de variables a cruzar
+    private int numberCross = 3;//maximo numero de variables a cruzar
     private int currentYear = 0;
     private boolean btnAddVariableDisabled = true;
     private boolean btnAddCategoricalValueDisabled = true;
     private boolean btnRemoveCategoricalValueDisabled = true;
     private boolean btnRemoveVariableDisabled = true;
-    
     int colorId = 0;
     int typeFill = 0;
-    
     private String sql;//mostrar filas y columnas vacias
     private boolean showCount = false;//mostrar recuento
     private boolean showFrames = true;
@@ -177,7 +176,7 @@ public class IndicatorsPercentageMB {
     String variablesName = "";
     String categoryAxixLabel = "";
     String indicatorName = "";
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy",new Locale("ES"));
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy", new Locale("ES"));
     DefaultCategoryDataset defaultDataSet = null;
     DefaultPieDataset pieDataSet = null;
 
@@ -781,90 +780,8 @@ public class IndicatorsPercentageMB {
         //---------------------------------------------------------
         columNames = new ArrayList<>();
         rowNames = new ArrayList<>();
-        //columnTypeName = new ArrayList<>();
         try {
-//            //---------------------------------------------------------
-//            //CREO NUEVOS VECTORES DE VALORES POR QUE PUEDE SER QUE HAYA QUE AGREGAR EL VALOR 'SIN DATO' QUE NO VIENE POR DEFECTO EN LA CATEGORIA
-//            //---------------------------------------------------------
-//            ArrayList<String> values1 = new ArrayList<>();
-//            ResultSet rs;
-//            sql = "";
-//            boolean addNoData;
-//            if (variablesCrossData.size() > 0) {
-//                addNoData = true;
-//                for (int i = 0; i < variablesCrossData.get(0).getValuesConfigured().size(); i++) {
-//                    values1.add(variablesCrossData.get(0).getValuesConfigured().get(i));
-//                    if (variablesCrossData.get(0).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
-//                        addNoData = false;//la categoria contiene un valor sin dato
-//                    }
-//                }
-//                if (addNoData) {
-//                    sql = ""
-//                            + " SELECT "
-//                            + "    * "
-//                            + " FROM "
-//                            + "    indicators_records "
-//                            + " WHERE "
-//                            + "    column_1 like 'SIN DATO' AND "
-//                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-//                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
-//                    rs = connectionJdbcMB.consult(sql);
-//                    if (rs.next()) {
-//                        values1.add("SIN DATO");
-//                    }
-//                }
-//            }
-//            ArrayList<String> values2 = new ArrayList<>();
-//            if (variablesCrossData.size() > 1) {
-//                addNoData = true;
-//                for (int i = 0; i < variablesCrossData.get(1).getValuesConfigured().size(); i++) {
-//                    values2.add(variablesCrossData.get(1).getValuesConfigured().get(i));
-//                    if (variablesCrossData.get(1).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
-//                        addNoData = false;//la categoria contiene un valor sin dato
-//                    }
-//                }
-//                if (addNoData) {
-//                    sql = ""
-//                            + " SELECT "
-//                            + "    * "
-//                            + " FROM "
-//                            + "    indicators_records "
-//                            + " WHERE "
-//                            + "    column_2 like 'SIN DATO' AND "
-//                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-//                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
-//                    rs = connectionJdbcMB.consult(sql);
-//                    if (rs.next()) {
-//                        values2.add("SIN DATO");
-//                    }
-//                }
-//            }
-//            ArrayList<String> values3 = new ArrayList<>();
-//            if (variablesCrossData.size() > 2) {
-//                addNoData = true;
-//                for (int i = 0; i < variablesCrossData.get(2).getValuesConfigured().size(); i++) {
-//                    values3.add(variablesCrossData.get(2).getValuesConfigured().get(i));
-//                    if (variablesCrossData.get(2).getValuesConfigured().get(i).compareToIgnoreCase("SIN DATO") == 0) {
-//                        addNoData = false;//la categoria contiene un valor sin dato
-//                    }
-//                }
-//                if (addNoData) {
-//                    sql = ""
-//                            + " SELECT "
-//                            + "    * "
-//                            + " FROM "
-//                            + "    indicators_records "
-//                            + " WHERE "
-//                            + "    column_3 like 'SIN DATO' AND "
-//                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-//                            + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
-//                    rs = connectionJdbcMB.consult(sql);
-//                    if (rs.next()) {
-//                        values3.add("SIN DATO");
-//                    }
-//                }
-//            }
-            ArrayList<String> values1, values2, values3;
+            List<String> values1, values2, values3;
             //---------------------------------------------------------
             //REALIZO LAS POSIBLES COMBINACIONES
             //---------------------------------------------------------            
@@ -874,7 +791,7 @@ public class IndicatorsPercentageMB {
             tuplesProcessed = 0;
             int id = 0;
             if (variablesCrossData.size() == 1) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
                 for (int i = 0; i < values1.size(); i++) {
                     columNames.add(values1.get(i));
                     sb.
@@ -891,8 +808,8 @@ public class IndicatorsPercentageMB {
                 }
                 rowNames.add("Valor");
             } else if (variablesCrossData.size() == 2) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
-                values2 = (ArrayList<String>) variablesCrossData.get(1).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
+                values2 = variablesCrossData.get(1).getValuesConfigured();
                 for (int i = 0; i < values2.size(); i++) {
                     rowNames.add(values2.get(i));
                     for (int j = 0; j < values1.size(); j++) {
@@ -912,9 +829,9 @@ public class IndicatorsPercentageMB {
                     }
                 }
             } else if (variablesCrossData.size() == 3) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
-                values2 = (ArrayList<String>) variablesCrossData.get(1).getValuesConfigured();
-                values3 = (ArrayList<String>) variablesCrossData.get(2).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
+                values2 = variablesCrossData.get(1).getValuesConfigured();
+                values3 = variablesCrossData.get(2).getValuesConfigured();
                 for (int i = 0; i < values2.size(); i++) {
                     for (int j = 0; j < values1.size(); j++) {
                         columNames.add(values1.get(j) + "}" + values2.get(i));
@@ -1115,7 +1032,7 @@ public class IndicatorsPercentageMB {
                                         + "       WHEN (( \n\r"
                                         + "           CASE \n\r"
                                         + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r"
-                                        + "               WHEN (victims.age_type_id = 1) THEN victims.victim_age \n\r"
+                                        + "               WHEN (victims.age_type_id = 1 or victims.age_type_id is null) THEN victims.victim_age \n\r"
                                         + "           END \n\r"
                                         + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                             }
@@ -1701,17 +1618,19 @@ public class IndicatorsPercentageMB {
 
     public int btnRemoveConfigurationClick() {
         //System.out.println("currentConfigurationSelected es " + currentConfigurationSelected);
-        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+        if (currentConfigurationSelected == null || currentConfigurationSelected.isEmpty()) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
             return 0;
         }
         List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
         for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
-            if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(currentConfigurationSelected) == 0) {
-                indicatorsConfigurationsFacade.remove(indicatorsConfigurationsList.get(i));
-                btnLoadConfigurationClick();
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La configuración ha sido eliminada"));
-                return 0;
+            for (int j = 0; j < currentConfigurationSelected.size(); j++) {
+                if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(currentConfigurationSelected.get(j)) == 0) {
+                    indicatorsConfigurationsFacade.remove(indicatorsConfigurationsList.get(i));
+                    btnLoadConfigurationClick();
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La configuración ha sido eliminada"));
+                    return 0;
+                }
             }
         }
         return 0;
@@ -1719,12 +1638,12 @@ public class IndicatorsPercentageMB {
 
     public int btnOpenConfigurationClick() {
         //realizar la carga de la configuracion indicada
-        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+        if (currentConfigurationSelected == null || currentConfigurationSelected.isEmpty()) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
             return 0;
         }
         currentCategoricalValuesList = new ArrayList<>();
-        IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected);
+        IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected.get(0));
 
         if (firstVariablesCrossSelected.compareTo(indicatorsConfigurationsSelected.getVariableName()) != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La configuracion corresponde a la variable ("
@@ -1759,7 +1678,7 @@ public class IndicatorsPercentageMB {
     public void btnLoadConfigurationClick() {
         //recargar las configuraciones existentes
         //System.out.println("inicia carga de configuraciones");
-        currentConfigurationSelected = "";
+        currentConfigurationSelected = new ArrayList<>();
         configurationsList = new ArrayList<>();
         List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
         for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
@@ -2130,7 +2049,7 @@ public class IndicatorsPercentageMB {
         int modPos = 0;
         if (showFrames) {
             modPos = colorId % 99;
-        }else{
+        } else {
             modPos = colorId % 20;
         }
         switch (modPos) {
@@ -2186,7 +2105,6 @@ public class IndicatorsPercentageMB {
                 return createTexturePaint(getColorById(color1), getColorById(color2));
         }
     }
-    
 
     public void createImage() {
         try {//JFreeChart 
@@ -2331,7 +2249,7 @@ public class IndicatorsPercentageMB {
         currentValueGraph1 = null;
         currentValueGraph2 = null;
 
-        numberCross = currentIndicator.getNumberCross();
+        //numberCross = currentIndicator.getNumberCross();
 
         typesGraph = new ArrayList<>();
         typesGraph.add("apiladas porcentual");
@@ -2834,7 +2752,7 @@ public class IndicatorsPercentageMB {
                 celda = fila.createCell(posCol++);
                 celda.setCellValue("Recuento");
                 for (int i = 0; i < columNames.size(); i++) {
-                    celda = fila.createCell(posCol++);                    
+                    celda = fila.createCell(posCol++);
                     setValueCell(celda, getMatrixValue("countXY", i, j));//celda.setCellValue(getMatrixValue("countXY", i, j));
                 }
                 celda = fila.createCell(posCol++);
@@ -2977,7 +2895,7 @@ public class IndicatorsPercentageMB {
             celda.setCellValue(value);
         } catch (Exception e) {
             celda.setCellValue(new HSSFRichTextString(strValue));
-        }        
+        }
     }
 
     private String createDataTableResult() {
@@ -3680,11 +3598,11 @@ public class IndicatorsPercentageMB {
         this.newConfigurationName = newConfigurationName;
     }
 
-    public String getCurrentConfigurationSelected() {
+    public List<String> getCurrentConfigurationSelected() {
         return currentConfigurationSelected;
     }
 
-    public void setCurrentConfigurationSelected(String currentConfigurationSelected) {
+    public void setCurrentConfigurationSelected(List<String> currentConfigurationSelected) {
         this.currentConfigurationSelected = currentConfigurationSelected;
     }
 
@@ -3799,6 +3717,7 @@ public class IndicatorsPercentageMB {
     public void setValuesGraph2(List<String> valuesGraph2) {
         this.valuesGraph2 = valuesGraph2;
     }
+
     public boolean isShowFrames() {
         return showFrames;
     }

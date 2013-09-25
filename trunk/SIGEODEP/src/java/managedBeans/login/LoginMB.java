@@ -6,6 +6,7 @@ package managedBeans.login;
 
 import managedBeans.filters.FilterMB;
 import beans.connection.ConnectionJdbcMB;
+import beans.util.StringEncryption;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -37,19 +38,18 @@ public class LoginMB {
     private String userLogin = "";
     private String userName = "";
     private String userJob = "";
+    private Boolean userSystem = true;//true = usuario del sistema //false = usuario invitado
     private Users currentUser;
     private String activeIndexAcoordion1 = "-1";
     private String activeIndexAcoordion2 = "-1";
+    private boolean activeSantos = false;
     private boolean permissionFatal = false;
     private boolean permissionNonFatal = false;
     private boolean permissionVif = false;
     private boolean permissionIndicators = false;
     private boolean permissionAdministrator = false;
-    private boolean disableNonFatalSection = true;
-    private boolean disableFatalSection = true;
-    private boolean disableVifSection = true;
-    private boolean disableIndicatorsSection = true;
-    private boolean disableAdministratorSection = true;
+    StringEncryption stringEncryption = new StringEncryption();
+    private boolean permissionRegistryDataSection = true;
     FacesContext context;
     ConnectionJdbcMB connectionJdbcMB;
     ProjectsMB projectsMB;
@@ -128,9 +128,9 @@ public class LoginMB {
 
     public String closeSessionAndLogin() {
         /*
-         * terminar una session iniciada y continuar abriendo una nueva;
+         * terminar una session iniciada en otra terminal y continuar abriendo una nueva;
          * se usa cuando un mismo usuario intenta loguearse desde dos
-         * terminales distintas
+         * terminales distintas, 
          */
         applicationControlMB.removeSession(currentUser.getUserId());
         return continueLogin();
@@ -142,39 +142,234 @@ public class LoginMB {
          */
         context = FacesContext.getCurrentInstance();
         connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-
         FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("username", loginname);
         HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
+        //permisos
         String[] splitPermissions = currentUser.getPermissions().split("\t");
         for (int i = 0; i < splitPermissions.length; i++) {
             if (splitPermissions[i].compareTo("1") == 0) {
                 permissionFatal = true;
-                disableFatalSection = false;
             }
             if (splitPermissions[i].compareTo("2") == 0) {
                 permissionNonFatal = true;
-                disableNonFatalSection = false;
             }
             if (splitPermissions[i].compareTo("3") == 0) {
                 permissionVif = true;
-                disableVifSection = false;
             }
             if (splitPermissions[i].compareTo("4") == 0) {
                 permissionIndicators = true;
-                disableIndicatorsSection = false;
             }
             if (splitPermissions[i].compareTo("5") == 0) {
                 permissionAdministrator = true;
-                disableAdministratorSection = false;
             }
         }
-
+        //determinar si se muestra o no la seccion de regsitro de datos
+        if (!permissionFatal && !permissionNonFatal && !permissionVif) {
+            permissionRegistryDataSection = false;
+        }
         idSession = session.getId();
         userLogin = currentUser.getUserLogin();
         userName = currentUser.getUserName();
         userJob = currentUser.getUserJob();
         applicationControlMB.addSession(currentUser.getUserId(), idSession);
-        //System.out.println("Usuario se logea " + loginname + " ID: " + idSession);
+        activeSantos = false;
+        if (userLogin.compareTo("santos") == 0) {
+            activeSantos = true;
+        }
+        return inicializeVariables();
+    }
+
+    public void corregirDB() {
+        /*
+         * funcion exclusiva cuando accede el usuario santos
+         * sirve para administracion del sistema
+         */
+        try {
+            //DETERMINAR EN CUANTO ESTA GEN_NN
+            /*
+             ResultSet rs = connectionJdbcMB.consult("Select * from victims where victim_nid is null");
+             boolean determinada;
+             while (rs.next()) {
+             determinada = false;
+             if (rs.getString("victim_age") != null && rs.getString("victim_age").length() != 0) {
+             if (rs.getString("age_type_id") != null && rs.getString("age_type_id").length() != 0 && rs.getString("age_type_id").compareTo("1") == 0) {
+             }
+             }
+             if (determinada == false) {
+             connectionJdbcMB.consult("UPDATE victims SET  where victim_nid is null");
+             }
+             }*/
+            //-------------------------------------------------------------
+            //-----------correcion para sitio anatomico -------------------
+            //-------------------------------------------------------------
+            int count = 0;
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + " SELECT non_fatal_injury_id "
+                    + " FROM non_fatal_injuries "
+                    + " WHERE "
+                    + "    ("
+                    + "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
+                    + "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
+                    + "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
+                    + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                    + "    injury_id = 54 OR"//"NO INTENCIONAL"
+                    + "    injury_id = 55"//"VIOLENCIA INTRAFAMILIAR LCENF"
+                    //+ "    injury_id = 56"//"SIVIGILA-VIF"
+                    + "    )"
+                    + "    AND non_fatal_injury_id NOT IN "
+                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_anatomical_location)");
+            while (rs.next()) {
+                connectionJdbcMB.non_query("INSERT INTO non_fatal_anatomical_location VALUES (99," + rs.getString(1) + ");");
+                System.out.println("Operaciones (A): " + String.valueOf(count));
+                count++;
+            }
+            //-------------------------------------------------------------
+            //-----------naturaleza de lesion -----------------------------
+            //-------------------------------------------------------------
+            rs = connectionJdbcMB.consult(""
+                    + " SELECT non_fatal_injury_id "
+                    + " FROM non_fatal_injuries "
+                    + " WHERE "
+                    + "    ("
+                    + "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
+                    + "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
+                    + "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
+                    + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                    + "    injury_id = 54 OR"//"NO INTENCIONAL"
+                    + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
+                    //+ "    injury_id = 56"//"SIVIGILA-VIF"
+                    + "    )"
+                    + "    AND non_fatal_injury_id NOT IN "
+                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_kind_of_injury)");
+            while (rs.next()) {
+                connectionJdbcMB.non_query("INSERT INTO non_fatal_kind_of_injury VALUES (99," + rs.getString(1) + ");");
+                System.out.println("Operaciones (B): " + String.valueOf(count));
+                count++;
+            }
+            //-------------------------------------------------------------
+            //-----------tipo de maltrato -----------------------------
+            //-------------------------------------------------------------
+            rs = connectionJdbcMB.consult(""
+                    + " SELECT non_fatal_injury_id "
+                    + " FROM non_fatal_injuries "
+                    + " WHERE "
+                    + "    ("
+                    //+ "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
+                    //+ "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
+                    //+ "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
+                    + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                    //+ "    injury_id = 54 OR"//"NO INTENCIONAL"
+                    + "    injury_id = 55 OR"//"VIOLENCIA INTRAFAMILIAR LCENF"
+                    + "    injury_id = 56"//"SIVIGILA-VIF" (tambien va esta)
+                    + "    )"
+                    + "    AND non_fatal_injury_id NOT IN "
+                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_abuse_type)");
+            while (rs.next()) {
+                connectionJdbcMB.non_query("INSERT INTO domestic_violence_abuse_type VALUES (" + rs.getString(1) + ",7);");
+                System.out.println("Operaciones (C): " + String.valueOf(count));
+                count++;
+            }
+            //-------------------------------------------------------------
+            //-----------tipo de agresor -----------------------------
+            //-------------------------------------------------------------
+            rs = connectionJdbcMB.consult(""
+                    + " SELECT non_fatal_injury_id "
+                    + " FROM non_fatal_injuries "
+                    + " WHERE "
+                    + "    ("
+                    //+ "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
+                    //+ "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
+                    //+ "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
+                    + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                    //+ "    injury_id = 54 OR"//"NO INTENCIONAL"
+                    + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
+                    //+ "    injury_id = 56"//"SIVIGILA-VIF"
+                    + "    )"
+                    + "    AND non_fatal_injury_id NOT IN "
+                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_aggressor_type)");
+            while (rs.next()) {
+                connectionJdbcMB.non_query("INSERT INTO domestic_violence_aggressor_type VALUES (" + rs.getString(1) + ",9);");
+                System.out.println("Operaciones (D): " + String.valueOf(count));
+                count++;
+            }
+            //-------------------------------------------------------------
+            //-----------acciones a realizar -----------------------------
+            //-------------------------------------------------------------
+            rs = connectionJdbcMB.consult(""
+                    + " SELECT non_fatal_injury_id "
+                    + " FROM non_fatal_injuries "
+                    + " WHERE "
+                    + "    ("
+                    //+ "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
+                    //+ "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
+                    //+ "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
+                    + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                    //+ "    injury_id = 54 OR"//"NO INTENCIONAL"
+                    + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
+                    //+ "    injury_id = 56"//"SIVIGILA-VIF"
+                    + "    )"
+                    + "    AND non_fatal_injury_id NOT IN "
+                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_action_to_take)");
+            while (rs.next()) {
+                connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString(1) + ",13);");
+                System.out.println("Operaciones (E): " + String.valueOf(count));
+                count++;
+            }
+            //-------------------------------------------------------------
+            //-----------acciones en salud publica ------------------------
+            //-------------------------------------------------------------
+            rs = connectionJdbcMB.consult(""
+                    + " SELECT non_fatal_injury_id "
+                    + " FROM non_fatal_injuries "
+                    + " WHERE "
+                    + "    ("
+                    //+ "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
+                    //+ "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
+                    //+ "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
+                    //+ "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                    //+ "    injury_id = 54 OR"//"NO INTENCIONAL"
+                    //+ "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
+                    + "    injury_id = 56"//"SIVIGILA-VIF"
+                    + "    )"
+                    + "    AND non_fatal_injury_id NOT IN "
+                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM sivigila_event_public_health)");
+            while (rs.next()) {
+                connectionJdbcMB.non_query("INSERT INTO sivigila_event_public_health VALUES (" + rs.getString(1) + ",8);");
+                System.out.println("Operaciones (F): " + String.valueOf(count));
+                count++;
+            }
+            //-------------------------------------------------------------
+            //-----------elementos de seguridad------------------------
+            //-------------------------------------------------------------
+            rs = connectionJdbcMB.consult(""
+                    + " SELECT non_fatal_injury_id "
+                    + " FROM non_fatal_injuries "
+                    + " WHERE "
+                    + "    ("
+                    //+ "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
+                    + "    injury_id = 51 "//"LESION EN ACCIDENTE DE TRANSITO"
+                    //+ "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
+                    //+ "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                    //+ "    injury_id = 54 OR"//"NO INTENCIONAL"
+                    //+ "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
+                    //+ "    injury_id = 56"//"SIVIGILA-VIF"
+                    + "    )"
+                    + "    AND non_fatal_injury_id NOT IN "
+                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_transport_security_element)");
+            while (rs.next()) {
+                connectionJdbcMB.non_query("INSERT INTO non_fatal_transport_security_element VALUES (8," + rs.getString(1) + ");");
+                System.out.println("Operaciones (G): " + String.valueOf(count));
+                count++;
+            }
+            
+            System.out.println("Proceso de mantenimiento de base de datos realizado, PROCESOS: " + String.valueOf(count));
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "correcto", "operaciones de correccion y mantenimiento realizadas");
+        } catch (Exception e) {
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "" + e.getMessage());
+        }
+    }
+
+    private String inicializeVariables() {
         if (connectionJdbcMB.connectToDb()) {
             connectionJdbcMB.setCurrentUser(currentUser);
             projectsMB = (ProjectsMB) context.getApplication().evaluateExpressionGet(context, "#{projectsMB}", ProjectsMB.class);
@@ -230,14 +425,62 @@ public class LoginMB {
         }
     }
 
+    public String CheckValidInvited() {
+        /*
+         * permitir el acceso de un usuario como invitado
+         */
+        //obtengo el bean de aplicacion                
+        ExternalContext contexto = FacesContext.getCurrentInstance().getExternalContext();
+        applicationControlMB = (ApplicationControlMB) contexto.getApplicationMap().get("applicationControlMB");
+        context = FacesContext.getCurrentInstance();
+        connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        userSystem = false;//es usuario invitado (no es usuario del sistema)
+        HttpSession session = (HttpSession) contexto.getSession(false);
+
+        //permisos
+        permissionFatal = false;
+        permissionNonFatal = false;
+        permissionVif = false;
+        permissionIndicators = true;
+        permissionAdministrator = false;
+        permissionRegistryDataSection = false;
+
+        idSession = session.getId();
+
+        if (applicationControlMB.findIdSession(idSession)) {//ya existe esta sesion solo se ingresa a la aplicacion
+            return "homePage";
+        } else {//no existe sesion se debe crear el usuario temporal         
+            int max = applicationControlMB.getMaxUserId();
+            if (max < 1001) {
+                max = 1001;
+            } else {
+                max = max + 1;
+            }
+            currentUser = new Users(max, "Invitado: " + String.valueOf(max - 1000), "123", "USUARIO");//nuevo ususario temporal
+            currentUser.setActive(true);
+            loginname = "Invitado: " + String.valueOf(max - 1000);
+            contexto.getSessionMap().put("username", loginname);
+            userLogin = currentUser.getUserLogin();
+            userName = currentUser.getUserName();
+            userJob = "Analista";
+            applicationControlMB.addSession(currentUser.getUserId(), idSession);
+            return inicializeVariables();
+        }
+
+
+
+
+    }
+
     public String CheckValidUser() {
         /*
          * determinar si el usuario puede acceder al sistema determinando si exite
          * el login, clave y la cuenta esta activa
          */
         closeSessionDialog = "";
+        password = stringEncryption.getStringMessageDigest(password, "SHA-1");
         currentUser = usersFacade.findUser(loginname, password);
-
+        userSystem = true;//es usuario del sistema (no es usuario invitado)
         if (currentUser == null) {
             //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "SESION FINALIZADA", "La sesión fue finalizada por que se inició una nueva sesión para el mismo usuario");
             //FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_WARN, "SESION FINALIZADA", "Después de 20 minutos de inactividad el sistema finaliza la sesión automáticamente, por favor presione el botón: ' ingresar a la aplicación ' para acceder nuevamente.");
@@ -385,44 +628,51 @@ public class LoginMB {
         this.permissionAdministrator = permissionAdministrator;
     }
 
-    public boolean isDisableNonFatalSection() {
-        return disableNonFatalSection;
+//    public boolean isDisableNonFatalSection() {
+//        return disableNonFatalSection;
+//    }
+//
+//    public void setDisableNonFatalSection(boolean disableNonFatalSection) {
+//        this.disableNonFatalSection = disableNonFatalSection;
+//    }
+//
+//    public boolean isDisableFatalSection() {
+//        return disableFatalSection;
+//    }
+//
+//    public void setDisableFatalSection(boolean disableFatalSection) {
+//        this.disableFatalSection = disableFatalSection;
+//    }
+//
+//    public boolean isDisableVifSection() {
+//        return disableVifSection;
+//    }
+//
+//    public void setDisableVifSection(boolean disableVifSection) {
+//        this.disableVifSection = disableVifSection;
+//    }
+//
+//    public boolean isDisableIndicatorsSection() {
+//        return disableIndicatorsSection;
+//    }
+//
+//    public void setDisableIndicatorsSection(boolean disableIndicatorsSection) {
+//        this.disableIndicatorsSection = disableIndicatorsSection;
+//    }
+//
+//    public boolean isDisableAdministratorSection() {
+//        return disableAdministratorSection;
+//    }
+//
+//    public void setDisableAdministratorSection(boolean disableAdministratorSection) {
+//        this.disableAdministratorSection = disableAdministratorSection;
+//    }
+    public boolean isPermissionRegistryDataSection() {
+        return permissionRegistryDataSection;
     }
 
-    public void setDisableNonFatalSection(boolean disableNonFatalSection) {
-        this.disableNonFatalSection = disableNonFatalSection;
-    }
-
-    public boolean isDisableFatalSection() {
-        return disableFatalSection;
-    }
-
-    public void setDisableFatalSection(boolean disableFatalSection) {
-        this.disableFatalSection = disableFatalSection;
-    }
-
-    public boolean isDisableVifSection() {
-        return disableVifSection;
-    }
-
-    public void setDisableVifSection(boolean disableVifSection) {
-        this.disableVifSection = disableVifSection;
-    }
-
-    public boolean isDisableIndicatorsSection() {
-        return disableIndicatorsSection;
-    }
-
-    public void setDisableIndicatorsSection(boolean disableIndicatorsSection) {
-        this.disableIndicatorsSection = disableIndicatorsSection;
-    }
-
-    public boolean isDisableAdministratorSection() {
-        return disableAdministratorSection;
-    }
-
-    public void setDisableAdministratorSection(boolean disableAdministratorSection) {
-        this.disableAdministratorSection = disableAdministratorSection;
+    public void setPermissionRegistryDataSection(boolean permissionRegistryDataSection) {
+        this.permissionRegistryDataSection = permissionRegistryDataSection;
     }
 
     public boolean isAutenticado() {
@@ -431,5 +681,21 @@ public class LoginMB {
 
     public void setAutenticado(boolean autenticado) {
         this.autenticado = autenticado;
+    }
+
+    public Boolean getUserSystem() {
+        return userSystem;
+    }
+
+    public void setUserSystem(Boolean userSystem) {
+        this.userSystem = userSystem;
+    }
+
+    public boolean isActiveSantos() {
+        return activeSantos;
+    }
+
+    public void setActiveSantos(boolean activeSantos) {
+        this.activeSantos = activeSantos;
     }
 }

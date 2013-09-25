@@ -91,7 +91,8 @@ public class IndicatorsVariationMB {
     IndicatorsFacade indicatorsFacade;
     @EJB
     IndicatorsConfigurationsFacade indicatorsConfigurationsFacade;
-    private String currentConfigurationSelected = "";
+    private List<String> currentConfigurationSelected = new ArrayList<>();
+    ;
     private List<String> configurationsList = new ArrayList<>();
     private String newConfigurationName = "";
     private Indicators currentIndicator;
@@ -591,7 +592,7 @@ public class IndicatorsVariationMB {
         rowNames = new ArrayList<>();
         //columnTypeName = new ArrayList<String>();
         try {
-            ArrayList<String> values1, values2, values3;
+            List<String> values1, values2, values3;
             //---------------------------------------------------------
             //REALIZO LAS POSIBLES COMBINACIONES
             //---------------------------------------------------------            
@@ -600,7 +601,7 @@ public class IndicatorsVariationMB {
             tuplesProcessed = 0;
             int id = 0;
             if (variablesCrossData.size() == 1) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
                 for (int i = 0; i < values1.size(); i++) {
                     columNames.add(values1.get(i));
                     sb.
@@ -616,8 +617,8 @@ public class IndicatorsVariationMB {
                 }
                 rowNames.add("Valor");
             } else if (variablesCrossData.size() == 2) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
-                values2 = (ArrayList<String>) variablesCrossData.get(1).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
+                values2 = variablesCrossData.get(1).getValuesConfigured();
                 for (int i = 0; i < values1.size(); i++) {
                     columNames.add(values1.get(i));
                     for (int j = 0; j < values2.size(); j++) {
@@ -637,9 +638,9 @@ public class IndicatorsVariationMB {
                     }
                 }
             } else if (variablesCrossData.size() == 3) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
-                values2 = (ArrayList<String>) variablesCrossData.get(1).getValuesConfigured();
-                values3 = (ArrayList<String>) variablesCrossData.get(2).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
+                values2 = variablesCrossData.get(1).getValuesConfigured();
+                values3 = variablesCrossData.get(2).getValuesConfigured();
                 for (int i = 0; i < values1.size(); i++) {
                     for (int j = 0; j < values2.size(); j++) {
                         columNames.add(values1.get(i) + "}" + values2.get(j));
@@ -878,7 +879,7 @@ public class IndicatorsVariationMB {
                                         + "       WHEN (( \n\r"
                                         + "           CASE \n\r"
                                         + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r"
-                                        + "               WHEN (victims.age_type_id = 1) THEN victims.victim_age \n\r"
+                                        + "               WHEN (victims.age_type_id = 1 or victims.age_type_id is null) THEN victims.victim_age \n\r"
                                         + "           END \n\r"
                                         + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                             }
@@ -1401,17 +1402,19 @@ public class IndicatorsVariationMB {
 
     public int btnRemoveConfigurationClick() {
         //System.out.println("currentConfigurationSelected es " + currentConfigurationSelected);
-        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+        if (currentConfigurationSelected == null || currentConfigurationSelected.isEmpty()) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
             return 0;
         }
         List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
         for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
-            if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(currentConfigurationSelected) == 0) {
-                indicatorsConfigurationsFacade.remove(indicatorsConfigurationsList.get(i));
-                btnLoadConfigurationClick();
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La configuración ha sido eliminada"));
-                return 0;
+            for (int j = 0; j < currentConfigurationSelected.size(); j++) {
+                if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(currentConfigurationSelected.get(j)) == 0) {
+                    indicatorsConfigurationsFacade.remove(indicatorsConfigurationsList.get(i));
+                    btnLoadConfigurationClick();
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La configuración ha sido eliminada"));
+                    return 0;
+                }
             }
         }
         return 0;
@@ -1419,12 +1422,12 @@ public class IndicatorsVariationMB {
 
     public int btnOpenConfigurationClick() {
         //realizar la carga de la configuracion indicada
-        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+        if (currentConfigurationSelected == null || currentConfigurationSelected.isEmpty()) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
             return 0;
         }
         currentCategoricalValuesList = new ArrayList<>();
-        IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected);
+        IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected.get(0));
 
         if (firstVariablesCrossSelected.compareTo(indicatorsConfigurationsSelected.getVariableName()) != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La configuracion corresponde a la variable ("
@@ -1459,7 +1462,7 @@ public class IndicatorsVariationMB {
     public void btnLoadConfigurationClick() {
         //recargar las configuraciones existentes
         //System.out.println("inicia carga de configuraciones");
-        currentConfigurationSelected = "";
+        currentConfigurationSelected = new ArrayList<>();
         configurationsList = new ArrayList<>();
         List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
         for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
@@ -1898,7 +1901,7 @@ public class IndicatorsVariationMB {
         int modPos = 0;
         if (showFrames) {
             modPos = colorId % 99;
-        }else{
+        } else {
             modPos = colorId % 20;
         }
         switch (modPos) {
@@ -1953,8 +1956,7 @@ public class IndicatorsVariationMB {
                 }
                 return createTexturePaint(getColorById(color1), getColorById(color2));
         }
-    }    
-    
+    }
 
     public void createImage() {
         try {
@@ -2075,7 +2077,7 @@ public class IndicatorsVariationMB {
         typesGraph.add("areas");
         typesGraph.add("lineas");
 
-        numberCross = currentIndicator.getNumberCross();
+        //numberCross = currentIndicator.getNumberCross();
         variablesList = new ArrayList<>();//SelectItem[variablesListData.size()];
         for (int i = 0; i < variablesListData.size(); i++) {
             variablesList.add(variablesListData.get(i).getName());
@@ -2765,7 +2767,6 @@ public class IndicatorsVariationMB {
         reset();
     }
 
-
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
@@ -3056,11 +3057,11 @@ public class IndicatorsVariationMB {
         this.newConfigurationName = newConfigurationName;
     }
 
-    public String getCurrentConfigurationSelected() {
+    public List<String> getCurrentConfigurationSelected() {
         return currentConfigurationSelected;
     }
 
-    public void setCurrentConfigurationSelected(String currentConfigurationSelected) {
+    public void setCurrentConfigurationSelected(List<String> currentConfigurationSelected) {
         this.currentConfigurationSelected = currentConfigurationSelected;
     }
 
@@ -3187,6 +3188,7 @@ public class IndicatorsVariationMB {
     public void setCurrentTypeGraph(String currentTypeGraph) {
         this.currentTypeGraph = currentTypeGraph;
     }
+
     public boolean isShowFrames() {
         return showFrames;
     }

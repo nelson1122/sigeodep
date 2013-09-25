@@ -1254,11 +1254,19 @@ public class TransitMB implements Serializable {
 
                 //--------------------------------------------------------------
                 //--------------AUTOCOMPLETAR LOS FORMULARIOS-------------------
+                //EDAD Y TIPO DE EDAD
+                if (newVictim.getVictimAge() != null) {//HAY EDAD 
+                    if (newVictim.getAgeTypeId() == null) {//no hay tipo de edad
+                        newVictim.setAgeTypeId((short) 1);//tiṕo de edad años
+                    }
+                } else {
+                    newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
+                }                
+                //DETERMINAR EL NUMERO DE IDENTIFICACION
                 newVictim.setVictimClass((short) 1);
                 if (newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
                     newVictim.setVictimNid(null);
                 }
-                //DETERMINAR EL NUMERO DE IDENTIFICACION
                 if (newVictim.getVictimNid() == null) {
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
                     newVictim.setVictimClass((short) 2);//nn
@@ -2578,12 +2586,12 @@ public class TransitMB implements Serializable {
         if (loading == false) {
             changeForm();
         }
+        currentAge = "";
         if (currentMeasureOfAge == 0 || currentMeasureOfAge == 4) {
             valueAgeDisabled = true;
 
         } else {
             valueAgeDisabled = false;
-            currentAge = "";
         }
         //System.out.println("----" + currentEthnicGroup + "----" + ethnicGroupsDisabled);
 

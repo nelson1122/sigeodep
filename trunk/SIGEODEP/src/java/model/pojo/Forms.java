@@ -39,9 +39,9 @@ public class Forms implements Serializable {
     private String formName;
     @JoinTable(name = "form_source", joinColumns = {
         @JoinColumn(name = "form_id", referencedColumnName = "form_id", nullable = false)}, inverseJoinColumns = {
-        @JoinColumn(name = "source_id", referencedColumnName = "source_id", nullable = false)})
+        @JoinColumn(name = "source_id", referencedColumnName = "non_fatal_data_source_id", nullable = false)})
     @ManyToMany
-    private List<Sources> sourcesList;
+    private List<NonFatalDataSources> nonFatalDataSourcesList;
     @OneToMany(mappedBy = "formId")
     private List<RelationGroup> relationGroupList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "forms")
@@ -78,13 +78,22 @@ public class Forms implements Serializable {
 	this.formName = formName;
     }
 
+//    @XmlTransient
+//    public List<Sources> getSourcesList() {
+//	return sourcesList;
+//    }
+//
+//    public void setSourcesList(List<Sources> sourcesList) {
+//	this.sourcesList = sourcesList;
+//    }
+    
     @XmlTransient
-    public List<Sources> getSourcesList() {
-	return sourcesList;
+    public List<NonFatalDataSources> getNonFatalDataSourcesList() {
+        return nonFatalDataSourcesList;
     }
 
-    public void setSourcesList(List<Sources> sourcesList) {
-	this.sourcesList = sourcesList;
+    public void setNonFatalDataSourcesList(List<NonFatalDataSources> nonFatalDataSourcesList) {
+        this.nonFatalDataSourcesList = nonFatalDataSourcesList;
     }
 
     @XmlTransient

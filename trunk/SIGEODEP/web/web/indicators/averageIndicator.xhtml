@@ -126,7 +126,6 @@
                                         Variables disponibles                                            
                                     </p:column>    
                                     <p:column styleClass="ui-widget-header">
-
                                     </p:column>    
                                     <p:column styleClass="ui-widget-header">
                                         Variables a cruzar
@@ -301,7 +300,7 @@
                                                 render="IdImageChart"/>
                                         </h:selectBooleanCheckbox>
                                     </p:column>                                        
-                                    
+
                                     <p:column styleClass="ui-widget-header">
                                         Filtro 2
                                     </p:column>
@@ -491,16 +490,13 @@
                     resizable="false"                    
                     widgetVar="openConfigurationDialog">  
                     <br/>
-                    Seleccione la configuración a cargar
-                    <br/>
-                    <br/>
-                    <h:selectOneListbox 
+                    <h:selectManyListbox 
                         id="IdConfigurationsList"
                         value="#{indicatorsAverageMB.currentConfigurationSelected}"
                         style="height:110px; width: 360px;"
                         converterMessage="Fallo de comunicación, por favor intente nuevamente.">
                         <f:selectItems value="#{indicatorsAverageMB.configurationsList}"/>
-                    </h:selectOneListbox>
+                    </h:selectManyListbox>
                     <br/>
                     <br/>
                     <p:commandButton                                                            
@@ -600,6 +596,7 @@
                                     onclick="saveConfigurationDialog.show()"/>  
                                 <p:commandButton                                                            
                                     value="Cargar/Eliminar"
+                                    rendered="#{loginMB.userSystem}"
                                     style="margin:0;"                    
                                     oncomplete="openConfigurationDialog.show()"/>  
                                 <br/>

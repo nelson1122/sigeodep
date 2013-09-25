@@ -6,6 +6,7 @@ package managedBeans.login;
 
 import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
+import beans.util.StringEncryption;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class UsersMB {
     private String email = "";
     private String newEmail = "";
     private String password = "";
+    private String passwordTmp = "";//pasword temporal
     private String newPasword = "";
     private String confirmPassword = "";
     private String newConfirmPasword = "";
@@ -66,108 +68,13 @@ public class UsersMB {
     private boolean newPermission4 = true;
     private boolean newPermission5 = true;
     private ConnectionJdbcMB connectionJdbcMB;
+    StringEncryption stringEncryption = new StringEncryption();
 
     /**
      * Creates a new instance of UsersMB
      */
     public UsersMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-    }
-
-    public void changePermission1() {
-        /*
-         * determinar automaticamente permisos aceptados seleccione o desseleccione
-         * las casillas de permisos 
-         */
-        if (permission1 == false) {
-            permission5 = false;
-        } else if (permission1 && permission2 && permission3 && permission4) {
-            permission5 = true;
-        }
-    }
-
-    public void changePermission2() {
-        /*
-         * determinar automaticamente permisos aceptados seleccione o desseleccione
-         * las casillas de permisos 
-         */
-        if (permission2 == false) {
-            permission5 = false;
-        } else if (permission1 && permission2 && permission3 && permission4) {
-            permission5 = true;
-        }
-    }
-
-    public void changePermission3() {
-        if (permission3 == false) {
-            permission5 = false;
-        } else if (permission1 && permission2 && permission3 && permission4) {
-            permission5 = true;
-        }
-    }
-
-    public void changePermission4() {
-        if (permission4 == false) {
-            permission5 = false;
-        } else if (permission1 && permission2 && permission3 && permission4) {
-            permission5 = true;
-        }
-    }
-
-    public void changePermission5() {
-        if (permission5 == true) {
-            permission1 = true;
-            permission2 = true;
-            permission3 = true;
-            permission4 = true;
-            permission5 = true;
-        } else if (permission1 && permission2 && permission3 && permission4) {
-            permission5 = true;
-        }
-    }
-
-    public void changeNewPermission1() {
-        if (newPermission1 == false) {
-            newPermission5 = false;
-        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
-            newPermission5 = true;
-        }
-    }
-
-    public void changeNewPermission2() {
-        if (newPermission2 == false) {
-            newPermission5 = false;
-        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
-            newPermission5 = true;
-        }
-    }
-
-    public void changeNewPermission3() {
-        if (newPermission3 == false) {
-            newPermission5 = false;
-        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
-            newPermission5 = true;
-        }
-    }
-
-    public void changeNewPermission4() {
-        if (newPermission4 == false) {
-            newPermission5 = false;
-        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
-            newPermission5 = true;
-        }
-    }
-
-    public void changeNewPermission5() {
-        if (newPermission5 == true) {
-            newPermission1 = true;
-            newPermission2 = true;
-            newPermission3 = true;
-            newPermission4 = true;
-            newPermission5 = true;
-        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
-            newPermission5 = true;
-        }
     }
 
     public void load() {
@@ -205,9 +112,12 @@ public class UsersMB {
                 email = "";
             }
             if (currentUser.getUserPassword() != null) {
+                passwordTmp = currentUser.getUserPassword();
                 password = currentUser.getUserPassword();
+                confirmPassword = currentUser.getUserPassword();
             } else {
                 password = "";
+                confirmPassword = "";
             }
             if (currentUser.getUserAddress() != null) {
                 address = currentUser.getUserAddress();
@@ -315,10 +225,22 @@ public class UsersMB {
         }
 
         if (continueProcess) {
-            if (name.trim().length() == 0 || password.trim().length() == 0 || login.trim().length() == 0) {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Faltan datos", "los campos: LOGIN, CLAVE y NOMBRES son obligatorios");
+            if (name.trim().length() == 0 || login.trim().length() == 0) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Faltan datos", "los campos: LOGIN y NOMBRES son obligatorios");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
                 continueProcess = false;
+            }
+        }
+        if (continueProcess) {
+            if (password.trim().length() == 0 && confirmPassword.trim().length() == 0 && passwordTmp.trim().length() == 0) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Faltan datos", "Se debe digitar una clave y confirmacion de clave");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
+                continueProcess = false;
+            } else {
+                if (password.trim().length() == 0 && confirmPassword.trim().length() == 0 && passwordTmp.trim().length() != 0) {
+                    password = passwordTmp;
+                    confirmPassword = passwordTmp;
+                }
             }
         }
 
@@ -347,7 +269,12 @@ public class UsersMB {
             currentUser.setUserTelephone(telephone);
             currentUser.setUserEmail(email);
             currentUser.setUserAddress(address);
-            currentUser.setUserPassword(password);
+            if (password.compareTo(passwordTmp) == 0) {//se mantiene el mismo pasword
+                currentUser.setUserPassword(password);
+            } else {//se digito un nuevo pasword
+                currentUser.setUserPassword(stringEncryption.getStringMessageDigest(password, "SHA-1"));
+            }
+
             String permissions = "";
             if (permission1) {
                 if (permissions.length() != 0) {
@@ -433,7 +360,7 @@ public class UsersMB {
             newRegistry.setUserTelephone(newtelephone);
             newRegistry.setUserEmail(newEmail);
             newRegistry.setUserAddress(newAddress);
-            newRegistry.setUserPassword(newPasword);
+            newRegistry.setUserPassword(stringEncryption.getStringMessageDigest(newPasword, "SHA-1"));
             String permissions = "";
             if (permission1) {
                 if (permissions.length() != 0) {
@@ -520,7 +447,7 @@ public class UsersMB {
             reset();
         } else {
             currentSearchValue = currentSearchValue.toUpperCase();
-            rowDataTableList = new ArrayList<RowDataTable>();
+            rowDataTableList = new ArrayList<>();
             usersList = usersFacade.findCriteria(currentSearchCriteria, currentSearchValue);
             if (usersList.isEmpty()) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
@@ -551,7 +478,7 @@ public class UsersMB {
     }
 
     public void reset() {
-        rowDataTableList = new ArrayList<RowDataTable>();
+        rowDataTableList = new ArrayList<>();
         usersList = usersFacade.findAll();
         String active;
         for (int i = 0; i < usersList.size(); i++) {
@@ -570,6 +497,102 @@ public class UsersMB {
                     usersList.get(i).getUserTelephone(),
                     usersList.get(i).getUserEmail(),
                     usersList.get(i).getUserAddress()));
+        }
+    }
+
+    public void changePermission1() {
+        /*
+         * determinar automaticamente permisos aceptados seleccione o desseleccione
+         * las casillas de permisos 
+         */
+        if (permission1 == false) {
+            permission5 = false;
+        } else if (permission1 && permission2 && permission3 && permission4) {
+            permission5 = true;
+        }
+    }
+
+    public void changePermission2() {
+        /*
+         * determinar automaticamente permisos aceptados seleccione o desseleccione
+         * las casillas de permisos 
+         */
+        if (permission2 == false) {
+            permission5 = false;
+        } else if (permission1 && permission2 && permission3 && permission4) {
+            permission5 = true;
+        }
+    }
+
+    public void changePermission3() {
+        if (permission3 == false) {
+            permission5 = false;
+        } else if (permission1 && permission2 && permission3 && permission4) {
+            permission5 = true;
+        }
+    }
+
+    public void changePermission4() {
+        if (permission4 == false) {
+            permission5 = false;
+        } else if (permission1 && permission2 && permission3 && permission4) {
+            permission5 = true;
+        }
+    }
+
+    public void changePermission5() {
+        if (permission5 == true) {
+            permission1 = true;
+            permission2 = true;
+            permission3 = true;
+            permission4 = true;
+            permission5 = true;
+        } else if (permission1 && permission2 && permission3 && permission4) {
+            permission5 = true;
+        }
+    }
+
+    public void changeNewPermission1() {
+        if (newPermission1 == false) {
+            newPermission5 = false;
+        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
+            newPermission5 = true;
+        }
+    }
+
+    public void changeNewPermission2() {
+        if (newPermission2 == false) {
+            newPermission5 = false;
+        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
+            newPermission5 = true;
+        }
+    }
+
+    public void changeNewPermission3() {
+        if (newPermission3 == false) {
+            newPermission5 = false;
+        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
+            newPermission5 = true;
+        }
+    }
+
+    public void changeNewPermission4() {
+        if (newPermission4 == false) {
+            newPermission5 = false;
+        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
+            newPermission5 = true;
+        }
+    }
+
+    public void changeNewPermission5() {
+        if (newPermission5 == true) {
+            newPermission1 = true;
+            newPermission2 = true;
+            newPermission3 = true;
+            newPermission4 = true;
+            newPermission5 = true;
+        } else if (newPermission1 && newPermission2 && newPermission3 && newPermission4) {
+            newPermission5 = true;
         }
     }
 

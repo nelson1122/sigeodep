@@ -53,7 +53,5 @@ public class DinamicTable implements Serializable{
 
     public void setTitles2(ArrayList<String> titles2) {
         this.titles2 = titles2;
-    }
-
-    
+    }   
 }

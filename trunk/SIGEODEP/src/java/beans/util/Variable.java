@@ -30,9 +30,9 @@ public class Variable {
         this.table = table;
         this.field = field;
         this.generic_table = generic_table;
-        this.values = new ArrayList<String>();
-        this.valuesId = new ArrayList<String>();
-        this.valuesConfigured = new ArrayList<String>();
+        this.values = new ArrayList<>();
+        this.valuesId = new ArrayList<>();
+        this.valuesConfigured = new ArrayList<>();
         this.configurable = conf;
         this.source_table = source_table;
     }
@@ -40,15 +40,15 @@ public class Variable {
     public Variable(String name, String generic_table, boolean conf, String source_table) {
         this.name = name;
         this.generic_table = generic_table;
-        this.values = new ArrayList<String>();
-        this.valuesId = new ArrayList<String>();
-        this.valuesConfigured = new ArrayList<String>();
+        this.values = new ArrayList<>();
+        this.valuesId = new ArrayList<>();
+        this.valuesConfigured = new ArrayList<>();
         this.configurable = conf;
         this.source_table = source_table;
     }
 
     public Variable() {
-        this.values = new ArrayList<String>();
+        this.values = new ArrayList<>();
     }
 
     public String getField() {

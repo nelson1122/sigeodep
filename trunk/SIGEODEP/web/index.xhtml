@@ -7,18 +7,14 @@
     <h:head>
         <link rel="shortcut icon" href="resources/img/icon.gif"/>
         <title>INICIO</title>	        
-        <script type="text/javascript">  
-            
+        <script type="text/javascript">
+
             function clickSeeDialog() {
-                document.getElementById('IdForm:IdBtnSeeDialog').click();                    
+                document.getElementById('IdForm:IdBtnSeeDialog').click();
             }
         </script>
     </h:head>
-    <h:body style="font-size: 10px;">
-
-
-        
-
+    <h:body  style="font-size: 10px;">
         <h:form id="IdForm">    
             <div style=" 
                  position:absolute;
@@ -27,19 +23,16 @@
                  left: 50%; 
                  margin-left: -250px;  
                  top: 50%;
-                 margin-top: -190px;
-                 background-image:url(resources/img/entrada.png);">
-
-
+                 margin-top: -190px;">
                 <p:growl id="message"  showDetail="true" sticky="true" />
                 <p:commandButton
                     id="IdBtnSeeDialog"
                     oncomplete="#{loginMB.closeSessionDialog}"
                     value="#{applicationControlMB.value}"
                     style="width: 0px;height: 0px; display: none;"/> 
-                <h:graphicImage id="IdImgCarga" value="resources/img/ajaxloading.gif"  style="display: none" />                
-
-                <p:panelGrid style="margin-top: 160px; margin-left: 210px; "> 
+                <h:graphicImage id="IdImgCarga" value="resources/img/ajaxloading.gif"  style="display: none" />
+                <p:graphicImage value="../resources/img/img_login.png" />
+                <p:panelGrid style="margin-left: 160px; "> 
                     <p:row>  
                         <p:column styleClass="ui-widget-header" ><h:outputText value="USUARIO: " /></p:column>
                         <p:column ><h:inputText id="loginname" value="#{loginMB.loginname}" />
@@ -52,11 +45,13 @@
                     </p:row>                      
                     <p:row>
                         <p:column colspan="2" style="text-align: center;" >
+
                             <p:commandButton 
                                 value="INGRESAR" 												
                                 action="#{loginMB.CheckValidUser}"                                 
                                 oncomplete="clickSeeDialog()"
                                 update="@form" />
+
                         </p:column>
                     </p:row>  
                 </p:panelGrid>

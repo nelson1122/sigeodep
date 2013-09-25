@@ -16,19 +16,19 @@ and open the template in the editor.
                 document.getElementById('IdEndSession').style.display ='none';
                 document.getElementById('IdCloseSession').style.display ='none';
                 document.getElementById('IdNoSession').style.display ='none';                
-                if(cadGET.indexOf("timeout") != -1){
+                if(cadGET.indexOf("timeout") !== -1){
                     document.getElementById('IdEndSession').style.display ='block';
                 }
-                if(cadGET.indexOf("close") != -1){
+                if(cadGET.indexOf("close") !== -1){
                     document.getElementById('IdCloseSession').style.display ='block';
                 }
-                if(cadGET.indexOf("nosession") != -1){
+                if(cadGET.indexOf("nosession") !== -1){
                     document.getElementById('IdNoSession').style.display ='block';
                 }
             } 
         </script> 
     </head>
-    <body onload="leerGET()">
+    <body onload="leerGET();">
         <div style=" 
              position:absolute;
              width: 500px; 
@@ -37,12 +37,15 @@ and open the template in the editor.
              margin-left: -250px;  
              top: 50%;
              margin-top: -190px;
-             background-image:url(resources/img/entrada.png);">
+             background-image:url(resources/img/img_index.png);">
             <div style="
                  margin-top: 195px;
                  margin-left: 250px;">                
                 <a href="faces/index.xhtml">                     
-                    <img src="resources/img/inicio_1.png" />                
+                    <img src="resources/img/btn_inicio_1.png" />                
+                </a>
+                <a href="faces/indexInvited.xhtml">                     
+                    <img src="resources/img/btn_inicio_2.png" />                
                 </a>
             </div>
         </div>

@@ -39,8 +39,8 @@ public class RecordDataMB implements Serializable {
 
     @EJB
     FormsFacade formsFacade;
-    @EJB
-    SourcesFacade sourcesFacade;
+//    @EJB
+//    SourcesFacade sourcesFacade;
     @EJB
     FieldsFacade fieldsFacade;
     @EJB
@@ -69,8 +69,8 @@ public class RecordDataMB implements Serializable {
     VictimCharacteristicsFacade victimCharacteristicsFacade;
     @EJB
     NonFatalPlacesFacade nonFatalPlacesFacade;
-    @EJB
-    DomesticViolenceDataSourcesFacade domesticViolenceDataSourcesFacade;
+//    @EJB
+//    DomesticViolenceDataSourcesFacade domesticViolenceDataSourcesFacade;
     @EJB
     UseAlcoholDrugsFacade useAlcoholDrugsFacade;
     @EJB
@@ -253,6 +253,7 @@ public class RecordDataMB implements Serializable {
     private String minutos1 = "";//minuto consulta
     private String ampm1 = "";//ampm consulta                
     private String narrative = "";//narracion
+    private String errorOnComplete = "";//errorAlRealizar carga de registros
     private int hourInt = 0;
     private int minuteInt = 0;
     private Date n;
@@ -284,8 +285,12 @@ public class RecordDataMB implements Serializable {
     }
 
     public void onComplete() {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la adición de " + String.valueOf(tuplesProcessed)
-                + " registros en el conjunto de registros: \" " + lastTagNameCreated + " \""));
+        if (errorOnComplete.length() == 0) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la adición de " + String.valueOf(tuplesProcessed)
+                    + " registros en el conjunto de registros: \" " + lastTagNameCreated + " \""));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", errorOnComplete));
+        }
     }
 
     public void onCompleteValidate() {
@@ -853,7 +858,6 @@ public class RecordDataMB implements Serializable {
                                         selftInflictedValues,
                                         domesticViolenceValues);
                             }
-
                         case SCC_F_028:
                         case SCC_F_029:
                         case SCC_F_030:
@@ -883,9 +887,6 @@ public class RecordDataMB implements Serializable {
                 progress = 100;
                 System.out.println("Error 4 en " + this.getClass().getName() + ":" + ex.toString());
             }
-//            if(!errorsControlMB.getErrorControlArrayList().isEmpty()){
-//                
-//            }
         }
     }
 
@@ -910,6 +911,13 @@ public class RecordDataMB implements Serializable {
         //---------------- VALIDACION ENTRE INTENCIONALIDAD Y MECANISMO ----
         //------------------------------------------------------------------
         if (intencionality1 != null && mechanism.length() != 0) {
+            //--------------------------------------------------------------
+            //el mecanismo es transporte pero no hay datos de transporte
+//            if (mechanism.compareTo("1") == 0 && traficValues.length() == 0) {//transporte y no hay datos especificos de transporte                
+//                errorsNumber++;
+//                errorsControlMB.addError(errorsNumber * -1, null, "El mecanismo es LESION DE TRANSPORTE pero no hay datos especificos sobre la lesión de transporte", rowId);
+//            }
+
             if (intencionality1.compareTo("1") == 0) {//NO INTENCIONAL (ACCIDENTES)
                 //--------------------------------------------------------------
                 if (mechanism.compareTo("2") == 0) {//VIOLENCIA SEXUAL
@@ -986,6 +994,12 @@ public class RecordDataMB implements Serializable {
                     errorsNumber++;
                     errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' no pueden haber datos de VIOLENCIA INRAFAMILIAR: (" + domesticViolenceValues + ")", rowId);
                 }
+//                //--------------------------------------------------------------
+//                //intencionalidad autoinflingida y no hay datos de autoinflingida
+//                if (mechanism.compareTo("1") == 0 && traficValues.length() == 0) {
+//                    errorsNumber++;
+//                    errorsControlMB.addError(errorsNumber * -1, null, "La intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' pero no hay datos especificos sobre la lesión autoinflingida", rowId);
+//                }
             } else if (intencionality1.compareTo("3") == 0) {//VIOLENCIA / AGRESION O SOSPECHA
                 //------------------------------------------------------------------                
                 if (mechanism.compareTo("1") == 0) {//LESION DE TRANSPORTE
@@ -1012,6 +1026,12 @@ public class RecordDataMB implements Serializable {
                     errorsNumber++;
                     errorsControlMB.addError(errorsNumber * -1, null, "No pueden Haber datos de VIOLENCIA INTERPERSONAL Y VIOLENCIA INTRAFAMILIAR en el mismo registro; INTERPERSONAL: (" + interpersonalValues + "), INTRAFAMILIAR: (" + domesticViolenceValues + ")", rowId);
                 }
+//                //--------------------------------------------------------------
+//                //intencionalidad violencia/agresion y no hay datos de VIOLENCIA INTERPERSONAL o VIOLENCIA INTRAFAMILIAR
+//                if (interpersonalValues.length() == 0 && domesticViolenceValues.length() == 0) {
+//                    errorsNumber++;
+//                    errorsControlMB.addError(errorsNumber * -1, null, "La intencionalidad es 'VIOLENCIA / AGRESION O SOSPECHA' pero no hay datos especificos de VIOLENCIA INTERPERSONAL o VIOLENCIA INTRAFAMILIAR en el registro; ", rowId);
+//                }
             }
         }
     }
@@ -1052,15 +1072,15 @@ public class RecordDataMB implements Serializable {
 
             newTag = new Tags();
             newTag.setTagId(ungroupedTagsFacade.findMax());
-            String tagName=determineTagName(projectsMB.getCurrentProjectName());
+            String tagName = determineTagName(projectsMB.getCurrentProjectName());
             newTag.setTagName(tagName);
             newTag.setTagFileInput(projectsMB.getCurrentFileName());
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
-            
-            
-                    
+
+
+
 
             lastTagNameCreated = newTag.getTagName();
 
@@ -1399,6 +1419,16 @@ public class RecordDataMB implements Serializable {
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name.trim());
                 }
+                //EDAD Y TIPO DE EDAD
+                if (newVictim.getVictimAge() != null) {//HAY EDAD 
+                    if (newVictim.getAgeTypeId() == null) {//no hay tipo de edad
+                        newVictim.setAgeTypeId((short) 1);//tiṕo de edad años
+                    }
+                } else {
+                    newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
+                }
+
+
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
                     if (newVictim.getVictimAge() == null) {
@@ -1890,6 +1920,14 @@ public class RecordDataMB implements Serializable {
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name.trim());
                 }
+                //EDAD Y TIPO DE EDAD
+                if (newVictim.getVictimAge() != null) {//HAY EDAD 
+                    if (newVictim.getAgeTypeId() == null) {//no hay tipo de edad
+                        newVictim.setAgeTypeId((short) 1);//tiṕo de edad años
+                    }
+                } else {
+                    newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
+                }
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
                     if (newVictim.getVictimAge() == null) {
@@ -2367,7 +2405,14 @@ public class RecordDataMB implements Serializable {
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name.trim());
                 }
-
+                //EDAD Y TIPO DE EDAD
+                if (newVictim.getVictimAge() != null) {//HAY EDAD 
+                    if (newVictim.getAgeTypeId() == null) {//no hay tipo de edad
+                        newVictim.setAgeTypeId((short) 1);//tiṕo de edad años
+                    }
+                } else {
+                    newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
+                }
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
                     if (newVictim.getVictimAge() == null) {
@@ -2843,7 +2888,14 @@ public class RecordDataMB implements Serializable {
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name.trim());
                 }
-
+                //EDAD Y TIPO DE EDAD
+                if (newVictim.getVictimAge() != null) {//HAY EDAD 
+                    if (newVictim.getAgeTypeId() == null) {//no hay tipo de edad
+                        newVictim.setAgeTypeId((short) 1);//tiṕo de edad años
+                    }
+                } else {
+                    newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
+                }
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
                     if (newVictim.getVictimAge() == null) {
@@ -2982,7 +3034,7 @@ public class RecordDataMB implements Serializable {
             newUngroupedTags.setFormId(nameForm);
             newUngroupedTags.setCurrentTagId(ungroupedTagsFacade.findMax() + 1);
             ungroupedTagsFacade.create(newUngroupedTags);
-            
+
             newTag = new Tags();//VARIABLES PARA CONJUNTOS DE REGISTROS
             newTag.setTagId(ungroupedTagsFacade.findMax());
             newTag.setTagName(determineTagName(projectsMB.getCurrentProjectName()));
@@ -3141,6 +3193,9 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find(Short.parseShort(value)));
                                 break;
                             case numero_identificacion_victima:
+//                                if (value.compareTo("30744424") == 0) {
+//                                    System.out.println("aqui");
+//                                }
                                 newVictim.setVictimNid(value);
                                 break;
                             case aseguradora:
@@ -3549,6 +3604,7 @@ public class RecordDataMB implements Serializable {
                             // ************************************************DATOS PARA LA TABLA non_fatal_injuries
                             case institucion_salud:
                                 newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find(Short.parseShort(value)));
+                                newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(nonFatalDataSourcesFacade.find(Short.parseShort(value)));
                                 break;
                             case barrio_evento://bario donde ocurrio el evento
                                 newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(value)));
@@ -3786,6 +3842,15 @@ public class RecordDataMB implements Serializable {
 ////                        System.out.print("");
 ////                    }
 ////                }
+
+                //SI NO HAY INSTITUCION RECEPTORA SE TRATA DE COLOCAR LA FUENTE DEL PROYECTO
+                if (newNonFatalDomesticViolence.getDomesticViolenceDataSourceId() == null) {
+                    if (projectsMB.getCurrentSourceId() != 75) {//si la fuente es diferente de observatorio del delito
+                        newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(nonFatalDataSourcesFacade.find(projectsMB.getCurrentSourceId()));
+                        newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find(projectsMB.getCurrentSourceId()));
+                    }
+                }
+
                 //SI NO HAY FECHA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
                 if (newNonFatalInjury.getCheckupDate() == null) {
                     dia1 = haveData(dia1);
@@ -3925,7 +3990,14 @@ public class RecordDataMB implements Serializable {
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name.trim());
                 }
-
+                //EDAD Y TIPO DE EDAD
+                if (newVictim.getVictimAge() != null) {//HAY EDAD 
+                    if (newVictim.getAgeTypeId() == null) {//no hay tipo de edad
+                        newVictim.setAgeTypeId((short) 1);//tiṕo de edad años
+                    }
+                } else {
+                    newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
+                }
                 //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
                 if (newNonFatalInjury.getNonFatalDataSourceId() == null) {
                     if (currentSource != 21) {//"OBSERVATORIO DEL DELITO")
@@ -3971,33 +4043,26 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-
-                //AGREGO LAS LISTAS NO VACIAS///////////////////////////////////
-                if (!anatomicalLocationsList.isEmpty()) {
-                    newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
-                }
-                if (!securityElementList.isEmpty()) {
-                    newNonFatalTransport.setSecurityElementsList(securityElementList);
-                }
-                if (!abuseTypesList.isEmpty()) {
-                    newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
-                }
-                if (!aggressorTypesList.isEmpty()) {
-                    newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
-                }
-                if (!kindsOfInjurysList.isEmpty()) {
-                    newNonFatalInjury.setKindsOfInjuryList(kindsOfInjurysList);
-                }
-                if (!diagnosesList.isEmpty()) {
-                    newNonFatalInjury.setDiagnosesList(diagnosesList);
-                }
-                if (!vulnerableGroupList.isEmpty()) {
-                    newVictim.setVulnerableGroupsList(vulnerableGroupList);
-                }
-
                 //DETERMINO TIPO DE LESION//////////////////////////////////////
                 if (selectInjuryDetermined == null) {//no se pudo determinar se coloca por defecto //54. No intencional
-                    newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 54));
+                    if (newNonFatalInjury.getMechanismId()!= null && newNonFatalInjury.getMechanismId().getMechanismId() == 1) {//mecanismo es transito 
+                        newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 51));//lesion en accidente de transito
+                    } else {//el mecanismo no es transito se evalua segun la intecionalidad
+                        if (newNonFatalInjury.getIntentionalityId().getIntentionalityId() != null) {
+                            if (newNonFatalInjury.getIntentionalityId().getIntentionalityId() == (short) 1) {//no intencional
+                                newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 54));//no intencional
+                            }
+                            if (newNonFatalInjury.getIntentionalityId().getIntentionalityId() == (short) 2) {//auntoinflingida
+                                newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 52));//autoinflingida
+                            }
+                            if (newNonFatalInjury.getIntentionalityId().getIntentionalityId() == (short) 3) {//violencia agresion o sospecha
+                                newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 50));//interpersonal
+                            }
+                        } else {
+                            newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 54));//no intencional
+                            newNonFatalInjury.setIntentionalityId(intentionalitiesFacade.find((short) 1));//no intencional
+                        }
+                    }
                 } else {//se determino segun los datos que llegaron                        
                     newNonFatalInjury.setInjuryId(selectInjuryDetermined);
                 }
@@ -4005,6 +4070,52 @@ public class RecordDataMB implements Serializable {
                 if (newNonFatalInjury.getInjuryId().getInjuryId() == (short) 53) {//53 ES POR QUE ES VIF 
                     newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 55));//CAMBIA A 55 PARA SER VIF INGRESADA DESDE LCENF
                 }
+
+                //AGREGO LAS LISTAS NO VACIAS///////////////////////////////////
+                if (!anatomicalLocationsList.isEmpty()) {
+                    newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
+                } else {
+                    anatomicalLocationsList.add(new AnatomicalLocations((short) 99));
+                    newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
+                }
+
+                if (!abuseTypesList.isEmpty()) {
+                    newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                } else {
+                    abuseTypesList.add(new AbuseTypes((short) 7));
+                    newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                }
+
+                if (!aggressorTypesList.isEmpty()) {
+                    newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+                } else {
+                    aggressorTypesList.add(new AggressorTypes((short) 9));
+                    newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+                }
+
+                if (!kindsOfInjurysList.isEmpty()) {
+                    newNonFatalInjury.setKindsOfInjuryList(kindsOfInjurysList);
+                } else {
+                    kindsOfInjurysList.add(new KindsOfInjury((short) 99));
+                    newNonFatalInjury.setKindsOfInjuryList(kindsOfInjurysList);
+                }
+
+                if (!diagnosesList.isEmpty()) {
+                    newNonFatalInjury.setDiagnosesList(diagnosesList);
+                }
+
+                if (!vulnerableGroupList.isEmpty()) {
+                    newVictim.setVulnerableGroupsList(vulnerableGroupList);
+                }
+
+                if (!securityElementList.isEmpty()) {
+                    newNonFatalTransport.setSecurityElementsList(securityElementList);
+                } else {
+                    securityElementList.add(new SecurityElements((short) 8));
+                    newNonFatalTransport.setSecurityElementsList(securityElementList);
+                }
+
+
 
                 if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
@@ -4079,6 +4190,7 @@ public class RecordDataMB implements Serializable {
                         nonFatalSelfInflictedFacade.create(newNonFatalSelfInflicted);
                     } else if (newNonFatalInjury.getInjuryId().getInjuryId().compareTo((short) 53) == 0
                             || newNonFatalInjury.getInjuryId().getInjuryId().compareTo((short) 55) == 0) {//VIOLENCIA INTRAFAMILIAR
+
                         newNonFatalDomesticViolence.setNonFatalInjuries(nonFatalInjuriesFacade.find(newNonFatalInjury.getNonFatalInjuryId()));
                         nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
                     } else if (newNonFatalInjury.getInjuryId().getInjuryId().compareTo((short) 54) == 0) {//NO INTENCIONAL 
@@ -4238,7 +4350,8 @@ public class RecordDataMB implements Serializable {
                             //case clave:
                             //    break;
                             case institucion_receptora:
-                                newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(domesticViolenceDataSourcesFacade.find(Short.parseShort(value)));
+                                newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(nonFatalDataSourcesFacade.find(Short.parseShort(value)));
+                                newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find(Short.parseShort(value)));
                                 break;
                             case primer_apellido:
                                 if (surname.trim().length() != 0) {
@@ -4687,6 +4800,13 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
+                //SI NO HAY INSTITUCION RECEPTORA SE TRATA DE COLOCAR LA FUENTE DEL PROYECTO
+                if (newNonFatalDomesticViolence.getDomesticViolenceDataSourceId() == null) {
+                    if (projectsMB.getCurrentSourceId() != 75) {//si la fuente es diferente de observatorio del delito
+                        newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(nonFatalDataSourcesFacade.find(projectsMB.getCurrentSourceId()));
+                        newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find(projectsMB.getCurrentSourceId()));
+                    }
+                }
 
                 //SI NO HAY FECHA DE CONSULTA TRATAR DE CALCULAR MEDIANTE LAS VARIABLES dia_evento, mes_evento, año_evento
                 if (newNonFatalInjury.getCheckupDate() == null) {
@@ -4819,7 +4939,14 @@ public class RecordDataMB implements Serializable {
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name.trim());
                 }
-
+                //EDAD Y TIPO DE EDAD
+                if (newVictim.getVictimAge() != null) {//HAY EDAD 
+                    if (newVictim.getAgeTypeId() == null) {//no hay tipo de edad
+                        newVictim.setAgeTypeId((short) 1);//tiṕo de edad años
+                    }
+                } else {
+                    newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
+                }
                 //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
                 if (newNonFatalInjury.getNonFatalDataSourceId() == null) {
                     if (currentSource != 21) {//1=compareTo("OBSERVATORIO DEL DELITO")
@@ -4871,19 +4998,36 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                //agrego las listas las listas
-                if (!anatomicalLocationsList.isEmpty()) {
-                    newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
-                }
+                //agrego las listas no vacias
+//                if (!anatomicalLocationsList.isEmpty()) {
+//                    newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
+//                } else {
+//                    anatomicalLocationsList.add(new AnatomicalLocations((short) 99));
+//                    newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
+//                }
+
                 if (!abuseTypesList.isEmpty()) {
                     newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                } else {
+                    abuseTypesList.add(new AbuseTypes((short) 7));
+                    newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
                 }
+
                 if (!aggressorTypesList.isEmpty()) {
                     newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+                } else {
+                    aggressorTypesList.add(new AggressorTypes((short) 9));
+                    newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
                 }
+
                 if (!actionsToTakeList.isEmpty()) {
                     newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
+                } else {
+                    actionsToTakeList.add(new ActionsToTake((short) 13));
+                    newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
                 }
+
+
                 if (!vulnerableGroupList.isEmpty()) {
                     newVictim.setVulnerableGroupsList(vulnerableGroupList);
                 }
@@ -4968,31 +5112,6 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 26 en " + this.getClass().getName() + ":" + ex.toString());
         } catch (Exception ex) {
             System.out.println("Error 27 en " + this.getClass().getName() + ":" + ex.toString());
-        }
-    }
-
-    public void corregirDB() {
-        try {
-            //DETERMINAR EN CUANTO ESTA GEN_NN
-
-            ResultSet rs = connectionJdbcMB.consult("Select * from victims where victim_nid is null");
-            boolean determinada;
-            while (rs.next()) {
-                determinada = false;
-                if (rs.getString("victim_age") != null && rs.getString("victim_age").length() != 0) {
-                    if (rs.getString("age_type_id") != null && rs.getString("age_type_id").length() != 0 && rs.getString("age_type_id").compareTo("1") == 0) {
-                    }
-                }
-                if (determinada == false) {
-                    connectionJdbcMB.consult("UPDATE victims SET  where victim_nid is null");
-                    //ACtUALIZAR victim class                    
-                    //victim id
-                    //type_id
-                }
-            }
-            //actuañizar GEN_NN
-
-        } catch (Exception e) {
         }
     }
 
@@ -5343,9 +5462,18 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case institucion_de_salud:
                                 newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find(Short.parseShort(value)));
+                                newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(nonFatalDataSourcesFacade.find(Short.parseShort(value)));
                                 break;
                             default:
                         }
+                    }
+                }
+
+                //SI NO HAY INSTITUCION RECEPTORA SE TRATA DE COLOCAR LA FUENTE DEL PROYECTO
+                if (newNonFatalDomesticViolence.getDomesticViolenceDataSourceId() == null) {
+                    if (projectsMB.getCurrentSourceId() != 75) {//si la fuente es diferente de observatorio del delito
+                        newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(nonFatalDataSourcesFacade.find(projectsMB.getCurrentSourceId()));
+                        newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find(projectsMB.getCurrentSourceId()));
                     }
                 }
 
@@ -5385,7 +5513,14 @@ public class RecordDataMB implements Serializable {
                 if (name.trim().length() > 1) {
                     newVictim.setVictimName(name.trim());
                 }
-
+                //EDAD Y TIPO DE EDAD
+                if (newVictim.getVictimAge() != null) {//HAY EDAD 
+                    if (newVictim.getAgeTypeId() == null) {//no hay tipo de edad
+                        newVictim.setAgeTypeId((short) 1);//tiṕo de edad años
+                    }
+                } else {
+                    newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
+                }
                 //SI NO SE DETERMINA LA INSTITUCION DE SALUD SE ALMACENA LA QUE VIENE DEL FORMULARIO                
                 if (newNonFatalInjury.getNonFatalDataSourceId() == null) {
                     if (currentSource != 21) {//1=compareTo("OBSERVATORIO DEL DELITO")
@@ -5430,11 +5565,18 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-                //agrego las listas las listas
+                //agrego las listas no vacias
                 if (!publicHealthActionsList.isEmpty()) {
                     newSivigilaEvent.setPublicHealthActionsList(publicHealthActionsList);
+                } else {
+                    publicHealthActionsList.add(new PublicHealthActions((short) 8));
+                    newSivigilaEvent.setPublicHealthActionsList(publicHealthActionsList);
                 }
+
                 if (!abuseTypesList.isEmpty()) {
+                    newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                } else {
+                    abuseTypesList.add(new AbuseTypes((short) 7));
                     newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
                 }
 
@@ -5526,13 +5668,28 @@ public class RecordDataMB implements Serializable {
     public void btnRegisterDataClick() throws ParseException {
         nameForm = projectsMB.getCurrentFormId();
         currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());//tomo el grupos_vulnerables de relaciones de valores y de variables
-        continueProcces = false;
         btnRegisterDataDisabled = true;
+        errorOnComplete = "";
+
         if (errorsControlMB.getErrorsList() != null && errorsControlMB.getErrorsList().isEmpty()) {
             continueProcces = true;
         } else {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se deben corregir todos los errores para poder realizar la carga."));
+            errorOnComplete = "Se deben corregir todos los errores para poder realizar la carga.";
+            continueProcces = false;
             progress = 100;
+        }
+        //verifico que no exista una carga con este nombre ya realizada
+        try {
+            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM ungrouped_tags WHERE ungrouped_tag_name ILIKE '" + projectsMB.getCurrentProjectName() + "'");
+            if (rs.next()) {
+                errorOnComplete = "Ya existe una conjunto de registros cargados con el mismo nombre.    \n "
+                        + "Para poder realizar la carga de estos registros se debe dirigir a la sección: "
+                        + "'Gestión de conjuntos' y eliminar el conjunto: '" + projectsMB.getCurrentProjectName() + "'. "
+                        + " Si este conjunto ya esta agrupado en otro se debe desagrupar para poder eliminarlo.";
+                progress = 100;
+                continueProcces = false;
+            }
+        } catch (Exception e) {
         }
         if (continueProcces == true) {
             switch (FormsEnum.convert(nameForm.replace("-", "_"))) {

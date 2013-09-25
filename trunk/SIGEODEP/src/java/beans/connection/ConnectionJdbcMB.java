@@ -2649,7 +2649,7 @@ public class ConnectionJdbcMB implements Serializable {
         }
 
         if (currentNonFatalDomesticV.getDomesticViolenceDataSourceId() != null) {
-            newRowDataTable.setColumn80(currentNonFatalDomesticV.getDomesticViolenceDataSourceId().getDomesticViolenceDataSourcesName());
+            newRowDataTable.setColumn80(currentNonFatalDomesticV.getDomesticViolenceDataSourceId().getNonFatalDataSourceName());
         }
 
         return newRowDataTable;

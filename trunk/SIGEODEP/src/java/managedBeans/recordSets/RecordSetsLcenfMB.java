@@ -78,7 +78,7 @@ public class RecordSetsLcenfMB implements Serializable {
     }
 
     public RecordSetsLcenfMB() {
-        tagsList = new ArrayList<Tags>();
+        tagsList = new ArrayList<>();
         table_model = new LazyRecordSetsDataModel(0, "", FormsEnum.SCC_F_032);
         connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
@@ -99,11 +99,97 @@ public class RecordSetsLcenfMB implements Serializable {
         openForm = "LCENF";
     }
 
+//    void loadValues(RowDataTable[] selectedRowsDataTableTags) {
+//        try {
+//            //CREO LA LISTA DE TAGS SELECCIONADOS   
+//            exportFileName = "LCENF - " + initialDateStr + " - " + endDateStr;
+//
+//            //DETERMINO TOTAL DE REGISTROS
+////            sql =  " "//mecanismo es transito
+////                    + " SELECT \n"
+////                    + " count(*) \n"
+////                    + " FROM \n"
+////                    + " public.victims, \n"
+////                    + " public.non_fatal_injuries \n"
+////                    + " WHERE \n"
+////                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
+////                    + " non_fatal_injuries.injury_id = 54 AND "
+////                    + " non_fatal_injuries.mechanism_id = 1 ";
+//            
+////            sql =  " "
+////                    + " SELECT \n"
+////                    + " count(*) \n"
+////                    + " FROM \n"
+////                    + " public.victims, \n"
+////                    + " public.non_fatal_injuries \n"
+////                    + " WHERE \n"
+////                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
+////                    + " non_fatal_injuries.injury_id = 54 AND "
+////                    + " non_fatal_injuries.intentionality_id = 2 ";//auntoinflingida
+//            
+//            sql =  " "
+//                    + " SELECT \n"
+//                    + " count(*) \n"
+//                    + " FROM \n"
+//                    + " public.victims, \n"
+//                    + " public.non_fatal_injuries \n"
+//                    + " WHERE \n"
+//                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
+//                    + " non_fatal_injuries.injury_id = 54 AND "
+//                    + " non_fatal_injuries.intentionality_id = 3 ";//violencia agresion o sospecha
+//
+//            ResultSet resultSet = connection.consult(sql);
+//            totalRecords = "0";
+//            if (resultSet.next()) {
+//                totalRecords = String.valueOf(resultSet.getInt(1));
+//            }
+//            //System.out.println("Total de registros = " + totalRecords);
+//            //DETERMINO EL ID DE CADA REGISTRO                        
+////            sql =  " "
+////                    + " SELECT \n"
+////                    + " non_fatal_injuries.victim_id \n"
+////                    + " FROM \n"
+////                    + " public.victims, \n"
+////                    + " public.non_fatal_injuries \n"
+////                    + " WHERE \n"
+////                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
+////                    + " non_fatal_injuries.injury_id = 54 AND "
+////                    + " non_fatal_injuries.mechanism_id = 1 ";    
+//            
+////            sql =  " "
+////                    + " SELECT \n"
+////                    + " non_fatal_injuries.victim_id \n"
+////                    + " FROM \n"
+////                    + " public.victims, \n"
+////                    + " public.non_fatal_injuries \n"
+////                    + " WHERE \n"
+////                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
+////                    + " non_fatal_injuries.injury_id = 54 AND "
+////                    + " non_fatal_injuries.intentionality_id = 2 ";//auntoinflingida
+//            
+//            sql =  " "
+//                    + " SELECT \n"
+//                    + " non_fatal_injuries.victim_id \n"
+//                    + " FROM \n"
+//                    + " public.victims, \n"
+//                    + " public.non_fatal_injuries \n"
+//                    + " WHERE \n"
+//                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
+//                    + " non_fatal_injuries.injury_id = 54 AND "
+//                    + " non_fatal_injuries.intentionality_id = 3 ";//violencia agresion o sospecha
+//
+//            //CONSTRUYO EL TABLE_MODEL
+//            table_model = new LazyRecordSetsDataModel(Integer.parseInt(totalRecords), sql, FormsEnum.SCC_F_032);
+//        } catch (SQLException ex) {
+//            Logger.getLogger(RecordSetsLcenfMB.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
+
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
         try {
             //CREO LA LISTA DE TAGS SELECCIONADOS   
             exportFileName = "LCENF - " + initialDateStr + " - " + endDateStr;
-            tagsList = new ArrayList<Tags>();
+            tagsList = new ArrayList<>();
             data = "";
             for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
                 if (i == 0) {
@@ -182,7 +268,7 @@ public class RecordSetsLcenfMB implements Serializable {
             progress = 0;
             tuplesNumber = Integer.parseInt(totalRecords);
             tuplesProcessed = 0;
-            rowsDataTableArrayList = new ArrayList<RowDataTable>();
+            rowsDataTableArrayList = new ArrayList<>();
             ResultSet resultSet = connection.consult(sql);
             while (resultSet.next()) {
                 rowsDataTableArrayList.add(connection.loadNonFatalInjuryRecord(resultSet.getString(1)));
@@ -611,7 +697,7 @@ public class RecordSetsLcenfMB implements Serializable {
             }//deselecciono los controles
             selectedRowsDataTable = null;
             btnEditDisabled = true;
-            totalRecords=String.valueOf(Integer.parseInt(totalRecords)-1);
+            totalRecords = String.valueOf(Integer.parseInt(totalRecords) - 1);
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
         } else {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
@@ -680,7 +766,6 @@ public class RecordSetsLcenfMB implements Serializable {
 //    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
 //        this.btnRemoveDisabled = btnRemoveDisabled;
 //    }
-
     public String getData() {
         return data;
     }

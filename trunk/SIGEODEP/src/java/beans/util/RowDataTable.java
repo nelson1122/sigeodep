@@ -168,9 +168,7 @@ public class RowDataTable {
             try {
                 Field field = propieties[i];
                 this.getClass().getField(field.getName()).set(this.getClass().newInstance(),"sss");
-            } catch (InstantiationException ex) {
-                Logger.getLogger(RowDataTable.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
+            } catch (    InstantiationException | IllegalAccessException ex) {
                 Logger.getLogger(RowDataTable.class.getName()).log(Level.SEVERE, null, ex);
             }
             

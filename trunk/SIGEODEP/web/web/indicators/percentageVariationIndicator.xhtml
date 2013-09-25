@@ -554,18 +554,15 @@
                     modal="true"
                     header="Cargar configuración"         
                     resizable="false"                    
-                    widgetVar="openConfigurationDialog">  
+                    widgetVar="openConfigurationDialog">
                     <br/>
-                    Seleccione la configuración a cargar
-                    <br/>
-                    <br/>
-                    <h:selectOneListbox 
+                    <h:selectManyListbox 
                         id="IdConfigurationsList"
                         value="#{indicatorsPercentageVariationMB.currentConfigurationSelected}"
                         style="height:110px; width: 360px;"
                         converterMessage="Fallo de comunicación, por favor intente nuevamente.">
                         <f:selectItems value="#{indicatorsPercentageVariationMB.configurationsList}"/>
-                    </h:selectOneListbox>
+                    </h:selectManyListbox>
                     <br/>
                     <br/>
                     <p:commandButton                                                            
@@ -574,7 +571,8 @@
                         oncomplete="openConfigurationDialog.hide()"
                         actionListener="#{indicatorsPercentageVariationMB.btnOpenConfigurationClick}"
                         update="IdSelectManyListCategoryValues IdConfigurationsList :IdTabView:IdForm:message"/>
-                    <p:commandButton                                                            
+                    <p:commandButton    
+                        rendered="#{loginMB.userSystem}"
                         value="Eliminar"
                         style="margin:0;"
                         oncomplete="openConfigurationDialog.hide()"
@@ -659,14 +657,16 @@
                                     style="margin:0;"                                                
                                     actionListener="#{indicatorsPercentageVariationMB.btnResetCategoryListClick}"                                                
                                     update="IdBtnRemoveCategory IdSelectManyListCategoryValues"/>  
-                                <p:commandButton                                                            
+                                <p:commandButton 
+                                    rendered="#{loginMB.userSystem}"
                                     value="Guardar"
                                     style="margin:0;"
-                                    onclick="saveConfigurationDialog.show()"/>  
+                                    onclick="saveConfigurationDialog.show();"/>  
                                 <p:commandButton                                                            
                                     value="Cargar/Eliminar"
+                                    rendered="#{loginMB.userSystem}"
                                     style="margin:0;"                    
-                                    oncomplete="openConfigurationDialog.show()"/>  
+                                    oncomplete="openConfigurationDialog.show();"/>  
                                 <br/>
                                 <br/>
                             </p:column>

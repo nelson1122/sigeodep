@@ -155,7 +155,7 @@ public class MurderContextVariableMB implements Serializable {
             reset();
         } else {
             currentSearchValue = currentSearchValue.toUpperCase();
-            rowDataTableList = new ArrayList<RowDataTable>();
+            rowDataTableList = new ArrayList<>();
             murderContextsList = murderContextsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
             if (murderContextsList.isEmpty()) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
@@ -170,7 +170,7 @@ public class MurderContextVariableMB implements Serializable {
     }
 
     public void reset() {
-        rowDataTableList = new ArrayList<RowDataTable>();
+        rowDataTableList = new ArrayList<>();
         murderContextsList = murderContextsFacade.findAll();        
         for (int i = 0; i < murderContextsList.size(); i++) {
             rowDataTableList.add(new RowDataTable(
