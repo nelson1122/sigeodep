@@ -6,6 +6,11 @@ package managedBeans.configurations;
 
 import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +22,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.servlet.ServletContext;
 import model.dao.CorridorsFacade;
 import model.dao.NeighborhoodsFacade;
 import model.pojo.Corridors;
@@ -52,6 +58,13 @@ public class NeighborhoodsVariableMB implements Serializable {
     private SelectItem[] corridorsList;
     private Neighborhoods currentNeighborhood;
     private String type = "";
+    
+    private String newPoligonText = "";//poligono para el nuevo barrio
+    private boolean disabledShowGeomFile = true;//activar/desactivar boton de ver archivo KML
+    private String newNameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
+    private String newGeomText = "Geometría no cargada";//nombre del archivo de geometria para nuevo barrio
+    private String nameGeomFile = "";//nombre del archivo de geometria para barrio existente
+    
     private String neighborhoodName = "";//Nombre del barrio.
     private String neighborhoodId = "";//Código del barrio.
     private String neighborhoodSuburbId = "";//Código de la comuna.
@@ -80,9 +93,12 @@ public class NeighborhoodsVariableMB implements Serializable {
     ConnectionJdbcMB connectionJdbcMB;
     private String newPopuation = "0";
     private String popuation = "0";
+    private String realPath = "";//ruta real en el servidor de la aplicacion
 
     public NeighborhoodsVariableMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+        realPath = (String) servletContext.getRealPath("/"); 
     }
 
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
@@ -127,18 +143,62 @@ public class NeighborhoodsVariableMB implements Serializable {
         }
     }
 
+    private void copyFile(String fileName, InputStream in) {
+
+
+        disabledShowGeomFile = true;
+        newNameGeomFile = "Archivo no cargado";
+        try {
+            java.io.File folder = new java.io.File(realPath + "web/configurations/maps");
+            if (folder.exists()) {//verificar que el directorio exista
+                StringBuilder nameAndPathFile = new StringBuilder();
+                nameAndPathFile.append(realPath);
+                nameAndPathFile.append("web/configurations/maps/");
+                nameAndPathFile.append(fileName);
+                newNameGeomFile = fileName;//ruta que se usa en java script
+                disabledShowGeomFile = false;
+                java.io.File ficherofile = new java.io.File(nameAndPathFile.toString());
+                if (ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
+                    ficherofile.delete();//Lo Borramos
+                }
+                try (OutputStream out = new FileOutputStream(new File(nameAndPathFile.toString()))) {
+                    int read;
+                    byte[] bytes = new byte[1024];
+                    while ((read = in.read(bytes)) != -1) {
+                        out.write(bytes, 0, read);
+                    }
+                    in.close();
+                    out.flush();
+                    System.out.println("El fichero de geometria copiado con exito: " + nameAndPathFile.toString());
+                } catch (IOException e) {
+                    System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
+                }
+            } else {
+                System.out.println("No se encuentra la carpeta");
+            }
+        } catch (Exception e) {
+            System.out.println("No se pudo procesar el archivo");
+        }
+    }
+
     public void handleFileUpload(FileUploadEvent event) {
         /*
          * cargar el archivo de geometria del varrio
          */
+        newNameGeomFile = "";//nombre del archivo de geometria para nuevo barrio
         try {
-            //file = event.getFile();
-            //File file2 = new File(file.getFileName());
+            //realizo la copia de este archivo a la carpeta correspondiente a geometrias
+            file = event.getFile();
+            copyFile(event.getFile().getFileName(), event.getFile().getInputstream());
+            //newNameGeomFile = event.getFile().getFileName();
         } catch (Exception ex) {
-            //System.out.println("Error: populationsMB_1 > " + ex.toString());
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se pudo realizar la carga de este archivo"));
         }
     }
 
+//    public void cualArchivo() {
+//        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Archivo es", newNameGeomFile));
+//    }
     public void addQuadrantInNewNeighborhoodClick() {
         /*
          * adicionar un cuadrante en un nuevo barrio
@@ -291,7 +351,7 @@ public class NeighborhoodsVariableMB implements Serializable {
             availableAddQuadrants = new ArrayList<>();
             selectedAvailableAddQuadrants = new ArrayList<>();
             quadrantsFilter = "";
-            
+
             //determino los cuadrantes
             availableQuadrants = new ArrayList<>();
             selectedAvailableQuadrants = new ArrayList<>();
@@ -314,6 +374,19 @@ public class NeighborhoodsVariableMB implements Serializable {
                 }
             } catch (Exception e) {
             }
+        }
+    }
+
+    public void showGeomFileClick() {
+        newPoligonText = "";
+    }
+
+    public void loadGeometrySelected() {
+        if (newPoligonText != null && newPoligonText.trim().length() != 0) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "la geometria ha sido cargada"));
+            newGeomText = "Geometria cargada";
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado ninguna geometria"));
         }
     }
 
@@ -451,12 +524,16 @@ public class NeighborhoodsVariableMB implements Serializable {
         if (continueProcess) {
             try {
                 String sql = "INSERT INTO neighborhoods VALUES (";
+                String geom="null";
+                if(newPoligonText!=null&&newPoligonText.trim().length()!=0){
+                    geom="'"+newPoligonText+"'";
+                }
                 sql = sql
                         + newNeighborhoodId + ",'"//codigo
                         + newNeighborhoodName + "',"//nombre
                         + newNeighborhoodSuburbId + ","//comuna
                         + newPopuation + ","//poblacion
-                        + "null,"//geometria
+                        + geom+","//geometria
                         + "0,"//cuadrante
                         + newNeighborhoodType + ","//area
                         + newNeighborhoodLevel + ","//estrato
@@ -483,6 +560,7 @@ public class NeighborhoodsVariableMB implements Serializable {
                 connectionJdbcMB.non_query(sql);
             } catch (Exception e) {
             }
+            reset();
             newRegistry();//limpiar formulario
             currentNeighborhood = null;
             selectedRowDataTable = null;
@@ -730,7 +808,7 @@ public class NeighborhoodsVariableMB implements Serializable {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
-                    
+
             for (int i = 0; i < neighborhoodsList.size(); i++) {
                 if (neighborhoodsList.get(i).getNeighborhoodArea() != null) {
                     if (neighborhoodsList.get(i).getNeighborhoodArea() == 1) {
@@ -751,6 +829,14 @@ public class NeighborhoodsVariableMB implements Serializable {
         neighborhoodsList = neighborhoodsFacade.findAll();
         newPopuation = "0";
         newNeighborhoodCorridor = "0";
+
+        newPoligonText = "";
+        disabledShowGeomFile = true;
+        newNameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
+        newGeomText = "Geometría no cargada";//nombre del archivo de geometria para nuevo barrio
+        nameGeomFile = "";//nombre del archivo de geometria para barrio existente
+
+
 
         for (int i = 0; i < neighborhoodsList.size(); i++) {
             if (neighborhoodsList.get(i).getNeighborhoodArea() == 1) {
@@ -1068,5 +1154,45 @@ public class NeighborhoodsVariableMB implements Serializable {
 
     public void setQuadrantsFilter(String quadrantsFilter) {
         this.quadrantsFilter = quadrantsFilter;
+    }
+
+    public String getNewNameGeomFile() {
+        return newNameGeomFile;
+    }
+
+    public void setNewNameGeomFile(String newNameGeomFile) {
+        this.newNameGeomFile = newNameGeomFile;
+    }
+
+    public String getNameGeomFile() {
+        return nameGeomFile;
+    }
+
+    public void setNameGeomFile(String nameGeomFile) {
+        this.nameGeomFile = nameGeomFile;
+    }
+
+    public boolean isDisabledShowGeomFile() {
+        return disabledShowGeomFile;
+    }
+
+    public void setDisabledShowGeomFile(boolean disabledShowGeomFile) {
+        this.disabledShowGeomFile = disabledShowGeomFile;
+    }
+
+    public String getNewGeomText() {
+        return newGeomText;
+    }
+
+    public void setNewGeomText(String newGeomText) {
+        this.newGeomText = newGeomText;
+    }
+
+    public String getNewPoligonText() {
+        return newPoligonText;
+    }
+
+    public void setNewPoligonText(String newPoligonText) {
+        this.newPoligonText = newPoligonText;
     }
 }

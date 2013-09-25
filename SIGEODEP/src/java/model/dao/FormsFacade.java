@@ -10,7 +10,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import model.pojo.Fields;
 import model.pojo.Forms;
-import model.pojo.Sources;
+import model.pojo.NonFatalDataSources;
+
 
 /**
  *
@@ -36,7 +37,7 @@ public class FormsFacade extends AbstractFacade<Forms> {
 	return (Forms) em.createQuery(hql).setParameter("id", idForm).getSingleResult();
     }
 
-    public List<Sources> findSources(String nameForm) {
+    public List<NonFatalDataSources> findSources(String nameForm) {
 	String hql = "Select x.sourcesList from Forms x where x.formId=:id";
 	return em.createQuery(hql).setParameter("id", nameForm).getResultList();
     }

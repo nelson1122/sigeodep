@@ -206,7 +206,7 @@ public class RecordSetsSivigilaVifMB implements Serializable {
             row = sheet.createRow(rowPosition);// Se crea una fila dentro de la hoja
 
             createCell(cellStyle, row, 0, "CODIGO INTERNO");
-            createCell(cellStyle, row, 1, "INSTITUCION DE SALUD");
+            createCell(cellStyle, row, 1, "INSTITUCION RECEPTORA");
             createCell(cellStyle, row, 2, "NOMBRES Y APELLIDOS");
             createCell(cellStyle, row, 3, "TIPO IDENTIFICACION");
             createCell(cellStyle, row, 4, "IDENTIFICACION");

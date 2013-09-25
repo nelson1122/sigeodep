@@ -516,7 +516,7 @@
                                         <f:facet name="header">
                                             Valor Actual
                                         </f:facet>
-                                        <h:outputText value="#{fields.oldValue}" />
+                                        <h:outputText value="#{fields.oldValue}"/>
                                     </p:column>
                                     <p:column headerText="NUEVO VALOR" style="width:125px">
                                         <p:cellEditor>
@@ -531,7 +531,6 @@
                                     <p:column headerText="EDICION" style="width:50px">
                                         <p:rowEditor />
                                     </p:column>
-
                                 </p:dataTable>
                                 <br/>
                                 <p:commandButton 
@@ -651,7 +650,6 @@
                         <p:accordionPanel id="IdAccordionPanel" activeIndex="-1">
                             <!--======================== SECCION PARA LA RELACION DE VARIABLES ======================-->
                             <p:tab title="RELACION DE VARIABLES">
-
                                 <br/>
                                 <p:panelGrid >                            
                                     <p:row>  
@@ -668,7 +666,6 @@
                                             </h:inputText>
                                         </p:column>                                       
                                         <p:column styleClass="ui-widget-header">
-
                                             <h:outputLabel 
                                                 value="MUESTRA" style="text-align: left;"/>                                                          
                                             <h:outputText 
@@ -738,15 +735,15 @@
                                                 style="width: 200px;"                                                
                                                 effect="fold" 
                                                 editable="true">                                                 
-                                                <f:selectItem itemLabel="dd/MM/yyyy" itemValue="dd/MM/yyyy" />  
-                                                <f:selectItem itemLabel="dd-MM-yyyy" itemValue="dd-MM-yyyy" />  
-                                                <f:selectItem itemLabel="yyyy/MM/dd" itemValue="yyyy/MM/dd" />  
-                                                <f:selectItem itemLabel="yyyy-MM-dd" itemValue="yyyy-MM-dd" />  
-                                                <f:selectItem itemLabel="dd/MM/yy" itemValue="dd/MM/yy" />  
-                                                <f:selectItem itemLabel="dd-MM-yy" itemValue="dd-MM-yy" />  
-                                                <f:selectItem itemLabel="MM/dd/yy" itemValue="MM/dd/yy" />                                                              
+                                                <f:selectItem itemLabel="dd/MM/yyyy" itemValue="dd/MM/yyyy" />
+                                                <f:selectItem itemLabel="dd-MM-yyyy" itemValue="dd-MM-yyyy" />
+                                                <f:selectItem itemLabel="yyyy/MM/dd" itemValue="yyyy/MM/dd" />
+                                                <f:selectItem itemLabel="yyyy-MM-dd" itemValue="yyyy-MM-dd" />
+                                                <f:selectItem itemLabel="dd/MM/yy" itemValue="dd/MM/yy" />
+                                                <f:selectItem itemLabel="dd-MM-yy" itemValue="dd-MM-yy" />
+                                                <f:selectItem itemLabel="MM/dd/yy" itemValue="MM/dd/yy" />
                                                 <f:selectItem itemLabel="MM-dd-yy" itemValue="MM-dd-yy" />
-                                                <f:selectItem itemLabel="yy/MM/dd" itemValue="yy/MM/dd" />  
+                                                <f:selectItem itemLabel="yy/MM/dd" itemValue="yy/MM/dd" />
                                                 <f:selectItem itemLabel="yy-MM-dd" itemValue="yy-MM-dd" />
                                             </p:selectOneMenu>
                                         </p:column>                                         
@@ -842,8 +839,8 @@
                                             <p:column styleClass="ui-widget-header">
                                                 <h:outputLabel value="Relaciones categóricas"/>  
                                                 <h:inputText 
-                                                    id="IdCategoriacalRelationsFilter"                                                                                            
-                                                    value="#{relationshipOfValuesMB.categoricalRelationsFilter}"                                                            
+                                                    id="IdCategoriacalRelationsFilter"
+                                                    value="#{relationshipOfValuesMB.categoricalRelationsFilter}"
                                                     size="20">
                                                     <f:ajax 
                                                         event="keyup"                                                                
@@ -910,11 +907,11 @@
                                                     converterMessage="Fallo de comunicación, por favor intente nuevamente.">
                                                     <f:selectItems value="#{relationshipOfValuesMB.valuesExpected}"/>
                                                     <f:ajax 
-                                                        event="change"                                                                                                           
-                                                        listener="#{relationshipOfValuesMB.changeValuesExpected}" 
+                                                        event="change"                                                                
+                                                        listener="#{relationshipOfValuesMB.changeValuesExpected}"
                                                         render="IdBtnAssociateValues IdBtnAutomaticRelationValues IdNameOfValueExpected :IdForm2:IdToolTipText"/>
                                                     <f:ajax 
-                                                        event="dblclick"                                                                                                           
+                                                        event="dblclick"
                                                         onevent="toolTipDialog.show()"/>
                                                 </h:selectManyMenu> 
                                                 <br/>                                                        

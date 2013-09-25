@@ -49,7 +49,7 @@
                     <h:form id="IdForm0">                                                
                         <br/>
                         <p:accordionPanel  activeIndex="#{loginMB.activeIndexAcoordion1}" >                            
-                            <p:tab title="REGISTRO DE DATOS">
+                            <p:tab title="REGISTRO DE DATOS"  rendered="#{loginMB.permissionRegistryDataSection}">
                                 <p:menu style="width: 200px; z-index:23; overflow: no-display;">
                                     <p:menuitem 
                                         icon="ui-icon-document"
@@ -194,6 +194,8 @@
                                 </p:menu> 
                             </p:tab>
                         </p:accordionPanel>
+                        
+                        <h:commandButton value="Correcciones de Santos" rendered="#{loginMB.activeSantos}" actionListener="#{loginMB.corregirDB}" />
                     </h:form>  
                 </p:layoutUnit>  
                 <!-- ****************************** CONTENIDO (PARTE CENTRAL) ************************ -->

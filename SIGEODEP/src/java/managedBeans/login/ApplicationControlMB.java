@@ -40,7 +40,7 @@ public class ApplicationControlMB {
     @Resource(name = "jdbc/od")
     private DataSource ds;//fuente de datos(es configurada por glassfish)
     Timer timer = new Timer(3600000, new ActionListener() {//cada hora
-    //Timer timer = new Timer(60000, new ActionListener() {//cada minuto
+        //Timer timer = new Timer(60000, new ActionListener() {//cada minuto
         @Override
         public void actionPerformed(ActionEvent e) {
             actionsPerHour();
@@ -61,7 +61,7 @@ public class ApplicationControlMB {
 
     public ApplicationControlMB() {
         /*
-         * Constuctor de la clase: obtiene la ruta rela del servidor e 
+         * Constuctor de la clase: obtiene la ruta real del servidor e 
          * inicia un timer que es llamado cada hora
          */
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
@@ -84,7 +84,7 @@ public class ApplicationControlMB {
 
                 if (connectToDb()) {
                     //determinar si existe una copia de seguridad para el dia actual
-                    String sql="SELECT * FROM backups WHERE date_backup::date = to_date('" + df3.format(Calendario.getTime()) + "','yyyy-MM-dd') AND id_backup < 11";
+                    String sql = "SELECT * FROM backups WHERE date_backup::date = to_date('" + df3.format(Calendario.getTime()) + "','yyyy-MM-dd') AND id_backup < 11";
                     rs = consult(sql);
                     if (rs.next()) {
                         //System.out.println("Ya existe una copia de seguridad automatica para este dia");
@@ -100,7 +100,7 @@ public class ApplicationControlMB {
                 //System.out.println("no se realiza copia de seguridad por que existen usuarios en el sistema");
             }
         } catch (Exception e) {
-            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.getMessage());
+            //System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.getMessage());
         }
     }
 
@@ -383,6 +383,20 @@ public class ApplicationControlMB {
         }
 
 
+    }
+
+    public int getMaxUserId() {
+        if (currentUserIdSessions != null && !currentUserIdSessions.isEmpty()) {
+            int max = 0;
+            for (int i = 0; i < currentUserIdSessions.size(); i++) {
+                if (currentUserIdSessions.get(i) > max) {
+                    max = currentUserIdSessions.get(i);
+                }
+            }
+            return max;
+        } else {
+            return 0;
+        }
     }
 
     public String getValue() {

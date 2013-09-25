@@ -148,12 +148,7 @@
             <from-outcome>healtInstitutions</from-outcome>
             <to-view-id>/web/configurations/healtInstitutions.xhtml</to-view-id>
             <redirect/>
-        </navigation-case>
-        <navigation-case>
-            <from-outcome>violenceDataSources</from-outcome>
-            <to-view-id>/web/configurations/violenceDataSources.xhtml</to-view-id>
-            <redirect/>
-        </navigation-case>
+        </navigation-case>        
         <navigation-case>
             <from-outcome>murderContext</from-outcome>
             <to-view-id>/web/configurations/murderContext.xhtml</to-view-id>

@@ -52,7 +52,7 @@ public class VIFMB implements Serializable {
     //private SelectItem[] insurances;
     //------------------------
     @EJB
-    DomesticViolenceDataSourcesFacade domesticViolenceDataSourcesFacade;
+    NonFatalDataSourcesFacade domesticViolenceDataSourcesFacade;
     private Short currentDomesticViolenceDataSource = 1;
     private SelectItem[] violenceDataSources;
     //------------------------
@@ -367,11 +367,31 @@ public class VIFMB implements Serializable {
                 }
             }
             //cargo las instituciones receptoras
-            List<DomesticViolenceDataSources> violenceDataSourcesList = domesticViolenceDataSourcesFacade.findAll();
-            violenceDataSources = new SelectItem[violenceDataSourcesList.size()];
-            for (int i = 0; i < violenceDataSourcesList.size(); i++) {
-                violenceDataSources[i] = new SelectItem(violenceDataSourcesList.get(i).getDomesticViolenceDataSourcesId(), violenceDataSourcesList.get(i).getDomesticViolenceDataSourcesName());
-            }
+            //cargo las instituciones de salud y de donde es remitido
+            try {
+
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " SELECT "
+                        + "   count(*) "
+                        + " FROM non_fatal_data_sources "
+                        + " WHERE non_fatal_data_source_form = 1 OR non_fatal_data_source_form = 3");
+                if (rs.next()) {
+                    
+                    violenceDataSources = new SelectItem[rs.getInt(1)];                    
+                    rs = connectionJdbcMB.consult(""
+                            + " SELECT "
+                            + "   * "
+                            + " FROM non_fatal_data_sources "
+                            + " WHERE non_fatal_data_source_form = 1 OR non_fatal_data_source_form = 3");
+                    int i = 0;
+                    while (rs.next()) {
+                        violenceDataSources[i] = new SelectItem(rs.getShort("non_fatal_data_source_id"), rs.getString("non_fatal_data_source_name"));
+                        i++;
+                    }
+                }
+            } catch (Exception e) {
+            }            
+
             //cargo los grupos vulnerables
             List<VulnerableGroups> vulnerableGroupsList = vulnerableGroupsFacade.findAll();
             vulnerableGroups = new SelectItem[vulnerableGroupsList.size() + 1];
@@ -994,7 +1014,7 @@ public class VIFMB implements Serializable {
         //------------------------------------------------------------
 
         if (currentNonFatalDomesticViolence.getDomesticViolenceDataSourceId() != null) {
-            currentDomesticViolenceDataSource = currentNonFatalDomesticViolence.getDomesticViolenceDataSourceId().getDomesticViolenceDataSourcesId();
+            currentDomesticViolenceDataSource = currentNonFatalDomesticViolence.getDomesticViolenceDataSourceId().getNonFatalDataSourceId();
         }
         //cargo la lista de agresores-----------------------------------
         List<AggressorTypes> aggressorTypesList = currentNonFatalDomesticViolence.getAggressorTypesList();
@@ -1416,6 +1436,7 @@ public class VIFMB implements Serializable {
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
                 newNonFatalDomesticViolence.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
                 newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(domesticViolenceDataSourcesFacade.find(currentDomesticViolenceDataSource));
+                newNonFatalInjuries.setNonFatalDataSourceId(domesticViolenceDataSourcesFacade.find(currentDomesticViolenceDataSource));
                 newNonFatalDomesticViolence.setNonFatalInjuries(newNonFatalInjuries);
 
                 if (currentDepartamentHome != 0) {
@@ -1459,7 +1480,13 @@ public class VIFMB implements Serializable {
                 if (isAG10) {
                     aggressorTypesList.add(aggressorTypesFacade.find((short) 10));
                 }
-                newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+                //si no hay agresores agregar sin dato
+                if (!aggressorTypesList.isEmpty()) {
+                    newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+                } else {
+                    aggressorTypesList.add(new AggressorTypes((short) 9));
+                    newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+                }
 
                 //creo la lista de abusos(tipos de maltrato)-----------------------------------
                 List<AbuseTypes> abuseTypesList = new ArrayList<>();
@@ -1488,7 +1515,13 @@ public class VIFMB implements Serializable {
                 if (isMA8) {
                     abuseTypesList.add(abuseTypesFacade.find((short) 8));
                 }
-                newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                //si no hay tipos de abuso agregar sin dato
+                if (!abuseTypesList.isEmpty()) {
+                    newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                } else {
+                    abuseTypesList.add(new AbuseTypes((short) 7));
+                    newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                }
 
                 //creo la lista de acciones a realizar-----------------------------------
                 List<ActionsToTake> actionsToTakeList = new ArrayList<>();
@@ -1533,7 +1566,13 @@ public class VIFMB implements Serializable {
                     actionsToTakeList.add(actionsToTakeFacade.find((short) 13));
                 }
 
-                newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
+                //si no hay acciones a realizar agrego nis dato
+                if (!actionsToTakeList.isEmpty()) {
+                    newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
+                } else {
+                    actionsToTakeList.add(new ActionsToTake((short) 13));
+                    newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
+                }
 
                 //-----GUARDAR CAMPOS OTROS----------------
                 List<Others> othersList = new ArrayList<>();
@@ -1639,11 +1678,19 @@ public class VIFMB implements Serializable {
 
                 //--------------------------------------------------------------
                 //--------------AUTOCOMPLETAR LOS FORMULARIOS-------------------
+                //EDAD Y TIPO DE EDAD
+                if (newVictim.getVictimAge() != null) {//HAY EDAD 
+                    if (newVictim.getAgeTypeId() == null) {//no hay tipo de edad
+                        newVictim.setAgeTypeId((short) 1);//tiṕo de edad años
+                    }
+                } else {
+                    newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
+                }                
+                //DETERMINAR EL NUMERO DE IDENTIFICACION
                 newVictim.setVictimClass((short) 1);
                 if (newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
                     newVictim.setVictimNid(null);
                 }
-                //DETERMINAR EL NUMERO DE IDENTIFICACION
                 if (newVictim.getVictimNid() == null) {
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));
                     newVictim.setVictimClass((short) 2);//nn
@@ -2929,12 +2976,12 @@ public class VIFMB implements Serializable {
         if (loading == false) {
             changeForm();
         }
+        currentAge = "";
         if (currentMeasureOfAge == 0 || currentMeasureOfAge == 4) {
             valueAgeDisabled = true;
 
         } else {
-            valueAgeDisabled = false;
-            currentAge = "";
+            valueAgeDisabled = false;            
         }
     }
 

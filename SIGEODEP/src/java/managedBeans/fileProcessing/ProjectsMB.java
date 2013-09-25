@@ -14,8 +14,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -67,7 +65,7 @@ public class ProjectsMB implements Serializable {
     @EJB
     ProjectsFacade projectsFacade;
     @EJB
-    SourcesFacade sourcesFacade;
+    NonFatalDataSourcesFacade nonFatalDataSourcesFacade;
     @EJB
     TagsFacade tagsFacade;
     @EJB
@@ -105,8 +103,9 @@ public class ProjectsMB implements Serializable {
     private boolean exportFileNameDisabled = true;//xls donde exporta proyecto
     private int countNulos = 0;
     private SelectItem[] forms;
-    private int newSourceName = 0;//proveedor actual    
+    private short newSourceName = 0;//proveedor actual    
     private String currentSourceName = "";//proveedor actual    
+    private short currentSourceId = 0;//proveedor actual    
     private SelectItem[] sources;
     private boolean hubo_error = false;
     private SelectItem[] delimiters;
@@ -148,7 +147,7 @@ public class ProjectsMB implements Serializable {
     private long startColumnId = 0;//columna inicial en tabla 'project_columns'
     private long endColumnId = 0;//columna inicial en tabla 'project_columns'
     private String inconsistentRelationsDialog = "";
-    private ArrayList<String> errorsList = new ArrayList<String>();
+    private ArrayList<String> errorsList = new ArrayList<>();
     String error = "";
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -176,7 +175,7 @@ public class ProjectsMB implements Serializable {
             String newName = "";
             int numberOfRelation = 2;
             boolean nameDetermined = false;
-            boolean nameFound = false;
+            boolean nameFound;
 
             List<RelationGroup> relationGroupList = relationGroupFacade.findAll();
             while (!nameDetermined) {
@@ -199,7 +198,7 @@ public class ProjectsMB implements Serializable {
     }
 
     public void changeForm() {
-        System.out.println("Cambia el formulario");
+        //System.out.println("Cambia el formulario");
         loadSources();
         //loadVarsExpected();
     }
@@ -224,7 +223,7 @@ public class ProjectsMB implements Serializable {
 
     public void loadProjects() {
         List<Projects> projectsList = projectsFacade.findAll();
-        rowProjectsTableList = new ArrayList<RowDataTable>();
+        rowProjectsTableList = new ArrayList<>();
         for (int i = 0; i < projectsList.size(); i++) {
             if (projectsList.get(i).getUserId() == loginMB.getCurrentUser().getUserId()) {
                 rowProjectsTableList.add(new RowDataTable(
@@ -232,7 +231,7 @@ public class ProjectsMB implements Serializable {
                         projectsList.get(i).getProjectName().toString(),
                         usersFacade.find(projectsList.get(i).getUserId()).getUserLogin(),
                         formsFacade.findByFormId(projectsList.get(i).getFormId()).getFormName(),
-                        sourcesFacade.find(projectsList.get(i).getSourceId()).getSourceName(),
+                        nonFatalDataSourcesFacade.find(projectsList.get(i).getSourceId()).getNonFatalDataSourceName(),
                         projectsList.get(i).getFileName()));
             }
         }
@@ -256,6 +255,7 @@ public class ProjectsMB implements Serializable {
         currentFormId = "";
         currentRelationsGroupName = "";
         currentSourceName = "";
+        currentSourceId = 0;
         newProjectName = "";
         newFileName = "";
 
@@ -266,15 +266,14 @@ public class ProjectsMB implements Serializable {
             System.out.println("Error 1 en " + this.getClass().getName() + ":" + ex.toString());
         }
 
-        //tagName = "";
         loadForms();
         loadSources();
         loadVarsExpected();
         loadDelimiters();
         loadRelatedGroups();
         loadProjects();
-        //tagsList = tagsFacade.findAll();
-        variablesFound = new ArrayList<String>();
+
+        variablesFound = new ArrayList<>();
     }
 
     //----------------------------------------------------------------------
@@ -290,8 +289,8 @@ public class ProjectsMB implements Serializable {
         List<RelationGroup> relationGroupList = relationGroupFacade.findAll();
         currentRelationsGroupNameInLoad = "";
         selectedRelationsNameInCopy = "";
-        relationGroupsInLoad = new ArrayList<String>();
-        relationGroupsInCopy = new ArrayList<String>();
+        relationGroupsInLoad = new ArrayList<>();
+        relationGroupsInCopy = new ArrayList<>();
         for (int i = 0; i < relationGroupList.size(); i++) {
             if (relationGroupList.get(i).getUserId() == loginMB.getCurrentUser().getUserId()) {
                 relationGroupsInLoad.add(relationGroupList.get(i).getNameRelationGroup());
@@ -334,13 +333,47 @@ public class ProjectsMB implements Serializable {
          * cargar la lista de proveedores(fuentes) de datos dependiendo de un
          * determinado formulario
          */
-        List<Sources> sourcesList = formsFacade.findSources(newFormId);
-        sources = new SelectItem[sourcesList.size()];
-
-        for (int i = 0; i < sourcesList.size(); i++) {
-            sources[i] = new SelectItem(sourcesList.get(i).getSourceId().toString(), sourcesList.get(i).getSourceName());
-            newSourceName = Integer.parseInt(sources[0].getValue().toString());
+        try {
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + " SELECT "
+                    + "   count(*) "
+                    + " FROM non_fatal_data_sources "
+                    + " WHERE non_fatal_data_source_id IN "
+                    + "    ("
+                    + "      SELECT source_id "
+                    + "      FROM form_source "
+                    + "      WHERE form_id LIKE '" + newFormId + "'"
+                    + "    )");
+            if (rs.next()) {
+                sources = new SelectItem[rs.getInt(1)];
+                rs = connectionJdbcMB.consult(""
+                        + " SELECT "
+                        + "   * "
+                        + " FROM non_fatal_data_sources "
+                        + " WHERE non_fatal_data_source_id IN "
+                        + "    ("
+                        + "      SELECT source_id "
+                        + "      FROM form_source "
+                        + "      WHERE form_id LIKE '" + newFormId + "'"
+                        + "    )");
+                int i = 0;
+                while (rs.next()) {
+                    sources[i] = new SelectItem(rs.getShort("non_fatal_data_source_id"), rs.getString("non_fatal_data_source_name"));
+                    if (i == 0) {
+                        newSourceName = rs.getShort("non_fatal_data_source_id");
+                    }
+                    i++;
+                }
+            }
+        } catch (Exception e) {
         }
+//        List<NonFatalDataSources> sourcesList = formsFacade.findSources(newFormId);
+        //sources = new SelectItem[sourcesList.size()];
+//
+//        for (int i = 0; i < sourcesList.size(); i++) {
+//            sources[i] = new SelectItem(sourcesList.get(i).getSourceId().toString(), sourcesList.get(i).getSourceName());
+//            newSourceName = Integer.parseInt(sources[0].getValue().toString());
+//        }
     }
 
     private void reloadVarsFound() {
@@ -404,15 +437,15 @@ public class ProjectsMB implements Serializable {
 
     private void copyFile(String fileName, InputStream in) {
         try {
-            OutputStream out = new FileOutputStream(new File(fileName));
-            int read;
-            byte[] bytes = new byte[1024];
-            while ((read = in.read(bytes)) != -1) {
-                out.write(bytes, 0, read);
+            try (OutputStream out = new FileOutputStream(new File(fileName))) {
+                int read;
+                byte[] bytes = new byte[1024];
+                while ((read = in.read(bytes)) != -1) {
+                    out.write(bytes, 0, read);
+                }
+                in.close();
+                out.flush();
             }
-            in.close();
-            out.flush();
-            out.close();
             System.out.println("El nuevo fichero fue creado con éxito!");
         } catch (IOException e) {
             System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
@@ -433,7 +466,7 @@ public class ProjectsMB implements Serializable {
             //String salida = "";
             //boolean continueProcess = true;
 
-            headerFileNames = new ArrayList<String>();
+            headerFileNames = new ArrayList<>();
             String[] tupla;
             //String[] tupla2;
             isr = new InputStreamReader(file.getInputstream());
@@ -454,7 +487,7 @@ public class ProjectsMB implements Serializable {
                     headerFileNames = prepareArray(headerFileNames);
                     addTableProjectColumns();//registrar en project_columns
                 } else {
-                    rowFileData = new ArrayList<String>();
+                    rowFileData = new ArrayList<>();
 
                     if (headerFileNames.size() == tupla.length) {//igual numero de columnas en cabecera y tupla
                         rowFileData.addAll(Arrays.asList(tupla));
@@ -498,7 +531,7 @@ public class ProjectsMB implements Serializable {
          */
 
         //System.out.println("actual nombre 1: " + newGroupRelationsName);
-        acceptedRelations = new ArrayList<String>();
+        acceptedRelations = new ArrayList<>();
 
         if (file.getFileName().endsWith("xlsx")) {//validar las relaciones de variables desde excell
             //------------------------------------------------------------------
@@ -520,7 +553,7 @@ public class ProjectsMB implements Serializable {
                         SAXParser saxParser = saxFactory.newSAXParser();
                         XMLReader sheetParser = saxParser.getXMLReader();
                         ContentHandler handler = new XSSFSheetXMLHandler(styles, strings, new SheetContentsHandler() {
-                            ArrayList<String> rowFileData = new ArrayList<String>();
+                            ArrayList<String> rowFileData = new ArrayList<>();
                             int pos = 0;
 
                             @Override
@@ -561,7 +594,7 @@ public class ProjectsMB implements Serializable {
                     stream.close();
                     break;
                 }
-            } catch (Exception e) {
+            } catch (IOException | SAXException | OpenXML4JException e) {
                 System.out.println("Error 8 en " + this.getClass().getName() + ":" + e.toString());
                 errorsList.add("El archivo especificado no pudo ser leido");
             }
@@ -574,7 +607,7 @@ public class ProjectsMB implements Serializable {
                 String line;
                 InputStreamReader isr;
                 BufferedReader buffer;
-                headerFileNames = new ArrayList<String>();
+                headerFileNames = new ArrayList<>();
                 String[] tupla;
                 isr = new InputStreamReader(file.getInputstream());
                 buffer = new BufferedReader(isr);
@@ -716,7 +749,7 @@ public class ProjectsMB implements Serializable {
                             @Override
                             public void startRow(int rowNum) {
                                 //System.out.println(" INICIA " + String.valueOf(rowNum) + "-----------------------");
-                                rowFileData = new ArrayList<String>();
+                                rowFileData = new ArrayList<>();
                             }
 
                             @Override
@@ -789,7 +822,7 @@ public class ProjectsMB implements Serializable {
             cellStyle.setFont(font);
 
             //ArrayList<RowDataTable> moreInfoDataTableList = new ArrayList<RowDataTable>();
-            ArrayList<String> titles = new ArrayList<String>();
+            ArrayList<String> titles = new ArrayList<>();
             try {
                 int rowNumber = 0;
                 ResultSet rs = connectionJdbcMB.consult(""
@@ -878,11 +911,11 @@ public class ProjectsMB implements Serializable {
                 sb2.delete(0, sb2.length());
             }
             //reader2 = new PushbackReader(new StringReader(""), 10000);
-            headerFileIds = new ArrayList<Long>();
+            headerFileIds = new ArrayList<>();
             sb2 = new StringBuilder();
             ResultSet rs = connectionJdbcMB.consult("select max(column_id) from project_columns;");
             rs.next();
-            long max = 0;
+            long max;
             try {
                 max = rs.getLong(1);
             } catch (Exception e) {
@@ -903,7 +936,7 @@ public class ProjectsMB implements Serializable {
             sb2.delete(0, sb2.length());
             System.out.println("Procesando... " + tuplesProcessed + " cargadas");
 
-        } catch (Exception ex) {
+        } catch (SQLException | IOException ex) {
             hubo_error = true;
             System.out.println("Error 18 en " + this.getClass().getName() + ":" + ex.toString());
         }
@@ -933,7 +966,7 @@ public class ProjectsMB implements Serializable {
                                     append(currentProjectId).append("\t").
                                     append(numLine).append("\t").
                                     append(headerFileIds.get(i)).append("\t").
-                                    append(rowFileData.get(i).trim()).append("\n");
+                                    append(rowFileData.get(i).trim().replace('\t', ' ').replace('\'', ' ')).append("\n");
                             if (currentNumberInserts % maxNumberInserts == 0) {//se llego al limite de inserts
                                 //reader.unread(sb.toString().toCharArray());
                                 cpManager.copyIn("COPY project_records FROM STDIN", new StringReader(sb.toString()));
@@ -945,7 +978,7 @@ public class ProjectsMB implements Serializable {
                         }
                     }
                 }
-            } catch (Exception ex) {
+            } catch (SQLException | IOException ex) {
                 hubo_error = true;
                 System.out.println("Error 19 en " + this.getClass().getName() + ":" + ex.toString());
                 //System.out.println("i esta en: " + va_i + "   tamaño de header: " + headerFileNames.size() + "   tamaño de vector: " + rowFileData.size());
@@ -1178,7 +1211,7 @@ public class ProjectsMB implements Serializable {
          */
         inconsistentRelationsDialog = "";
         currentNumberInserts = 0;
-        errorsList = new ArrayList<String>();
+        errorsList = new ArrayList<>();
         if (newProjectName.trim().length() != 0) {//verifico nombre del proyecto
             List<Projects> projectsList = projectsFacade.findAll();
             for (int i = 0; i < projectsList.size(); i++) {
@@ -1187,6 +1220,17 @@ public class ProjectsMB implements Serializable {
                     break;
                 }
             }
+            //verifico que no exista una carga con este nombre
+            try {
+                ResultSet rs=connectionJdbcMB.consult("SELECT * FROM ungrouped_tags WHERE ungrouped_tag_name ILIKE '"+newProjectName+"'");
+                if(rs.next()){
+                    errorsList.add("Ya existe una conjunto de registros cargados con el mismo nombre. el nombre del proyecto debe ser cambiado");
+                }
+            } catch (Exception e) {
+            }
+            
+            
+            
         } else {
             errorsList.add("Se debe digitar un nombre para el proyecto");
         }
@@ -1249,7 +1293,8 @@ public class ProjectsMB implements Serializable {
                 currentFormId = currentForm.getFormId();
                 currentRelationsGroupName = newRelationsGroupName;
                 currentRelationsGroupId = relationGroupFacade.findByName(currentRelationsGroupName).getIdRelationGroup();
-                currentSourceName = sourcesFacade.find(newSourceName).getSourceName();
+                currentSourceName = nonFatalDataSourcesFacade.find(newSourceName).getNonFatalDataSourceName();
+                currentSourceId = nonFatalDataSourcesFacade.find(newSourceName).getNonFatalDataSourceId();
                 newProjectName = "";
                 newFileName = "";
                 newGroupRelationsName = "";
@@ -1296,7 +1341,9 @@ public class ProjectsMB implements Serializable {
                     currentFormId = formsFacade.findByFormId(openProject.getFormId()).getFormId();
                     currentRelationsGroupName = openProject.getRelationGroupName();
                     currentRelationsGroupId = relationGroupFacade.findByName(currentRelationsGroupName).getIdRelationGroup();
-                    currentSourceName = sourcesFacade.find(openProject.getSourceId()).getSourceName();
+                    //currentSourceName = sourcesFacade.find(openProject.getSourceId()).getSourceName();
+                    currentSourceName = nonFatalDataSourcesFacade.find(openProject.getSourceId()).getNonFatalDataSourceName();
+                    currentSourceId = openProject.getSourceId();
                     newProjectName = "";
                     newFileName = "";
 
@@ -1348,7 +1395,8 @@ public class ProjectsMB implements Serializable {
                 currentFormId = formsFacade.findByFormId(openProject.getFormId()).getFormId();
                 currentRelationsGroupName = openProject.getRelationGroupName();
                 currentRelationsGroupId = relationGroupFacade.findByName(currentRelationsGroupName).getIdRelationGroup();
-                currentSourceName = sourcesFacade.find(openProject.getSourceId()).getSourceName();
+                currentSourceName = nonFatalDataSourcesFacade.find(openProject.getSourceId()).getNonFatalDataSourceName();
+                currentSourceId = openProject.getSourceId();
                 newProjectName = "";
                 newFileName = "";
                 newGroupRelationsName = "";
@@ -1377,7 +1425,7 @@ public class ProjectsMB implements Serializable {
     }
 
     public void removeProject() {
-        String sql = "";
+        String sql;
         if (selectedProjectTable != null) {
             Projects openProject = projectsFacade.find(Integer.parseInt(selectedProjectTable.getColumn1()));
             if (openProject != null) {
@@ -1488,7 +1536,7 @@ public class ProjectsMB implements Serializable {
             RelationGroup newRelationGroup = new RelationGroup(relationGroupFacade.findMaxId() + 1);
             newRelationGroup.setFormId(formsFacade.findByFormId(newFormId));
             newRelationGroup.setNameRelationGroup(newGroupRelationsName);
-            newRelationGroup.setSourceId(newSourceName);
+            newRelationGroup.setSourceId((int) newSourceName);
             newRelationGroup.setUserId(loginMB.getCurrentUser().getUserId());
             relationGroupFacade.create(newRelationGroup);
             newRelationsGroupName = newGroupRelationsName;
@@ -1703,51 +1751,7 @@ public class ProjectsMB implements Serializable {
     public void clearRelationGroup() {
         newRelationsGroupName = "";
     }
-
-//    public void corregir() {
-//        try {
-//            String line;
-//            InputStreamReader isr;
-//            BufferedReader buffer;
-//            headerFileNames = new ArrayList<String>();
-//            String[] tupla;
-//            isr = new InputStreamReader(file.getInputstream());
-//            buffer = new BufferedReader(isr);
-//            //Leer el la informacion del archivo linea por linea                       
-//            ArrayList<String> descartarlos = new ArrayList<String>();
-//            while ((line = buffer.readLine()) != null) {
-//                tupla = line.split("\t");
-//                boolean esta = false;
-//                for (int i = 0; i < descartarlos.size(); i++) {
-//                    if (descartarlos.get(i).compareTo(tupla[0]) == 0) {
-//                        esta = true;
-//                        break;
-//                    }
-//                }
-//                if (!esta) {
-//                    descartarlos.add(tupla[0]);
-//                }
-//                esta = false;
-//                for (int i = 0; i < descartarlos.size(); i++) {
-//                    if (descartarlos.get(i).compareTo(tupla[1]) == 0) {
-//                        esta = true;
-//                        break;
-//                    }
-//                }
-//                if (!esta) {
-//                    System.out.println("\n DELETE FROM relation_values WHERE id_relation_values = " + tupla[1] + ";");
-//                    descartarlos.add(tupla[1]);
-//                }
-//            }
-//            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "correcto", "finalizado"));
-//        } catch (IOException e) {
-//            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
-//            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", e.toString()));
-//        } catch (Exception ex) {
-//            System.out.println("Error 4 en " + this.getClass().getName() + ":" + ex.toString());
-//            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", ex.toString()));
-//        }
-//    }
+    
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES GET Y SET DE LAS VARIABLES ---------------------------------
@@ -1786,11 +1790,11 @@ public class ProjectsMB implements Serializable {
         this.forms = forms;
     }
 
-    public int getNewSourceName() {
+    public short getNewSourceName() {
         return newSourceName;
     }
 
-    public void setNewSourceName(int newSourceName) {
+    public void setNewSourceName(short newSourceName) {
         this.newSourceName = newSourceName;
     }
 
@@ -1802,6 +1806,15 @@ public class ProjectsMB implements Serializable {
         this.currentSourceName = currentSourceName;
     }
 
+    public short getCurrentSourceId() {
+        return currentSourceId;
+    }
+
+    public void setCurrentSourceId(short currentSourceId) {
+        this.currentSourceId = currentSourceId;
+    }
+    
+
     public SelectItem[] getSources() {
         return sources;
     }
@@ -1811,7 +1824,7 @@ public class ProjectsMB implements Serializable {
     }
 
     public List<String> getVariablesFound() {
-        variablesFound = new ArrayList<String>();
+        variablesFound = new ArrayList<>();
         reloadVarsFound();
         variablesFound = headerFileNames;
         return variablesFound;

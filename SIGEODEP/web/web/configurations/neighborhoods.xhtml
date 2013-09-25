@@ -10,7 +10,66 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
+            <script type="text/javascript" src="../../resources/js/OpenLayers.js"></script>
             <script type="text/javascript">
+                var map, controls;
+
+                function displayWKT(feature) {
+                    var str = wkt.write(feature);
+                    //alert(str);
+                    document.getElementById('IdForm1:hiddenButton').value = str;
+                    remoteChangeCommand();
+                }
+                function paintMap(nameFile) {
+                    $('#map').html("");//limpia el mapa                    
+                    OpenLayers.Feature.Vector.style['default']['strokeWidth'] = 2;
+                    var options = {
+                        projection: new OpenLayers.Projection("EPSG:900913"),
+                        displayProjection: new OpenLayers.Projection("EPSG:4326")
+                    };
+                    map = new OpenLayers.Map('map', options);
+                    var vectors = new OpenLayers.Layer.Vector("KML", {
+                        projection: map.displayProjection,
+                        strategies: [new OpenLayers.Strategy.Fixed()],
+                        protocol: new OpenLayers.Protocol.HTTP({
+                            url: "maps/" + nameFile,
+                            format: new OpenLayers.Format.KML({
+                                extractStyles: false,
+                                extractAttributes: true,
+                                maxDepth: 2
+                            })
+                        })
+                    });
+                    osm = new OpenLayers.Layer.OSM("Base");
+                    map.addLayers([osm, vectors]);
+
+                    var report = function(e) {
+                        OpenLayers.Console.log(e.type, e.feature.id);
+                    };
+
+                    var highlightCtrl = new OpenLayers.Control.SelectFeature(vectors, {
+                        hover: true,
+                        highlightOnly: true,
+                        renderIntent: "temporary",
+                        eventListeners: {
+                            beforefeaturehighlighted: report,
+                            featurehighlighted: report,
+                            featureunhighlighted: report
+                        }
+                    });
+
+                    var selectCtrl = new OpenLayers.Control.SelectFeature(vectors,
+                            {clickout: true,
+                                onSelect: displayWKT
+                            }
+                    );
+                    map.addControl(highlightCtrl);
+                    map.addControl(selectCtrl);
+                    highlightCtrl.activate();
+                    selectCtrl.activate();
+                    wkt = new OpenLayers.Format.WKT();
+                    map.setCenter(new OpenLayers.LonLat(-8601323.09512, 133593.156062), 13);
+                }
             </script> 
         </ui:define>
         <!--=================================================================-->
@@ -25,6 +84,8 @@
         <!--==============================CONTENIDO==========================-->
         <ui:define name="content">
             <h:form enctype="multipart/form-data" id="IdForm1"> 
+                <h:inputHidden id="hiddenButton" value="#{neighborhoodsVariableMB.newPoligonText}"/>
+                <p:remoteCommand name="remoteChangeCommand" process="hiddenButton"/>
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
                 <!--===================================================================================-->
                 <br/>
@@ -69,7 +130,7 @@
                                             actionListener="#{neighborhoodsVariableMB.createDynamicTable}"
                                             update="IdSearchTable :IdForm1:message"/>                                                                        
                                     </p:column>
-                                </p:row>                        
+                                </p:row>
                             </p:panelGrid>
                             <br/>
                             <p:dataTable 
@@ -266,7 +327,7 @@
                                     value="+"                                    
                                     actionListener="#{neighborhoodsVariableMB.addQuadrantInExistingNeighborhoodClick}"  
                                     update="IdCurrentQuadrants2 IdAddQuadrants2 IdQuadrantsFilter"/> 
-                                
+
                                 <p:commandButton 
                                     value="-"
                                     actionListener="#{neighborhoodsVariableMB.removeQuadrantInExistingNeighborhoodClick}"  
@@ -323,7 +384,6 @@
                         <p:row>
                             <p:column>
                                 <h:outputText value="NOMBRE" />  
-
                             </p:column>
                             <p:column colspan="3">
                                 <p:inputText size="70" value="#{neighborhoodsVariableMB.newNeighborhoodName}" /> 
@@ -435,8 +495,7 @@
                                 <p:commandButton 
                                     value="+"                                    
                                     actionListener="#{neighborhoodsVariableMB.addQuadrantInNewNeighborhoodClick}"  
-                                    update="IdCurrentQuadrants IdAddQuadrants IdNewQuadrantsFilter"/> 
-                                
+                                    update="IdCurrentQuadrants IdAddQuadrants IdNewQuadrantsFilter"/>
                                 <p:commandButton 
                                     value="-"
                                     actionListener="#{neighborhoodsVariableMB.removeQuadrantInNewNeighborhoodClick}"  
@@ -451,29 +510,54 @@
                                     <f:selectItems value="#{neighborhoodsVariableMB.newAvailableAddQuadrants}"/>
                                 </h:selectManyMenu> 
                             </p:column>
-
                         </p:row>
                         <p:row>
                             <p:column>
                                 <h:outputText value="GEOMETRIA"/>
                             </p:column>
-                            <p:column colspan="3">                                
-                                <p:fileUpload                                             
-
+                            <p:column colspan="3"> 
+                                <p:fileUpload
                                     fileUploadListener="#{neighborhoodsVariableMB.handleFileUpload}"                                                                                  
                                     mode="advanced"                                           
                                     cancelLabel="Cancelar"
-                                    uploadLabel="Subir"                                        
+                                    uploadLabel="Subir"                       
                                     label="Archivo"
                                     sizeLimit="50000000"
-                                    update=":IdForm1:message"
+                                    update=":IdForm1:message IdNewNameGeomFile IdShowNewMapFile IdNewGeomText"
                                     invalidFileMessage="Tipo de archivo no aceptado"
                                     invalidSizeMessage="El tamaño del archivo debe ser inferior a 5MB"
-                                    allowTypes="/(\.|\/)(xlsx|csv|txt)$/">                                        
+                                    allowTypes="/(\.|\/)(kml|txt)$/">                                        
                                 </p:fileUpload>
+                                <br/>  
+                                <p:panelGrid>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Archivo cargado:"/>                                
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText id="IdNewNameGeomFile" value="#{neighborhoodsVariableMB.newNameGeomFile}"/>                                
+                                        </p:column>
+                                        <p:column>
+                                            <p:commandButton 
+                                                value="Mostrar"
+                                                id="IdShowNewMapFile"
+                                                actionListener="#{neighborhoodsVariableMB.showGeomFileClick}"
+                                                disabled="#{neighborhoodsVariableMB.disabledShowGeomFile}"
+                                                oncomplete="paintMap('#{neighborhoodsVariableMB.newNameGeomFile}'); dialogMap.show();"
+                                                update=""/>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <h:outputText value="Geometria cargada:"/>
+                                        </p:column>
+                                        <p:column colspan="2">
+                                            <h:outputText id="IdNewGeomText" value="#{neighborhoodsVariableMB.newGeomText}"/>
+                                        </p:column>                                        
+                                    </p:row>
+                                </p:panelGrid>
                             </p:column>
                         </p:row>
-
                         <p:row>
                             <p:column colspan="4" styleClass="ui-widget-header">
                                 <p:commandButton 
@@ -511,7 +595,26 @@
                             </p:column>
                         </p:row>
                     </p:panelGrid>
-                </p:dialog>                
+                </p:dialog>   
+                <!-- DIALOGO MAPA-->
+                <p:dialog                                                         
+                    id="IdDialogMap"
+                    modal="true"
+                    resizable="false"
+                    header="Mapa" 
+                    widgetVar="dialogMap"
+                    height="550"
+                    width="650">                    
+                    <p:commandButton
+                        value="Cargar Geometría Seleccionada" 
+                        oncomplete="dialogMap.hide();"
+                        update=":IdForm2:displayNew"
+                        actionListener="#{neighborhoodsVariableMB.loadGeometrySelected}"/> 
+                    <br/>
+                    <div id="map" style="width: 625px; height: 515px;">
+                    </div>                    
+
+                </p:dialog>   
             </h:form>
         </ui:define>
     </ui:composition>

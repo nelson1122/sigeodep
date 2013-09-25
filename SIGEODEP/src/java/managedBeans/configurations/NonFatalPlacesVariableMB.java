@@ -158,7 +158,7 @@ public class NonFatalPlacesVariableMB implements Serializable {
             reset();
         } else {
             currentSearchValue = currentSearchValue.toUpperCase();
-            rowDataTableList = new ArrayList<RowDataTable>();
+            rowDataTableList = new ArrayList<>();
             nonFatalPlacesList = nonFatalPlacesFacade.findCriteria(currentSearchCriteria, currentSearchValue);
             if (nonFatalPlacesList.isEmpty()) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
@@ -173,7 +173,7 @@ public class NonFatalPlacesVariableMB implements Serializable {
     }
 
     public void reset() {
-        rowDataTableList = new ArrayList<RowDataTable>();
+        rowDataTableList = new ArrayList<>();
         nonFatalPlacesList = nonFatalPlacesFacade.findAll();
         for (int i = 0; i < nonFatalPlacesList.size(); i++) {
             rowDataTableList.add(new RowDataTable(

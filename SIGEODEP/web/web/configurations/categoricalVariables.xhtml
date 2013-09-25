@@ -106,11 +106,11 @@
                                 value="DIAGNOSTICO CIE-10" 
                                 actionListener="#{diagnosesVariableMB.reset}"
                                 action="diagnoses"/>
-                            <p:commandButton 
+                            <!-- p:commandButton 
                                 style="width: 340px;" 
                                 value="ESTACIONES" 
-                                actionListener="#{stationsVariableMB.reset}"
-                                action="stations"/>
+                                actionListener="# {stationsVariableMB.reset}"
+                                action="stations"/ -->
                             <p:commandButton 
                                 style="width: 340px;" 
                                 value="EVENTOS RELACIONADOS CON EL HECHO" 
@@ -128,14 +128,9 @@
                                 action="vulnerableGroup"/>
                             <p:commandButton 
                                 style="width: 340px;" 
-                                value="INSTITUCIONES DE SALUD" 
+                                value="INSTITUCIONES DE SALUD / RECEPTORAS" 
                                 actionListener="#{healtInstitutionsVariableMB.reset}"
-                                action="healtInstitutions"/>
-                            <p:commandButton 
-                                style="width: 340px;" 
-                                value="INSTITUCIONES RECEPTORAS" 
-                                actionListener="#{violenceDataSourcesVariableMB.reset}"
-                                action="violenceDataSources"/>
+                                action="healtInstitutions"/>                            
                             <p:commandButton 
                                 style="width: 340px;" 
                                 value="LUGARES DE REMISION (VIF)" 

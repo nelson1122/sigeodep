@@ -452,8 +452,8 @@ public class LcenfMB implements Serializable {
                 + "IdNatureOfInjurye1 IdNatureOfInjurye2 IdNatureOfInjurye3 IdNatureOfInjurye4 IdNatureOfInjurye5 IdNatureOfInjurye6 IdNatureOfInjurye7 IdNatureOfInjurye8 IdNatureOfInjurye9 IdCheckOtherInjury IdOtherInjury IdUnknownNatureOfInjurye IdDestinationPatient IdOtherDestinationPatient "
                 + "IdIdCIE10_1 IdTxtCIE10_1 IdIdCIE10_2 IdTxtCIE10_2 IdIdCIE10_3 IdTxtCIE10_3 IdIdCIE10_4 IdTxtCIE10_4 "
                 + "IdHealthProfessionals IdResponsible IdControls message :IdForm2:IdSearchCriteria :IdForm2:IdSearcValue :IdForm2:IdSearchTable "
-                + "IdInsurance IdFormId";
-        idElements2 = ":IdForm1:IdHealthInstitution :IdForm1:IdName :IdForm1:IdIdentificationType :IdForm1:IdIdentificationNumber :IdForm1:IdMeasureOfAge "
+                + "IdInsurance IdFormId IdQuadrant";
+        idElements2 = ":IdForm1:IdQuadrant :IdForm1:IdHealthInstitution :IdForm1:IdName :IdForm1:IdIdentificationType :IdForm1:IdIdentificationNumber :IdForm1:IdMeasureOfAge "
                 + ":IdForm1:IdValueAge :IdForm1:IdGender :IdForm1:IdJob :IdForm1:IdDisplaced :IdForm1:IdHandicapped :IdForm1:IdEthnicGroup :IdForm1:IdOtherEthnicGroup :IdForm1:IdTelephoneHome "
                 + ":IdForm1:IdNeighborhoodEvent :IdForm1:IdNeighborhoodsEventCode :IdForm1:IdDirectionEvent :IdForm1:IdDayEvent :IdForm1:IdMonthEvent :IdForm1:IdYearEvent :IdForm1:IdDateEvent "
                 + ":IdForm1:IdWeekdayEvent :IdForm1:IdHourEvent :IdForm1:IdMinuteEvent :IdForm1:IdAmPmEvent :IdForm1:IdTimeEvent :IdForm1:IdDayConsult :IdForm1:IdMonthConsult :IdForm1:IdYearConsult "
@@ -511,11 +511,11 @@ public class LcenfMB implements Serializable {
 
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
-        
+
         quadrantsEvent = new SelectItem[1];
-        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        quadrantsEvent[0] = new SelectItem(0, "SIN DATO");
         currentQuadrantEvent = 0;
-        
+
         loading = true;
         try {
             //cargo los conjuntos de registros
@@ -538,24 +538,34 @@ public class LcenfMB implements Serializable {
                     count++;
                 }
             }
+            //cargo las instituciones de salud y de donde es remitido
+            try {
 
-            //cargo las aseguradoras
-//            List<Insurance> insuranceList = insuranceFacade.findAll();
-//            insurances = new SelectItem[insuranceList.size() + 1];
-//            insurances[0] = new SelectItem(0, "");
-//            for (int i = 0; i < insuranceList.size(); i++) {
-//                insurances[i + 1] = new SelectItem(insuranceList.get(i).getInsuranceId(), insuranceList.get(i).getInsuranceName());
-//            }
-            //cargo las instituciones de salud de donde es remitido
-            List<NonFatalDataSources> sourcesList = nonFatalDataSourcesFacade.findAll();
-            fromWhereList = new SelectItem[sourcesList.size() + 1];
-            fromWhereList[0] = new SelectItem(0, "");
-            healthInstitutions = new SelectItem[sourcesList.size() + 1];
-            healthInstitutions[0] = new SelectItem(0, "");
-            for (int i = 0; i < sourcesList.size(); i++) {
-                fromWhereList[i + 1] = new SelectItem(sourcesList.get(i).getNonFatalDataSourceId(), sourcesList.get(i).getNonFatalDataSourceName());
-                healthInstitutions[i + 1] = new SelectItem(sourcesList.get(i).getNonFatalDataSourceId(), sourcesList.get(i).getNonFatalDataSourceName());
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " SELECT "
+                        + "   count(*) "
+                        + " FROM non_fatal_data_sources "
+                        + " WHERE non_fatal_data_source_form = 2 OR non_fatal_data_source_form = 3");
+                if (rs.next()) {
+                    fromWhereList = new SelectItem[rs.getInt(1) + 1];
+                    fromWhereList[0] = new SelectItem(0, "");
+                    healthInstitutions = new SelectItem[rs.getInt(1) + 1];
+                    healthInstitutions[0] = new SelectItem(0, "");
+                    rs = connectionJdbcMB.consult(""
+                            + " SELECT "
+                            + "   * "
+                            + " FROM non_fatal_data_sources "
+                            + " WHERE non_fatal_data_source_form = 2 OR non_fatal_data_source_form = 3");
+                    int i = 0;
+                    while (rs.next()) {
+                        fromWhereList[i + 1] = new SelectItem(rs.getShort("non_fatal_data_source_id"), rs.getString("non_fatal_data_source_name"));
+                        healthInstitutions[i + 1] = new SelectItem(rs.getShort("non_fatal_data_source_id"), rs.getString("non_fatal_data_source_name"));
+                        i++;
+                    }
+                }
+            } catch (Exception e) {
             }
+
             //cargo los tipos de identificacion
             List<IdTypes> idTypesList = idTypesFacade.findAll();
             identifications = new SelectItem[idTypesList.size() + 1];
@@ -1150,7 +1160,7 @@ public class LcenfMB implements Serializable {
                         currentQuadrantEvent = -1;
                         int pos = 0;
                         while (rs.next()) {
-                            if (currentQuadrantEvent == -1 && currentNonFatalInjury.getQuadrantId()!=null) {
+                            if (currentQuadrantEvent == -1 && currentNonFatalInjury.getQuadrantId() != null) {
                                 currentQuadrantEvent = currentNonFatalInjury.getQuadrantId().getQuadrantId();
                             }
                             quadrantsEvent[pos] = new SelectItem(rs.getInt("quadrant_id"), rs.getString("quadrant_name"));
@@ -1789,8 +1799,10 @@ public class LcenfMB implements Serializable {
     private boolean validateFields() {
         validationsErrors = new ArrayList<>();
         //---------VALIDAR EL USUARIO TENGA PERMISMOS SUFIENTES
-        if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentNonFatalInjury.getUserId().getUserId()) {
-            validationsErrors.add("Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
+        if (currentNonFatalInjuriId != -1) {//SE ESTA ACTUALIZANDO UN REGISTRO
+            if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentNonFatalInjury.getUserId().getUserId()) {
+                validationsErrors.add("Este registro solo puede ser modificado por un administrador o por el usuario que creo el registro");
+            }
         }
         //---------VALIDAR QUE LA FECHA DEL SISTEMA SEA MAYOR A LA FECHA DEL HECHO 
         if (currentDateEvent.trim().length() != 0) {
@@ -2091,6 +2103,7 @@ public class LcenfMB implements Serializable {
 
                 if (currentHealthInstitution != 0) {
                     newNonFatalInjuries.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find(currentHealthInstitution));
+
                 }
                 if (currentMechanisms != 0) {
                     newNonFatalInjuries.setMechanismId(mechanismsFacade.find(currentMechanisms));
@@ -2144,7 +2157,13 @@ public class LcenfMB implements Serializable {
                 if (checkOtherPlace) {
                     anatomicalLocationList.add(anatomicalLocationsFacade.find((short) 98));
                 }
-                newNonFatalInjuries.setAnatomicalLocationsList(anatomicalLocationList);
+                //si no hay ningun sitio anatomico se agrega sin dato a la lista
+                if (!anatomicalLocationList.isEmpty()) {
+                    newNonFatalInjuries.setAnatomicalLocationsList(anatomicalLocationList);
+                } else {
+                    anatomicalLocationList.add(new AnatomicalLocations((short) 99));
+                    newNonFatalInjuries.setAnatomicalLocationsList(anatomicalLocationList);
+                }
 
                 //---NATURALEZA DE LA LESION--------------------------------------------
                 List<KindsOfInjury> kindsOfInjuryList = new ArrayList<>();
@@ -2183,7 +2202,14 @@ public class LcenfMB implements Serializable {
                     kindsOfInjuryList.add(kindsOfInjuryFacade.find((short) 99));
                 }
 
-                newNonFatalInjuries.setKindsOfInjuryList(kindsOfInjuryList);
+                //si no hay naturaleza de lesion se agrega sin dato a la lista
+                if (!kindsOfInjuryList.isEmpty()) {
+                    newNonFatalInjuries.setKindsOfInjuryList(kindsOfInjuryList);
+                } else {
+                    kindsOfInjuryList.add(new KindsOfInjury((short) 99));
+                    newNonFatalInjuries.setKindsOfInjuryList(kindsOfInjuryList);
+                }
+
 
                 //---CODIGO CIE10---------------------------------
                 List<Diagnoses> diagnosesesList = new ArrayList<>();
@@ -2303,7 +2329,14 @@ public class LcenfMB implements Serializable {
                             newNonFatalDomesticViolence = new NonFatalDomesticViolence();
                             newNonFatalDomesticViolence.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
                             //newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(domesticViolenceDataSourcesFacade.find(currentDomesticViolenceDataSource));
+                            if (newNonFatalInjuries.getNonFatalDataSourceId() != null) {
+                                newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(newNonFatalInjuries.getNonFatalDataSourceId());
+                            }
                             newNonFatalDomesticViolence.setNonFatalInjuries(newNonFatalInjuries);
+
+
+
+
                             //---LISTA DE AGRESORES-----------------------------------
                             List<AggressorTypes> aggressorTypesList = new ArrayList<>();
 
@@ -2337,7 +2370,13 @@ public class LcenfMB implements Serializable {
                             if (isAG10) {
                                 aggressorTypesList.add(aggressorTypesFacade.find((short) 10));
                             }
-                            newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+                            //sino hay ningun tipo de agresor se agrega sin dato
+                            if (!aggressorTypesList.isEmpty()) {
+                                newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+                            } else {
+                                aggressorTypesList.add(new AggressorTypes((short) 9));
+                                newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
+                            }
 
                             //----LISTA DE TIPOS DE MALTRATO-----------------------------------
                             List<AbuseTypes> abuseTypesList = new ArrayList<>();
@@ -2366,7 +2405,14 @@ public class LcenfMB implements Serializable {
                             if (isMA8) {
                                 abuseTypesList.add(abuseTypesFacade.find((short) 8));
                             }
-                            newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+
+                            //si no hay ningun tipo de maltrato se agrega sin dato
+                            if (!abuseTypesList.isEmpty()) {
+                                newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                            } else {
+                                abuseTypesList.add(new AbuseTypes((short) 7));
+                                newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
+                            }
                         }
                         break;
                     case 1: //01. No intencional (accidentes)                                    
@@ -2414,7 +2460,13 @@ public class LcenfMB implements Serializable {
                             securityElementsList.add(securityElementsFacade.find((short) 7));
                         }
                     }
-                    newNonFatalTransport.setSecurityElementsList(securityElementsList);
+                    //si no hay elementos de seguridad se agrega sin dato
+                    if (!securityElementsList.isEmpty()) {
+                        newNonFatalTransport.setSecurityElementsList(securityElementsList);
+                    } else {
+                        securityElementsList.add(new SecurityElements((short) 8));
+                        newNonFatalTransport.setSecurityElementsList(securityElementsList);
+                    }
                     newNonFatalTransport.setNonFatalInjuryId(newNonFatalInjuries.getNonFatalInjuryId());
                 }
 
@@ -2517,6 +2569,15 @@ public class LcenfMB implements Serializable {
 
                 //--------------------------------------------------------------
                 //--------------AUTOCOMPLETAR LOS FORMULARIOS-------------------
+                //EDAD Y TIPO DE EDAD
+                if (newVictim.getVictimAge() != null) {//HAY EDAD 
+                    if (newVictim.getAgeTypeId() == null) {//no hay tipo de edad
+                        newVictim.setAgeTypeId((short) 1);//tiṕo de edad años
+                    }
+                } else {
+                    newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
+                }
+                
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newVictim.getVictimNeighborhoodId() == null) {
                     newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
@@ -3026,7 +3087,7 @@ public class LcenfMB implements Serializable {
         currentUseDrugs = 0;
 
         quadrantsEvent = new SelectItem[1];
-        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        quadrantsEvent[0] = new SelectItem(0, "SIN DATO");
         currentQuadrantEvent = 0;
 
         //LESION POR TRANSPOTE
@@ -3269,7 +3330,7 @@ public class LcenfMB implements Serializable {
             int position = nonFatalInjuriesFacade.findPosition(currentNonFatalInjury.getNonFatalInjuryId(), currentTag);
             currentIdForm = String.valueOf(currentNonFatalInjury.getNonFatalInjuryId());
             currentPosition = position + "/" + String.valueOf(totalRegisters);
-            openDialogDelete = "dialogDelete.show();";            
+            openDialogDelete = "dialogDelete.show();";
         }
         //System.out.println("POSICION DETERMINADA: " + currentPosition);        
     }
@@ -3280,7 +3341,7 @@ public class LcenfMB implements Serializable {
     //----------------------------------------------------------------------
     private List<RowDataTable> rowDataTableList;
     private RowDataTable selectedRowDataTable;
-    
+
     public List<RowDataTable> getRowDataTableList() {
         return rowDataTableList;
     }
@@ -4296,12 +4357,12 @@ public class LcenfMB implements Serializable {
         if (loading == false) {
             changeForm();
         }
+        currentAge = "";
         if (currentMeasureOfAge == 0 || currentMeasureOfAge == 4) {
             valueAgeDisabled = true;
 
         } else {
             valueAgeDisabled = false;
-            currentAge = "";
         }
         //System.out.println("----" + currentEthnicGroup + "----" + ethnicGroupsDisabled);
 

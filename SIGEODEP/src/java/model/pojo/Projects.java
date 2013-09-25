@@ -50,7 +50,7 @@ public class Projects implements Serializable {
     @Column(name = "form_id", length = 2147483647)
     private String formId;
     @Column(name = "source_id")
-    private Integer sourceId;
+    private Short sourceId;
     @Size(max = 3)
     @Column(name = "file_delimiter", length = 3)
     private String fileDelimiter;
@@ -104,11 +104,11 @@ public class Projects implements Serializable {
         this.formId = formId;
     }
 
-    public Integer getSourceId() {
+    public Short getSourceId() {
         return sourceId;
     }
 
-    public void setSourceId(Integer sourceId) {
+    public void setSourceId(Short sourceId) {
         this.sourceId = sourceId;
     }
 

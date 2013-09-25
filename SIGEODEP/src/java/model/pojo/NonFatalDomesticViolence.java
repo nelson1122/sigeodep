@@ -54,9 +54,16 @@ public class NonFatalDomesticViolence implements Serializable {
     @JoinColumn(name = "submitted_form_where_id", referencedColumnName = "non_fatal_data_sources_from_where_id")
     @ManyToOne
     private NonFatalDataSourcesFromWhere submittedFormWhereId;
-    @JoinColumn(name = "domestic_violence_data_source_id", referencedColumnName = "domestic_violence_data_sources_id")
+    
+    
+//    @JoinColumn(name = "domestic_violence_data_source_id", referencedColumnName = "domestic_violence_data_sources_id")
+//    @ManyToOne
+//    private DomesticViolenceDataSources domesticViolenceDataSourceId;
+    
+    @JoinColumn(name = "domestic_violence_data_source_id", referencedColumnName = "non_fatal_data_source_id")
     @ManyToOne
-    private DomesticViolenceDataSources domesticViolenceDataSourceId;
+    private NonFatalDataSources domesticViolenceDataSourceId;
+    
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "nonFatalDomesticViolence")
     private SivigilaEvent sivigilaEvent;
     
@@ -134,12 +141,20 @@ public class NonFatalDomesticViolence implements Serializable {
 	this.submittedFormWhereId = submittedFormWhereId;
     }
 
-    public DomesticViolenceDataSources getDomesticViolenceDataSourceId() {
-	return domesticViolenceDataSourceId;
+//    public DomesticViolenceDataSources getDomesticViolenceDataSourceId() {
+//	return domesticViolenceDataSourceId;
+//    }
+//
+//    public void setDomesticViolenceDataSourceId(DomesticViolenceDataSources domesticViolenceDataSourceId) {
+//	this.domesticViolenceDataSourceId = domesticViolenceDataSourceId;
+//    }
+    
+    public NonFatalDataSources getDomesticViolenceDataSourceId() {
+        return domesticViolenceDataSourceId;
     }
 
-    public void setDomesticViolenceDataSourceId(DomesticViolenceDataSources domesticViolenceDataSourceId) {
-	this.domesticViolenceDataSourceId = domesticViolenceDataSourceId;
+    public void setDomesticViolenceDataSourceId(NonFatalDataSources domesticViolenceDataSourceId) {
+        this.domesticViolenceDataSourceId = domesticViolenceDataSourceId;
     }
 
     @Override

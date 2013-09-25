@@ -106,12 +106,13 @@ public class IndicatorsAverageMB {
     IndicatorsFacade indicatorsFacade;
     @EJB
     IndicatorsConfigurationsFacade indicatorsConfigurationsFacade;
-    private String currentConfigurationSelected = "";
+    private List<String> currentConfigurationSelected = new ArrayList<>();
+    ;
     private List<String> configurationsList = new ArrayList<>();
     private String newConfigurationName = "";
     private Indicators currentIndicator;
     private StreamedContent chartImage;
-    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy",new Locale("ES"));
+    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy", new Locale("ES"));
     private OutputPanel dynamicDataTableGroup; // Placeholder.
     private FacesMessage message = null;
     private ConnectionJdbcMB connectionJdbcMB;
@@ -134,8 +135,6 @@ public class IndicatorsAverageMB {
     private String initialDateStr;
     private String endDateStr;
     private boolean showItems = true;
-    
-    
     private String currentVariableGraph1;
     private String currentVariableGraph2;
     private String currentValueGraph1;
@@ -159,8 +158,7 @@ public class IndicatorsAverageMB {
     ArrayList<String> countAppearsStr = new ArrayList<>();//arreglo para cada dia
     private LoginMB loginMB;
     private Variable currentVariableConfiguring;
-    private int numberCross = 2;//maximo numero de variables a cruzar
-    private int grandTotal = 0;//total general de la matriz
+    private int numberCross = 2;//maximo numero de variables a cruzar    
     private int currentYear = 0;
     private boolean btnExportDisabled = true;
     private boolean btnAddVariableDisabled = true;
@@ -188,11 +186,11 @@ public class IndicatorsAverageMB {
         Calendar c = Calendar.getInstance();
         currentYear = c.get(Calendar.YEAR);
 
-                
+
         initialDate.setDate(1);
         initialDate.setMonth(0);
         initialDate.setYear(c.get(Calendar.YEAR) - 1900);
-        
+
         endDate.setDate(31);
         endDate.setMonth(11);
         endDate.setYear(c.get(Calendar.YEAR) - 1900);
@@ -304,7 +302,7 @@ public class IndicatorsAverageMB {
                 }
             }
 
-        } catch (Exception e) {            
+        } catch (Exception e) {
             System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
@@ -323,7 +321,7 @@ public class IndicatorsAverageMB {
 
         if (currentTemporalDisaggregation.compareTo("Diaria") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "diaria");
-            sdf = new SimpleDateFormat("dd MMM yyyy",new Locale("ES"));
+            sdf = new SimpleDateFormat("dd MMM yyyy", new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.add(Calendar.DATE, i);
@@ -335,7 +333,7 @@ public class IndicatorsAverageMB {
         }
         if (currentTemporalDisaggregation.compareTo("Mensual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "mensual");
-            sdf = new SimpleDateFormat("MMM yyyy",new Locale("ES"));
+            sdf = new SimpleDateFormat("MMM yyyy", new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
@@ -351,7 +349,7 @@ public class IndicatorsAverageMB {
         }
         if (currentTemporalDisaggregation.compareTo("Anual") == 0) {
             diferenceRank = getDateDifference(initialDate, endDate, "anual");
-            sdf = new SimpleDateFormat("yyyy",new Locale("ES"));
+            sdf = new SimpleDateFormat("yyyy", new Locale("ES"));
             for (int i = 0; i < diferenceRank; i++) {
                 cal1.setTime(initialDate);
                 cal1.set(Calendar.DATE, 1);//coloco el dia en 1
@@ -586,18 +584,17 @@ public class IndicatorsAverageMB {
         //---------------------------------------------------------
         columNames = new ArrayList<>();
         rowNames = new ArrayList<>();
-        //columnTypeName = new ArrayList<String>();
         try {
             //---------------------------------------------------------
             //REALIZO LAS POSIBLES COMBINACIONES
             //---------------------------------------------------------            
-            ArrayList<String> values1, values2, values3;
+            List<String> values1, values2, values3;
             cpManager = new CopyManager((BaseConnection) connectionJdbcMB.getConn());
             sb = new StringBuilder();
             tuplesProcessed = 0;
             int id = 0;
             if (variablesCrossData.size() == 1) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
                 for (int i = 0; i < values1.size(); i++) {
                     columNames.add(values1.get(i));
                     sb.
@@ -613,8 +610,8 @@ public class IndicatorsAverageMB {
                 }
                 rowNames.add("Valor");
             } else if (variablesCrossData.size() == 2) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
-                values2 = (ArrayList<String>) variablesCrossData.get(1).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
+                values2 = variablesCrossData.get(1).getValuesConfigured();
                 for (int i = 0; i < values2.size(); i++) {
                     rowNames.add(values2.get(i));
                     for (int j = 0; j < values1.size(); j++) {
@@ -634,9 +631,9 @@ public class IndicatorsAverageMB {
                     }
                 }
             } else if (variablesCrossData.size() == 3) {
-                values1 = (ArrayList<String>) variablesCrossData.get(0).getValuesConfigured();
-                values2 = (ArrayList<String>) variablesCrossData.get(1).getValuesConfigured();
-                values3 = (ArrayList<String>) variablesCrossData.get(2).getValuesConfigured();
+                values1 = variablesCrossData.get(0).getValuesConfigured();
+                values2 = variablesCrossData.get(1).getValuesConfigured();
+                values3 = variablesCrossData.get(2).getValuesConfigured();
                 for (int i = 0; i < values2.size(); i++) {
                     for (int j = 0; j < values1.size(); j++) {
                         columNames.add(values1.get(j) + "}" + values2.get(i));
@@ -892,7 +889,7 @@ public class IndicatorsAverageMB {
                                         + "       WHEN (( \n\r"
                                         + "           CASE \n\r"
                                         + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r"
-                                        + "               WHEN (victims.age_type_id = 1) THEN victims.victim_age \n\r"
+                                        + "               WHEN (victims.age_type_id = 1 or victims.age_type_id is null) THEN victims.victim_age \n\r"
                                         + "           END \n\r"
                                         + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                             }
@@ -1393,8 +1390,8 @@ public class IndicatorsAverageMB {
                 + "       " + currentIndicator.getInjuryType() + ", victims" + sourceTable + " \n\r"
                 + "   WHERE  \n\r"
                 + "       " + currentIndicator.getInjuryType() + ".victim_id = victims.victim_id AND \n\r"
-//                + "       " + currentIndicator.getInjuryType() + ".injury_neighborhood_id IN "//filtro por area urbana
-//                + "       ( SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_area = 1 ) AND"//filtro por area urbana
+                //                + "       " + currentIndicator.getInjuryType() + ".injury_neighborhood_id IN "//filtro por area urbana
+                //                + "       ( SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_area = 1 ) AND"//filtro por area urbana
                 + "       " + filterSourceTable;
 
         if (currentIndicator.getIndicatorId() > 4) { //si no es general se filtra por tipo de lesion
@@ -1415,17 +1412,19 @@ public class IndicatorsAverageMB {
 
     public int btnRemoveConfigurationClick() {
         //System.out.println("currentConfigurationSelected es " + currentConfigurationSelected);
-        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+        if (currentConfigurationSelected == null || currentConfigurationSelected.isEmpty()) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
             return 0;
         }
         List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
         for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
-            if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(currentConfigurationSelected) == 0) {
-                indicatorsConfigurationsFacade.remove(indicatorsConfigurationsList.get(i));
-                btnLoadConfigurationClick();
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La configuración ha sido eliminada"));
-                return 0;
+            for (int j = 0; j < currentConfigurationSelected.size(); j++) {
+                if (indicatorsConfigurationsList.get(i).getConfigurationName().compareTo(currentConfigurationSelected.get(j)) == 0) {
+                    indicatorsConfigurationsFacade.remove(indicatorsConfigurationsList.get(i));
+                    btnLoadConfigurationClick();
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La configuración ha sido eliminada"));
+                    return 0;
+                }
             }
         }
         return 0;
@@ -1433,12 +1432,12 @@ public class IndicatorsAverageMB {
 
     public int btnOpenConfigurationClick() {
         //realizar la carga de la configuracion indicada
-        if (currentConfigurationSelected == null || currentConfigurationSelected.trim().length() == 0) {//VALOR INICIAL INGRESADO
+        if (currentConfigurationSelected == null || currentConfigurationSelected.isEmpty()) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
             return 0;
         }
         currentCategoricalValuesList = new ArrayList<>();
-        IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected);
+        IndicatorsConfigurations indicatorsConfigurationsSelected = indicatorsConfigurationsFacade.findByName(currentConfigurationSelected.get(0));
 
         if (firstVariablesCrossSelected.compareTo(indicatorsConfigurationsSelected.getVariableName()) != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La configuracion corresponde a la variable ("
@@ -1473,7 +1472,7 @@ public class IndicatorsAverageMB {
     public void btnLoadConfigurationClick() {
         //recargar las configuraciones existentes
         //System.out.println("inicia carga de configuraciones");
-        currentConfigurationSelected = "";
+        currentConfigurationSelected = new ArrayList<>();
         configurationsList = new ArrayList<>();
         List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
         for (int i = 0; i < indicatorsConfigurationsList.size(); i++) {
@@ -1634,6 +1633,9 @@ public class IndicatorsAverageMB {
                 currentCategoricalValuesList.add(currentVariableConfiguring.getValuesConfigured().get(j));
             }
         }
+        else{
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccion la categoria a quitar"));
+        }
     }
 
     public void btnResetCategoryListClick() {
@@ -1749,7 +1751,7 @@ public class IndicatorsAverageMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
         }
     }
-    
+
     public void createImage() {
         if (currentTypeGraph.compareTo("barras") == 0) {
             try {
@@ -1784,7 +1786,7 @@ public class IndicatorsAverageMB {
         valuesGraph2 = new ArrayList<>();
         currentValueGraph1 = "";
         currentValueGraph2 = "";
-        numberCross = currentIndicator.getNumberCross();
+        //numberCross = currentIndicator.getNumberCross();
         typesGraph = new ArrayList<>();
         typesGraph.add("barras");
 
@@ -2103,9 +2105,9 @@ public class IndicatorsAverageMB {
             String[] splitVars;
             for (int i = 0; i < columNames.size(); i++) {
                 splitVars = columNames.get(i).split("\\}");//separo las dos variables
-                String first=splitVars[0];//invierto el orden de llegada
-                splitVars[0]=splitVars[1];
-                splitVars[1]=first;
+                String first = splitVars[0];//invierto el orden de llegada
+                splitVars[0] = splitVars[1];
+                splitVars[1] = first;
                 if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
                     int num = headers1.get(headers1.size() - 1).getColumns();
                     headers1.get(headers1.size() - 1).setColumns(num + 1);
@@ -2159,13 +2161,13 @@ public class IndicatorsAverageMB {
             for (int i = 0; i < columNames.size(); i++) {
                 celda = fila.createCell((short) posI);
                 //celda.setCellValue(new HSSFRichTextString(matrixResult[i][j]));
-                setValueCell(celda,matrixResult[i][j]);
-                
+                setValueCell(celda, matrixResult[i][j]);
+
                 posI++;
             }
         }
     }
-    
+
     private void setValueCell(HSSFCell celda, String strValue) {
         /*determina si el valor a almacenar en una celda del 
          archivo excell debe ser numerica o cadena*/
@@ -2174,7 +2176,7 @@ public class IndicatorsAverageMB {
             celda.setCellValue(value);
         } catch (Exception e) {
             celda.setCellValue(new HSSFRichTextString(strValue));
-        }        
+        }
     }
 
     private String createDataTableResult() {
@@ -2210,9 +2212,9 @@ public class IndicatorsAverageMB {
             String[] splitVars;
             for (int i = 0; i < columNames.size(); i++) {
                 splitVars = columNames.get(i).split("\\}");//separo las dos variables
-                String first=splitVars[0];//invierto el orden de llegada
-                splitVars[0]=splitVars[1];
-                splitVars[1]=first;
+                String first = splitVars[0];//invierto el orden de llegada
+                splitVars[0] = splitVars[1];
+                splitVars[1] = first;
                 if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
                     int num = headers1.get(headers1.size() - 1).getColumns();
                     headers1.get(headers1.size() - 1).setColumns(num + 1);
@@ -2347,7 +2349,7 @@ public class IndicatorsAverageMB {
         } catch (SQLException ex) {
             System.out.println("Error 6 en " + this.getClass().getName() + ":" + ex.toString());
         }
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy",new Locale("ES"));
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy", new Locale("ES"));
         indicatorName = indicatorName + variablesName + "\nPeriodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);
 
         JFreeChart chartReturn = ChartFactory.createBarChart(indicatorName, categoryAxixLabel, "Promedio", dataset, PlotOrientation.VERTICAL, false, true, false);
@@ -2692,11 +2694,11 @@ public class IndicatorsAverageMB {
         this.newConfigurationName = newConfigurationName;
     }
 
-    public String getCurrentConfigurationSelected() {
+    public List<String> getCurrentConfigurationSelected() {
         return currentConfigurationSelected;
     }
 
-    public void setCurrentConfigurationSelected(String currentConfigurationSelected) {
+    public void setCurrentConfigurationSelected(List<String> currentConfigurationSelected) {
         this.currentConfigurationSelected = currentConfigurationSelected;
     }
 
@@ -2706,8 +2708,8 @@ public class IndicatorsAverageMB {
 
     public void setConfigurationsList(List<String> configurationsList) {
         this.configurationsList = configurationsList;
-    }    
-    
+    }
+
     public boolean isShowItems() {
         return showItems;
     }
@@ -2763,6 +2765,4 @@ public class IndicatorsAverageMB {
     public void setCurrentTypeGraph(String currentTypeGraph) {
         this.currentTypeGraph = currentTypeGraph;
     }
-    
-    
 }

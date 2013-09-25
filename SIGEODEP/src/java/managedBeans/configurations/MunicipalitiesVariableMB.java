@@ -191,7 +191,7 @@ public class MunicipalitiesVariableMB implements Serializable {
             reset();
         } else {
             currentSearchValue = currentSearchValue.toUpperCase();
-            rowDataTableList = new ArrayList<RowDataTable>();
+            rowDataTableList = new ArrayList<>();
             municipalitiesList = municipalitiesFacade.findCriteria(currentSearchCriteria, currentSearchValue);
             if (municipalitiesList.isEmpty()) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
@@ -209,7 +209,7 @@ public class MunicipalitiesVariableMB implements Serializable {
 
     @PostConstruct
     public void reset() {
-        rowDataTableList = new ArrayList<RowDataTable>();
+        rowDataTableList = new ArrayList<>();
         municipalitiesList = municipalitiesFacade.findAll();
         for (int i = 0; i < municipalitiesList.size(); i++) {
             rowDataTableList.add(new RowDataTable(
@@ -219,7 +219,7 @@ public class MunicipalitiesVariableMB implements Serializable {
                     String.valueOf(i)));
         }
         //cargo los departamentos
-        List<Departaments> departamentsList = departamentsFacade.findAll();
+        departamentsList = departamentsFacade.findAll();
         departaments = new SelectItem[departamentsList.size() + 1];
         departaments[0] = new SelectItem(0, "");
         for (int i = 0; i < departamentsList.size(); i++) {
