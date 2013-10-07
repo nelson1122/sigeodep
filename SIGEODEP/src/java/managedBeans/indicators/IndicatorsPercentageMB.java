@@ -37,8 +37,7 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.component.html.HtmlOutputText;
 import javax.faces.context.FacesContext;
 import managedBeans.login.LoginMB;
-import managedBeans.reports.SpanColumns;
-import managedBeans.reports.TableGroup;
+import beans.util.SpanColumns;
 import model.dao.IndicatorsConfigurationsFacade;
 import model.dao.IndicatorsFacade;
 import model.pojo.Indicators;
@@ -129,8 +128,6 @@ public class IndicatorsPercentageMB {
     private ArrayList<Variable> variablesListData;//lista de variables que tiene el indicador
     private ArrayList<Variable> variablesCrossData = new ArrayList<>();//lista de variables a cruzar
     private ArrayList<String> valuesCategoryList;//lista de valores para una categoria
-    private ArrayList<SpanColumns> dynamicHeaders1;
-    private ArrayList<TableGroup> listaDeGrupos;
     private ArrayList<String> columNames;//NOMBRES DE LAS COLUMNAS, (SI EL CRUCE ES DE TRES VARIABLES ESTA SEPARADO POR EL CARACTER: }  )
     private ArrayList<String> rowNames;//NOMBRES DE LAS FILAS    
     private ArrayList<String> totalsHorizontal = new ArrayList<>();
@@ -237,87 +234,8 @@ public class IndicatorsPercentageMB {
     }
 
     public void createMatrixResult() {
-
         try {//System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-            //ArrayList<String> columnNamesPivot = new ArrayList<String>();
-            //columNames = new ArrayList<>();
-            //rowNames = new ArrayList<>();
-            ResultSet rs = null;
-//            //---------------------------------------------------------            
-//            //DETERMINO NOMBRES DE COLUMNAS PARA MATIRZ SALIDA
-//            //---------------------------------------------------------            
-//            if (variablesCrossData.size() < 3) { //una o dos variables
-//                sql = ""
-//                        + " SELECT \n"
-//                        + "    column_1 \n"
-//                        + " FROM \n"
-//                        + "    indicators_records \n"
-//                        + " WHERE \n"
-//                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
-//                        + " GROUP BY \n"
-//                        + "    column_1 \n"
-//                        + " ORDER BY \n"
-//                        + "    MIN(record_id) \n";
-//                rs = connectionJdbcMB.consult(sql);
-//            }
-//            if (variablesCrossData.size() == 3) {
-//                sql = ""
-//                        + " SELECT "
-//                        + "    column_1 ||'}'|| column_2 "
-//                        + " FROM \n"
-//                        + "    indicators_records \n"
-//                        + " WHERE \n"
-//                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
-//                        + " GROUP BY \n"
-//                        + "    column_1 ||'}'|| column_2 "
-//                        + " ORDER BY \n"
-//                        + "    MIN(record_id) \n";
-//                rs = connectionJdbcMB.consult(sql);
-//            }
-//            while (rs.next()) {
-//                columNames.add(rs.getString(1));
-//            }
-//            //---------------------------------------------------------            
-//            //DETERMINO NOMBRES DE FILAS PARA MATIRZ SALIDA
-//            //---------------------------------------------------------            
-//            if (variablesCrossData.size() == 1) {
-//                rowNames.add("Valor");
-//            }
-//            if (variablesCrossData.size() == 2) {
-//                sql = ""
-//                        + " SELECT \n"
-//                        + "    column_2 \n"
-//                        + " FROM \n"
-//                        + "    indicators_records \n"
-//                        + " WHERE \n"
-//                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
-//                        + " GROUP BY \n"
-//                        + "    column_2 \n"
-//                        + " ORDER BY \n"
-//                        + "    MIN(record_id) \n";
-//                rs = connectionJdbcMB.consult(sql);
-//            }
-//            if (variablesCrossData.size() == 3) {
-//                sql = ""
-//                        + " SELECT \n"
-//                        + "    column_3 \n"
-//                        + " FROM \n"
-//                        + "    indicators_records \n"
-//                        + " WHERE \n"
-//                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-//                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n"
-//                        + " GROUP BY \n"
-//                        + "    column_3 \n"
-//                        + " ORDER BY \n"
-//                        + "    MIN(record_id) \n";
-//                rs = connectionJdbcMB.consult(sql);
-//            }
-//            while (rs.next()) {
-//                rowNames.add(rs.getString(1));
-//            }
+            ResultSet rs;
             //---------------------------------------------------------            
             //SE CREA LA MATRIZ DE RESULTADOS (iniciada en 0 )
             //---------------------------------------------------------
@@ -714,6 +632,19 @@ public class IndicatorsPercentageMB {
                             splitForSql = splitRegisters[i].split("<=>");
                             if (splitForSql.length == 4) {
                                 tuplesProcessed++;
+                                if (splitForSql[1].compareTo("abuse_types") == 0) {
+                                    //para el caso de "tipos de maltrato"="abuse_types" se debe agrupar valores
+                                    if (splitForSql[3].compareTo("9") == 0 //        9;"PORNOGRAFIA CON NNA"
+                                            || splitForSql[3].compareTo("10") == 0// 10;"TRATA DE PERSONAL PARA EXPLOTACION SEXUAL"
+                                            || splitForSql[3].compareTo("11") == 0// 11;"ABUSO SEXUAL"
+                                            || splitForSql[3].compareTo("12") == 0// 12;"ACOSO SEXUAL"
+                                            || splitForSql[3].compareTo("13") == 0// 13;"ASALTO SEXUAL"
+                                            || splitForSql[3].compareTo("14") == 0// 14;"EXPLOTACION SEXUAL"
+                                            || splitForSql[3].compareTo("15") == 0)//15;"TURISMO SEXUAL"
+                                    {
+                                        splitForSql[3] = "3";//3;"VIOLENCIA SEXUAL"
+                                    }
+                                }
                                 rs2 = connectionJdbcMB.consult("SELECT " + splitForSql[0] + " FROM " + splitForSql[1] + " WHERE " + splitForSql[2] + " = " + splitForSql[3]);
                                 rs2.next();
                                 if (col == 1) {
@@ -767,10 +698,8 @@ public class IndicatorsPercentageMB {
                         + "     ( column_" + col + " like '%<=>%')";
                 connectionJdbcMB.non_query(sqlRemove);
             }
-
-
         } catch (SQLException | IOException e) {
-            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -1016,6 +945,8 @@ public class IndicatorsPercentageMB {
                     for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
                         sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
                     }
+                    sqlReturn = sqlReturn + "       WHEN '55' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
+                    sqlReturn = sqlReturn + "       WHEN '56' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
                     sqlReturn = sqlReturn + "   END AS tipo_lesion";
                     break;
                 case age://DETERMINAR EDAD -----------------------          
@@ -1589,7 +1520,7 @@ public class IndicatorsPercentageMB {
                     + " naturaleza_violencia not like '%>2}' AND "
                     + " naturaleza_violencia not like '%>4}' ";
         }
-        //System.out.println("CONSULTA (indicators percentage) \n " + sqlReturn);
+        System.out.println("CONSULTA (indicators percentage) \n " + sqlReturn);
         return sqlReturn;
     }
 
@@ -2267,7 +2198,7 @@ public class IndicatorsPercentageMB {
         currentVariablesCrossSelected = null;
     }
 
-    public Variable createVariable(String name, String generic_table, boolean conf, String source_table) {
+    private Variable createVariable(String name, String generic_table, boolean conf, String source_table) {
         //conf me indica si es permitida la configuracion de esta variable
         Variable newVariable = new Variable(name, generic_table, conf, source_table);
         //cargo la lista de valores posibles
@@ -2331,12 +2262,12 @@ public class IndicatorsPercentageMB {
                 valuesId.add("54");
                 valuesName.add("NO INTENCIONAL");
                 valuesConf.add("NO INTENCIONAL");
-                valuesId.add("55");
-                valuesName.add("VIOLENCIA INTRAFAMILIAR");
-                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
-                valuesId.add("56");
-                valuesName.add("SIVIGILA-VIF");
-                valuesConf.add("SIVIGILA-VIF");
+//                valuesId.add("55");//si se agrgegan aqui aparecen duplicado en tabla de resultados y grafico
+//                valuesName.add("VIOLENCIA INTRAFAMILIAR");//se agregan en la consulta sql
+//                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
+//                valuesId.add("56");
+//                valuesName.add("VIOLENCIA INTRAFAMILIAR");
+//                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
                 break;
             case hour:
                 infInt = 0;
@@ -2397,6 +2328,49 @@ public class IndicatorsPercentageMB {
                     valuesId.add(String.valueOf(i));
                 }
                 break;
+            case abuse_types:
+                //1;"FISICO"
+                valuesId.add("1");
+                valuesName.add("FISICO");
+                valuesConf.add("FISICO");
+                //2;"PSICOLOGICO / VERBAL"
+                valuesId.add("2");
+                valuesName.add("PSICOLOGICO / VERBAL");
+                valuesConf.add("PSICOLOGICO / VERBAL");
+                //3;"VIOLENCIA SEXUAL"
+                valuesId.add("3");
+                valuesName.add("VIOLENCIA SEXUAL");
+                valuesConf.add("VIOLENCIA SEXUAL");
+                //4;"NEGLIGENCIA"
+                valuesId.add("4");
+                valuesName.add("NEGLIGENCIA");
+                valuesConf.add("NEGLIGENCIA");
+                //5;"ABANDONO"
+                valuesId.add("5");
+                valuesName.add("ABANDONO");
+                valuesConf.add("ABANDONO");
+                //6;"INSTITUCIONAL"
+                valuesId.add("6");
+                valuesName.add("INSTITUCIONAL");
+                valuesConf.add("INSTITUCIONAL");
+                //7;"SIN DATO"
+                valuesId.add("7");
+                valuesName.add("SIN DATO");
+                valuesConf.add("SIN DATO");
+                //8;"OTRO"
+                valuesId.add("8");
+                valuesName.add("OTRO");
+                valuesConf.add("OTRO");
+
+                //9;"PORNOGRAFIA CON NNA"
+                //10;"TRATA DE PERSONAL PARA EXPLOTACION SEXUAL"
+                //11;"ABUSO SEXUAL"
+                //12;"ACOSO SEXUAL"
+                //13;"ASALTO SEXUAL"
+                //14;"EXPLOTACION SEXUAL"
+                //15;"TURISMO SEXUAL"
+
+                break;
             case neighborhoods://barrio,
             case communes://comuna,
             case corridors://corredor,
@@ -2434,7 +2408,7 @@ public class IndicatorsPercentageMB {
             case involved_vehicles:
             case road_types:
 
-            case abuse_types:
+            //case abuse_types:
             case aggressor_types:
             case ethnic_groups:
             case insurance:
@@ -2451,6 +2425,7 @@ public class IndicatorsPercentageMB {
             case anatomical_locations:
             case actions_to_take:
             case security_elements:
+            case source_vif:
             case NOVALUE://es una tabla categorica
                 try {
                     //ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
@@ -2461,7 +2436,6 @@ public class IndicatorsPercentageMB {
                         valuesId.add(rs.getString(1));
                     }
                 } catch (Exception e) {
-                    System.out.println("Error 8 en " + this.getClass().getName() + ":" + e.toString());
                 }
                 break;
         }

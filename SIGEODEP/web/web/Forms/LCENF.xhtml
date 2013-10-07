@@ -43,8 +43,11 @@
         <!--=================================================================-->
         <!--==============================CONTENIDO==========================-->
         <ui:define name="content">
-
-            <h:form enctype="multipart/form-data" id="IdForm1" >
+            <h:outputText 
+                value="No se puede mostrar esta sección por que no cuenta con los permisos suficientes"
+                style=" color: red;"
+                rendered="#{!loginMB.permissionNonFatal}"/> 
+            <h:form enctype="multipart/form-data" id="IdForm1" rendered="#{loginMB.permissionNonFatal}">
                 <p:growl id="message"  showDetail="true" sticky="true" />
                 <!--================================== FILTRADO DE REGISTROS ===========================================-->
                 <br/>
@@ -493,7 +496,7 @@
                                                     </p:autoComplete>
 
                                                 </p:column>
-                                                </p:row>
+                                            </p:row>
 
                                             <p:row>
                                                 <p:column>CODIGO DEL BARRIO:&nbsp;</p:column>
@@ -518,7 +521,7 @@
                                                             listener="#{lcenfMB.changeForm}"/>
                                                     </h:selectOneMenu>
                                                 </p:column>
-                                                
+
                                             </p:row>
 
                                             <p:row>

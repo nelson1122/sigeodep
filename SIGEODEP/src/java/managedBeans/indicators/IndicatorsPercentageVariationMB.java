@@ -60,7 +60,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.login.LoginMB;
-import managedBeans.reports.SpanColumns;
+import beans.util.SpanColumns;
 import model.dao.IndicatorsConfigurationsFacade;
 import model.dao.IndicatorsFacade;
 import model.pojo.Indicators;
@@ -563,6 +563,11 @@ public class IndicatorsPercentageVariationMB {
         if (continueProcess) {//ALMACENO EN BASE DE DATOS LOS REGISTROS DEL RANGO A
             saveIndicatorRecords(createIndicatorConsult(initialDateStrA, endDateStrA), 200);
         }
+        if (continueProcess) {//DE SER NECESARIO SEPARO LOS REGISTROS(cuando son variables con relaciones de uno a muchos)
+            if (separateRecords) {
+                separateRecordsFunction(200);
+            }
+        }
         if (continueProcess) {//CREO TODAS LAS POSIBLES COMBINACIONES DEL RANGO A
             createCombinations(200, 0);//se determina si las 200 tienen "sin dato" y genera cobinaciones en 100
         }
@@ -594,6 +599,11 @@ public class IndicatorsPercentageVariationMB {
         if (continueProcess) {//ALMACENO EN BASE DE DATOS LOS REGISTROS DEL RANGO B
             saveIndicatorRecords(createIndicatorConsult(initialDateStrB, endDateStrB), 200);
         }
+        if (continueProcess) {//DE SER NECESARIO SEPARO LOS REGISTROS(cuando son variables con relaciones de uno a muchos)
+            if (separateRecords) {
+                separateRecordsFunction(200);
+            }
+        }        
         if (continueProcess) {//CREO TODAS LAS POSIBLES COMBINACIONES DEL RANGO B
             createCombinations(200, 100);//se determina si las 200 tienen "sin dato" y genera cobinaciones en 0
         }
@@ -611,6 +621,117 @@ public class IndicatorsPercentageVariationMB {
             loadValuesGraph();//creo el grafico
             btnExportDisabled = false;
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
+        }
+    }
+    
+    private void separateRecordsFunction(int increment) {
+        ResultSet rs;
+        ResultSet rs2;
+        String valueColumn;
+        String[] splitRegisters;
+        String[] splitForSql;
+        try {
+            //determinar el maximo
+            sql = ""
+                    + " SELECT  \n\r"
+                    + "	MAX(record_id) \n\r"
+                    + " FROM \n\r"
+                    + "	indicators_records \n\r"
+                    + " WHERE \n\r"
+                    + "     user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                    + "     indicator_id = " + (currentIndicator.getIndicatorId() + increment) + " \n\r";
+            rs = connectionJdbcMB.consult(sql);
+            rs.next();
+            tuplesProcessed = rs.getInt(1);
+            sql = ""
+                    + " SELECT  \n\r"
+                    + "	* \n\r"
+                    + " FROM \n\r"
+                    + "	indicators_records \n\r"
+                    + " WHERE \n\r"
+                    + "     user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                    + "     indicator_id = " + (currentIndicator.getIndicatorId() + increment) + " \n\r";
+            cpManager = new CopyManager((BaseConnection) connectionJdbcMB.getConn());
+            for (int col = 1; col < 4; col++) {//se repite tres veces por cada una de las columnas
+                sb = new StringBuilder();
+                rs = connectionJdbcMB.consult(sql);
+                while (rs.next()) {
+                    if (rs.getString("column_" + col).indexOf("<=>") != -1) {
+                        valueColumn = rs.getString("column_" + col);
+                        valueColumn = valueColumn.substring(1, valueColumn.length() - 1);
+                        splitRegisters = valueColumn.split(",");
+                        for (int i = 0; i < splitRegisters.length; i++) {
+                            splitForSql = splitRegisters[i].split("<=>");
+                            if (splitForSql.length == 4) {
+                                tuplesProcessed++;
+                                if (splitForSql[1].compareTo("abuse_types") == 0) {
+                                    //para el caso de "tipos de maltrato"="abuse_types" se debe agrupar valores
+                                    if (splitForSql[3].compareTo("9") == 0 //        9;"PORNOGRAFIA CON NNA"
+                                            || splitForSql[3].compareTo("10") == 0// 10;"TRATA DE PERSONAL PARA EXPLOTACION SEXUAL"
+                                            || splitForSql[3].compareTo("11") == 0// 11;"ABUSO SEXUAL"
+                                            || splitForSql[3].compareTo("12") == 0// 12;"ACOSO SEXUAL"
+                                            || splitForSql[3].compareTo("13") == 0// 13;"ASALTO SEXUAL"
+                                            || splitForSql[3].compareTo("14") == 0// 14;"EXPLOTACION SEXUAL"
+                                            || splitForSql[3].compareTo("15") == 0)//15;"TURISMO SEXUAL"
+                                    {
+                                        splitForSql[3] = "3";//3;"VIOLENCIA SEXUAL"
+                                    }
+                                }
+                                rs2 = connectionJdbcMB.consult("SELECT " + splitForSql[0] + " FROM " + splitForSql[1] + " WHERE " + splitForSql[2] + " = " + splitForSql[3]);
+                                rs2.next();
+                                if (col == 1) {
+                                    sb.
+                                            append(rs.getInt("user_id")).append("\t"). //  user_id integer NOT NULL, -- usuario que genera el indicador
+                                            append(rs.getInt("indicator_id")).append("\t"). //  indicator_id integer NOT NULL, -- identificador del indicador
+                                            append(tuplesProcessed).append("\t"). //  record_id integer NOT NULL, -- identificador del registro para ordenamiento
+                                            append(rs2.getString(1)).append("\t"). //  column_1 text, -- valor de la primer variable cruzada
+                                            append(rs.getString("column_2")).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
+                                            append(rs.getString("column_3")).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
+                                            append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
+                                            append(0).append("\n");                             //  population integer,
+                                }
+                                if (col == 2) {
+                                    sb.
+                                            append(rs.getInt("user_id")).append("\t"). //  user_id integer NOT NULL, -- usuario que genera el indicador
+                                            append(rs.getInt("indicator_id")).append("\t"). //  indicator_id integer NOT NULL, -- identificador del indicador
+                                            append(tuplesProcessed).append("\t"). //  record_id integer NOT NULL, -- identificador del registro para ordenamiento
+                                            append(rs.getString("column_1")).append("\t"). //  column_1 text, -- valor de la primer variable cruzada
+                                            append(rs2.getString(1)).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
+                                            append(rs.getString("column_3")).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
+                                            append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
+                                            append(0).append("\n");                             //  population integer,
+                                }
+                                if (col == 3) {
+                                    sb.
+                                            append(rs.getInt("user_id")).append("\t"). //  user_id integer NOT NULL, -- usuario que genera el indicador
+                                            append(rs.getInt("indicator_id")).append("\t"). //  indicator_id integer NOT NULL, -- identificador del indicador
+                                            append(tuplesProcessed).append("\t"). //  record_id integer NOT NULL, -- identificador del registro para ordenamiento
+                                            append(rs.getString("column_1")).append("\t"). //  column_1 text, -- valor de la primer variable cruzada
+                                            append(rs.getString("column_2")).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
+                                            append(rs2.getString(1)).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
+                                            append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
+                                            append(0).append("\n");                             //  population integer,
+                                }
+                            }
+                        }
+                    }
+                }
+                //REALIZO LA INSERCION
+                cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
+                sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
+                //elimino registro que contengan 
+                String sqlRemove = ""
+                        + " DELETE  \n\r"
+                        + " FROM \n\r"
+                        + "	    indicators_records \n\r"
+                        + " WHERE \n\r"
+                        + "     user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
+                        + "     indicator_id = " + (currentIndicator.getIndicatorId() + increment) + " AND \n\r"
+                        + "     ( column_" + col + " like '%<=>%')";
+                connectionJdbcMB.non_query(sqlRemove);
+            }
+        } catch (SQLException | IOException e) {
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -892,6 +1013,8 @@ public class IndicatorsPercentageVariationMB {
                     for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
                         sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
                     }
+                    sqlReturn = sqlReturn + "       WHEN '55' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
+                    sqlReturn = sqlReturn + "       WHEN '56' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
                     sqlReturn = sqlReturn + "   END AS tipo_lesion";
                     break;
                 case age://DETERMINAR EDAD -----------------------          
@@ -1413,8 +1536,15 @@ public class IndicatorsPercentageVariationMB {
                 //                + "       ( SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_area = 1 ) AND"//filtro por area urbana
                 + "       " + filterSourceTable;
 
-        if (currentIndicator.getIndicatorId() > 4) { //si no es general se filtra por tipo de lesion
-            sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
+//        if (currentIndicator.getIndicatorId() > 4) { //si no es general se filtra por tipo de lesion
+//            sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
+//        }
+        if (currentIndicator.getIndicatorId() > 4) { //si no es uno de los indicadores generales se filtra por tipo de lesion
+            if (currentIndicator.getIndicatorId() > 32 && currentIndicator.getIndicatorId() < 40) {//si es interpersonal en familia injury_id=53,55,56
+                sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id IN (53,55,56) AND \n\r";
+            } else {
+                sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
+            }
         }
         sqlReturn = sqlReturn + ""
                 + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
@@ -2102,9 +2232,12 @@ public class IndicatorsPercentageVariationMB {
                 valuesId.add("54");
                 valuesName.add("NO INTENCIONAL");
                 valuesConf.add("NO INTENCIONAL");
-                valuesId.add("55");
-                valuesName.add("VIOLENCIA INTRAFAMILIAR");
-                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
+//                valuesId.add("55");//si se agrgegan aqui aparecen duplicado en tabla de resultados y grafico
+//                valuesName.add("VIOLENCIA INTRAFAMILIAR");//se agregan en la consulta sql
+//                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
+//                valuesId.add("56");
+//                valuesName.add("VIOLENCIA INTRAFAMILIAR");
+//                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
                 break;
             case hour:
                 infInt = 0;
@@ -2165,14 +2298,56 @@ public class IndicatorsPercentageVariationMB {
                     valuesId.add(String.valueOf(i));
                 }
                 break;
-            case neighborhoods://barrio
-            case communes://comuna
-            case corridors://corredor
-            case areas://zona
-            case genders://genero
+            case abuse_types:
+                //1;"FISICO"
+                valuesId.add("1");
+                valuesName.add("FISICO");
+                valuesConf.add("FISICO");
+                //2;"PSICOLOGICO / VERBAL"
+                valuesId.add("2");
+                valuesName.add("PSICOLOGICO / VERBAL");
+                valuesConf.add("PSICOLOGICO / VERBAL");
+                //3;"VIOLENCIA SEXUAL"
+                valuesId.add("3");
+                valuesName.add("VIOLENCIA SEXUAL");
+                valuesConf.add("VIOLENCIA SEXUAL");
+                //4;"NEGLIGENCIA"
+                valuesId.add("4");
+                valuesName.add("NEGLIGENCIA");
+                valuesConf.add("NEGLIGENCIA");
+                //5;"ABANDONO"
+                valuesId.add("5");
+                valuesName.add("ABANDONO");
+                valuesConf.add("ABANDONO");
+                //6;"INSTITUCIONAL"
+                valuesId.add("6");
+                valuesName.add("INSTITUCIONAL");
+                valuesConf.add("INSTITUCIONAL");
+                //7;"SIN DATO"
+                valuesId.add("7");
+                valuesName.add("SIN DATO");
+                valuesConf.add("SIN DATO");
+                //8;"OTRO"
+                valuesId.add("8");
+                valuesName.add("OTRO");
+                valuesConf.add("OTRO");
+
+                //9;"PORNOGRAFIA CON NNA"
+                //10;"TRATA DE PERSONAL PARA EXPLOTACION SEXUAL"
+                //11;"ABUSO SEXUAL"
+                //12;"ACOSO SEXUAL"
+                //13;"ASALTO SEXUAL"
+                //14;"EXPLOTACION SEXUAL"
+                //15;"TURISMO SEXUAL"
+
+                break;
+            case neighborhoods://barrio,
+            case communes://comuna,
+            case corridors://corredor,
+            case areas://zona,
+            case genders://genero,
             case days://dia semana
             case quadrants://cuadrante
-
             case activities:
             case boolean3:
             case victim_characteristics:
@@ -2195,7 +2370,7 @@ public class IndicatorsPercentageVariationMB {
             case protective_measures:
             case relationships_to_victim:
             case weapon_types:
-            case counterpart_service_type:
+            case degree:
             case service_types:
             case transport_counterparts:
             case transport_types:
@@ -2203,6 +2378,24 @@ public class IndicatorsPercentageVariationMB {
             case involved_vehicles:
             case road_types:
 
+            //case abuse_types:
+            case aggressor_types:
+            case ethnic_groups:
+            case insurance:
+            case jobs:
+            case public_health_actions:
+            case sivigila_educational_level:
+            case sivigila_group:
+            case sivigila_mechanism:
+            case sivigila_no_relative:
+            case sivigila_tip_ss:
+            case sivigila_vulnerability:
+            case vulnerable_groups:
+            case kinds_of_injury:
+            case anatomical_locations:
+            case actions_to_take:
+            case security_elements:
+            case source_vif:
             case NOVALUE://es una tabla categorica
                 try {
                     //ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
@@ -2237,6 +2430,7 @@ public class IndicatorsPercentageVariationMB {
         newVariable.setValuesConfigured(valuesConf);
         return newVariable;
     }
+
 
     public ArrayList<Variable> getVariablesIndicator() {
         ArrayList<Variable> arrayReturn = new ArrayList<>();

@@ -38,7 +38,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.login.LoginMB;
-import managedBeans.reports.SpanColumns;
+import beans.util.SpanColumns;
 import model.dao.IndicatorsConfigurationsFacade;
 import model.dao.IndicatorsFacade;
 import model.pojo.Indicators;
@@ -526,6 +526,19 @@ public class IndicatorsRateMB {
                             splitForSql = splitRegisters[i].split("<=>");
                             if (splitForSql.length == 4) {
                                 tuplesProcessed++;
+                                if (splitForSql[1].compareTo("abuse_types") == 0) {
+                                    //para el caso de "tipos de maltrato"="abuse_types" se debe agrupar valores
+                                    if (splitForSql[3].compareTo("9") == 0 //        9;"PORNOGRAFIA CON NNA"
+                                            || splitForSql[3].compareTo("10") == 0// 10;"TRATA DE PERSONAL PARA EXPLOTACION SEXUAL"
+                                            || splitForSql[3].compareTo("11") == 0// 11;"ABUSO SEXUAL"
+                                            || splitForSql[3].compareTo("12") == 0// 12;"ACOSO SEXUAL"
+                                            || splitForSql[3].compareTo("13") == 0// 13;"ASALTO SEXUAL"
+                                            || splitForSql[3].compareTo("14") == 0// 14;"EXPLOTACION SEXUAL"
+                                            || splitForSql[3].compareTo("15") == 0)//15;"TURISMO SEXUAL"
+                                    {
+                                        splitForSql[3] = "3";//3;"VIOLENCIA SEXUAL"
+                                    }
+                                }
                                 rs2 = connectionJdbcMB.consult("SELECT " + splitForSql[0] + " FROM " + splitForSql[1] + " WHERE " + splitForSql[2] + " = " + splitForSql[3]);
                                 rs2.next();
                                 if (col == 1) {
@@ -537,7 +550,7 @@ public class IndicatorsRateMB {
                                             append(rs.getString("column_2")).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
                                             append(rs.getString("column_3")).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
                                             append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
-                                            append(rs.getString("population")).append("\n");                             //  population integer,
+                                            append(0).append("\n");                             //  population integer,
                                 }
                                 if (col == 2) {
                                     sb.
@@ -548,7 +561,7 @@ public class IndicatorsRateMB {
                                             append(rs2.getString(1)).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
                                             append(rs.getString("column_3")).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
                                             append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
-                                            append(rs.getString("population")).append("\n");                             //  population integer,
+                                            append(0).append("\n");                             //  population integer,
                                 }
                                 if (col == 3) {
                                     sb.
@@ -559,7 +572,7 @@ public class IndicatorsRateMB {
                                             append(rs.getString("column_2")).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
                                             append(rs2.getString(1)).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
                                             append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
-                                            append(rs.getString("population")).append("\n");                             //  population integer,
+                                            append(0).append("\n");                             //  population integer,
                                 }
                             }
                         }
@@ -579,10 +592,8 @@ public class IndicatorsRateMB {
                         + "     ( column_" + col + " like '%<=>%')";
                 connectionJdbcMB.non_query(sqlRemove);
             }
-
-
         } catch (SQLException | IOException e) {
-            System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
@@ -811,6 +822,8 @@ public class IndicatorsRateMB {
                     for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
                         sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
                     }
+                    sqlReturn = sqlReturn + "       WHEN '55' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
+                    sqlReturn = sqlReturn + "       WHEN '56' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
                     sqlReturn = sqlReturn + "   END AS tipo_lesion";
                     break;
                 case age://DETERMINAR EDAD -----------------------          
@@ -1362,8 +1375,15 @@ public class IndicatorsRateMB {
                 //                + "       ( SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_area = 1 ) AND"//filtro por area urbana
                 + "       " + filterSourceTable;
 
-        if (currentIndicator.getIndicatorId() > 4) { //si no es general se filtra por tipo de lesion
-            sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
+//        if (currentIndicator.getIndicatorId() > 4) { //si no es general se filtra por tipo de lesion
+//            sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
+//        }
+        if (currentIndicator.getIndicatorId() > 4) { //si no es uno de los indicadores generales se filtra por tipo de lesion
+            if (currentIndicator.getIndicatorId() > 32 && currentIndicator.getIndicatorId() < 40) {//si es interpersonal en familia injury_id=53,55,56
+                sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id IN (53,55,56) AND \n\r";
+            } else {
+                sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
+            }
         }
         sqlReturn = sqlReturn + ""
                 + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
@@ -2225,7 +2245,7 @@ public class IndicatorsRateMB {
         return newVariable;
     }
 
-    public Variable createVariable(String name, String generic_table, boolean conf, String source_table) {
+    private Variable createVariable(String name, String generic_table, boolean conf, String source_table) {
         //conf me indica si es permitida la configuracion de esta variable
         Variable newVariable = new Variable(name, generic_table, conf, source_table);
         //cargo la lista de valores posibles
@@ -2289,9 +2309,12 @@ public class IndicatorsRateMB {
                 valuesId.add("54");
                 valuesName.add("NO INTENCIONAL");
                 valuesConf.add("NO INTENCIONAL");
-                valuesId.add("55");
-                valuesName.add("VIOLENCIA INTRAFAMILIAR");
-                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
+//                valuesId.add("55");//si se agrgegan aqui aparecen duplicado en tabla de resultados y grafico
+//                valuesName.add("VIOLENCIA INTRAFAMILIAR");//se agregan en la consulta sql
+//                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
+//                valuesId.add("56");
+//                valuesName.add("VIOLENCIA INTRAFAMILIAR");
+//                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
                 break;
             case hour:
                 infInt = 0;
@@ -2352,6 +2375,49 @@ public class IndicatorsRateMB {
                     valuesId.add(String.valueOf(i));
                 }
                 break;
+            case abuse_types:
+                //1;"FISICO"
+                valuesId.add("1");
+                valuesName.add("FISICO");
+                valuesConf.add("FISICO");
+                //2;"PSICOLOGICO / VERBAL"
+                valuesId.add("2");
+                valuesName.add("PSICOLOGICO / VERBAL");
+                valuesConf.add("PSICOLOGICO / VERBAL");
+                //3;"VIOLENCIA SEXUAL"
+                valuesId.add("3");
+                valuesName.add("VIOLENCIA SEXUAL");
+                valuesConf.add("VIOLENCIA SEXUAL");
+                //4;"NEGLIGENCIA"
+                valuesId.add("4");
+                valuesName.add("NEGLIGENCIA");
+                valuesConf.add("NEGLIGENCIA");
+                //5;"ABANDONO"
+                valuesId.add("5");
+                valuesName.add("ABANDONO");
+                valuesConf.add("ABANDONO");
+                //6;"INSTITUCIONAL"
+                valuesId.add("6");
+                valuesName.add("INSTITUCIONAL");
+                valuesConf.add("INSTITUCIONAL");
+                //7;"SIN DATO"
+                valuesId.add("7");
+                valuesName.add("SIN DATO");
+                valuesConf.add("SIN DATO");
+                //8;"OTRO"
+                valuesId.add("8");
+                valuesName.add("OTRO");
+                valuesConf.add("OTRO");
+
+                //9;"PORNOGRAFIA CON NNA"
+                //10;"TRATA DE PERSONAL PARA EXPLOTACION SEXUAL"
+                //11;"ABUSO SEXUAL"
+                //12;"ACOSO SEXUAL"
+                //13;"ASALTO SEXUAL"
+                //14;"EXPLOTACION SEXUAL"
+                //15;"TURISMO SEXUAL"
+
+                break;
             case neighborhoods://barrio,
             case communes://comuna,
             case corridors://corredor,
@@ -2389,7 +2455,7 @@ public class IndicatorsRateMB {
             case involved_vehicles:
             case road_types:
 
-            case abuse_types:
+            //case abuse_types:
             case aggressor_types:
             case ethnic_groups:
             case insurance:
@@ -2406,6 +2472,7 @@ public class IndicatorsRateMB {
             case anatomical_locations:
             case actions_to_take:
             case security_elements:
+            case source_vif:
             case NOVALUE://es una tabla categorica
                 try {
                     //ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
@@ -2416,7 +2483,6 @@ public class IndicatorsRateMB {
                         valuesId.add(rs.getString(1));
                     }
                 } catch (Exception e) {
-                    System.out.println("Error 7 en " + this.getClass().getName() + ":" + e.toString());
                 }
                 break;
         }

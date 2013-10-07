@@ -44,7 +44,11 @@
         <!--=================================================================-->
         <!--==============================CONTENIDO==========================-->
         <ui:define name="content">
-            <h:form enctype="multipart/form-data" id="IdForm1"> 
+            <h:outputText 
+                value="No se puede mostrar esta sección por que no cuenta con los permisos suficientes"
+                style=" color: red;"
+                rendered="#{!loginMB.permissionFatal}"/> 
+            <h:form enctype="multipart/form-data" id="IdForm1" rendered="#{loginMB.permissionFatal}"> 
                 <p:growl id="message"  showDetail="true" sticky="true" />
                 <!--================================== FILTRADO DE REGISTROS ===========================================-->
                 <br/>

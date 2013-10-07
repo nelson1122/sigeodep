@@ -38,7 +38,7 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.geo2.GeoDBConnection;
 import managedBeans.login.LoginMB;
-import managedBeans.reports.SpanColumns;
+import beans.util.SpanColumns;
 import model.dao.IndicatorsConfigurationsFacade;
 import model.dao.IndicatorsFacade;
 import model.pojo.Indicators;
@@ -66,6 +66,11 @@ import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RectangleEdge;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.Interval;
+import org.joda.time.Months;
+import org.joda.time.Years;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 import org.primefaces.component.outputpanel.OutputPanel;
@@ -134,6 +139,7 @@ public class IndicatorsCountMB {
     private String sql = "";
     private boolean btnRemoveVariableDisabled = true;
     private boolean renderedDynamicDataTable = true;
+    private boolean sameRangeLimit = false;//limitar a rangos similares
     private boolean showFrames = true;
     private boolean showItems = true;
     private boolean showEmpty = false;
@@ -158,6 +164,7 @@ public class IndicatorsCountMB {
     String indicatorName = "";
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy", new Locale("ES"));
     DefaultCategoryDataset dataset = null;
+    Calendar c = Calendar.getInstance();
 
     public IndicatorsCountMB() {
         //-------------------------------------------------
@@ -165,7 +172,7 @@ public class IndicatorsCountMB {
         geoDBConnection = (GeoDBConnection) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{geoDBConnectionMB}", GeoDBConnection.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         geoDBConnection = (GeoDBConnection) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{geoDBConnectionMB}", GeoDBConnection.class);
-        Calendar c = Calendar.getInstance();
+
         currentYear = c.get(Calendar.YEAR);
         initialDate.setDate(1);
         initialDate.setMonth(0);
@@ -173,7 +180,6 @@ public class IndicatorsCountMB {
         endDate.setDate(c.get(Calendar.DATE));
         endDate.setMonth(c.get(Calendar.MONTH));
         endDate.setYear(c.get(Calendar.YEAR) - 1900);
-
     }
 
     public void showMessage() {
@@ -208,9 +214,9 @@ public class IndicatorsCountMB {
                 + "    indicator_id = " + currentIndicator.getIndicatorId() + " AND \n\r"
                 + "    count = 0 ";
         connectionJdbcMB.non_query(sql);
-        //---------------------------------------------------------            
+        //---------------------------------------------------------
         //ELIMINO LOS NOMBRES DE COLUMNAS NO NECESARIOS
-        //---------------------------------------------------------            
+        //---------------------------------------------------------
         ResultSet rs;
         if (variablesCrossData.size() < 3) { //una o dos variables
             sql = ""
@@ -305,10 +311,44 @@ public class IndicatorsCountMB {
         currentVariableGraph = "";
         dataset = null;
         categoryAxixLabel = "";
+
         if (continueProcess) {//VALIDACION DE FECHAS
             initialDateStr = formato.format(initialDate);
             endDateStr = formato.format(endDate);
+            long fechaInicialMs = initialDate.getTime();
+            long fechaFinalMs = endDate.getTime();
+            long diferencia = fechaFinalMs - fechaInicialMs;
+            if (diferencia < 0) {
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial debe ser inferior o igual a la final");
+                continueProcess = false;
+            }
         }
+
+        if (continueProcess && sameRangeLimit) {
+            //se valida que exista diferencia de año
+            if (initialDate.getYear() == endDate.getYear()) {
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' la fecha inicial y final deben estar en diferentes años, desactive la opción o cambie las fechas");
+                continueProcess = false;
+            }
+            //
+        }
+
+        if (continueProcess && sameRangeLimit) {
+            //se valida que mes y dia de la fecha final sea igual o mayor que el mes y dia de la fecha inicial
+            if (initialDate.getMonth() == endDate.getMonth()) {
+                if (initialDate.getDate() > endDate.getDate()) {
+                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes y dia de la fecha final sea igual o mayor que el mes y dia de la fecha inicial");
+                    continueProcess = false;
+                }
+            } else {
+                if (initialDate.getMonth() > endDate.getMonth()) {
+                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes y dia de la fecha final sea igual o mayor que el mes y dia de la fecha inicial");
+                    continueProcess = false;
+                }
+            }
+        }
+
+
         if (continueProcess) {//NUMERO DE VARIABLES A CRUZAR SEA MENOR O IGUAL AL LIMITE ESTABLECIDO
             if (currentIndicator.getIndicatorId() < 5) {//es un indicador general
                 if (variablesCrossList.size() <= numberCross) {
@@ -1149,6 +1189,7 @@ public class IndicatorsCountMB {
     }
 
     public void reset() {
+        sameRangeLimit = false;
         btnExportDisabled = true;
         dataTableHtml = "";
         chartImage = null;
@@ -1183,11 +1224,12 @@ public class IndicatorsCountMB {
         variablesCrossList = new ArrayList<>();//SelectItem[variablesListData.size()];
         btnAddVariableDisabled = true;
         btnRemoveVariableDisabled = true;
+
         currentVariablesSelected = null;
         currentVariablesCrossSelected = null;
     }
 
-    public Variable createVariable(String name, String generic_table, boolean conf, String source_table) {
+    private Variable createVariable(String name, String generic_table, boolean conf, String source_table) {
         //conf me indica si es permitida la configuracion de esta variable
         Variable newVariable = new Variable(name, generic_table, conf, source_table);
         //cargo la lista de valores posibles
@@ -1251,6 +1293,12 @@ public class IndicatorsCountMB {
                 valuesId.add("54");
                 valuesName.add("NO INTENCIONAL");
                 valuesConf.add("NO INTENCIONAL");
+//                valuesId.add("55");//si se agrgegan aqui aparecen duplicado en tabla de resultados y grafico
+//                valuesName.add("VIOLENCIA INTRAFAMILIAR");//se agregan en la consulta sql
+//                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
+//                valuesId.add("56");
+//                valuesName.add("VIOLENCIA INTRAFAMILIAR");
+//                valuesConf.add("VIOLENCIA INTRAFAMILIAR");
                 break;
             case hour:
                 infInt = 0;
@@ -1311,6 +1359,49 @@ public class IndicatorsCountMB {
                     valuesId.add(String.valueOf(i));
                 }
                 break;
+            case abuse_types:
+                //1;"FISICO"
+                valuesId.add("1");
+                valuesName.add("FISICO");
+                valuesConf.add("FISICO");
+                //2;"PSICOLOGICO / VERBAL"
+                valuesId.add("2");
+                valuesName.add("PSICOLOGICO / VERBAL");
+                valuesConf.add("PSICOLOGICO / VERBAL");
+                //3;"VIOLENCIA SEXUAL"
+                valuesId.add("3");
+                valuesName.add("VIOLENCIA SEXUAL");
+                valuesConf.add("VIOLENCIA SEXUAL");
+                //4;"NEGLIGENCIA"
+                valuesId.add("4");
+                valuesName.add("NEGLIGENCIA");
+                valuesConf.add("NEGLIGENCIA");
+                //5;"ABANDONO"
+                valuesId.add("5");
+                valuesName.add("ABANDONO");
+                valuesConf.add("ABANDONO");
+                //6;"INSTITUCIONAL"
+                valuesId.add("6");
+                valuesName.add("INSTITUCIONAL");
+                valuesConf.add("INSTITUCIONAL");
+                //7;"SIN DATO"
+                valuesId.add("7");
+                valuesName.add("SIN DATO");
+                valuesConf.add("SIN DATO");
+                //8;"OTRO"
+                valuesId.add("8");
+                valuesName.add("OTRO");
+                valuesConf.add("OTRO");
+
+                //9;"PORNOGRAFIA CON NNA"
+                //10;"TRATA DE PERSONAL PARA EXPLOTACION SEXUAL"
+                //11;"ABUSO SEXUAL"
+                //12;"ACOSO SEXUAL"
+                //13;"ASALTO SEXUAL"
+                //14;"EXPLOTACION SEXUAL"
+                //15;"TURISMO SEXUAL"
+
+                break;
             case neighborhoods://barrio,
             case communes://comuna,
             case corridors://corredor,
@@ -1348,7 +1439,7 @@ public class IndicatorsCountMB {
             case involved_vehicles:
             case road_types:
 
-            case abuse_types:
+            //case abuse_types:
             case aggressor_types:
             case ethnic_groups:
             case insurance:
@@ -2004,7 +2095,6 @@ public class IndicatorsCountMB {
                     }
                     sqlReturn = sqlReturn + "       WHEN '55' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
                     sqlReturn = sqlReturn + "       WHEN '56' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
-
                     sqlReturn = sqlReturn + "   END AS tipo_lesion";
                     break;
                 case age://DETERMINAR EDAD -----------------------          
@@ -2553,16 +2643,63 @@ public class IndicatorsCountMB {
                 + "       " + currentIndicator.getInjuryType() + ".victim_id = victims.victim_id AND \n\r"
                 + "       " + filterSourceTable;
 
-        if (currentIndicator.getIndicatorId() > 4) { //si no es general se filtra por tipo de lesion
+        if (currentIndicator.getIndicatorId() > 4) { //si no es uno de los indicadores generales se filtra por tipo de lesion
             if (currentIndicator.getIndicatorId() > 32 && currentIndicator.getIndicatorId() < 40) {//si es interpersonal en familia injury_id=53,55,56
                 sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id IN (53,55,56) AND \n\r";
             } else {
                 sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
             }
         }
-        sqlReturn = sqlReturn + ""
-                + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
-                + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+
+        //------DETERMINAR RANGOS DE FECHAS ---------------------------
+        if (sameRangeLimit) {
+            //determinar cuantos años existen entre las dos fechas
+            int years = getDateDifference(initialDate, endDate, "anual") + 1;
+            String startDateRange;
+            String endDateRange;
+            sqlReturn = sqlReturn + " (\n";
+            for (int i = 0; i < years; i++) {
+                startDateRange = "";
+                if (String.valueOf(initialDate.getDate()).length() == 1) {
+                    startDateRange = startDateRange + "0" + String.valueOf(initialDate.getDate()) + "/";
+                } else {
+                    startDateRange = startDateRange + String.valueOf(initialDate.getDate()) + "/";
+                }
+                if (String.valueOf(initialDate.getMonth() + 1).length() == 1) {
+                    startDateRange = startDateRange + "0" + String.valueOf(initialDate.getMonth() + 1) + "/";
+                } else {
+                    startDateRange = startDateRange + String.valueOf(initialDate.getMonth() + 1) + "/";
+                }
+                startDateRange = startDateRange + String.valueOf(initialDate.getYear() + i + 1900);
+
+                endDateRange = "";
+                if (String.valueOf(endDate.getDate()).length() == 1) {
+                    endDateRange = endDateRange + "0" + String.valueOf(endDate.getDate()) + "/";
+                } else {
+                    endDateRange = endDateRange + String.valueOf(endDate.getDate()) + "/";
+                }
+                if (String.valueOf(endDate.getMonth() + 1).length() == 1) {
+                    endDateRange = endDateRange + "0" + String.valueOf(endDate.getMonth() + 1) + "/";
+                } else {
+                    endDateRange = endDateRange + String.valueOf(endDate.getMonth() + 1) + "/";
+                }
+                endDateRange = endDateRange + String.valueOf(initialDate.getYear() + i + 1900);
+                sqlReturn = sqlReturn
+                        + "       ( \n"
+                        + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + startDateRange + "','dd/MM/yyyy') AND \n\r"
+                        + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateRange + "','dd/MM/yyyy') \n\r"
+                        + "       ) \n";
+                if (i != years - 1) {
+                    sqlReturn = sqlReturn + "       OR \n";
+                }
+            }
+            sqlReturn = sqlReturn + " )\n";
+        } else {
+            sqlReturn = sqlReturn + ""
+                    + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
+                    + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+        }
+
         if (currentIndicator.getIndicatorId() == 71 || currentIndicator.getIndicatorId() == 75) {
             //CASOS DE VIOLENCIA SEXUAL (VSX) EN EL SECTOR SALUD
             //PORCENTAJE DE CASOS DE SIVIGILA_VSX            
@@ -2573,8 +2710,26 @@ public class IndicatorsCountMB {
                     + " naturaleza_violencia not like '%>2}' AND "
                     + " naturaleza_violencia not like '%>4}' ";
         }
-        //System.out.println("CONSULTA (indicators count) \n " + sqlReturn);
+        System.out.println("CONSULTA (indicators count) \n " + sqlReturn);
         return sqlReturn;
+    }
+
+    private int getDateDifference(Date date1, Date date2, String typeDifference) {
+        Interval interval = new Interval(new DateTime(date1), (new DateTime(date2)).plusDays(1));
+        if (typeDifference.compareTo("anual") == 0) {
+            Years years34 = Years.yearsIn(interval);
+            System.out.println("Años" + years34.getYears());
+            return years34.getYears();
+        } else if (typeDifference.compareTo("mensual") == 0) {
+            Months months11 = Months.monthsIn(interval);
+            System.out.println("Meses" + months11.getMonths());
+            return months11.getMonths();
+        } else if (typeDifference.compareTo("diaria") == 0) {
+            Days days15 = Days.daysIn(interval);
+            System.out.println("Dias" + days15.getDays());
+            return days15.getDays();
+        }
+        return 0;
     }
 
     private void saveIndicatorRecords(String sqlConsult) {
@@ -2662,6 +2817,19 @@ public class IndicatorsCountMB {
                             splitForSql = splitRegisters[i].split("<=>");
                             if (splitForSql.length == 4) {
                                 tuplesProcessed++;
+                                if (splitForSql[1].compareTo("abuse_types") == 0) {
+                                    //para el caso de "tipos de maltrato"="abuse_types" se debe agrupar valores
+                                    if (splitForSql[3].compareTo("9") == 0 //        9;"PORNOGRAFIA CON NNA"
+                                            || splitForSql[3].compareTo("10") == 0// 10;"TRATA DE PERSONAL PARA EXPLOTACION SEXUAL"
+                                            || splitForSql[3].compareTo("11") == 0// 11;"ABUSO SEXUAL"
+                                            || splitForSql[3].compareTo("12") == 0// 12;"ACOSO SEXUAL"
+                                            || splitForSql[3].compareTo("13") == 0// 13;"ASALTO SEXUAL"
+                                            || splitForSql[3].compareTo("14") == 0// 14;"EXPLOTACION SEXUAL"
+                                            || splitForSql[3].compareTo("15") == 0)//15;"TURISMO SEXUAL"
+                                    {
+                                        splitForSql[3] = "3";//3;"VIOLENCIA SEXUAL"
+                                    }
+                                }
                                 rs2 = connectionJdbcMB.consult("SELECT " + splitForSql[0] + " FROM " + splitForSql[1] + " WHERE " + splitForSql[2] + " = " + splitForSql[3]);
                                 rs2.next();
                                 if (col == 1) {
@@ -3236,5 +3404,13 @@ public class IndicatorsCountMB {
 
     public void setShowFrames(boolean showFrames) {
         this.showFrames = showFrames;
+    }
+
+    public boolean isSameRangeLimit() {
+        return sameRangeLimit;
+    }
+
+    public void setSameRangeLimit(boolean sameRangeLimit) {
+        this.sameRangeLimit = sameRangeLimit;
     }
 }
