@@ -36,15 +36,7 @@
              top: 50%;
              margin-top: -190px;
              background-image:url(resources/img/entrada.png);">
-            <h:form id="IdForm3">
-                <p:idleMonitor 
-                    timeout="600000"
-                    onidle="document.getElementById('IdForm3:btnLogout').click();"/>
-                <p:commandButton 
-                    id="btnLogout"
-                    value="A"  
-                    style="display: none;"                            
-                    actionListener="#{loginMB.logout}"/>
+            <h:form id="IdForm3">                
                 <p:growl id="message"  showDetail="true" sticky="true" />
                 <h:graphicImage id="IdImgCarga" value="resources/img/ajaxloading.gif"  style="display: none" />
                 
@@ -78,7 +70,7 @@
                     <p:row>
                         <p:column colspan="2" style="text-align: center;" >
                             <p:commandButton 
-                                value="INGRESAR" 												
+                                value="CONECTAR" 												
                                 action="#{connectionJdbcMB.checkConnection}" 
                                 onclick="show();"
                                 oncomplete="hide();"

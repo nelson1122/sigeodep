@@ -42,12 +42,14 @@ public class LoginMB {
     private Users currentUser;
     private String activeIndexAcoordion1 = "-1";
     private String activeIndexAcoordion2 = "-1";
+    
     private boolean activeSantos = false;
     private boolean permissionFatal = false;
     private boolean permissionNonFatal = false;
     private boolean permissionVif = false;
     private boolean permissionIndicators = false;
     private boolean permissionAdministrator = false;
+    
     StringEncryption stringEncryption = new StringEncryption();
     private boolean permissionRegistryDataSection = true;
     FacesContext context;
@@ -341,6 +343,7 @@ public class LoginMB {
             //-------------------------------------------------------------
             //-----------elementos de seguridad------------------------
             //-------------------------------------------------------------
+            ResultSet rs2;
             rs = connectionJdbcMB.consult(""
                     + " SELECT non_fatal_injury_id "
                     + " FROM non_fatal_injuries "
@@ -357,11 +360,18 @@ public class LoginMB {
                     + "    AND non_fatal_injury_id NOT IN "
                     + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_transport_security_element)");
             while (rs.next()) {
-                connectionJdbcMB.non_query("INSERT INTO non_fatal_transport_security_element VALUES (8," + rs.getString(1) + ");");
+                rs2 = connectionJdbcMB.consult("SELECT * FROM non_fatal_transport WHERE non_fatal_injury_id = " + rs.getString(1));
+                if (!rs2.next()) {
+                    connectionJdbcMB.non_query("INSERT INTO non_fatal_transport VALUES (null,null,null," + rs.getString(1) + ");");
+                    connectionJdbcMB.non_query("INSERT INTO non_fatal_transport_security_element VALUES (8," + rs.getString(1) + ");");
+                } else {
+                    connectionJdbcMB.non_query("INSERT INTO non_fatal_transport_security_element VALUES (8," + rs.getString(1) + ");");
+                }
+
                 System.out.println("Operaciones (G): " + String.valueOf(count));
                 count++;
             }
-            
+
             System.out.println("Proceso de mantenimiento de base de datos realizado, PROCESOS: " + String.valueOf(count));
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "correcto", "operaciones de correccion y mantenimiento realizadas");
         } catch (Exception e) {

@@ -70,11 +70,6 @@
             <redirect/>
         </navigation-case>
         <navigation-case>
-            <from-outcome>crossing</from-outcome>
-            <to-view-id>/web/reports/crossingOfVariables.xhtml</to-view-id>
-            <redirect/>
-        </navigation-case>
-        <navigation-case>
             <from-outcome>categoricalVariables</from-outcome>
             <to-view-id>/web/configurations/categoricalVariables.xhtml</to-view-id>
             <redirect/>
@@ -211,7 +206,7 @@
         </navigation-case>        
         <navigation-case>
             <from-outcome>index</from-outcome>
-            <to-view-id>index.xhtml</to-view-id>
+            <to-view-id>indexUser.xhtml</to-view-id>
             <redirect/>
         </navigation-case>
         <navigation-case>

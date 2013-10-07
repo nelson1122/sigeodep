@@ -83,11 +83,13 @@
                         <!--===================================================================================-->                        
                         <br/>
                         <p:fieldset legend="RANGO DE FECHAS" > 
-                            <br/>
-                            <h:outputText value="Fecha Inicial:" />
+                            <br/>                                                       
+                            <h:outputScript library="js" name="calendar_es.js" />
+                            <h:outputText value="Fecha Inicial:" />                            
                             <p:calendar
                                 id="IdInitialDate"
                                 value="#{indicatorsCountMB.initialDate}" 
+                                locale="es"
                                 converterMessage="La fecha inicial no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
@@ -102,6 +104,10 @@
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
                             </p:calendar>
+                            <br/>
+                            <br/>
+                            <h:selectBooleanCheckbox value="#{indicatorsCountMB.sameRangeLimit}"/>
+                            <h:outputText value=" Limitar a rangos similares" />
                             <br/>
                             <br/>
                         </p:fieldset>                        

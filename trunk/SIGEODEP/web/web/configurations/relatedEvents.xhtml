@@ -12,7 +12,7 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
-            <script type="text/javascript">                  
+            <script type="text/javascript">
             </script> 
         </ui:define>
         <!--=================================================================-->
@@ -26,7 +26,11 @@
         <!--=================================================================-->
         <!--==============================CONTENIDO==========================-->
         <ui:define name="content">
-            <h:form enctype="multipart/form-data" id="IdForm1"> 
+            <h:outputText 
+                value="No se puede mostrar esta sección por que no cuenta con los permisos suficientes"
+                style=" color: red;"
+                rendered="#{!loginMB.permissionAdministrator}"/> 
+            <h:form enctype="multipart/form-data" id="IdForm1" rendered="#{loginMB.permissionAdministrator}">
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
                 <!--===================================================================================-->
 

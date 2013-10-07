@@ -21,7 +21,7 @@ import managedBeans.login.LoginMB;
 
 /*
  * ingresa a esta clase cada que hay un cambio de fase
- * (fase= solicitud al servidor)
+ * (fase = solicitud al servidor)
  */
 public class DefaultPhaseListener implements PhaseListener {
 
@@ -45,7 +45,7 @@ public class DefaultPhaseListener implements PhaseListener {
                     loginMB.logout1();
                 }
             }
-        } catch (Exception e) {//System.out.println("no se realizo validacion por lista de sessiones" + e.toString());
+        } catch (Exception e) {
         }
 
         //---------------------------------------------------------------------------
@@ -55,16 +55,12 @@ public class DefaultPhaseListener implements PhaseListener {
             String ctxPath = ((ServletContext) ext.getContext()).getContextPath();
             String currentPage = facesContext.getViewRoot().getViewId();
             boolean isLoginPage;
-            isLoginPage = (currentPage.lastIndexOf("index.xhtml") > -1);//determinar si es index para usuario del sistema
+            isLoginPage = (currentPage.lastIndexOf("indexUser.xhtml") > -1);//determinar si es index para usuario del sistema
             if (!isLoginPage) {
                 isLoginPage = (currentPage.lastIndexOf("indexInvited.xhtml") > -1);//determinar si es index para usuario invitado
             }
             HttpSession session = (HttpSession) facesContext.getExternalContext().getSession(false);
-//            if (!isLoginPage) {
-//                if (currentPage.indexOf("html") == -1) {
-//                    isLoginPage = true;
-//                }
-//            }
+            
             if (!isLoginPage) {
                 if (session == null) {
                     try {//System.out.println("salida del programa por que sesion es null" + ctxPath);
