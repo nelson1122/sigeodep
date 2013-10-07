@@ -47,7 +47,6 @@ Ext.onReady(function() {
             fillColor: "#FFFFFF",
             'strokeWidth': 1,
             fillOpacity: 0.4,
-            graphicZIndex: 1,
             label : "${getLabel}",
             fontColor: "#555555",
             fontSize: "12px",
@@ -77,7 +76,6 @@ Ext.onReady(function() {
             fillColor: "#FFFFFF",
             'strokeWidth': 1,
             fillOpacity: 0.4,
-            graphicZIndex: 1,
             label : "${getLabel}",
             fontColor: "#555555",
             fontSize: "12px",
@@ -106,11 +104,10 @@ Ext.onReady(function() {
         "default": new OpenLayers.Style({
             fillColor: "#FFFFFF",
             'strokeWidth': 1,
-            fillOpacity: 0.4,
-            graphicZIndex: 1,
+            fillOpacity: 0.0,
             label : "${getLabel}",
-            fontColor: "#555555",
-            fontSize: "10px",
+            fontColor: "black",
+            fontSize: "18px",
             fontFamily: "Courier New, monospace",
             fontWeight: "bold",
             labelOutlineColor: "white",
@@ -118,7 +115,7 @@ Ext.onReady(function() {
         }, {
             context: {
                 getLabel: function(feature) {
-                    if(feature.layer.map.getZoom() > 14) {
+                    if(feature.layer.map.getZoom() > 12) {
                         if(feature.data.name !== null){
                             return feature.data.name;
                         } else {
@@ -137,7 +134,31 @@ Ext.onReady(function() {
             fillColor: "\${colour}",
             'strokeWidth': 1,
             fillOpacity: 0.8,
-            graphicZIndex: 1
+            label : "${getLabel}",
+            fontColor: "black",
+            fontSize: "18px",
+            fontFamily: "Courier New, monospace",
+            fontWeight: "bold",
+            labelOutlineColor: "white",
+            labelOutlineWidth: 3
+        }, {
+            context: {
+                getLabel: function(feature) {
+                    if(geo_vars[index_g] !== 'Barrios'){
+                        if(feature.layer.map.getZoom() > 12) {
+                            if(feature.data.name !== null){
+                                return feature.data.name;
+                            } else {
+                                return ""
+                            }
+                        } else {
+                            return "";
+                        }
+                    } else {
+                        return ""
+                    }
+                }
+            }
         })
     });
 
@@ -277,7 +298,7 @@ Ext.onReady(function() {
     };
     blank = new OpenLayers.Layer.OSM("En Blanco","images/default/s.gif"); 
 
-    map.addLayers([osm, hybrid, vectors, blank]);
+    map.addLayers([osm, hybrid, blank]);
     if(geo_vars[index_g] !== 'Cuadrantes'){
         neighborhoods = new OpenLayers.Layer.Vector("Barrios", {
             styleMap: initialStyles,
@@ -301,7 +322,8 @@ Ext.onReady(function() {
                 callbackKey: "callback"
             })
         });
-        map.addLayer(quadrant_polygons);        
+        map.addLayer(quadrant_polygons);
+
     }
     if(geo_vars[index_g] === 'Comunas'){
         commune_polygons = new OpenLayers.Layer.Vector(geo_vars[index_g], {
@@ -314,11 +336,14 @@ Ext.onReady(function() {
                 callbackKey: "callback"
             })
         });
-        map.addLayer(commune_polygons);        
+        map.addLayer(commune_polygons);   
     }
+    map.addLayer(vectors);
+    map.setLayerIndex(vectors, map.layers.length-2);
     map.addControl(new OpenLayers.Control.LayerSwitcher());
     map.addControl(new OpenLayers.Control.MousePosition());
     getTitle(params["indicator_id"][0]);
+
     // create map panel
     mapPanel = new GeoExt.MapPanel({
         title: "Map ",
