@@ -165,12 +165,23 @@ public class GeoDBConnection implements Serializable {
 
     public void createRanges() {
         if (this.rf != null) {
-            rf.setBins(this.bins);
+            System.out.println(numbers);
+            System.out.println(getMaxNumberOfRanges());
+            if(getMaxNumberOfRanges() < 3){
+                rf.setBins(getMaxNumberOfRanges());
+            } else {
+                rf.setBins(this.bins);
+            }
             rf.setSplitMethod(splitMethod);
             rf.setSelectedRamp(selectedRamp);
             rf.createRanges();
             this.ranges = rf.getRanges();
         }
+    }
+    
+    private int getMaxNumberOfRanges(){
+        Set<Double> uniques = new HashSet<>(numbers);
+        return uniques.size();
     }
 
     public void onEdit(RowEditEvent event) {
