@@ -137,10 +137,12 @@ public class IndicatorsCountMB {
     private boolean btnAddVariableDisabled = true;
     private boolean btnAddCategoricalValueDisabled = true;
     private String sql = "";
+    int colorId = 0;
+    int typeFill = 0;
     private boolean btnRemoveVariableDisabled = true;
     private boolean renderedDynamicDataTable = true;
     private boolean sameRangeLimit = false;//limitar a rangos similares
-    private boolean showFrames = true;
+    private boolean showFrames = true;//tramas
     private boolean showItems = true;
     private boolean showEmpty = false;
     private boolean showGeo = false;
@@ -312,7 +314,7 @@ public class IndicatorsCountMB {
         dataset = null;
         categoryAxixLabel = "";
 
-        if (continueProcess) {//VALIDACION DE FECHAS
+        if (continueProcess) {//VALIDACION DE FECHAS            
             initialDateStr = formato.format(initialDate);
             endDateStr = formato.format(endDate);
             long fechaInicialMs = initialDate.getTime();
@@ -334,18 +336,18 @@ public class IndicatorsCountMB {
         }
 
         if (continueProcess && sameRangeLimit) {
-            //se valida que mes y dia de la fecha final sea igual o mayor que el mes y dia de la fecha inicial
-            if (initialDate.getMonth() == endDate.getMonth()) {
-                if (initialDate.getDate() > endDate.getDate()) {
-                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes y dia de la fecha final sea igual o mayor que el mes y dia de la fecha inicial");
-                    continueProcess = false;
-                }
-            } else {
-                if (initialDate.getMonth() > endDate.getMonth()) {
-                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes y dia de la fecha final sea igual o mayor que el mes y dia de la fecha inicial");
-                    continueProcess = false;
-                }
+            //se valida que mes de la fecha final sea igual o mayor que el mes de la fecha inicial
+//            if (initialDate.getMonth() == endDate.getMonth()) {
+//                if (initialDate.getDate() > endDate.getDate()) {
+//                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes de la fecha final sea igual o mayor que el mes de la fecha inicial");
+//                    continueProcess = false;
+//                }
+//            } else {
+            if (initialDate.getMonth() > endDate.getMonth()) {
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes de la fecha final sea igual o mayor que el mes de la fecha inicial");
+                continueProcess = false;
             }
+//            }
         }
 
 
@@ -1100,17 +1102,53 @@ public class IndicatorsCountMB {
                 return createTexturePaint(getColorById(color1), getColorById(color2));
         }
     }
-    int colorId = 0;
-    int typeFill = 0;
+
+    private String intToMonth(int m) {
+        switch (m) {
+            case 0:
+                return "Enero";
+            case 1:
+                return "Febrero";
+            case 2:
+                return "Marzo";
+            case 3:
+                return "Abril";
+            case 4:
+                return "Mayo";
+            case 5:
+                return "Junio";
+            case 6:
+                return "Julio";
+            case 7:
+                return "Agosto";
+            case 8:
+                return "Septiembre";
+            case 9:
+                return "Octubre";
+            case 10:
+                return "Noviembre";
+            case 11:
+                return "Diciembre";
+        }
+        return "Enero";
+    }
 
     public void createImage() {
         try {
-
             JFreeChart chart = null;
             dataset = createDataSet();
             //-----CREACION DEL TITULO
-            indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n";
-            indicatorName = indicatorName + variablesName + "\nPeriodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);
+            indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n" + variablesName + "\n ";
+            if (sameRangeLimit) {
+                if (initialDate.getMonth() == endDate.getMonth()) {
+                    indicatorName = indicatorName + intToMonth(initialDate.getMonth());
+                } else {
+                    indicatorName = indicatorName + intToMonth(initialDate.getMonth()) + " a " + intToMonth(endDate.getMonth());
+                }
+                indicatorName = indicatorName + " de los años " + String.valueOf(initialDate.getYear() + 1900) + " a " + String.valueOf(endDate.getYear() + 1900);
+            } else {
+                indicatorName = indicatorName + "Periodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);
+            }
             //-----SELECCION DE TIPO DE GRAFICO
             if (currentTypeGraph.compareTo("barras") == 0) {
                 chart = ChartFactory.createBarChart(indicatorName, categoryAxixLabel, "Casos", dataset, PlotOrientation.VERTICAL, true, true, false);
@@ -1402,6 +1440,7 @@ public class IndicatorsCountMB {
                 //15;"TURISMO SEXUAL"
 
                 break;
+            case non_fatal_data_sources:
             case neighborhoods://barrio,
             case communes://comuna,
             case corridors://corredor,
@@ -1460,6 +1499,7 @@ public class IndicatorsCountMB {
             case NOVALUE://es una tabla categorica
                 try {
                     //ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table);
+
                     ResultSet rs = connectionJdbcMB.consult("Select * from " + generic_table + " order by 1");
                     while (rs.next()) {
                         valuesName.add(rs.getString(2));
@@ -1468,6 +1508,8 @@ public class IndicatorsCountMB {
                     }
                 } catch (Exception e) {
                 }
+
+
                 break;
         }
         //agregar valor "SIN DATO"
@@ -1977,6 +2019,10 @@ public class IndicatorsCountMB {
     }
 
     private void addToSourceTable(String tableName) {
+        /*
+         * cuando se necesita una tabla adicional se agrega
+         * en la seccion FROM y en la seccion WHERE de la consulta SQL
+         */
         if (tableName.indexOf("sivigila_event") == 0 && sourceTable.indexOf("sivigila_event") == -1) {
             sourceTable = sourceTable + ", sivigila_event ";
             filterSourceTable = filterSourceTable + " non_fatal_injuries.non_fatal_injury_id = sivigila_event.non_fatal_injury_id AND \n\r";
@@ -2062,7 +2108,7 @@ public class IndicatorsCountMB {
         filterSourceTable = "";//filtro adicional usado en la "WHERE" de la consulta sql
         ResultSet rs = null;
         for (int i = 0; i < variablesCrossData.size(); i++) {
-            switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable 
+            switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable                 
                 case temporalDisaggregation://DETERMINAR LA DESAGREGACION TEMPORAL -----------------------                   
                     sqlReturn = sqlReturn + "   CASE \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValuesId().size(); j++) {
@@ -2088,6 +2134,7 @@ public class IndicatorsCountMB {
                             + "      ELSE (SELECT source_vif_name FROM source_vif WHERE source_vif_id = " + currentIndicator.getInjuryType() + ".injury_id) \n\r"
                             + "   END AS origen_vif";
                     break;
+
                 case injuries_non_fatal://TIPO DE LESION NO FATAL-----------------------
                     sqlReturn = sqlReturn + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
                     for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
@@ -2598,6 +2645,14 @@ public class IndicatorsCountMB {
                     addToSourceTable("fatal_injury_murder");
                     sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "weapon_type_name", "weapon_types", "weapon_type_id", "tipo_arma");
                     break;
+                case non_fatal_data_sources:
+                    if ((currentIndicator.getIndicatorId() >= 33 && currentIndicator.getIndicatorId() <= 39) || (currentIndicator.getIndicatorId() >= 68 && currentIndicator.getIndicatorId() <= 75)) {//se lista las receptoras                        
+                        addToSourceTable("non_fatal_domestic_violence");
+                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "non_fatal_data_source_name", "non_fatal_data_sources", "non_fatal_data_source_id", "institucion_salud");
+                    } else {//se lista las de salud
+                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "non_fatal_data_source_name", "non_fatal_data_sources", "non_fatal_data_source_id", "institucion_salud");
+                    }
+                    break;
             }
             if (i == variablesCrossData.size() - 1) {//si es la ultima instruccion se agrega salto de linea
                 sqlReturn = sqlReturn + " \n\r";
@@ -2658,13 +2713,11 @@ public class IndicatorsCountMB {
             String startDateRange;
             String endDateRange;
             sqlReturn = sqlReturn + " (\n";
-            for (int i = 0; i < years; i++) {
+            for (int i = 0; i < years; i++) {//cilco que se repite por cada año
+
+                //DETERMINAR FECHA INICIAL EN PARA ESTE AÑO(debe tener el primer dia del mes de la fecha inicial)
                 startDateRange = "";
-                if (String.valueOf(initialDate.getDate()).length() == 1) {
-                    startDateRange = startDateRange + "0" + String.valueOf(initialDate.getDate()) + "/";
-                } else {
-                    startDateRange = startDateRange + String.valueOf(initialDate.getDate()) + "/";
-                }
+                startDateRange = startDateRange + "01/";//primer dia del mes
                 if (String.valueOf(initialDate.getMonth() + 1).length() == 1) {
                     startDateRange = startDateRange + "0" + String.valueOf(initialDate.getMonth() + 1) + "/";
                 } else {
@@ -2672,18 +2725,22 @@ public class IndicatorsCountMB {
                 }
                 startDateRange = startDateRange + String.valueOf(initialDate.getYear() + i + 1900);
 
+                //DETERMINAR FECHA FINAL PARA ESTE AÑO(debe tener ultimo dia del mes de la fecha final)
                 endDateRange = "";
-                if (String.valueOf(endDate.getDate()).length() == 1) {
-                    endDateRange = endDateRange + "0" + String.valueOf(endDate.getDate()) + "/";
+                DateTime f = new DateTime(new Date(initialDate.getYear() + i, endDate.getMonth(), 1));
+                DateTime fEnd = f.dayOfMonth().withMaximumValue();//ultimo dia del mes
+
+                if (String.valueOf(fEnd.getDayOfMonth()).length() == 1) {
+                    endDateRange = endDateRange + "0" + String.valueOf(fEnd.getDayOfMonth()) + "/";
                 } else {
-                    endDateRange = endDateRange + String.valueOf(endDate.getDate()) + "/";
+                    endDateRange = endDateRange + String.valueOf(fEnd.getDayOfMonth()) + "/";
                 }
-                if (String.valueOf(endDate.getMonth() + 1).length() == 1) {
-                    endDateRange = endDateRange + "0" + String.valueOf(endDate.getMonth() + 1) + "/";
+                if (String.valueOf(fEnd.getMonthOfYear() + 1).length() == 1) {
+                    endDateRange = endDateRange + "0" + String.valueOf(fEnd.getMonthOfYear()) + "/";
                 } else {
-                    endDateRange = endDateRange + String.valueOf(endDate.getMonth() + 1) + "/";
+                    endDateRange = endDateRange + String.valueOf(fEnd.getMonthOfYear()) + "/";
                 }
-                endDateRange = endDateRange + String.valueOf(initialDate.getYear() + i + 1900);
+                endDateRange = endDateRange + String.valueOf(fEnd.getYear());
                 sqlReturn = sqlReturn
                         + "       ( \n"
                         + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + startDateRange + "','dd/MM/yyyy') AND \n\r"
@@ -2697,7 +2754,7 @@ public class IndicatorsCountMB {
         } else {
             sqlReturn = sqlReturn + ""
                     + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
-                    + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+                    + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') \n";
         }
 
         if (currentIndicator.getIndicatorId() == 71 || currentIndicator.getIndicatorId() == 75) {

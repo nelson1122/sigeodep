@@ -408,11 +408,6 @@
             <from-outcome>quadrants</from-outcome>
             <to-view-id>/web/configurations/quadrants.xhtml</to-view-id>
             <redirect/>
-        </navigation-case>                  
-        <navigation-case>
-            <from-outcome>stations</from-outcome>
-            <to-view-id>/web/configurations/stations.xhtml</to-view-id>
-            <redirect/>
-        </navigation-case>                  
+        </navigation-case>                          
     </navigation-rule>    
 </faces-config>

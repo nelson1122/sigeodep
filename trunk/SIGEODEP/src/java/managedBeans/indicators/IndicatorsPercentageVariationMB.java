@@ -603,7 +603,7 @@ public class IndicatorsPercentageVariationMB {
             if (separateRecords) {
                 separateRecordsFunction(200);
             }
-        }        
+        }
         if (continueProcess) {//CREO TODAS LAS POSIBLES COMBINACIONES DEL RANGO B
             createCombinations(200, 100);//se determina si las 200 tienen "sin dato" y genera cobinaciones en 0
         }
@@ -623,7 +623,7 @@ public class IndicatorsPercentageVariationMB {
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
         }
     }
-    
+
     private void separateRecordsFunction(int increment) {
         ResultSet rs;
         ResultSet rs2;
@@ -1520,6 +1520,14 @@ public class IndicatorsPercentageVariationMB {
                     addToSourceTable("fatal_injury_murder");
                     sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "weapon_type_name", "weapon_types", "weapon_type_id", "tipo_arma");
                     break;
+                case non_fatal_data_sources:
+                    if ((currentIndicator.getIndicatorId() >= 33 && currentIndicator.getIndicatorId() <= 39) || (currentIndicator.getIndicatorId() >= 68 && currentIndicator.getIndicatorId() <= 75)) {//se lista las receptoras                        
+                        addToSourceTable("non_fatal_domestic_violence");
+                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "non_fatal_data_source_name", "non_fatal_data_sources", "non_fatal_data_source_id", "institucion_salud");
+                    } else {//se lista las de salud
+                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "non_fatal_data_source_name", "non_fatal_data_sources", "non_fatal_data_source_id", "institucion_salud");
+                    }
+                    break;
             }
             if (i == variablesCrossData.size() - 1) {//si es la ultima instruccion se agrega salto de linea
                 sqlReturn = sqlReturn + " \n\r";
@@ -2341,6 +2349,7 @@ public class IndicatorsPercentageVariationMB {
                 //15;"TURISMO SEXUAL"
 
                 break;
+            case non_fatal_data_sources:
             case neighborhoods://barrio,
             case communes://comuna,
             case corridors://corredor,
@@ -2430,7 +2439,6 @@ public class IndicatorsPercentageVariationMB {
         newVariable.setValuesConfigured(valuesConf);
         return newVariable;
     }
-
 
     public ArrayList<Variable> getVariablesIndicator() {
         ArrayList<Variable> arrayReturn = new ArrayList<>();

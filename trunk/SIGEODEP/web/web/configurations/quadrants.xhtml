@@ -13,7 +13,6 @@
             <script type="text/javascript" src="../../resources/js/OpenLayers.js"></script>
             <script type="text/javascript">
                 var map, controls;
-
                 function displayWKT(feature) {
                     var str = wkt.write(feature);
                     //alert(str);
@@ -88,8 +87,9 @@
                 style=" color: red;"
                 rendered="#{!loginMB.permissionAdministrator}"/> 
             <h:form enctype="multipart/form-data" id="IdForm1" rendered="#{loginMB.permissionAdministrator}">
-                <h:inputHidden id="hiddenButton" value="#{quadrantsVariableMB.newPoligonText}"/>
+                <h:inputHidden id="hiddenButton" value="#{quadrantsVariableMB.newPoligonText}"/>                
                 <p:remoteCommand name="remoteChangeCommand" process="hiddenButton"/>
+                
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
                 <!--===================================================================================-->
                 <br/>
@@ -268,7 +268,6 @@
                                     value="+"                                    
                                     actionListener="#{quadrantsVariableMB.addNeighborhoodInExistingQuadrantClick}"  
                                     update="IdCurrentNeighborhoods2 IdAddNeighborhoods2"/> 
-
                                 <p:commandButton 
                                     value="-"
                                     actionListener="#{quadrantsVariableMB.removeNeighborhoodInExistingQuadrantClick}"  
@@ -276,6 +275,14 @@
                             </p:column>
                             <p:column>
                                 Agregados<br/>
+                                <!--h:inputText
+                                    value="# {quadrantsVariableMB.neighborhoodFilter2}"
+                                    size="20">
+                                    <f:ajax 
+                                        event="keyup"
+                                        listener="# {quadrantsVariableMB.changeNeighborhoodFilter}"
+                                        render="IdCurrentNeighborhoods2"/>
+                                </h:inputText-->
                                 <h:selectManyMenu 
                                     id="IdAddNeighborhoods2"
                                     value="#{quadrantsVariableMB.selectedAvailableAddNeighborhoods}"
@@ -288,7 +295,11 @@
                             <p:column>
                                 <h:outputText value="GEOMETRIA"/>
                             </p:column>
-                            <p:column colspan="3">                                
+                            <p:column colspan="3">
+                                <h:outputText 
+                                    id="IdCurrentGeomText" 
+                                    value="#{quadrantsVariableMB.currentGeomText}"
+                                    escape="false"/>
                                 <p:fileUpload                                                                                 
                                     fileUploadListener="#{quadrantsVariableMB.handleFileUpload}"                                                                                  
                                     mode="advanced"                                           
@@ -296,11 +307,19 @@
                                     uploadLabel="Subir"                                        
                                     label="Archivo"
                                     sizeLimit="50000000"
-                                    update=":IdForm1:message"
+                                    update=":IdForm1:message IdShowCurrentMapFile IdCurrentGeomText"
                                     invalidFileMessage="Tipo de archivo no aceptado"
                                     invalidSizeMessage="El tamaño del archivo debe ser inferior a 5MB"
-                                    allowTypes="/(\.|\/)(xlsx|csv|txt)$/">                                        
+                                    allowTypes="/(\.|\/)(kml|txt)$/">                                        
                                 </p:fileUpload>
+                                <!-- h:outputText id="IdCurrentNameGeomFile" value="Archivo: # {quadrantsVariableMB.currentNameGeomFile }"/-->                                
+                                <p:commandButton 
+                                    value="Visualizar Archivo"
+                                    id="IdShowCurrentMapFile"
+                                    actionListener="#{quadrantsVariableMB.showCurrentGeomFileClick}"
+                                    disabled="#{quadrantsVariableMB.disabledCurrentShowGeomFile}"
+                                    oncomplete="paintMap('#{quadrantsVariableMB.currentNameGeomFile}'); dialogMap.show();"
+                                    update=""/>
                             </p:column>
                         </p:row>
                         <p:row>
@@ -391,7 +410,17 @@
                                     update="IdCurrentNeighborhoods IdAddNeighborhoods"/> 
                             </p:column>
                             <p:column>
-                                Agregados<br/>
+                                Agregados                                
+                                <!-- h:inputText 
+                                    id="IdNewQuadrantsFilter2"                                                                                         
+                                    value="# {quadrantsVariableMB.newNeighborhoodFilter2}"
+                                    size="20">
+                                    <f:ajax 
+                                        event="keyup"
+                                        listener="# {quadrantsVariableMB.changeNewNeighborhoodFilter}"
+                                        render="IdCurrentNeighborhoods"/>
+                                </h:inputText -->
+                                <br/>
                                 <h:selectManyMenu 
                                     id="IdAddNeighborhoods"
                                     value="#{quadrantsVariableMB.newSelectedAvailableAddNeighborhoods}"
@@ -399,13 +428,16 @@
                                     <f:selectItems value="#{quadrantsVariableMB.newAvailableAddNeighborhoods}"/>
                                 </h:selectManyMenu> 
                             </p:column>
-
                         </p:row>
                         <p:row>
                             <p:column>
                                 <h:outputText value="GEOMETRIA"/>
                             </p:column>
-                            <p:column colspan="3">                                
+                            <p:column colspan="3">  
+                                <h:outputText 
+                                    id="IdNewGeomText" 
+                                    value="#{quadrantsVariableMB.newGeomText}"
+                                    escape="false"/>
                                 <p:fileUpload
                                     fileUploadListener="#{quadrantsVariableMB.handleFileUpload}"                                                                                  
                                     mode="advanced"                                           
@@ -413,42 +445,21 @@
                                     uploadLabel="Subir"                       
                                     label="Archivo"
                                     sizeLimit="50000000"
-                                    update=":IdForm1:message IdNewNameGeomFile IdShowNewMapFile IdNewGeomText"
+                                    update=":IdForm1:message IdShowNewMapFile IdNewGeomText"
                                     invalidFileMessage="Tipo de archivo no aceptado"
                                     invalidSizeMessage="El tamaño del archivo debe ser inferior a 5MB"
                                     allowTypes="/(\.|\/)(kml|txt)$/">                                        
                                 </p:fileUpload>
-                                <br/>  
-                                <p:panelGrid>
-                                    <p:row>
-                                        <p:column>
-                                            <h:outputText value="Archivo cargado:"/>                                
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputText id="IdNewNameGeomFile" value="#{quadrantsVariableMB.newNameGeomFile}"/>                                
-                                        </p:column>
-                                        <p:column>
-                                            <p:commandButton 
-                                                value="Mostrar"
-                                                id="IdShowNewMapFile"
-                                                actionListener="#{quadrantsVariableMB.showGeomFileClick}"
-                                                disabled="#{quadrantsVariableMB.disabledShowGeomFile}"
-                                                oncomplete="paintMap('#{quadrantsVariableMB.newNameGeomFile}'); dialogMap.show();"
-                                                update=""/>
-                                        </p:column>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column>
-                                            <h:outputText value="Geometria cargada:"/>
-                                        </p:column>
-                                        <p:column colspan="2">
-                                            <h:outputText id="IdNewGeomText" value="#{quadrantsVariableMB.newGeomText}"/>
-                                        </p:column>                                        
-                                    </p:row>
-                                </p:panelGrid>
+                                <!-- h:outputText id="IdNewNameGeomFile" value="# {quadrantsVariableMB.newNameGeomFile}"/-->                                
+                                <p:commandButton 
+                                    value="Visualizar Archivo"
+                                    id="IdShowNewMapFile"
+                                    actionListener="#{quadrantsVariableMB.showNewGeomFileClick}"
+                                    disabled="#{quadrantsVariableMB.disabledNewShowGeomFile}"
+                                    oncomplete="paintMap('#{quadrantsVariableMB.newNameGeomFile}'); dialogMap.show();"
+                                    update=""/>
                             </p:column>
                         </p:row>
-
                         <p:row>
                             <p:column colspan="4" styleClass="ui-widget-header">
                                 <p:commandButton 

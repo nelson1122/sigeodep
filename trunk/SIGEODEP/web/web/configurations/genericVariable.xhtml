@@ -12,7 +12,7 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
-            <script type="text/javascript">                  
+            <script type="text/javascript">
             </script> 
         </ui:define>
         <!--=================================================================-->
@@ -39,50 +39,38 @@
                     <p:row>  
                         <p:column styleClass="ui-widget-header" style="text-align: center;">
                             <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
-                            <h:outputLabel value="GRUPOS ETNICOS"/>  
+                            <h:outputLabel value="GESTION DE VARIABLE: #{genericVariableMB.currentVariableName}"/>  
                         </p:column>                                       
                     </p:row>
                     <p:row>  
                         <p:column>
                             <br/>
-                            <p:panelGrid style="width: 730px;">
-                                <p:row>  
-                                    <p:column styleClass="ui-widget-header" colspan="5">
-                                        <h:outputLabel value="FILTRAR DATOS"/>
-                                    </p:column>                            
-                                </p:row>
-                                <p:row>  
-                                    <p:column styleClass="ui-widget-header ui-state-focus" colspan="1">
-                                        <h:outputLabel value="Variable"/>
-                                    </p:column>
-                                    <p:column colspan="1">
-                                        <p:selectOneMenu id="IdSearchCriteria" value="#{ethnicGroupVariableMB.currentSearchCriteria}" > 
-                                            <f:selectItem itemLabel="NOMBRE" itemValue="1" />
-                                        </p:selectOneMenu>
-                                    </p:column>                                                                        
-                                    <p:column styleClass="ui-widget-header ui-state-focus" colspan="1">
-                                        <h:outputLabel value="Valor"/>
-                                    </p:column>
-                                    <p:column>
-                                        <p:inputText 
-                                            id="IdSearcValue"
-                                            value="#{ethnicGroupVariableMB.currentSearchValue}"/>
-                                    </p:column>
-                                    <p:column colspan="1" styleClass="ui-widget-header ui-state-focus">
-                                        <p:commandButton 
-                                            value="Buscar" 
-                                            icon="ui-icon-search"                                                
-                                            actionListener="#{ethnicGroupVariableMB.createDynamicTable}"
-                                            update="IdSearchTable :IdForm1:message"/>                                                                        
-                                    </p:column>
-                                </p:row>                        
-                            </p:panelGrid>
+                            <br/>
+                            <h:outputLabel value="FILTRAR DATOS"/>
+                            <br/>
+                            <br/>
+                            <h:outputLabel value="Filtro por"/>
+
+                            <h:selectOneMenu id="IdSearchCriteria" value="#{genericVariableMB.currentSearchCriteria}" >                                 
+                                <f:selectItem itemLabel="NOMBRE" itemValue="1" />
+                                <f:selectItem itemLabel="CODIGO" itemValue="2" />
+                            </h:selectOneMenu>
+                            <h:outputLabel value="Valor"/>
+                            <p:inputText 
+                                id="IdSearcValue"
+                                value="#{genericVariableMB.currentSearchValue}"/>
+                            <p:commandButton 
+                                value="Buscar" 
+                                icon="ui-icon-search"                                                
+                                actionListener="#{genericVariableMB.createDynamicTable}"
+                                update="IdSearchTable :IdForm1:message IdControls"/>                                                                        
+                            <br/>
                             <br/>
                             <p:dataTable 
                                 id="IdSearchTable" var="rowX" 
-                                value="#{ethnicGroupVariableMB.rowDataTableList}" 
+                                value="#{genericVariableMB.rowDataTableList}" 
                                 rowKey="#{rowX.column1}"  
-                                selection="#{ethnicGroupVariableMB.selectedRowDataTable}" 
+                                selection="#{genericVariableMB.selectedRowDataTable}" 
                                 paginator="true"
                                 rows="10"                                    
                                 paginatorPosition="bottom"                                
@@ -96,29 +84,29 @@
                                 resizableColumns="true">                                
                                 <p:ajax
                                     event="rowSelect"
-                                    listener="#{ethnicGroupVariableMB.load}"                                    
+                                    listener="#{genericVariableMB.loadCategoryData}"                                    
                                     update=":IdForm1:IdControls :IdForm2:IdDialogEdit :IdForm2:display :IdForm1:message" />
                                 <p:column headerText="CODIGO" width="140">  
                                     #{rowX.column1}  
                                 </p:column>  
                                 <p:column headerText="NOMBRE" width="546">  
                                     #{rowX.column2}  
-                                </p:column>  
+                                </p:column>                                  
                             </p:dataTable>                            
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
                                 <p:row>  
-                                    <p:column styleClass="ui-widget-header" colspan="5">
+                                    <p:column>
                                         <p:commandButton 
                                             id="IdEdit"
-                                            disabled="#{ethnicGroupVariableMB.btnEditDisabled}"
+                                            disabled="#{genericVariableMB.btnEditDisabled}"
                                             value="Editar"                                 
                                             icon="ui-icon-pencil"                                            
                                             oncomplete="dialogEdit.show()"                                            
                                             update=":IdForm2:IdDialogEdit :IdForm2:display :IdForm1:message"/>
                                         <p:commandButton 
                                             id="IdRemove" 
-                                            disabled="#{ethnicGroupVariableMB.btnRemoveDisabled}"
+                                            disabled="#{genericVariableMB.btnRemoveDisabled}"
                                             value="Eliminar" 
                                             icon="ui-icon-close"
                                             oncomplete="dialogDelete.show()"                                            
@@ -127,12 +115,12 @@
                                             id="IdNew" 
                                             value="Nuevo" 
                                             icon="ui-icon-document"
-                                            actionListener="#{ethnicGroupVariableMB.newRegistry}"
+                                            actionListener="#{genericVariableMB.newRegistry}"
                                             oncomplete="dialogNew.show()"                                            
                                             update=":IdForm2:IdDialogNew :IdForm2:displayNew :IdForm1:message"/>
                                         <h:commandLink >                                              
                                             <p:button value="Exportar"/>
-                                            <p:dataExporter type="xls" target="IdSearchTable" fileName="GRUPOS ETNICOS" postProcessor="#{ethnicGroupVariableMB.postProcessXLS}"/>  
+                                            <p:dataExporter type="xls" target="IdSearchTable" fileName="#{genericVariableMB.currentVariableNameXLSX}" postProcessor="#{genericVariableMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                     </p:column>                            
                                 </p:row>
@@ -146,14 +134,22 @@
         <ui:define name="dialogs">
             <h:form id="IdForm2">
                 <!--   DIALOGO EDITAR -->
-                <p:dialog id="IdDialogEdit" header="EDICION DE GRUPO ETNICO" widgetVar="dialogEdit" resizable="false" modal="true">  
-                    <p:panelGrid id="display">                          
+                <p:dialog id="IdDialogEdit" header="EDICION DE CATEGORIA" widgetVar="dialogEdit" resizable="false" modal="true">  
+                    <p:panelGrid id="display">  
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="CODIGO" />  
+                            </p:column>
+                            <p:column>
+                                <p:inputText disabled="#{genericVariableMB.codeDisabled}" size="40" value="#{genericVariableMB.code}" />  
+                            </p:column>
+                        </p:row>
                         <p:row>
                             <p:column>
                                 <h:outputText value="NOMBRE" />  
                             </p:column>
                             <p:column>
-                                <p:inputText size="40" value="#{ethnicGroupVariableMB.name}" /> 
+                                <p:inputText size="40" value="#{genericVariableMB.name}" /> 
                             </p:column>
                         </p:row>                        
                         <p:row>
@@ -162,7 +158,7 @@
                                     value="Guardar" 
                                     icon="ui-icon-disk"
                                     oncomplete="dialogEdit.hide()"
-                                    actionListener="#{ethnicGroupVariableMB.updateRegistry}"
+                                    actionListener="#{genericVariableMB.updateRegistry}"
                                     update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>
                                 <p:commandButton 
                                     value="Cancelar" 
@@ -173,14 +169,22 @@
                     </p:panelGrid>  
                 </p:dialog> 
                 <!--   DIALOGO NUEVO -->
-                <p:dialog id="IdDialogNew" header="NUEVO GRUPO ETNICO" widgetVar="dialogNew" resizable="false" modal="true">  
-                    <p:panelGrid id="displayNew">                          
+                <p:dialog id="IdDialogNew" header="NUEVA CATEGORIA" widgetVar="dialogNew" resizable="false" modal="true">  
+                    <p:panelGrid id="displayNew">  
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="CODIGO" />  
+                            </p:column>
+                            <p:column>
+                                <p:inputText size="40" disabled="#{genericVariableMB.codeDisabled}" value="#{genericVariableMB.newCode}" />  
+                            </p:column>
+                        </p:row>
                         <p:row>
                             <p:column>
                                 <h:outputText value="NOMBRE" />  
                             </p:column>
                             <p:column>
-                                <p:inputText size="40" value="#{ethnicGroupVariableMB.newName}" /> 
+                                <p:inputText size="40" value="#{genericVariableMB.newName}" /> 
                             </p:column>
                         </p:row>                        
                         <p:row>
@@ -189,7 +193,7 @@
                                     value="Guardar" 
                                     icon="ui-icon-disk"                                   
                                     oncomplete="dialogNew.hide()"
-                                    actionListener="#{ethnicGroupVariableMB.saveRegistry}"
+                                    actionListener="#{genericVariableMB.saveRegistry}"
                                     update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>
                                 <p:commandButton 
                                     value="Cancelar" 
@@ -200,12 +204,12 @@
                     </p:panelGrid>  
                 </p:dialog> 
                 <!-- DIALOGO ELIMINAR-->
-                <p:dialog                                                         
+                <p:dialog
                     id="IdDialogDelete"
                     modal="true"
                     resizable="false"
-                    header="ELIMINAR GRUPO ETNICO" 
-                    widgetVar="dialogDelete"> 
+                    header="Eliminar"
+                    widgetVar="dialogDelete">
                     <p:panelGrid id="displayDelete">
                         <p:row>  
                             <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
@@ -216,17 +220,16 @@
                             <p:column styleClass="ui-widget-header">
                                 <p:commandButton                                                           
                                     oncomplete="dialogDelete.hide()"
-                                    actionListener="#{ethnicGroupVariableMB.deleteRegistry}"
+                                    actionListener="#{genericVariableMB.deleteRegistry}"
                                     value="Eliminar" 
                                     update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:message"/>   
                                 <p:commandButton
                                     value="Cancelar" 
-                                    onclick="dialogDelete.hide()"/> 
+                                    onclick="dialogDelete.hide();"/> 
                             </p:column>
                         </p:row>
                     </p:panelGrid>
-                </p:dialog>
-                
+                </p:dialog>                
             </h:form>
         </ui:define>
     </ui:composition>

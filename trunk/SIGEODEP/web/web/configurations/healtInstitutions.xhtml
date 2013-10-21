@@ -12,7 +12,7 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
-            <script type="text/javascript">                  
+            <script type="text/javascript">
             </script> 
         </ui:define>
         <!--=================================================================-->
@@ -73,7 +73,7 @@
                                             value="Buscar" 
                                             icon="ui-icon-search"                                                
                                             actionListener="#{healtInstitutionsVariableMB.createDynamicTable}"
-                                            update="IdSearchTable :IdForm1:message"/>                                                                        
+                                            update="IdSearchTable :IdForm1:message IdControls"/>
                                     </p:column>
                                 </p:row>                        
                             </p:panelGrid>
@@ -132,7 +132,7 @@
                                             update=":IdForm2:IdDialogNew :IdForm2:displayNew :IdForm1:message"/>
                                         <h:commandLink >                                              
                                             <p:button value="Exportar"/>
-                                            <p:dataExporter type="xls" target="IdSearchTable" fileName="INSTITUCIONES DE SALUD" postProcessor="#{healtInstitutionsVariableMB.postProcessXLS}"/>  
+                                            <p:dataExporter type="xls" target="IdSearchTable" fileName="INSTITUCIONES SALUD - RECEPTORAS" postProcessor="#{healtInstitutionsVariableMB.postProcessXLS}"/>  
                                         </h:commandLink>
                                     </p:column>                            
                                 </p:row>
@@ -146,7 +146,7 @@
         <ui:define name="dialogs">
             <h:form id="IdForm2">
                 <!--   DIALOGO EDITAR -->
-                <p:dialog id="IdDialogEdit" header="EDICION DE INSTITUCION DE SALUD" widgetVar="dialogEdit" resizable="false" modal="true">  
+                <p:dialog id="IdDialogEdit" header="EDICION DE INSTITUCION" widgetVar="dialogEdit" resizable="false" modal="true">  
                     <p:panelGrid id="display">                          
                         <p:row>
                             <p:column>
@@ -164,6 +164,7 @@
                                 <p:inputText size="40" value="#{healtInstitutionsVariableMB.addressInstitution}" /> 
                             </p:column>
                         </p:row>
+
                         <p:row>
                             <p:column>
                                 <h:outputText value="BARRIO" />  
@@ -179,7 +180,7 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:outputText value="TIPO" />  
+                                <h:outputText value="REGIMEN" />  
                             </p:column>
                             <p:column>
                                 <p:selectOneMenu value="#{healtInstitutionsVariableMB.typeInstitution}" >                                     
@@ -187,6 +188,17 @@
                                     <f:selectItem itemLabel="SUBSIDIADO" itemValue="1" />  
                                     <f:selectItem itemLabel="CONTRIBUTIVO" itemValue="2" />                                    
                                 </p:selectOneMenu>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="TIPO" />  
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="Receptora: " />  
+                                <p:selectBooleanCheckbox value="#{healtInstitutionsVariableMB.receptorInstitution}" />    
+                                <h:outputText value="Salud: " />  
+                                <p:selectBooleanCheckbox value="#{healtInstitutionsVariableMB.healtInstitution}"/>
                             </p:column>
                         </p:row>
                         <p:row>
@@ -206,7 +218,7 @@
                     </p:panelGrid>  
                 </p:dialog> 
                 <!--   DIALOGO NUEVO -->
-                <p:dialog id="IdDialogNew" header="NUEVA INSTITUCION DE SALUD" widgetVar="dialogNew" resizable="false" modal="true">  
+                <p:dialog id="IdDialogNew" header="NUEVA INSTITUCION" widgetVar="dialogNew" resizable="false" modal="true">  
                     <p:panelGrid id="displayNew">                          
                         <p:row>
                             <p:column>
@@ -239,7 +251,7 @@
                         </p:row>
                         <p:row>
                             <p:column>
-                                <h:outputText value="TIPO" />  
+                                <h:outputText value="REGIMEN" />  
                             </p:column>
                             <p:column>
                                 <p:selectOneMenu value="#{healtInstitutionsVariableMB.newTypeInstitution}" >                                     
@@ -247,6 +259,17 @@
                                     <f:selectItem itemLabel="SUBSIDIADO" itemValue="1" />  
                                     <f:selectItem itemLabel="CONTRIBUTIVO" itemValue="2" />                                    
                                 </p:selectOneMenu>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="TIPO" />  
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="Receptora: " />  
+                                <p:selectBooleanCheckbox value="#{healtInstitutionsVariableMB.newReceptorInstitution}" />    
+                                <h:outputText value="Salud: " />  
+                                <p:selectBooleanCheckbox value="#{healtInstitutionsVariableMB.newHealtInstitution}"/>
                             </p:column>
                         </p:row>
                         <p:row>
@@ -270,7 +293,7 @@
                     id="IdDialogDelete"
                     modal="true"
                     resizable="false"
-                    header="ELIMINAR INSTITUCION DE SALUD" 
+                    header="ELIMINAR INSTITUCION" 
                     widgetVar="dialogDelete"> 
                     <p:panelGrid id="displayDelete">
                         <p:row>  

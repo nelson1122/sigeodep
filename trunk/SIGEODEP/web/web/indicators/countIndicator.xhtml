@@ -83,13 +83,13 @@
                         <!--===================================================================================-->                        
                         <br/>
                         <p:fieldset legend="RANGO DE FECHAS" > 
-                            <br/>                                                       
-                            <h:outputScript library="js" name="calendar_es.js" />
+                            <br/>
                             <h:outputText value="Fecha Inicial:" />                            
+                            <h:outputScript  library="js" name="calendar_es.js" />
                             <p:calendar
                                 id="IdInitialDate"
                                 value="#{indicatorsCountMB.initialDate}" 
-                                locale="es"
+                                locale="es"                                       
                                 converterMessage="La fecha inicial no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">

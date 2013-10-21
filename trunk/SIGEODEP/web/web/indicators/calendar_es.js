@@ -27,6 +27,6 @@ PrimeFaces.locales['es'] = {
     week: 'Semana',
     day: 'Día',
     allDayText : 'Todo el día'
-};
+}
 
 
