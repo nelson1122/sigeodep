@@ -62,7 +62,7 @@ public class NeighborhoodsVariableMB implements Serializable {
     private String newPoligonText = "";//poligono para el nuevo barrio
     private boolean disabledShowGeomFile = true;//activar/desactivar boton de ver archivo KML
     private String newNameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
-    private String newGeomText = "Geometría no cargada";//nombre del archivo de geometria para nuevo barrio
+    private String newGeomText = "Geometría no seleccionada";//nombre del archivo de geometria para nuevo barrio
     private String nameGeomFile = "";//nombre del archivo de geometria para barrio existente
     
     private String neighborhoodName = "";//Nombre del barrio.
@@ -384,7 +384,7 @@ public class NeighborhoodsVariableMB implements Serializable {
     public void loadGeometrySelected() {
         if (newPoligonText != null && newPoligonText.trim().length() != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "la geometria ha sido cargada"));
-            newGeomText = "Geometria cargada";
+            newGeomText = "Geometria seleccionada";
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado ninguna geometria"));
         }
@@ -833,7 +833,7 @@ public class NeighborhoodsVariableMB implements Serializable {
         newPoligonText = "";
         disabledShowGeomFile = true;
         newNameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
-        newGeomText = "Geometría no cargada";//nombre del archivo de geometria para nuevo barrio
+        newGeomText = "Geometría no seleccionada";//nombre del archivo de geometria para nuevo barrio
         nameGeomFile = "";//nombre del archivo de geometria para barrio existente
 
 

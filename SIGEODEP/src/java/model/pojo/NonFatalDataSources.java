@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "NonFatalDataSources.findByNonFatalDataSourceNeighborhoodId", query = "SELECT n FROM NonFatalDataSources n WHERE n.nonFatalDataSourceNeighborhoodId = :nonFatalDataSourceNeighborhoodId"),
     @NamedQuery(name = "NonFatalDataSources.findByNonFatalDataSourceType", query = "SELECT n FROM NonFatalDataSources n WHERE n.nonFatalDataSourceType = :nonFatalDataSourceType")})
 public class NonFatalDataSources implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -46,6 +47,8 @@ public class NonFatalDataSources implements Serializable {
     private String nonFatalDataSourceNeighborhoodId;
     @Column(name = "non_fatal_data_source_type")
     private Short nonFatalDataSourceType;
+    @Column(name = "non_fatal_data_source_form")
+    private Short nonFatalDataSourceForm;
     @OneToMany(mappedBy = "nonFatalDataSourceId")
     private List<NonFatalInjuries> nonFatalInjuriesList;
     @OneToMany(mappedBy = "submittedDataSourceId")
@@ -55,95 +58,102 @@ public class NonFatalDataSources implements Serializable {
     }
 
     public NonFatalDataSources(Short nonFatalDataSourceId) {
-	this.nonFatalDataSourceId = nonFatalDataSourceId;
+        this.nonFatalDataSourceId = nonFatalDataSourceId;
     }
 
     public NonFatalDataSources(Short nonFatalDataSourceId, String nonFatalDataSourceName) {
-	this.nonFatalDataSourceId = nonFatalDataSourceId;
-	this.nonFatalDataSourceName = nonFatalDataSourceName;
+        this.nonFatalDataSourceId = nonFatalDataSourceId;
+        this.nonFatalDataSourceName = nonFatalDataSourceName;
     }
 
     public Short getNonFatalDataSourceId() {
-	return nonFatalDataSourceId;
+        return nonFatalDataSourceId;
     }
 
     public void setNonFatalDataSourceId(Short nonFatalDataSourceId) {
-	this.nonFatalDataSourceId = nonFatalDataSourceId;
+        this.nonFatalDataSourceId = nonFatalDataSourceId;
     }
 
     public String getNonFatalDataSourceName() {
-	return nonFatalDataSourceName;
+        return nonFatalDataSourceName;
     }
 
     public void setNonFatalDataSourceName(String nonFatalDataSourceName) {
-	this.nonFatalDataSourceName = nonFatalDataSourceName;
+        this.nonFatalDataSourceName = nonFatalDataSourceName;
     }
 
     public String getNonFatalDataSourceAddress() {
-	return nonFatalDataSourceAddress;
+        return nonFatalDataSourceAddress;
     }
 
     public void setNonFatalDataSourceAddress(String nonFatalDataSourceAddress) {
-	this.nonFatalDataSourceAddress = nonFatalDataSourceAddress;
+        this.nonFatalDataSourceAddress = nonFatalDataSourceAddress;
     }
 
     public String getNonFatalDataSourceNeighborhoodId() {
-	return nonFatalDataSourceNeighborhoodId;
+        return nonFatalDataSourceNeighborhoodId;
     }
 
     public void setNonFatalDataSourceNeighborhoodId(String nonFatalDataSourceNeighborhoodId) {
-	this.nonFatalDataSourceNeighborhoodId = nonFatalDataSourceNeighborhoodId;
+        this.nonFatalDataSourceNeighborhoodId = nonFatalDataSourceNeighborhoodId;
     }
 
     public Short getNonFatalDataSourceType() {
-	return nonFatalDataSourceType;
+        return nonFatalDataSourceType;
     }
 
     public void setNonFatalDataSourceType(Short nonFatalDataSourceType) {
-	this.nonFatalDataSourceType = nonFatalDataSourceType;
+        this.nonFatalDataSourceType = nonFatalDataSourceType;
+    }
+
+    public Short getNonFatalDataSourceForm() {
+        return nonFatalDataSourceForm;
+    }
+
+    public void setNonFatalDataSourceForm(Short nonFatalDataSourceForm) {
+        this.nonFatalDataSourceForm = nonFatalDataSourceForm;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList() {
-	return nonFatalInjuriesList;
+        return nonFatalInjuriesList;
     }
 
     public void setNonFatalInjuriesList(List<NonFatalInjuries> nonFatalInjuriesList) {
-	this.nonFatalInjuriesList = nonFatalInjuriesList;
+        this.nonFatalInjuriesList = nonFatalInjuriesList;
     }
 
     @XmlTransient
     public List<NonFatalInjuries> getNonFatalInjuriesList1() {
-	return nonFatalInjuriesList1;
+        return nonFatalInjuriesList1;
     }
 
     public void setNonFatalInjuriesList1(List<NonFatalInjuries> nonFatalInjuriesList1) {
-	this.nonFatalInjuriesList1 = nonFatalInjuriesList1;
+        this.nonFatalInjuriesList1 = nonFatalInjuriesList1;
     }
 
     @Override
     public int hashCode() {
-	int hash = 0;
-	hash += (nonFatalDataSourceId != null ? nonFatalDataSourceId.hashCode() : 0);
-	return hash;
+        int hash = 0;
+        hash += (nonFatalDataSourceId != null ? nonFatalDataSourceId.hashCode() : 0);
+        return hash;
     }
 
     @Override
     public boolean equals(Object object) {
-	// TODO: Warning - this method won't work in the case the id fields are not set
-	if (!(object instanceof NonFatalDataSources)) {
-	    return false;
-	}
-	NonFatalDataSources other = (NonFatalDataSources) object;
-	if ((this.nonFatalDataSourceId == null && other.nonFatalDataSourceId != null) || (this.nonFatalDataSourceId != null && !this.nonFatalDataSourceId.equals(other.nonFatalDataSourceId))) {
-	    return false;
-	}
-	return true;
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof NonFatalDataSources)) {
+            return false;
+        }
+        NonFatalDataSources other = (NonFatalDataSources) object;
+        if ((this.nonFatalDataSourceId == null && other.nonFatalDataSourceId != null) || (this.nonFatalDataSourceId != null && !this.nonFatalDataSourceId.equals(other.nonFatalDataSourceId))) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public String toString() {
-	return "model.pojo.NonFatalDataSources[ nonFatalDataSourceId=" + nonFatalDataSourceId + " ]";
+        return "model.pojo.NonFatalDataSources[ nonFatalDataSourceId=" + nonFatalDataSourceId + " ]";
     }
-    
 }

@@ -31,7 +31,7 @@
     </servlet-mapping>
     <error-page>
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
-        <location>/faces/index.xhtml</location>
+        <location>/index.html</location>
     </error-page>
     <session-config>
         <session-timeout>20</session-timeout>

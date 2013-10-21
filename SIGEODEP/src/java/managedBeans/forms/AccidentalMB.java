@@ -199,7 +199,7 @@ public class AccidentalMB implements Serializable {
     private String stylePosition = "color: #1471B1;";
     private String currentIdForm = "";
     private Users currentUser;
-    ConnectionJdbcMB connectionJdbcMB;
+    private ConnectionJdbcMB connectionJdbcMB;
     private LoginMB loginMB;
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa 

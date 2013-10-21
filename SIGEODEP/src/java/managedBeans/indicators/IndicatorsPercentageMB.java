@@ -69,6 +69,11 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.ui.RectangleEdge;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.Interval;
+import org.joda.time.Months;
+import org.joda.time.Years;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 import org.primefaces.component.column.Column;
@@ -144,7 +149,8 @@ public class IndicatorsPercentageMB {
     int typeFill = 0;
     private String sql;//mostrar filas y columnas vacias
     private boolean showCount = false;//mostrar recuento
-    private boolean showFrames = true;
+    private boolean sameRangeLimit = false;//limitar a rangos similares
+    private boolean showFrames = true;//tramas
     private boolean showItems = true;
     private boolean showRowPercentage = true;//mostrar porcentaje por fila
     private boolean showColumnPercentage = false;//mostrar porcentaje por columna
@@ -426,9 +432,40 @@ public class IndicatorsPercentageMB {
 //        currentValueGraph = "";
 //        currentVariableGraph = "";
 
-        if (continueProcess) {//VALIDACION DE FECHAS
+        if (continueProcess) {//VALIDACION DE FECHAS            
             initialDateStr = formato.format(initialDate);
             endDateStr = formato.format(endDate);
+            long fechaInicialMs = initialDate.getTime();
+            long fechaFinalMs = endDate.getTime();
+            long diferencia = fechaFinalMs - fechaInicialMs;
+            if (diferencia < 0) {
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La fecha inicial debe ser inferior o igual a la final");
+                continueProcess = false;
+            }
+        }
+
+        if (continueProcess && sameRangeLimit) {
+            //se valida que exista diferencia de año
+            if (initialDate.getYear() == endDate.getYear()) {
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' la fecha inicial y final deben estar en diferentes años, desactive la opción o cambie las fechas");
+                continueProcess = false;
+            }
+            //
+        }
+
+        if (continueProcess && sameRangeLimit) {
+            //se valida que mes de la fecha final sea igual o mayor que el mes de la fecha inicial
+//            if (initialDate.getMonth() == endDate.getMonth()) {
+//                if (initialDate.getDate() > endDate.getDate()) {
+//                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes de la fecha final sea igual o mayor que el mes de la fecha inicial");
+//                    continueProcess = false;
+//                }
+//            } else {
+            if (initialDate.getMonth() > endDate.getMonth()) {
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes de la fecha final sea igual o mayor que el mes de la fecha inicial");
+                continueProcess = false;
+            }
+//            }
         }
         if (continueProcess) {//NUMERO DE VARIABLES A CRUZAR SEA MENOR O IGUAL AL LIMITE ESTABLECIDO
             if (currentIndicator.getIndicatorId() < 5) {//es un indicador general
@@ -788,6 +825,24 @@ public class IndicatorsPercentageMB {
         } catch (SQLException | IOException e) {
             System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
         }
+    }
+
+    private int getDateDifference(Date date1, Date date2, String typeDifference) {
+        Interval interval = new Interval(new DateTime(date1), (new DateTime(date2)).plusDays(1));
+        if (typeDifference.compareTo("anual") == 0) {
+            Years years34 = Years.yearsIn(interval);
+            System.out.println("Años" + years34.getYears());
+            return years34.getYears();
+        } else if (typeDifference.compareTo("mensual") == 0) {
+            Months months11 = Months.monthsIn(interval);
+            System.out.println("Meses" + months11.getMonths());
+            return months11.getMonths();
+        } else if (typeDifference.compareTo("diaria") == 0) {
+            Days days15 = Days.daysIn(interval);
+            System.out.println("Dias" + days15.getDays());
+            return days15.getDays();
+        }
+        return 0;
     }
 
     private void saveIndicatorRecords(String sqlConsult) {
@@ -1452,6 +1507,14 @@ public class IndicatorsPercentageMB {
                     addToSourceTable("fatal_injury_murder");
                     sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "weapon_type_name", "weapon_types", "weapon_type_id", "tipo_arma");
                     break;
+                case non_fatal_data_sources:
+                    if ((currentIndicator.getIndicatorId() >= 33 && currentIndicator.getIndicatorId() <= 39) || (currentIndicator.getIndicatorId() >= 68 && currentIndicator.getIndicatorId() <= 75)) {//se lista las receptoras                        
+                        addToSourceTable("non_fatal_domestic_violence");
+                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "non_fatal_data_source_name", "non_fatal_data_sources", "non_fatal_data_source_id", "institucion_salud");
+                    } else {//se lista las de salud
+                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "non_fatal_data_source_name", "non_fatal_data_sources", "non_fatal_data_source_id", "institucion_salud");
+                    }
+                    break;
             }
             if (i == variablesCrossData.size() - 1) {//si es la ultima instruccion se agrega salto de linea
                 sqlReturn = sqlReturn + " \n\r";
@@ -1507,9 +1570,60 @@ public class IndicatorsPercentageMB {
                 sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
             }
         }
-        sqlReturn = sqlReturn + ""
-                + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
-                + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
+
+        //------DETERMINAR RANGOS DE FECHAS ---------------------------
+        if (sameRangeLimit) {
+            //determinar cuantos años existen entre las dos fechas
+            int years = getDateDifference(initialDate, endDate, "anual") + 1;
+            String startDateRange;
+            String endDateRange;
+            sqlReturn = sqlReturn + " (\n";
+            for (int i = 0; i < years; i++) {//cilco que se repite por cada año
+
+                //DETERMINAR FECHA INICIAL EN PARA ESTE AÑO(debe tener el primer dia del mes de la fecha inicial)
+                startDateRange = "";
+                startDateRange = startDateRange + "01/";//primer dia del mes
+                if (String.valueOf(initialDate.getMonth() + 1).length() == 1) {
+                    startDateRange = startDateRange + "0" + String.valueOf(initialDate.getMonth() + 1) + "/";
+                } else {
+                    startDateRange = startDateRange + String.valueOf(initialDate.getMonth() + 1) + "/";
+                }
+                startDateRange = startDateRange + String.valueOf(initialDate.getYear() + i + 1900);
+
+                //DETERMINAR FECHA FINAL PARA ESTE AÑO(debe tener ultimo dia del mes de la fecha final)
+                endDateRange = "";
+                DateTime f = new DateTime(new Date(initialDate.getYear() + i, endDate.getMonth(), 1));
+                DateTime fEnd = f.dayOfMonth().withMaximumValue();//ultimo dia del mes
+
+                if (String.valueOf(fEnd.getDayOfMonth()).length() == 1) {
+                    endDateRange = endDateRange + "0" + String.valueOf(fEnd.getDayOfMonth()) + "/";
+                } else {
+                    endDateRange = endDateRange + String.valueOf(fEnd.getDayOfMonth()) + "/";
+                }
+                if (String.valueOf(fEnd.getMonthOfYear() + 1).length() == 1) {
+                    endDateRange = endDateRange + "0" + String.valueOf(fEnd.getMonthOfYear()) + "/";
+                } else {
+                    endDateRange = endDateRange + String.valueOf(fEnd.getMonthOfYear()) + "/";
+                }
+                endDateRange = endDateRange + String.valueOf(fEnd.getYear());
+                sqlReturn = sqlReturn
+                        + "       ( \n"
+                        + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + startDateRange + "','dd/MM/yyyy') AND \n\r"
+                        + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateRange + "','dd/MM/yyyy') \n\r"
+                        + "       ) \n";
+                if (i != years - 1) {
+                    sqlReturn = sqlReturn + "       OR \n";
+                }
+            }
+            sqlReturn = sqlReturn + " )\n";
+        } else {
+            sqlReturn = sqlReturn + ""
+                    + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
+                    + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') \n";
+        }
+//        sqlReturn = sqlReturn + ""
+//                + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
+//                + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy') ";
         if (currentIndicator.getIndicatorId() == 71 || currentIndicator.getIndicatorId() == 75) {
             //CASOS DE VIOLENCIA SEXUAL (VSX) EN EL SECTOR SALUD
             //PORCENTAJE DE CASOS DE SIVIGILA_VSX            
@@ -2037,8 +2151,38 @@ public class IndicatorsPercentageMB {
         }
     }
 
+    private String intToMonth(int m) {
+        switch (m) {
+            case 0:
+                return "Enero";
+            case 1:
+                return "Febrero";
+            case 2:
+                return "Marzo";
+            case 3:
+                return "Abril";
+            case 4:
+                return "Mayo";
+            case 5:
+                return "Junio";
+            case 6:
+                return "Julio";
+            case 7:
+                return "Agosto";
+            case 8:
+                return "Septiembre";
+            case 9:
+                return "Octubre";
+            case 10:
+                return "Noviembre";
+            case 11:
+                return "Diciembre";
+        }
+        return "Enero";
+    }
+
     public void createImage() {
-        try {//JFreeChart 
+        try {
             JFreeChart chart = null;
             if (currentTypeGraph.compareTo("pastel") == 0) {
                 pieDataSet = createPieDataSet();
@@ -2047,8 +2191,18 @@ public class IndicatorsPercentageMB {
                 defaultDataSet = createDataSet();
             }
             //-----CREACION DEL TITULO
-            indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n";
-            indicatorName = indicatorName + variablesName + "\nPeriodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);
+            indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n" + variablesName + "\n ";
+            if (sameRangeLimit) {
+                if (initialDate.getMonth() == endDate.getMonth()) {
+                    indicatorName = indicatorName + intToMonth(initialDate.getMonth());
+                } else {
+                    indicatorName = indicatorName + intToMonth(initialDate.getMonth()) + " a " + intToMonth(endDate.getMonth());
+                }
+                indicatorName = indicatorName + " de los años " + String.valueOf(initialDate.getYear() + 1900) + " a " + String.valueOf(endDate.getYear() + 1900);
+            } else {
+                indicatorName = indicatorName + "Periodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);
+            }
+
             //-----SELECCION DE TIPO DE GRAFICO            
             if (currentTypeGraph.compareTo("apiladas porcentual") == 0) {
                 chart = ChartFactory.createStackedBarChart(indicatorName, categoryAxixLabel, "Porcentaje", defaultDataSet, PlotOrientation.VERTICAL, true, true, false);
@@ -2152,6 +2306,7 @@ public class IndicatorsPercentageMB {
     }
 
     public void reset() {
+        sameRangeLimit = false;
         btnExportDisabled = true;
         dataTableHtml = "";
         chartImage = null;
@@ -2371,6 +2526,7 @@ public class IndicatorsPercentageMB {
                 //15;"TURISMO SEXUAL"
 
                 break;
+            case non_fatal_data_sources:
             case neighborhoods://barrio,
             case communes://comuna,
             case corridors://corredor,
@@ -3698,5 +3854,13 @@ public class IndicatorsPercentageMB {
 
     public void setShowFrames(boolean showFrames) {
         this.showFrames = showFrames;
+    }
+
+    public boolean isSameRangeLimit() {
+        return sameRangeLimit;
+    }
+
+    public void setSameRangeLimit(boolean sameRangeLimit) {
+        this.sameRangeLimit = sameRangeLimit;
     }
 }

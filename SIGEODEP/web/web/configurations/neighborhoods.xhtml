@@ -331,7 +331,6 @@
                                     value="+"                                    
                                     actionListener="#{neighborhoodsVariableMB.addQuadrantInExistingNeighborhoodClick}"  
                                     update="IdCurrentQuadrants2 IdAddQuadrants2 IdQuadrantsFilter"/> 
-
                                 <p:commandButton 
                                     value="-"
                                     actionListener="#{neighborhoodsVariableMB.removeQuadrantInExistingNeighborhoodClick}"  
@@ -352,8 +351,12 @@
                                 <h:outputText value="GEOMETRIA"/>
                             </p:column>
                             <p:column colspan="3">                                
+                                <h:outputText 
+                                    id="IdCurrentGeomText" 
+                                    value="#{quadrantsVariableMB.currentGeomText}"
+                                    escape="false"/>
                                 <p:fileUpload                                                                                 
-                                    fileUploadListener="#{neighborhoodsVariableMB.handleFileUpload}"                                                                                  
+                                    fileUploadListener="#{neighborhoodsVariableMB.handleFileUpload}"
                                     mode="advanced"                                           
                                     cancelLabel="Cancelar"
                                     uploadLabel="Subir"                                        
@@ -362,7 +365,7 @@
                                     update=":IdForm1:message"
                                     invalidFileMessage="Tipo de archivo no aceptado"
                                     invalidSizeMessage="El tamaño del archivo debe ser inferior a 5MB"
-                                    allowTypes="/(\.|\/)(xlsx|csv|txt)$/">                                        
+                                    allowTypes="/(\.|\/)(kml|txt)$/">                                        
                                 </p:fileUpload>
                             </p:column>
                         </p:row>

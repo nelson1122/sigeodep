@@ -71,15 +71,13 @@ public enum VariablesEnum {
     sivigila_no_relative,
     sivigila_tip_ss,
     sivigila_vulnerability,
-    //string,
     vulnerable_groups,    
     kinds_of_injury,
     anatomical_locations,
-    //abuse_types,
-    //aggressor_types,
     actions_to_take,
     security_elements,
     source_vif,
+    non_fatal_data_sources,
     NOVALUE;
 
     public static VariablesEnum convert(String str) {
