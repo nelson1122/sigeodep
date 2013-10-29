@@ -182,12 +182,7 @@
                                 widgetVar="pbAjaxValidate" 
                                 ajax="true" 
                                 value="#{recordSetsSivigilaVifMB.progress}" 
-                                labelTemplate="{value}%">          
-                                <p:ajax 
-                                    event="complete" 
-                                    listener="#{recordSetsSivigilaVifMB.onCompleteLoad}" 
-                                    update="IdProgresValidate"/>  
-                            </p:progressBar>
+                                labelTemplate="{value}%"/>
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
                                 <p:row>  
@@ -203,7 +198,7 @@
                                             id="IdR" 
                                             value="Exportar" 
                                             onclick="pbAjaxValidate.start();"
-                                            oncomplete="startA(); pbAjaxValidate.stop();"
+                                            oncomplete="startA(); pbAjaxValidate.cancel();"
                                             actionListener="#{recordSetsSivigilaVifMB.postProcessXLS1}"/>                                                                                
                                         <h:commandLink id="IdComandLink" style="display: none" >
                                             <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>

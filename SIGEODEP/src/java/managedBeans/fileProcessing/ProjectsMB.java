@@ -149,6 +149,9 @@ public class ProjectsMB implements Serializable {
     private String inconsistentRelationsDialog = "";
     private ArrayList<String> errorsList = new ArrayList<>();
     String error = "";
+    //load-delete-new relations
+    private String relationsFilter = "";
+
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES DE PROPOSITO GENERAL ---------------------------------------
@@ -158,7 +161,6 @@ public class ProjectsMB implements Serializable {
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
      */
-
     @PostConstruct
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
@@ -293,12 +295,22 @@ public class ProjectsMB implements Serializable {
         relationGroupsInCopy = new ArrayList<>();
         for (int i = 0; i < relationGroupList.size(); i++) {
             if (relationGroupList.get(i).getUserId() == loginMB.getCurrentUser().getUserId()) {
-                relationGroupsInLoad.add(relationGroupList.get(i).getNameRelationGroup());
+                if (relationsFilter != null && relationsFilter.length() != 0) {//se filtrao la busqueda
+                    if (relationGroupList.get(i).getNameRelationGroup().toUpperCase().indexOf(relationsFilter.toUpperCase()) != -1) {
+                        relationGroupsInLoad.add(relationGroupList.get(i).getNameRelationGroup());
+                    }
+                } else {
+                    relationGroupsInLoad.add(relationGroupList.get(i).getNameRelationGroup());
+                }
             }
-//            else{
-//                relationGroupsInLoad.add("este no - "+relationGroupList.get(i).getNameRelationGroup());
-//            }
-            relationGroupsInCopy.add(relationGroupList.get(i).getNameRelationGroup());
+            //------------------------------
+            if (relationsFilter != null && relationsFilter.length() != 0) {//se filtrao la busqueda
+                if (relationGroupList.get(i).getNameRelationGroup().toUpperCase().indexOf(relationsFilter.toUpperCase()) != -1) {
+                    relationGroupsInCopy.add(relationGroupList.get(i).getNameRelationGroup());
+                }
+            } else {
+                relationGroupsInCopy.add(relationGroupList.get(i).getNameRelationGroup());
+            }
         }
     }
 
@@ -1222,15 +1234,15 @@ public class ProjectsMB implements Serializable {
             }
             //verifico que no exista una carga con este nombre
             try {
-                ResultSet rs=connectionJdbcMB.consult("SELECT * FROM ungrouped_tags WHERE ungrouped_tag_name ILIKE '"+newProjectName+"'");
-                if(rs.next()){
+                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM ungrouped_tags WHERE ungrouped_tag_name ILIKE '" + newProjectName + "'");
+                if (rs.next()) {
                     errorsList.add("Ya existe una conjunto de registros cargados con el mismo nombre. el nombre del proyecto debe ser cambiado");
                 }
             } catch (Exception e) {
             }
-            
-            
-            
+
+
+
         } else {
             errorsList.add("Se debe digitar un nombre para el proyecto");
         }
@@ -1750,8 +1762,10 @@ public class ProjectsMB implements Serializable {
 
     public void clearRelationGroup() {
         newRelationsGroupName = "";
+        relationsFilter = "";
+        loadRelatedGroups();
     }
-    
+
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //FUNCIONES GET Y SET DE LAS VARIABLES ---------------------------------
@@ -1813,7 +1827,6 @@ public class ProjectsMB implements Serializable {
     public void setCurrentSourceId(short currentSourceId) {
         this.currentSourceId = currentSourceId;
     }
-    
 
     public SelectItem[] getSources() {
         return sources;
@@ -2064,5 +2077,13 @@ public class ProjectsMB implements Serializable {
 
     public void setToolTipText(String toolTipText) {
         this.toolTipText = toolTipText;
+    }
+
+    public String getRelationsFilter() {
+        return relationsFilter;
+    }
+
+    public void setRelationsFilter(String relationsFilter) {
+        this.relationsFilter = relationsFilter;
     }
 }

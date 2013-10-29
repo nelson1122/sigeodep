@@ -44,7 +44,12 @@
                 <p:layoutUnit position="west" size="300" header="&nbsp;" collapsible="true"> 
                     <h:form target="_blank">
                         <h:commandButton value="+" action="home" image="../../resources/img/logo2.png" />                        
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <h:commandButton value="h"  action="help" image="../../resources/img/help.gif" />                        
                     </h:form>
+                    
+                        
+                    
                     <h:form id="IdForm0">                                                
                         <br/>
                         <p:accordionPanel  activeIndex="#{loginMB.activeIndexAcoordion1}" >                            
@@ -192,11 +197,12 @@
                                         actionListener="#{loginMB.logout2}"
                                         ajax="false"/>                                      
                                 </p:menu> 
-                            </p:tab>
+                            </p:tab>                            
                         </p:accordionPanel>
-                        
+
                         <h:commandButton value="Correcciones de Santos" rendered="#{loginMB.activeSantos}" actionListener="#{loginMB.corregirDB}" />
                     </h:form>  
+                    
                 </p:layoutUnit>  
                 <!-- ****************************** CONTENIDO (PARTE CENTRAL) ************************ -->
                 <p:layoutUnit position="center" > 
@@ -222,7 +228,8 @@
                     </p:dialog-->
                     <div id="welcome">
                         <h1>
-                            <ui:insert name="title" >   
+                            <ui:insert name="title" >  
+                                
                             </ui:insert>
                         </h1>
                     </div>

@@ -59,10 +59,9 @@ public class NeighborhoodsVariableMB implements Serializable {
     private Neighborhoods currentNeighborhood;
     private String type = "";
     
-    private String newPoligonText = "";//poligono para el nuevo barrio
+    private String poligonText = "";//poligono para el nuevo barrio    
     private boolean disabledShowGeomFile = true;//activar/desactivar boton de ver archivo KML
-    private String newNameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
-    private String newGeomText = "Geometría no seleccionada";//nombre del archivo de geometria para nuevo barrio
+    private String geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";//aviso de si la geometria esta o no cargada
     private String nameGeomFile = "";//nombre del archivo de geometria para barrio existente
     
     private String neighborhoodName = "";//Nombre del barrio.
@@ -147,7 +146,7 @@ public class NeighborhoodsVariableMB implements Serializable {
 
 
         disabledShowGeomFile = true;
-        newNameGeomFile = "Archivo no cargado";
+        nameGeomFile = "Archivo no cargado";
         try {
             java.io.File folder = new java.io.File(realPath + "web/configurations/maps");
             if (folder.exists()) {//verificar que el directorio exista
@@ -155,7 +154,7 @@ public class NeighborhoodsVariableMB implements Serializable {
                 nameAndPathFile.append(realPath);
                 nameAndPathFile.append("web/configurations/maps/");
                 nameAndPathFile.append(fileName);
-                newNameGeomFile = fileName;//ruta que se usa en java script
+                nameGeomFile = fileName;//ruta que se usa en java script
                 disabledShowGeomFile = false;
                 java.io.File ficherofile = new java.io.File(nameAndPathFile.toString());
                 if (ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
@@ -169,7 +168,7 @@ public class NeighborhoodsVariableMB implements Serializable {
                     }
                     in.close();
                     out.flush();
-                    System.out.println("El fichero de geometria copiado con exito: " + nameAndPathFile.toString());
+                    //System.out.println("El fichero de geometria copiado con exito: " + nameAndPathFile.toString());
                 } catch (IOException e) {
                     System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
                 }
@@ -185,7 +184,7 @@ public class NeighborhoodsVariableMB implements Serializable {
         /*
          * cargar el archivo de geometria del varrio
          */
-        newNameGeomFile = "";//nombre del archivo de geometria para nuevo barrio
+        nameGeomFile = "";//nombre del archivo de geometria para nuevo barrio
         try {
             //realizo la copia de este archivo a la carpeta correspondiente a geometrias
             file = event.getFile();
@@ -283,8 +282,6 @@ public class NeighborhoodsVariableMB implements Serializable {
             }
             selectedAvailableAddQuadrants = new ArrayList<>();
         }
-        //quadrantsFilter = "";
-        //changeQuadrantsFilter();
     }
 
     public void loadRegistry() {
@@ -292,6 +289,7 @@ public class NeighborhoodsVariableMB implements Serializable {
          * carga de los datos de un registro cuando se selecciona una fila de 
          * la tabla que muestra los barrios existentes
          */
+        disabledShowGeomFile = true;
         currentNeighborhood = null;
         if (selectedRowDataTable != null) {
             currentNeighborhood = neighborhoodsFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
@@ -345,6 +343,13 @@ public class NeighborhoodsVariableMB implements Serializable {
             } else {
                 neighborhoodSuburbId = "";
             }
+            
+            //determino si la geometria ya esta cargada
+            if (currentNeighborhood.getGeom() != null && currentNeighborhood.getGeom().trim().length() != 0) {
+                geomText = "<div style=\"color: blue;\"><b>Tiene geometría</b></div>";
+            } else {
+                geomText = "<div style=\"color: red;\"><b>No tiene geometría</b></div>";
+            }
 
             availableQuadrants = new ArrayList<>();
             selectedAvailableQuadrants = new ArrayList<>();
@@ -378,13 +383,13 @@ public class NeighborhoodsVariableMB implements Serializable {
     }
 
     public void showGeomFileClick() {
-        newPoligonText = "";
+        poligonText = "";
     }
 
     public void loadGeometrySelected() {
-        if (newPoligonText != null && newPoligonText.trim().length() != 0) {
+        if (poligonText != null && poligonText.trim().length() != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "la geometria ha sido cargada"));
-            newGeomText = "Geometria seleccionada";
+            geomText = "<div style=\"color: blue;\"><b>Geometría cargada</b></div>";
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado ninguna geometria"));
         }
@@ -393,6 +398,7 @@ public class NeighborhoodsVariableMB implements Serializable {
     public void deleteRegistry() {
         if (currentNeighborhood != null) {
             //se elimina de la tabla cuadrantes 
+            connectionJdbcMB.setShowMessages(false);
             connectionJdbcMB.non_query(""
                     + " DELETE FROM neighborhood_quadrant WHERE neighborhood_id = " + currentNeighborhood.getNeighborhoodId() + "; \n"
                     + " DELETE FROM neighborhoods WHERE neighborhood_id = " + currentNeighborhood.getNeighborhoodId() + "; \n");
@@ -406,6 +412,7 @@ public class NeighborhoodsVariableMB implements Serializable {
                 btnRemoveDisabled = true;
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El registro fue eliminado"));
             }
+            connectionJdbcMB.setShowMessages(true);
         }
     }
 
@@ -425,7 +432,7 @@ public class NeighborhoodsVariableMB implements Serializable {
             if (continueProcess) {
                 neighborhoodName = neighborhoodName.toUpperCase();
                 try {
-                    //buscar si el codigo o barrio ya esta registrado
+                    //buscar si el nombre de barrio ya esta registrado
                     ResultSet rs = connectionJdbcMB.consult("SELECT * FROM neighborhoods "
                             + " WHERE neighborhood_name LIKE '" + neighborhoodName + "' AND "
                             + " neighborhood_name NOT LIKE '" + currentNeighborhood.getNeighborhoodName() + "'");
@@ -525,8 +532,8 @@ public class NeighborhoodsVariableMB implements Serializable {
             try {
                 String sql = "INSERT INTO neighborhoods VALUES (";
                 String geom="null";
-                if(newPoligonText!=null&&newPoligonText.trim().length()!=0){
-                    geom="'"+newPoligonText+"'";
+                if(poligonText!=null&&poligonText.trim().length()!=0){
+                    geom="'"+poligonText+"'";
                 }
                 sql = sql
                         + newNeighborhoodId + ",'"//codigo
@@ -573,6 +580,10 @@ public class NeighborhoodsVariableMB implements Serializable {
     }
 
     public void newRegistry() {
+        //se quita elemento seleccionado de la tabla, se inhabilitan controles
+        selectedRowDataTable = null;
+        btnEditDisabled = true;
+        btnRemoveDisabled = true;
         //se limpia el formulario
         newNeighborhoodType = "1";//zona urbana
         newNeighborhoodName = "";//Nombre del barrio.
@@ -584,7 +595,11 @@ public class NeighborhoodsVariableMB implements Serializable {
         newNeighborhoodCorridor = "0";
         changeNewArea();//se determina el codigo
         changeNewQuadrantsFilter();//determinar cuadrantes
-
+        
+        nameGeomFile = "";
+        geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";//nombre del archivo de geometria para nuevo barrio
+        poligonText = "";
+        disabledShowGeomFile = true;
     }
 
     public void changeArea() {//cambia tipo de barrio
@@ -830,10 +845,10 @@ public class NeighborhoodsVariableMB implements Serializable {
         newPopuation = "0";
         newNeighborhoodCorridor = "0";
 
-        newPoligonText = "";
+        poligonText = "";
         disabledShowGeomFile = true;
-        newNameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
-        newGeomText = "Geometría no seleccionada";//nombre del archivo de geometria para nuevo barrio
+        nameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
+        geomText = "Geometría no seleccionada";//nombre del archivo de geometria para nuevo barrio
         nameGeomFile = "";//nombre del archivo de geometria para barrio existente
 
 
@@ -1156,13 +1171,7 @@ public class NeighborhoodsVariableMB implements Serializable {
         this.quadrantsFilter = quadrantsFilter;
     }
 
-    public String getNewNameGeomFile() {
-        return newNameGeomFile;
-    }
-
-    public void setNewNameGeomFile(String newNameGeomFile) {
-        this.newNameGeomFile = newNameGeomFile;
-    }
+    
 
     public String getNameGeomFile() {
         return nameGeomFile;
@@ -1180,19 +1189,21 @@ public class NeighborhoodsVariableMB implements Serializable {
         this.disabledShowGeomFile = disabledShowGeomFile;
     }
 
-    public String getNewGeomText() {
-        return newGeomText;
+    public String getGeomText() {
+        return geomText;
     }
 
-    public void setNewGeomText(String newGeomText) {
-        this.newGeomText = newGeomText;
+    public void setGeomText(String geomText) {
+        this.geomText = geomText;
+    }    
+
+    public String getPoligonText() {
+        return poligonText;
     }
 
-    public String getNewPoligonText() {
-        return newPoligonText;
+    public void setPoligonText(String poligonText) {
+        this.poligonText = poligonText;
     }
 
-    public void setNewPoligonText(String newPoligonText) {
-        this.newPoligonText = newPoligonText;
-    }
+
 }

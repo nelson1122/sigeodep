@@ -87,7 +87,7 @@
                 style=" color: red;"
                 rendered="#{!loginMB.permissionAdministrator}"/> 
             <h:form enctype="multipart/form-data" id="IdForm1" rendered="#{loginMB.permissionAdministrator}">
-                <h:inputHidden id="hiddenButton" value="#{quadrantsVariableMB.newPoligonText}"/>                
+                <h:inputHidden id="hiddenButton" value="#{quadrantsVariableMB.poligonText}"/>                
                 <p:remoteCommand name="remoteChangeCommand" process="hiddenButton"/>
                 
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
@@ -186,7 +186,7 @@
                                             icon="ui-icon-document"
                                             actionListener="#{quadrantsVariableMB.newRegistry}"
                                             oncomplete="dialogNew.show()"
-                                            update=":IdForm2:displayNew"/>                                            
+                                            update=":IdForm2:displayNew IdSearchTable IdControls"/>                                            
                                         <h:commandLink>                                              
                                             <p:button value="Exportar"/>
                                             <p:dataExporter type="xls" target="IdSearchTable" fileName="CUADRANTES" postProcessor="#{quadrantsVariableMB.postProcessXLS}"/>  
@@ -201,143 +201,7 @@
             </h:form>
         </ui:define>
         <ui:define name="dialogs">
-            <h:form id="IdForm2">
-                <!--   DIALOGO EDITAR -->
-                <p:dialog id="IdDialogEdit" header="EDICION DE CUADRANTE" widgetVar="dialogEdit" resizable="false" modal="true">  
-                    <p:panelGrid id="display">  
-                        <p:row>
-                            <p:column>
-                                <h:outputText value="NOMBRE" />  
-
-                            </p:column>
-                            <p:column colspan="3">
-                                <p:inputText size="70" value="#{quadrantsVariableMB.quadrantName}" /> 
-                            </p:column>
-                        </p:row>
-                        <p:row>
-                            <p:column>
-                                <h:outputText value="CODIGO" />  
-                            </p:column>
-                            <p:column>
-                                <p:inputText 
-                                    size="20" 
-                                    value="#{quadrantsVariableMB.quadrantId}" 
-                                    disabled="true">
-                                </p:inputText>
-                            </p:column>                            
-                        </p:row>                        
-                        <p:row>
-                            <p:column>
-                                <h:outputText value="POBLACION" />  
-                            </p:column>
-                            <p:column>                                
-                                <p:inputText id="IdPopulation" size="20" value="#{quadrantsVariableMB.quadrantPopuation}" >
-                                    <f:ajax                                         
-                                        event="change"                                                                                                            
-                                        render="IdPopulation"
-                                        listener="#{quadrantsVariableMB.changePopulation}"/>                                            
-                                </p:inputText>
-                            </p:column>
-                        </p:row>
-                        <p:row>
-                            <p:column>
-                                <h:outputText value="BARRIO(S)" />
-                            </p:column>
-                            <p:column > 
-                                Disponibles
-                                <h:inputText
-                                    value="#{quadrantsVariableMB.neighborhoodFilter}"
-                                    size="20">
-                                    <f:ajax 
-                                        event="keyup"
-                                        listener="#{quadrantsVariableMB.changeNeighborhoodFilter}"
-                                        render="IdCurrentNeighborhoods2"/>
-                                </h:inputText>
-                                <br/>
-                                <h:selectManyMenu 
-                                    id="IdCurrentNeighborhoods2"
-                                    value="#{quadrantsVariableMB.selectedAvailableNeighborhoods}"
-                                    style="height:120px; width: 200px;">                                    
-                                    <f:selectItems value="#{quadrantsVariableMB.availableNeighborhoods}"/>                                                                                        
-                                </h:selectManyMenu> 
-                            </p:column>
-                            <p:column>
-                                <br/>
-                                <br/>
-                                <p:commandButton 
-                                    value="+"                                    
-                                    actionListener="#{quadrantsVariableMB.addNeighborhoodInExistingQuadrantClick}"  
-                                    update="IdCurrentNeighborhoods2 IdAddNeighborhoods2"/> 
-                                <p:commandButton 
-                                    value="-"
-                                    actionListener="#{quadrantsVariableMB.removeNeighborhoodInExistingQuadrantClick}"  
-                                    update="IdCurrentNeighborhoods2 IdAddNeighborhoods2"/> 
-                            </p:column>
-                            <p:column>
-                                Agregados<br/>
-                                <!--h:inputText
-                                    value="# {quadrantsVariableMB.neighborhoodFilter2}"
-                                    size="20">
-                                    <f:ajax 
-                                        event="keyup"
-                                        listener="# {quadrantsVariableMB.changeNeighborhoodFilter}"
-                                        render="IdCurrentNeighborhoods2"/>
-                                </h:inputText-->
-                                <h:selectManyMenu 
-                                    id="IdAddNeighborhoods2"
-                                    value="#{quadrantsVariableMB.selectedAvailableAddNeighborhoods}"
-                                    style="height:120px; width: 200px;">
-                                    <f:selectItems value="#{quadrantsVariableMB.availableAddNeighborhoods}"/>
-                                </h:selectManyMenu> 
-                            </p:column>
-                        </p:row>
-                        <p:row>
-                            <p:column>
-                                <h:outputText value="GEOMETRIA"/>
-                            </p:column>
-                            <p:column colspan="3">
-                                <h:outputText 
-                                    id="IdCurrentGeomText" 
-                                    value="#{quadrantsVariableMB.currentGeomText}"
-                                    escape="false"/>
-                                <p:fileUpload                                                                                 
-                                    fileUploadListener="#{quadrantsVariableMB.handleFileUpload}"                                                                                  
-                                    mode="advanced"                                           
-                                    cancelLabel="Cancelar"
-                                    uploadLabel="Subir"                                        
-                                    label="Archivo"
-                                    sizeLimit="50000000"
-                                    update=":IdForm1:message IdShowCurrentMapFile IdCurrentGeomText"
-                                    invalidFileMessage="Tipo de archivo no aceptado"
-                                    invalidSizeMessage="El tamaño del archivo debe ser inferior a 5MB"
-                                    allowTypes="/(\.|\/)(kml|txt)$/">                                        
-                                </p:fileUpload>
-                                <!-- h:outputText id="IdCurrentNameGeomFile" value="Archivo: # {quadrantsVariableMB.currentNameGeomFile }"/-->                                
-                                <p:commandButton 
-                                    value="Visualizar Archivo"
-                                    id="IdShowCurrentMapFile"
-                                    actionListener="#{quadrantsVariableMB.showCurrentGeomFileClick}"
-                                    disabled="#{quadrantsVariableMB.disabledCurrentShowGeomFile}"
-                                    oncomplete="paintMap('#{quadrantsVariableMB.currentNameGeomFile}'); dialogMap.show();"
-                                    update=""/>
-                            </p:column>
-                        </p:row>
-                        <p:row>
-                            <p:column colspan="4" styleClass="ui-widget-header">
-                                <p:commandButton 
-                                    value="Guardar" 
-                                    icon="ui-icon-disk"
-                                    oncomplete="dialogEdit.hide()"
-                                    actionListener="#{quadrantsVariableMB.updateRegistry}"
-                                    update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:IdControls :IdForm1:message"/>
-                                <p:commandButton 
-                                    value="Cancelar" 
-                                    icon="ui-icon-close"
-                                    oncomplete="dialogEdit.hide()"/>
-                            </p:column>
-                        </p:row>
-                    </p:panelGrid>                    
-                </p:dialog> 
+            <h:form id="IdForm2">               
                 <!--   DIALOGO NUEVO -->                
                 <p:dialog id="IdDialogNew" header="NUEVO CUADRANTE" widgetVar="dialogNew" resizable="false" modal="true">  
                     <p:panelGrid id="displayNew">  
@@ -436,7 +300,7 @@
                             <p:column colspan="3">  
                                 <h:outputText 
                                     id="IdNewGeomText" 
-                                    value="#{quadrantsVariableMB.newGeomText}"
+                                    value="#{quadrantsVariableMB.geomText}"
                                     escape="false"/>
                                 <p:fileUpload
                                     fileUploadListener="#{quadrantsVariableMB.handleFileUpload}"                                                                                  
@@ -450,14 +314,11 @@
                                     invalidSizeMessage="El tamaño del archivo debe ser inferior a 5MB"
                                     allowTypes="/(\.|\/)(kml|txt)$/">                                        
                                 </p:fileUpload>
-                                <!-- h:outputText id="IdNewNameGeomFile" value="# {quadrantsVariableMB.newNameGeomFile}"/-->                                
                                 <p:commandButton 
                                     value="Visualizar Archivo"
                                     id="IdShowNewMapFile"
-                                    actionListener="#{quadrantsVariableMB.showNewGeomFileClick}"
-                                    disabled="#{quadrantsVariableMB.disabledNewShowGeomFile}"
-                                    oncomplete="paintMap('#{quadrantsVariableMB.newNameGeomFile}'); dialogMap.show();"
-                                    update=""/>
+                                    disabled="#{quadrantsVariableMB.disabledShowGeomFile}"
+                                    oncomplete="paintMap('#{quadrantsVariableMB.nameGeomFile}'); dialogMap.show();"/>
                             </p:column>
                         </p:row>
                         <p:row>
@@ -471,6 +332,140 @@
                         </p:row>
                     </p:panelGrid>  
                 </p:dialog>                 
+                 <!--   DIALOGO EDITAR -->
+                <p:dialog id="IdDialogEdit" header="EDICION DE CUADRANTE" widgetVar="dialogEdit" resizable="false" modal="true">  
+                    <p:panelGrid id="display">  
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="NOMBRE" />  
+
+                            </p:column>
+                            <p:column colspan="3">
+                                <p:inputText size="70" value="#{quadrantsVariableMB.quadrantName}" /> 
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="CODIGO" />  
+                            </p:column>
+                            <p:column>
+                                <p:inputText 
+                                    size="20" 
+                                    value="#{quadrantsVariableMB.quadrantId}" 
+                                    disabled="true">
+                                </p:inputText>
+                            </p:column>                            
+                        </p:row>                        
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="POBLACION" />  
+                            </p:column>
+                            <p:column>                                
+                                <p:inputText id="IdPopulation" size="20" value="#{quadrantsVariableMB.quadrantPopuation}" >
+                                    <f:ajax                                         
+                                        event="change"                                                                                                            
+                                        render="IdPopulation"
+                                        listener="#{quadrantsVariableMB.changePopulation}"/>                                            
+                                </p:inputText>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="BARRIO(S)" />
+                            </p:column>
+                            <p:column > 
+                                Disponibles
+                                <h:inputText
+                                    value="#{quadrantsVariableMB.neighborhoodFilter}"
+                                    size="20">
+                                    <f:ajax 
+                                        event="keyup"
+                                        listener="#{quadrantsVariableMB.changeNeighborhoodFilter}"
+                                        render="IdCurrentNeighborhoods2"/>
+                                </h:inputText>
+                                <br/>
+                                <h:selectManyMenu 
+                                    id="IdCurrentNeighborhoods2"
+                                    value="#{quadrantsVariableMB.selectedAvailableNeighborhoods}"
+                                    style="height:120px; width: 200px;">                                    
+                                    <f:selectItems value="#{quadrantsVariableMB.availableNeighborhoods}"/>                                                                                        
+                                </h:selectManyMenu> 
+                            </p:column>
+                            <p:column>
+                                <br/>
+                                <br/>
+                                <p:commandButton 
+                                    value="+"                                    
+                                    actionListener="#{quadrantsVariableMB.addNeighborhoodInExistingQuadrantClick}"  
+                                    update="IdCurrentNeighborhoods2 IdAddNeighborhoods2"/> 
+                                <p:commandButton 
+                                    value="-"
+                                    actionListener="#{quadrantsVariableMB.removeNeighborhoodInExistingQuadrantClick}"  
+                                    update="IdCurrentNeighborhoods2 IdAddNeighborhoods2"/> 
+                            </p:column>
+                            <p:column>
+                                Agregados<br/>
+                                <!--h:inputText
+                                    value="# {quadrantsVariableMB.neighborhoodFilter2}"
+                                    size="20">
+                                    <f:ajax 
+                                        event="keyup"
+                                        listener="# {quadrantsVariableMB.changeNeighborhoodFilter}"
+                                        render="IdCurrentNeighborhoods2"/>
+                                </h:inputText-->
+                                <h:selectManyMenu 
+                                    id="IdAddNeighborhoods2"
+                                    value="#{quadrantsVariableMB.selectedAvailableAddNeighborhoods}"
+                                    style="height:120px; width: 200px;">
+                                    <f:selectItems value="#{quadrantsVariableMB.availableAddNeighborhoods}"/>
+                                </h:selectManyMenu> 
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column>
+                                <h:outputText value="GEOMETRIA"/>
+                            </p:column>
+                            <p:column colspan="3">
+                                <h:outputText 
+                                    id="IdCurrentGeomText" 
+                                    value="#{quadrantsVariableMB.geomText}"
+                                    escape="false"/>
+                                <p:fileUpload                                                                                 
+                                    fileUploadListener="#{quadrantsVariableMB.handleFileUpload}"                                                                                  
+                                    mode="advanced"                                           
+                                    cancelLabel="Cancelar"
+                                    uploadLabel="Subir"                                        
+                                    label="Archivo"
+                                    sizeLimit="50000000"
+                                    update=":IdForm1:message IdShowCurrentMapFile IdCurrentGeomText"                                    
+                                    invalidFileMessage="Tipo de archivo no aceptado"
+                                    invalidSizeMessage="El tamaño del archivo debe ser inferior a 5MB"
+                                    allowTypes="/(\.|\/)(kml|txt)$/">                                        
+                                </p:fileUpload>
+                                <p:commandButton 
+                                    value="Visualizar Archivo"
+                                    id="IdShowCurrentMapFile"
+                                    disabled="#{quadrantsVariableMB.disabledShowGeomFile}"
+                                    oncomplete="paintMap('#{quadrantsVariableMB.nameGeomFile}'); dialogMap.show();"
+                                    update=""/>
+                            </p:column>
+                        </p:row>
+                        <p:row>
+                            <p:column colspan="4" styleClass="ui-widget-header">
+                                <p:commandButton 
+                                    value="Guardar" 
+                                    icon="ui-icon-disk"
+                                    oncomplete="dialogEdit.hide()"
+                                    actionListener="#{quadrantsVariableMB.updateRegistry}"
+                                    update=":IdForm1:IdSearchTable :IdForm1:IdControls :IdForm1:IdControls :IdForm1:message"/>
+                                <p:commandButton 
+                                    value="Cancelar" 
+                                    icon="ui-icon-close"
+                                    oncomplete="dialogEdit.hide()"/>
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>                    
+                </p:dialog> 
                 <!-- DIALOGO ELIMINAR-->
                 <p:dialog                                                         
                     id="IdDialogDelete"
@@ -510,7 +505,7 @@
                     <p:commandButton
                         value="Cargar Geometría Seleccionada" 
                         oncomplete="dialogMap.hide();"
-                        update=":IdForm2:displayNew"
+                        update=":IdForm2:displayNew :IdForm2:display"
                         actionListener="#{quadrantsVariableMB.loadGeometrySelected}"/> 
                     <br/>
                     <div id="map" style="width: 625px; height: 515px;">

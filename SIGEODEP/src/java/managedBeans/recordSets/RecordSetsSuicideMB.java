@@ -68,10 +68,10 @@ public class RecordSetsSuicideMB implements Serializable {
     private String sql = "";
     private String exportFileName = "";
 
-    public void onCompleteLoad() {
-        //progress = 0;
-        System.out.println("Termino generacion de XLSX");
-    }
+//    public void onCompleteLoad() {
+//        //progress = 0;
+//        System.out.println("Termino generacion de XLSX");
+//    }
 
     public RecordSetsSuicideMB() {
         tagsList = new ArrayList<>();
