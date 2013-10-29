@@ -409,5 +409,10 @@
             <to-view-id>/web/configurations/quadrants.xhtml</to-view-id>
             <redirect/>
         </navigation-case>                          
+        <navigation-case>
+            <from-outcome>help</from-outcome>
+            <to-view-id>/web/help.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>                          
     </navigation-rule>    
 </faces-config>

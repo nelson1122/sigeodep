@@ -12,8 +12,8 @@
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
             <script type="text/javascript">
-                function startA() {                                          
-                    document.getElementById('IdForm1:IdBtnExport').click();                    
+                function startA() {
+                    document.getElementById('IdForm1:IdBtnExport').click();
                     //$('#IdPaint').click();
                 }
             </script> 
@@ -33,7 +33,7 @@
                 value="No se puede mostrar esta sección por que no cuenta con los permisos suficientes"
                 style=" color: red;"
                 rendered="#{!loginMB.permissionAdministrator}"/> 
-            <h:form enctype="multipart/form-data" id="IdForm" rendered="#{loginMB.permissionAdministrator}">
+            <h:form enctype="multipart/form-data" id="IdForm1" rendered="#{loginMB.permissionAdministrator}">
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
                 <!--===================================================================================-->
 
@@ -121,12 +121,12 @@
                                 <p:column headerText="COMUNA BARRIO RESIDENCIA" width="100">#{rowX.column81}</p:column>
                                 <p:column headerText="DIRECCION RESIDENCIA" width="400">#{rowX.column14}</p:column>
                                 <p:column headerText="TELEFONO" width="100">#{rowX.column11}</p:column>
-                                
+
                                 <p:column headerText="BARRIO EVENTO" width="250">#{rowX.column36}</p:column>
                                 <p:column headerText="COMUNA BARRIO EVENTO" width="100">#{rowX.column82}</p:column>
                                 <p:column headerText="DIRECCION EVENTO" width="400">#{rowX.column35}</p:column>
-                                
-                                
+
+
                                 //------------------------------------------------------------
                                 //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA NO FATAL
                                 //------------------------------------------------------------        
@@ -137,7 +137,7 @@
                                 <p:column headerText="HORA CONSULTA" width="100">#{rowX.column32}</p:column>
                                 <p:column headerText="REMITIDO" width="100">#{rowX.column43}</p:column>
                                 <p:column headerText="REMITIDO DE DONDE" width="250">#{rowX.column44}</p:column>
-                                
+
                                 <p:column headerText="LUGAR DEL HECHO" width="200">#{rowX.column37}</p:column>
                                 <p:column headerText="OTRO LUGAR DEL HECHO" width="200">#{rowX.column19}</p:column>
                                 <p:column headerText="ACTIVIDAD" width="250">#{rowX.column38}</p:column>
@@ -148,11 +148,11 @@
                                 <p:column headerText="CUAL OTRO MECANISMO / OBJETO" width="100">#{rowX.column24}</p:column>                                
                                 <p:column headerText="USO DE ALCOHOL" width="150">#{rowX.column39}</p:column>
                                 <p:column headerText="USO DE DROGAS" width="150">#{rowX.column40}</p:column>
-                                
+
                                 <p:column headerText="GRADO (QUEMADOS)" width="100">#{rowX.column41}</p:column>
                                 <p:column headerText="PORCENTAJE(QUEMADOS)" width="100">#{rowX.column42}</p:column>
-                                
-                                
+
+
                                 <p:column headerText="GRUPO ETNICO" width="100">#{rowX.column10}</p:column>
                                 <p:column headerText="OTRO GRUPO ETNICO" width="100">#{rowX.column26}</p:column>
                                 <p:column headerText="GRUPO VULNERABLE" width="100">#{rowX.column16}</p:column>
@@ -171,7 +171,7 @@
                                 <p:column headerText="CUAL OTRO AGRESOR(VIF)" width="100">#{rowX.column28}</p:column>
                                 <p:column headerText="AG9 SIN DATO(VIF)" width="100">#{rowX.column57}</p:column>
                                 <p:column headerText="AG10 NOVIO(VIF)" width="100">#{rowX.column58}</p:column>                                
-                                
+
                                 //tipo de maltrato
                                 <p:column headerText="MA1 FISICO(VIF)" width="100">#{rowX.column59}</p:column>
                                 <p:column headerText="MA2 PSICOLOGICO(VIF)" width="100">#{rowX.column60}</p:column>
@@ -204,14 +204,9 @@
                                 id="IdProgresValidate" 
                                 interval="500" 
                                 widgetVar="pbAjaxValidate" 
-                                ajax="true" 
+                                ajax="true"                                
                                 value="#{recordSetsVifMB.progress}" 
-                                labelTemplate="{value}%">          
-                                <p:ajax 
-                                    event="complete" 
-                                    listener="#{recordSetsVifMB.onCompleteLoad}" 
-                                    update="IdProgresValidate"/>  
-                            </p:progressBar>
+                                labelTemplate="{value}%"/>
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
                                 <p:row>  
@@ -236,7 +231,7 @@
                                             id="IdR" 
                                             value="Exportar" 
                                             onclick="pbAjaxValidate.start();"
-                                            oncomplete="startA(); pbAjaxValidate.stop();"
+                                            oncomplete="startA(); pbAjaxValidate.cancel();"
                                             actionListener="#{recordSetsVifMB.postProcessXLS1}"/>                                                                                
                                         <h:commandLink id="IdComandLink" style="display: none" >
                                             <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>

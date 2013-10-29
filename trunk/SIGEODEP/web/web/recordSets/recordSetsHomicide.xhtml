@@ -34,7 +34,7 @@
                 value="No se puede mostrar esta sección por que no cuenta con los permisos suficientes"
                 style=" color: red;"
                 rendered="#{!loginMB.permissionAdministrator}"/> 
-            <h:form enctype="multipart/form-data" id="IdForm" rendered="#{loginMB.permissionAdministrator}">
+            <h:form enctype="multipart/form-data" id="IdForm1" rendered="#{loginMB.permissionAdministrator}">
                 <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
                 <!--===================================================================================-->
 
@@ -145,12 +145,7 @@
                                 widgetVar="pbAjaxValidate" 
                                 ajax="true" 
                                 value="#{recordSetsHomicideMB.progress}" 
-                                labelTemplate="{value}%">          
-                                <p:ajax 
-                                    event="complete" 
-                                    listener="#{recordSetsHomicideMB.onCompleteLoad}" 
-                                    update="IdProgresValidate"/>  
-                            </p:progressBar>
+                                labelTemplate="{value}%"/>
                             <br/>
                             <p:panelGrid id="IdControls" style="width: 730px;">
                                 <p:row>  
@@ -173,16 +168,17 @@
                                             id="IdR" 
                                             value="Exportar" 
                                             onclick="pbAjaxValidate.start();"
-                                            oncomplete="startA(); pbAjaxValidate.stop();"
+                                            oncomplete="startA(); pbAjaxValidate.cancel();"
                                             actionListener="#{recordSetsHomicideMB.postProcessXLS1}"/>                                                                                
+                                        <p:dataTable id="IdOutFile" style="display: none;">
+                                            <p:column>                                                  
+                                            </p:column>
+                                        </p:dataTable>
                                         <h:commandLink id="IdComandLink" style="display: none" >
                                             <p:commandButton id="IdBtnExport"  widgetVar="btnExport" value="ExportarA"/>
                                             <p:dataExporter type="xls" target="IdOutFile" fileName="#{recordSetsHomicideMB.exportFileName}"  postProcessor="#{recordSetsHomicideMB.postProcessXLS}"/>  
                                         </h:commandLink>
-                                        <p:dataTable id="IdOutFile" style="display: none">
-                                            <p:column>                                                  
-                                            </p:column>
-                                        </p:dataTable>
+                                        
                                     </p:column>                            
                                 </p:row>
                             </p:panelGrid>

@@ -71,7 +71,7 @@ public class LazyRecordSetsDataModel extends LazyDataModel<RowDataTable> {
 
     @Override
     public List<RowDataTable> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, String> filters) {
-        datasource = new ArrayList<RowDataTable>();
+        datasource = new ArrayList<>();
         try {
             this.setRowCount(rowCountAux);
             if (this.getRowCount() != 0) {

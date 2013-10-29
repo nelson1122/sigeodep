@@ -51,20 +51,19 @@ public class CommunesVariableMB implements Serializable {
     private List<Communes> communesList;
     private Communes currentCommune;
     private String type = "";
-    private String communeName = "";//Nombre del cuadrante.
-    private String communeId = "";//Código del cuadrante.
+    private String communeName = "";//Nombre del comuna.
+    private String communeId = "";//Código del comuna.
     private String communePopuation = "0";
     private String communeType = "";//Tipo de barrio (zona)
-    private String newCommuneName = "";//Nombre del cuadrante.
-    private String newCommuneId = "";//Código del cuadrante.
+    private String newCommuneName = "";//Nombre del comuna.
+    private String newCommuneId = "";//Código del comuna.
     private String newCommunePopuation = "0";
     private String newCommuneType = "";//Tipo de barrio (zona)
     private String newNeighborhoodFilter = "";
-    private String newPoligonText = "";//poligono para el nuevo barrio
-    private boolean disabledShowGeomFile = true;//activar/desactivar boton de ver archivo KML
-    private String newNameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
-    private String newGeomText = "Geometría no cargada";//nombre del archivo de geometria para nuevo barrio
-    private String nameGeomFile = "";//nombre del archivo de geometria para barrio existente
+    private String poligonText = "";//poligono para el nuevo barrio
+    private boolean disabledShowGeomFile = true;//activar/desactivar boton de ver archivo KML    
+    private String nameGeomFile = "";//nombre del archivo de geometria para nuevo barrio    
+    private String geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";//aviso de si la geometria esta o no cargada
     private String neighborhoodFilter = "";
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
@@ -124,7 +123,7 @@ public class CommunesVariableMB implements Serializable {
 
 
         disabledShowGeomFile = true;
-        newNameGeomFile = "Archivo no cargado";
+        nameGeomFile = "Archivo no cargado";
         try {
             java.io.File folder = new java.io.File(realPath + "web/configurations/maps");
             if (folder.exists()) {//verificar que el directorio exista
@@ -132,7 +131,7 @@ public class CommunesVariableMB implements Serializable {
                 nameAndPathFile.append(realPath);
                 nameAndPathFile.append("web/configurations/maps/");
                 nameAndPathFile.append(fileName);
-                newNameGeomFile = fileName;//ruta que se usa en java script
+                nameGeomFile = fileName;//ruta que se usa en java script
                 disabledShowGeomFile = false;
                 java.io.File ficherofile = new java.io.File(nameAndPathFile.toString());
                 if (ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
@@ -146,7 +145,7 @@ public class CommunesVariableMB implements Serializable {
                     }
                     in.close();
                     out.flush();
-                    System.out.println("El fichero de geometria copiado con exito: " + nameAndPathFile.toString());
+                    //System.out.println("El fichero de geometria copiado con exito: " + nameAndPathFile.toString());
                 } catch (IOException e) {
                     System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
                 }
@@ -162,7 +161,7 @@ public class CommunesVariableMB implements Serializable {
         /*
          * cargar el archivo de geometria del varrio
          */
-        newNameGeomFile = "";//nombre del archivo de geometria para nuevo barrio
+        nameGeomFile = "";//nombre del archivo de geometria para nuevo barrio
         try {
             //realizo la copia de este archivo a la carpeta correspondiente a geometrias
             file = event.getFile();
@@ -175,7 +174,7 @@ public class CommunesVariableMB implements Serializable {
 
     public void addNeighborhoodInNewQuadrantClick() {
         /*
-         * adicionar un cuadrante en un nuevo cuadrante
+         * adicionar un barrio en un nuevo comuna
          */
         if (newSelectedAvailableNeighborhoods != null && !newSelectedAvailableNeighborhoods.isEmpty()) {
             for (int i = 0; i < newSelectedAvailableNeighborhoods.size(); i++) {
@@ -197,7 +196,7 @@ public class CommunesVariableMB implements Serializable {
 
     public void addNeighborhoodInExistingQuadrantClick() {
         /*
-         * adicionar un cuadrante a la lista de agregados, cuando se esta editando un cuadrante existente
+         * adicionar un barrio a la lista de agregados, cuando se esta editando un comuna existente
          */
         if (selectedAvailableNeighborhoods != null && !selectedAvailableNeighborhoods.isEmpty()) {
             for (int i = 0; i < selectedAvailableNeighborhoods.size(); i++) {
@@ -219,7 +218,7 @@ public class CommunesVariableMB implements Serializable {
 
     public void removeNeighborhoodInNewQuadrantClick() {
         /*
-         * quitar un cuadrante de la lista de agregados, cuando se esta creando un nuevo cuadrante
+         * quitar un barrio de la lista de agregados, cuando se esta creando un nuevo comuna
          */
         if (newSelectedAvailableAddNeighborhoods != null && !newSelectedAvailableAddNeighborhoods.isEmpty()) {
             for (int i = 0; i < newSelectedAvailableAddNeighborhoods.size(); i++) {
@@ -241,7 +240,7 @@ public class CommunesVariableMB implements Serializable {
 
     public void removeNeighborhoodInExistingQuadrantClick() {
         /*
-         * quitar un cuadrante de la lista de agregados, cuando se esta editando un cuadrante existente
+         * quitar un barrio de la lista de agregados, cuando se esta editando un comuna existente
          */
         if (selectedAvailableAddNeighborhoods != null && !selectedAvailableAddNeighborhoods.isEmpty()) {
             for (int i = 0; i < selectedAvailableAddNeighborhoods.size(); i++) {
@@ -264,8 +263,9 @@ public class CommunesVariableMB implements Serializable {
     public void loadRegistry() {
         /*
          * carga de los datos de un registro cuando se selecciona una fila de 
-         * la tabla que muestra los cuadrantes existentes
+         * la tabla que muestra las comunas existentes
          */
+        disabledShowGeomFile = true;
         currentCommune = null;
         if (selectedRowDataTable != null) {
             currentCommune = communesFacade.find(Short.parseShort(selectedRowDataTable.getColumn1()));
@@ -279,7 +279,7 @@ public class CommunesVariableMB implements Serializable {
                 communeName = "";
             }
             if (currentCommune.getCommuneId() != null) {
-                communeId = currentCommune.getCommuneId().toString();// integer NOT NULL, -- Código del cuadrante.
+                communeId = currentCommune.getCommuneId().toString();// integer NOT NULL, -- Código del comuna.
             } else {
                 communeId = "";
             }
@@ -296,6 +296,12 @@ public class CommunesVariableMB implements Serializable {
                 }
             } else {
                 communeType = "1";
+            }
+            //determino si la geometria ya esta cargada
+            if (currentCommune.getGeom() != null && currentCommune.getGeom().trim().length() != 0) {
+                geomText = "<div style=\"color: blue;\"><b>Tiene geometría</b></div>";
+            } else {
+                geomText = "<div style=\"color: red;\"><b>No tiene geometría</b></div>";
             }
 
             //determino los barrios
@@ -325,13 +331,13 @@ public class CommunesVariableMB implements Serializable {
     }
 
     public void showGeomFileClick() {
-        newPoligonText = "";
+        poligonText = "";
     }
 
     public void loadGeometrySelected() {
-        if (newPoligonText != null && newPoligonText.trim().length() != 0) {
+        if (poligonText != null && poligonText.trim().length() != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "la geometria ha sido cargada"));
-            newGeomText = "Geometria cargada";
+            geomText = "<div style=\"color: blue;\"><b>Geometría cargada</b></div>";
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado ninguna geometria"));
         }
@@ -339,12 +345,12 @@ public class CommunesVariableMB implements Serializable {
 
     public void deleteRegistry() {
         if (currentCommune != null) {
-            //se elimina de la tabla cuadrantes 
+            //se elimina de la tabla comunas 
+            connectionJdbcMB.setShowMessages(false);
             connectionJdbcMB.non_query(""
-                    + " DELETE FROM neighborhood_quadrant WHERE neighborhood_id = " + currentCommune.getCommuneId() + "; \n"
-                    + " DELETE FROM neighborhoods WHERE neighborhood_id = " + currentCommune.getCommuneId() + "; \n");
+                    + " DELETE FROM communes WHERE commune_id = " + currentCommune.getCommuneId() + "; \n");
             if (connectionJdbcMB.getMsj().startsWith("ERROR")) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El sistema esta haciendo uso de este cuadrante por lo cual no puede ser eliminado"));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Existen barrios que pertenecen a esta comuna, edite esta comuna y quite los barrios agregados para poder realizar esta eliminación"));
             } else {
                 currentCommune = null;
                 selectedRowDataTable = null;
@@ -353,6 +359,7 @@ public class CommunesVariableMB implements Serializable {
                 btnRemoveDisabled = true;
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El registro fue eliminado"));
             }
+            connectionJdbcMB.setShowMessages(true);
         }
     }
 
@@ -372,12 +379,12 @@ public class CommunesVariableMB implements Serializable {
             if (continueProcess) {
                 communeName = communeName.toUpperCase();
                 try {
-                    //buscar si el codigo o cuadrante ya esta registrado
-                    ResultSet rs = connectionJdbcMB.consult("SELECT * FROM quadrants "
-                            + " WHERE quadrant_name LIKE '" + communeName + "' AND "
-                            + " quadrant_name NOT LIKE '" + currentCommune.getCommuneName() + "'");
+                    //buscar si el nombre de la comuna ya esta registrado
+                    ResultSet rs = connectionJdbcMB.consult(" SELECT * FROM communes "
+                            + " WHERE commune_name LIKE '" + communeName + "' AND "
+                            + " commune_name NOT LIKE '" + currentCommune.getCommuneName() + "'");
                     if (rs.next()) {
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una cuadrante con un nombre igual"));
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una comuna con un nombre igual"));
                         continueProcess = false;
                     }
                 } catch (SQLException ex) {
@@ -386,33 +393,25 @@ public class CommunesVariableMB implements Serializable {
             if (continueProcess) {
                 communeName = communeName.toUpperCase();
                 currentCommune.setCommuneName(communeName);
-                //currentQuadrant.setQuadrantId(Integer.parseInt(quadrantId));                
+                
+                if (poligonText != null && poligonText.trim().length() != 0) {
+                    currentCommune.setGeom(poligonText);
+                }
+                currentCommune.setAreaId(Short.parseShort(communeType));
                 currentCommune.setPopulation(Integer.parseInt(communePopuation));
                 communesFacade.edit(currentCommune);
 
                 String sql = "";
-                //elimino los barrios de este cuadrante
-                connectionJdbcMB.non_query("DELETE FROM neighborhood_quadrant WHERE quadrant_id = " + currentCommune.getCommuneId());
-                //se inserta los diferentes barrios que se haya indicado
+                //a los barrios que contengan esta comuna les asigno sin dato, por que no sae sabe si quedaran todas 
+                connectionJdbcMB.non_query(" UPDATE neighborhoods SET neighborhood_suburb = 0  WHERE neighborhood_suburb = " + currentCommune.getCommuneId());
+                //se inserta los diferentes barrios que se haya indicado a la camuna
                 if (availableAddNeighborhoods != null && !availableAddNeighborhoods.isEmpty()) {
                     for (int i = 0; i < availableAddNeighborhoods.size(); i++) {
-                        ResultSet rs = connectionJdbcMB.consult(""
-                                + "SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_name LIKE '" + availableAddNeighborhoods.get(i) + "'");
-                        try {
-                            if (rs.next()) {
-                                sql = sql
-                                        + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
-                                        + rs.getString(1) + ","//id_cuadrante
-                                        + communeId + "); \n";//corredor
-                            }
-                        } catch (SQLException e) {
-                        }
+                        sql = sql
+                                + " UPDATE neighborhoods "
+                                + " SET neighborhood_suburb = " + currentCommune.getCommuneId() + " "
+                                + " WHERE neighborhood_name LIKE '" + availableAddNeighborhoods.get(i) + "'; \n";
                     }
-                } else {//se agrega sin dato si no se ha seleccionado algun barrio
-                    sql = sql
-                            + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
-                            + "52001,"//id_barrio
-                            + newCommuneId + "); \n";//id_cuadrante
                 }
                 connectionJdbcMB.non_query(sql);
                 //reinicio controles
@@ -422,7 +421,7 @@ public class CommunesVariableMB implements Serializable {
                 createDynamicTable();
                 btnEditDisabled = true;
                 btnRemoveDisabled = true;
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Registro actualizado");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
@@ -438,10 +437,10 @@ public class CommunesVariableMB implements Serializable {
         if (continueProcess) {
             newCommuneName = newCommuneName.toUpperCase();
             try {
-                //buscar si el nombre de cuadrante ya esta registrado
-                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM quadrants WHERE quadrant_name LIKE '" + newCommuneName + "'");
+                //buscar si el nombre de la comuna ya esta registrado
+                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM communes WHERE commune_name LIKE '" + newCommuneName + "'");
                 if (rs.next()) {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe un cuadrante con un nombre igual"));
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una comuna con un nombre igual"));
                     continueProcess = false;
                 }
             } catch (SQLException ex) {
@@ -449,10 +448,10 @@ public class CommunesVariableMB implements Serializable {
         }
         if (continueProcess) {
             try {
-                //buscar si el codigo o cuadrante ya esta registrado
-                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM neighborhoods WHERE neighborhood_id = " + newCommuneId);
+                //buscar si el codigo o comuna ya esta registrado
+                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM communes WHERE commune_id = " + newCommuneId);
                 if (rs.next()) {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe un cuadrante con un codigo igual"));
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una comuna con un codigo igual"));
                     continueProcess = false;
                 }
             } catch (SQLException ex) {
@@ -460,38 +459,30 @@ public class CommunesVariableMB implements Serializable {
         }
         if (continueProcess) {
             try {
-                String sql = "INSERT INTO quadrants VALUES (";
+                String sql = "INSERT INTO communes VALUES (";
                 String geom = "null";
-                if (newPoligonText != null && newPoligonText.trim().length() != 0) {
-                    geom = "'" + newPoligonText + "'";
+                if (poligonText != null && poligonText.trim().length() != 0) {
+                    geom = "'" + poligonText + "'";
                 }
                 sql = sql
                         + newCommuneId + ",'"//codigo
                         + newCommuneName + "',"//nombre
                         + newCommunePopuation + ","//poblacion
+                        + newCommuneType + ","//area
                         + geom + "); \n";//geometria
-                //se inserta los diferentes cuadrantes que se haya indicado
+                //se inserta los diferentes barrios que se haya indicado
                 if (newAvailableAddNeighborhoods != null && !newAvailableAddNeighborhoods.isEmpty()) {
                     for (int i = 0; i < newAvailableAddNeighborhoods.size(); i++) {
-                        ResultSet rs = connectionJdbcMB.consult(""
-                                + "SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_name LIKE '" + newAvailableAddNeighborhoods.get(i) + "'");
-                        if (rs.next()) {
-                            sql = sql
-                                    + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
-                                    + rs.getString(1) + ","//id_barrio
-                                    + newCommuneId + "); \n";//id_cuadrante
-                        }
+                        sql = sql
+                                + " UPDATE neighborhoods "
+                                + " SET neighborhood_suburb = " + newCommuneId + " "
+                                + " WHERE neighborhood_name LIKE '" + newAvailableAddNeighborhoods.get(i) + "' \n";
+
                     }
-                } else {//se agrega sin dato si no se ha seleccionado algun barrio
-                    sql = sql
-                            + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
-                            + "52001,"//id_barrio
-                            + newCommuneId + "); \n";//id_cuadrante
                 }
                 connectionJdbcMB.non_query(sql);
             } catch (Exception e) {
             }
-
             currentCommune = null;
             selectedRowDataTable = null;
             createDynamicTable();
@@ -504,15 +495,24 @@ public class CommunesVariableMB implements Serializable {
     }
 
     public void newRegistry() {
+        //se quita elemento seleccionado de la tabla, se inhabilitan controles
+        selectedRowDataTable = null;
+        btnEditDisabled = true;
+        btnRemoveDisabled = true;
         //se limpia el formulario        
-        newCommuneId = String.valueOf(communesFacade.findMax() + 1);//id del cuadrante.
-        newCommuneName = "";//Nombre del cuadrante.                
+        newCommuneId = String.valueOf(communesFacade.findMax() + 1);//id del comuna.
+        newCommuneName = "";//Nombre del comuna.                
         newCommunePopuation = "0";
         newAvailableNeighborhoods = new ArrayList<>();
         newSelectedAvailableNeighborhoods = new ArrayList<>();
         newAvailableAddNeighborhoods = new ArrayList<>();
         newSelectedAvailableAddNeighborhoods = new ArrayList<>();
-        changeNewNeighborhoodFilter();//determinar cuadrantes
+        changeNewNeighborhoodFilter();//determinar barrios
+
+        nameGeomFile = "";
+        geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";//nombre del archivo de geometria para nuevo barrio
+        poligonText = "";
+        disabledShowGeomFile = true;
     }
 
     public void changeNewPopulation() {
@@ -674,10 +674,10 @@ public class CommunesVariableMB implements Serializable {
         newAvailableAddNeighborhoods = new ArrayList<>();
         newSelectedAvailableAddNeighborhoods = new ArrayList<>();
 
-        newPoligonText = "";
+        poligonText = "";
         disabledShowGeomFile = true;
-        newNameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
-        newGeomText = "Geometría no cargada";//nombre del archivo de geometria para nuevo barrio
+        nameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
+        geomText = "Geometría no cargada";//nombre del archivo de geometria para nuevo barrio
         nameGeomFile = "";//nombre del archivo de geometria para barrio existente
     }
 
@@ -874,14 +874,6 @@ public class CommunesVariableMB implements Serializable {
         this.newCommuneType = newCommuneType;
     }
 
-    public String getNewNameGeomFile() {
-        return newNameGeomFile;
-    }
-
-    public void setNewNameGeomFile(String newNameGeomFile) {
-        this.newNameGeomFile = newNameGeomFile;
-    }
-
     public String getNameGeomFile() {
         return nameGeomFile;
     }
@@ -898,19 +890,19 @@ public class CommunesVariableMB implements Serializable {
         this.disabledShowGeomFile = disabledShowGeomFile;
     }
 
-    public String getNewGeomText() {
-        return newGeomText;
+    public String getPoligonText() {
+        return poligonText;
     }
 
-    public void setNewGeomText(String newGeomText) {
-        this.newGeomText = newGeomText;
+    public void setPoligonText(String poligonText) {
+        this.poligonText = poligonText;
     }
 
-    public String getNewPoligonText() {
-        return newPoligonText;
+    public String getGeomText() {
+        return geomText;
     }
 
-    public void setNewPoligonText(String newPoligonText) {
-        this.newPoligonText = newPoligonText;
+    public void setGeomText(String geomText) {
+        this.geomText = geomText;
     }
 }

@@ -22,10 +22,8 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
-import model.dao.CommunesFacade;
 import model.dao.CorridorsFacade;
 import model.dao.NeighborhoodsFacade;
-import model.pojo.Communes;
 import model.pojo.Corridors;
 import org.apache.poi.hssf.usermodel.*;
 import org.primefaces.event.FileUploadEvent;
@@ -52,16 +50,15 @@ public class CorridorsVariableMB implements Serializable {
     NeighborhoodsFacade neighborhoodsFacade;
     private List<Corridors> corridorsList;
     private Corridors currentCorridor;
-    private String corridorName = "";//Nombre del cuadrante.
-    private String corridorId = "";//Código del cuadrante.
+    private String corridorName = "";//Nombre del corredor.
+    private String corridorId = "";//Código del corredor.
     private String corridorPopuation = "0";
-    private String newCorridorName = "";//Nombre del cuadrante.
-    private String newCorridorId = "";//Código del cuadrante.
+    private String newCorridorName = "";//Nombre del corredor.
+    private String newCorridorId = "";//Código del corredor.
     private String newCorridorPopuation = "0";
-    private String newPoligonText = "";//poligono para el nuevo barrio
+    private String poligonText = "";//poligono para el nuevo barrio    
     private boolean disabledShowGeomFile = true;//activar/desactivar boton de ver archivo KML
-    private String newNameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
-    private String newGeomText = "Geometría no cargada";//nombre del archivo de geometria para nuevo barrio
+    private String geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";//aviso de si la geometria esta o no cargada
     private String nameGeomFile = "";//nombre del archivo de geometria para barrio existente
     private String newNeighborhoodFilter = "";
     private String neighborhoodFilter = "";
@@ -123,7 +120,7 @@ public class CorridorsVariableMB implements Serializable {
 
 
         disabledShowGeomFile = true;
-        newNameGeomFile = "Archivo no cargado";
+        nameGeomFile = "Archivo no cargado";
         try {
             java.io.File folder = new java.io.File(realPath + "web/configurations/maps");
             if (folder.exists()) {//verificar que el directorio exista
@@ -131,7 +128,7 @@ public class CorridorsVariableMB implements Serializable {
                 nameAndPathFile.append(realPath);
                 nameAndPathFile.append("web/configurations/maps/");
                 nameAndPathFile.append(fileName);
-                newNameGeomFile = fileName;//ruta que se usa en java script
+                nameGeomFile = fileName;//ruta que se usa en java script
                 disabledShowGeomFile = false;
                 java.io.File ficherofile = new java.io.File(nameAndPathFile.toString());
                 if (ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
@@ -145,7 +142,7 @@ public class CorridorsVariableMB implements Serializable {
                     }
                     in.close();
                     out.flush();
-                    System.out.println("El fichero de geometria copiado con exito: " + nameAndPathFile.toString());
+                    //System.out.println("El fichero de geometria copiado con exito: " + nameAndPathFile.toString());
                 } catch (IOException e) {
                     System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
                 }
@@ -161,7 +158,7 @@ public class CorridorsVariableMB implements Serializable {
         /*
          * cargar el archivo de geometria del varrio
          */
-        newNameGeomFile = "";//nombre del archivo de geometria para nuevo barrio
+        nameGeomFile = "";//nombre del archivo de geometria para nuevo barrio
         try {
             //realizo la copia de este archivo a la carpeta correspondiente a geometrias
             file = event.getFile();
@@ -174,7 +171,7 @@ public class CorridorsVariableMB implements Serializable {
 
     public void addNeighborhoodInNewQuadrantClick() {
         /*
-         * adicionar un cuadrante en un nuevo cuadrante
+         * adicionar un barrio en un nuevo corredor
          */
         if (newSelectedAvailableNeighborhoods != null && !newSelectedAvailableNeighborhoods.isEmpty()) {
             for (int i = 0; i < newSelectedAvailableNeighborhoods.size(); i++) {
@@ -196,7 +193,7 @@ public class CorridorsVariableMB implements Serializable {
 
     public void addNeighborhoodInExistingQuadrantClick() {
         /*
-         * adicionar un cuadrante a la lista de agregados, cuando se esta editando un cuadrante existente
+         * adicionar un barrio a la lista de agregados, cuando se esta editando un corredor existente
          */
         if (selectedAvailableNeighborhoods != null && !selectedAvailableNeighborhoods.isEmpty()) {
             for (int i = 0; i < selectedAvailableNeighborhoods.size(); i++) {
@@ -218,7 +215,7 @@ public class CorridorsVariableMB implements Serializable {
 
     public void removeNeighborhoodInNewQuadrantClick() {
         /*
-         * quitar un cuadrante de la lista de agregados, cuando se esta creando un nuevo cuadrante
+         * quitar un barrio de la lista de agregados, cuando se esta creando un nuevo corredor
          */
         if (newSelectedAvailableAddNeighborhoods != null && !newSelectedAvailableAddNeighborhoods.isEmpty()) {
             for (int i = 0; i < newSelectedAvailableAddNeighborhoods.size(); i++) {
@@ -240,7 +237,7 @@ public class CorridorsVariableMB implements Serializable {
 
     public void removeNeighborhoodInExistingQuadrantClick() {
         /*
-         * quitar un cuadrante de la lista de agregados, cuando se esta editando un cuadrante existente
+         * quitar un barrio de la lista de agregados, cuando se esta editando un corredor existente
          */
         if (selectedAvailableAddNeighborhoods != null && !selectedAvailableAddNeighborhoods.isEmpty()) {
             for (int i = 0; i < selectedAvailableAddNeighborhoods.size(); i++) {
@@ -263,8 +260,9 @@ public class CorridorsVariableMB implements Serializable {
     public void loadRegistry() {
         /*
          * carga de los datos de un registro cuando se selecciona una fila de 
-         * la tabla que muestra los cuadrantes existentes
+         * la tabla que muestra los corredors existentes
          */
+        disabledShowGeomFile = true;
         currentCorridor = null;
         if (selectedRowDataTable != null) {
             currentCorridor = corridorsFacade.find(Short.parseShort(selectedRowDataTable.getColumn1()));
@@ -278,7 +276,7 @@ public class CorridorsVariableMB implements Serializable {
                 corridorName = "";
             }
             if (currentCorridor.getCorridorId() != null) {
-                corridorId = currentCorridor.getCorridorId().toString();// integer NOT NULL, -- Código del cuadrante.
+                corridorId = currentCorridor.getCorridorId().toString();// integer NOT NULL, -- Código del corredor.
             } else {
                 corridorId = "";
             }
@@ -286,6 +284,12 @@ public class CorridorsVariableMB implements Serializable {
                 corridorPopuation = String.valueOf(currentCorridor.getPopulation());
             } else {
                 corridorPopuation = "0";
+            }
+            //determino si la geometria ya esta cargada
+            if (currentCorridor.getGeom() != null && currentCorridor.getGeom().trim().length() != 0) {
+                geomText = "<div style=\"color: blue;\"><b>Tiene geometría</b></div>";
+            } else {
+                geomText = "<div style=\"color: red;\"><b>No tiene geometría</b></div>";
             }
 
             //determino los barrios
@@ -315,13 +319,13 @@ public class CorridorsVariableMB implements Serializable {
     }
 
     public void showGeomFileClick() {
-        newPoligonText = "";
+        poligonText = "";
     }
 
     public void loadGeometrySelected() {
-        if (newPoligonText != null && newPoligonText.trim().length() != 0) {
+        if (poligonText != null && poligonText.trim().length() != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "la geometria ha sido cargada"));
-            newGeomText = "Geometria cargada";
+            geomText = "<div style=\"color: blue;\"><b>Geometría cargada</b></div>";            
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado ninguna geometria"));
         }
@@ -329,12 +333,12 @@ public class CorridorsVariableMB implements Serializable {
 
     public void deleteRegistry() {
         if (currentCorridor != null) {
-            //se elimina de la tabla cuadrantes 
+            //se elimina de la tabla corredors 
+            connectionJdbcMB.setShowMessages(false);
             connectionJdbcMB.non_query(""
-                    + " DELETE FROM neighborhood_quadrant WHERE neighborhood_id = " + currentCorridor.getCorridorId() + "; \n"
-                    + " DELETE FROM neighborhoods WHERE neighborhood_id = " + currentCorridor.getCorridorId() + "; \n");
+                    + " DELETE FROM corridors WHERE corridor_id = " + currentCorridor.getCorridorId() + "; \n");
             if (connectionJdbcMB.getMsj().startsWith("ERROR")) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El sistema esta haciendo uso de este cuadrante por lo cual no puede ser eliminado"));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Existen barrios que pertenecen a este ccorredor, edite este corredor y quite los barrios agregados para poder realizar esta eliminación"));
             } else {
                 currentCorridor = null;
                 selectedRowDataTable = null;
@@ -343,6 +347,7 @@ public class CorridorsVariableMB implements Serializable {
                 btnRemoveDisabled = true;
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El registro fue eliminado"));
             }
+            connectionJdbcMB.setShowMessages(true);
         }
     }
 
@@ -362,12 +367,12 @@ public class CorridorsVariableMB implements Serializable {
             if (continueProcess) {
                 corridorName = corridorName.toUpperCase();
                 try {
-                    //buscar si el codigo o cuadrante ya esta registrado
-                    ResultSet rs = connectionJdbcMB.consult("SELECT * FROM quadrants "
-                            + " WHERE quadrant_name LIKE '" + corridorName + "' AND "
-                            + " quadrant_name NOT LIKE '" + currentCorridor.getCorridorName() + "'");
+                    //buscar si el nombre del corredor  ya esta registrado
+                    ResultSet rs = connectionJdbcMB.consult("SELECT * FROM corridors "
+                            + " WHERE corridor_name LIKE '" + corridorName + "' AND "
+                            + " corridor_name NOT LIKE '" + currentCorridor.getCorridorName() + "'");
                     if (rs.next()) {
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe un cuadrante con un nombre igual"));
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe un corredor con un nombre igual"));
                         continueProcess = false;
                     }
                 } catch (SQLException ex) {
@@ -376,33 +381,22 @@ public class CorridorsVariableMB implements Serializable {
             if (continueProcess) {
                 corridorName = corridorName.toUpperCase();
                 currentCorridor.setCorridorName(corridorName);
-                //currentQuadrant.setQuadrantId(Integer.parseInt(quadrantId));                
                 currentCorridor.setPopulation(Integer.parseInt(corridorPopuation));
+                if (poligonText != null && poligonText.trim().length() != 0) {
+                    currentCorridor.setGeom(poligonText);
+                }
                 corridorsFacade.edit(currentCorridor);
-
                 String sql = "";
-                //elimino los barrios de este cuadrante
-                connectionJdbcMB.non_query("DELETE FROM neighborhood_quadrant WHERE quadrant_id = " + currentCorridor.getCorridorId());
+                //a los barrios que contengan este corredor les asigno sin dato, por que no se sabe si quedaran todas 
+                connectionJdbcMB.non_query("UPDATE neighborhoods SET neighborhood_corridor = 0  WHERE neighborhood_corridor = " + currentCorridor.getCorridorId());
                 //se inserta los diferentes barrios que se haya indicado
                 if (availableAddNeighborhoods != null && !availableAddNeighborhoods.isEmpty()) {
                     for (int i = 0; i < availableAddNeighborhoods.size(); i++) {
-                        ResultSet rs = connectionJdbcMB.consult(""
-                                + "SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_name LIKE '" + availableAddNeighborhoods.get(i) + "'");
-                        try {
-                            if (rs.next()) {
-                                sql = sql
-                                        + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
-                                        + rs.getString(1) + ","//id_cuadrante
-                                        + corridorId + "); \n";//corredor
-                            }
-                        } catch (SQLException e) {
-                        }
+                        sql = sql
+                                + " UPDATE neighborhoods "
+                                + " SET neighborhood_corridor = " + currentCorridor.getCorridorId() + " "
+                                + " WHERE neighborhood_name LIKE '" + availableAddNeighborhoods.get(i) + "'; \n";
                     }
-                } else {//se agrega sin dato si no se ha seleccionado algun barrio
-                    sql = sql
-                            + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
-                            + "52001,"//id_barrio
-                            + newCorridorId + "); \n";//id_cuadrante
                 }
                 connectionJdbcMB.non_query(sql);
                 //reinicio controles
@@ -412,7 +406,7 @@ public class CorridorsVariableMB implements Serializable {
                 createDynamicTable();
                 btnEditDisabled = true;
                 btnRemoveDisabled = true;
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Registro actualizado");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
@@ -428,10 +422,10 @@ public class CorridorsVariableMB implements Serializable {
         if (continueProcess) {
             newCorridorName = newCorridorName.toUpperCase();
             try {
-                //buscar si el nombre de cuadrante ya esta registrado
-                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM quadrants WHERE quadrant_name LIKE '" + newCorridorName + "'");
+                //buscar si el nombre de corredor ya esta registrado
+                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM corridors WHERE corridor_name LIKE '" + newCorridorName + "'");
                 if (rs.next()) {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe un cuadrante con un nombre igual"));
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe un corredor con un nombre igual"));
                     continueProcess = false;
                 }
             } catch (SQLException ex) {
@@ -439,10 +433,10 @@ public class CorridorsVariableMB implements Serializable {
         }
         if (continueProcess) {
             try {
-                //buscar si el codigo o cuadrante ya esta registrado
-                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM neighborhoods WHERE neighborhood_id = " + newCorridorId);
+                //buscar si el codigo o corredor ya esta registrado
+                ResultSet rs = connectionJdbcMB.consult("SELECT * FROM corridors WHERE corridor_id = " + newCorridorId);
                 if (rs.next()) {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe un cuadrante con un codigo igual"));
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe un corredor con un codigo igual"));
                     continueProcess = false;
                 }
             } catch (SQLException ex) {
@@ -450,33 +444,29 @@ public class CorridorsVariableMB implements Serializable {
         }
         if (continueProcess) {
             try {
-                String sql = "INSERT INTO quadrants VALUES (";
+                String sql = "INSERT INTO corridors VALUES (";
                 String geom = "null";
-                if (newPoligonText != null && newPoligonText.trim().length() != 0) {
-                    geom = "'" + newPoligonText + "'";
+                if (poligonText != null && poligonText.trim().length() != 0) {
+                    geom = "'" + poligonText + "'";
                 }
                 sql = sql
                         + newCorridorId + ",'"//codigo
                         + newCorridorName + "',"//nombre
                         + newCorridorPopuation + ","//poblacion
                         + geom + "); \n";//geometria
-                //se inserta los diferentes cuadrantes que se haya indicado
+
+//                sql = sql
+//                        + " UPDATE neighborhoods "
+//                        + " SET neighborhood_corridor = null "
+//                        + " WHERE neighborhood_corridor = " + newCorridorId + " \n";
+                //se inserta los diferentes barrios que se haya indicado
                 if (newAvailableAddNeighborhoods != null && !newAvailableAddNeighborhoods.isEmpty()) {
                     for (int i = 0; i < newAvailableAddNeighborhoods.size(); i++) {
-                        ResultSet rs = connectionJdbcMB.consult(""
-                                + "SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_name LIKE '" + newAvailableAddNeighborhoods.get(i) + "'");
-                        if (rs.next()) {
-                            sql = sql
-                                    + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
-                                    + rs.getString(1) + ","//id_barrio
-                                    + newCorridorId + "); \n";//id_cuadrante
-                        }
+                        sql = sql
+                                + " UPDATE neighborhoods "
+                                + " SET neighborhood_corridor = " + newCorridorId + " "
+                                + " WHERE neighborhood_name LIKE '" + newAvailableAddNeighborhoods.get(i) + "' \n";
                     }
-                } else {//se agrega sin dato si no se ha seleccionado algun barrio
-                    sql = sql
-                            + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
-                            + "52001,"//id_barrio
-                            + newCorridorId + "); \n";//id_cuadrante
                 }
                 connectionJdbcMB.non_query(sql);
             } catch (Exception e) {
@@ -484,25 +474,35 @@ public class CorridorsVariableMB implements Serializable {
 
             currentCorridor = null;
             selectedRowDataTable = null;
+            newNeighborhoodFilter = "";
             createDynamicTable();
             newRegistry();//limpiar formulario
             btnEditDisabled = true;
             btnRemoveDisabled = true;
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Nuevo cuadrante almacenado.");
+            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Nuevo Corredor almacenado.");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
 
     public void newRegistry() {
+        //se quita elemento seleccionado de la tabla, se inhabilitan controles
+        selectedRowDataTable = null;
+        btnEditDisabled = true;
+        btnRemoveDisabled = true;
         //se limpia el formulario        
-        newCorridorId = String.valueOf(corridorsFacade.findMax() + 1);//id del cuadrante.
-        newCorridorName = "";//Nombre del cuadrante.                
+        newCorridorId = String.valueOf(corridorsFacade.findMax() + 1);//id del corredor.
+        newCorridorName = "";//Nombre del corredor
         newCorridorPopuation = "0";
         newAvailableNeighborhoods = new ArrayList<>();
         newSelectedAvailableNeighborhoods = new ArrayList<>();
         newAvailableAddNeighborhoods = new ArrayList<>();
         newSelectedAvailableAddNeighborhoods = new ArrayList<>();
         changeNewNeighborhoodFilter();//determinar barrios
+
+        nameGeomFile = "";
+        geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";//nombre del archivo de geometria para nuevo barrio
+        poligonText = "";
+        disabledShowGeomFile = true;
     }
 
     public void changeNewPopulation() {
@@ -638,10 +638,10 @@ public class CorridorsVariableMB implements Serializable {
         newAvailableAddNeighborhoods = new ArrayList<>();
         newSelectedAvailableAddNeighborhoods = new ArrayList<>();
 
-        newPoligonText = "";
+        poligonText = "";
         disabledShowGeomFile = true;
-        newNameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
-        newGeomText = "Geometría no cargada";//nombre del archivo de geometria para nuevo barrio
+        nameGeomFile = "Archivo no cargado";//nombre del archivo de geometria para nuevo barrio
+        geomText = "Geometría no cargada";//nombre del archivo de geometria para nuevo barrio
         nameGeomFile = "";//nombre del archivo de geometria para barrio existente
     }
 
@@ -822,14 +822,6 @@ public class CorridorsVariableMB implements Serializable {
         this.newSelectedAvailableAddNeighborhoods = newSelectedAvailableAddNeighborhoods;
     }
 
-    public String getNewNameGeomFile() {
-        return newNameGeomFile;
-    }
-
-    public void setNewNameGeomFile(String newNameGeomFile) {
-        this.newNameGeomFile = newNameGeomFile;
-    }
-
     public String getNameGeomFile() {
         return nameGeomFile;
     }
@@ -846,19 +838,19 @@ public class CorridorsVariableMB implements Serializable {
         this.disabledShowGeomFile = disabledShowGeomFile;
     }
 
-    public String getNewGeomText() {
-        return newGeomText;
+    public String getPoligonText() {
+        return poligonText;
     }
 
-    public void setNewGeomText(String newGeomText) {
-        this.newGeomText = newGeomText;
+    public void setPoligonText(String poligonText) {
+        this.poligonText = poligonText;
     }
 
-    public String getNewPoligonText() {
-        return newPoligonText;
+    public String getGeomText() {
+        return geomText;
     }
 
-    public void setNewPoligonText(String newPoligonText) {
-        this.newPoligonText = newPoligonText;
+    public void setGeomText(String geomText) {
+        this.geomText = geomText;
     }
 }

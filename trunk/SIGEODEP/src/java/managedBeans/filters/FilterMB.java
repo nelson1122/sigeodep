@@ -88,8 +88,8 @@ public class FilterMB {
     private List<RowDataTable> filtersAppliedList = new ArrayList<>();
     private String sqlUndo = "";
     private String filterDescription = "";
-    private String filterName = "";
-
+    private String filterName = ""; 
+    
     /**
      * Creates a new instance of FilterMB
      */
@@ -303,6 +303,9 @@ public class FilterMB {
         }
         return arrayReturn;
     }
+
+    
+    
 
     private ArrayList<String> loadFoundVariables(String filter) {
         /*
@@ -709,8 +712,8 @@ public class FilterMB {
                     }
                     if (splitValue != null && splitValue.length > 1) {
                         if (splitValue[1].trim().length() != 0) {
-                        addTableProjectRecords(rs.getInt("project_id"), rs.getInt("record_id"), maxColumnId + 1, splitValue[1]);
-                        currentNumberInserts++;
+                            addTableProjectRecords(rs.getInt("project_id"), rs.getInt("record_id"), maxColumnId + 1, splitValue[1]);
+                            currentNumberInserts++;
                         }//                      
                     }
                 }
@@ -1824,4 +1827,8 @@ public class FilterMB {
     public void setFiltersAppliedList(List<RowDataTable> filtersAppliedList) {
         this.filtersAppliedList = filtersAppliedList;
     }
+
+    
+    
+    
 }

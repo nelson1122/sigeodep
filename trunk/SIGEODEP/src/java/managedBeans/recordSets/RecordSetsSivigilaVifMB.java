@@ -71,10 +71,10 @@ public class RecordSetsSivigilaVifMB implements Serializable {
     private int progress = 0;//PROGRESO AL CREAR XLS
     private String sql = "";
 
-    public void onCompleteLoad() {
-        //progress = 0;
-        System.out.println("Termino generacion de XLSX");
-    }
+//    public void onCompleteLoad() {
+//        //progress = 0;
+//        System.out.println("Termino generacion de XLSX");
+//    }
 
     public RecordSetsSivigilaVifMB() {
         tagsList = new ArrayList<>();

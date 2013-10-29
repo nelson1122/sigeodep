@@ -30,6 +30,7 @@ import model.pojo.RelationGroup;
 import model.pojo.RelationValues;
 import model.pojo.RelationVariables;
 import model.pojo.RelationsDiscardedValues;
+import org.primefaces.model.LazyDataModel;
 
 /**
  *
@@ -87,7 +88,8 @@ public class RelationshipOfValuesMB implements Serializable {
     private List<String> copyRelationVariablesSelected;
     private RelationVariables currentRelationVariables;
     private List<RowDataTable> moreInfoDataTableList;
-
+    
+    
     /*
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
@@ -1434,5 +1436,5 @@ public class RelationshipOfValuesMB implements Serializable {
 
     public void changeExpectedValuesFilter() {
         loadExpectedValues();
-    }
+    }   
 }

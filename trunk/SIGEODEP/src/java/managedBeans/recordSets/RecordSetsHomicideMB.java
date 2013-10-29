@@ -70,9 +70,9 @@ public class RecordSetsHomicideMB implements Serializable {
     private String exportFileName = "";
     private String sql = "";
 
-    public void onCompleteLoad() {
-        System.out.println("Termino generacion de XLSX");
-    }
+//    public void onCompleteLoad() {
+//        System.out.println("Termino generacion de XLSX");
+//    }
 
     public RecordSetsHomicideMB() {
         tagsList = new ArrayList<>();

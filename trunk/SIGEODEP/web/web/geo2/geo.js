@@ -49,8 +49,8 @@ Ext.onReady(function() {
             fillOpacity: 0.4,
             label : "${getLabel}",
             fontColor: "#555555",
-            fontSize: "12px",
-            fontFamily: "Courier New, monospace",
+            fontSize: "11px",
+            fontFamily: "Arial",
             fontWeight: "bold",
             labelOutlineColor: "white",
             labelOutlineWidth: 3
@@ -78,8 +78,8 @@ Ext.onReady(function() {
             fillOpacity: 0.4,
             label : "${getLabel}",
             fontColor: "#555555",
-            fontSize: "12px",
-            fontFamily: "Courier New, monospace",
+            fontSize: "11px",
+            fontFamily: "Arial",
             fontWeight: "bold",
             labelOutlineColor: "white",
             labelOutlineWidth: 3
@@ -107,8 +107,8 @@ Ext.onReady(function() {
             fillOpacity: 0.0,
             label : "${getLabel}",
             fontColor: "black",
-            fontSize: "18px",
-            fontFamily: "Courier New, monospace",
+            fontSize: "16px",
+            fontFamily: "Arial",
             fontWeight: "bold",
             labelOutlineColor: "white",
             labelOutlineWidth: 3
@@ -136,8 +136,8 @@ Ext.onReady(function() {
             fillOpacity: 0.8,
             label : "${getLabel}",
             fontColor: "black",
-            fontSize: "18px",
-            fontFamily: "Courier New, monospace",
+            fontSize: "16px",
+            fontFamily: "Arial",
             fontWeight: "bold",
             labelOutlineColor: "white",
             labelOutlineWidth: 3

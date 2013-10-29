@@ -1187,6 +1187,12 @@
                                                 disabled="#{errorsControlMB.btnViewDisabled}"
                                                 onclick="seeRecordDialog.hide();
                     seeRecordDialog.show();"/>
+                                            <p:commandButton                                                             
+                                                id="IdBtnDeleteErrorRecord"
+                                                value="ELIMINAR REGISTRO"
+                                                style="width: 130px;"
+                                                disabled="#{errorsControlMB.btnViewDisabled}"
+                                                onclick="deleteRecordDialog.show();"/>
                                         </p:column>
                                     </p:row>
                                     <p:row>
@@ -1296,7 +1302,7 @@
                                     </p:row>
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
-                                            
+
                                             <p:commandButton 
                                                 id="IdBtnRegisterData"
                                                 value="REGISTRAR DATOS" 
@@ -1394,31 +1400,35 @@
                     <br/>
                     <br/>
                 </p:dialog>
+                <!-- /////////////////////////////////// ELIMINAR EL REGISTRO CON ERRORES /////////////////////////////////// -->
+                <p:dialog 
+                    id="IddeleteRecordDialog" 
+                    header="Eliminar registro" 
+                    widgetVar="deleteRecordDialog" 
+                    resizable="false"
+                    modal="true" >   
+                    <br/>
+                    <p:inputTextarea 
+                        value="Confirma la eliminación de este registro?" 
+                        readonly="true" 
+                        style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 30px; width: 320px;"/>
+                    <br/><br/>
+                    <p:commandButton 
+                        value="Aceptar"
+                        actionListener="#{errorsControlMB.deleteRecordClick}"
+                        oncomplete="deleteRecordDialog.hide();"
+                        update=":IdForm:IdTabView:IdAccordionPanel4:IdErrorOptions :IdForm:IdTabView:IdAccordionPanel4:IdListErrors :IdForm:IdTabView:IdAccordionPanel4:IdSizeErrors"/>
+                    <p:commandButton 
+                        value="Cancelar"
+                        oncomplete="deleteRecordDialog.hide();"/>
+                </p:dialog>
                 <!-- /////////////////////////////////// DATOS DEL REGISTRO CON ERRORES /////////////////////////////////// -->
                 <p:dialog 
                     id="IdSeeRecordDialog" 
                     header="Datos del registro que presenta Errores" 
                     widgetVar="seeRecordDialog" 
                     resizable="false"
-                    modal="true" >                    
-                    <!-- p:dataTable 
-                        id="IdDataTableR" 
-                        var="rowX" 
-                        value="# {errorsControlMB.moreInfoDataTableList}" 
-                        rowKey="# {rowX.column1}"  
-                        paginatorPosition="bottom"                  
-                        emptyMessage="Vacio"
-                        scrollable="true"
-                        scrollWidth="630"                                 
-                        scrollHeight="330"
-                        resizableColumns="true">                                                                
-                        <p:column headerText="COLUMNA" width="100" style="background-color: #ebf4fb">  
-                            # {rowX.column1}
-                        </p:column>  
-                        <p:column headerText="VALOR" width="470">  
-                            # {rowX.column2}  
-                        </p:column>                                                                  
-                    </p:dataTable -->                            
+                    modal="true" >                               
                     <p:dataTable 
                         id="IdDataTableR" 
                         value="#{errorsControlMB.moreInfoModel}" 
@@ -1492,7 +1502,9 @@
                         event="close"                         
                         listener="#{relationshipOfValuesMB.loadFoundValues}"
                         update=":IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesFound2 :IdForm:IdTabView:IdAccordionPanel:IdFoundValuesFilter"/> 
-                    <!-- update=":IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesExpected2 :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesFound2 :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesRelated :IdForm:IdTabView:IdAccordionPanel:IdSelectOneListValuesDiscarded :IdForm:IdTabView:IdAccordionPanel:IdBtnAssociateValues :IdForm:IdTabView:IdAccordionPanel:IdBtnAutomaticRelationValues :IdForm:IdTabView:IdAccordionPanel:IdBtnRemoveRelationValues :IdForm:IdTabView:IdAccordionPanel:IdBtnDiscardValue :IdForm:IdTabView:IdAccordionPanel:IdBtnRemoveDiscardedValues :IdForm:IdTabView:IdAccordionPanel:IdExpectedValuesFilter :IdForm:IdTabView:IdAccordionPanel:IdFoundValuesFilter :IdForm:IdTabView:IdAccordionPanel:IdBtnView :IdForm:IdTabView:IdAccordionPanel:IdNameOfValueExpected"  -->
+                    <!-- 
+                    
+                    -->
                     <p:dataTable 
                         id="IdCoincidentsTable"                                     
                         var="listOfRecords"
@@ -1520,8 +1532,6 @@
                             <h:outputText value="#{listOfRecords[index]}" />  
                         </p:columns>
                     </p:dataTable>  
-
-
                     <br/>
                     Nuevo valor para:
                     <b>
@@ -1590,13 +1600,21 @@
                         style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 30px; width: 320px;"/>
                     <br/><br/>
                     <b>Grupos de relaciones existentes:</b>
+                    <h:inputText 
+                        id="IdRelationsFilter"                                                                                         
+                        value="#{projectsMB.relationsFilter}"
+                        size="20">
+                        <f:ajax 
+                            event="keyup"
+                            listener="#{projectsMB.loadRelatedGroups}"
+                            render="IdRelationGroupsInLoad"/>
+                    </h:inputText>
                     <br/>
                     <p:selectOneListbox                         
                         id="IdRelationGroupsInLoad"
                         style="height:100px; width: 320px; "
                         value="#{projectsMB.currentRelationsGroupNameInLoad}">
                         <f:selectItems value="#{projectsMB.relationGroupsInLoad}"/>                                    
-
                     </p:selectOneListbox>
                     <br/>
                     <p:commandButton
@@ -1642,6 +1660,15 @@
                         style="text-align: center; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 30px; width: 320px;"/>
                     <br/><br/>                                        
                     <b>Grupos de relaciones existentes:</b>
+                    <h:inputText 
+                        id="IdRelationsFilter2"                                                                                         
+                        value="#{projectsMB.relationsFilter}"
+                        size="20">
+                        <f:ajax 
+                            event="keyup"
+                            listener="#{projectsMB.loadRelatedGroups}"
+                            render="IdRelationGroupsInCopy"/>
+                    </h:inputText>
                     <br/>
                     <p:selectOneListbox                         
                         id="IdRelationGroupsInCopy"

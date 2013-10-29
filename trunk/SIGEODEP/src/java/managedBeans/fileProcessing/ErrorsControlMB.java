@@ -175,10 +175,49 @@ public class ErrorsControlMB implements Serializable {
         }
     }
 
+    public void deleteRecordClick() {
+        if (selectedErrorRowTable != null) {
+            ResultSet rs;
+            try {
+                //se elimina los registros que correspondan a este registro                
+                String sql = ""
+                        + " DELETE "
+                        + " FROM "
+                        + "   project_records "
+                        + " WHERE \n"
+                        + "    record_id = " + selectedErrorRowTable.getColumn2() + " AND "
+                        + "    project_id = " + projectsMB.getCurrentProjectId();
+                connectionJdbcMB.non_query(sql);
+
+                String idRow = selectedErrorRowTable.getColumn2();
+                //elimino los errores que tengan como id este registro 
+                for (int i = 0; i < errorsList.size(); i++) {
+                    if (errorsList.get(i).getColumn2().compareTo(idRow) == 0) {
+                        //elimino de la lista de errores
+                        errorsList.remove(i);
+                        sizeErrorsList--;
+                        i--;
+                    }
+                }
+                //reseteo variables
+                selectedErrorRowTable = null;
+                btnSolveDisabled = true;
+                btnViewDisabled = true;
+                valueFound = "";//valor actual
+                currentNewValue = "";
+                currentDateFormatAcepted = "";
+                aceptedValues = new SelectItem[0];
+
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El registro ha sido eliminado"));
+            } catch (Exception e) {
+                System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
+            }
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un error de la lista"));
+        }
+    }
+
     public void updateRecordClick() {
-
-
-
         if (selectedErrorRowTable != null) {
             ResultSet rs;
             try {
@@ -209,8 +248,8 @@ public class ErrorsControlMB implements Serializable {
                                 + "')";
                     }
                 }
-                if(values.length()!=0){//existen datos para registrar                    
-                    connectionJdbcMB.non_query("INSERT INTO project_records VALUES " + values + ";");                    
+                if (values.length() != 0) {//existen datos para registrar                    
+                    connectionJdbcMB.non_query("INSERT INTO project_records VALUES " + values + ";");
                 }
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El registro ha sido actualizado"));
             } catch (Exception e) {
@@ -575,7 +614,7 @@ public class ErrorsControlMB implements Serializable {
             }
             if (!correction) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "El valor ingresado no es aceptado como válido"));
-            } else {//se realiza la actualizacion de la tabla
+            } else {//se realiza la actualizacion en db
                 Projects currentProject = projectsFacade.find(projectsMB.getCurrentProjectId());
                 try {
                     long columnId = -1;//determino el identificador de la columna
