@@ -47,9 +47,6 @@
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <h:commandButton value="h"  action="help" image="../../resources/img/help.gif" />                        
                     </h:form>
-                    
-                        
-                    
                     <h:form id="IdForm0">                                                
                         <br/>
                         <p:accordionPanel  activeIndex="#{loginMB.activeIndexAcoordion1}" >                            
@@ -163,6 +160,12 @@
                                         action="populations" 
                                         ajax="false"/>  
                                     <p:menuitem 
+                                        icon="ui-icon-clipboard"
+                                        value="Control de Registros" 
+                                        actionListener="#{registerControlMB.reset}"
+                                        action="registerControl" 
+                                        ajax="false"/>  
+                                    <p:menuitem 
                                         icon="ui-icon-person"
                                         value="Gestión de Usuarios" 
                                         actionListener="#{usersMB.reset}"
@@ -173,6 +176,12 @@
                                         value="Copias de seguridad" 
                                         actionListener="#{backupsMB.reset}"
                                         action="backups" 
+                                        ajax="false"/>  
+                                    <p:menuitem
+                                        icon="ui-icon-flag"
+                                        value="Cierres" 
+                                        actionListener="#{closuresMB.reset}"
+                                        action="closures" 
                                         ajax="false"/>  
 
                                 </p:menu> 

@@ -2698,7 +2698,6 @@ public class LcenfMB implements Serializable {
                     connectionJdbcMB.non_query("UPDATE gen_nn SET cod_nn = " + newGenNnId + " where cod_nn IN (SELECT MAX(cod_nn) from gen_nn)");
                 }
 
-
                 //DETERMINAR TIPO DE IDENTIFICACION
                 if (newVictim.getVictimNid() != null) {
                     if (newVictim.getTypeId() == null) {

@@ -765,7 +765,6 @@ public class RelationshipOfValuesMB implements Serializable {
                     ResultSet rs2;
                     String[] newRow;
                     //ArrayList<String> newRow = new ArrayList<String>();
-
                     rs = connectionJdbcMB.consult(""
                             + " SELECT "
                             + "    project_columns.column_name, "
@@ -799,7 +798,8 @@ public class RelationshipOfValuesMB implements Serializable {
                             + "	   project_records.data_value LIKE '" + valuesFoundSelectedInRelationValues.get(0) + "' "//valuesFoundSelectedInRelationValues.get(0)"
                             + " GROUP BY "
                             + "    project_records.project_id, "
-                            + "    project_records.record_id ");
+                            + "    project_records.record_id "
+                            + "    limit 100");
                     while (rs.next()) {
                         //determino los datos segun el identificador contenido en rs
                         rs2 = connectionJdbcMB.consult(""

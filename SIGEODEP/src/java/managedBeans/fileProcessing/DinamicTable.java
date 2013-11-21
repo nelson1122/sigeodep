@@ -13,9 +13,9 @@ import java.util.ArrayList;
  */
 public class DinamicTable implements Serializable{
    
-    private ArrayList<ArrayList<String>> listOfRecords=new ArrayList<ArrayList<String>>();
-    private ArrayList<String> titles=new ArrayList<String>();
-    private ArrayList<String> titles2=new ArrayList<String>();
+    private ArrayList<ArrayList<String>> listOfRecords=new ArrayList<>();
+    private ArrayList<String> titles=new ArrayList<>();
+    private ArrayList<String> titles2=new ArrayList<>();
     
     public DinamicTable() {        
     }

@@ -3140,17 +3140,15 @@ public class RecordDataMB implements Serializable {
 
                     continueProcces = false;
                     if (value != null) {
-//                        if (value.compareTo("12950805") == 0 
-//                                //|| value.compareTo("1802058") == 0
-//                                //|| value.compareTo("1840600") == 0
-//                                //|| value.compareTo("4871203") == 0
-//                                //|| value.compareTo("5194128") == 0
-//                                //|| value.compareTo("5199446") == 0
-//                                //|| value.compareTo("5207257") == 0
-//                                ) {
-//                            System.out.print("aqui");
-//                        
-//                        }                        
+                        if (value.compareTo("87450201") == 0 //|| value.compareTo("1802058") == 0
+                                //|| value.compareTo("1840600") == 0
+                                //|| value.compareTo("4871203") == 0
+                                //|| value.compareTo("5194128") == 0
+                                //|| value.compareTo("5199446") == 0
+                                //|| value.compareTo("5207257") == 0
+                                ) {
+                            System.out.print("aqui");
+                        }
                         if (value.trim().length() != 0) {
                             continueProcces = true;
                         }
@@ -3701,7 +3699,6 @@ public class RecordDataMB implements Serializable {
                                 newNonFatalInjury.setIntentionalityId(intentionalitiesFacade.find(Short.parseShort(value)));
                                 break;
                             case lugar_ocurrio_lesion:
-
                                 newNonFatalInjury.setInjuryPlaceId(nonFatalPlacesFacade.find(Short.parseShort(value)));
                                 break;
                             case activida_que_realizaba:
@@ -4045,7 +4042,7 @@ public class RecordDataMB implements Serializable {
 
                 //DETERMINO TIPO DE LESION//////////////////////////////////////
                 if (selectInjuryDetermined == null) {//no se pudo determinar se coloca por defecto //54. No intencional
-                    if (newNonFatalInjury.getMechanismId()!= null && newNonFatalInjury.getMechanismId().getMechanismId() == 1) {//mecanismo es transito 
+                    if (newNonFatalInjury.getMechanismId() != null && newNonFatalInjury.getMechanismId().getMechanismId() == 1) {//mecanismo es transito 
                         newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 51));//lesion en accidente de transito
                     } else {//el mecanismo no es transito se evalua segun la intecionalidad
                         if (newNonFatalInjury.getIntentionalityId().getIntentionalityId() != null) {
@@ -4063,8 +4060,12 @@ public class RecordDataMB implements Serializable {
                             newNonFatalInjury.setIntentionalityId(intentionalitiesFacade.find((short) 1));//no intencional
                         }
                     }
-                } else {//se determino segun los datos que llegaron                        
-                    newNonFatalInjury.setInjuryId(selectInjuryDetermined);
+                } else {//se pudo determinar una intencionalidad segun los datos que llegaron                        
+                    if (newNonFatalInjury.getMechanismId() != null && newNonFatalInjury.getMechanismId().getMechanismId() == 1) {//mecanismo es transito 
+                        newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 51));//lesion en accidente de transito
+                    } else {//el mecanismo no es transito se asigna el determinado segun los datos que llegaron
+                        newNonFatalInjury.setInjuryId(selectInjuryDetermined);
+                    }
                 }
 
                 if (newNonFatalInjury.getInjuryId().getInjuryId() == (short) 53) {//53 ES POR QUE ES VIF 
@@ -4172,6 +4173,17 @@ public class RecordDataMB implements Serializable {
 //                    }
 //                }
                 //PERSISTO//////////////////////////////////////////////////////
+                if (newNonFatalInjury.getInjuryId().getInjuryId() == 53
+                        || newNonFatalInjury.getInjuryId().getInjuryId() == 55
+                        || newNonFatalInjury.getInjuryId().getInjuryId() == 56) {
+                    //es intrafamiliar
+                    if (newNonFatalInjury.getMechanismId().getMechanismId() == 1) {
+                        //dice que es transito
+                        System.out.println("Aqui esta el error");
+
+                    }
+                }
+
                 try {
                     if (!othersList.isEmpty()) {
                         newVictim.setOthersList(othersList);

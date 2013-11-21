@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+    <ui:composition template="../templates/layoutTemplate.xhtml">
+        <!--==================================================================-->
+        <!--========================CABECERA SCRIPTS==========================-->                    
+        <ui:define name="head">
+            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
+            <script type="text/javascript">
+            </script> 
+        </ui:define>
+        <!--=================================================================-->
+        <!--================================TITULOS==========================-->
+        <ui:define name="titlePage">
+            SIGEODEP -  CIERRES 
+        </ui:define>
+        <ui:define name="title">
+            SIGEODEP -  CIERRES
+        </ui:define>
+        <!--=================================================================-->
+        <!--==============================CONTENIDO==========================-->
+        <ui:define name="content">
+            <h:outputText 
+                value="No se puede mostrar esta sección por que no cuenta con los permisos suficientes"
+                style=" color: red;"
+                rendered="#{!loginMB.permissionAdministrator}"/> 
+            <h:form enctype="multipart/form-data" id="IdForm1" rendered="#{loginMB.permissionAdministrator}">
+                <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
+                <!--===================================================================================-->
+                <br/>
+                <p:panelGrid id="IdPanel1" style="position: absolute;  width: 750px;  margin-left: -375px; left: 50%;" >                            
+                    <p:row>  
+                        <p:column styleClass="ui-widget-header" style="text-align: center;">
+                            <h:outputLabel value="OBSERVATORIO DEL DELITO - ALCALDA DE PASTO"/><br/>  
+                            <h:outputLabel value="CIERRES"/>  
+                        </p:column>                                       
+                    </p:row>
+                    <p:row>  
+                        <p:column>
+                            <br/>
+                            <p:panelGrid style="width: 730px;">                                                        
+                                <p:row>  
+                                    <p:column styleClass="ui-widget-header">
+                                        <h:outputLabel value="LESION"/>
+                                    </p:column>                            
+                                    <p:column>
+                                        <p:selectOneMenu id="IdYear" value="#{closuresMB.currentInjury}" >                                             
+                                            <f:selectItems value="#{closuresMB.injuriesList}"/>
+                                            <f:ajax 
+                                                event="change"                                                                                                            
+                                                render="IdDateClosure message"
+                                                listener="#{closuresMB.changeInjury}"/>                                        
+                                        </p:selectOneMenu>                                        
+                                    </p:column>                                    
+                                    <p:column styleClass="ui-widget-header">
+                                        <h:outputLabel value="FECHA DE CIERRE"/>
+                                    </p:column>                            
+                                    <p:column>
+                                        <h:outputLabel id="IdDateClosure" value="#{closuresMB.currentDateClosure}"/>
+                                    </p:column>
+                                </p:row>                        
+                            </p:panelGrid>
+                            <br/>
+                            <p:commandButton                                 
+                                value="Realizar Análisis"                                 
+                                oncomplete="dialogConfirm.show()"
+                                update=":IdForm2:IdDialogConfirm"/>
+                            <br/>
+                            <br/>
+                            <p:panelGrid>
+                                <p:row>                        
+                                    <p:column styleClass="ui-widget-header">
+                                        Variables:
+                                    </p:column>
+                                    <p:column>
+                                        <h:selectOneMenu 
+                                            id="IdSelectForm"
+                                            value="#{closuresMB.currentVariableData}">                                                                             
+                                            <f:selectItems value="#{closuresMB.variablesData}"/>                                          
+                                            <f:ajax                                        
+                                                event="change" 
+                                                listener="#{closuresMB.changeVariableData}"                                                                                                           
+                                                render="IdOutput"/>
+                                        </h:selectOneMenu>  
+                                    </p:column>
+                                
+                                    <p:column styleClass="ui-widget-header">
+                                        Datos:
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText 
+                                            id="IdOutput" 
+                                            value="#{closuresMB.outputText}"
+                                            escape="false"/>
+                                    </p:column>
+
+                                </p:row>                        
+                            </p:panelGrid>
+                            <br/>
+                            <p:commandButton                                 
+                                value="Realizar Imputacion"                                 
+                                oncomplete="dialogConfirm.show()"
+                                update=":IdForm2:IdDialogConfirm"/>
+                            <br/>
+                        </p:column>                                       
+                    </p:row>
+                </p:panelGrid>
+            </h:form>
+        </ui:define>
+        <ui:define name="dialogs">
+            <h:form id="IdForm2">
+                <!--   DIALOGO CONFIRMAR -->
+                <p:dialog                                                         
+                    id="IdDialogConfirm"
+                    modal="true"
+                    resizable="false"
+                    header="Confirmación" 
+                    widgetVar="dialogConfirm"> 
+                    <p:panelGrid >
+                        <p:row>  
+                            <p:column >
+                                <div style="width: 250px; height: 120px; text-align: center; background: #fbef9a;">
+                                    <br/>                                    
+                                    #{closuresMB.currentInjuryName}<br/>
+                                    desde #{closuresMB.startDate}<br/>
+                                    hasta #{closuresMB.endDate}<br/>
+                                    <br/>
+                                    Confirma la realización de este cierre?
+                                </div>
+                            </p:column>
+                        </p:row>
+                        <p:row>  
+                            <div></div>
+                            <p:column  styleClass="ui-widget-header">
+                                <p:commandButton                                                           
+                                    oncomplete="dialogConfirm.hide()"
+                                    actionListener="#{closuresMB.startClosure}"
+                                    value="Aceptar" 
+                                    update=":IdForm1:message :IdForm1:IdOutput :IdForm1:IdSelectForm"/>   
+                                <p:commandButton
+                                    value="Cancelar" 
+                                    onclick="dialogConfirm.hide();"/> 
+                            </p:column>
+                        </p:row>
+                    </p:panelGrid>
+                </p:dialog>
+
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</html>
+
