@@ -1240,9 +1240,6 @@ public class ProjectsMB implements Serializable {
                 }
             } catch (Exception e) {
             }
-
-
-
         } else {
             errorsList.add("Se debe digitar un nombre para el proyecto");
         }
@@ -1444,37 +1441,13 @@ public class ProjectsMB implements Serializable {
                 if (openProject.getUserId() == loginMB.getCurrentUser().getUserId()) {
                     String nameProjet = openProject.getProjectName();
                     //---------------------------------------------------------
-                    try {
-                        //determino el inicio de la columnas
-                        sql = " \n"
-                                + " SELECT \n"
-                                + "    start_column_id, \n"
-                                + "    end_column_id \n"
-                                + " FROM \n"
-                                + "    projects \n"
-                                + " WHERE \n"
-                                + "        project_id=" + openProject.getProjectId() + " \n";
-                        ResultSet rs = connectionJdbcMB.consult(sql);
-                        if (rs.next()) {
-                            sql = " \n"
-                                    + " DELETE from \n"
-                                    + "    project_columns \n"
-                                    + " WHERE \n"
-                                    + "    column_id IN \n"
-                                    + "    (SELECT "
-                                    + "        column_id "
-                                    + "     FROM "
-                                    + "        project_columns "
-                                    + "     WHERE "
-                                    + "        column_id between " + rs.getString(1) + " AND " + rs.getString(2) + " "
-                                    + "    )";
-                            //System.out.println("Eliminado project_columns" + sql);
-                            connectionJdbcMB.non_query(sql);
-                        }
-                    } catch (SQLException ex) {
-                        System.out.println("Error 23 en " + this.getClass().getName() + ":" + ex.toString());
-
-                    }
+                    //determino el inicio de la columnas             
+                    sql = " \n"
+                            + " DELETE from \n"
+                            + "    project_columns \n"
+                            + " WHERE \n"
+                            + "    project_id=" + openProject.getProjectId() + " \n";
+                    connectionJdbcMB.non_query(sql);
                     //---------------------------------------------------------
                     sql = " \n"
                             + " delete from \n"

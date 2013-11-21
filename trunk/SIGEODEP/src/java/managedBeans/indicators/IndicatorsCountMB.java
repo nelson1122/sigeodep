@@ -160,7 +160,7 @@ public class IndicatorsCountMB {
     private int widthGraph = 660;
     private List<String> typesGraph = new ArrayList<>();
     private String currentTypeGraph;
-    DecimalFormat formateador = new DecimalFormat("0.00");
+    //DecimalFormat formateador = new DecimalFormat("0.00");
     String variablesName = "";
     String categoryAxixLabel = "";
     String indicatorName = "";
@@ -1595,6 +1595,11 @@ public class IndicatorsCountMB {
         HSSFCell celda;
         HSSFRichTextString texto;
 
+        
+        if(columNames.size()>200){
+            
+        }
+        
         headers1 = new ArrayList<>();
         headers2 = new String[columNames.size()];
         int posRow = 0;
