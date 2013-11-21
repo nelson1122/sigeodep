@@ -113,6 +113,7 @@ public class ProjectsMB implements Serializable {
     private String currentFileName = "";
     private String newFileName = "";
     private String exportFileName = "salida";
+    private boolean continueProcces;
     private ArrayList<String> acceptedRelations;//caberecera del archivo
     private ArrayList<String> headerFileNames;//caberecera del archivo
     private ArrayList<Long> headerFileIds;//caberecera del archivo
@@ -544,7 +545,8 @@ public class ProjectsMB implements Serializable {
 
         //System.out.println("actual nombre 1: " + newGroupRelationsName);
         acceptedRelations = new ArrayList<>();
-
+        tuplesProcessed = 0;
+        headerFileNames = new ArrayList<>();
         if (file.getFileName().endsWith("xlsx")) {//validar las relaciones de variables desde excell
             //------------------------------------------------------------------
             //----OBTENER CABECERA DEL ARCHIVO EXCEL ---------------------------
@@ -557,7 +559,8 @@ public class ProjectsMB implements Serializable {
                 XSSFReader xssfReader = new XSSFReader(container);
                 StylesTable styles = xssfReader.getStylesTable();
                 XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
-                while (iter.hasNext()) {
+                continueProcces = true;
+                while (iter.hasNext() && continueProcces) {
                     InputStream stream = iter.next();
                     InputSource sheetSource = new InputSource(stream);
                     SAXParserFactory saxFactory = SAXParserFactory.newInstance();
@@ -578,6 +581,8 @@ public class ProjectsMB implements Serializable {
                                 if (pos == 0) {
                                     headerFileNames = prepareArray(rowFileData);
                                     pos++;
+                                } else {
+                                    continueProcces = false;//finalizar por que solo se lee la primer linea;
                                 }
                             }
 
@@ -619,12 +624,12 @@ public class ProjectsMB implements Serializable {
                 String line;
                 InputStreamReader isr;
                 BufferedReader buffer;
-                headerFileNames = new ArrayList<>();
+
                 String[] tupla;
                 isr = new InputStreamReader(file.getInputstream());
                 buffer = new BufferedReader(isr);
-
-                while ((line = buffer.readLine()) != null) {//Leer archivo linea por linea                       
+                
+                if ((line = buffer.readLine()) != null) {//se lee primer linea                       
                     if (newDelimiter.compareTo("TAB") == 0) {
                         tupla = line.split("\t");
                     } else if (newDelimiter.compareTo(",") == 0) {
@@ -636,6 +641,7 @@ public class ProjectsMB implements Serializable {
                         headerFileNames.addAll(Arrays.asList(tupla));
                         headerFileNames = prepareArray(headerFileNames);
                     }
+                    //System.out.println("********INICIO CABECERA***************\n"+line+"\n********FIN CABECERA***************");
                 }
             } catch (IOException e) {
                 System.out.println("Error 9 en " + this.getClass().getName() + ":" + e.toString());
