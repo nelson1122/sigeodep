@@ -143,8 +143,6 @@ public class NeighborhoodsVariableMB implements Serializable {
     }
 
     private void copyFile(String fileName, InputStream in) {
-
-
         disabledShowGeomFile = true;
         nameGeomFile = "Archivo no cargado";
         try {

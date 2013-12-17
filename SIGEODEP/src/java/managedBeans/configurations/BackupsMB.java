@@ -146,6 +146,7 @@ public class BackupsMB {
             //determinar si el nombre ya esta ingresado
             ResultSet rs = connectionJdbcMB.consult("SELECT * FROM backups WHERE name_backup ILIKE '" + newName.trim() + "'");
             try {
+                connectionJdbcMB.non_query("DELETE FROM non_fatal_non_intentional_sta");
                 if (rs.next()) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una copia de seguridad con el nombre ingresado"));
                 } else {

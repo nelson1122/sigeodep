@@ -5475,10 +5475,11 @@ public class LcenfMB implements Serializable {
 //    public boolean isRelationshipToVictimDisabled() {
 //        return relationshipToVictimDisabled;
 //    }
-//
+
 //    public void setRelationshipToVictimDisabled(boolean relationshipToVictimDisabled) {
 //        this.relationshipToVictimDisabled = relationshipToVictimDisabled;
 //    }
+    
     public String getOtherRelation() {
         return otherRelation;
     }

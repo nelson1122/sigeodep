@@ -4,12 +4,10 @@
  */
 package managedBeans.configurations;
 
-import beans.connection.ConnectionJdbcMB;
 import beans.util.Document;
 import java.io.Serializable;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
-import javax.faces.context.FacesContext;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.NodeSelectEvent;
 import org.primefaces.model.DefaultTreeNode;
@@ -23,7 +21,7 @@ import org.primefaces.model.TreeNode;
 @SessionScoped
 public class HelpMB implements Serializable {
 
-    private ConnectionJdbcMB connectionJdbcMB;
+    //private ConnectionJdbcMB connectionJdbcMB;
     private TreeNode root;
     private String helpTitle = " ";
 
@@ -315,7 +313,7 @@ public class HelpMB implements Serializable {
     }
 
     public HelpMB() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+//        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         root = new DefaultTreeNode("root", null);
 
         //----------------------------------------------------------------------
@@ -390,6 +388,7 @@ public class HelpMB implements Serializable {
         TreeNode node_3_3 = new DefaultTreeNode("document", new Document("3.3 Gestión de Usuarios", "33", "Folder"), node_3);
         TreeNode node_3_4 = new DefaultTreeNode("document", new Document("3.4 Copias de seguridad", "34", "Folder"), node_3);
         TreeNode node_3_5 = new DefaultTreeNode("document", new Document("3.5 Cierres", "35", "Folder"), node_3);
+        TreeNode node_3_6 = new DefaultTreeNode("document", new Document("3.6 Control de registros", "36", "Folder"), node_3);
 
         //----------------------------------------------------------------------
         TreeNode node_4 = new DefaultTreeNode(new Document("4. General", "4", "Folder"), root);

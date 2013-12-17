@@ -158,13 +158,7 @@
                                         value="Configurar Poblaciones" 
                                         actionListener="#{populationsMB.createDynamicTable}"
                                         action="populations" 
-                                        ajax="false"/>  
-                                    <p:menuitem 
-                                        icon="ui-icon-clipboard"
-                                        value="Control de Registros" 
-                                        actionListener="#{registerControlMB.reset}"
-                                        action="registerControl" 
-                                        ajax="false"/>  
+                                        ajax="false"/>                                      
                                     <p:menuitem 
                                         icon="ui-icon-person"
                                         value="Gestión de Usuarios" 
@@ -183,7 +177,12 @@
                                         actionListener="#{closuresMB.reset}"
                                         action="closures" 
                                         ajax="false"/>  
-
+                                    <p:menuitem 
+                                        icon="ui-icon-clipboard"
+                                        value="Control de Registros" 
+                                        actionListener="#{registerControlMB.reset}"
+                                        action="registerControl" 
+                                        ajax="false"/>  
                                 </p:menu> 
                             </p:tab>
                             <p:tab title="GENERAL">
@@ -211,7 +210,7 @@
 
                         <h:commandButton value="Correcciones de Santos" rendered="#{loginMB.activeSantos}" actionListener="#{loginMB.corregirDB}" />
                     </h:form>  
-                    
+
                 </p:layoutUnit>  
                 <!-- ****************************** CONTENIDO (PARTE CENTRAL) ************************ -->
                 <p:layoutUnit position="center" > 
@@ -238,7 +237,7 @@
                     <div id="welcome">
                         <h1>
                             <ui:insert name="title" >  
-                                
+
                             </ui:insert>
                         </h1>
                     </div>

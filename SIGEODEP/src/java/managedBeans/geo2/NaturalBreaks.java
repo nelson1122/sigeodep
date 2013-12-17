@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import weka.classifiers.trees.J48;
 import weka.clusterers.SimpleKMeans;
 import weka.core.*;
 import weka.filters.Filter;
