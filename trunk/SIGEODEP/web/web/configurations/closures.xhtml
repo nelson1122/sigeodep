@@ -64,14 +64,22 @@
                                     </p:column>
                                 </p:row>                        
                             </p:panelGrid>
-                            <br/>
-                            <p:commandButton                                 
-                                value="Realizar Análisis"                                 
+                            <br/>                            
+                            
+                            <p:commandButton  
+                                id="IdBtnAnalysis"                                
+                                value="Realizar Análisis" 
+                                rendered="#{closuresMB.renderedBtnAnalysis}"
                                 oncomplete="dialogConfirm.show()"
-                                update=":IdForm2:IdDialogConfirm"/>
+                                update=":IdForm2:IdDialogConfirm"/>                            
                             <br/>
                             <br/>
-                            <p:panelGrid>
+                            <p:panelGrid rendered="#{closuresMB.renderedAnalysisResult}">
+                                <p:row>                        
+                                    <p:column styleClass="ui-widget-header" colspan="4">
+                                        Resultado del análisis:
+                                    </p:column>
+                                </p:row>
                                 <p:row>                        
                                     <p:column styleClass="ui-widget-header">
                                         Variables:
@@ -84,28 +92,70 @@
                                             <f:ajax                                        
                                                 event="change" 
                                                 listener="#{closuresMB.changeVariableData}"                                                                                                           
-                                                render="IdOutput"/>
+                                                render="IdOutputAnalysis"/>
                                         </h:selectOneMenu>  
                                     </p:column>
-                                
+
                                     <p:column styleClass="ui-widget-header">
                                         Datos:
                                     </p:column>
                                     <p:column>
                                         <h:outputText 
-                                            id="IdOutput" 
-                                            value="#{closuresMB.outputText}"
+                                            id="IdOutputAnalysis" 
+                                            value="#{closuresMB.outputTextAnalysis}"
                                             escape="false"/>
                                     </p:column>
-
+                                </p:row>                        
+                            </p:panelGrid>
+                            <br/>
+                            <p:commandButton
+                                id="IdBtnImputation"
+                                value="Realizar Imputacion"                                 
+                                rendered="#{closuresMB.renderedBtnImputation}"
+                                actionListener="#{closuresMB.startImputation}"                                
+                                update=":IdForm1"/>
+                            <br/>
+                            <br/>
+                            <p:panelGrid rendered="#{closuresMB.renderedImputationResult}">
+                                <p:row>                        
+                                    <p:column styleClass="ui-widget-header">
+                                        Resultado Imputacion:
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText 
+                                            id="IdOutputImputation" 
+                                            value="#{closuresMB.outputTextImputation}"
+                                            escape="false"/>
+                                    </p:column>
                                 </p:row>                        
                             </p:panelGrid>
                             <br/>
                             <p:commandButton                                 
-                                value="Realizar Imputacion"                                 
-                                oncomplete="dialogConfirm.show()"
-                                update=":IdForm2:IdDialogConfirm"/>
+                                value="Caragar Datos a la Bodega"                                 
+                                rendered="#{closuresMB.renderedBtnStoreData}"
+                                actionListener="#{closuresMB.startStoreData}"
+                                update=":IdForm1"/>
                             <br/>
+                            <p:panelGrid rendered="#{closuresMB.renderedStoreDataResult}">
+                                <p:row>                        
+                                    <p:column styleClass="ui-widget-header">
+                                        Resultado Carga:
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText 
+                                            id="IdOutputStoreData" 
+                                            value="#{closuresMB.outputTextStoreData}"
+                                            escape="false"/>
+                                    </p:column>
+                                </p:row>                        
+                            </p:panelGrid>
+                            <br/>                            
+                            <p:commandButton                                 
+                                value="Reiniciar Proceso"                                 
+                                rendered="#{closuresMB.renderedBtnReset}"
+                                actionListener="#{closuresMB.reset}"                                                                
+                                update=":IdForm1"
+                                />
                         </p:column>                                       
                     </p:row>
                 </p:panelGrid>
@@ -118,7 +168,7 @@
                     id="IdDialogConfirm"
                     modal="true"
                     resizable="false"
-                    header="Confirmación" 
+                    header="Rango de fechas" 
                     widgetVar="dialogConfirm"> 
                     <p:panelGrid >
                         <p:row>  
@@ -129,7 +179,7 @@
                                     desde #{closuresMB.startDate}<br/>
                                     hasta #{closuresMB.endDate}<br/>
                                     <br/>
-                                    Confirma la realización de este cierre?
+                                    Se procedera a analizar los registros dentro de este rango de frechas
                                 </div>
                             </p:column>
                         </p:row>
@@ -139,8 +189,8 @@
                                 <p:commandButton                                                           
                                     oncomplete="dialogConfirm.hide()"
                                     actionListener="#{closuresMB.startClosure}"
-                                    value="Aceptar" 
-                                    update=":IdForm1:message :IdForm1:IdOutput :IdForm1:IdSelectForm"/>   
+                                    value="Continuar" 
+                                    update=":IdForm1"/>   
                                 <p:commandButton
                                     value="Cancelar" 
                                     onclick="dialogConfirm.hide();"/> 

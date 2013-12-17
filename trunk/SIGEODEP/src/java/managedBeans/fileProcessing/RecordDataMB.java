@@ -694,9 +694,9 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case NOVALUE:
                                     value = isCategorical(registryData, relationVar);
-                                    //if(relationVar.getNameExpected().compareTo("aseguradora")==0){
-                                    //System.out.println("Validando Categoria: " + registryData + "   Resultado: " + value);
-                                    //}
+                                    if(relationVar.getNameExpected().compareTo("aseguradora")==0){
+                                      System.out.println("Validando Categoria: " + registryData + "   Resultado: " + value);
+                                    }
                                     if (relationVar.getNameExpected().compareTo("intencionalidad") == 0) {
                                         //intencionality = registryData;
                                         intencionality = value;
@@ -3057,6 +3057,7 @@ public class RecordDataMB implements Serializable {
 
                 Injuries selectInjuryDetermined = null;
                 newNonFatalInjury.setInputTimestamp(new Date());
+                newNonFatalInjury.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
                 newNonFatalTransport = new NonFatalTransport();//nuevo non_fatal_transport
                 newNonFatalTransport.setNonFatalInjuryId(newNonFatalInjury.getNonFatalInjuryId());
                 newNonFatalInterpersonal = new NonFatalInterpersonal();//nuevo non_fatal_Interpersonal
@@ -3822,7 +3823,7 @@ public class RecordDataMB implements Serializable {
                                 newNonFatalInjury.setHealthProfessionalId(healthProfessionalsFacade.find(Integer.parseInt(value)));
                                 break;
                             case digitador_ficha:
-                                newNonFatalInjury.setUserId(usersFacade.find(Integer.parseInt(value)));
+                                //newNonFatalInjury.setUserId(usersFacade.find(Integer.parseInt(value)));
                                 break;
                             default:
                         }
@@ -4270,6 +4271,7 @@ public class RecordDataMB implements Serializable {
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
                 newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
+                newNonFatalInjury.setUserId(usersFacade.find(1));//usuario administrador
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
                 newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
                 newNonFatalInjury.setInputTimestamp(new Date());
@@ -4767,46 +4769,72 @@ public class RecordDataMB implements Serializable {
                                 }
                                 break;
                             case accion_realizar_conciliacion:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 1));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 1));
+                                }
                                 break;
                             case accion_realizar_caucion:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 2));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 2));
+                                }
                                 break;
                             case accion_realizar_dictamen:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 3));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 3));
+                                }
                                 break;
                             case accion_realizar_remision_fiscalia:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 4));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 4));
+                                }
                                 break;
                             case accion_realizar_remision_medicina_legal:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 5));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 5));
+                                }
                                 break;
                             case accion_realizar_remision_comisaria:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 6));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 6));
+                                }
                                 break;
                             case accion_realizar_remision_icbf:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 7));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 7));
+                                }
                                 break;
                             case accion_realizar_medidas_proteccion:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 8));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 8));
+                                }
                                 break;
                             case accion_realizar_resimison_salud:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 9));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 9));
+                                }
                                 break;
                             case accion_realizar_atencion_psicologica:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 10));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 10));
+                                }
                                 break;
                             case accion_realizar_restablecimiento_derechos:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 11));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 11));
+                                }
                                 break;
                             case accion_realizar_otra:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 12));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 12));
+                                }
                                 break;
                             case accion_realizar_sin_dato:
-                                actionsToTakeList.add(actionsToTakeFacade.find((short) 13));
+                                if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
+                                    actionsToTakeList.add(actionsToTakeFacade.find((short) 13));
+                                }
                                 break;
                             case responsable:
-                                newNonFatalInjury.setUserId(usersFacade.find(Integer.parseInt(value)));
+                                //newNonFatalInjury.setUserId(usersFacade.find(Integer.parseInt(value)));
                                 break;
                             default:
                         }
@@ -5032,12 +5060,16 @@ public class RecordDataMB implements Serializable {
                     newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
                 }
 
+
                 if (!actionsToTakeList.isEmpty()) {
                     newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
                 } else {
                     actionsToTakeList.add(new ActionsToTake((short) 13));
                     newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
                 }
+//                if (actionsToTakeList.size() > 5) {
+//                    System.out.println("Aqui hay mas de 5");
+//                }
 
 
                 if (!vulnerableGroupList.isEmpty()) {

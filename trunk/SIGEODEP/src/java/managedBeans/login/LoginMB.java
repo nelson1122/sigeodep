@@ -184,152 +184,219 @@ public class LoginMB {
          * funcion exclusiva cuando accede el usuario santos
          * sirve para administracion del sistema
          */
-        try {
-            //DETERMINAR EN CUANTO ESTA GEN_NN
+        int accion = 2;
+
+
+        if (accion == 2) {
+            //armo los registros
+            //de cada proyecto saco 
+
+            //elimino los registros en domestic_violence_action_to_take que tengan 13 datos
+            try {
+                //creo tablas necesarias
+                connectionJdbcMB.non_query(""
+                        + "DROP TABLE IF EXISTS injuries_mal;\n"
+                        + "CREATE TABLE injuries_mal\n"
+                        + "(\n"
+                        + "  non_fatal_injury_id integer NOT NULL,\n"
+                        + "  CONSTRAINT injuries_mal_pkey PRIMARY KEY (non_fatal_injury_id)\n"
+                        + ")\n"
+                        + "WITH (\n"
+                        + "  OIDS=FALSE\n"
+                        + ");\n");
+
+
+                //ingreso en tabla injuries mal estos datos
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " select count(*)::int as co,non_fatal_injury_id "
+                        + " from domestic_violence_action_to_take "
+                        + " group by non_fatal_injury_id");
+                while (rs.next()) {
+                    if(rs.getInt("co")>=12){
+                        connectionJdbcMB.non_query("INSERT INTO injuries_mal VALUES ("+rs.getString("non_fatal_injury_id")+");");
+                    }
+                }
+                
+                
+                //borro tablas necesarias
+                
+            } catch (Exception e) {
+            }
+            //select count(*),non_fatal_injury_id from domestic_violence_action_to_take group by non_fatal_injury_id
+
+        }
+
+
+        if (accion == 0) {
+            try {
+                ResultSet rs = connectionJdbcMB.consult("Select victim_id from victims");
+                int pos = 0;
+                while (rs.next()) {
+                    connectionJdbcMB.non_query(""
+                            + " UPDATE victims "
+                            + " SET "
+                            + " victim_nid = " + pos + ", "
+                            + " victim_name = '" + pos + "',"
+                            + " victim_address = '" + pos + "'"
+                            + " WHERE"
+                            + " victim_id = " + rs.getString("victim_id"));
+                    System.out.println(pos);
+
+                    pos++;
+                    //break;
+                }
+            } catch (Exception e) {
+            }
+        }
+
+
+        if (accion == 1) {
+            try {
+                //DETERMINAR EN CUANTO ESTA GEN_NN
             /*
-             ResultSet rs = connectionJdbcMB.consult("Select * from victims where victim_nid is null");
-             boolean determinada;
-             while (rs.next()) {
-             determinada = false;
-             if (rs.getString("victim_age") != null && rs.getString("victim_age").length() != 0) {
-             if (rs.getString("age_type_id") != null && rs.getString("age_type_id").length() != 0 && rs.getString("age_type_id").compareTo("1") == 0) {
-             }
-             }
-             if (determinada == false) {
-             connectionJdbcMB.consult("UPDATE victims SET  where victim_nid is null");
-             }
-             }*/
-            //-------------------------------------------------------------
-            //-----------correcion para sitio anatomico -------------------
-            //-------------------------------------------------------------
-            int count = 0;
-            ResultSet rs = connectionJdbcMB.consult(""
-                    + " SELECT non_fatal_injury_id "
-                    + " FROM non_fatal_injuries "
-                    + " WHERE "
-                    + "    ("
-                    + "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
-                    + "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
-                    + "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
-                    + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                    + "    injury_id = 54 OR"//"NO INTENCIONAL"
-                    + "    injury_id = 55"//"VIOLENCIA INTRAFAMILIAR LCENF"
-                    + "    )"
-                    + "    AND non_fatal_injury_id NOT IN "
-                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_anatomical_location)");
-            while (rs.next()) {
-                //connectionJdbcMB.non_query("INSERT INTO non_fatal_anatomical_location VALUES (99," + rs.getString(1) + ");");
-                System.out.println("Operaciones (A): " + String.valueOf(count));
-                count++;
-            }
-            //-------------------------------------------------------------
-            //-----------naturaleza de lesion -----------------------------
-            //-------------------------------------------------------------
-            rs = connectionJdbcMB.consult(""
-                    + " SELECT non_fatal_injury_id "
-                    + " FROM non_fatal_injuries "
-                    + " WHERE "
-                    + "    ("
-                    + "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
-                    + "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
-                    + "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
-                    + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                    + "    injury_id = 54 OR"//"NO INTENCIONAL"
-                    + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
-                    + "    )"
-                    + "    AND non_fatal_injury_id NOT IN "
-                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_kind_of_injury)");
-            while (rs.next()) {
-                //connectionJdbcMB.non_query("INSERT INTO non_fatal_kind_of_injury VALUES (99," + rs.getString(1) + ");");
-                System.out.println("Operaciones (B): " + String.valueOf(count));
-                count++;
-            }
-            //-------------------------------------------------------------
-            //-----------tipo de maltrato -----------------------------
-            //-------------------------------------------------------------
-            rs = connectionJdbcMB.consult(""
-                    + " SELECT non_fatal_injury_id "
-                    + " FROM non_fatal_injuries "
-                    + " WHERE "
-                    + "    ("
-                    + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                    + "    injury_id = 55 OR"//"VIOLENCIA INTRAFAMILIAR LCENF"
-                    + "    injury_id = 56"//"SIVIGILA-VIF" (tambien va esta)
-                    + "    )"
-                    + "    AND non_fatal_injury_id NOT IN "
-                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_abuse_type)");
-            while (rs.next()) {
-                //connectionJdbcMB.non_query("INSERT INTO domestic_violence_abuse_type VALUES (" + rs.getString(1) + ",7);");
-                System.out.println("Operaciones (C): " + String.valueOf(count));
-                count++;
-            }
-            //-------------------------------------------------------------
-            //-----------tipo de agresor -----------------------------
-            //-------------------------------------------------------------
-            rs = connectionJdbcMB.consult(""
-                    + " SELECT non_fatal_injury_id "
-                    + " FROM non_fatal_injuries "
-                    + " WHERE "
-                    + "    ("
-                    + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                    + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
-                    + "    )"
-                    + "    AND non_fatal_injury_id NOT IN "
-                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_aggressor_type)");
-            while (rs.next()) {
-                //connectionJdbcMB.non_query("INSERT INTO domestic_violence_aggressor_type VALUES (" + rs.getString(1) + ",9);");
-                System.out.println("Operaciones (D): " + String.valueOf(count));
-                count++;
-            }
-            //-------------------------------------------------------------
-            //-----------acciones a realizar -----------------------------
-            //-------------------------------------------------------------
-            rs = connectionJdbcMB.consult(""
-                    + " SELECT non_fatal_injury_id "
-                    + " FROM non_fatal_injuries "
-                    + " WHERE "
-                    + "    ("
-                    + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                    + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
-                    + "    )"
-                    + "    AND non_fatal_injury_id NOT IN "
-                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_action_to_take)");
-            while (rs.next()) {
-                //connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString(1) + ",13);");
-                System.out.println("Operaciones (E): " + String.valueOf(count));
-                count++;
-            }
-            //-------------------------------------------------------------
-            //-----------acciones en salud publica ------------------------
-            //-------------------------------------------------------------
-            rs = connectionJdbcMB.consult(""
-                    + " SELECT non_fatal_injury_id "
-                    + " FROM non_fatal_injuries "
-                    + " WHERE "
-                    + "    ("
-                    + "    injury_id = 56"//"SIVIGILA-VIF"
-                    + "    )"
-                    + "    AND non_fatal_injury_id NOT IN "
-                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM sivigila_event_public_health)");
-            while (rs.next()) {
-                //connectionJdbcMB.non_query("INSERT INTO sivigila_event_public_health VALUES (" + rs.getString(1) + ",8);");
-                System.out.println("Operaciones (F): " + String.valueOf(count));
-                count++;
-            }
-            //-------------------------------------------------------------
-            //-----------elementos de seguridad------------------------
-            //-------------------------------------------------------------
-            ResultSet rs2;
-            rs = connectionJdbcMB.consult(""
-                    + " SELECT non_fatal_injury_id "
-                    + " FROM non_fatal_injuries "
-                    + " WHERE "
-                    + "    ("
-                    + "    injury_id = 51 "//"LESION EN ACCIDENTE DE TRANSITO"
-                    + "    )"
-                    + "    AND non_fatal_injury_id NOT IN "
-                    + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_transport_security_element)");
-            while (rs.next()) {
+                 ResultSet rs = connectionJdbcMB.consult("Select * from victims where victim_nid is null");
+                 boolean determinada;
+                 while (rs.next()) {
+                 determinada = false;
+                 if (rs.getString("victim_age") != null && rs.getString("victim_age").length() != 0) {
+                 if (rs.getString("age_type_id") != null && rs.getString("age_type_id").length() != 0 && rs.getString("age_type_id").compareTo("1") == 0) {
+                 }
+                 }
+                 if (determinada == false) {
+                 connectionJdbcMB.consult("UPDATE victims SET  where victim_nid is null");
+                 }
+                 }*/
+                //-------------------------------------------------------------
+                //-----------correcion para sitio anatomico -------------------
+                //-------------------------------------------------------------
+                int count = 0;
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " SELECT non_fatal_injury_id "
+                        + " FROM non_fatal_injuries "
+                        + " WHERE "
+                        + "    ("
+                        + "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
+                        + "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
+                        + "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
+                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                        + "    injury_id = 54 OR"//"NO INTENCIONAL"
+                        + "    injury_id = 55"//"VIOLENCIA INTRAFAMILIAR LCENF"
+                        + "    )"
+                        + "    AND non_fatal_injury_id NOT IN "
+                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_anatomical_location)");
+                while (rs.next()) {
+                    //connectionJdbcMB.non_query("INSERT INTO non_fatal_anatomical_location VALUES (99," + rs.getString(1) + ");");
+                    System.out.println("Operaciones (A): " + String.valueOf(count));
+                    count++;
+                }
+                //-------------------------------------------------------------
+                //-----------naturaleza de lesion -----------------------------
+                //-------------------------------------------------------------
+                rs = connectionJdbcMB.consult(""
+                        + " SELECT non_fatal_injury_id "
+                        + " FROM non_fatal_injuries "
+                        + " WHERE "
+                        + "    ("
+                        + "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
+                        + "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
+                        + "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
+                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                        + "    injury_id = 54 OR"//"NO INTENCIONAL"
+                        + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
+                        + "    )"
+                        + "    AND non_fatal_injury_id NOT IN "
+                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_kind_of_injury)");
+                while (rs.next()) {
+                    //connectionJdbcMB.non_query("INSERT INTO non_fatal_kind_of_injury VALUES (99," + rs.getString(1) + ");");
+                    System.out.println("Operaciones (B): " + String.valueOf(count));
+                    count++;
+                }
+                //-------------------------------------------------------------
+                //-----------tipo de maltrato -----------------------------
+                //-------------------------------------------------------------
+                rs = connectionJdbcMB.consult(""
+                        + " SELECT non_fatal_injury_id "
+                        + " FROM non_fatal_injuries "
+                        + " WHERE "
+                        + "    ("
+                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                        + "    injury_id = 55 OR"//"VIOLENCIA INTRAFAMILIAR LCENF"
+                        + "    injury_id = 56"//"SIVIGILA-VIF" (tambien va esta)
+                        + "    )"
+                        + "    AND non_fatal_injury_id NOT IN "
+                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_abuse_type)");
+                while (rs.next()) {
+                    //connectionJdbcMB.non_query("INSERT INTO domestic_violence_abuse_type VALUES (" + rs.getString(1) + ",7);");
+                    System.out.println("Operaciones (C): " + String.valueOf(count));
+                    count++;
+                }
+                //-------------------------------------------------------------
+                //-----------tipo de agresor -----------------------------
+                //-------------------------------------------------------------
+                rs = connectionJdbcMB.consult(""
+                        + " SELECT non_fatal_injury_id "
+                        + " FROM non_fatal_injuries "
+                        + " WHERE "
+                        + "    ("
+                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                        + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
+                        + "    )"
+                        + "    AND non_fatal_injury_id NOT IN "
+                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_aggressor_type)");
+                while (rs.next()) {
+                    //connectionJdbcMB.non_query("INSERT INTO domestic_violence_aggressor_type VALUES (" + rs.getString(1) + ",9);");
+                    System.out.println("Operaciones (D): " + String.valueOf(count));
+                    count++;
+                }
+                //-------------------------------------------------------------
+                //-----------acciones a realizar -----------------------------
+                //-------------------------------------------------------------
+                rs = connectionJdbcMB.consult(""
+                        + " SELECT non_fatal_injury_id "
+                        + " FROM non_fatal_injuries "
+                        + " WHERE "
+                        + "    ("
+                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                        + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
+                        + "    )"
+                        + "    AND non_fatal_injury_id NOT IN "
+                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_action_to_take)");
+                while (rs.next()) {
+                    //connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString(1) + ",13);");
+                    System.out.println("Operaciones (E): " + String.valueOf(count));
+                    count++;
+                }
+                //-------------------------------------------------------------
+                //-----------acciones en salud publica ------------------------
+                //-------------------------------------------------------------
+                rs = connectionJdbcMB.consult(""
+                        + " SELECT non_fatal_injury_id "
+                        + " FROM non_fatal_injuries "
+                        + " WHERE "
+                        + "    ("
+                        + "    injury_id = 56"//"SIVIGILA-VIF"
+                        + "    )"
+                        + "    AND non_fatal_injury_id NOT IN "
+                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM sivigila_event_public_health)");
+                while (rs.next()) {
+                    //connectionJdbcMB.non_query("INSERT INTO sivigila_event_public_health VALUES (" + rs.getString(1) + ",8);");
+                    System.out.println("Operaciones (F): " + String.valueOf(count));
+                    count++;
+                }
+                //-------------------------------------------------------------
+                //-----------elementos de seguridad------------------------
+                //-------------------------------------------------------------
+                ResultSet rs2;
+                rs = connectionJdbcMB.consult(""
+                        + " SELECT non_fatal_injury_id "
+                        + " FROM non_fatal_injuries "
+                        + " WHERE "
+                        + "    ("
+                        + "    injury_id = 51 "//"LESION EN ACCIDENTE DE TRANSITO"
+                        + "    )"
+                        + "    AND non_fatal_injury_id NOT IN "
+                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_transport_security_element)");
+                while (rs.next()) {
 //                rs2 = connectionJdbcMB.consult("SELECT * FROM non_fatal_transport WHERE non_fatal_injury_id = " + rs.getString(1));
 //                if (!rs2.next()) {
 //                    connectionJdbcMB.non_query("INSERT INTO non_fatal_transport VALUES (null,null,null," + rs.getString(1) + ");");
@@ -338,14 +405,15 @@ public class LoginMB {
 //                    connectionJdbcMB.non_query("INSERT INTO non_fatal_transport_security_element VALUES (8," + rs.getString(1) + ");");
 //                }
 
-                System.out.println("Operaciones (G): " + String.valueOf(count));
-                count++;
-            }
+                    System.out.println("Operaciones (G): " + String.valueOf(count));
+                    count++;
+                }
 
-            System.out.println("Proceso de mantenimiento de base de datos realizado, PROCESOS: " + String.valueOf(count));
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "correcto", "operaciones de correccion y mantenimiento realizadas");
-        } catch (Exception e) {
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "" + e.getMessage());
+                System.out.println("Proceso de mantenimiento de base de datos realizado, PROCESOS: " + String.valueOf(count));
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "correcto", "operaciones de correccion y mantenimiento realizadas");
+            } catch (Exception e) {
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "" + e.getMessage());
+            }
         }
     }
 

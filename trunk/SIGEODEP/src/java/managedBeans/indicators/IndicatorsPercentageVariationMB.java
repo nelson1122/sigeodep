@@ -15,7 +15,6 @@ import static beans.enumerators.VariablesEnum.alcohol_levels_counterparts;
 import static beans.enumerators.VariablesEnum.alcohol_levels_victim;
 import static beans.enumerators.VariablesEnum.boolean3;
 import static beans.enumerators.VariablesEnum.contexts;
-import static beans.enumerators.VariablesEnum.counterpart_service_type;
 import static beans.enumerators.VariablesEnum.destinations_of_patient;
 import static beans.enumerators.VariablesEnum.involved_vehicles;
 import static beans.enumerators.VariablesEnum.mechanisms;
@@ -74,8 +73,6 @@ import org.apache.poi.hssf.util.CellRangeAddress;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.LegendItem;
-import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.labels.CategoryItemLabelGenerator;
@@ -86,7 +83,6 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
-import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -205,7 +201,7 @@ public class IndicatorsPercentageVariationMB {
     private StringBuilder sb;
     private int tuplesProcessed;
     private String sourceTable = "";//tabla adicional que se usara en la seccion "FROM" de la consulta sql
-    private String filterSourceTable = "";//filtro adicional usado en la "WHERE" de la consulta sql
+    
     private boolean separateRecords = false;
     private int heightGraph = 460;
     private int widthGraph = 660;
@@ -914,55 +910,43 @@ public class IndicatorsPercentageVariationMB {
     }
 
     private void addToSourceTable(String tableName) {
+        /*
+         * cuando se necesita una tabla adicional se agrega
+         * en la seccion FROM y en la seccion WHERE de la consulta SQL
+         */
         if (tableName.indexOf("sivigila_event") == 0 && sourceTable.indexOf("sivigila_event") == -1) {
-            sourceTable = sourceTable + ", sivigila_event ";
-            filterSourceTable = filterSourceTable + " non_fatal_injuries.non_fatal_injury_id = sivigila_event.non_fatal_injury_id AND \n\r";
+            sourceTable = sourceTable + " LEFT JOIN sivigila_event USING (non_fatal_injury_id) \n";
         }
         if (tableName.indexOf("sivigila_aggresor") == 0 && sourceTable.indexOf("sivigila_aggresor") == -1) {
-            sourceTable = sourceTable + ", sivigila_aggresor ";
-            filterSourceTable = filterSourceTable + " sivigila_aggresor.sivigila_agresor_id = sivigila_event.sivigila_agresor_id AND \n\r";
+            sourceTable = sourceTable + " JOIN  sivigila_aggresor USING (sivigila_agresor_id) \n";
         }
         if (tableName.indexOf("sivigila_victim") == 0 && sourceTable.indexOf("sivigila_victim") == -1) {
-            sourceTable = sourceTable + ", sivigila_victim ";
-            filterSourceTable = filterSourceTable + " sivigila_victim.sivigila_victim_id = sivigila_event.sivigila_victim_id AND \n\r";
+            sourceTable = sourceTable + " JOIN  sivigila_victim USING (sivigila_victim_id) \n";
         }
         if (tableName.indexOf("fatal_injury_murder") == 0 && sourceTable.indexOf("fatal_injury_murder") == -1) {
-            sourceTable = sourceTable + ", fatal_injury_murder ";
-            filterSourceTable = filterSourceTable + " fatal_injury_murder.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+            sourceTable = sourceTable + " LEFT JOIN fatal_injury_murder USING (fatal_injury_id) \n";
         }
         if (tableName.indexOf("fatal_injury_traffic") == 0 && sourceTable.indexOf("fatal_injury_traffic") == -1) {
-            sourceTable = sourceTable + ", fatal_injury_traffic ";
-            filterSourceTable = filterSourceTable + " fatal_injury_traffic.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+            sourceTable = sourceTable + " LEFT JOIN fatal_injury_traffic USING (fatal_injury_id) \n";
         }
         if (tableName.indexOf("fatal_injury_suicide") == 0 && sourceTable.indexOf("fatal_injury_suicide") == -1) {
-            sourceTable = sourceTable + ", fatal_injury_suicide ";
-            filterSourceTable = filterSourceTable + " fatal_injury_suicide.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+            sourceTable = sourceTable + " LEFT JOIN fatal_injury_suicide USING (fatal_injury_id) \n";
         }
         if (tableName.indexOf("fatal_injury_accident") == 0 && sourceTable.indexOf("fatal_injury_accident") == -1) {
-            sourceTable = sourceTable + ", fatal_injury_accident ";
-            filterSourceTable = filterSourceTable + " fatal_injury_accident.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
+            sourceTable = sourceTable + " LEFT JOIN fatal_injury_accident USING (fatal_injury_id) \n";
         }
         if (tableName.indexOf("non_fatal_interpersonal") == 0 && sourceTable.indexOf("non_fatal_interpersonal") == -1) {
-            sourceTable = sourceTable + ", non_fatal_interpersonal ";
-            filterSourceTable = filterSourceTable + " non_fatal_interpersonal.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+            sourceTable = sourceTable + " LEFT JOIN non_fatal_interpersonal USING (non_fatal_injury_id) \n";
         }
         if (tableName.indexOf("non_fatal_self_inflicted") == 0 && sourceTable.indexOf("non_fatal_self_inflicted") == -1) {
-            sourceTable = sourceTable + ", non_fatal_self_inflicted ";
-            filterSourceTable = filterSourceTable + " non_fatal_self_inflicted.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+            sourceTable = sourceTable + " LEFT JOIN non_fatal_self_inflicted USING (non_fatal_injury_id) \n";
         }
         if (tableName.indexOf("non_fatal_transport") == 0 && sourceTable.indexOf("non_fatal_transport") == -1) {
-            sourceTable = sourceTable + ", non_fatal_transport ";
-            filterSourceTable = filterSourceTable + " non_fatal_transport.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+            sourceTable = sourceTable + " LEFT JOIN non_fatal_transport USING (non_fatal_injury_id) \n";
         }
         if (tableName.indexOf("non_fatal_domestic_violence") == 0 && sourceTable.indexOf("non_fatal_domestic_violence") == -1) {
-            sourceTable = sourceTable + ", non_fatal_domestic_violence ";
-            filterSourceTable = filterSourceTable + " non_fatal_domestic_violence.non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id AND \n\r";
+            sourceTable = sourceTable + " LEFT JOIN non_fatal_domestic_violence USING (non_fatal_injury_id) \n";
         }
-        if (tableName.indexOf("counterpart_service_type") == 0 && sourceTable.indexOf("counterpart_service_type") == -1) {
-            sourceTable = sourceTable + ", counterpart_service_type ";
-            filterSourceTable = filterSourceTable + " counterpart_service_type.fatal_injury_id = fatal_injuries.fatal_injury_id AND \n\r";
-        }
-
     }
 
     private String createCase(String sqlReturn, String source_table, String column_whit_name, String category_table, String column_whit_id, String as_name) {
@@ -986,7 +970,7 @@ public class IndicatorsPercentageVariationMB {
         String sqlReturn = " SELECT  \n\r";
         separateRecords = false;
         sourceTable = "";//tabla adicional que se usara en la seccion "FROM" de la consulta sql
-        filterSourceTable = "";//filtro adicional usado en la "WHERE" de la consulta sql
+        String filterSourceTable = "";//filtro adicional usado en la seccion "WHERE" de la consulta sql
         ResultSet rs = null;
         for (int i = 0; i < variablesCrossData.size(); i++) {
             switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable 
@@ -1216,70 +1200,75 @@ public class IndicatorsPercentageVariationMB {
                 case kinds_of_injury://RELACION DE UNO A MUCHOS
                     separateRecords = true;
                     sqlReturn = sqlReturn + ""
-                            + " ( \n"
-                            + "   SELECT \n"
-                            + "	     cast(array_agg('kind_injury_name<=>kinds_of_injury<=>kind_injury_id<=>'||kind_injury_id) as text \n)"
-                            + "   FROM \n"
-                            + "      non_fatal_kind_of_injury \n"
-                            + "   WHERE \n"
-                            + "      non_fatal_kind_of_injury.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) as naturaleza_lesion \n";
+                            + " CASE \n"
+                            + "    WHEN( SELECT cast(array_agg('kind_injury_name<=>kinds_of_injury<=>kind_injury_id<=>'||kind_injury_id) as text \n)"
+                            + "          FROM non_fatal_kind_of_injury \n"
+                            + "          WHERE non_fatal_kind_of_injury.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
+                            + "    ELSE( SELECT cast(array_agg('kind_injury_name<=>kinds_of_injury<=>kind_injury_id<=>'||kind_injury_id) as text \n)"
+                            + "          FROM non_fatal_kind_of_injury \n"
+                            + "          WHERE non_fatal_kind_of_injury.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
+                            + " END AS naturaleza_lesion \n";
                     break;
                 case anatomical_locations://RELACION DE UNO A MUCHOS
                     separateRecords = true;
                     sqlReturn = sqlReturn + ""
-                            + " ( \n"
-                            + "   SELECT \n"
-                            + "	     cast(array_agg('anatomical_location_name<=>anatomical_locations<=>anatomical_location_id<=>'||anatomical_location_id) as text \n)"
-                            + "   FROM \n"
-                            + "      non_fatal_anatomical_location \n"
-                            + "   WHERE \n"
-                            + "      non_fatal_anatomical_location.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) as sitio_anatomico \n";
+                            + " CASE \n"
+                            + "    WHEN (SELECT cast(array_agg('anatomical_location_name<=>anatomical_locations<=>anatomical_location_id<=>'||anatomical_location_id) as text \n)"
+                            + "          FROM non_fatal_anatomical_location \n"
+                            + "          WHERE non_fatal_anatomical_location.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
+                            + "    ELSE (SELECT cast(array_agg('anatomical_location_name<=>anatomical_locations<=>anatomical_location_id<=>'||anatomical_location_id) as text \n)"
+                            + "         FROM non_fatal_anatomical_location \n"
+                            + "         WHERE non_fatal_anatomical_location.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
+                            + " END AS sitio_anatomico \n";
                     break;
-
 
                 case actions_to_take://RELACION DE UNO A MUCHOS
                     separateRecords = true;
                     sqlReturn = sqlReturn + ""
-                            + " ( \n"
-                            + "   SELECT \n"
-                            + "	     cast(array_agg('action_name<=>actions_to_take<=>action_id<=>'||action_id) as text \n)"
-                            + "   FROM \n"
-                            + "      domestic_violence_action_to_take \n"
-                            + "   WHERE \n"
-                            + "      domestic_violence_action_to_take.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) as acciones_a_realizar \n";
+                            + " CASE \n"
+                            + "    WHEN (SELECT cast(array_agg('action_name<=>actions_to_take<=>action_id<=>'||action_id) as text \n)"
+                            + "          FROM domestic_violence_action_to_take \n"
+                            + "          WHERE domestic_violence_action_to_take.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
+                            + "    ELSE (SELECT cast(array_agg('action_name<=>actions_to_take<=>action_id<=>'||action_id) as text \n)"
+                            + "          FROM domestic_violence_action_to_take \n"
+                            + "          WHERE domestic_violence_action_to_take.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
+                            + " END AS acciones_a_realizar \n";
                     break;
                 case security_elements://RELACION DE UNO A MUCHOS
                     separateRecords = true;
                     sqlReturn = sqlReturn + ""
-                            + " ( \n"
-                            + "   SELECT \n"
-                            + "	     cast(array_agg('security_element_name<=>security_elements<=>security_element_id<=>'||security_element_id) as text \n)"
-                            + "   FROM \n"
-                            + "      non_fatal_transport_security_element \n"
-                            + "   WHERE \n"
-                            + "      non_fatal_transport_security_element.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) as elementos_seguridad \n";
+                            + " CASE \n"
+                            + "    WHEN (SELECT cast(array_agg('security_element_name<=>security_elements<=>security_element_id<=>'||security_element_id) as text \n)"
+                            + "          FROM non_fatal_transport_security_element \n"
+                            + "          WHERE non_fatal_transport_security_element.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
+                            + "    ELSE (SELECT cast(array_agg('security_element_name<=>security_elements<=>security_element_id<=>'||security_element_id) as text \n)"
+                            + "          FROM non_fatal_transport_security_element \n"
+                            + "          WHERE non_fatal_transport_security_element.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
+                            + " END AS elementos_seguridad \n";
                     break;
                 case vulnerable_groups://";"grupo poblacional"//RELACION DE UNO A MUCHOS
                     separateRecords = true;
                     sqlReturn = sqlReturn + ""
-                            + " ( \n"
-                            + "   SELECT \n"
-                            + "	     cast(array_agg('vulnerable_group_name<=>vulnerable_groups<=>vulnerable_group_id<=>'||vulnerable_group_id) as text \n)"
-                            + "   FROM \n"
-                            + "      victim_vulnerable_group \n"
-                            + "   WHERE \n"
-                            + "      victim_vulnerable_group.victim_id=victims.victim_id ) as grupo_poblacional \n";
+                            + " CASE \n"
+                            + "    WHEN (SELECT cast(array_agg('vulnerable_group_name<=>vulnerable_groups<=>vulnerable_group_id<=>'||vulnerable_group_id) as text \n)"
+                            + "          FROM victim_vulnerable_group \n"
+                            + "          WHERE victim_vulnerable_group.victim_id=victims.victim_id ) is null THEN 'SIN DATO'\n"
+                            + "    ELSE (SELECT cast(array_agg('vulnerable_group_name<=>vulnerable_groups<=>vulnerable_group_id<=>'||vulnerable_group_id) as text \n)"
+                            + "          FROM victim_vulnerable_group \n"
+                            + "          WHERE victim_vulnerable_group.victim_id=victims.victim_id )\n"
+                            + " END AS grupo_poblacional \n";
                     break;
-                case abuse_types://";"naturaleza violencia" //RELACION DE UNO A MUCHOS
+                case abuse_types://";"tipo maltrato" //RELACION DE UNO A MUCHOS
                     separateRecords = true;
                     sqlReturn = sqlReturn + ""
-                            + " ( \n"
-                            + "   SELECT \n"
-                            + "	     cast(array_agg('abuse_type_name<=>abuse_types<=>abuse_type_id<=>'||abuse_type_id) as text \n)"
-                            + "   FROM \n"
-                            + "      domestic_violence_abuse_type \n"
-                            + "   WHERE \n"
-                            + "      domestic_violence_abuse_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) as naturaleza_violencia \n";
+                            + " CASE \n"
+                            + "    WHEN (SELECT cast(array_agg('abuse_type_name<=>abuse_types<=>abuse_type_id<=>'||abuse_type_id) as text \n)"
+                            + "          FROM domestic_violence_abuse_type \n"
+                            + "          WHERE domestic_violence_abuse_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
+                            + "    ELSE (SELECT cast(array_agg('abuse_type_name<=>abuse_types<=>abuse_type_id<=>'||abuse_type_id) as text \n)"
+                            + "          FROM domestic_violence_abuse_type \n"
+                            + "          WHERE domestic_violence_abuse_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
+                            + " END AS tipo_maltrato \n";
                     break;
                 case ethnic_groups://";"pertenecia étnica"
                     sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "ethnic_group_name", "ethnic_groups", "ethnic_group_id", "grupo_etnico");
@@ -1289,13 +1278,14 @@ public class IndicatorsPercentageVariationMB {
                     if (variablesCrossData.get(i).getSource_table().compareTo("domestic_violence_aggressor_type") == 0) {
                         separateRecords = true;
                         sqlReturn = sqlReturn + ""
-                                + " ( \n"
-                                + "   SELECT \n"
-                                + "	     cast(array_agg('aggressor_type_name<=>aggressor_types<=>aggressor_type_id<=>'||aggressor_type_id) as text \n)"
-                                + "   FROM \n"
-                                + "      domestic_violence_aggressor_type \n"
-                                + "   WHERE \n"
-                                + "      domestic_violence_aggressor_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) as tipo_agresor \n";
+                                + " CASE \n"
+                                + "    WHEN (SELECT cast(array_agg('aggressor_type_name<=>aggressor_types<=>aggressor_type_id<=>'||aggressor_type_id) as text \n)"
+                                + "          FROM domestic_violence_aggressor_type \n"
+                                + "          WHERE domestic_violence_aggressor_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
+                                + "    ELSE (SELECT cast(array_agg('aggressor_type_name<=>aggressor_types<=>aggressor_type_id<=>'||aggressor_type_id) as text \n)"
+                                + "          FROM domestic_violence_aggressor_type \n"
+                                + "          WHERE domestic_violence_aggressor_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) \n"
+                                + " END AS tipo_agresor \n";
                     }
                     //relacion familiar victima sivigila"
                     if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_aggresor.relative_id") == 0) {
@@ -1317,13 +1307,14 @@ public class IndicatorsPercentageVariationMB {
                 case public_health_actions://acciones en salud publica //RELACION DE UNO A MUCHOS
                     separateRecords = true;
                     sqlReturn = sqlReturn + ""
-                            + " ( \n"
-                            + "   SELECT \n"
-                            + "	     cast(array_agg('action_name<=>public_health_actions<=>action_id<=>'||action_id) as text \n)"
-                            + "   FROM \n"
-                            + "      sivigila_event_public_health \n"
-                            + "   WHERE \n"
-                            + "      sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) as aaciones_salud \n";
+                            + " CASE \n"
+                            + "    WHEN (SELECT cast(array_agg('action_name<=>public_health_actions<=>action_id<=>'||action_id) as text \n)"
+                            + "          FROM sivigila_event_public_health \n"
+                            + "          WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
+                            + "    ELSE (SELECT cast(array_agg('action_name<=>public_health_actions<=>action_id<=>'||action_id) as text \n)"
+                            + "          FROM sivigila_event_public_health \n"
+                            + "          WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
+                            + " END AS aciones_salud \n";
                     break;
                 case jobs:
                     if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_aggresor.occupation") == 0) {
@@ -1402,18 +1393,19 @@ public class IndicatorsPercentageVariationMB {
                     addToSourceTable("fatal_injury_traffic");
                     sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "road_type_name", "road_types", "road_type_id", "tipo_via");
                     break;
-//                case counterpart_service_type://(transito) //RELACION UNO A MUCHOS
-//
-//                    break;
                 case service_types://(transito)
                     //contraparte
                     if (variablesCrossData.get(i).getSource_table().indexOf("counterpart_service_type.service_type_id") != -1) {
-                        addToSourceTable("counterpart_service_type");
-                        sqlReturn = sqlReturn + "   CASE (SELECT service_type_id  FROM counterpart_service_type  WHERE fatal_injury_id=" + currentIndicator.getInjuryType() + ".fatal_injury_id LIMIT 1)  \n\r";
-                        for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
-                            sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-                        }
-                        sqlReturn = sqlReturn + "       ELSE 'SIN DATO' \n\r END AS servicio_contraparte";
+                        separateRecords = true;
+                        sqlReturn = sqlReturn + ""
+                                + "CASE \n"
+                                + "    WHEN( SELECT cast(array_agg('service_type_name<=>service_types<=>service_type_id<=>'||service_type_id) as text)  \n"
+                                + "          FROM counterpart_service_type \n"
+                                + "          WHERE counterpart_service_type.fatal_injury_id=fatal_injuries.fatal_injury_id) is null THEN 'SIN DATO'\n"
+                                + "    ELSE (SELECT cast(array_agg('service_type_name<=>service_types<=>service_type_id<=>'||service_type_id) as text)  \n"
+                                + "          FROM counterpart_service_type \n"
+                                + "          WHERE counterpart_service_type.fatal_injury_id=fatal_injuries.fatal_injury_id)     \n"
+                                + "    END AS servicio_contraparte \n";
                     }
                     //victima
                     if (variablesCrossData.get(i).getSource_table().indexOf("fatal_injury_traffic.service_type_id") != -1) {
@@ -1424,11 +1416,16 @@ public class IndicatorsPercentageVariationMB {
                 case involved_vehicles://(transito)
                     //contraparte
                     if (variablesCrossData.get(i).getSource_table().indexOf("counterpart_involved_vehicle.involved_vehicle_id") != -1) {
-                        sqlReturn = sqlReturn + "   CASE (SELECT involved_vehicle_id  FROM counterpart_involved_vehicle  WHERE fatal_injury_id=" + currentIndicator.getInjuryType() + ".fatal_injury_id LIMIT 1)  \n\r";
-                        for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
-                            sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-                        }
-                        sqlReturn = sqlReturn + "       ELSE 'SIN DATO' \n\r END AS vehiculo_contraparte";
+                        separateRecords = true;
+                        sqlReturn = sqlReturn + ""
+                                + "CASE \n"
+                                + "    WHEN( SELECT cast(array_agg('involved_vehicle_name<=>involved_vehicles<=>involved_vehicle_id<=>'||involved_vehicle_id) as text)  \n"
+                                + "          FROM counterpart_involved_vehicle \n"
+                                + "          WHERE counterpart_involved_vehicle.fatal_injury_id=fatal_injuries.fatal_injury_id) is null THEN 'SIN DATO'\n"
+                                + "    ELSE (SELECT cast(array_agg('involved_vehicle_name<=>involved_vehicles<=>involved_vehicle_id<=>'||involved_vehicle_id) as text)  \n"
+                                + "          FROM counterpart_involved_vehicle \n"
+                                + "          WHERE counterpart_involved_vehicle.fatal_injury_id=fatal_injuries.fatal_injury_id)     \n"
+                                + "    END AS vehiculo_contraparte \n";
                     }
                     //victima
                     if (variablesCrossData.get(i).getSource_table().indexOf("fatal_injury_traffic.involved_vehicle_id") != -1) {
@@ -1536,17 +1533,13 @@ public class IndicatorsPercentageVariationMB {
             }
         }
         sqlReturn = sqlReturn + ""
-                + "   FROM  \n\r"
-                + "       " + currentIndicator.getInjuryType() + ", victims" + sourceTable + " \n\r"
+                + "   FROM  \n"
+                + "       " + currentIndicator.getInjuryType() + "\n"
+                + "       " + sourceTable
+                + "       JOIN victims USING (victim_id) \n"
                 + "   WHERE  \n\r"
-                + "       " + currentIndicator.getInjuryType() + ".victim_id = victims.victim_id AND \n\r"
-                //                + "       " + currentIndicator.getInjuryType() + ".injury_neighborhood_id IN "//filtro por area urbana
-                //                + "       ( SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_area = 1 ) AND"//filtro por area urbana
                 + "       " + filterSourceTable;
 
-//        if (currentIndicator.getIndicatorId() > 4) { //si no es general se filtra por tipo de lesion
-//            sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id = " + currentIndicator.getInjuryId().toString() + " AND \n\r";
-//        }
         if (currentIndicator.getIndicatorId() > 4) { //si no es uno de los indicadores generales se filtra por tipo de lesion
             if (currentIndicator.getIndicatorId() > 32 && currentIndicator.getIndicatorId() < 40) {//si es interpersonal en familia injury_id=53,55,56
                 sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id IN (53,55,56) AND \n\r";
@@ -3063,7 +3056,7 @@ public class IndicatorsPercentageVariationMB {
             columNamesFinal = new ArrayList<>();
             int totalA;
             int totalB;
-            ResultSet rs = null;
+            ResultSet rs;
             ResultSet rs2;
             //---------------------------------------------------------            
             //SE CREA LA MATRIZ DE RESULTADOS (iniciada en 0 )

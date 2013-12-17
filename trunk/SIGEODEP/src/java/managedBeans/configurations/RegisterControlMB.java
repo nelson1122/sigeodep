@@ -5,12 +5,13 @@
 package managedBeans.configurations;
 
 import beans.connection.ConnectionJdbcMB;
-import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -26,468 +27,231 @@ import org.apache.poi.hssf.usermodel.*;
 public class RegisterControlMB implements Serializable {
 
     /**
-     * Esta clase permite llevar el control de la cantidad de registros que los 
+     * Esta clase permite llevar el control de la cantidad de registros que los
      * usuarios hain ingresado al sistema
      */
-    private List<RowDataTable> rowDataTableList;
-    private RowDataTable selectedRowDataTable;
-    private int currentSearchCriteria = 0;
-    private String currentSearchValue = "";
+    private Date initialDate = new Date();
+    private Date endDate = new Date();
+    private String exportFileName = "";
+    private Boolean btnExportDisabled = false;
     private ConnectionJdbcMB connectionJdbcMB;
-    private String name = "";
-    private String newName = "";
-    private String code = "";
-    private boolean codeDisabled = true;
-    private String newCode = "";
-    private boolean btnEditDisabled = true;
-    private boolean btnRemoveDisabled = true;
-    private String currentVariableName = "";
-    private String currentVariableNameXLSX = "";//nombre para la exportacion de datos
-    private String currentVariableId = "";
-    private String currentVariableTable = "";
-    private String currentVariableTypePrimaryKey = "";
-    private String currentVariableObligatoryId = "";
+    SimpleDateFormat format_es = new SimpleDateFormat("dd MMM yyyy", new Locale("ES"));
+    SimpleDateFormat format_sql = new SimpleDateFormat("dd/MM/yyyy");
+    SimpleDateFormat format_postgres = new SimpleDateFormat("yyyy-MM-dd");
 
     public RegisterControlMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        
+        initialDate.setDate(1);
+        initialDate.setMonth(0);
+        initialDate.setYear(2012 - 1900);
+        endDate.setDate(1);
+        endDate.setMonth(5);
+        endDate.setYear(2012-1900);
+        
+        exportFileName = format_es.format(initialDate) + " - " + format_es.format(endDate);
+        
     }
 
-    public void loadVariableData(int variableId) {
-        //funcion para cargar los datos de la variable que se va a gestionar
-        try {
-            ResultSet rs = connectionJdbcMB.consult(""
-                    + " SELECT * "
-                    + " FROM categorical_variables "
-                    + " WHERE categorical_variable_id = " + variableId);
-
-            rs.next();
-            currentVariableName = rs.getString(2);
-            currentVariableId = rs.getString(1);
-            currentVariableTable = rs.getString(3);
-            currentVariableTypePrimaryKey = rs.getString(4);
-            currentVariableObligatoryId = rs.getString(6);
-            //nombre para el archivo XLS
-            currentVariableNameXLSX = "";
-            for (int i = 0; i < currentVariableName.length(); i++) {
-                if ((currentVariableName.charAt(i) >= 'a' && currentVariableName.charAt(i) <= 'z')
-                        || (currentVariableName.charAt(i) >= 'A' && currentVariableName.charAt(i) <= 'Z')) {
-                    currentVariableNameXLSX = currentVariableNameXLSX + String.valueOf(currentVariableName.charAt(i));
-                } else {
-                    currentVariableNameXLSX = currentVariableNameXLSX + "_";
-                }
-
-            }
-            //determinar si la llave primaria puede calcularse
-            if (currentVariableTypePrimaryKey.compareTo("smallint") == 0 || currentVariableTypePrimaryKey.compareTo("integer") == 0) {
-                rs = connectionJdbcMB.consult("SELECT * FROM " + currentVariableTable);
-                String namePrimaryKey = rs.getMetaData().getColumnName(1);
-                rs = connectionJdbcMB.consult(""
-                        + " SELECT MAX(" + namePrimaryKey + ") FROM " + currentVariableTable);
-                rs.next();
-                newCode = String.valueOf(rs.getInt(1) + 1);
-                codeDisabled = true;
-                newName = "";
-
-            } else {
-                codeDisabled = false;
-                newCode = "";
-                newName = "";
-            }
-        } catch (Exception e) {
-        }
-        rowDataTableList = new ArrayList<>();
-        selectedRowDataTable = null;
-        currentSearchValue = "";
-        currentSearchCriteria = 1;
-        createDynamicTable();
+    public void changeDate() {
+        exportFileName = format_es.format(initialDate) + " - " + format_es.format(endDate);
     }
 
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
-        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
-        cell.setCellValue(new HSSFRichTextString(value));
+        cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                                
+        try {
+            double valueDouble = Double.parseDouble(value.replace(",", "."));
+            cell.setCellValue(valueDouble);
+        } catch (Exception e) {
+            cell.setCellValue(new HSSFRichTextString(value));
+        }        
         cell.setCellStyle(cellStyle);
     }
 
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
-        cell.setCellValue(new HSSFRichTextString(value));
+        try {
+            double valueDouble = Double.parseDouble(value.replace(",", "."));
+            cell.setCellValue(valueDouble);
+        } catch (Exception e) {
+            cell.setCellValue(new HSSFRichTextString(value));
+        }
     }
 
     public void postProcessXLS(Object document) {
-        HSSFWorkbook book = (HSSFWorkbook) document;
-        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
-        HSSFRow row;
-        HSSFCellStyle cellStyle = book.createCellStyle();
-        HSSFFont font = book.createFont();
-        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-        cellStyle.setFont(font);
 
-        row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
-        createCell(cellStyle, row, 0, "CODIGO");//"100">#{rowX.column1}</p:column>
-        createCell(cellStyle, row, 1, "NOMBRE");//"100">#{rowX.column23}</p:column>                                
-        try {
-            int i = 0;
-            String sql = " SELECT * FROM " + currentVariableTable;
-            ResultSet rs = connectionJdbcMB.consult(sql);
-            while (rs.next()) {
-                row = sheet.createRow(i + 1);
-                createCell(row, 0, rs.getString(1));//CODIGO
-                createCell(row, 1, rs.getString(2));//NOMBRE            
-                i++;
-            }
-        } catch (Exception e) {
-        }
-    }
-
-    public void loadCategoryData() {
-        if (selectedRowDataTable != null) {
-            btnEditDisabled = true;
-            btnRemoveDisabled = true;
-            try {
-                String sql = " SELECT * FROM " + currentVariableTable;
-                ResultSet rs = connectionJdbcMB.consult(sql);
-                sql = sql + " WHERE " + rs.getMetaData().getColumnName(1) + "::text like '" + selectedRowDataTable.getColumn1() + "'";
-                rs = connectionJdbcMB.consult(sql);
-                if (rs.next()) {
-                    name = rs.getString(2);
-                    code = rs.getString(1);
-                    btnEditDisabled = false;
-                    btnRemoveDisabled = false;
-                }
-            } catch (Exception e) {
-            }
-        }
-    }
-
-    private void tryDeleteRegistry() {
-        /*
-         * se trata de eliminar un registro 
-         */
-        try {
-            String sql = " SELECT * FROM " + currentVariableTable;
-            ResultSet rs = connectionJdbcMB.consult(sql);
-            sql = " DELETE FROM " + currentVariableTable + " WHERE " + rs.getMetaData().getColumnName(1) + "::text like '" + selectedRowDataTable.getColumn1() + "'";
-            connectionJdbcMB.non_query(sql);
-            if (connectionJdbcMB.getMsj().startsWith("ERROR")) {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se puede eliminar esta categoria por que existen registros que estan haciendo uso de esta");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
-            } else {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La categoria se ha eliminado correctamente");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
-                loadVariableData(Integer.parseInt(currentVariableId));
-                createDynamicTable();
-            }
-        } catch (SQLException | NumberFormatException e) {
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se puede eliminar esta categoria por que existen registros que estan haciendo uso de esta");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
-        }
-    }
-
-    public void deleteRegistry() {
-        /*
-         * se llama cuando se presiona el boton eliminar registro
-         */
-        if (selectedRowDataTable != null) {
-            if (currentVariableTypePrimaryKey.compareTo("smallint") == 0 || currentVariableTypePrimaryKey.compareTo("integer") == 0) {
-                //se puede determinar si hay categorias que no pueden ser eliminadas
-                if (Integer.parseInt(selectedRowDataTable.getColumn1()) <= Integer.parseInt(currentVariableObligatoryId)) {
-                    //pertenece a una categoria obligatoria no puede ser eliminada
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se puede eliminar esta categoria por que existen registros que estan haciendo uso de esta");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                } else {
-                    //se tratara de eliminar, si se esta usando no se puede eliminar
-                    tryDeleteRegistry();
-                }
-            } else {
-                //se tratara de eliminar, si se esta usando no se puede eliminar
-                tryDeleteRegistry();
-            }
-        } else {
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar la categoria a eliminar");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
-        }
-        createDynamicTable();
-        btnEditDisabled = true;
-        btnRemoveDisabled = true;
-    }
-
-    public void updateRegistry() {
-        boolean continueProcess = false;
-        String categoryColumnName = "";
-        String categoryColumnCode = "";
-        if (selectedRowDataTable != null) {
-            continueProcess = true;
-        } else {
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar la categoria a editar");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
-        }
-
-        if (continueProcess) {
-            if (name != null && code != null && name.trim().length() != 0 && code.trim().length() != 0) {
-                name = name.toUpperCase();
-                code = code.toUpperCase();
-            } else {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Codigo y nombre son obligatorios");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
-                continueProcess = false;
-            }
-        }
-
-        if (continueProcess) {
-            try {
-                String sqlName, sqlCode;
-                ResultSet rs = connectionJdbcMB.consult(" SELECT * FROM " + currentVariableTable);
-                categoryColumnCode = rs.getMetaData().getColumnName(1);
-                categoryColumnName = rs.getMetaData().getColumnName(2);
-
-
-                sqlCode = ""
-                        + " SELECT * FROM " + currentVariableTable
-                        + " WHERE " + categoryColumnCode + "::text ilike '" + code + "'"
-                        + " AND " + categoryColumnCode + "::text not ilike '" + selectedRowDataTable.getColumn1() + "'";
-                sqlName = ""
-                        + " SELECT * FROM " + currentVariableTable
-                        + " WHERE " + categoryColumnName + "::text ilike '" + name + "'"
-                        + " AND " + categoryColumnCode + "::text not ilike '" + selectedRowDataTable.getColumn1() + "'";
-
-                rs = connectionJdbcMB.consult(sqlName);
-                if (rs.next()) {
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe otra categoria con el mismo nombre");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                    continueProcess = false;
-                    code = selectedRowDataTable.getColumn1();
-                    name = selectedRowDataTable.getColumn2();
-                } else {
-                    rs = connectionJdbcMB.consult(sqlCode);
-                    if (rs.next()) {
-                        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe otra categoria con el mismo codigo");
-                        FacesContext.getCurrentInstance().addMessage(null, msg);
-                        continueProcess = false;
-                        code = selectedRowDataTable.getColumn1();
-                        name = selectedRowDataTable.getColumn2();
-                    }
-                }
-            } catch (Exception e) {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Error al validar los datos");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
-            }
-        }
-        if (continueProcess) {//realizar la actualizacion de los datos
-            if (currentVariableTypePrimaryKey.compareTo("smallint") == 0 || currentVariableTypePrimaryKey.compareTo("integer") == 0) {
-                connectionJdbcMB.non_query(""
-                        + " UPDATE " + currentVariableTable + " SET "
-                        + categoryColumnCode + " = " + code + ", "
-                        + categoryColumnName + " = '" + name + "' "
-                        + " WHERE " + categoryColumnCode + " = " + selectedRowDataTable.getColumn1());
-            } else {
-                connectionJdbcMB.non_query(""
-                        + " UPDATE " + currentVariableTable + " SET "
-                        + categoryColumnCode + " = '" + code + "', "
-                        + categoryColumnName + " = '" + name + "' "
-                        + " WHERE " + categoryColumnCode + " like '" + selectedRowDataTable.getColumn1() + "'");
-            }
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El nuevo registro se ha actualizado correctamente");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
-            loadVariableData(Integer.parseInt(currentVariableId));
-            createDynamicTable();
-        }
-    }
-
-    public void saveRegistry() {
         boolean continueProcess = true;
+        //validacion de fechas
+        if (continueProcess) {//VALIDACION DE FECHAS            
+            long fechaInicialMs = initialDate.getTime();
+            long fechaFinalMs = endDate.getTime();
+            long diferencia = fechaFinalMs - fechaInicialMs;
+            exportFileName = format_es.format(initialDate) + " - " + format_es.format(endDate);
 
-        if (newName != null && newCode != null && newName.trim().length() != 0 && newCode.trim().length() != 0) {
-            newName = newName.toUpperCase();
-            newCode = newCode.toUpperCase();
-        } else {
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Codigo y nombre son obligatorios");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
-            continueProcess = false;
+
+            if (diferencia < 0) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una configuración de la lista"));
+                continueProcess = false;
+                document = null;
+            }
         }
 
+        //genero el xls
         if (continueProcess) {
-            try {
-                String sqlName, sqlCode;
-                ResultSet rs = connectionJdbcMB.consult(" SELECT * FROM " + currentVariableTable);
-                sqlCode = "SELECT * FROM " + currentVariableTable + " WHERE " + rs.getMetaData().getColumnName(1) + "::text ilike '" + newCode + "'";
-                sqlName = "SELECT * FROM " + currentVariableTable + " WHERE " + rs.getMetaData().getColumnName(2) + "::text ilike '" + newName + "'";
+            HSSFWorkbook book = (HSSFWorkbook) document;
+            HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+            HSSFRow rowXls;
+            HSSFCellStyle cellStyle = book.createCellStyle();
+            HSSFFont font = book.createFont();
+            font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+            cellStyle.setFont(font);
+            String sql;
+            ResultSet rs;
 
-                rs = connectionJdbcMB.consult(sqlName);
-                if (rs.next()) {
-                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una categoria con el mismo nombre");
-                    FacesContext.getCurrentInstance().addMessage(null, msg);
-                    continueProcess = false;
-                } else {
-                    rs = connectionJdbcMB.consult(sqlCode);
-                    if (rs.next()) {
-                        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una categoria con el mismo codigo");
-                        FacesContext.getCurrentInstance().addMessage(null, msg);
-                        continueProcess = false;
+            try {
+                //GENERO LA CONSULTA CON RESULTADOS DE USUARIOS DIA Y CONTEO-----------------
+                connectionJdbcMB.non_query("DROP VIEW IF EXISTS register_control");
+                sql = ""
+                        + "create view register_control as\n"
+                        + "SELECT\n"
+                        + "	u.user_id, user_name,CAST(input_timestamp AS DATE), count(*)\n"
+                        + "FROM\n"
+                        + "	non_fatal_injuries\n"
+                        + "JOIN\n"
+                        + "	users u\n"
+                        + "USING\n"
+                        + "	(user_id)\n"
+                        + "WHERE\n"
+                        + "	input_timestamp BETWEEN '" + format_postgres.format(initialDate) + "' AND '" + format_postgres.format(endDate) + "'\n"
+                        + "GROUP BY\n"
+                        + "	1,2, 3\n"
+                        + "order by \n"
+                        + "	3";
+                connectionJdbcMB.non_query(sql);
+                //DETERMINO TOTAL DE USUARIOS(columnas)----------------------------------------
+                rs = connectionJdbcMB.consult("SELECT COUNT(DISTINCT(user_name)) from register_control;");
+                rs.next();
+                int numColumns = rs.getInt(1) + 2;//+2 por fecha y total por fecha
+                //DETERMINO TOTAL DE FECHAS(filas)----------------------------------------
+                rs = connectionJdbcMB.consult("SELECT COUNT(DISTINCT(input_timestamp)) from register_control order by 1;");
+                rs.next();
+                int numRows = rs.getInt(1) + 2;//+2 por cabecera y total por usuario
+                //GENERO LA MATRIZ----------------------------------------
+                String[][] matrixResult = new String[numColumns][numRows];
+                //PRIMER FILA----------------------------------------
+                int posCol = 0;
+                matrixResult[posCol][0] = "FECHA";
+                posCol++;
+                rs = connectionJdbcMB.consult("SELECT DISTINCT(user_name) from register_control;");
+                while (rs.next()) {
+                    matrixResult[posCol][0] = rs.getString(1);
+                    posCol++;
+                }
+                matrixResult[posCol][0] = "TOTAL DIARIO";
+                //CALCULAR GRAN TOTAL-------------------------------------------
+                rs = connectionJdbcMB.consult("SELECT SUM(count) from register_control");
+                rs.next();
+                int granTotal=rs.getInt(1);
+                
+                //PRIMER COLUMNA----------------------------------------
+                int posRow = 1;
+                rs = connectionJdbcMB.consult("SELECT DISTINCT(input_timestamp) from register_control order by 1");
+                while (rs.next()) {
+                    matrixResult[0][posRow] = rs.getString(1);
+                    posRow++;
+                }
+                matrixResult[0][posRow] = "TOTAL POR USUARIO";
+                //ALMACENO LOS CONTEOS EN LA MATRIZ----------------------------------------
+                rs = connectionJdbcMB.consult("SELECT * from register_control");
+                while (rs.next()) {
+                    for (int i = 0; i < numRows; i++) {
+                        if (matrixResult[0][i].compareTo(rs.getString("input_timestamp")) == 0) {
+                            posRow = i;
+                            break;
+                        }
+                    }
+                    for (int i = 0; i < numColumns; i++) {
+                        if (matrixResult[i][0].compareTo(rs.getString("user_name")) == 0) {
+                            posCol = i;
+                            break;
+                        }
+                    }
+                    matrixResult[posCol][posRow] = rs.getString("count");
+                    if (matrixResult[numColumns - 1][posRow] == null) {
+                        matrixResult[numColumns - 1][posRow] = rs.getString("count");
+                    } else {
+                        matrixResult[numColumns - 1][posRow] = String.valueOf(Integer.parseInt(matrixResult[numColumns - 1][posRow]) + rs.getInt("count"));
+                    }
+                    if (matrixResult[posCol][numRows - 1] == null) {
+                        matrixResult[posCol][numRows - 1] = rs.getString("count");
+                    } else {
+                        matrixResult[posCol][numRows - 1] = String.valueOf(Integer.parseInt(matrixResult[posCol][numRows - 1]) + rs.getInt("count"));
+                    }
+                    posRow++;
+                }
+
+                //GENERO XLS A PARTIR DE matrixResult
+                String text;
+                HSSFCell celda;
+                for (int row = 0; row < numRows; row++) {
+                    rowXls = sheet.createRow(row);// crea una fila
+                    for (int col = 0; col < numColumns; col++) {
+                        text = "0";
+                        if (matrixResult[col][row] != null) {
+                            text = matrixResult[col][row];
+                        }
+                        if (row == 0) {
+                            createCell(cellStyle, rowXls, col, text);
+                        } else {
+                            createCell(rowXls, col, text);
+                        }
+                    }
+                    if(row == numRows-1){
+                        createCell(rowXls, numColumns-1, String.valueOf(granTotal));
                     }
                 }
-            } catch (Exception e) {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Error al validar los datos");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
+                
+            } catch (SQLException | NumberFormatException e) {
+                System.out.println(e.getMessage());
             }
         }
-        if (continueProcess) {//registrar los datos
-            if (currentVariableTypePrimaryKey.compareTo("smallint") == 0 || currentVariableTypePrimaryKey.compareTo("integer") == 0) {
-                connectionJdbcMB.non_query("INSERT INTO " + currentVariableTable + " VALUES (" + newCode + ",'" + newName + "')");
-            } else {
-                connectionJdbcMB.non_query("INSERT INTO " + currentVariableTable + " VALUES ('" + newCode + "','" + newName + "')");
-            }
-            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El nuevo registro se ha adicionado correctamente");
-            FacesContext.getCurrentInstance().addMessage(null, msg);
-            loadVariableData(Integer.parseInt(currentVariableId));
-            createDynamicTable();
-        }
     }
-
-    public void newRegistry() {
-        name = "";
-        newName = "";
-    }
-
-    public void createDynamicTable() {
-        rowDataTableList = new ArrayList<>();
-        selectedRowDataTable = null;
-        btnEditDisabled = true;
-        btnRemoveDisabled = true;
-        try {
-            String sql = " SELECT * FROM " + currentVariableTable;
-            ResultSet rs = connectionJdbcMB.consult(sql);
-            String column1Name = rs.getMetaData().getColumnName(1);
-            String column2Name = rs.getMetaData().getColumnName(2);
-            if (currentSearchValue.trim().length() != 0) {
-                if (currentSearchCriteria == 1) {//filtrar por nombre
-                    sql = sql + " WHERE " + column2Name + "::text ILIKE '%" + currentSearchValue + "%'";
-                }
-                if (currentSearchCriteria == 2) {//filtrar por codigo
-                    sql = sql + " WHERE " + column1Name + "::text ILIKE '%" + currentSearchValue + "%'";
-                }
-            }
-            rs = connectionJdbcMB.consult(sql);
-            while (rs.next()) {
-                rowDataTableList.add(new RowDataTable(rs.getString(1), rs.getString(2)));
-            }
-        } catch (Exception e) {
-        }
-    }
+    
 
     public void reset() {
-//        rowDataTableList = new ArrayList<RowDataTable>();
-//        diagnosesList = diagnosesFacade.findAll();
-//        for (int i = 0; i < diagnosesList.size(); i++) {
-//            rowDataTableList.add(new RowDataTable(
-//                    diagnosesList.get(i).getDiagnosisId().toString(),
-//                    diagnosesList.get(i).getDiagnosisName()));
-//        }
     }
 
-    public List<RowDataTable> getRowDataTableList() {
-        return rowDataTableList;
+    public Date getInitialDate() {
+        return initialDate;
     }
 
-    public void setRowDataTableList(List<RowDataTable> rowDataTableList) {
-        this.rowDataTableList = rowDataTableList;
+    public void setInitialDate(Date initialDate) {
+        this.initialDate = initialDate;
     }
 
-    public RowDataTable getSelectedRowDataTable() {
-        return selectedRowDataTable;
+    public Date getEndDate() {
+        return endDate;
     }
 
-    public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
-        this.selectedRowDataTable = selectedRowDataTable;
-
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
     }
 
-    public int getCurrentSearchCriteria() {
-        return currentSearchCriteria;
+    public String getExportFileName() {
+        return exportFileName;
     }
 
-    public void setCurrentSearchCriteria(int currentSearchCriteria) {
-        this.currentSearchCriteria = currentSearchCriteria;
+    public void setExportFileName(String exportFileName) {
+        this.exportFileName = exportFileName;
     }
 
-    public String getCurrentSearchValue() {
-        return currentSearchValue;
+    public Boolean getBtnExportDisabled() {
+        return btnExportDisabled;
     }
 
-    public void setCurrentSearchValue(String currentSearchValue) {
-        this.currentSearchValue = currentSearchValue;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getNewName() {
-        return newName;
-    }
-
-    public void setNewName(String newName) {
-        this.newName = newName;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getNewCode() {
-        return newCode;
-    }
-
-    public void setNewCode(String newCode) {
-        this.newCode = newCode;
-    }
-
-    public boolean isBtnEditDisabled() {
-        return btnEditDisabled;
-    }
-
-    public void setBtnEditDisabled(boolean btnEditDisabled) {
-        this.btnEditDisabled = btnEditDisabled;
-    }
-
-    public boolean isBtnRemoveDisabled() {
-        return btnRemoveDisabled;
-    }
-
-    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
-        this.btnRemoveDisabled = btnRemoveDisabled;
-    }
-
-    public String getCurrentVariableName() {
-        return currentVariableName;
-    }
-
-    public void setCurrentVariableName(String currentVariableName) {
-        this.currentVariableName = currentVariableName;
-    }
-
-    public String getCurrentVariableNameXLSX() {
-        return currentVariableNameXLSX;
-    }
-
-    public void setCurrentVariableNameXLSX(String currentVariableNameXLSX) {
-        this.currentVariableNameXLSX = currentVariableNameXLSX;
-    }
-
-    public boolean isCodeDisabled() {
-        return codeDisabled;
-    }
-
-    public void setCodeDisabled(boolean codeDisabled) {
-        this.codeDisabled = codeDisabled;
+    public void setBtnExportDisabled(Boolean btnExportDisabled) {
+        this.btnExportDisabled = btnExportDisabled;
     }
 }
