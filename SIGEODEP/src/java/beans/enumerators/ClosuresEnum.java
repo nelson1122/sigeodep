@@ -98,6 +98,11 @@ public enum ClosuresEnum {
     non_fatal_self_inflicted_sta,
     non_fatal_domestic_violence_sta,
     non_fatal_non_intentional_sta,    
+    sivigila_sta,
+    //-------enumeraciones para tipo de imputacion--------
+    model_imputation,
+    mode_imputation,
+    none_imputation,
     NOVALUE;
 
     public static ClosuresEnum convert(String str) {

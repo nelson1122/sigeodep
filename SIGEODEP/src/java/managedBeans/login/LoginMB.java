@@ -185,47 +185,30 @@ public class LoginMB {
          * sirve para administracion del sistema
          */
         int accion = 2;
-
-
         if (accion == 2) {
-            //armo los registros
-            //de cada proyecto saco 
-
-            //elimino los registros en domestic_violence_action_to_take que tengan 13 datos
+            int count=0;
             try {
-                //creo tablas necesarias
-                connectionJdbcMB.non_query(""
-                        + "DROP TABLE IF EXISTS injuries_mal;\n"
-                        + "CREATE TABLE injuries_mal\n"
-                        + "(\n"
-                        + "  non_fatal_injury_id integer NOT NULL,\n"
-                        + "  CONSTRAINT injuries_mal_pkey PRIMARY KEY (non_fatal_injury_id)\n"
-                        + ")\n"
-                        + "WITH (\n"
-                        + "  OIDS=FALSE\n"
-                        + ");\n");
-
-
-                //ingreso en tabla injuries mal estos datos
                 ResultSet rs = connectionJdbcMB.consult(""
-                        + " select count(*)::int as co,non_fatal_injury_id "
-                        + " from domestic_violence_action_to_take "
-                        + " group by non_fatal_injury_id");
+                        + " SELECT non_fatal_injury_id "
+                        + " FROM non_fatal_injuries "
+                        + " WHERE "
+                        + "    ("
+                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
+                        + "    injury_id = 55 OR"//"VIOLENCIA INTRAFAMILIAR LCENF"
+                        + "    injury_id = 56 "//"SIVIGILA
+                        + "    )"
+                        + "    AND non_fatal_injury_id NOT IN "
+                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_action_to_take)");
                 while (rs.next()) {
-                    if(rs.getInt("co")>=12){
-                        connectionJdbcMB.non_query("INSERT INTO injuries_mal VALUES ("+rs.getString("non_fatal_injury_id")+");");
-                    }
+                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString(1) + ",13);");                    
+                    count++;
                 }
                 
-                
-                //borro tablas necesarias
-                
+                System.out.println("Los cambios fueron: "+String.valueOf(count));
             } catch (Exception e) {
             }
-            //select count(*),non_fatal_injury_id from domestic_violence_action_to_take group by non_fatal_injury_id
 
         }
-
 
         if (accion == 0) {
             try {
@@ -476,6 +459,8 @@ public class LoginMB {
     public String CheckValidInvited() {
         /*
          * permitir el acceso de un usuario como invitado
+         * retorna la pagina a la cual se debe dirigir una 
+         * ves se determine si se puede ingresar o no
          */
         //obtengo el bean de aplicacion                
         ExternalContext contexto = FacesContext.getCurrentInstance().getExternalContext();
@@ -500,13 +485,13 @@ public class LoginMB {
         } else {//no existe sesion se debe crear el usuario temporal         
             int max = applicationControlMB.getMaxUserId();
             if (max < 1001) {
-                max = 1001;
+                max = 1001;//le aumento mil para que no tenga un id de los usuarios registrados del sistema
             } else {
                 max = max + 1;
             }
             currentUser = new Users(max, "Invitado: " + String.valueOf(max - 1000), "123", "USUARIO");//nuevo ususario temporal
             currentUser.setActive(true);
-            loginname = "Invitado: " + String.valueOf(max - 1000);
+            loginname = "Invitado: " + String.valueOf(max - 1000);//el id de los invitados inicia en 1000, se les rest mil para que aparezcan como 1,2...etc y no como 1001,1002....etc
             contexto.getSessionMap().put("username", loginname);
             userLogin = currentUser.getUserLogin();
             userName = currentUser.getUserName();
@@ -514,10 +499,6 @@ public class LoginMB {
             applicationControlMB.addSession(currentUser.getUserId(), idSession);
             return inicializeVariables();
         }
-
-
-
-
     }
 
     public String CheckValidUser() {
