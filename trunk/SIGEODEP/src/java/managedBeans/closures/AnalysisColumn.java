@@ -13,37 +13,28 @@ public class AnalysisColumn {
      * clase que representa el analisis realizado a una columna a imputar
      * no todos los valores seran usados, depende de la columna que se trabaje
      */    
-    private String sqlForImputation = null;//sql que permite realizar la imputacion de esta columna
-    private String description = null;//descripcion de imputacion(de haber sido realizada)
+    
     private String columnName = null;//nombre de la columna en base de datos
     private String variableName = null;//nombre de la variable que representa la columna
-    private double nullPercentagePerColumn = -1;//porcentage de nulos
-    private int nullCountPerColumn = -1;//porcentage de nulos
-    private double averagePerColumn = -1;//promedio por columna
-    private String minDatePerColumn = null;//fecha minima en columna
-    private String maxDatePerColumn = null;//fecha maxima en columna
-    private String minNumberPerColumn = null;//numero minimo en columna
-    private String maxNumberPerColumn = null;//numero maximo en columna
-    private String modePerColumn = null;//moda que tiene la columna
-    private String fiveFrecuents = null;//frecuentes (maximo 5)
+    //---------------variables para analisis sin cache(datos a cargar a la bodega)--------------------
+    private double nullPercentagePerColumnWhitOutCache = -1;//porcentage de nulos sin cache
+    private int nullCountPerColumnWhitOutCache = -1;//conteo de nulos sin cache
+    private int notApplicableCountPerColumnWhitOutCache=-1;//conteo de registros que no aplica
+    private int notNullCountPerColumnWhitOutCache = -1;//conteo de no nulos sin cache
+    private int countRedordsWhitOutCache = -1;//conteo de registros sin cache    
+    private String modePerColumnWhitOutCache = null;//moda que tiene la columna sin cache
+    private String fiveFrecuentsWhitOutCache = null;//frecuentes (maximo 5) sin cache
+    
+    //---------------variables para analisis con cache--------------------
+    private double nullPercentagePerColumnWhitCache = -1;//porcentage de nulos con cache(carga(nulos y no nulos) + no nulos del cache)   
+    private int notNullCountPerColumnWhitCache = -1;//conteo de no nulos con cache(no nulos carga + no nulos del cache)   
+    private int notNullCountPerColumnInCache = -1;//conteo de no nulos en cache
+    private int notApplicableCountPerColumnWhitCache=-1;//conteo de registros que no aplica
+    private int countRedordsInCache = -1;//conteo de registros en cache
+    private String modePerColumnWhitCache = null;//moda que tiene la columna con cache
+    private String fiveFrecuentsWhitCache = null;//frecuentes (maximo 5) con cache
 
     public AnalysisColumn() {
-    }
-
-    public String getSqlForImputation() {
-        return sqlForImputation;
-    }
-
-    public void setSqlForImputation(String sqlForImputation) {
-        this.sqlForImputation = sqlForImputation;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getColumnName() {
@@ -62,75 +53,118 @@ public class AnalysisColumn {
         this.variableName = variableName;
     }
 
-    public double getNullPercentagePerColumn() {
-        return nullPercentagePerColumn;
+    public double getNullPercentagePerColumnWhitOutCache() {
+        return nullPercentagePerColumnWhitOutCache;
     }
 
-    public void setNullPercentagePerColumn(double nullPercentagePerColumn) {
-        this.nullPercentagePerColumn = nullPercentagePerColumn;
+    public void setNullPercentagePerColumnWhitOutCache(double nullPercentagePerColumnWhitOutCache) {
+        this.nullPercentagePerColumnWhitOutCache = nullPercentagePerColumnWhitOutCache;
     }
 
-    public int getNullCountPerColumn() {
-        return nullCountPerColumn;
+    public int getNullCountPerColumnWhitOutCache() {
+        return nullCountPerColumnWhitOutCache;
     }
 
-    public void setNullCountPerColumn(int nullCountPerColumn) {
-        this.nullCountPerColumn = nullCountPerColumn;
+    public void setNullCountPerColumnWhitOutCache(int nullCountPerColumnWhitOutCache) {
+        this.nullCountPerColumnWhitOutCache = nullCountPerColumnWhitOutCache;
     }
 
-    public double getAveragePerColumn() {
-        return averagePerColumn;
+    public int getCountRedordsWhitOutCache() {
+        return countRedordsWhitOutCache;
     }
 
-    public void setAveragePerColumn(double averagePerColumn) {
-        this.averagePerColumn = averagePerColumn;
+    public void setCountRedordsWhitOutCache(int countRedordsWhitOutCache) {
+        this.countRedordsWhitOutCache = countRedordsWhitOutCache;
     }
 
-    public String getMinDatePerColumn() {
-        return minDatePerColumn;
+    public String getModePerColumnWhitOutCache() {
+        return modePerColumnWhitOutCache;
     }
 
-    public void setMinDatePerColumn(String minDatePerColumn) {
-        this.minDatePerColumn = minDatePerColumn;
+    public void setModePerColumnWhitOutCache(String modePerColumnWhitOutCache) {
+        this.modePerColumnWhitOutCache = modePerColumnWhitOutCache;
     }
 
-    public String getMaxDatePerColumn() {
-        return maxDatePerColumn;
+    public String getFiveFrecuentsWhitOutCache() {
+        return fiveFrecuentsWhitOutCache;
     }
 
-    public void setMaxDatePerColumn(String maxDatePerColumn) {
-        this.maxDatePerColumn = maxDatePerColumn;
+    public void setFiveFrecuentsWhitOutCache(String fiveFrecuentsWhitOutCache) {
+        this.fiveFrecuentsWhitOutCache = fiveFrecuentsWhitOutCache;
     }
 
-    public String getMinNumberPerColumn() {
-        return minNumberPerColumn;
+    public double getNullPercentagePerColumnWhitCache() {
+        return nullPercentagePerColumnWhitCache;
     }
 
-    public void setMinNumberPerColumn(String minNumberPerColumn) {
-        this.minNumberPerColumn = minNumberPerColumn;
+    public void setNullPercentagePerColumnWhitCache(double nullPercentagePerColumnWhitCache) {
+        this.nullPercentagePerColumnWhitCache = nullPercentagePerColumnWhitCache;
     }
 
-    public String getMaxNumberPerColumn() {
-        return maxNumberPerColumn;
+    public int getNotNullCountPerColumnWhitCache() {
+        return notNullCountPerColumnWhitCache;
     }
 
-    public void setMaxNumberPerColumn(String maxNumberPerColumn) {
-        this.maxNumberPerColumn = maxNumberPerColumn;
+    public void setNotNullCountPerColumnWhitCache(int notNullCountPerColumnWhitCache) {
+        this.notNullCountPerColumnWhitCache = notNullCountPerColumnWhitCache;
     }
 
-    public String getModePerColumn() {
-        return modePerColumn;
+    public int getNotNullCountPerColumnInCache() {
+        return notNullCountPerColumnInCache;
     }
 
-    public void setModePerColumn(String modePerColumn) {
-        this.modePerColumn = modePerColumn;
+    public void setNotNullCountPerColumnInCache(int notNullCountPerColumnInCache) {
+        this.notNullCountPerColumnInCache = notNullCountPerColumnInCache;
     }
 
-    public String getFiveFrecuents() {
-        return fiveFrecuents;
+    public int getCountRedordsInCache() {
+        return countRedordsInCache;
     }
 
-    public void setFiveFrecuents(String fiveFrecuents) {
-        this.fiveFrecuents = fiveFrecuents;
+    public void setCountRedordsInCache(int countRedordsInCache) {
+        this.countRedordsInCache = countRedordsInCache;
     }
+
+    public String getModePerColumnWhitCache() {
+        return modePerColumnWhitCache;
+    }
+
+    public void setModePerColumnWhitCache(String modePerColumnWhitCache) {
+        this.modePerColumnWhitCache = modePerColumnWhitCache;
+    }
+
+    public String getFiveFrecuentsWhitCache() {
+        return fiveFrecuentsWhitCache;
+    }
+
+    public void setFiveFrecuentsWhitCache(String fiveFrecuentsWhitCache) {
+        this.fiveFrecuentsWhitCache = fiveFrecuentsWhitCache;
+    }
+
+    public int getNotNullCountPerColumnWhitOutCache() {
+        return notNullCountPerColumnWhitOutCache;
+    }
+
+    public void setNotNullCountPerColumnWhitOutCache(int notNullCountPerColumnWhitOutCache) {
+        this.notNullCountPerColumnWhitOutCache = notNullCountPerColumnWhitOutCache;
+    }
+
+    public int getNotApplicableCountPerColumnWhitOutCache() {
+        return notApplicableCountPerColumnWhitOutCache;
+    }
+
+    public void setNotApplicableCountPerColumnWhitOutCache(int notApplicableCountPerColumnWhitOutCache) {
+        this.notApplicableCountPerColumnWhitOutCache = notApplicableCountPerColumnWhitOutCache;
+    }
+
+    public int getNotApplicableCountPerColumnWhitCache() {
+        return notApplicableCountPerColumnWhitCache;
+    }
+
+    public void setNotApplicableCountPerColumnWhitCache(int notApplicableCountPerColumnWhitCache) {
+        this.notApplicableCountPerColumnWhitCache = notApplicableCountPerColumnWhitCache;
+    }
+
+       
+    
 }

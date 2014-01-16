@@ -212,10 +212,13 @@ public class HomicideMB implements Serializable {
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
 
+    
     public HomicideMB() {
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
     }
 
+    
+    
     public void loadValues(List<Tags> tagsList, FatalInjuryMurder currentFatalInjuryM) {
         for (int i = 0; i < tagsList.size(); i++) {
             try {

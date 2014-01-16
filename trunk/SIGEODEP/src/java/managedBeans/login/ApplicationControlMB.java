@@ -386,6 +386,8 @@ public class ApplicationControlMB {
     }
 
     public int getMaxUserId() {
+        //deteminar cual es el maximo identificador de los usuarios que esten en el sistema
+        //los invitados inician en 1000
         if (currentUserIdSessions != null && !currentUserIdSessions.isEmpty()) {
             int max = 0;
             for (int i = 0; i < currentUserIdSessions.size(); i++) {

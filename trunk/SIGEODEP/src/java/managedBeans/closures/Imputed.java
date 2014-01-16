@@ -17,6 +17,7 @@ public class Imputed {
     private String actual;
     private String predicted;
     private double confidence;
+    private String tuple;
 
     public Imputed() {
         f = new DecimalFormat("##.00");
@@ -78,11 +79,22 @@ public class Imputed {
         this.confidence = confidence;
     }
 
+    public String getTuple() {
+        return tuple;
+    }
+
+    public void setTuple(String tuple) {
+        this.tuple = tuple;
+    }
+    
+    
+
     @Override
     public String toString() {
         return "# " + order 
                 + "\tActual: " + actual 
                 + "\tPredicted: " + predicted 
-                + "\tConfidence: " + f.format(confidence * 100) + "%";
+                + "\tConfidence: " + f.format(confidence * 100) + "%"
+                + "\tTuple: " + tuple ;
     }
 }

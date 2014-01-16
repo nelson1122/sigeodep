@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.trees.J48;
+import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
 import weka.filters.Filter;
@@ -104,8 +105,13 @@ public class Imputation {
 
             for (int i = 0; i < getPredict().numInstances(); i++) {
                 double pred = knn.classifyInstance(getPredict().instance(i));
+                Instance returned = knn.getNearestNeighbourSearchAlgorithm().nearestNeighbour(getPredict().instance(i));
+                //System.out.println(returned);//+"--"
                 double[] dist = knn.distributionForInstance(getPredict().instance(i));
                 Imputed imputed = new Imputed();
+                
+                imputed.setTuple(returned.toString());//colocar la tupla correspondiente
+                
                 imputed.setOrder(i + 1);
                 // print the actual value
                 imputed.setActual(getPredict().instance(i).toString(getPredict().classIndex()));

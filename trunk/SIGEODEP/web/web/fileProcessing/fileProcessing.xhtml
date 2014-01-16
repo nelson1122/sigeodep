@@ -13,7 +13,7 @@
             <style type="text/css">
                 .bla div { width: 125px; white-space:nowrap;}
             </style>
-            
+
             <script type="text/javascript">
                 $('*').live("keypress", function(e) {    //NO TOME CONTROL
                     if (e.keyCode === 17) {
@@ -1304,11 +1304,11 @@
                                     </p:row>
                                     <p:row>
                                         <p:column styleClass="ui-widget-header">
-                                            <!-- disabled="# {recordDataMB.btnRegisterDataDisabled}" -->
+                                            <!--  -->
                                             <p:commandButton 
                                                 id="IdBtnRegisterData"
                                                 value="REGISTRAR DATOS" 
-                                                
+                                                disabled="#{recordDataMB.btnRegisterDataDisabled}"
                                                 actionListener="#{recordDataMB.btnRegisterDataClick}" 
                                                 onclick="pbAjax.start();
                     startButton2.disable();

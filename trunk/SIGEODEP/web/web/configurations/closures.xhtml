@@ -48,12 +48,12 @@
                                         <h:outputLabel value="LESION"/>
                                     </p:column>                            
                                     <p:column>
-                                        <p:selectOneMenu id="IdYear" value="#{closuresMB.currentInjury}" >                                             
+                                        <p:selectOneMenu id="IdInjury" value="#{closuresMB.currentInjury}" disabled="#{closuresMB.disabledInjury}" >                                             
                                             <f:selectItems value="#{closuresMB.injuriesList}"/>
                                             <f:ajax 
                                                 event="change"                                                                                                            
                                                 render="IdDateClosure message"
-                                                listener="#{closuresMB.changeInjury}"/>                                        
+                                                listener="#{closuresMB.reset}"/>                                        
                                         </p:selectOneMenu>                                        
                                     </p:column>                                    
                                     <p:column styleClass="ui-widget-header">
@@ -65,7 +65,7 @@
                                 </p:row>                        
                             </p:panelGrid>
                             <br/>                            
-                            
+
                             <p:commandButton  
                                 id="IdBtnAnalysis"                                
                                 value="Realizar Análisis" 
@@ -74,43 +74,54 @@
                                 update=":IdForm2:IdDialogConfirm"/>                            
                             <br/>
                             <br/>
-                            <p:panelGrid rendered="#{closuresMB.renderedAnalysisResult}">
-                                <p:row>                        
-                                    <p:column styleClass="ui-widget-header" colspan="4">
-                                        Resultado del análisis:
+                            <p:tabView id="IdTabView" rendered="#{closuresMB.renderedAnalysisResult}">               
+                                <p:tab title="Homicidios" rendered="#{closuresMB.renderedAnalysisFatalInjuryMurder}">  
+                                </p:tab>
+                                <p:tab title="Muerte en Accidente de Tránsito" rendered="#{closuresMB.renderedAnalysisFatalInjuryTraffic}">  
+                                </p:tab>
+                                <p:tab title="Suicidio" rendered="#{closuresMB.renderedAnalysisFatalInjurySuicide}">  
+                                </p:tab>
+                                <p:tab title="Muerte Accidental" rendered="#{closuresMB.renderedAnalysisFatalInjuryAccident} ">  
+                                </p:tab>
+                                <p:tab title="Interpersonal" rendered="#{closuresMB.renderedAnalysisNonFatalInterpersonal}">  
+                                </p:tab>
+                                <p:tab title="Tránsito" rendered="#{closuresMB.renderedAnalysisNonFatalTransport}">  
+                                </p:tab>
+                                <p:tab title="Autoinflingida" rendered="#{closuresMB.renderedAnalysisNonFatalSelfInflicted}">  
+                                </p:tab>
+                                <p:tab title="Intrafamiliar" rendered="#{closuresMB.renderedAnalysisNonFatalDomesticViolence}">  
+                                </p:tab>
+                                <p:tab title="No intencional" rendered="#{closuresMB.renderedAnalysisNonFatalNonIntentional}">  
+                                </p:tab>
+                                <p:tab title="SIVIGILA-VIF" rendered="#{closuresMB.renderedAnalysisSivigila}">  
+                                </p:tab>
+                            </p:tabView>
+                            <p:panelGrid rendered="#{closuresMB.renderedAnalysisResult}">                                
+                                <p:row>                                                            
+                                    <p:column styleClass="ui-widget-header" style="width: 310px;">
+                                        Datos a cargar
                                     </p:column>
-                                </p:row>
-                                <p:row>                        
-                                    <p:column styleClass="ui-widget-header">
-                                        Variables:
+                                    <p:column styleClass="ui-widget-header" style="width: 320px;">
+                                        Datos a cargar y Cache
                                     </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdSelectForm"
-                                            value="#{closuresMB.currentVariableData}">                                                                             
-                                            <f:selectItems value="#{closuresMB.variablesData}"/>                                          
-                                            <f:ajax                                        
-                                                event="change" 
-                                                listener="#{closuresMB.changeVariableData}"                                                                                                           
-                                                render="IdOutputAnalysis"/>
-                                        </h:selectOneMenu>  
+                                </p:row>   
+                                <p:row>                                                            
+                                    <p:column colspan="2">
+                                        <div style="overflow: scroll; width: 700px; height: 200px;">
+                                            <h:outputText 
+                                                id="IdOutputAnalysis" 
+                                                value="#{closuresMB.outputTextAnalysis}"
+                                                escape="false"/>
+                                        </div>
                                     </p:column>
-
-                                    <p:column styleClass="ui-widget-header">
-                                        Datos:
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputText 
-                                            id="IdOutputAnalysis" 
-                                            value="#{closuresMB.outputTextAnalysis}"
-                                            escape="false"/>
-                                    </p:column>
-                                </p:row>                        
+                                </p:row>   
                             </p:panelGrid>
                             <br/>
                             <p:commandButton
                                 id="IdBtnImputation"
                                 value="Realizar Imputacion"                                 
+                                onclick="pageInactive();"
+                                oncomplete="pageActive();"
                                 rendered="#{closuresMB.renderedBtnImputation}"
                                 actionListener="#{closuresMB.startImputation}"                                
                                 update=":IdForm1"/>
@@ -121,6 +132,8 @@
                                     <p:column styleClass="ui-widget-header">
                                         Resultado Imputacion:
                                     </p:column>
+                                </p:row>                        
+                                <p:row>                        
                                     <p:column>
                                         <h:outputText 
                                             id="IdOutputImputation" 
@@ -131,7 +144,9 @@
                             </p:panelGrid>
                             <br/>
                             <p:commandButton                                 
-                                value="Caragar Datos a la Bodega"                                 
+                                value="Cargar Datos a la Bodega"                                 
+                                onclick="pageInactive();"
+                                oncomplete="pageActive();"
                                 rendered="#{closuresMB.renderedBtnStoreData}"
                                 actionListener="#{closuresMB.startStoreData}"
                                 update=":IdForm1"/>
@@ -168,18 +183,17 @@
                     id="IdDialogConfirm"
                     modal="true"
                     resizable="false"
-                    header="Rango de fechas" 
+                    header="Confirmacion" 
                     widgetVar="dialogConfirm"> 
                     <p:panelGrid >
                         <p:row>  
                             <p:column >
-                                <div style="width: 250px; height: 120px; text-align: center; background: #fbef9a;">
-                                    <br/>                                    
-                                    #{closuresMB.currentInjuryName}<br/>
-                                    desde #{closuresMB.startDate}<br/>
-                                    hasta #{closuresMB.endDate}<br/>
-                                    <br/>
-                                    Se procedera a analizar los registros dentro de este rango de frechas
+                                <div style="width: 250px; text-align: center; background: #fbef9a;">
+                                    <h:outputText 
+                                        id="IdMessageAnalysis" 
+                                        value="#{closuresMB.outputTextConfirmationMessage}"
+                                        escape="false"/>
+                                    <br/> 
                                 </div>
                             </p:column>
                         </p:row>
@@ -187,13 +201,16 @@
                             <div></div>
                             <p:column  styleClass="ui-widget-header">
                                 <p:commandButton                                                           
-                                    oncomplete="dialogConfirm.hide()"
+                                    oncomplete="pageActive();"
+                                    onclick="dialogConfirm.hide();
+                    pageInactive();"
                                     actionListener="#{closuresMB.startClosure}"
                                     value="Continuar" 
                                     update=":IdForm1"/>   
                                 <p:commandButton
                                     value="Cancelar" 
                                     onclick="dialogConfirm.hide();"/> 
+
                             </p:column>
                         </p:row>
                     </p:panelGrid>

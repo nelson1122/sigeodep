@@ -694,8 +694,8 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case NOVALUE:
                                     value = isCategorical(registryData, relationVar);
-                                    if(relationVar.getNameExpected().compareTo("aseguradora")==0){
-                                      System.out.println("Validando Categoria: " + registryData + "   Resultado: " + value);
+                                    if (relationVar.getNameExpected().compareTo("aseguradora") == 0) {
+                                        System.out.println("Validando Categoria: " + registryData + "   Resultado: " + value);
                                     }
                                     if (relationVar.getNameExpected().compareTo("intencionalidad") == 0) {
                                         //intencionality = registryData;
@@ -5760,6 +5760,7 @@ public class RecordDataMB implements Serializable {
                     break;
             }
         }
+
     }
 
     //----------------------------------------------------------------------
