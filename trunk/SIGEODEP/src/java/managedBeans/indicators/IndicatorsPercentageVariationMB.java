@@ -128,8 +128,7 @@ public class IndicatorsPercentageVariationMB {
     private String firstVariablesCrossSelected = null;
     private String initialValue = "";
     private String endValue = "";
-    private String dataTableHtmlA;
-    private String dataTableHtmlB;
+    private String dataTableHtml;
     private String dataTableHtmlDiference;
     private LoginMB loginMB;
     private String sql = "";
@@ -155,6 +154,7 @@ public class IndicatorsPercentageVariationMB {
     private String endDateStrA = "";
     private String initialDateStrB = "";
     private String endDateStrB = "";
+    private boolean invertMatrix = true;
     private String currentTemporalDisaggregation;
     private String pivotTableName;
     private String prepivotTableName;
@@ -613,7 +613,7 @@ public class IndicatorsPercentageVariationMB {
             createMatrixDifference();//matriz de resultados diferencia
         }
         if (continueProcess) {
-            dataTableHtmlA = createDataTableResult();
+            dataTableHtml = createDataTableResult();
             loadValuesGraph();//creo el grafico
             btnExportDisabled = false;
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
@@ -2094,8 +2094,7 @@ public class IndicatorsPercentageVariationMB {
             variablesList.add(variablesListData.get(i).getName());
         }
         //dynamicDataTableGroup = new OutputPanel();//creo el panel grid
-        dataTableHtmlA = "";
-        dataTableHtmlB = "";
+        dataTableHtml = "";
         dataTableHtmlDiference = "";
         chartImage = null;
         variablesCrossList = new ArrayList<>();//SelectItem[variablesListData.size()];
@@ -2826,9 +2825,26 @@ public class IndicatorsPercentageVariationMB {
             celda.setCellValue(new HSSFRichTextString(strValue));
         }
     }
+    
+    public void invertMatrixClick() {
+        if (invertMatrix) {
+            invertMatrix = false;
+        } else {
+            invertMatrix = true;
+        }
+        if (dataTableHtml != null && dataTableHtml.length() != 0) {
+            dataTableHtml = createDataTableResult();
+        }
+    }
 
-    private String createDataTableResult() {
-
+    private String verticalResult() {
+        
+        String strReturn = " ";
+        
+        return strReturn;
+    }
+    private String horizontalResult() {
+        
         headers1 = new ArrayList<>();
         headers2 = new String[columNamesFinal.size()];
         String height = "height:20px;";
@@ -2839,7 +2855,7 @@ public class IndicatorsPercentageVariationMB {
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
         strReturn = strReturn + "            <tr>\r\n";
-        strReturn = strReturn + "                <td id=\"firstTd\" >\r\n";
+        strReturn = strReturn + "                <td>\r\n";
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td class=\"ui-widget-header\">\r\n";
         //-------------------------------------------------------------------
@@ -2853,12 +2869,9 @@ public class IndicatorsPercentageVariationMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNamesFinal.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(columNamesFinal.get(i)) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(columNamesFinal.get(i)) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-//            strReturn = strReturn + "                                <td>\r\n";
-//            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
-//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         if (variablesCrossData.size() == 3) {
@@ -2887,24 +2900,18 @@ public class IndicatorsPercentageVariationMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < headers1.size(); i++) {
                 strReturn = strReturn + "                                <td colspan=\"" + headers1.get(i).getColumns() + "\">\r\n";
-                strReturn = strReturn + "                                    <div >" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-//            strReturn = strReturn + "                                <td >\r\n";
-//            strReturn = strReturn + "                                    <div >-</div>\r\n";
-//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
 
             strReturn = strReturn + "                            <tr>\r\n";
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(headers2[i]) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(headers2[i]) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-//            strReturn = strReturn + "                                <td >\r\n";
-//            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
-//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -2934,49 +2941,31 @@ public class IndicatorsPercentageVariationMB {
             //NOMBRE PARA CADA FILA            
             boolean showCountAdd = false;
             boolean showRowPercentageAdd = false;
-            boolean showColumnPercentageAdd = false;
-            boolean showTotalPercentageAdd = false;
+            //boolean showColumnPercentageAdd = false;
+            //boolean showTotalPercentageAdd = false;
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td rowspan=\"" + rowsForRecord + "\"><div style=\"overflow:hidden; " + height + " width:150px; \">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
+            strReturn = strReturn + "                                <td rowspan=\"" + rowsForRecord + "\"><div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
 
-            if (showCount && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:100px; height:20px;\">Recuento</div></td>\r\n";
+            if (showCount && !showCountAdd && !showRowPercentageAdd){// && !showColumnPercentageAdd && !showTotalPercentageAdd) {
+                strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:100px; white-space: nowrap;\">Recuento</div></td>\r\n";
                 showCountAdd = true;
             }
-            if (showRowPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"width:100px; height:20px;\">% por fila</div></td>\r\n";
+            if (showRowPercentage && !showCountAdd && !showRowPercentageAdd){// && !showColumnPercentageAdd && !showTotalPercentageAdd) {
+                strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:100px; white-space: nowrap;\">% por fila</div></td>\r\n";
                 showRowPercentageAdd = true;
             }
-//            if (showColumnPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-//                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% por columna</td>\r\n";
-//                showColumnPercentageAdd = true;
-//            }
-//            if (showTotalPercentage && !showCountAdd && !showRowPercentageAdd && !showColumnPercentageAdd && !showTotalPercentageAdd) {
-//                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% del total</td>\r\n";
-//                showTotalPercentageAdd = true;
-//            }
             strReturn = strReturn + "                            </tr>\r\n";
-            //
+            
             if (showCount && !showCountAdd) {
                 strReturn = strReturn + "                            <tr>\r\n";
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\">recuento</td>\r\n";
+                strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:100px; \">recuento</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             if (showRowPercentage && !showRowPercentageAdd) {
                 strReturn = strReturn + "                            <tr>\r\n";
-                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% por fila</td>\r\n";
+                strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:100px; \">% por fila</div></td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
-//            if (showColumnPercentage && !showColumnPercentageAdd) {
-//                strReturn = strReturn + "                            <tr>\r\n";
-//                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% por columna</td>\r\n";
-//                strReturn = strReturn + "                            </tr>\r\n";
-//            }
-//            if (showTotalPercentage && !showTotalPercentageAdd) {
-//                strReturn = strReturn + "                            <tr>\r\n";
-//                strReturn = strReturn + "                                <td class=\"tableFirstCol\">% del total</td>\r\n";
-//                strReturn = strReturn + "                            </tr>\r\n";
-//            }
         }
         strReturn = strReturn + "                        </table>\r\n";
         strReturn = strReturn + "                    </div>\r\n";
@@ -2998,7 +2987,7 @@ public class IndicatorsPercentageVariationMB {
         for (int j = 0; j < rowNames.size(); j++) {//-1 por que le agrege "TOTALES"
             if (showCount) {
                 if (j == 0 && !firstTrAdd) {
-                    strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
+                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
                     firstTrAdd = true;
                 } else {
                     strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
@@ -3011,14 +3000,14 @@ public class IndicatorsPercentageVariationMB {
                     } else {
                         value = formateador.format((totalA - totalB) * -1);
                     }
-                    strReturn = strReturn + "                                <td><div style=\"width:150px;" + height + "\">" + value + "</div></td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:200px; \">" + value + "</div></td>\r\n";
 
                 }
                 strReturn = strReturn + "                            </tr>\r\n";
             }
             if (showRowPercentage) {
                 if (j == 0 && !firstTrAdd) {
-                    strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
+                    strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
                     firstTrAdd = true;
                 } else {
                     strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
@@ -3032,7 +3021,7 @@ public class IndicatorsPercentageVariationMB {
                     } else {
                         value = formateador.format((totalA - totalB) * -1);
                     }
-                    strReturn = strReturn + "                                <td><div style=\"width:150px;" + height + "\">" + value + "</div></td>\r\n";
+                    strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:200px; \">" + value + "</div></td>\r\n";
 
                 }
                 strReturn = strReturn + "                            </tr>\r\n";
@@ -3047,8 +3036,17 @@ public class IndicatorsPercentageVariationMB {
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "            </tr>\r\n";
         strReturn = strReturn + "        </table>\r\n";
-        //System.out.println(strReturn);
+        //System.out.println("777777777777777777777777\n"+strReturn+"77777777777777777777777777777\n");
         return strReturn;
+    }
+
+    private String createDataTableResult() {
+
+        if (invertMatrix) {
+            return verticalResult();
+        } else {
+            return horizontalResult();
+        }
     }
 
     private void createMatrixDifference() {
@@ -3488,22 +3486,15 @@ public class IndicatorsPercentageVariationMB {
         this.variablesGraph = variablesGraph;
     }
 
-    public String getDataTableHtmlA() {
-        return dataTableHtmlA;
+    public String getDataTableHtml() {
+        return dataTableHtml;
     }
 
-    public void setDataTableHtmlA(String dataTableHtmlA) {
-        this.dataTableHtmlA = dataTableHtmlA;
+    public void setDataTableHtml(String dataTableHtml) {
+        this.dataTableHtml = dataTableHtml;
     }
 
-    public String getDataTableHtmlB() {
-        return dataTableHtmlB;
-    }
-
-    public void setDataTableHtmlB(String dataTableHtmlB) {
-        this.dataTableHtmlB = dataTableHtmlB;
-    }
-
+    
     public String getDataTableHtmlDiference() {
         return dataTableHtmlDiference;
     }
@@ -3694,5 +3685,13 @@ public class IndicatorsPercentageVariationMB {
 
     public void setCurrentTypeGraph(String currentTypeGraph) {
         this.currentTypeGraph = currentTypeGraph;
+    }
+    
+     public boolean isInvertMatrix() {
+        return invertMatrix;
+    }
+
+    public void setInvertMatrix(boolean invertMatrix) {
+        this.invertMatrix = invertMatrix;
     }
 }
