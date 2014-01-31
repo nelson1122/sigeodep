@@ -146,6 +146,7 @@ public class IndicatorsSpecifiedRateMB {
     private Date endDate = new Date();
     private String initialDateStr;
     private String endDateStr;
+    private boolean invertMatrix = true;
     private int multiplierK = 0;
     //private List<String> variablesGraph = new ArrayList<>();
     private List<String> valuesGraph = new ArrayList<>();
@@ -187,7 +188,6 @@ public class IndicatorsSpecifiedRateMB {
     private StringBuilder sb;
     private int tuplesProcessed;
     private String sourceTable = "";//tabla adicional que se usara en la seccion "FROM" de la consulta sql
-    
     private boolean separateRecords = false;
     private int heightGraph = 460;
     private int widthGraph = 660;
@@ -2626,7 +2626,26 @@ public class IndicatorsSpecifiedRateMB {
         }
     }
 
-    private String createDataTableResult() {
+    public void invertMatrixClick() {
+        if (invertMatrix) {
+            invertMatrix = false;
+        } else {
+            invertMatrix = true;
+        }
+        if (dataTableHtml != null && dataTableHtml.length() != 0) {
+            dataTableHtml = createDataTableResult();
+        }
+    }
+
+    private String verticalResult() {
+
+        String strReturn = " ";
+
+        return strReturn;
+    }
+
+    private String horizontalResult() {
+
         PanelGrid panelGrid = new PanelGrid();
         headers1 = new ArrayList<>();
         headers2 = new String[columNames.size()];
@@ -2638,7 +2657,7 @@ public class IndicatorsSpecifiedRateMB {
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
         strReturn = strReturn + "            <tr>\r\n";
-        strReturn = strReturn + "                <td id=\"firstTd\" >\r\n";
+        strReturn = strReturn + "                <td>\r\n";
         strReturn = strReturn + "                Cifras por: " + String.valueOf(multiplierK) + " habitantes\r\n";
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td class=\"ui-widget-header\">\r\n";
@@ -2653,12 +2672,9 @@ public class IndicatorsSpecifiedRateMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNames.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(columNames.get(i)) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(columNames.get(i)) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-//            strReturn = strReturn + "                                <td>\r\n";
-//            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
-//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         if (variablesCrossData.size() == 3) {
@@ -2687,24 +2703,18 @@ public class IndicatorsSpecifiedRateMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < headers1.size(); i++) {
                 strReturn = strReturn + "                                <td colspan=\"" + headers1.get(i).getColumns() + "\">\r\n";
-                strReturn = strReturn + "                                    <div >" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-//            strReturn = strReturn + "                                <td >\r\n";
-//            strReturn = strReturn + "                                    <div >-</div>\r\n";
-//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
 
             strReturn = strReturn + "                            <tr>\r\n";
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(headers2[i]) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(headers2[i]) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
-//            strReturn = strReturn + "                                <td >\r\n";
-//            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
-//            strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -2726,38 +2736,27 @@ public class IndicatorsSpecifiedRateMB {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td class=\"tableFirstCol\"><div style=\"overflow:hidden; width:150px;" + height + "\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
+            strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:200px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
         strReturn = strReturn + "                    </div>\r\n";
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td valign=\"top\">\r\n";
-
-
         //-------------------------------------------------------------------
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
-        //-------------------------------------------------------------------      
-        //int sizeTableMatrix = columNames.size() * 150;//que cada columna tenga 100px
-        //sizeTableMatrix = sizeTableMatrix + 100;//de los totales
-        strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
-        //strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        //-------------------------------------------------------------------              
+        strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla        
         strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
         //----------------------------------------------------------------------
         //AGREGO LOS REGISTROS DE LA MATRIZ        
-        //for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
         for (int j = 0; j < rowNames.size(); j++) {
-
             if (j == 0) {
-                strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
+                strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             } else {
                 strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             }
             for (int i = 0; i < columNames.size(); i++) {
-                //strReturn = strReturn + "                                <td>" + matrixResult[i][j] + "</td>\r\n";
-//                strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
-//                strReturn = strReturn + "                                <div style=\"width:150px;\">" + matrixResult[i][j] + "</div>\r\n";
-//                strReturn = strReturn + "                                </td> \r\n";
                 String value;
                 if (showCalculation) {
                     value = matrixResult[i][j];
@@ -2766,10 +2765,9 @@ public class IndicatorsSpecifiedRateMB {
                     value = splitColumn[0];
                 }
                 strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
-                strReturn = strReturn + "                                <div style=\"width:150px;" + height + "\">" + value + "</div>\r\n";
+                strReturn = strReturn + "                                <div style=\"overflow:hidden; " + height + " width:200px; white-space: nowrap;\">" + value + "</div>\r\n";
                 strReturn = strReturn + "                                </td> \r\n";
             }
-            //strReturn = strReturn + "                                <td><div style=\"width:150px;\">" + totalsVertical.get(j) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
             changeColorType();//cambiar de color las filas de blanco a azul
         }
@@ -2783,6 +2781,15 @@ public class IndicatorsSpecifiedRateMB {
         strReturn = strReturn + "        </table>\r\n";
         //System.out.println(strReturn);
         return strReturn;
+    }
+
+    private String createDataTableResult() {
+
+        if (invertMatrix) {
+            return verticalResult();
+        } else {
+            return horizontalResult();
+        }
     }
 
     public void createMatrixResult() {        //System.out.println("INICIA CREAR MATRIZ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
@@ -3421,5 +3428,13 @@ public class IndicatorsSpecifiedRateMB {
 
     public void setShowFrames(boolean showFrames) {
         this.showFrames = showFrames;
+    }
+
+    public boolean isInvertMatrix() {
+        return invertMatrix;
+    }
+
+    public void setInvertMatrix(boolean invertMatrix) {
+        this.invertMatrix = invertMatrix;
     }
 }

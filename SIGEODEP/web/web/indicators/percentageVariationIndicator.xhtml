@@ -12,49 +12,6 @@
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
             <script>
-
-                fnAdjustTable = function() {
-                    var colCount = $('#firstTr>td').length; //get total number of column
-                    var m = 0;
-                    var n = 0;
-                    var brow = 'mozilla';
-                    jQuery.each(jQuery.browser, function(i, val) {
-                        if (val === true) {
-                            brow = i.toString();
-                        }
-                    });
-
-                    $('.tableHeader').each(function(i) {
-                        if (colCount > m) {
-                            if (brow === 'mozilla') {
-                                $('#firstTd').css("width", $('.tableFirstCol').innerWidth());//for adjusting first td
-                                $(this).css('width', $('#table_div td:eq(' + m + ')').innerWidth());//for assigning width to table Header div
-                            } else if (brow === 'msie') {
-                                $('#firstTd').css("width", $('.tableFirstCol').width());
-                                $(this).css('width', $('#table_div td:eq(' + m + ')').width() - 2);//In IE there is difference of 2 px
-                            } else if (brow === 'safari') {
-                                $('#firstTd').css("width", $('.tableFirstCol').width());
-                                $(this).css('width', $('#table_div td:eq(' + m + ')').width());
-                            } else {
-                                $('#firstTd').css("width", $('.tableFirstCol').width());
-                                $(this).css('width', $('#table_div td:eq(' + m + ')').innerWidth());
-                            }
-                        }
-                        m++;
-                    });
-                    $('.tableFirstCol').each(function(i) {
-                        if (brow === 'mozilla') {
-                            $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').outerHeight());//for providing height using scrollable table column height
-                        } else if (brow === 'msie') {
-                            $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').innerHeight() - 2);
-                        } else {
-                            $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').height());
-                        }
-                        n++;
-                    });
-                };
-
-
                 //function to support scrolling of title and first column
                 fnScroll = function() {
                     $('#divHeader').scrollLeft($('#table_div').scrollLeft());
@@ -62,7 +19,6 @@
                 };
                 function showTableResult() {
                     document.getElementById('IdTabView:IdForm:IdPaint').click();
-                    fnAdjustTable();
                 }
             </script>  
         </ui:define>
@@ -305,13 +261,18 @@
                             <br/>
                             <h:outputText 
                                 id="IdDataTableHtml"
-                                value="#{indicatorsPercentageVariationMB.dataTableHtmlA}" 
+                                value="#{indicatorsPercentageVariationMB.dataTableHtml}" 
                                 escape="false"/>
+                            <br/>
                             <p:dataTable id="IdOutFile" style="display: none" >
                                 <p:column>                                                  
                                 </p:column>
                             </p:dataTable> 
-                            <br/>
+                            <p:commandButton                                 
+                                icon="ui-icon-transferthick-e-w"
+                                actionListener="#{indicatorsPercentageVariationMB.invertMatrixClick}"
+                                oncomplete="showTableResult();"  
+                                update="IdDataTableHtml"/> 
                             <h:commandLink id="IdBtnExport" disabled="#{indicatorsPercentageVariationMB.btnExportDisabled}">  
                                 <p:button  value="Exportar datos" />                                
                                 <p:dataExporter type="xls" target="IdOutFile" fileName="salida" postProcessor="#{indicatorsPercentageVariationMB.postProcessXLS}"/>  

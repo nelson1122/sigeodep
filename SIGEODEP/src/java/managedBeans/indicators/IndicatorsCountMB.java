@@ -112,6 +112,7 @@ public class IndicatorsCountMB {
     private Date endDate = new Date();
     private String initialDateStr;
     private String endDateStr;
+    private boolean invertMatrix = true;
     //private List<String> variablesGraph = new ArrayList<>();
     private List<String> valuesGraph = new ArrayList<>();
     private List<String> variablesList = new ArrayList<>();//lista de nombres de variables disponibles que sepueden cruzar(se visualizan en pagina)
@@ -430,6 +431,7 @@ public class IndicatorsCountMB {
             createMatrixResult();
         }
         if (continueProcess) {//GENERO TABLA E IMAGEN
+            rowNames.add("Totales");
             dataTableHtml = createDataTableResult();
 
             createImage();//creo el grafico
@@ -1725,13 +1727,153 @@ public class IndicatorsCountMB {
         }
     }
 
-    private String createDataTableResult() {
+    public void invertMatrixClick() {
+        if (invertMatrix) {
+            invertMatrix = false;
+        } else {
+            invertMatrix = true;
+        }
+        if (dataTableHtml != null && dataTableHtml.length() != 0) {
+            dataTableHtml = createDataTableResult();
+        }
+    }
+
+    private String verticalResult() {
         headers1 = new ArrayList<>();
         headers2 = new String[columNames.size()];
         String strReturn = " ";
-        strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
+        strReturn = strReturn + "    <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
         strReturn = strReturn + "            <tr>\r\n";
-        strReturn = strReturn + "                <td id=\"firstTd\" >\r\n";
+        strReturn = strReturn + "                <td>\r\n";
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "                <td class=\"ui-widget-header\">\r\n";
+        //TABLA QUE CONTIENE LA CABECERA//-------------------------------------------------------------------                        
+        strReturn = strReturn + "                    <div id=\"divHeader\" style=\"overflow:hidden;width:434px;\">\r\n";
+        strReturn = strReturn + "                        <table width=\"200px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        strReturn = strReturn + "                            <tr>\r\n";
+        for (int j = 0; j < rowNames.size(); j++) {//NOMBRE PARA CADA COLUMNA                        
+            strReturn = strReturn + "                                <td><div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
+        }
+        strReturn = strReturn + "                            </tr>\r\n";
+        strReturn = strReturn + "                        </table>\r\n";        
+        strReturn = strReturn + "                    </div>\r\n";        
+        //FIN TABLA QUE CONTIENE LA CABECERA//-------------------------------------------------------------------
+        
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "            </tr>\r\n";
+        strReturn = strReturn + "            <tr>\r\n";
+        strReturn = strReturn + "                <td valign=\"top\" class=\"ui-widget-header\">\r\n";        
+        //TABLA QUE CONTIENE LA PRIMER COLUMNA//-------------------------------------------------------------------        
+        strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden; height:280px\">\r\n";//tamaño del div izquierdo
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {//COLUMNA SIMPLE
+
+            for (int i = 0; i < columNames.size(); i++) {
+                strReturn = strReturn + "                            <tr>\r\n";
+                strReturn = strReturn + "                                <td>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(columNames.get(i)) + "</div>\r\n";
+                strReturn = strReturn + "                                </td>\r\n";
+                strReturn = strReturn + "                            </tr>\r\n";
+            }
+            strReturn = strReturn + "                            <tr>\r\n";
+            strReturn = strReturn + "                                <td>\r\n";
+            strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">Total</div>\r\n";
+            strReturn = strReturn + "                                </td>\r\n";
+            strReturn = strReturn + "                            </tr>\r\n";
+        }
+        if (variablesCrossData.size() == 3) {//COLUMNA COMPUESTA            
+            String currentVar = "";
+            String[] splitVars;
+            for (int i = 0; i < columNames.size(); i++) {
+                splitVars = columNames.get(i).split("\\}");//separo las dos variables
+                String first = splitVars[0];//invierto el orden de llegada
+                splitVars[0] = splitVars[1];
+                splitVars[1] = first;
+
+                if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
+                    int num = headers1.get(headers1.size() - 1).getColumns();
+                    headers1.get(headers1.size() - 1).setColumns(num + 1);
+                } else {//no existe la columna la debo crear y adicionar a la lista                    
+                    currentVar = splitVars[0];
+                    SpanColumns newSpanColumn = new SpanColumns();
+                    newSpanColumn.setLabel(splitVars[0]);
+                    newSpanColumn.setColumns(1);
+                    headers1.add(newSpanColumn);
+                }
+                headers2[i] = splitVars[1];//a la segunda cabecera le agrego la segunda variable separada
+            }
+            int posh = 0;
+            for (int i = 0; i < headers1.size(); i++) {//AGREGO LA COLUMNA 1 
+                strReturn = strReturn + "                            <tr>\r\n";
+                strReturn = strReturn + "                                <td rowspan=\"" + (headers1.get(i).getColumns()+1) + "\">\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
+                strReturn = strReturn + "                                </td>\r\n";
+                strReturn = strReturn + "                            </tr>\r\n";
+                for (int j = 0; j < headers1.get(i).getColumns(); j++) {//AGREGO LA COLUMNA 2 
+                    strReturn = strReturn + "                            <tr>\r\n";
+                    strReturn = strReturn + "                                <td>\r\n";
+                    strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">" + determineHeader(headers2[posh]) + "</div>\r\n";
+                    strReturn = strReturn + "                                </td>\r\n";
+                    strReturn = strReturn + "                            </tr>\r\n";
+                    posh++;
+                }                
+            }
+            strReturn = strReturn + "                            <tr>\r\n";
+            strReturn = strReturn + "                                <td >\r\n";
+            strReturn = strReturn + "                                    <div style=\"height:20px; width:100px; white-space: nowrap;\">-</div>\r\n";            
+            strReturn = strReturn + "                                </td>\r\n";
+            strReturn = strReturn + "                                <td >\r\n";
+            strReturn = strReturn + "                                    <div style=\"height:20px; width:100px; white-space: nowrap;\">Total</div>\r\n";
+            strReturn = strReturn + "                                </td>\r\n";
+            strReturn = strReturn + "                            </tr>\r\n";
+        }
+        strReturn = strReturn + "                        </table>\r\n";
+        strReturn = strReturn + "                    </div>\r\n";
+        //FIN TABLA QUE CONTIENE LA PRIMER COLUMNA//-------------------------------------------------------------------
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "                <td valign=\"top\">\r\n";
+        
+        //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
+        strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        for (int j = 0; j < columNames.size(); j++) {//AGREGO LOS REGISTROS DE LA MATRIZ        
+            if (j == 0) {
+                strReturn = strReturn + "                            <tr " + getColorType() + ">\r\n";
+            } else {
+                strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+            }
+            for (int i = 0; i < rowNames.size() - 1; i++) {//-1 por que le agrege "TOTALES"                
+                strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
+                strReturn = strReturn + "                                <div style=\"overflow:hidden;  width:200px; height:20px; white-space: nowrap;\">" + matrixResult[j][i] + "</div>\r\n";
+                strReturn = strReturn + "                                </td> \r\n";
+            }
+            strReturn = strReturn + "                                <td><div style=\"overflow:hidden;  width:200px; height:20px; white-space: nowrap;\">" + totalsHorizontal.get(j) + "</div></td>\r\n";
+            strReturn = strReturn + "                            </tr>\r\n";
+            changeColorType();//cambiar de color las filas de blanco a azul
+        }
+        strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+        for (int i = 0; i < totalsVertical.size(); i++) {//AGREGO LA ULTIMA FILA CORRESPONDIENTE A LOS TOTALES
+            strReturn = strReturn + "                                <td><div style=\"overflow:hidden;  width:200px; height:20px; white-space: nowrap;\">" + totalsVertical.get(i) + "</div></td>\r\n";
+        }
+        strReturn = strReturn + "                                <td><div style=\"overflow:hidden;  width:200px; height:20px; white-space: nowrap;\">" + String.valueOf(grandTotal) + "</div></td>\r\n";
+        strReturn = strReturn + "                            </tr>\r\n";        
+        strReturn = strReturn + "                        </table>\r\n";
+        strReturn = strReturn + "                    </div>\r\n";
+        //FIN TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "            </tr>\r\n";
+        strReturn = strReturn + "        </table>\r\n";
+        //System.out.println("---------------------------------\n" + strReturn + "\n---------------------------------");
+        return strReturn;
+    }
+
+    private String horizontalResult() {
+        headers1 = new ArrayList<>();
+        headers2 = new String[columNames.size()];
+        String strReturn = " ";
+        strReturn = strReturn + "    <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
+        strReturn = strReturn + "            <tr>\r\n";
+        strReturn = strReturn + "                <td>\r\n";
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td class=\"ui-widget-header\">\r\n";
         //-------------------------------------------------------------------
@@ -1743,11 +1885,11 @@ public class IndicatorsCountMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNames.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(columNames.get(i)) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(columNames.get(i)) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td>\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
+            strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">Total</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -1775,21 +1917,21 @@ public class IndicatorsCountMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < headers1.size(); i++) {//AGREGO LA CABECERA 1 A El PANEL_GRID
                 strReturn = strReturn + "                                <td colspan=\"" + headers1.get(i).getColumns() + "\">\r\n";
-                strReturn = strReturn + "                                    <div >" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden;  width:200px; height:20px; white-space: nowrap;\">" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div >-</div>\r\n";
+            strReturn = strReturn + "                                    <div style=\"overflow:hidden;  width:200px; height:20px; white-space: nowrap;\">-</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < headers2.length; i++) {//AGREGO LA CABECERA 2 A El PANEL_GRID
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(headers2[i]) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(headers2[i]) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">Total</div>\r\n";
+            strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">Total</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -1805,10 +1947,10 @@ public class IndicatorsCountMB {
         strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden;height:280px\">\r\n";//tamaño del div izquierdo
         strReturn = strReturn + "                        <table width=\"200px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
 
-        rowNames.add("Totales");
+        //rowNames.add("Totales");
         for (int j = 0; j < rowNames.size(); j++) {//NOMBRE PARA CADA FILA            
             strReturn = strReturn + "                            <tr>\r\n";
-            strReturn = strReturn + "                                <td height=\"20px\" ><div style=\"overflow:hidden; height:20px; width:200px; \">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
+            strReturn = strReturn + "                                <td><div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -1817,22 +1959,22 @@ public class IndicatorsCountMB {
         strReturn = strReturn + "                <td valign=\"top\">\r\n";
         //-------------------------------------------------------------------
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ        
-        strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
+        strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px; height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
         strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
         //----------------------------------------------------------------------
         //AGREGO LOS REGISTROS DE LA MATRIZ        
         for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
             if (j == 0) {
-                strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
+                strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             } else {
                 strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             }
             for (int i = 0; i < columNames.size(); i++) {
                 strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
-                strReturn = strReturn + "                                <div style=\"width:150px; height:20px;\">" + matrixResult[i][j] + "</div>\r\n";
+                strReturn = strReturn + "                                <div style=\"overflow:hidden;  width:200px; height:20px; white-space: nowrap;\">" + matrixResult[i][j] + "</div>\r\n";
                 strReturn = strReturn + "                                </td> \r\n";
             }
-            strReturn = strReturn + "                                <td><div style=\"width:150px; height:20px;\">" + totalsVertical.get(j) + "</div></td>\r\n";
+            strReturn = strReturn + "                                <td><div style=\"overflow:hidden;  width:200px; height:20px; white-space: nowrap;\">" + totalsVertical.get(j) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
             changeColorType();//cambiar de color las filas de blanco a azul
         }
@@ -1840,9 +1982,9 @@ public class IndicatorsCountMB {
         //AGREGO LA ULTIMA FILA CORRESPONDIENTE A LOS TOTALES
         strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
         for (int i = 0; i < totalsHorizontal.size(); i++) {
-            strReturn = strReturn + "                                <td><div style=\"width:150px; height:20px;\">" + totalsHorizontal.get(i) + "</div></td>\r\n";
+            strReturn = strReturn + "                                <td><div style=\"overflow:hidden; width:200px; height:20px; white-space: nowrap;\">" + totalsHorizontal.get(i) + "</div></td>\r\n";
         }
-        strReturn = strReturn + "                                <td><div style=\"width:150px; height:20px;\">" + String.valueOf(grandTotal) + "</div></td>\r\n";
+        strReturn = strReturn + "                                <td><div style=\"overflow:hidden; width:200px; height:20px; white-space: nowrap;\">" + String.valueOf(grandTotal) + "</div></td>\r\n";
         strReturn = strReturn + "                            </tr>\r\n";
         //FINALIZA        
         strReturn = strReturn + "                        </table>\r\n";
@@ -1852,6 +1994,15 @@ public class IndicatorsCountMB {
         strReturn = strReturn + "        </table>\r\n";
         //System.out.println(strReturn);
         return strReturn;
+    }
+
+    private String createDataTableResult() {
+
+        if (invertMatrix) {
+            return verticalResult();
+        } else {
+            return horizontalResult();
+        }
     }
 
     private DefaultCategoryDataset createDataSet() {
@@ -2683,7 +2834,7 @@ public class IndicatorsCountMB {
                         + "    ELSE (SELECT cast(array_agg('abuse_type_name<=>abuse_types<=>abuse_type_id<=>'||abuse_type_id) as text \n)"
                         + "          FROM domestic_violence_abuse_type \n"
                         + "          WHERE domestic_violence_abuse_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
-                        + " END AS naturaleza_violencia \n";                
+                        + " END AS naturaleza_violencia \n";
             }
         }
         if (currentIndicator.getIndicatorId() == 69 || currentIndicator.getIndicatorId() == 73) {//CASOS DE VIOLENCIA INTRAFAMILIAR (VIF) SECTOR SALUD            
@@ -2772,7 +2923,7 @@ public class IndicatorsCountMB {
                     + " naturaleza_violencia not like '%>2}' AND "
                     + " naturaleza_violencia not like '%>4}' ";
         }
-        System.out.println("CONSULTA (indicators count) \n " + sqlReturn);
+        //System.out.println("CONSULTA (indicators count) \n " + sqlReturn);
         return sqlReturn;
     }
 
@@ -3087,6 +3238,7 @@ public class IndicatorsCountMB {
             System.out.println("Error 7 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
+
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
@@ -3094,7 +3246,6 @@ public class IndicatorsCountMB {
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
-
     private void loadIndicator(int n) {
         if (geoDBConnection.getRanges() != null) {
             geoDBConnection.getRanges().clear();
@@ -3474,5 +3625,13 @@ public class IndicatorsCountMB {
 
     public void setSameRangeLimit(boolean sameRangeLimit) {
         this.sameRangeLimit = sameRangeLimit;
+    }
+
+    public boolean isInvertMatrix() {
+        return invertMatrix;
+    }
+
+    public void setInvertMatrix(boolean invertMatrix) {
+        this.invertMatrix = invertMatrix;
     }
 }

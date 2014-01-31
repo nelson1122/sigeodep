@@ -6,34 +6,6 @@ package managedBeans.indicators;
 
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.VariablesEnum;
-import static beans.enumerators.VariablesEnum.accident_classes;
-import static beans.enumerators.VariablesEnum.accident_mechanisms;
-import static beans.enumerators.VariablesEnum.activities;
-import static beans.enumerators.VariablesEnum.aggressor_genders;
-import static beans.enumerators.VariablesEnum.alcohol_levels;
-import static beans.enumerators.VariablesEnum.alcohol_levels_counterparts;
-import static beans.enumerators.VariablesEnum.alcohol_levels_victim;
-import static beans.enumerators.VariablesEnum.boolean3;
-import static beans.enumerators.VariablesEnum.contexts;
-import static beans.enumerators.VariablesEnum.destinations_of_patient;
-import static beans.enumerators.VariablesEnum.involved_vehicles;
-import static beans.enumerators.VariablesEnum.mechanisms;
-import static beans.enumerators.VariablesEnum.murder_contexts;
-import static beans.enumerators.VariablesEnum.non_fatal_places;
-import static beans.enumerators.VariablesEnum.places;
-import static beans.enumerators.VariablesEnum.precipitating_factors;
-import static beans.enumerators.VariablesEnum.protective_measures;
-import static beans.enumerators.VariablesEnum.related_events;
-import static beans.enumerators.VariablesEnum.relationships_to_victim;
-import static beans.enumerators.VariablesEnum.road_types;
-import static beans.enumerators.VariablesEnum.service_types;
-import static beans.enumerators.VariablesEnum.suicide_mechanisms;
-import static beans.enumerators.VariablesEnum.transport_counterparts;
-import static beans.enumerators.VariablesEnum.transport_types;
-import static beans.enumerators.VariablesEnum.transport_users;
-import static beans.enumerators.VariablesEnum.use_alcohol_drugs;
-import static beans.enumerators.VariablesEnum.victim_characteristics;
-import static beans.enumerators.VariablesEnum.weapon_types;
 import beans.util.Variable;
 import java.awt.Color;
 import java.awt.Font;
@@ -111,15 +83,13 @@ public class IndicatorsAverageMB {
     private String newConfigurationName = "";
     private Indicators currentIndicator;
     private StreamedContent chartImage;
-    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy", new Locale("ES"));
-    private OutputPanel dynamicDataTableGroup; // Placeholder.
+    private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy", new Locale("ES"));    
     private FacesMessage message = null;
     private ConnectionJdbcMB connectionJdbcMB;
     private String titlePage = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
     private String titleIndicator = "SIGEODEP -  INDICADORES GENERALES PARA LESIONES FATALES";
     private String subTitleIndicator = "NUMERO DE CASOS POR LESION";
     private String sql = "";
-    //private String currentValueGraph;
     private String currentTemporalDisaggregation;
     private String firstVariablesCrossSelected = null;
     private String initialValue = "";
@@ -133,6 +103,7 @@ public class IndicatorsAverageMB {
     private Date endDate = new Date();
     private String initialDateStr;
     private String endDateStr;
+    private boolean invertMatrix = true;
     private boolean showItems = true;
     private String currentVariableGraph1;
     private String currentVariableGraph2;
@@ -1517,7 +1488,7 @@ public class IndicatorsAverageMB {
         sqlReturn = sqlReturn + ""
                 + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
                 + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy'); ";
-        System.out.println("CONSULTA (indicators average) \n " + sqlReturn);
+        //System.out.println("CONSULTA (indicators average) \n " + sqlReturn);
         return sqlReturn;
     }
 
@@ -1909,8 +1880,7 @@ public class IndicatorsAverageMB {
         variablesList = new ArrayList<>();//SelectItem[variablesListData.size()];        
         for (int i = 0; i < variablesListData.size(); i++) {
             variablesList.add(variablesListData.get(i).getName());
-        }
-        dynamicDataTableGroup = new OutputPanel();//creo el panel grid
+        }       
 
         variablesCrossList = new ArrayList<>();//SelectItem[variablesListData.size()];
         btnAddVariableDisabled = true;
@@ -2343,8 +2313,26 @@ public class IndicatorsAverageMB {
             celda.setCellValue(new HSSFRichTextString(strValue));
         }
     }
+    
+    public void invertMatrixClick() {
+        if (invertMatrix) {
+            invertMatrix = false;
+        } else {
+            invertMatrix = true;
+        }
+        if (dataTableHtml != null && dataTableHtml.length() != 0) {
+            dataTableHtml = createDataTableResult();
+        }
+    }
 
-    private String createDataTableResult() {
+    private String verticalResult() {
+        
+        String strReturn = " ";
+        
+        return strReturn;
+    }
+    private String horizontalResult() {
+        
         headers1 = new ArrayList<>();
         headers2 = new String[columNames.size()];
         String height = "height:20px;";
@@ -2352,7 +2340,7 @@ public class IndicatorsAverageMB {
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
         strReturn = strReturn + "            <tr>\r\n";
-        strReturn = strReturn + "                <td id=\"firstTd\" >\r\n";
+        strReturn = strReturn + "                <td>\r\n";
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td class=\"ui-widget-header\">\r\n";
         //-------------------------------------------------------------------
@@ -2365,7 +2353,7 @@ public class IndicatorsAverageMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNames.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(columNames.get(i)) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(columNames.get(i)) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2396,7 +2384,7 @@ public class IndicatorsAverageMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < headers1.size(); i++) {
                 strReturn = strReturn + "                                <td colspan=\"" + headers1.get(i).getColumns() + "\">\r\n";
-                strReturn = strReturn + "                                    <div >" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2405,7 +2393,7 @@ public class IndicatorsAverageMB {
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(headers2[i]) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(headers2[i]) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2418,14 +2406,13 @@ public class IndicatorsAverageMB {
         strReturn = strReturn + "                <td valign=\"top\" class=\"ui-widget-header\">\r\n";
         //-------------------------------------------------------------------
         //TABLA QUE CONTIENE LA PRIMER COLUMNA
-        strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden;height:280px\">\r\n";//tamaño del div izquierdo
+        strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden;height:280px;\">\r\n";//tamaño del div izquierdo
         strReturn = strReturn + "                        <table width=\"200px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
         for (int j = 0; j < rowNames.size(); j++) {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
             strReturn = strReturn + "                            <tr>\r\n";
-            //strReturn = strReturn + "                                <td class=\"tableFirstCol\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
-            strReturn = strReturn + "                                <td height=\"20px\" ><div style=\"overflow:hidden; height:20px; width:200px; \">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
+            strReturn = strReturn + "                                <td height=\"20px\" ><div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -2442,7 +2429,7 @@ public class IndicatorsAverageMB {
         //for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
         for (int j = 0; j < rowNames.size(); j++) {
             if (j == 0) {
-                strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
+                strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             } else {
                 strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             }
@@ -2450,8 +2437,7 @@ public class IndicatorsAverageMB {
                 String value;
                 value = matrixResult[i][j];
                 strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
-//                strReturn = strReturn + "                                <div style=\"width:150px;\">" + value + "</div>\r\n";
-                strReturn = strReturn + "                                <div style=\"width:150px; height:20px;\">" + value + "</div>\r\n";
+                strReturn = strReturn + "                                <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + value + "</div>\r\n";
                 strReturn = strReturn + "                                </td> \r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2468,6 +2454,17 @@ public class IndicatorsAverageMB {
         //System.out.println(strReturn);
         return strReturn;
     }
+
+    private String createDataTableResult() {
+
+        if (invertMatrix) {
+            return verticalResult();
+        } else {
+            return horizontalResult();
+        }
+    }
+
+    
 
     public JFreeChart createBarChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -2769,15 +2766,7 @@ public class IndicatorsAverageMB {
 
     public void setDataTableHtml(String dataTableHtml) {
         this.dataTableHtml = dataTableHtml;
-    }
-
-    public OutputPanel getDynamicDataTableGroup() {
-        return dynamicDataTableGroup;
-    }
-
-    public void setDynamicDataTableGroup(OutputPanel dynamicDataTableGroup) {
-        this.dynamicDataTableGroup = dynamicDataTableGroup;
-    }
+    }    
 
     public boolean isRenderedDynamicDataTable() {
         return renderedDynamicDataTable;
@@ -2929,5 +2918,13 @@ public class IndicatorsAverageMB {
 
     public void setCurrentTypeGraph(String currentTypeGraph) {
         this.currentTypeGraph = currentTypeGraph;
+    }
+    
+     public boolean isInvertMatrix() {
+        return invertMatrix;
+    }
+
+    public void setInvertMatrix(boolean invertMatrix) {
+        this.invertMatrix = invertMatrix;
     }
 }

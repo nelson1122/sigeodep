@@ -40,7 +40,7 @@ public class ClosuresMB {
     private boolean disabledInjury = false;
     private SelectItem[] injuriesList;
     private short currentInjury = 10;
-    private String currentInjuryName;
+    //private String currentInjuryName;
     private ConnectionJdbcMB connectionJdbcMB;
     private BackupsMB backupsMB;
     private String nameBackup = "";
@@ -50,8 +50,6 @@ public class ClosuresMB {
     private String nextDateClosure;//fecha del siguiente de cierre
     private String yearBeforeDate;//un año antes de la fecha inical de cierre (para borrar cache)
     private String endDate;//fecha final de cierre
-    private String outputTextAnalysis = "";
-    private String outputTextImputation = "";
     private String outputTextStoreData = "";
     private String outputTextConfirmationMessage = "";
     private int currentVariableData = 0;
@@ -63,6 +61,36 @@ public class ClosuresMB {
     private boolean renderedAnalysisResult = false;
     private boolean renderedImputationResult = false;
     private boolean renderedStoreDataResult = false;
+    private String outputTextAnalysisFatalInjuryMurder = "";
+    private String outputTextAnalysisFatalInjuryTraffic = "";
+    private String outputTextAnalysisFatalInjurySuicide = "";
+    private String outputTextAnalysisFatalInjuryAccident = "";
+    private String outputTextAnalysisNonFatalInterpersonal = "";
+    private String outputTextAnalysisNonFatalNonIntentional = "";
+    private String outputTextAnalysisNonFatalSelfInflicted = "";
+    private String outputTextAnalysisNonFatalTransport = "";
+    private String outputTextAnalysisNonFatalDomesticViolence = "";
+    private String outputTextAnalysisSivigila = "";
+    private String outputTextImputationFatalInjuryMurder = "";
+    private String outputTextImputationFatalInjuryTraffic = "";
+    private String outputTextImputationFatalInjurySuicide = "";
+    private String outputTextImputationFatalInjuryAccident = "";
+    private String outputTextImputationNonFatalInterpersonal = "";
+    private String outputTextImputationNonFatalNonIntentional = "";
+    private String outputTextImputationNonFatalSelfInflicted = "";
+    private String outputTextImputationNonFatalTransport = "";
+    private String outputTextImputationNonFatalDomesticViolence = "";
+    private String outputTextImputationSivigila = "";
+    ArrayList<AnalysisColumn> analyzedColumnsFatalInjuryMurder;
+    ArrayList<AnalysisColumn> analyzedColumnsFatalInjuryTraffic;
+    ArrayList<AnalysisColumn> analyzedColumnsFatalInjurySuicide;
+    ArrayList<AnalysisColumn> analyzedColumnsFatalInjuryAccident;
+    ArrayList<AnalysisColumn> analyzedColumnsNonFatalInterpersonal;
+    ArrayList<AnalysisColumn> analyzedColumnsNonFatalNonIntentional;
+    ArrayList<AnalysisColumn> analyzedColumnsNonFatalSelfInflicted;
+    ArrayList<AnalysisColumn> analyzedColumnsNonFatalTransport;
+    ArrayList<AnalysisColumn> analyzedColumnsNonFatalDomesticViolence;
+    ArrayList<AnalysisColumn> analyzedColumnsSivigila;
     private boolean renderedAnalysisFatalInjuryMurder = false;
     private boolean renderedAnalysisFatalInjuryTraffic = false;
     private boolean renderedAnalysisFatalInjurySuicide = false;
@@ -73,8 +101,18 @@ public class ClosuresMB {
     private boolean renderedAnalysisNonFatalTransport = false;
     private boolean renderedAnalysisNonFatalDomesticViolence = false;
     private boolean renderedAnalysisSivigila = false;
+    private boolean renderedImputationFatalInjuryMurder = false;
+    private boolean renderedImputationFatalInjuryTraffic = false;
+    private boolean renderedImputationFatalInjurySuicide = false;
+    private boolean renderedImputationFatalInjuryAccident = false;
+    private boolean renderedImputationNonFatalInterpersonal = false;
+    private boolean renderedImputationNonFatalNonIntentional = false;
+    private boolean renderedImputationNonFatalSelfInflicted = false;
+    private boolean renderedImputationNonFatalTransport = false;
+    private boolean renderedImputationNonFatalDomesticViolence = false;
+    private boolean renderedImputationSivigila = false;
     private DecimalFormat formatD = new DecimalFormat("0.00");
-    ArrayList<AnalysisColumn> analyzedColumns;
+    private ArrayList<Short> injuriesToImputation;//lista de lesiones que se imputaran(ejemplo: 'Todas las LCENF' son varias al tiempo)
     private String realPath = "";
 
     public ClosuresMB() {
@@ -84,41 +122,53 @@ public class ClosuresMB {
         realPath = (String) servletContext.getRealPath("/");
     }
 
-    private void activeTab(int injuryId) {
+    private void activeTabs() {
         /*
          * se realiza la activacion de una determinada pestaña dependiendo del tipo de lesion que se este trabajando
          */
-        switch (currentInjury) {
-            case 10://;"HOMICIDIO"
-                renderedAnalysisFatalInjuryMurder = true;
-                break;
-            case 11://;"MUERTE EN ACCIDENTE DE TRANSITO"
-                renderedAnalysisFatalInjuryTraffic = true;
-                break;
-            case 12://;"SUICIDIO"
-                renderedAnalysisFatalInjurySuicide = true;
-                break;
-            case 13://;"MUERTE ACCIDENTAL"
-                renderedAnalysisFatalInjuryAccident = true;
-                break;
-            case 50://;"VIOLENCIA INTERPERSONAL"
-                renderedAnalysisNonFatalInterpersonal = true;
-                break;
-            case 51://;"LESION EN ACCIDENTE DE TRANSITO"
-                renderedAnalysisNonFatalTransport = true;
-                break;
-            case 52://;"INTENCIONAL AUTOINFLINGIDA"
-                renderedAnalysisNonFatalSelfInflicted = true;
-                break;
-            case 53://;"VIOLENCIA INTRAFAMILIAR"                
-                renderedAnalysisNonFatalDomesticViolence = true;
-                break;
-            case 54://;"NO INTENCIONAL"
-                renderedAnalysisNonFatalNonIntentional = true;
-                break;
-            case 56://;"SIVIGILA-VIF"                
-                renderedAnalysisSivigila = true;
-                break;
+        for (int i = 0; i < injuriesToImputation.size(); i++) {
+            switch (injuriesToImputation.get(i)) {
+                case 10://;"HOMICIDIO"
+                    renderedAnalysisFatalInjuryMurder = true;
+                    renderedImputationFatalInjuryMurder = true;
+                    break;
+                case 11://;"MUERTE EN ACCIDENTE DE TRANSITO"
+                    renderedAnalysisFatalInjuryTraffic = true;
+                    renderedImputationFatalInjuryTraffic = true;
+                    break;
+                case 12://;"SUICIDIO"
+                    renderedAnalysisFatalInjurySuicide = true;
+                    renderedImputationFatalInjurySuicide = true;
+                    break;
+                case 13://;"MUERTE ACCIDENTAL"
+                    renderedAnalysisFatalInjuryAccident = true;
+                    renderedImputationFatalInjuryAccident = true;
+                    break;
+                case 50://;"VIOLENCIA INTERPERSONAL"
+                    renderedAnalysisNonFatalInterpersonal = true;
+                    renderedImputationNonFatalInterpersonal = true;
+                    break;
+                case 51://;"LESION EN ACCIDENTE DE TRANSITO"
+                    renderedAnalysisNonFatalTransport = true;
+                    renderedImputationNonFatalTransport = true;
+                    break;
+                case 52://;"INTENCIONAL AUTOINFLINGIDA"
+                    renderedAnalysisNonFatalSelfInflicted = true;
+                    renderedImputationNonFatalSelfInflicted = true;
+                    break;
+                case 53://;"VIOLENCIA INTRAFAMILIAR"                
+                    renderedAnalysisNonFatalDomesticViolence = true;
+                    renderedImputationNonFatalDomesticViolence = true;
+                    break;
+                case 54://;"NO INTENCIONAL"
+                    renderedAnalysisNonFatalNonIntentional = true;
+                    renderedImputationNonFatalNonIntentional = true;
+                    break;
+                case 56://;"SIVIGILA-VIF"                
+                    renderedAnalysisSivigila = true;
+                    renderedImputationSivigila = true;
+                    break;
+            }
         }
     }
 
@@ -144,7 +194,39 @@ public class ClosuresMB {
         renderedAnalysisNonFatalDomesticViolence = false;
         renderedAnalysisSivigila = false;
 
-        outputTextAnalysis = "";
+        renderedImputationFatalInjuryMurder = false;
+        renderedImputationFatalInjuryTraffic = false;
+        renderedImputationFatalInjurySuicide = false;
+        renderedImputationFatalInjuryAccident = false;
+        renderedImputationNonFatalInterpersonal = false;
+        renderedImputationNonFatalNonIntentional = false;
+        renderedImputationNonFatalSelfInflicted = false;
+        renderedImputationNonFatalTransport = false;
+        renderedImputationNonFatalDomesticViolence = false;
+        renderedImputationSivigila = false;
+
+        outputTextAnalysisFatalInjuryMurder = "";
+        outputTextAnalysisFatalInjuryTraffic = "";
+        outputTextAnalysisFatalInjurySuicide = "";
+        outputTextAnalysisFatalInjuryAccident = "";
+        outputTextAnalysisNonFatalInterpersonal = "";
+        outputTextAnalysisNonFatalNonIntentional = "";
+        outputTextAnalysisNonFatalSelfInflicted = "";
+        outputTextAnalysisNonFatalTransport = "";
+        outputTextAnalysisNonFatalDomesticViolence = "";
+        outputTextAnalysisSivigila = "";
+
+        outputTextImputationFatalInjuryMurder = "";
+        outputTextImputationFatalInjuryTraffic = "";
+        outputTextImputationFatalInjurySuicide = "";
+        outputTextImputationFatalInjuryAccident = "";
+        outputTextImputationNonFatalInterpersonal = "";
+        outputTextImputationNonFatalNonIntentional = "";
+        outputTextImputationNonFatalSelfInflicted = "";
+        outputTextImputationNonFatalTransport = "";
+        outputTextImputationNonFatalDomesticViolence = "";
+        outputTextImputationSivigila = "";
+
         injuriesList = new SelectItem[11];
         variablesData = null;
         currentVariableData = 0;
@@ -159,6 +241,8 @@ public class ClosuresMB {
         injuriesList[8] = new SelectItem(54, "NO INTENCIONAL");
         injuriesList[9] = new SelectItem(56, "SIVIGILA-VIF");
         injuriesList[10] = new SelectItem(60, "TODAS LAS LCENF");
+
+        injuriesToImputation = new ArrayList<>();
 
         try {
             ResultSet rs;
@@ -182,7 +266,7 @@ public class ClosuresMB {
             outputTextConfirmationMessage = "<br/> Se procederá a realizar el cierre de: ";
 
             if (rs.next()) {//se de termina la fecha de cierre de la primer lesion
-                activeTab(rs.getShort("injury_id"));
+                injuriesToImputation.add(rs.getShort("injury_id"));
                 outputTextConfirmationMessage = outputTextConfirmationMessage + "<br/> " + rs.getString("injury_name");
                 Date closureDate = rs.getDate("closure_date");
                 currentDateClosure = formato.format(closureDate);
@@ -197,14 +281,15 @@ public class ClosuresMB {
                 nextDateClosure = formato.format(closureTimeDT.toDate());//fecha con primer dia del mes y un mes aumentado
 
                 yearBeforeDate = endDate.split("/")[0] + "/" + endDate.split("/")[1] + "/" + String.valueOf(Integer.parseInt(endDate.split("/")[2]) - 1);
-                currentInjuryName = rs.getString(2);
+                //currentInjuryName = rs.getString(2);
             }
             while (rs.next()) {// si se trata de varias lesiones al tiempo
-                activeTab(rs.getShort("injury_id"));
+                injuriesToImputation.add(rs.getShort("injury_id"));
                 outputTextConfirmationMessage = outputTextConfirmationMessage + "<br/> " + rs.getString("injury_name");
             }
             outputTextConfirmationMessage = outputTextConfirmationMessage + "<br/> Desde " + startDate;
             outputTextConfirmationMessage = outputTextConfirmationMessage + "<br/> Hasta " + endDate;
+            activeTabs();
         } catch (SQLException | NumberFormatException e) {
         }
     }
@@ -213,130 +298,191 @@ public class ClosuresMB {
         /*
          * se realiza las operaciones de imputacion
          */
-        outputTextImputation = "";
-        ClosuresEnum imputationMode;//imputacion sin cache
 
-        for (int i = 0; i < analyzedColumns.size(); i++) {
-            imputationMode = ClosuresEnum.none_imputation;
 
-            if (analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() > 0 && analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() <= 10) {
-                imputationMode = ClosuresEnum.mode_imputation;
-            }
-            if (analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() > 10 && analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() <= 33) {
-                imputationMode = ClosuresEnum.model_imputation;
-            }
-            if (analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache() == 0) {//si porcentage por columna sin cache es cero no se realiza imputacion
-                imputationMode = ClosuresEnum.none_imputation;
-            }
+        for (int posInjury = 0; posInjury < injuriesToImputation.size(); posInjury++) {
 
-            switch (currentInjury) {
+            ArrayList<AnalysisColumn> analyzedColumns = new ArrayList<>();
+            switch (injuriesToImputation.get(posInjury)) {
                 case 10://;"HOMICIDIO"
-                    switch (imputationMode) {
-                        case mode_imputation:
-                            imputeForModeAndAverage("fatal_injury_murder_sta", analyzedColumns.get(i));//imputacion(moda y promedio) 
-                            break;
-                        case model_imputation:
-                            imputeForModel("fatal_injury_murder_sta", analyzedColumns.get(i));//imputacion por modelo        
-                            break;
-                    }
+                    analyzedColumns = analyzedColumnsFatalInjuryMurder;
                     break;
                 case 11://;"MUERTE EN ACCIDENTE DE TRANSITO"
-                    switch (imputationMode) {
-                        case mode_imputation:
-                            imputeForModeAndAverage("fatal_injury_traffic_sta", analyzedColumns.get(i));//imputacion(moda y promedio) 
-                            break;
-                        case model_imputation:
-                            imputeForModel("fatal_injury_traffic_sta", analyzedColumns.get(i));//imputacion por modelo        
-                            break;
-                    }
+                    analyzedColumns = analyzedColumnsFatalInjuryTraffic;
                     break;
                 case 12://;"SUICIDIO"
-                    switch (imputationMode) {
-                        case mode_imputation:
-                            imputeForModeAndAverage("fatal_injury_suicide_sta", analyzedColumns.get(i));//imputacion(moda y promedio) 
-                            break;
-                        case model_imputation:
-                            imputeForModel("fatal_injury_suicide_sta", analyzedColumns.get(i));//imputacion por modelo        
-                            break;
-                    }
+                    analyzedColumns = analyzedColumnsFatalInjurySuicide;
                     break;
                 case 13://;"MUERTE ACCIDENTAL"
-                    switch (imputationMode) {
-                        case mode_imputation:
-                            imputeForModeAndAverage("fatal_injury_accident_sta", analyzedColumns.get(i));//imputacion(moda y promedio) 
-                            break;
-                        case model_imputation:
-                            imputeForModel("fatal_injury_accident_sta", analyzedColumns.get(i));//imputacion por modelo                        
-                            break;
-                    }
+                    analyzedColumns = analyzedColumnsFatalInjuryAccident;
                     break;
                 case 50://;"VIOLENCIA INTERPERSONAL"
-                    switch (imputationMode) {
-                        case mode_imputation:
-                            imputeForModeAndAverage("non_fatal_interpersonal_sta", analyzedColumns.get(i));//imputacion(moda y promedio) 
-                            break;
-                        case model_imputation:
-                            imputeForModel("non_fatal_interpersonal_sta", analyzedColumns.get(i));//imputacion por modelo                        
-                            break;
-                    }
+                    analyzedColumns = analyzedColumnsNonFatalInterpersonal;
                     break;
                 case 51://;"LESION EN ACCIDENTE DE TRANSITO"
-                    switch (imputationMode) {
-                        case mode_imputation:
-                            imputeForModeAndAverage("non_fatal_transport_sta", analyzedColumns.get(i));//imputacion(moda y promedio) 
-                            break;
-                        case model_imputation:
-                            imputeForModel("non_fatal_transport_sta", analyzedColumns.get(i));//imputacion por modelo        
-                            break;
-                    }
+                    analyzedColumns = analyzedColumnsNonFatalTransport;
                     break;
                 case 52://;"INTENCIONAL AUTOINFLINGIDA"
-                    switch (imputationMode) {
-                        case mode_imputation:
-                            imputeForModeAndAverage("non_fatal_self_inflicted_sta", analyzedColumns.get(i));//imputacion(moda y promedio) 
-                            break;
-                        case model_imputation:
-                            imputeForModel("non_fatal_self_inflicted_sta", analyzedColumns.get(i));//imputacion por modelo        
-                            break;
-                    }
+                    analyzedColumns = analyzedColumnsNonFatalSelfInflicted;
                     break;
                 case 53://;"VIOLENCIA INTRAFAMILIAR"                
-                    switch (imputationMode) {
-                        case mode_imputation:
-                            imputeForModeAndAverage("non_fatal_domestic_violence_sta", analyzedColumns.get(i));//imputacion(moda y promedio) 
-                            break;
-                        case model_imputation:
-                            imputeForModel("non_fatal_domestic_violence_sta", analyzedColumns.get(i));//imputacion por modelo        
-                            break;
-                    }
+                    analyzedColumns = analyzedColumnsNonFatalDomesticViolence;
                     break;
                 case 54://;"NO INTENCIONAL"
-                    switch (imputationMode) {
-                        case mode_imputation:
-                            imputeForModeAndAverage("non_fatal_non_intentional_sta", analyzedColumns.get(i));//imputacion(moda y promedio) 
-                            break;
-                        case model_imputation:
-                            imputeForModel("non_fatal_non_intentional_sta", analyzedColumns.get(i));//imputacion por modelo                
-                            break;
-                    }
+                    analyzedColumns = analyzedColumnsNonFatalNonIntentional;
                     break;
                 case 56://;"SIVIGILA-VIF"                
-                    switch (imputationMode) {
-                        case mode_imputation:
-                            imputeForModeAndAverage("sivigila_sta", analyzedColumns.get(i));//imputacion(moda y promedio)                     
-                            break;
-                        case model_imputation:
-                            imputeForModel("sivigila_sta", analyzedColumns.get(i));//imputacion por modelo                
-                            break;
-                    }
+                    analyzedColumns = analyzedColumnsSivigila;
                     break;
             }
-        }
+            ClosuresEnum imputationMode;
+            for (int posColumn = 0; posColumn < analyzedColumns.size(); posColumn++) {
+                imputationMode = ClosuresEnum.none_imputation;
 
-        if (outputTextImputation.length() == 0) {
-            outputTextImputation = "No se realizó ninguna imputación";
-        }
+                if (analyzedColumns.get(posColumn).getNullPercentagePerColumnWhitCache() > 0 && analyzedColumns.get(posColumn).getNullPercentagePerColumnWhitCache() <= 10) {
+                    imputationMode = ClosuresEnum.mode_imputation;
+                }
+                if (analyzedColumns.get(posColumn).getNullPercentagePerColumnWhitCache() > 10 && analyzedColumns.get(posColumn).getNullPercentagePerColumnWhitCache() <= 33) {
+                    imputationMode = ClosuresEnum.model_imputation;
+                }
+                if (analyzedColumns.get(posColumn).getNullPercentagePerColumnWhitOutCache() == 0) {//si porcentage por columna sin cache es cero no se realiza imputacion
+                    imputationMode = ClosuresEnum.none_imputation;
+                }
 
+                switch (injuriesToImputation.get(posInjury)) {
+                    case 10://;"HOMICIDIO"
+                        switch (imputationMode) {
+                            case mode_imputation:
+                                outputTextImputationFatalInjuryMurder = outputTextImputationFatalInjuryMurder + imputeForModeAndAverage("fatal_injury_murder_sta", analyzedColumns.get(posColumn));//imputacion(moda y promedio) 
+                                break;
+                            case model_imputation:
+                                outputTextImputationFatalInjuryMurder = outputTextImputationFatalInjuryMurder + imputeForModel("fatal_injury_murder_sta", analyzedColumns.get(posColumn));//imputacion por modelo        
+                                break;
+                        }
+                        break;
+                    case 11://;"MUERTE EN ACCIDENTE DE TRANSITO"
+                        switch (imputationMode) {
+                            case mode_imputation:
+                                outputTextImputationFatalInjuryTraffic = outputTextImputationFatalInjuryTraffic + imputeForModeAndAverage("fatal_injury_traffic_sta", analyzedColumns.get(posColumn));//imputacion(moda y promedio) 
+                                break;
+                            case model_imputation:
+                                outputTextImputationFatalInjuryTraffic = outputTextImputationFatalInjuryTraffic + imputeForModel("fatal_injury_traffic_sta", analyzedColumns.get(posColumn));//imputacion por modelo        
+                                break;
+                        }
+                        break;
+                    case 12://;"SUICIDIO"
+                        switch (imputationMode) {
+                            case mode_imputation:
+                                outputTextImputationFatalInjurySuicide = outputTextImputationFatalInjurySuicide + imputeForModeAndAverage("fatal_injury_suicide_sta", analyzedColumns.get(posColumn));//imputacion(moda y promedio) 
+                                break;
+                            case model_imputation:
+                                outputTextImputationFatalInjurySuicide = outputTextImputationFatalInjurySuicide + imputeForModel("fatal_injury_suicide_sta", analyzedColumns.get(posColumn));//imputacion por modelo        
+                                break;
+                        }
+                        break;
+                    case 13://;"MUERTE ACCIDENTAL"
+                        switch (imputationMode) {
+                            case mode_imputation:
+                                outputTextImputationFatalInjuryAccident = outputTextImputationFatalInjuryAccident + imputeForModeAndAverage("fatal_injury_accident_sta", analyzedColumns.get(posColumn));//imputacion(moda y promedio) 
+                                break;
+                            case model_imputation:
+                                outputTextImputationFatalInjuryAccident = outputTextImputationFatalInjuryAccident + imputeForModel("fatal_injury_accident_sta", analyzedColumns.get(posColumn));//imputacion por modelo                        
+                                break;
+                        }
+                        break;
+                    case 50://;"VIOLENCIA INTERPERSONAL"
+                        switch (imputationMode) {
+                            case mode_imputation:
+                                outputTextImputationNonFatalInterpersonal = outputTextImputationNonFatalInterpersonal + imputeForModeAndAverage("non_fatal_interpersonal_sta", analyzedColumns.get(posColumn));//imputacion(moda y promedio) 
+                                break;
+                            case model_imputation:
+                                outputTextImputationNonFatalInterpersonal = outputTextImputationNonFatalInterpersonal + imputeForModel("non_fatal_interpersonal_sta", analyzedColumns.get(posColumn));//imputacion por modelo                        
+                                break;
+                        }
+                        break;
+                    case 51://;"LESION EN ACCIDENTE DE TRANSITO"
+                        switch (imputationMode) {
+                            case mode_imputation:
+                                outputTextImputationNonFatalTransport = outputTextImputationNonFatalTransport + imputeForModeAndAverage("non_fatal_transport_sta", analyzedColumns.get(posColumn));//imputacion(moda y promedio) 
+                                break;
+                            case model_imputation:
+                                outputTextImputationNonFatalTransport = outputTextImputationNonFatalTransport + imputeForModel("non_fatal_transport_sta", analyzedColumns.get(posColumn));//imputacion por modelo        
+                                break;
+                        }
+                        break;
+                    case 52://;"INTENCIONAL AUTOINFLINGIDA"
+                        switch (imputationMode) {
+                            case mode_imputation:
+                                outputTextImputationNonFatalSelfInflicted = outputTextImputationNonFatalSelfInflicted + imputeForModeAndAverage("non_fatal_self_inflicted_sta", analyzedColumns.get(posColumn));//imputacion(moda y promedio) 
+                                break;
+                            case model_imputation:
+                                outputTextImputationNonFatalSelfInflicted = outputTextImputationNonFatalSelfInflicted + imputeForModel("non_fatal_self_inflicted_sta", analyzedColumns.get(posColumn));//imputacion por modelo        
+                                break;
+                        }
+                        break;
+                    case 53://;"VIOLENCIA INTRAFAMILIAR"                
+                        switch (imputationMode) {
+                            case mode_imputation:
+                                outputTextImputationNonFatalDomesticViolence = outputTextImputationNonFatalDomesticViolence + imputeForModeAndAverage("non_fatal_domestic_violence_sta", analyzedColumns.get(posColumn));//imputacion(moda y promedio) 
+                                break;
+                            case model_imputation:
+                                outputTextImputationNonFatalDomesticViolence = outputTextImputationNonFatalDomesticViolence + imputeForModel("non_fatal_domestic_violence_sta", analyzedColumns.get(posColumn));//imputacion por modelo        
+                                break;
+                        }
+                        break;
+                    case 54://;"NO INTENCIONAL"
+                        switch (imputationMode) {
+                            case mode_imputation:
+                                outputTextImputationNonFatalNonIntentional = outputTextImputationNonFatalNonIntentional + imputeForModeAndAverage("non_fatal_non_intentional_sta", analyzedColumns.get(posColumn));//imputacion(moda y promedio) 
+                                break;
+                            case model_imputation:
+                                outputTextImputationNonFatalNonIntentional = outputTextImputationNonFatalNonIntentional + imputeForModel("non_fatal_non_intentional_sta", analyzedColumns.get(posColumn));//imputacion por modelo                
+                                break;
+                        }
+                        break;
+                    case 56://;"SIVIGILA-VIF"                
+                        switch (imputationMode) {
+                            case mode_imputation:
+                                outputTextImputationSivigila = outputTextImputationSivigila + imputeForModeAndAverage("sivigila_sta", analyzedColumns.get(posColumn));//imputacion(moda y promedio)                     
+                                break;
+                            case model_imputation:
+                                outputTextImputationSivigila = outputTextImputationSivigila + imputeForModel("sivigila_sta", analyzedColumns.get(posColumn));//imputacion por modelo                
+                                break;
+                        }
+                        break;
+                }
+            }
+        }
+        if (outputTextImputationFatalInjuryMurder.length() == 0) {
+            outputTextImputationFatalInjuryMurder = "No se realizó ninguna imputación";
+        }
+        if (outputTextImputationFatalInjuryTraffic.length() == 0) {
+            outputTextImputationFatalInjuryTraffic = "No se realizó ninguna imputación";
+        }
+        if (outputTextImputationFatalInjurySuicide.length() == 0) {
+            outputTextImputationFatalInjurySuicide = "No se realizó ninguna imputación";
+        }
+        if (outputTextImputationFatalInjuryAccident.length() == 0) {
+            outputTextImputationFatalInjuryAccident = "No se realizó ninguna imputación";
+        }
+        if (outputTextImputationNonFatalInterpersonal.length() == 0) {
+            outputTextImputationNonFatalInterpersonal = "No se realizó ninguna imputación";
+        }
+        if (outputTextImputationNonFatalNonIntentional.length() == 0) {
+            outputTextImputationNonFatalNonIntentional = "No se realizó ninguna imputación";
+        }
+        if (outputTextImputationNonFatalSelfInflicted.length() == 0) {
+            outputTextImputationNonFatalSelfInflicted = "No se realizó ninguna imputación";
+        }
+        if (outputTextImputationNonFatalTransport.length() == 0) {
+            outputTextImputationNonFatalTransport = "No se realizó ninguna imputación";
+        }
+        if (outputTextImputationNonFatalDomesticViolence.length() == 0) {
+            outputTextImputationNonFatalDomesticViolence = "No se realizó ninguna imputación";
+        }
+        if (outputTextImputationSivigila.length() == 0) {
+            outputTextImputationSivigila = "No se realizó ninguna imputación";
+        }
         renderedBtnAnalysis = false;
         renderedBtnImputation = false;
         renderedBtnReset = true;
@@ -370,7 +516,7 @@ public class ClosuresMB {
                                 + " SET " + rs.getMetaData().getColumnName(i) + " = "
                                 + " replace( " + rs.getMetaData().getColumnName(i) + ",'-',','); ";
                         connectionJdbcMB.non_query(sql);
-                        System.out.println("Reemplazo de 'guion' por 'coma' " + sql);
+                        //System.out.println("Reemplazo de 'guion' por 'coma' " + sql);
                         break;
                     case NOVALUE:
                         System.out.println("El nombre de columna (" + rs.getMetaData().getColumnName(i) + ") no se encontro en la enumeración");
@@ -385,71 +531,136 @@ public class ClosuresMB {
         }
 
     }
-    
-    
 
     public void startStoreData() {
 
-        //se envian los datos a la bodega
-        switch (currentInjury) {
-            case 10://;"HOMICIDIO"
-                replaceToCommaStaTemp("fatal_injury_murder_sta");//remplazo '-' por ','
-                nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_HOMICIDIOS";
-                copyToDataWarehouse("fatal_injury_murder_sta");//se transfiere datos a la bodega                                
-                break;
-            case 11://;"MUERTE EN ACCIDENTE DE TRANSITO"        
-                replaceToCommaStaTemp("fatal_injury_traffic_sta");//remplazo '-' por ','
-                nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_MUERTES_TRANSITO";
-                copyToDataWarehouse("fatal_injury_traffic_sta");//se transfiere datos a la bodega                
-                break;
-            case 12://;"SUICIDIO"
-                replaceToCommaStaTemp("fatal_injury_suicide_sta");//remplazo '-' por ','
-                nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_SUICIDIOS";
-                copyToDataWarehouse("fatal_injury_suicide_sta");//se transfiere datos a la bodega                
-                break;
-            case 13://;"MUERTE ACCIDENTAL"
-                replaceToCommaStaTemp("fatal_injury_accident_sta");//remplazo '-' por ','
-                nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_MUERTES_ACCIDENTALES";
-                copyToDataWarehouse("fatal_injury_accident_sta");//se transfiere datos a la bodega
-                break;
-            case 50://;"VIOLENCIA INTERPERSONAL"
-                replaceToCommaStaTemp("non_fatal_interpersonal_sta");//remplazo '-' por ','
-                nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_VIOLENCIA_INTERPERSONAL";
-                copyToDataWarehouse("non_fatal_interpersonal_sta");//se transfiere datos a la bodega
-                break;
-            case 51://;"LESION EN ACCIDENTE DE TRANSITO"
-                replaceToCommaStaTemp("non_fatal_transport_sta");//remplazo '-' por ','
-                nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_LESION_EN_TRANSITO";
-                copyToDataWarehouse("non_fatal_transport_sta");//se transfiere datos a la bodega
-                break;
-            case 52://;"INTENCIONAL AUTOINFLINGIDA"
-                replaceToCommaStaTemp("non_fatal_self_inflicted_sta");//remplazo '-' por ','
-                nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_INTENCIONAL_AUTOINFLINGIDA";
-                copyToDataWarehouse("non_fatal_self_inflicted_sta");//se transfiere datos a la bodega
-                break;
-            case 53://;"VIOLENCIA INTRAFAMILIAR"                
-                replaceToCommaStaTemp("non_fatal_domestic_violence_sta");//remplazo '-' por ','
-                nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_VIOLENCIA_INTRAFAMILIAR";
-                copyToDataWarehouse("non_fatal_domestic_violence_sta");//se transfiere datos a la bodega
-                break;
-            case 54://;"NO INTENCIONAL"
-                replaceToCommaStaTemp("non_fatal_non_intentional_sta");//remplazo '-' por ','
-                nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_LESION_NO_INTENCIONAL";
-                copyToDataWarehouse("non_fatal_non_intentional_sta");//se transfiere datos a la bodega
-                break;
-            case 56://;"SIVIGILA-VIF"                
-                replaceToCommaStaTemp("sivigila_sta");//remplazo '-' por ','
-                nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_SIVIGILA_VIF";
-                copyToDataWarehouse("sivigila_sta");//se transfiere datos a la bodega
-                break;
+        ResultSet rs;
+        outputTextStoreData = ""
+                + "Se ha realizado el cierre comprendido desde <font color=\"blue\"><b>" + startDate + "</b></font> hasta <font color=\"blue\"><b>" + endDate + "</b></font>";
+        try {
+            for (int i = 0; i < injuriesToImputation.size(); i++) {
+                switch (injuriesToImputation.get(i)) {
+                    case 10://;"HOMICIDIO"
+                        replaceToCommaStaTemp("fatal_injury_murder_sta");//remplazo '-' por ','
+                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_HOMICIDIOS";
+                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM fatal_injury_murder_sta WHERE estado != 1; ");
+                        if (rs.next()) {
+                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por homicidios almacenados";
+                        }
+                        copyToDataWarehouse("fatal_injury_murder_sta");//se transfiere datos a la bodega                                
+                        //actualizo la fecha que se realizo el ultimocierre
+                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+                        break;
+                    case 11://;"MUERTE EN ACCIDENTE DE TRANSITO"        
+                        replaceToCommaStaTemp("fatal_injury_traffic_sta");//remplazo '-' por ','
+                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_MUERTES_TRANSITO";
+                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM fatal_injury_traffic_sta WHERE estado != 1; ");
+                        if (rs.next()) {
+                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por muerte en accidente de tránsito almacenados";
+                        }
+                        copyToDataWarehouse("fatal_injury_traffic_sta");//se transfiere datos a la bodega                
+                        //actualizo la fecha que se realizo el ultimocierre
+                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+                        break;
+                    case 12://;"SUICIDIO"
+                        replaceToCommaStaTemp("fatal_injury_suicide_sta");//remplazo '-' por ','
+                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_SUICIDIOS";
+                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM fatal_injury_suicide_sta WHERE estado != 1; ");
+                        if (rs.next()) {
+                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por suicidios almacenados";
+                        }
+                        copyToDataWarehouse("fatal_injury_suicide_sta");//se transfiere datos a la bodega                
+                        //actualizo la fecha que se realizo el ultimocierre
+                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+                        break;
+                    case 13://;"MUERTE ACCIDENTAL"
+                        replaceToCommaStaTemp("fatal_injury_accident_sta");//remplazo '-' por ','
+                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_MUERTES_ACCIDENTALES";
+                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM fatal_injury_accident_sta WHERE estado != 1; ");
+                        if (rs.next()) {
+                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por muerte accidental almacenados";
+                        }
+                        copyToDataWarehouse("fatal_injury_accident_sta");//se transfiere datos a la bodega
+                        //actualizo la fecha que se realizo el ultimocierre
+                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+                        break;
+                    case 50://;"VIOLENCIA INTERPERSONAL"
+                        replaceToCommaStaTemp("non_fatal_interpersonal_sta");//remplazo '-' por ','
+                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_VIOLENCIA_INTERPERSONAL";
+                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM non_fatal_interpersonal_sta WHERE estado != 1; ");
+                        if (rs.next()) {
+                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por homicidios almacenados";
+                        }
+                        copyToDataWarehouse("non_fatal_interpersonal_sta");//se transfiere datos a la bodega
+                        //actualizo la fecha que se realizo el ultimocierre
+                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+                        break;
+                    case 51://;"LESION EN ACCIDENTE DE TRANSITO"
+                        replaceToCommaStaTemp("non_fatal_transport_sta");//remplazo '-' por ','
+                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_LESION_EN_TRANSITO";
+                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM non_fatal_transport_sta WHERE estado != 1; ");
+                        if (rs.next()) {
+                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por lesión en transito almacenados";
+                        }
+                        copyToDataWarehouse("non_fatal_transport_sta");//se transfiere datos a la bodega
+                        //actualizo la fecha que se realizo el ultimocierre
+                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+                        break;
+                    case 52://;"INTENCIONAL AUTOINFLINGIDA"
+                        replaceToCommaStaTemp("non_fatal_self_inflicted_sta");//remplazo '-' por ','
+                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_INTENCIONAL_AUTOINFLINGIDA";
+                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM non_fatal_self_inflicted_sta WHERE estado != 1; ");
+                        if (rs.next()) {
+                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por lesiones autoinflingidas almacenados";
+                        }
+                        copyToDataWarehouse("non_fatal_self_inflicted_sta");//se transfiere datos a la bodega
+                        //actualizo la fecha que se realizo el ultimocierre
+                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+                        break;
+                    case 53://;"VIOLENCIA INTRAFAMILIAR"                
+                        replaceToCommaStaTemp("non_fatal_domestic_violence_sta");//remplazo '-' por ','
+                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_VIOLENCIA_INTRAFAMILIAR";
+                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM non_fatal_domestic_violence_sta WHERE estado != 1; ");
+                        if (rs.next()) {
+                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por violencia intrafamiliar almacenados";
+                        }
+                        copyToDataWarehouse("non_fatal_domestic_violence_sta");//se transfiere datos a la bodega
+                        //actualizo la fecha que se realizo el ultimocierre
+                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+                        break;
+                    case 54://;"NO INTENCIONAL"
+                        replaceToCommaStaTemp("non_fatal_non_intentional_sta");//remplazo '-' por ','
+                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_LESION_NO_INTENCIONAL";
+                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM non_fatal_non_intentional_sta WHERE estado != 1; ");
+                        if (rs.next()) {
+                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por lesiones no intencionales almacenados";
+                        }
+                        copyToDataWarehouse("non_fatal_non_intentional_sta");//se transfiere datos a la bodega
+                        //actualizo la fecha que se realizo el ultimocierre
+                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+                        break;
+                    case 56://;"SIVIGILA-VIF"                
+                        replaceToCommaStaTemp("sivigila_sta");//remplazo '-' por ','
+                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_SIVIGILA_VIF";
+                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM sivigila_sta WHERE estado != 1; ");
+                        if (rs.next()) {
+                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por SIVIGILA-VIF almacenados";
+                        }
+                        copyToDataWarehouse("sivigila_sta");//se transfiere datos a la bodega
+                        //actualizo la fecha que se realizo el ultimocierre
+                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
+        if (currentInjury == 60) {
+            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_TODAS_LCENF";
+        }
+        outputTextStoreData = outputTextStoreData + "</br>Se creó una copia de seguridad con el nombre: <font color=\"blue\"><b>" + nameBackup + "</b></font>";
         backupsMB.setNewNameDwh(nameBackup);
         backupsMB.createBackupClickDwh();
-        //actualizo la fecha que se realizo el ultimocierre
-        connectionJdbcMB.non_query(""
-                + " UPDATE injuries "
-                + " SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') "
-                + " WHERE injury_id = " + currentInjury);
 
         renderedBtnAnalysis = false;
         renderedBtnImputation = false;
@@ -860,6 +1071,61 @@ public class ClosuresMB {
                 }
                 strReturn = strReturn + " ORDER BY \n  id_lesion ASC \n";
                 break;
+            case sivigila_sta:
+                strReturn = ""
+                        + " SELECT "
+                        + "   institucion_receptora,\n"
+                        + "   edad_victima,\n"
+                        + "   mayor_edad_victima,\n"
+                        + "   genero_victima,\n"
+                        + "   ocupacion_victima,\n"
+                        + "   aseguradora,	\n"
+                        + "   pertenencia_etnica,\n"
+                        + "   grupo_poblacional,   \n"
+                        + "   escolaridad_victima,\n"
+                        + "   factor_vulnerabilidad,\n"
+                        + "   antecedentes_hecho_similar,\n"
+                        + "   presencia_alcohol_victima,\n"
+                        + "   tipo_regimen,\n"
+                        + "   barrio_evento,\n"
+                        + "   zona_conflicto,\n"
+                        + "   EXTRACT(MONTH FROM fecha_evento) AS mes_evento,\n"
+                        + "   EXTRACT(YEAR FROM fecha_evento) AS anio_evento,\n"
+                        + "   EXTRACT(DOW FROM fecha_evento) AS dia_semana_evento,\n"
+                        + "   (EXTRACT(HOUR FROM hora_evento)||':00:00') AS hora_evento,\n"
+                        + "   EXTRACT(MONTH FROM fecha_consulta) AS mes_consulta,\n"
+                        + "   EXTRACT(YEAR FROM fecha_consulta) AS anio_consulta,\n"
+                        + "   EXTRACT(DOW FROM fecha_consulta) AS dia_semana_consulta,\n"
+                        + "   (EXTRACT(HOUR FROM hora_consulta)||':00:00') AS hora_consulta,\n"
+                        + "   escenario,\n"
+                        + "   edad_agresor,\n"
+                        + "   mayor_edad_agresor,\n"
+                        + "   genero_agresor,\n"
+                        + "   ocupacion_agresor,\n"
+                        + "   escolaridad_agresor,\n"
+                        + "   relacion_familiar_victima,\n"
+                        + "   relacion_no_familiar,   \n"
+                        + "   convive_con_agresor,\n"
+                        + "   grupo_agresor,\n"
+                        + "   presencia_alcohol_agresor,\n"
+                        + "   armas_utilizadas,   \n"
+                        + "   naturaleza_violencia,   \n"
+                        + "   atencion_salud,\n"
+                        + "   recomienda_proteccion,\n"
+                        + "   trabajo_de_campo "
+                        + " FROM \n"
+                        + "  " + table + " \n"
+                        + " WHERE \n";
+                if (takeNulls) {//se toman los datos donde la columna sea "null"
+                    strReturn = strReturn + "  " + column + " IS NULL ";
+                } else {//se toman los datos donde la columna no sea "null"
+                    strReturn = strReturn + "  " + column + " IS NOT NULL ";
+                }
+                if (!whitCache) {//no se toma el cache                                    
+                    strReturn = strReturn + "  AND estado = 3 ";
+                }
+                strReturn = strReturn + " ORDER BY \n  id_lesion ASC \n";
+                break;
         }
 
         try {
@@ -1011,80 +1277,93 @@ public class ClosuresMB {
         /*
          * se analiza y imprime el resultado del analisis
          */
-        outputTextAnalysis = "";
+
         disabledInjury = true;
-        analyzedColumns = new ArrayList<>();
-        switch (currentInjury) {
-            case 10://;"HOMICIDIO"
-                insertFatalInjuryMurderSta();//se ingresa los registros en el rango de fechas
-                preProcessCategoryToNull("fatal_injury_murder_sta");//reglas iniciales y conversion a nulos                
-                copyToStaTemp("fatal_injury_murder_sta");//copiar datos a la tabla temporal
-                analyzeColumnsOfTableSta("fatal_injury_murder_sta");
-                printResultOfAnalisis();
-                break;
-            case 11://;"MUERTE EN ACCIDENTE DE TRANSITO"
-                insertFatalInjuryTrafficSta();
-                preProcessCategoryToNull("fatal_injury_traffic_sta");//reglas iniciales y conversion a nulos
-                copyToStaTemp("fatal_injury_traffic_sta");//copiar datos a la tabla temporal
-                analyzeColumnsOfTableSta("fatal_injury_traffic_sta");
-                printResultOfAnalisis();
-                break;
-            case 12://;"SUICIDIO"
-                insertFatalInjurySuicideSta();
-                preProcessCategoryToNull("fatal_injury_suicide_sta");//reglas iniciales y conversion a nulos
-                copyToStaTemp("fatal_injury_suicide_sta");//copiar datos a la tabla temporal
-                analyzeColumnsOfTableSta("fatal_injury_suicide_sta");
-                printResultOfAnalisis();
-                break;
-            case 13://;"MUERTE ACCIDENTAL"
-                insertFatalInjuryAccidentSta();
-                preProcessCategoryToNull("fatal_injury_accident_sta");//reglas iniciales y conversion a nulos
-                copyToStaTemp("fatal_injury_accident_sta");//copiar datos a la tabla temporal
-                analyzeColumnsOfTableSta("fatal_injury_accident_sta");
-                printResultOfAnalisis();
-                break;
-            case 50://;"VIOLENCIA INTERPERSONAL"
-                insertNonFatalInterpersonalSta();
-                preProcessCategoryToNull("non_fatal_interpersonal_sta");//reglas iniciales y conversion a nulos
-                copyToStaTemp("non_fatal_interpersonal_sta");//copiar datos a la tabla temporal
-                analyzeColumnsOfTableSta("non_fatal_interpersonal_sta");
-                printResultOfAnalisis();
-                break;
-            case 51://;"LESION EN ACCIDENTE DE TRANSITO"
-                insertNonFatalTraficcSta();
-                preProcessCategoryToNull("non_fatal_transport_sta");//reglas iniciales y conversion a nulos
-                copyToStaTemp("non_fatal_transport_sta");//copiar datos a la tabla temporal
-                analyzeColumnsOfTableSta("non_fatal_transport_sta");
-                printResultOfAnalisis();
-                break;
-            case 52://;"INTENCIONAL AUTOINFLINGIDA"
-                insertNonFatalSelfInflictedSta();
-                preProcessCategoryToNull("non_fatal_self_inflicted_sta");//reglas iniciales y conversion a nulos
-                copyToStaTemp("non_fatal_self_inflicted_sta");//copiar datos a la tabla temporal
-                analyzeColumnsOfTableSta("non_fatal_self_inflicted_sta");
-                printResultOfAnalisis();
-                break;
-            case 53://;"VIOLENCIA INTRAFAMILIAR"                
-                insertNonFatalDomesticViolenceSta();
-                preProcessCategoryToNull("non_fatal_domestic_violence_sta");//reglas iniciales y conversion a nulos
-                copyToStaTemp("non_fatal_domestic_violence_sta");//copiar datos a la tabla temporal
-                analyzeColumnsOfTableSta("non_fatal_domestic_violence_sta");
-                printResultOfAnalisis();
-                break;
-            case 54://;"NO INTENCIONAL"
-                insertNonFatalNonIntentionalSta();
-                preProcessCategoryToNull("non_fatal_non_intentional_sta");//reglas iniciales y conversion a nulos
-                copyToStaTemp("non_fatal_non_intentional_sta");//copiar datos a la tabla temporal
-                analyzeColumnsOfTableSta("non_fatal_non_intentional_sta");
-                printResultOfAnalisis();
-                break;
-            case 56://;"SIVIGILA-VIF"                
-                insertSivigilaSta();
-                preProcessCategoryToNull("sivigila_sta");//reglas iniciales y conversion a nulos
-                copyToStaTemp("sivigila_sta");//copiar datos a la tabla temporal
-                analyzeColumnsOfTableSta("sivigila_sta");
-                printResultOfAnalisis();
-                break;
+
+        analyzedColumnsFatalInjuryMurder = new ArrayList<>();
+        analyzedColumnsFatalInjuryTraffic = new ArrayList<>();
+        analyzedColumnsFatalInjurySuicide = new ArrayList<>();
+        analyzedColumnsFatalInjuryAccident = new ArrayList<>();
+        analyzedColumnsNonFatalInterpersonal = new ArrayList<>();
+        analyzedColumnsNonFatalNonIntentional = new ArrayList<>();
+        analyzedColumnsNonFatalSelfInflicted = new ArrayList<>();
+        analyzedColumnsNonFatalTransport = new ArrayList<>();
+        analyzedColumnsNonFatalDomesticViolence = new ArrayList<>();
+        analyzedColumnsSivigila = new ArrayList<>();
+
+        for (int i = 0; i < injuriesToImputation.size(); i++) {
+            switch (injuriesToImputation.get(i)) {
+                case 10://;"HOMICIDIO"
+                    insertFatalInjuryMurderSta();//se ingresa los registros en el rango de fechas
+                    preProcessCategoryToNull("fatal_injury_murder_sta");//reglas iniciales y conversion a nulos                
+                    copyToStaTemp("fatal_injury_murder_sta");//copiar datos a la tabla temporal
+                    analyzedColumnsFatalInjuryMurder = analyzeColumnsOfTableSta("fatal_injury_murder_sta");
+                    outputTextAnalysisFatalInjuryMurder = printResultOfAnalisis(analyzedColumnsFatalInjuryMurder);
+                    break;
+                case 11://;"MUERTE EN ACCIDENTE DE TRANSITO"
+                    insertFatalInjuryTrafficSta();
+                    preProcessCategoryToNull("fatal_injury_traffic_sta");//reglas iniciales y conversion a nulos
+                    copyToStaTemp("fatal_injury_traffic_sta");//copiar datos a la tabla temporal
+                    analyzedColumnsFatalInjuryTraffic = analyzeColumnsOfTableSta("fatal_injury_traffic_sta");
+                    outputTextAnalysisFatalInjuryTraffic = printResultOfAnalisis(analyzedColumnsFatalInjuryTraffic);
+                    break;
+                case 12://;"SUICIDIO"
+                    insertFatalInjurySuicideSta();
+                    preProcessCategoryToNull("fatal_injury_suicide_sta");//reglas iniciales y conversion a nulos
+                    copyToStaTemp("fatal_injury_suicide_sta");//copiar datos a la tabla temporal
+                    analyzedColumnsFatalInjurySuicide = analyzeColumnsOfTableSta("fatal_injury_suicide_sta");
+                    outputTextAnalysisFatalInjurySuicide = printResultOfAnalisis(analyzedColumnsFatalInjurySuicide);
+                    break;
+                case 13://;"MUERTE ACCIDENTAL"
+                    insertFatalInjuryAccidentSta();
+                    preProcessCategoryToNull("fatal_injury_accident_sta");//reglas iniciales y conversion a nulos
+                    copyToStaTemp("fatal_injury_accident_sta");//copiar datos a la tabla temporal
+                    analyzedColumnsFatalInjuryAccident = analyzeColumnsOfTableSta("fatal_injury_accident_sta");
+                    outputTextAnalysisFatalInjuryAccident = printResultOfAnalisis(analyzedColumnsFatalInjuryAccident);
+                    break;
+                case 50://;"VIOLENCIA INTERPERSONAL"
+                    insertNonFatalInterpersonalSta();
+                    preProcessCategoryToNull("non_fatal_interpersonal_sta");//reglas iniciales y conversion a nulos
+                    copyToStaTemp("non_fatal_interpersonal_sta");//copiar datos a la tabla temporal
+                    analyzedColumnsNonFatalInterpersonal = analyzeColumnsOfTableSta("non_fatal_interpersonal_sta");
+                    outputTextAnalysisNonFatalInterpersonal = printResultOfAnalisis(analyzedColumnsNonFatalInterpersonal);
+                    break;
+                case 51://;"LESION EN ACCIDENTE DE TRANSITO"
+                    insertNonFatalTraficcSta();
+                    preProcessCategoryToNull("non_fatal_transport_sta");//reglas iniciales y conversion a nulos
+                    copyToStaTemp("non_fatal_transport_sta");//copiar datos a la tabla temporal
+                    analyzedColumnsNonFatalTransport = analyzeColumnsOfTableSta("non_fatal_transport_sta");
+                    outputTextAnalysisNonFatalTransport = printResultOfAnalisis(analyzedColumnsNonFatalTransport);
+                    break;
+                case 52://;"INTENCIONAL AUTOINFLINGIDA"
+                    insertNonFatalSelfInflictedSta();
+                    preProcessCategoryToNull("non_fatal_self_inflicted_sta");//reglas iniciales y conversion a nulos
+                    copyToStaTemp("non_fatal_self_inflicted_sta");//copiar datos a la tabla temporal
+                    analyzedColumnsNonFatalSelfInflicted = analyzeColumnsOfTableSta("non_fatal_self_inflicted_sta");
+                    outputTextAnalysisNonFatalSelfInflicted = printResultOfAnalisis(analyzedColumnsNonFatalSelfInflicted);
+                    break;
+                case 53://;"VIOLENCIA INTRAFAMILIAR"                
+                    insertNonFatalDomesticViolenceSta();
+                    preProcessCategoryToNull("non_fatal_domestic_violence_sta");//reglas iniciales y conversion a nulos
+                    copyToStaTemp("non_fatal_domestic_violence_sta");//copiar datos a la tabla temporal
+                    analyzedColumnsNonFatalDomesticViolence = analyzeColumnsOfTableSta("non_fatal_domestic_violence_sta");
+                    outputTextAnalysisNonFatalDomesticViolence = printResultOfAnalisis(analyzedColumnsNonFatalDomesticViolence);
+                    break;
+                case 54://;"NO INTENCIONAL"
+                    insertNonFatalNonIntentionalSta();
+                    preProcessCategoryToNull("non_fatal_non_intentional_sta");//reglas iniciales y conversion a nulos
+                    copyToStaTemp("non_fatal_non_intentional_sta");//copiar datos a la tabla temporal
+                    analyzedColumnsNonFatalNonIntentional = analyzeColumnsOfTableSta("non_fatal_non_intentional_sta");
+                    outputTextAnalysisNonFatalNonIntentional = printResultOfAnalisis(analyzedColumnsNonFatalNonIntentional);
+                    break;
+                case 56://;"SIVIGILA-VIF"                
+                    insertSivigilaSta();
+                    preProcessCategoryToNull("sivigila_sta");//reglas iniciales y conversion a nulos
+                    copyToStaTemp("sivigila_sta");//copiar datos a la tabla temporal
+                    analyzedColumnsSivigila = analyzeColumnsOfTableSta("sivigila_sta");
+                    outputTextAnalysisSivigila = printResultOfAnalisis(analyzedColumnsSivigila);
+                    break;
+            }
         }
         renderedBtnAnalysis = false;
         renderedBtnImputation = true;
@@ -1096,8 +1375,11 @@ public class ClosuresMB {
         //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Empieza proceso de cierre"));
     }
 
-    private void imputeForModeAndAverage(String table, AnalysisColumn analyzedColumn) {
-        //imputacion(moda y promedio)
+    private String imputeForModeAndAverage(String table, AnalysisColumn analyzedColumn) {
+        /*
+         * imputacion(moda y promedio)
+         * se retorna la informacion del proceso de imputacion
+         */
 
         connectionJdbcMB.non_query("\n"
                 + " UPDATE \n"
@@ -1106,11 +1388,12 @@ public class ClosuresMB {
                 + "  " + analyzedColumn.getColumnName() + " = '" + analyzedColumn.getModePerColumnWhitCache() + "'"
                 + " WHERE \n"
                 + "  " + analyzedColumn.getColumnName() + " IS NULL ");
-        outputTextImputation = outputTextImputation
-                + "<br/><font color=\"blue\">Imputación por</font><font color=\"green\"><b> moda</b></font>: "
+        String strReturn =
+                "<br/><font color=\"blue\">Imputación por</font><font color=\"green\"><b> moda</b></font>: "
                 + " <font color=\"blue\">Variable </font> <b>" + analyzedColumn.getVariableName() + "</b>, "
                 + " <font color=\"blue\">Nulos:</font> <b>" + formatD.format(analyzedColumn.getNullPercentagePerColumnWhitCache()) + "%</b>, "
                 + " <font color=\"blue\">Moda:</font> <b>" + analyzedColumn.getModePerColumnWhitCache() + "</b>";
+        return strReturn;
     }
 
     private ArrayList<String> determineIdFromNullData(String table, String column) {
@@ -1253,6 +1536,30 @@ public class ClosuresMB {
                 }
                 break;
             case sivigila_sta:
+                strReturn = tuple.split(",");
+                for (int i = 0; i < strReturn.length; i++) {
+                    switch (i) {
+                        case 15://mes
+                        case 19://mes
+                            if (strReturn[i].length() == 1) {
+                                strDate = "0" + strReturn[i];
+                            } else {
+                                strDate = strReturn[i];
+                            }
+                            break;
+                        case 16://año
+                        case 20://año
+                            strDate = strReturn[i] + "-" + strDate;
+                            break;
+                        case 17://dia semana
+                        case 21://dia semana
+                            strR = strR + "," + strDate + "-01";
+                            break;
+                        default:
+                            strR = strR + "," + strReturn[i];
+                            break;
+                    }
+                }
                 break;
         }
         strR = strR + ",-";//el ultimo es estado se pasa vacio
@@ -1261,11 +1568,13 @@ public class ClosuresMB {
         return strReturn;
     }
 
-    private void imputeForModel(String table, AnalysisColumn analyzedColumn) {
-        //-------------------------------------------
-        //--- imputacion por modelo -----------------
-        //-------------------------------------------
+    private String imputeForModel(String table, AnalysisColumn analyzedColumn) {
+        /*
+         * imputacion por modelo 
+         * retorna la informacion del resultado de la imputacion
+         */
         Imputation imputation;
+        String strReturn = "";
         ArrayList<Imputed> KNNPrediction;
         ArrayList<String> idLesionArray;
         boolean continueProcess = true;
@@ -1301,15 +1610,12 @@ public class ClosuresMB {
                                 + " WHERE id_lesion LIKE '" + idLesionArray.get(k) + "'");
                         if (rs.next()) {
                             if (rs.getMetaData().getColumnCount() == splitTuple.length) {
-                                System.err.println("igual longitud rs y tupla, analizando columna " + analyzedColumn.getColumnName());
+                                System.err.println("== analizando columna " + analyzedColumn.getColumnName());
                             } else {
-                                System.err.println("diferente longitudm, analizando columna " + analyzedColumn.getColumnName() + " rs:" + rs.getMetaData().getColumnCount() + " tupla:" + splitTuple.length);
+                                System.err.println("<> analizando columna " + analyzedColumn.getColumnName() + " rs:" + rs.getMetaData().getColumnCount() + " tupla:" + splitTuple.length);
                             }
                             for (int h = 0; h < rs.getMetaData().getColumnCount(); h++) {
-                                System.out.println(""
-                                        + "compara " + rs.getMetaData().getColumnName(h + 1)
-                                        + ": \t" + rs.getString(h + 1)
-                                        + "\tcon \t" + splitTuple[h]);
+                                System.out.println("compara " + rs.getMetaData().getColumnName(h + 1) + ": \t" + rs.getString(h + 1) + "\tcon \t" + splitTuple[h]);
                             }
                             for (int i = 0; i < splitTuple.length; i++) {
 
@@ -1322,10 +1628,7 @@ public class ClosuresMB {
                                                 + "   " + rs.getMetaData().getColumnName(i + 1) + " = '" + splitTuple[i] + "' \n"
                                                 + " WHERE \n"
                                                 + "   id_lesion LIKE '" + idLesionArray.get(k) + "'\n");
-                                        System.out.println("Se actualiza >>"
-                                                + " Columna: " + rs.getMetaData().getColumnName(i + 1)
-                                                + "\t\t Nuevo valor: " + splitTuple[i]
-                                                + "\t\t id_lesion: " + idLesionArray.get(k));
+                                        System.out.println("Se actualiza >> Columna: " + rs.getMetaData().getColumnName(i + 1)+ "\t\t Nuevo valor: " + splitTuple[i]+ "\t\t id_lesion: " + idLesionArray.get(k));
                                     }
                                 }
                             }
@@ -1334,8 +1637,8 @@ public class ClosuresMB {
                         System.out.println("Error: " + ex.getMessage());
                     }
                 }
-                outputTextImputation = outputTextImputation
-                        + "<br/> <font color=\"blue\">Imputación por</font><font color=\"orange\"><b> modelo</b></font>: "
+                strReturn =
+                        "<br/> <font color=\"blue\">Imputación por</font><font color=\"orange\"><b> modelo</b></font>: "
                         + " <font color=\"blue\">Variable:</font> <b>" + analyzedColumn.getVariableName() + "</b>, "
                         + " <font color=\"blue\">Nulos:</font> <b>" + formatD.format(analyzedColumn.getNullPercentagePerColumnWhitCache()) + "%</b> ";
             } else {//la columa solo tiene un valor distinto
@@ -1346,20 +1649,22 @@ public class ClosuresMB {
                         + "   " + analyzedColumn.getColumnName() + " = '" + analyzedColumn.getModePerColumnWhitCache() + "' \n"
                         + " WHERE \n"
                         + "   " + analyzedColumn.getColumnName() + " is null ");
-                outputTextImputation = outputTextImputation
-                        + "<br/> <font color=\"blue\">Imputación por</font><font color=\"orange\"><b> modelo</b></font>: "
+                strReturn =
+                        "<br/> <font color=\"blue\">Imputación por</font><font color=\"orange\"><b> modelo</b></font>: "
                         + " <font color=\"blue\">Variable:</font> <b>" + analyzedColumn.getVariableName() + "</b>, "
                         + " <font color=\"blue\">Nulos:</font> <b>" + formatD.format(analyzedColumn.getNullPercentagePerColumnWhitCache()) + "%</b>, "
                         + " <font color=\"blue\">Columna Unitaria:</font> <b>" + analyzedColumn.getModePerColumnWhitCache() + "</b>";
             }
         }
+        return strReturn;
     }
 
-    private void printResultOfAnalisis() {
+    private String printResultOfAnalisis(ArrayList<AnalysisColumn> analyzedColumns) {
         //------------------------------------------------------------------
-        //--- IMPRIMO RESULTADOS   ------------------------------------------
+        //--- IMPRIMO RESULTADOS   -----------------------------------------
         //------------------------------------------------------------------
-        outputTextAnalysis = "<table>";
+
+        String outputTextAnalysis = "<table class=\"ui-widget-content ui-datatable-odd\">";
         for (int i = 0; i < analyzedColumns.size(); i++) {
             outputTextAnalysis = outputTextAnalysis + "<tr>";
             //------------------------------------------------------------------
@@ -1375,12 +1680,12 @@ public class ClosuresMB {
             //PORCENTAJE NULOS SIN CACHE----------------------------------------------
             if (analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache() == -1) {
                 outputTextAnalysis = outputTextAnalysis + "<br/> <font color=\"red\"> nulos por columna no determinado </font>";
-            } else if ((int) analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache() > -1
-                    && (int) analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache() <= 10) {
+            } else if (analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache() > -1
+                    && analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache() <= 10) {
                 outputTextAnalysis = outputTextAnalysis + "<br/> <font color=\"blue\">Nulos carga: </font>" + analyzedColumns.get(i).getNullCountPerColumnWhitOutCache() + " ";
                 outputTextAnalysis = outputTextAnalysis + "<font color=\"green\"><b>(" + formatD.format(analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache()) + "%)</b> </font>";
-            } else if ((int) analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache() > 10
-                    && (int) analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache() <= 33) {
+            } else if (analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache() > 10
+                    && analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache() <= 33) {
                 outputTextAnalysis = outputTextAnalysis + "<br/> <font color=\"blue\">Nulos carga: </font>" + analyzedColumns.get(i).getNullCountPerColumnWhitOutCache() + " ";
                 outputTextAnalysis = outputTextAnalysis + "<font color=\"orange\"><b>(" + formatD.format(analyzedColumns.get(i).getNullPercentagePerColumnWhitOutCache()) + "%)</b> </font>";
             } else {
@@ -1413,12 +1718,12 @@ public class ClosuresMB {
             //PORCENTAJE NULOS----------------------------------------------
             if (analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() == -1) {
                 outputTextAnalysis = outputTextAnalysis + "<br/> <font color=\"red\"> nulos por columna no determinado </font>";
-            } else if ((int) analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() > -1
-                    && (int) analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() <= 10) {
+            } else if (analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() > -1
+                    && analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() <= 10) {
                 outputTextAnalysis = outputTextAnalysis + "<br/> <font color=\"blue\">Nulos (carga + usados de cache): </font> " + analyzedColumns.get(i).getNullCountPerColumnWhitOutCache() + " ";
                 outputTextAnalysis = outputTextAnalysis + "<font color=\"green\"><b>(" + formatD.format(analyzedColumns.get(i).getNullPercentagePerColumnWhitCache()) + "%)</b> </font>";
-            } else if ((int) analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() > 10
-                    && (int) analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() <= 33) {
+            } else if (analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() > 10
+                    && analyzedColumns.get(i).getNullPercentagePerColumnWhitCache() <= 33) {
                 outputTextAnalysis = outputTextAnalysis + "<br/> <font color=\"blue\">Nulos (carga + usados de cache): </font> " + analyzedColumns.get(i).getNullCountPerColumnWhitOutCache() + " ";
                 outputTextAnalysis = outputTextAnalysis + "<font color=\"orange\"><b>(" + formatD.format(analyzedColumns.get(i).getNullPercentagePerColumnWhitCache()) + "%)</b> </font>";
             } else {
@@ -1442,6 +1747,7 @@ public class ClosuresMB {
             outputTextAnalysis = outputTextAnalysis + "</tr>";
         }
         outputTextAnalysis = outputTextAnalysis + "</table>";
+        return outputTextAnalysis;
     }
 
     private void copyToDataWarehouse(String table) {
@@ -1449,19 +1755,9 @@ public class ClosuresMB {
         //1. se transfiere datos a la bodega
 
         //2. convierto los registros cargados en registros que forman parte del cache
-        outputTextStoreData = "";
-        try {
-            ResultSet rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + table + " WHERE estado != 1; ");
-            if (rs.next()) {
-                outputTextStoreData = ""
-                        + "Se ha realizado el cierre de <font color=\"blue\"><b>'" + currentInjuryName + "'</b></font> "
-                        + "</br>comprendido desde <font color=\"blue\"><b>" + startDate + "</b></font> hasta <font color=\"blue\"><b>" + endDate + "</b></font>"
-                        + "</br>se almacenaron <font color=\"blue\"><b>" + rs.getString(1) + "</b></font> registros"
-                        + "</br>Se creó una copia de seguridad con el nombre: <font color=\"blue\"><b>" + nameBackup + "</b></font>";
-            }
-            connectionJdbcMB.non_query(" UPDATE " + table + " SET estado = 1; ");
-        } catch (Exception e) {
-        }
+
+
+        connectionJdbcMB.non_query(" UPDATE " + table + " SET estado = 1; ");
 
         //3. se eliminan los datos que esten un año antes de este cierre para las lesiones no fatales
         switch (ClosuresEnum.convert(table)) {//nombre de variable                                                             
@@ -1481,9 +1777,6 @@ public class ClosuresMB {
                         + " WHERE " + table + ".fecha_evento <= to_date('" + yearBeforeDate + "','dd/MM/yyyy')");
                 break;
         }
-
-
-
     }
 
     private void preProcessCategoryToNull(String table) {
@@ -1501,41 +1794,41 @@ public class ClosuresMB {
                     //------- COLUMNAS SIN REGLAS INICIALES, Y NO SE TRANSFORMAN EN NULOS --
                     //----------------------------------------------------------------------
                     case id_lesion:
-                        break;
                     case estado:
-                        break;
                     case tipo_via_hecho://road_types
-                        break;
                     case mecanismo_muerte://accident_mechanisms
-                        break;
                     case fuente_no_fatal://non_fatal_data_sources
-                        break;
                     case destino_paciente://destinations_of_patient
-                        break;
                     case diagnostico_1://diagnoses                        
                     case diagnostico_2://no se realiza la imputacion de diagnostco 2 por que se acepta nulo
-                        break;
                     case genero:
-                        break;
+                    case genero_victima:
                     case tipo_arma://weapon_types
-                        break;
                     case fecha_consulta:
-                        break;
                     case fecha_evento:
-                        break;
                     case edad_victima://se categorizo a quinquenal
-                        break;
+                    case edad_agresor://se categorizo a quinquenal
                     case mayor_edad:
-                        break;
+                    case mayor_edad_victima:
+                    case mayor_edad_agresor:
                     case hora_consulta://no construir modelo solo moda
-                        break;
                     case hora_evento://no construir modelo solo moda
-                        break;
-                    case grupo_etnico://ethnic_groups                        
-                        break;
+                    case grupo_etnico://ethnic_groups  
+                    case pertenencia_etnica:
+                    case grupo_poblacional:
+                    case escolaridad_victima:
+                    case escolaridad_agresor:
+                    case factor_vulnerabilidad:
+                    case antecedentes_hecho_similar:
                     case numero_victimas_no_fatales_mismo_hecho://nulos se reemplazan por 0, se categoriza a: '0','1','2','3','4 o más'
-                        break;
                     case numero_victimas_fatales_mismo_hecho://nulos se reemplazan por 1, se categoriza a: '1','2','3','4 o más', si es menor a 1 se vuelve 1
+                    case institucion_receptora:
+                    case tipo_regimen:
+                    case zona_conflicto:
+                    case armas_utilizadas:
+                    case recomienda_proteccion:
+                    case trabajo_de_campo:
+                    case grupo_agresor:
                         break;
                     //----------------------------------------------------------
                     //---------- REEMPLAZO POR NO APLICA -----------------------
@@ -1889,30 +2182,39 @@ public class ClosuresMB {
                             System.out.println("Error reglas iniciales tipo de maltrato" + e.getMessage());
                         }
                         break;
+                    case atencion_salud://sivigila_event_public_health                        
+                        connectionJdbcMB.non_query(""//si todos son N  se vuelve null
+                                + " UPDATE " + table
+                                + " SET " + rs.getMetaData().getColumnName(i) + " = null "
+                                + " WHERE "
+                                + rs.getMetaData().getColumnName(i) + "  LIKE 'N-N-N-N-N-N-N' AND estado = 2");
+                        break;
                     //----------------------------------------------------------
                     //---------- RELACIONES CATEGORICAS CON REMPLAZO -----------
                     //----------------------------------------------------------
                     case uso_de_alcohol://NO SE SABE(9)
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '9' ) AND estado = 2");
-                        break;
                     case uso_de_drogas://NO SE SABE(9) A IMPUTAR CONVIERTO EN NULO
+                    case presencia_alcohol_agresor:
+                    case presencia_alcohol_victima:
+                    case lugar_del_hecho://non_fatal_places //9. NO SE SABE                        
+                    case clase_lugar_hecho://places //9. NO SE SABE
+                    case escenario:    //non_fatal_places //9. NO SE SABE                        
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '9' ) AND estado = 2");
                         break;
+
                     case nivel_alcohol_contraparte://'2. SIN DATO'
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '2' ) AND estado = 2");
-                        break;
                     case nivel_alcohol://'2. SIN DATO'
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '2' ) AND estado = 2");
                         break;
+
                     case ocupacion://jobs //'0. SIN DATO'
+                    case ocupacion_victima://jobs //'0. SIN DATO'
+                    case ocupacion_agresor://jobs //'0. SIN DATO'
+                    case cuadrante://quadrants //0. SIN DATO
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '0' ) AND estado = 2");
@@ -1929,11 +2231,7 @@ public class ClosuresMB {
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE " + rs.getMetaData().getColumnName(i) + " LIKE '000001' AND estado = 2");
                         break;
-                    case cuadrante://quadrants //0. SIN DATO
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '0' ) AND estado = 2");
-                        break;
+
                     case actividad://activities //99. NO SE SABE                        
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
@@ -1944,61 +2242,35 @@ public class ClosuresMB {
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '28' ) AND estado = 2");
                         break;
-                    case lugar_del_hecho://non_fatal_places //9. NO SE SABE
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '9' ) AND estado = 2");
-                        break;
-                    case clase_lugar_hecho://places //9. NO SE SABE
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '9' ) AND estado = 2");
-                        break;
+
+
+
                     case contexto_homicidio://murder_contexts   //'1. DESCONOCIDO'
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '1' ) AND estado = 2");
                         break;
+                    case naturaleza_violencia: //abuse_types, 7.SIN DATO
                     case mecanismo_suicidio://suicide_mechanisms //7. SIN DATO                        
+                    case medidas_proteccion://protective_measures //7. SIN DATO
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '7' ) AND estado = 2");
                         break;
-                    case intento_previo_suicidio://boolean3 //3. NO SE SABE
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '3' ) AND estado = 2");
-                        break;
-                    case antecedentes_salud_mental://boolean3 //3. NO SE SABE                        
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '3' ) AND estado = 2");
-                        break;
+
+
                     case eventos_relacionados_con_hecho://related_events //6. SIN DATO
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '6' ) AND estado = 2");
                         break;
                     case clase_accidente://accident_classes //8. SIN DATO
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '8' ) AND estado = 2");
-                        break;
                     case caracteristicas_victima://victim_characteristics //8. SIN DATO
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '8' ) AND estado = 2");
                         break;
-                    case medidas_proteccion://protective_measures //7. SIN DATO
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '7' ) AND estado = 2");
-                        break;
                     case vehiculo_involucrado_victima://involved_vehicles //5. SIN DATO
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '5' ) AND estado = 2");
-                        break;
                     case tipo_servicio_vehiculo_victima://service_types //5. SIN DATO
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
@@ -2014,16 +2286,27 @@ public class ClosuresMB {
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '13' ) AND estado = 2");
                         break;
-                    case tipo_de_usuario://transport_users //9. NO SE SABE
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '9' ) AND estado = 2");
-                        break;
+
                     case antecedentes_previos://boolean3 //3. NO SE SABE
+                    case intento_previo_suicidio://boolean3 //3. NO SE SABE
+                    case antecedentes_salud_mental://boolean3 //3. NO SE SABE                        
+                    case intento_previo://boolean3 //3. NO SE SABE
+                    case antecedentes_mentales://boolean3 //3. NO SE SABE
+                    case convive_con_agresor:
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '3' ) AND estado = 2");
                         break;
+                    case tipo_de_usuario://transport_users //9. NO SE SABE
+                    case relacion_familiar_victima://aggressor_types//9. sin dato
+                    case relacion_no_familiar://sivigila_no_relative //9. sin informacion
+                    case genero_agresor://aggressor_genders //9. NO SE SABE
+                        connectionJdbcMB.non_query(""
+                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
+                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '9' ) AND estado = 2");
+                        break;
+
+
                     case relacion_agresor_victima://relationships_to_victim //4. NO SE SABE
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
@@ -2034,21 +2317,7 @@ public class ClosuresMB {
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
                                 + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '6' ) AND estado = 2");
                         break;
-                    case genero_agresor://aggressor_genders //9. NO SE SABE
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '9' ) AND estado = 2");
-                        break;
-                    case intento_previo://boolean3 //3. NO SE SABE
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '3' ) AND estado = 2");
-                        break;
-                    case antecedentes_mentales://boolean3 //3. NO SE SABE
-                        connectionJdbcMB.non_query(""
-                                + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
-                                + " WHERE (" + rs.getMetaData().getColumnName(i) + " LIKE '3' ) AND estado = 2");
-                        break;
+
                     case factores_precipitantes://precipitating_factors //99. NO SE SABE
                         connectionJdbcMB.non_query(""
                                 + " UPDATE " + table + " SET " + rs.getMetaData().getColumnName(i) + " = null "
@@ -2061,13 +2330,14 @@ public class ClosuresMB {
                         System.out.println("El nombre de columna (" + rs.getMetaData().getColumnName(i) + ") no se procesara");
                 }
             }
-            //se actualiza al estado 3 (se aplico conversion de categorias a nulos Y REGLAS INICIALES)
+            //se actualiza al estado 3 (indica quese aplico conversion de categorias a nulos Y REGLAS INICIALES)
             connectionJdbcMB.non_query(" UPDATE " + table + " SET estado = 3 WHERE estado = 2");
         } catch (Exception e) {
         }
     }
 
-    private void analyzeColumnsOfTableSta(String table) {
+    private ArrayList<AnalysisColumn> analyzeColumnsOfTableSta(String table) {
+        ArrayList<AnalysisColumn> analyzedColumns = new ArrayList<>();
         try {
             //--------------------------------------------------------------------
             //--- REALIZO EL ANALISIS DE CADA COLUMNA
@@ -2076,7 +2346,6 @@ public class ClosuresMB {
             int numColumns;//numero de columnas de la tabla
             String filter, filter2;
             ResultSet rs = connectionJdbcMB.consult("SELECT * FROM " + table + " LIMIT 1");
-            ResultSet rs2;
             numColumns = rs.getMetaData().getColumnCount();//determino cantidad de columnas
             for (int i = 1; i <= numColumns; i++) {//recorro columnas y realizo analisis
                 filter = null;
@@ -2155,6 +2424,33 @@ public class ClosuresMB {
                     case intento_previo:
                     case antecedentes_mentales:
                     case factores_precipitantes:
+                    case institucion_receptora:
+                    case mayor_edad_victima:
+                    case genero_victima:
+                    case grupo_agresor:
+                    case edad_agresor:
+                    case mayor_edad_agresor:
+                    case ocupacion_victima:
+                    case ocupacion_agresor:
+                    case pertenencia_etnica:
+                    case grupo_poblacional:
+                    case escolaridad_victima:
+                    case factor_vulnerabilidad:
+                    case antecedentes_hecho_similar:
+                    case presencia_alcohol_victima:
+                    case presencia_alcohol_agresor:
+                    case tipo_regimen:
+                    case zona_conflicto:
+                    case escenario:
+                    case escolaridad_agresor:
+                    case relacion_familiar_victima:
+                    case relacion_no_familiar:
+                    case convive_con_agresor:
+                    case armas_utilizadas:
+                    case naturaleza_violencia:
+                    case atencion_salud:
+                    case recomienda_proteccion:
+                    case trabajo_de_campo:
                         filter = "";
                         break;
                     case NOVALUE:
@@ -2189,6 +2485,7 @@ public class ClosuresMB {
 
         } catch (Exception e) {
         }
+        return analyzedColumns;
     }
 
     private void insertNonFatalNonIntentionalSta() {
@@ -3775,7 +4072,7 @@ public class ClosuresMB {
                     + "   fatal_injuries.injury_id = 11 AND \n"
                     + "   fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
                     + "   fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
-            System.out.println("\nCONSULTA INSERT\n" + sql + "\n");
+            //System.out.println("\nCONSULTA INSERT\n" + sql + "\n");
             connectionJdbcMB.non_query(sql);//se pasa la información a la tabla           
 
         } catch (Exception e) {
@@ -3793,209 +4090,125 @@ public class ClosuresMB {
             String sql = ""
                     + " INSERT INTO sivigila_sta \n"
                     + " SELECT \n"
-                    + "	non_fatal_injuries.non_fatal_injury_id,\n"
-                    + "	CASE\n"
-                    + "       WHEN ( victim_age between 0 and 4) THEN '0-4'  \n"
-                    + "       WHEN ( victim_age between 5 and 9) THEN '5-9'  \n"
-                    + "       WHEN ( victim_age between 10 and 14) THEN '10-14'  \n"
-                    + "       WHEN ( victim_age between 15 and 19) THEN '15-19'  \n"
-                    + "       WHEN ( victim_age between 20 and 24) THEN '20-24'  \n"
-                    + "       WHEN ( victim_age between 25 and 29) THEN '25-29'  \n"
-                    + "       WHEN ( victim_age between 30 and 34) THEN '30-34'  \n"
-                    + "       WHEN ( victim_age between 35 and 39) THEN '35-39'  \n"
-                    + "       WHEN ( victim_age between 40 and 44) THEN '40-44'  \n"
-                    + "       WHEN ( victim_age between 45 and 49) THEN '45-49'  \n"
-                    + "       WHEN ( victim_age between 50 and 54) THEN '50-54'  \n"
-                    + "       WHEN ( victim_age between 55 and 59) THEN '55-59'  \n"
-                    + "       WHEN ( victim_age between 60 and 64) THEN '60-64'  \n"
-                    + "       WHEN ( victim_age >= 65) THEN '65+'  \n"
-                    + "  END AS edad_victima,\n"
-                    + "  CASE\n"
-                    + "       WHEN ( victim_age <= 17) THEN 'MENOR'  \n"
-                    + "       WHEN ( victim_age >= 18) THEN 'MAYOR'  \n"
-                    + "  END AS mayor_edad,"
-                    + "	burn_injury_degree,\n"
-                    + "	burn_injury_percentage,\n"
-                    + "	victims.gender_id,\n"
-                    + "	victims.job_id,\n"
-                    + "	victims.victim_neighborhood_id,\n"
-                    + "	victims.ethnic_group_id,\n"
-                    + "	victims.insurance_id,	\n"
-                    + "	--(SELECT cast(array_agg(vulnerable_group_id) as text ) FROM victim_vulnerable_group WHERE victim_vulnerable_group.victim_id=victims.victim_id ) as grupo_vulnerable2 ,	\n"
-                    + "	 CASE (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id AND vulnerable_group_id = 1) \n"
-                    + "	       WHEN '1' THEN 'S'  \n"
-                    + "	       ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id AND vulnerable_group_id = 2) \n"
-                    + "	       WHEN '2' THEN 'S'  \n"
-                    + "	       ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id AND vulnerable_group_id = 3) \n"
-                    + "	       WHEN '3' THEN 'S'  \n"
-                    + "	       ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id AND vulnerable_group_id = 4) \n"
-                    + "	       WHEN '4' THEN 'S'  \n"
-                    + "	       ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id AND vulnerable_group_id = 5) \n"
-                    + "	       WHEN '5' THEN 'S'  \n"
-                    + "	       ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id AND vulnerable_group_id = 6) \n"
-                    + "	       WHEN '6' THEN 'S'  \n"
-                    + "	       ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id AND vulnerable_group_id = 13) \n"
-                    + "	       WHEN '13' THEN 'S'  \n"
-                    + "	       ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id AND vulnerable_group_id = 14) \n"
-                    + "	       WHEN '14' THEN 'S'  \n"
-                    + "	       ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id AND vulnerable_group_id = 16) \n"
-                    + "	       WHEN '16' THEN 'S'  \n"
-                    + "	       ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id AND vulnerable_group_id = 98) \n"
-                    + "	       WHEN '98' THEN 'S'  \n"
-                    + "	       ELSE 'N'\n"
-                    + "	 END AS grupo_vulnerable,	  \n"
-                    + "	 checkup_date,\n"
-                    + "	 checkup_time,\n"
-                    + "	 injury_date,\n"
-                    + "	 injury_time,\n"
-                    + "	 non_fatal_injuries.injury_neighborhood_id,\n"
-                    + "	 non_fatal_injuries.quadrant_id,\n"
-                    + "	 non_fatal_injuries.non_fatal_data_source_id,\n"
-                    + "	 non_fatal_injuries.activity_id,\n"
-                    + "	 non_fatal_injuries.mechanism_id,\n"
-                    + "	 non_fatal_injuries.injury_place_id,\n"
-                    + "	 non_fatal_injuries.use_alcohol_id,	  \n"
-                    + "	 non_fatal_injuries.use_drugs_id,\n"
-                    + "	 non_fatal_injuries.destination_patient_id,	  	 \n"
-                    + "	 (SELECT diagnosis_id FROM non_fatal_diagnosis WHERE non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id LIMIT 1) AS cie_1,	  	 \n"
-                    + "	 (SELECT diagnosis_id FROM non_fatal_diagnosis WHERE non_fatal_injury_id = non_fatal_injuries.non_fatal_injury_id LIMIT 1 OFFSET 1) AS cie_2,\n"
-                    + "	 --(SELECT cast(array_agg(anatomical_location_id) as text ) FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id ) as sitio_anatomico,\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=1) \n"
-                    + "	    WHEN '1' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=2) \n"
-                    + "	    WHEN '2' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=3) \n"
-                    + "	    WHEN '3' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=4) \n"
-                    + "	    WHEN '4' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=5) \n"
-                    + "	    WHEN '5' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=6) \n"
-                    + "	    WHEN '6' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=7) \n"
-                    + "	    WHEN '7' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=8) \n"
-                    + "	    WHEN '8' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "         CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=9) \n"
-                    + "	    WHEN '9' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=10) \n"
-                    + "	    WHEN '10' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=11) \n"
-                    + "	    WHEN '11' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=98) \n"
-                    + "	    WHEN '98' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT anatomical_location_id FROM non_fatal_anatomical_location	 \n"
-                    + "	WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_anatomical_location.non_fatal_injury_id AND anatomical_location_id=99) \n"
-                    + "	    WHEN '99' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END AS sitio_anatomico,\n"
-                    + "	 --(SELECT cast(array_agg(kind_injury_id) as text ) FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id ) as naturaleza_lesion,\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=1) \n"
-                    + "	    WHEN '1' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=2) \n"
-                    + "	    WHEN '2' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=3) \n"
-                    + "	    WHEN '3' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=4) \n"
-                    + "	    WHEN '4' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=5) \n"
-                    + "	    WHEN '5' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=6) \n"
-                    + "	    WHEN '6' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=7) \n"
-                    + "	    WHEN '7' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=8) \n"
-                    + "	    WHEN '8' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=9) \n"
-                    + "	    WHEN '9' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=98) \n"
-                    + "	    WHEN '98' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END ||'-'||\n"
-                    + "	 CASE (SELECT kind_injury_id FROM non_fatal_kind_of_injury WHERE non_fatal_injuries.non_fatal_injury_id = non_fatal_kind_of_injury.non_fatal_injury_id AND kind_injury_id=99) \n"
-                    + "	    WHEN '99' THEN 'S'  \n"
-                    + "	    ELSE 'N'\n"
-                    + "	 END AS naturaleza_lesion,\n"
-                    + "	 \n"
-                    + "	 '2'::int as estado\n"
-                    + "   FROM \n"
-                    + "       non_fatal_injuries, victims \n"
-                    + "   WHERE  \n"
-                    + "       non_fatal_injuries.injury_id = 56 AND \n"
-                    + "       non_fatal_injuries.victim_id = victims.victim_id AND \n"
-                    //+ "   non_fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
-                    //+ "   non_fatal_injuries.injury_date <= to_date('01/01/2014','dd/MM/yyyy') ";
-                    + "       non_fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
-                    + "       non_fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
+                    + "   non_fatal_injuries.non_fatal_injury_id,\n"
+                    + "   non_fatal_injuries.non_fatal_data_source_id as institucion_receptora,\n"
+                    + "   CASE\n"
+                    + "     WHEN ( victim_age between 0 and 4) THEN '0-4'  \n"
+                    + "     WHEN ( victim_age between 5 and 9) THEN '5-9'  \n"
+                    + "     WHEN ( victim_age between 10 and 14) THEN '10-14'  \n"
+                    + "     WHEN ( victim_age between 15 and 19) THEN '15-19'  \n"
+                    + "     WHEN ( victim_age between 20 and 24) THEN '20-24'  \n"
+                    + "     WHEN ( victim_age between 25 and 29) THEN '25-29'  \n"
+                    + "     WHEN ( victim_age between 30 and 34) THEN '30-34'  \n"
+                    + "     WHEN ( victim_age between 35 and 39) THEN '35-39'  \n"
+                    + "     WHEN ( victim_age between 40 and 44) THEN '40-44'  \n"
+                    + "     WHEN ( victim_age between 45 and 49) THEN '45-49'  \n"
+                    + "     WHEN ( victim_age between 50 and 54) THEN '50-54'  \n"
+                    + "     WHEN ( victim_age between 55 and 59) THEN '55-59'  \n"
+                    + "     WHEN ( victim_age between 60 and 64) THEN '60-64'  \n"
+                    + "     WHEN ( victim_age >= 65) THEN '65+'  \n"
+                    + "   END AS edad_victima,\n"
+                    + "   CASE\n"
+                    + "     WHEN ( victim_age <= 17) THEN 'MENOR'  \n"
+                    + "     WHEN ( victim_age >= 18) THEN 'MAYOR'  \n"
+                    + "   END AS mayor_edad_victima,\n"
+                    + "   victims.gender_id as genero_victima,\n"
+                    + "   victims.job_id as ocupacion_victima,\n"
+                    + "   victims.insurance_id as aseguradora,	\n"
+                    + "   victims.ethnic_group_id as pertenencia_etnica,\n"
+                    + "   --(SELECT cast(array_agg(vulnerable_group_id) as text ) FROM victim_vulnerable_group WHERE victim_vulnerable_group.victim_id=victims.victim_id ) as grupo_poblacional2 ,\n"
+                    + "   (SELECT vulnerable_group_id FROM victim_vulnerable_group WHERE victims.victim_id = victim_vulnerable_group.victim_id LIMIT 1) as grupo_poblacional,   \n"
+                    + "   sivigila_victim.educational_level_id as escolaridad_victima,\n"
+                    + "   sivigila_victim.vulnerability_id as factor_vulnerabilidad,\n"
+                    + "   sivigila_victim.antecedent as antecedentes_hecho_similar,\n"
+                    + "   non_fatal_injuries.use_alcohol_id as presencia_alcohol_victima,\n"
+                    + "   sivigila_victim.health_category as tipo_regimen,\n"
+                    + "   non_fatal_injuries.injury_neighborhood_id as barrio_evento,\n"
+                    + "   sivigila_event.conflict_zone as zona_conflicto,\n"
+                    + "   non_fatal_injuries.injury_date as fecha_evento,\n"
+                    + "   non_fatal_injuries.injury_time as hora_evento,\n"
+                    + "   non_fatal_injuries.checkup_date as fecha_consulta,\n"
+                    + "   non_fatal_injuries.checkup_time as hora_consulta,\n"
+                    + "   non_fatal_injuries.injury_place_id as escenario,\n"
+                    + "   CASE\n"
+                    + "     WHEN ( sivigila_aggresor.age between 0 and 4) THEN '0-4'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 5 and 9) THEN '5-9'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 10 and 14) THEN '10-14'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 15 and 19) THEN '15-19'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 20 and 24) THEN '20-24'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 25 and 29) THEN '25-29'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 30 and 34) THEN '30-34'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 35 and 39) THEN '35-39'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 40 and 44) THEN '40-44'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 45 and 49) THEN '45-49'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 50 and 54) THEN '50-54'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 55 and 59) THEN '55-59'  \n"
+                    + "     WHEN ( sivigila_aggresor.age between 60 and 64) THEN '60-64'  \n"
+                    + "     WHEN ( sivigila_aggresor.age >= 65) THEN '65+'  \n"
+                    + "   END AS edad_agresor,\n"
+                    + "   CASE\n"
+                    + "     WHEN ( sivigila_aggresor.age <= 17) THEN 'MENOR'  \n"
+                    + "     WHEN ( sivigila_aggresor.age >= 18) THEN 'MAYOR'  \n"
+                    + "   END AS mayor_edad_agresor,   \n"
+                    + "   sivigila_aggresor.gender as genero_agresor,\n"
+                    + "   sivigila_aggresor.occupation as ocupacion_agresor,\n"
+                    + "   sivigila_aggresor.educational_level_id as escolaridad_agresor,\n"
+                    + "   sivigila_aggresor.relative_id as relacion_familiar_victima,\n"
+                    + "   sivigila_aggresor.live_together as convive_con_agresor,\n"
+                    + "   sivigila_aggresor.no_relative_id as relacion_no_familiar,\n"
+                    + "   sivigila_aggresor.group_id as grupo_agresor,\n"
+                    + "   sivigila_aggresor.alcohol_or_drugs as presencia_alcohol_agresor,\n"
+                    + "   sivigila_event.mechanism_id as armas_utilizadas,\n"
+                    + "   --(SELECT cast(array_agg(abuse_type_id) as text ) FROM domestic_violence_abuse_type WHERE domestic_violence_abuse_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) as naturaleza_violencia2 ,\n"
+                    + "   (SELECT abuse_type_id FROM domestic_violence_abuse_type WHERE domestic_violence_abuse_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id LIMIT 1) as naturaleza_violencia,   \n"
+                    + "   --(SELECT cast(array_agg(action_id) as text ) FROM sivigila_event_public_health WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) as atencionsalud2 ,	\n"
+                    + "   CASE (SELECT action_id FROM sivigila_event_public_health WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id AND action_id = 1) \n"
+                    + "       WHEN '1' THEN 'S'  \n"
+                    + "       ELSE 'N'\n"
+                    + "   END ||'-'||\n"
+                    + "   CASE (SELECT action_id FROM sivigila_event_public_health WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id AND action_id = 2) \n"
+                    + "       WHEN '2' THEN 'S'  \n"
+                    + "       ELSE 'N'\n"
+                    + "   END ||'-'||\n"
+                    + "   CASE (SELECT action_id FROM sivigila_event_public_health WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id AND action_id = 3) \n"
+                    + "       WHEN '3' THEN 'S'  \n"
+                    + "       ELSE 'N'\n"
+                    + "   END ||'-'||\n"
+                    + "   CASE (SELECT action_id FROM sivigila_event_public_health WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id AND action_id = 4) \n"
+                    + "       WHEN '4' THEN 'S'  \n"
+                    + "       ELSE 'N'\n"
+                    + "   END ||'-'||\n"
+                    + "   CASE (SELECT action_id FROM sivigila_event_public_health WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id AND action_id = 5) \n"
+                    + "       WHEN '5' THEN 'S'  \n"
+                    + "       ELSE 'N'\n"
+                    + "   END ||'-'||\n"
+                    + "   CASE (SELECT action_id FROM sivigila_event_public_health WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id AND action_id = 6) \n"
+                    + "       WHEN '6' THEN 'S'  \n"
+                    + "       ELSE 'N'\n"
+                    + "   END ||'-'||\n"
+                    + "   CASE (SELECT action_id FROM sivigila_event_public_health WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id AND action_id = 7) \n"
+                    + "       WHEN '7' THEN 'S'  \n"
+                    + "       ELSE 'N'\n"
+                    + "   END as atencion_salud,\n"
+                    + "   sivigila_event.recommended_protection as recomienda_proteccion,\n"
+                    + "   sivigila_event.further_fieldwork as trabajo_de_campo,	   \n"
+                    + "   '2'::int as estado\n"
+                    + " FROM \n"
+                    + "   non_fatal_injuries\n"
+                    + "   LEFT JOIN non_fatal_domestic_violence USING (non_fatal_injury_id)\n"
+                    + "   JOIN victims USING (victim_id)\n"
+                    + "   JOIN sivigila_event USING (non_fatal_injury_id)\n"
+                    + "   JOIN sivigila_aggresor USING (sivigila_agresor_id)\n"
+                    + "   JOIN sivigila_victim USING (sivigila_victim_id)\n"
+                    + " WHERE\n"
+                    + "   injury_id = 56   AND"
+                    + "   non_fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
+                    + "   non_fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
             //System.out.println("\nCONSULTA INSERT\n" + sql + "\n");
             connectionJdbcMB.non_query(sql);//se pasa la información a la tabla           
 
         } catch (Exception e) {
         }
-    }
-
-    public void changeVariableData() {
-        outputTextAnalysis = variablesData[currentVariableData].getDescription();
     }
 
     private String determineModeColumnWhitOutCache(String table, String column, String filter) {
@@ -4390,28 +4603,84 @@ public class ClosuresMB {
         this.endDate = endDate;
     }
 
-    public String getCurrentInjuryName() {
-        return currentInjuryName;
+    public String getOutputTextAnalysisFatalInjuryMurder() {
+        return outputTextAnalysisFatalInjuryMurder;
     }
 
-    public void setCurrentInjuryName(String currentInjuryName) {
-        this.currentInjuryName = currentInjuryName;
+    public void setOutputTextAnalysisFatalInjuryMurder(String outputTextAnalysisFatalInjuryMurder) {
+        this.outputTextAnalysisFatalInjuryMurder = outputTextAnalysisFatalInjuryMurder;
     }
 
-    public String getOutputTextAnalysis() {
-        return outputTextAnalysis;
+    public String getOutputTextAnalysisFatalInjuryTraffic() {
+        return outputTextAnalysisFatalInjuryTraffic;
     }
 
-    public void setOutputTextAnalysis(String outputTextAnalysis) {
-        this.outputTextAnalysis = outputTextAnalysis;
+    public void setOutputTextAnalysisFatalInjuryTraffic(String outputTextAnalysisFatalInjuryTraffic) {
+        this.outputTextAnalysisFatalInjuryTraffic = outputTextAnalysisFatalInjuryTraffic;
     }
 
-    public String getOutputTextImputation() {
-        return outputTextImputation;
+    public String getOutputTextAnalysisFatalInjurySuicide() {
+        return outputTextAnalysisFatalInjurySuicide;
     }
 
-    public void setOutputTextImputation(String outputTextImputation) {
-        this.outputTextImputation = outputTextImputation;
+    public void setOutputTextAnalysisFatalInjurySuicide(String outputTextAnalysisFatalInjurySuicide) {
+        this.outputTextAnalysisFatalInjurySuicide = outputTextAnalysisFatalInjurySuicide;
+    }
+
+    public String getOutputTextAnalysisFatalInjuryAccident() {
+        return outputTextAnalysisFatalInjuryAccident;
+    }
+
+    public void setOutputTextAnalysisFatalInjuryAccident(String outputTextAnalysisFatalInjuryAccident) {
+        this.outputTextAnalysisFatalInjuryAccident = outputTextAnalysisFatalInjuryAccident;
+    }
+
+    public String getOutputTextAnalysisNonFatalInterpersonal() {
+        return outputTextAnalysisNonFatalInterpersonal;
+    }
+
+    public void setOutputTextAnalysisNonFatalInterpersonal(String outputTextAnalysisNonFatalInterpersonal) {
+        this.outputTextAnalysisNonFatalInterpersonal = outputTextAnalysisNonFatalInterpersonal;
+    }
+
+    public String getOutputTextAnalysisNonFatalNonIntentional() {
+        return outputTextAnalysisNonFatalNonIntentional;
+    }
+
+    public void setOutputTextAnalysisNonFatalNonIntentional(String outputTextAnalysisNonFatalNonIntentional) {
+        this.outputTextAnalysisNonFatalNonIntentional = outputTextAnalysisNonFatalNonIntentional;
+    }
+
+    public String getOutputTextAnalysisNonFatalSelfInflicted() {
+        return outputTextAnalysisNonFatalSelfInflicted;
+    }
+
+    public void setOutputTextAnalysisNonFatalSelfInflicted(String outputTextAnalysisNonFatalSelfInflicted) {
+        this.outputTextAnalysisNonFatalSelfInflicted = outputTextAnalysisNonFatalSelfInflicted;
+    }
+
+    public String getOutputTextAnalysisNonFatalTransport() {
+        return outputTextAnalysisNonFatalTransport;
+    }
+
+    public void setOutputTextAnalysisNonFatalTransport(String outputTextAnalysisNonFatalTransport) {
+        this.outputTextAnalysisNonFatalTransport = outputTextAnalysisNonFatalTransport;
+    }
+
+    public String getOutputTextAnalysisNonFatalDomesticViolence() {
+        return outputTextAnalysisNonFatalDomesticViolence;
+    }
+
+    public void setOutputTextAnalysisNonFatalDomesticViolence(String outputTextAnalysisNonFatalDomesticViolence) {
+        this.outputTextAnalysisNonFatalDomesticViolence = outputTextAnalysisNonFatalDomesticViolence;
+    }
+
+    public String getOutputTextAnalysisSivigila() {
+        return outputTextAnalysisSivigila;
+    }
+
+    public void setOutputTextAnalysisSivigila(String outputTextAnalysisSivigila) {
+        this.outputTextAnalysisSivigila = outputTextAnalysisSivigila;
     }
 
     public String getOutputTextStoreData() {
@@ -4588,5 +4857,165 @@ public class ClosuresMB {
 
     public void setRenderedAnalysisSivigila(boolean renderedAnalysisSivigila) {
         this.renderedAnalysisSivigila = renderedAnalysisSivigila;
+    }
+
+    public String getOutputTextImputationFatalInjuryMurder() {
+        return outputTextImputationFatalInjuryMurder;
+    }
+
+    public void setOutputTextImputationFatalInjuryMurder(String outputTextImputationFatalInjuryMurder) {
+        this.outputTextImputationFatalInjuryMurder = outputTextImputationFatalInjuryMurder;
+    }
+
+    public String getOutputTextImputationFatalInjuryTraffic() {
+        return outputTextImputationFatalInjuryTraffic;
+    }
+
+    public void setOutputTextImputationFatalInjuryTraffic(String outputTextImputationFatalInjuryTraffic) {
+        this.outputTextImputationFatalInjuryTraffic = outputTextImputationFatalInjuryTraffic;
+    }
+
+    public String getOutputTextImputationFatalInjurySuicide() {
+        return outputTextImputationFatalInjurySuicide;
+    }
+
+    public void setOutputTextImputationFatalInjurySuicide(String outputTextImputationFatalInjurySuicide) {
+        this.outputTextImputationFatalInjurySuicide = outputTextImputationFatalInjurySuicide;
+    }
+
+    public String getOutputTextImputationFatalInjuryAccident() {
+        return outputTextImputationFatalInjuryAccident;
+    }
+
+    public void setOutputTextImputationFatalInjuryAccident(String outputTextImputationFatalInjuryAccident) {
+        this.outputTextImputationFatalInjuryAccident = outputTextImputationFatalInjuryAccident;
+    }
+
+    public String getOutputTextImputationNonFatalInterpersonal() {
+        return outputTextImputationNonFatalInterpersonal;
+    }
+
+    public void setOutputTextImputationNonFatalInterpersonal(String outputTextImputationNonFatalInterpersonal) {
+        this.outputTextImputationNonFatalInterpersonal = outputTextImputationNonFatalInterpersonal;
+    }
+
+    public String getOutputTextImputationNonFatalNonIntentional() {
+        return outputTextImputationNonFatalNonIntentional;
+    }
+
+    public void setOutputTextImputationNonFatalNonIntentional(String outputTextImputationNonFatalNonIntentional) {
+        this.outputTextImputationNonFatalNonIntentional = outputTextImputationNonFatalNonIntentional;
+    }
+
+    public String getOutputTextImputationNonFatalSelfInflicted() {
+        return outputTextImputationNonFatalSelfInflicted;
+    }
+
+    public void setOutputTextImputationNonFatalSelfInflicted(String outputTextImputationNonFatalSelfInflicted) {
+        this.outputTextImputationNonFatalSelfInflicted = outputTextImputationNonFatalSelfInflicted;
+    }
+
+    public String getOutputTextImputationNonFatalTransport() {
+        return outputTextImputationNonFatalTransport;
+    }
+
+    public void setOutputTextImputationNonFatalTransport(String outputTextImputationNonFatalTransport) {
+        this.outputTextImputationNonFatalTransport = outputTextImputationNonFatalTransport;
+    }
+
+    public String getOutputTextImputationNonFatalDomesticViolence() {
+        return outputTextImputationNonFatalDomesticViolence;
+    }
+
+    public void setOutputTextImputationNonFatalDomesticViolence(String outputTextImputationNonFatalDomesticViolence) {
+        this.outputTextImputationNonFatalDomesticViolence = outputTextImputationNonFatalDomesticViolence;
+    }
+
+    public String getOutputTextImputationSivigila() {
+        return outputTextImputationSivigila;
+    }
+
+    public void setOutputTextImputationSivigila(String outputTextImputationSivigila) {
+        this.outputTextImputationSivigila = outputTextImputationSivigila;
+    }
+
+    public boolean isRenderedImputationFatalInjuryMurder() {
+        return renderedImputationFatalInjuryMurder;
+    }
+
+    public void setRenderedImputationFatalInjuryMurder(boolean renderedImputationFatalInjuryMurder) {
+        this.renderedImputationFatalInjuryMurder = renderedImputationFatalInjuryMurder;
+    }
+
+    public boolean isRenderedImputationFatalInjuryTraffic() {
+        return renderedImputationFatalInjuryTraffic;
+    }
+
+    public void setRenderedImputationFatalInjuryTraffic(boolean renderedImputationFatalInjuryTraffic) {
+        this.renderedImputationFatalInjuryTraffic = renderedImputationFatalInjuryTraffic;
+    }
+
+    public boolean isRenderedImputationFatalInjurySuicide() {
+        return renderedImputationFatalInjurySuicide;
+    }
+
+    public void setRenderedImputationFatalInjurySuicide(boolean renderedImputationFatalInjurySuicide) {
+        this.renderedImputationFatalInjurySuicide = renderedImputationFatalInjurySuicide;
+    }
+
+    public boolean isRenderedImputationFatalInjuryAccident() {
+        return renderedImputationFatalInjuryAccident;
+    }
+
+    public void setRenderedImputationFatalInjuryAccident(boolean renderedImputationFatalInjuryAccident) {
+        this.renderedImputationFatalInjuryAccident = renderedImputationFatalInjuryAccident;
+    }
+
+    public boolean isRenderedImputationNonFatalInterpersonal() {
+        return renderedImputationNonFatalInterpersonal;
+    }
+
+    public void setRenderedImputationNonFatalInterpersonal(boolean renderedImputationNonFatalInterpersonal) {
+        this.renderedImputationNonFatalInterpersonal = renderedImputationNonFatalInterpersonal;
+    }
+
+    public boolean isRenderedImputationNonFatalNonIntentional() {
+        return renderedImputationNonFatalNonIntentional;
+    }
+
+    public void setRenderedImputationNonFatalNonIntentional(boolean renderedImputationNonFatalNonIntentional) {
+        this.renderedImputationNonFatalNonIntentional = renderedImputationNonFatalNonIntentional;
+    }
+
+    public boolean isRenderedImputationNonFatalSelfInflicted() {
+        return renderedImputationNonFatalSelfInflicted;
+    }
+
+    public void setRenderedImputationNonFatalSelfInflicted(boolean renderedImputationNonFatalSelfInflicted) {
+        this.renderedImputationNonFatalSelfInflicted = renderedImputationNonFatalSelfInflicted;
+    }
+
+    public boolean isRenderedImputationNonFatalTransport() {
+        return renderedImputationNonFatalTransport;
+    }
+
+    public void setRenderedImputationNonFatalTransport(boolean renderedImputationNonFatalTransport) {
+        this.renderedImputationNonFatalTransport = renderedImputationNonFatalTransport;
+    }
+
+    public boolean isRenderedImputationNonFatalDomesticViolence() {
+        return renderedImputationNonFatalDomesticViolence;
+    }
+
+    public void setRenderedImputationNonFatalDomesticViolence(boolean renderedImputationNonFatalDomesticViolence) {
+        this.renderedImputationNonFatalDomesticViolence = renderedImputationNonFatalDomesticViolence;
+    }
+
+    public boolean isRenderedImputationSivigila() {
+        return renderedImputationSivigila;
+    }
+
+    public void setRenderedImputationSivigila(boolean renderedImputationSivigila) {
+        this.renderedImputationSivigila = renderedImputationSivigila;
     }
 }

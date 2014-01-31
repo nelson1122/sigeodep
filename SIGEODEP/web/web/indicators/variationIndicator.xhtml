@@ -11,47 +11,7 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
-            <script>
-                fnAdjustTable = function() {
-                    var colCount = $('#firstTr>td').length; //get total number of column
-                    var m = 0;
-                    var n = 0;
-                    var brow = 'mozilla';
-                    jQuery.each(jQuery.browser, function(i, val) {
-                        if (val === true) {
-                            brow = i.toString();
-                        }
-                    });
-
-                    $('.tableHeader').each(function(i) {
-                        if (colCount > m) {
-                            if (brow === 'mozilla') {
-                                $('#firstTd').css("width", $('.tableFirstCol').innerWidth());//for adjusting first td
-                                $(this).css('width', $('#table_div td:eq(' + m + ')').innerWidth());//for assigning width to table Header div
-                            } else if (brow === 'msie') {
-                                $('#firstTd').css("width", $('.tableFirstCol').width());
-                                $(this).css('width', $('#table_div td:eq(' + m + ')').width() - 2);//In IE there is difference of 2 px
-                            } else if (brow === 'safari') {
-                                $('#firstTd').css("width", $('.tableFirstCol').width());
-                                $(this).css('width', $('#table_div td:eq(' + m + ')').width());
-                            } else {
-                                $('#firstTd').css("width", $('.tableFirstCol').width());
-                                $(this).css('width', $('#table_div td:eq(' + m + ')').innerWidth());
-                            }
-                        }
-                        m++;
-                    });
-                    $('.tableFirstCol').each(function(i) {
-                        if (brow === 'mozilla') {
-                            $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').outerHeight());//for providing height using scrollable table column height
-                        } else if (brow === 'msie') {
-                            $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').innerHeight() - 2);
-                        } else {
-                            $(this).css('height', $('#table_div td:eq(' + colCount * n + ')').height());
-                        }
-                        n++;
-                    });
-                };
+            <script>                
                 //function to support scrolling of title and first column
                 fnScroll = function() {
                     $('#divHeader').scrollLeft($('#table_div').scrollLeft());
@@ -59,7 +19,6 @@
                 };
                 function showTableResult() {
                     document.getElementById('IdTabView:IdForm:IdPaint').click();
-                    fnAdjustTable();
                 }
             </script>  
         </ui:define>
@@ -258,22 +217,17 @@
                                 onclick="pageInactive();"
                                 update="IdImageChart IdDataTableHtml IdPanelGraphConfig IdBtnExport">
                             </p:commandButton> 
-
                             <p:commandButton
                                 id="IdPaint"
                                 value="paint"
                                 actionListener="#{indicatorsVariationMB.showMessage}"
                                 update=":IdTabView:IdForm:message"                                                                                                    
-
                                 style="display: none;">
                                 <f:ajax 
                                     event="blur"
                                     listener="#{indicatorsVariationMB.createImage}"
-
                                     render="IdImageChart"/>
                             </p:commandButton>
-
-
                             <br/>
                             <br/>
                         </p:fieldset>
@@ -283,13 +237,18 @@
                             <br/>
                             <h:outputText 
                                 id="IdDataTableHtml"
-                                value="#{indicatorsVariationMB.dataTableHtmlA}" 
+                                value="#{indicatorsVariationMB.dataTableHtml}" 
                                 escape="false"/>                                  
                             <br/>
                             <p:dataTable id="IdOutFile" style="display: none" >
                                 <p:column>                                                  
                                 </p:column>
                             </p:dataTable>
+                            <p:commandButton                                 
+                                icon="ui-icon-transferthick-e-w"
+                                actionListener="#{indicatorsVariationMB.invertMatrixClick}"
+                                oncomplete="showTableResult();"  
+                                update="IdDataTableHtml"/> 
                             <h:commandLink id="IdBtnExport" disabled="#{indicatorsVariationMB.btnExportDisabled}">  
                                 <p:button  value="Exportar datos" />                                
                                 <p:dataExporter type="xls" target="IdOutFile" fileName="salida" postProcessor="#{indicatorsVariationMB.postProcessXLS}"/>  

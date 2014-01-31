@@ -184,7 +184,7 @@ public class LoginMB {
          * funcion exclusiva cuando accede el usuario santos
          * sirve para administracion del sistema
          */
-        int accion = 2;
+        int accion = 0;
         if (accion == 2) {
             int count=0;
             try {
@@ -220,11 +220,11 @@ public class LoginMB {
                             + " SET "
                             + " victim_nid = " + pos + ", "
                             + " victim_name = '" + pos + "',"
-                            + " victim_address = '" + pos + "'"
+                            + " victim_address = '" + pos + "',"
+                            + " victim_telephone = '" + pos + "'"
                             + " WHERE"
                             + " victim_id = " + rs.getString("victim_id"));
                     System.out.println(pos);
-
                     pos++;
                     //break;
                 }
@@ -506,7 +506,7 @@ public class LoginMB {
          * determinar si el usuario puede acceder al sistema determinando si exite
          * el login, clave y la cuenta esta activa
          */
-        closeSessionDialog = "";
+        closeSessionDialog = "a";
         password = stringEncryption.getStringMessageDigest(password, "SHA-1");
         currentUser = usersFacade.findUser(loginname, password);
         userSystem = true;//es usuario del sistema (no es usuario invitado)

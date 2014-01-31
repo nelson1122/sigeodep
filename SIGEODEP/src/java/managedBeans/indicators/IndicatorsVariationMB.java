@@ -102,6 +102,7 @@ public class IndicatorsVariationMB {
     private String endDateStrA = "";
     private String initialDateStrB = "";
     private String endDateStrB = "";
+    private boolean invertMatrix = true;
     private Calendar c1A = Calendar.getInstance();
     private Calendar c2A = Calendar.getInstance();
     private Calendar c1B = Calendar.getInstance();
@@ -121,8 +122,8 @@ public class IndicatorsVariationMB {
     private String firstVariablesCrossSelected = null;
     private String initialValue = "";
     private String endValue = "";
-    private String dataTableHtmlA;
-    private String dataTableHtmlB;
+    private String dataTableHtml;
+    
     private String dataTableHtmlDiference;
     private String sql = "";
     private String[] headers2;//CABECERA 2 CUANDO EL CRUCE SE REALIZA SOBRE 3 VARIABLES
@@ -587,7 +588,7 @@ public class IndicatorsVariationMB {
             createMatrixDifference();//matriz de resultados diferencia
         }
         if (continueProcess) {
-            dataTableHtmlA = createDataTableResult();
+            dataTableHtml = createDataTableResult();
             loadValuesGraph();//creo el grafico
             btnExportDisabled = false;
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
@@ -2217,8 +2218,8 @@ public class IndicatorsVariationMB {
             variablesList.add(variablesListData.get(i).getName());
         }
         //dynamicDataTableGroup = new OutputPanel();//creo el panel grid
-        dataTableHtmlA = "";
-        dataTableHtmlB = "";
+        dataTableHtml = "";
+        
         dataTableHtmlDiference = "";
         chartImage = null;
         variablesCrossList = new ArrayList<>();//SelectItem[variablesListData.size()];
@@ -2687,8 +2688,7 @@ public class IndicatorsVariationMB {
 
         //-------------------------------------------------------------------
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
-        //-------------------------------------------------------------------      
-        //rowNames.add("Totales");  
+        //-------------------------------------------------------------------              
         for (int j = 0; j < rowNames.size(); j++) {
             fila = sheet.createRow(posRow);
             posRow++;
@@ -2724,8 +2724,26 @@ public class IndicatorsVariationMB {
         }
     }
 
-    private String createDataTableResult() {
+    
+    public void invertMatrixClick() {
+        if (invertMatrix) {
+            invertMatrix = false;
+        } else {
+            invertMatrix = true;
+        }
+        if (dataTableHtml != null && dataTableHtml.length() != 0) {
+            dataTableHtml = createDataTableResult();
+        }
+    }
 
+    private String verticalResult() {
+        
+        String strReturn = " ";
+        
+        return strReturn;
+    }
+    private String horizontalResult() {
+        
         headers1 = new ArrayList<>();
         headers2 = new String[columNamesFinal.size()];
         String height = "height:20px;";
@@ -2736,7 +2754,7 @@ public class IndicatorsVariationMB {
         String strReturn = " ";
         strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
         strReturn = strReturn + "            <tr>\r\n";
-        strReturn = strReturn + "                <td id=\"firstTd\" >\r\n";
+        strReturn = strReturn + "                <td>\r\n";
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td class=\"ui-widget-header\">\r\n";
         //-------------------------------------------------------------------
@@ -2750,7 +2768,7 @@ public class IndicatorsVariationMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < columNamesFinal.size(); i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(columNamesFinal.get(i)) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(columNamesFinal.get(i)) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2781,7 +2799,7 @@ public class IndicatorsVariationMB {
             strReturn = strReturn + "                            <tr>\r\n";
             for (int i = 0; i < headers1.size(); i++) {
                 strReturn = strReturn + "                                <td colspan=\"" + headers1.get(i).getColumns() + "\">\r\n";
-                strReturn = strReturn + "                                    <div >" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2789,7 +2807,7 @@ public class IndicatorsVariationMB {
             //AGREGO LA CABECERA 2 A El PANEL_GRID
             for (int i = 0; i < headers2.length; i++) {
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div class=\"tableHeader\" style=\"width:150px;\">" + determineHeader(headers2[i]) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(headers2[i]) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2808,9 +2826,8 @@ public class IndicatorsVariationMB {
         for (int j = 0; j < rowNames.size(); j++) {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
-            strReturn = strReturn + "                            <tr>\r\n";
-            //strReturn = strReturn + "                                <td class=\"tableFirstCol\">" + determineHeader(rowNames.get(j)) + "</td>\r\n";
-            strReturn = strReturn + "                                <td ><div style=\"overflow:hidden; " + height + " width:200px; \">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
+            strReturn = strReturn + "                            <tr>\r\n";            
+            strReturn = strReturn + "                                <td ><div style=\"overflow:hidden; " + height + " width:200px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
         strReturn = strReturn + "                        </table>\r\n";
@@ -2826,7 +2843,7 @@ public class IndicatorsVariationMB {
         //AGREGO LOS REGISTROS DE LA MATRIZ
         for (int j = 0; j < rowNames.size(); j++) {//-1 por que le agrege "TOTALES"
             if (j == 0) {
-                strReturn = strReturn + "                            <tr " + getColorType() + " id='firstTr'>\r\n";
+                strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             } else {
                 strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             }
@@ -2838,9 +2855,8 @@ public class IndicatorsVariationMB {
                     String[] splitColumn = matrixResult[i][j].split("<br/>");
                     value = splitColumn[0];
                 }
-                strReturn = strReturn + "                                <td> \r\n";//mantenga dimension
-                //strReturn = strReturn + "                                <div style=\"width:150px;\">" + value + "</div>\r\n";
-                strReturn = strReturn + "                                <div style=\"width:150px;" + height + " \">" + value + "</div>\r\n";
+                strReturn = strReturn + "                                <td> \r\n";//mantenga dimension                
+                strReturn = strReturn + "                                <div style=\"overflow:hidden; " + height + " width:200px; white-space: nowrap;\">" + value + "</div>\r\n";
                 strReturn = strReturn + "                                </td > \r\n";
             }
             strReturn = strReturn + "                            </tr>\r\n";
@@ -2858,6 +2874,18 @@ public class IndicatorsVariationMB {
         return strReturn;
     }
 
+    private String createDataTableResult() {
+
+        if (invertMatrix) {
+            return verticalResult();
+        } else {
+            return horizontalResult();
+        }
+    }
+    
+   
+
+        
     private void createMatrixDifference() {
         try {
             columNamesFinal = new ArrayList<>();
@@ -3199,21 +3227,13 @@ public class IndicatorsVariationMB {
         this.renderedDynamicDataTable = renderedDynamicDataTable;
     }
 
-    public String getDataTableHtmlA() {
-        return dataTableHtmlA;
+    public String getDataTableHtml() {
+        return dataTableHtml;
     }
 
-    public void setDataTableHtmlA(String dataTableHtmlA) {
-        this.dataTableHtmlA = dataTableHtmlA;
-    }
-
-    public String getDataTableHtmlB() {
-        return dataTableHtmlB;
-    }
-
-    public void setDataTableHtmlB(String dataTableHtmlB) {
-        this.dataTableHtmlB = dataTableHtmlB;
-    }
+    public void setDataTableHtml(String dataTableHtml) {
+        this.dataTableHtml = dataTableHtml;
+    }    
 
     public String getDataTableHtmlDiference() {
         return dataTableHtmlDiference;
@@ -3393,5 +3413,13 @@ public class IndicatorsVariationMB {
 
     public void setShowFrames(boolean showFrames) {
         this.showFrames = showFrames;
+    }
+    
+     public boolean isInvertMatrix() {
+        return invertMatrix;
+    }
+
+    public void setInvertMatrix(boolean invertMatrix) {
+        this.invertMatrix = invertMatrix;
     }
 }
