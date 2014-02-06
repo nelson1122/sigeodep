@@ -319,46 +319,24 @@
                                         </p:spinner> 
                                     </p:column>
                                 </p:row>                                
-                                <!-- p:row>
-                                    <p:column>
-                                        Variable
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        Fuente
                                     </p:column>
                                     <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdVariableGraph" value="# {indicatorsSpecifiedRateMB.currentVariableGraph}"> 
-                                            <f:selectItems value="# {indicatorsSpecifiedRateMB.variablesGraph}"/>
+                                        <p:spinner 
+                                            value="#{indicatorsSpecifiedRateMB.sizeFont}"
+                                            min="1"
+                                            max="20"
+                                            stepFactor="1"
+                                            size="5">
                                             <f:ajax 
                                                 event="change"
-                                                listener="# {indicatorsSpecifiedRateMB.loadValuesGraph}"
-                                                render="IdImageChart IdPanelGraphConfig"/>
-                                        </h:selectOneMenu>
-                                    </p:column>                                
-                                    <p:column>
-                                        Valor
-                                    </p:column>
-                                    <p:column>
-                                        <h:selectOneMenu 
-                                            id="IdValueGraph" value="# {indicatorsSpecifiedRateMB.currentValueGraph}"> 
-                                            <f:selectItems value="# {indicatorsSpecifiedRateMB.valuesGraph}"/>
-                                            <f:ajax 
-                                                event="change"
-                                                listener="# {indicatorsSpecifiedRateMB.createImage}"
+                                                listener="#{indicatorsSpecifiedRateMB.createImage}"
                                                 render="IdImageChart"/>
-                                        </h:selectOneMenu>
-                                    </p:column>                                        
-                                    <p:column>
-                                        Mostrar Items
+                                        </p:spinner> 
                                     </p:column>
-                                    <p:column>
-                                        <h:selectBooleanCheckbox value="# {indicatorsSpecifiedRateMB.showItems}" >
-                                            <f:ajax 
-                                                event="change"
-                                                listener="# {indicatorsSpecifiedRateMB.createImage}"
-                                                render="IdVariableGraph IdValueGraph IdImageChart"/>
-                                        </h:selectBooleanCheckbox>
-
-                                    </p:column>                                        
-                                </p:row -->
+                                </p:row>
                             </p:panelGrid>                                
                             <br/>
                             <div style="width: 680px; height: 480px; overflow: scroll">

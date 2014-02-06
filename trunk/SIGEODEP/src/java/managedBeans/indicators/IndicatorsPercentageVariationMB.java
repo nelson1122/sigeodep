@@ -154,7 +154,7 @@ public class IndicatorsPercentageVariationMB {
     private String endDateStrA = "";
     private String initialDateStrB = "";
     private String endDateStrB = "";
-    private boolean invertMatrix = true;
+    private boolean invertMatrix = false;
     private String currentTemporalDisaggregation;
     private String pivotTableName;
     private String prepivotTableName;
@@ -201,10 +201,10 @@ public class IndicatorsPercentageVariationMB {
     private StringBuilder sb;
     private int tuplesProcessed;
     private String sourceTable = "";//tabla adicional que se usara en la seccion "FROM" de la consulta sql
-    
     private boolean separateRecords = false;
     private int heightGraph = 460;
     private int widthGraph = 660;
+    private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
     private String currentTypeGraph;
     String variablesName = "";
@@ -1944,7 +1944,7 @@ public class IndicatorsPercentageVariationMB {
             if (showItems) {//mostrar items                
                 CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00"));
                 plot.getRenderer().setItemLabelGenerator(generator);
-                plot.getRenderer().setItemLabelFont(new Font("arial", Font.BOLD, 12));
+                plot.getRenderer().setItemLabelFont(new Font("arial", Font.BOLD, sizeFont));
                 plot.getRenderer().setItemLabelsVisible(true);
             }
             //----------GENERAR PNG A PARTIR DEL JCHART
@@ -2048,8 +2048,16 @@ public class IndicatorsPercentageVariationMB {
 
             while (rs.next()) {
                 rs2.next();
-                valor = (double) (rs.getInt("count") * 100) / (double) totalA;
-                valor2 = (double) (rs2.getInt("count") * 100) / (double) totalB;
+                if (totalA == 0) {
+                    valor = 0;
+                } else {
+                    valor = (double) (rs.getInt("count") * 100) / (double) totalA;
+                }
+                if (totalB == 0) {
+                    valor2 = 0;
+                } else {
+                    valor2 = (double) (rs2.getInt("count") * 100) / (double) totalB;
+                }
 
                 valor = (valor - valor2) * -1;
                 if (increment < Math.sqrt(valor * valor)) {
@@ -2653,7 +2661,204 @@ public class IndicatorsPercentageVariationMB {
         return value;
     }
 
-    public void postProcessXLS(Object document) {
+    private void exportVerticalResult(Object document) {
+        /*
+         * Exportar los datos a un archivo excell de forma vertical
+         */
+        HSSFWorkbook book = (HSSFWorkbook) document;
+        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+        HSSFRow fila;
+        HSSFCell celda;
+        HSSFRichTextString texto;
+
+        headers1 = new ArrayList<>();
+        headers2 = new String[columNamesFinal.size()];
+        int posRow = 0;
+        int posCol;
+        int columnsForRecord = 0;//filas a crear por registro(inicia en 1 por el rowspan cuenta desde 1)        
+        int posF;
+        int posI;
+        int posCell;
+        String value;
+        double totalA;
+        double totalB;
+
+        //1. detrmino el numero de columnas por registro        
+        if (showRowPercentage) {
+            columnsForRecord++;
+        }
+        if (showCount) {
+            columnsForRecord++;
+        }
+        //2. creo las regiones para primer(as) filas y primer(as) columnas
+        int posColAux;
+        posCol = 1;
+        if (variablesCrossData.size() == 3) {
+            posCol = 2;
+        }
+        posColAux = posCol;
+        fila = sheet.createRow(posRow++);
+        for (int i = 0; i < rowNames.size(); i++) {//nombres de columna en la primer fila            
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, posCol, posCol + columnsForRecord - 1));
+            celda = fila.createCell((short) posCol);
+            setValueCell(celda, determineHeader(rowNames.get(i)));
+            posCol = posCol + columnsForRecord;
+        }
+        posCol = posColAux;
+
+        //2. inserto las segunda(as) fila
+        fila = sheet.createRow(posRow++);
+        for (int i = 0; i < rowNames.size(); i++) {//nombres de columna en la primer fila                        
+
+            if (showCount) {
+                celda = fila.createCell((short) posCol);
+                setValueCell(celda, "Recuento");
+                posCol++;
+            }
+            if (showRowPercentage) {
+                celda = fila.createCell((short) posCol);
+                setValueCell(celda, "% por fila");
+                posCol++;
+            }
+        }
+        //3. determino regiones para primer columna        
+        if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
+            for (int i = 0; i < columNamesFinal.size(); i++) {
+                fila = sheet.createRow(posRow++);
+                celda = fila.createCell(0);
+                texto = new HSSFRichTextString(determineHeader(columNamesFinal.get(i)));// Se crea el contenido de la celda y se mete en ella.
+                celda.setCellValue(texto);
+            }
+            fila = sheet.createRow(posRow++);
+            celda = fila.createCell(0);
+            celda.setCellValue("Total");
+        }
+        if (variablesCrossData.size() == 3) {
+            //-------------------------------------------------------------------
+            //CABECERA COMPUESTA            
+            String currentVar = "";
+            String[] splitVars;
+            for (int i = 0; i < columNamesFinal.size(); i++) {
+                splitVars = columNamesFinal.get(i).split("\\}");//separo las dos variables
+                String first = splitVars[0];//invierto el orden de llegada
+                splitVars[0] = splitVars[1];
+                splitVars[1] = first;
+                if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
+                    int num = headers1.get(headers1.size() - 1).getColumns();
+                    headers1.get(headers1.size() - 1).setColumns(num + 1);
+                } else {//no existe la columna la debo crear y adicionar a la lista                    
+                    currentVar = splitVars[0];
+                    SpanColumns newSpanColumn = new SpanColumns();
+                    newSpanColumn.setLabel(splitVars[0]);
+                    newSpanColumn.setColumns(1);
+                    headers1.add(newSpanColumn);
+                }
+                headers2[i] = splitVars[1];//a la segunda cabecera le agrego la segunda variable separada
+            }
+            //AGREGO LAS COLUMNAS CABECERAS
+            posF = 1;
+            posCol = 0;
+            for (int j = 0; j < headers1.size(); j++) {
+                posI = posF + 1;
+
+                for (int i = 0; i < headers1.get(j).getColumns(); i++) {
+                    posF++;
+                    posCell = 0;
+                    fila = sheet.createRow(posRow++);
+                    celda = fila.createCell(posCell++);
+                    texto = new HSSFRichTextString(determineHeader(headers1.get(j).getLabel()));
+                    celda.setCellValue(texto);
+                    celda = fila.createCell(posCell++);
+                    texto = new HSSFRichTextString(determineHeader(headers2[posCol++]));
+                    celda.setCellValue(texto);
+
+                    //posCol y .getRowNum()
+                    for (int l = 0; l < rowNames.size() - 1; l++) {//-1 por que le agrege "TOTALES"                                         
+                        if (showCount) {
+                            celda = fila.createCell(posCell++);
+                            //ppppppppppppppppppppppp
+                            totalA = Double.parseDouble(getMatrixValueA("countXY", posCol - 1, l));
+                            totalB = Double.parseDouble(getMatrixValueB("countXY", posCol - 1, l));
+                            if (showCalculation) {
+                                value = formateador.format((totalA - totalB) * -1) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                            } else {
+                                value = formateador.format((totalA - totalB) * -1);
+                            }
+                            setValueCell(celda, value);
+                            //kkkkkkkkkkkkkkkkkkkkkkk
+                        }
+                        if (showRowPercentage) {
+                            celda = fila.createCell(posCell++);
+                            //    setValueCell(celda, getMatrixValue("columnPercentageXY", posCol - 1, l));
+                            //ppppppppppppppppppppppppp
+                            celda = fila.createCell(1);
+                celda.setCellValue(new HSSFRichTextString("% por fila"));
+
+//                for (int i = 0; i < columNamesFinal.size(); i++) {
+//                    //value;
+//                    totalA = Double.parseDouble(getMatrixValueA("rowPercentageXY", posCol - 1, l));
+//                    totalB = Double.parseDouble(getMatrixValueB("rowPercentageXY", posCol - 1, l));
+//                    if (showCalculation) {
+//                        value = formateador.format((totalA - totalB) * -1) + " (" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+//                    } else {
+//                        value = formateador.format((totalA - totalB) * -1);
+//                    }
+//                    celda = fila.createCell((short) i + 2);// +2 por que faltal nombres de filas                            
+//                    //celda.setCellValue(new HSSFRichTextString(value));
+//                    setValueCell(celda, value);
+//                }
+                            //kkkkkkkkkkkkkkkkkkkkkkkkk
+                        }
+
+                    }
+//                    //totales                    
+//                    if (showCount) {
+//                        celda = fila.createCell(posCell++);
+//                        setValueCell(celda, getMatrixValue("columnTotal", posCol - 1, 0));
+//                    }
+//                    if (showRowPercentage) {
+//                        celda = fila.createCell(posCell++);
+//                        setValueCell(celda, getMatrixValue("percentageOfTotalColumnAccordingTotalColumn", posCol - 1, 0));
+//                    }
+                }
+                sheet.addMergedRegion(new CellRangeAddress(posI, posF, 0, 0));
+                //posF++;
+            }
+            //total
+            fila = sheet.createRow(posRow++);
+            celda = fila.createCell(0);
+            texto = new HSSFRichTextString("-");
+            celda.setCellValue(texto);
+            celda = fila.createCell(1);
+            texto = new HSSFRichTextString("Total");
+            celda.setCellValue(texto);
+            posCell = posColAux;
+//            for (int l = 0; l < rowNames.size() - 1; l++) {//-1 por que le agrege "TOTALES"                                         
+//                if (showCount) {
+//                    celda = fila.createCell(posCell++);
+//                    setValueCell(celda, getMatrixValue("rowTotal", -1, l));
+//                }
+//                if (showRowPercentage) {
+//                    celda = fila.createCell(posCell++);
+//                    setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingGrandTotal", -1, l));
+//                }             
+//            }
+//            //ultimos valores de la fila
+//            if (showCount) {
+//                celda = fila.createCell(posCell++);                                
+//                setValueCell(celda, String.valueOf(grandTotal));
+//            }
+//            if (showRowPercentage) {
+//                celda = fila.createCell(posCell++);
+//                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0,0));
+//            }            
+        }
+    }
+
+    private void exportHorizontalResult(Object document) {
+        /*
+         * Exportar los datos a un archivo excell de forma horizontal
+         */
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
         HSSFRow fila;
@@ -2665,7 +2870,6 @@ public class IndicatorsPercentageVariationMB {
         int posRow = 0;
         int posF;
         int posI;
-        String strReturn = " ";
         String value;
         double totalA;
         double totalB;
@@ -2815,6 +3019,14 @@ public class IndicatorsPercentageVariationMB {
         }
     }
 
+    public void postProcessXLS(Object document) {
+        if (invertMatrix) {
+            exportVerticalResult(document);
+        } else {
+            exportHorizontalResult(document);
+        }
+    }
+
     private void setValueCell(HSSFCell celda, String strValue) {
         /*determina si el valor a almacenar en una celda del 
          archivo excell debe ser numerica o cadena*/
@@ -2825,7 +3037,7 @@ public class IndicatorsPercentageVariationMB {
             celda.setCellValue(new HSSFRichTextString(strValue));
         }
     }
-    
+
     public void invertMatrixClick() {
         if (invertMatrix) {
             invertMatrix = false;
@@ -2838,13 +3050,170 @@ public class IndicatorsPercentageVariationMB {
     }
 
     private String verticalResult() {
-        
+
+        headers1 = new ArrayList<>();
+        headers2 = new String[columNamesFinal.size()];
+        String height = "height:20px;";
+        String value;
+        double totalA;
+        double totalB;
+        boolean firstTrAdd = false;
+
+        if (showCalculation) {
+            height = "height:30px;";
+        }
+        int rowsForRecord = 0;//filas a crear por registro(inicia en 1 por el rowspan cuenta desde 1)
+        if (showRowPercentage) {
+            rowsForRecord++;
+        }
+        if (showCount) {
+            rowsForRecord++;
+        }
+
         String strReturn = " ";
-        
+        strReturn = strReturn + "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
+        strReturn = strReturn + "            <tr>\r\n";
+        strReturn = strReturn + "                <td>\r\n";
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "                <td class=\"ui-widget-header\">\r\n";
+
+        //TABLA QUE CONTIENE LA CABECERA//-------------------------------------------------------------------                        
+        strReturn = strReturn + "                    <div id=\"divHeader\" style=\"overflow:hidden;width:434px;\">\r\n";
+        strReturn = strReturn + "                        <table width=\"200px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        strReturn = strReturn + "                            <tr>\r\n";
+        for (int j = 0; j < rowNames.size(); j++) {
+            strReturn = strReturn + "                                <td colspan=\"" + rowsForRecord + "\"><div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
+        }
+        strReturn = strReturn + "                            </tr>\r\n";
+        strReturn = strReturn + "                            <tr>\r\n";
+        for (int j = 0; j < rowNames.size(); j++) {
+            if (showCount) {
+                strReturn = strReturn + "                                <td><div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">Recuento</div></td>\r\n";
+            }
+            if (showRowPercentage) {
+                strReturn = strReturn + "                                <td><div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">% por fila</div></td>\r\n";
+            }
+        }
+        strReturn = strReturn + "                            </tr>\r\n";
+        strReturn = strReturn + "                        </table>\r\n";
+        strReturn = strReturn + "                    </div>\r\n";
+        //FIN TABLA QUE CONTIENE LA CABECERA//-------------------------------------------------------------------
+
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "            </tr>\r\n";
+        strReturn = strReturn + "            <tr>\r\n";
+        strReturn = strReturn + "                <td valign=\"top\" class=\"ui-widget-header\">\r\n";
+
+        //TABLA QUE CONTIENE LA PRIMER COLUMNA//-------------------------------------------------------------------        
+        strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden; height:280px\">\r\n";//tamaño del div izquierdo
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {//COLUMNA SIMPLE
+
+            for (int i = 0; i < columNamesFinal.size(); i++) {
+                strReturn = strReturn + "                            <tr>\r\n";
+                strReturn = strReturn + "                                <td>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; " + height + " width:200px; white-space: nowrap;\">" + determineHeader(columNamesFinal.get(i)) + "</div>\r\n";
+                strReturn = strReturn + "                                </td>\r\n";
+                strReturn = strReturn + "                            </tr>\r\n";
+            }
+        }
+        if (variablesCrossData.size() == 3) {//COLUMNA COMPUESTA            
+            String currentVar = "";
+            String[] splitVars;
+            for (int i = 0; i < columNamesFinal.size(); i++) {
+                splitVars = columNamesFinal.get(i).split("\\}");//separo las dos variables
+                String first = splitVars[0];//invierto el orden de llegada
+                splitVars[0] = splitVars[1];
+                splitVars[1] = first;
+                if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
+                    int num = headers1.get(headers1.size() - 1).getColumns();
+                    headers1.get(headers1.size() - 1).setColumns(num + 1);
+                } else {//no existe la columna la debo crear y adicionar a la lista                    
+                    currentVar = splitVars[0];
+                    SpanColumns newSpanColumn = new SpanColumns();
+                    newSpanColumn.setLabel(splitVars[0]);
+                    newSpanColumn.setColumns(1);
+                    headers1.add(newSpanColumn);
+                }
+                headers2[i] = splitVars[1];//a la segunda cabecera le agrego la segunda variable separada
+            }
+            int posh = 0;
+            for (int i = 0; i < headers1.size(); i++) {//AGREGO LA COLUMNA 1 
+                strReturn = strReturn + "                            <tr>\r\n";
+                strReturn = strReturn + "                                <td rowspan=\"" + (headers1.get(i).getColumns() + 1) + "\">\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; " + height + " width:100px; white-space: nowrap;\">" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
+                strReturn = strReturn + "                                </td>\r\n";
+                strReturn = strReturn + "                            </tr>\r\n";
+                for (int j = 0; j < headers1.get(i).getColumns(); j++) {//AGREGO LA COLUMNA 2 
+                    strReturn = strReturn + "                            <tr>\r\n";
+                    strReturn = strReturn + "                                <td>\r\n";
+                    strReturn = strReturn + "                                    <div style=\"overflow:hidden; " + height + " width:100px; white-space: nowrap;\">" + determineHeader(headers2[posh]) + "</div>\r\n";
+                    strReturn = strReturn + "                                </td>\r\n";
+                    strReturn = strReturn + "                            </tr>\r\n";
+                    posh++;
+                }
+            }
+        }
+        strReturn = strReturn + "                        </table>\r\n";
+        strReturn = strReturn + "                    </div>\r\n";
+        //FIN TABLA QUE CONTIENE LA PRIMER COLUMNA//-------------------------------------------------------------------
+
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "                <td valign=\"top\">\r\n";
+
+        //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
+        strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        for (int j = 0; j < columNamesFinal.size(); j++) {//AGREGO LOS REGISTROS DE LA MATRIZ        
+            if (j == 0 && !firstTrAdd) {
+                strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+                firstTrAdd = true;
+            } else {
+                strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+            }
+            for (int i = 0; i < rowNames.size(); i++) {
+                if (showCount) {
+                    //for (int i = 0; i < rowNames.size(); i++) {
+                    totalA = Double.parseDouble(getMatrixValueA("countXY", j, i));
+                    totalB = Double.parseDouble(getMatrixValueB("countXY", j, i));
+                    if (showCalculation) {
+                        value = "<b>" + formateador.format((totalA - totalB) * -1) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                    } else {
+                        value = formateador.format((totalA - totalB) * -1);
+                    }
+                    strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:100px; \">" + value + "</div></td>\r\n";
+                    //}
+                }
+                if (showRowPercentage) {
+                    //for (int i = 0; i < rowNames.size(); i++) {
+                    //value;
+                    totalA = Double.parseDouble(getMatrixValueA("rowPercentageXY", j, i));
+                    totalB = Double.parseDouble(getMatrixValueB("rowPercentageXY", j, i));
+                    if (showCalculation) {
+                        value = "<b>" + formateador.format((totalA - totalB) * -1) + "</b><br/>(" + formateador.format(totalA) + "-" + formateador.format(totalB) + ")";
+                    } else {
+                        value = formateador.format((totalA - totalB) * -1);
+                    }
+                    strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:100px; \">" + value + "</div></td>\r\n";
+                    //}
+                }
+            }
+            strReturn = strReturn + "                            </tr>\r\n";
+            changeColorType();//cambiar de color las filas de blanco a azul
+        }
+        strReturn = strReturn + "                        </table>\r\n";
+        strReturn = strReturn + "                    </div>\r\n";
+        //FIN TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------                
+
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "            </tr>\r\n";
+        strReturn = strReturn + "        </table>\r\n";
+        //System.out.println("777777777777777777777777\n"+strReturn+"77777777777777777777777777777\n");
         return strReturn;
     }
+
     private String horizontalResult() {
-        
+
         headers1 = new ArrayList<>();
         headers2 = new String[columNamesFinal.size()];
         String height = "height:20px;";
@@ -2946,16 +3315,16 @@ public class IndicatorsPercentageVariationMB {
             strReturn = strReturn + "                            <tr>\r\n";
             strReturn = strReturn + "                                <td rowspan=\"" + rowsForRecord + "\"><div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
 
-            if (showCount && !showCountAdd && !showRowPercentageAdd){// && !showColumnPercentageAdd && !showTotalPercentageAdd) {
+            if (showCount && !showCountAdd && !showRowPercentageAdd) {// && !showColumnPercentageAdd && !showTotalPercentageAdd) {
                 strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:100px; white-space: nowrap;\">Recuento</div></td>\r\n";
                 showCountAdd = true;
             }
-            if (showRowPercentage && !showCountAdd && !showRowPercentageAdd){// && !showColumnPercentageAdd && !showTotalPercentageAdd) {
+            if (showRowPercentage && !showCountAdd && !showRowPercentageAdd) {// && !showColumnPercentageAdd && !showTotalPercentageAdd) {
                 strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:100px; white-space: nowrap;\">% por fila</div></td>\r\n";
                 showRowPercentageAdd = true;
             }
             strReturn = strReturn + "                            </tr>\r\n";
-            
+
             if (showCount && !showCountAdd) {
                 strReturn = strReturn + "                            <tr>\r\n";
                 strReturn = strReturn + "                                <td><div style=\"overflow:hidden; " + height + " width:100px; \">recuento</div></td>\r\n";
@@ -3494,7 +3863,6 @@ public class IndicatorsPercentageVariationMB {
         this.dataTableHtml = dataTableHtml;
     }
 
-    
     public String getDataTableHtmlDiference() {
         return dataTableHtmlDiference;
     }
@@ -3686,12 +4054,20 @@ public class IndicatorsPercentageVariationMB {
     public void setCurrentTypeGraph(String currentTypeGraph) {
         this.currentTypeGraph = currentTypeGraph;
     }
-    
-     public boolean isInvertMatrix() {
+
+    public boolean isInvertMatrix() {
         return invertMatrix;
     }
 
     public void setInvertMatrix(boolean invertMatrix) {
         this.invertMatrix = invertMatrix;
+    }
+
+    public int getSizeFont() {
+        return sizeFont;
+    }
+
+    public void setSizeFont(int sizeFont) {
+        this.sizeFont = sizeFont;
     }
 }

@@ -6,9 +6,12 @@ package managedBeans.closures;
  */
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.ClosuresEnum;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -532,6 +536,74 @@ public class ClosuresMB {
 
     }
 
+    private boolean runPdi(String table) {
+        /*
+         * se ejecutan scripts que se encargan de pasar los datos de tal tablas sta a la 
+         * bodega de datos
+         */
+        boolean booleanReturn = false;
+        //Runtime r = Runtime.getRuntime();
+        Process p;
+        ProcessBuilder pb = new ProcessBuilder();
+        try {
+            switch (ClosuresEnum.convert(table)) {//nombre de variable                                                             
+                case fatal_injury_murder_sta:
+                    pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_murders.ktr");
+                    break;
+                case fatal_injury_traffic_sta:
+                    pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_traffic.ktr");
+                    break;
+                case fatal_injury_suicide_sta:
+                    pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_suicides.ktr");
+                    break;
+                case fatal_injury_accident_sta:
+                    pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_accidents.ktr");
+                    break;
+                case non_fatal_interpersonal_sta:
+                    pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_interpersonal.ktr");
+                    break;
+                case non_fatal_transport_sta:
+                    pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_transport.ktr");
+                    break;
+                case non_fatal_self_inflicted_sta:
+                    pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_self-inflicted.ktr");
+                    break;
+                case non_fatal_domestic_violence_sta:
+                    pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_intrafamiliar.ktr");
+                    break;
+                case non_fatal_non_intentional_sta:
+                    pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_unintentional.ktr");
+                    break;
+                case sivigila_sta:
+                    //pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_sivigila.ktr");
+                    break;
+            }
+            //r = Runtime.getRuntime();
+            p = pb.start();
+            try {
+                //CODIGO PARA MOSTRAR EL PROGESO DE LA GENERACION DEL ARCHIVO
+                InputStream is = p.getInputStream();
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
+                String ll;
+                while ((ll = br.readLine()) != null) {
+                    System.out.println(ll);
+                }
+            } catch (IOException e) {
+                System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.getMessage());
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
+            }
+            booleanReturn = true;
+            System.out.println("Finaliza cargar datos");
+            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Correcto", "La copia de seguridad ha sido creada correctamente"));
+
+        } catch (IOException x) {
+            System.out.println("Error 2 en " + this.getClass().getName() + ":" + x.getMessage());
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
+        }
+        return booleanReturn;
+    }
+
     public void startStoreData() {
 
         ResultSet rs;
@@ -550,6 +622,7 @@ public class ClosuresMB {
                         copyToDataWarehouse("fatal_injury_murder_sta");//se transfiere datos a la bodega                                
                         //actualizo la fecha que se realizo el ultimocierre
                         connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
+
                         break;
                     case 11://;"MUERTE EN ACCIDENTE DE TRANSITO"        
                         replaceToCommaStaTemp("fatal_injury_traffic_sta");//remplazo '-' por ','
@@ -1628,7 +1701,7 @@ public class ClosuresMB {
                                                 + "   " + rs.getMetaData().getColumnName(i + 1) + " = '" + splitTuple[i] + "' \n"
                                                 + " WHERE \n"
                                                 + "   id_lesion LIKE '" + idLesionArray.get(k) + "'\n");
-                                        System.out.println("Se actualiza >> Columna: " + rs.getMetaData().getColumnName(i + 1)+ "\t\t Nuevo valor: " + splitTuple[i]+ "\t\t id_lesion: " + idLesionArray.get(k));
+                                        System.out.println("Se actualiza >> Columna: " + rs.getMetaData().getColumnName(i + 1) + "\t\t Nuevo valor: " + splitTuple[i] + "\t\t id_lesion: " + idLesionArray.get(k));
                                     }
                                 }
                             }
@@ -1753,10 +1826,9 @@ public class ClosuresMB {
     private void copyToDataWarehouse(String table) {
 
         //1. se transfiere datos a la bodega
+        runPdi(table);
 
         //2. convierto los registros cargados en registros que forman parte del cache
-
-
         connectionJdbcMB.non_query(" UPDATE " + table + " SET estado = 1; ");
 
         //3. se eliminan los datos que esten un año antes de este cierre para las lesiones no fatales
