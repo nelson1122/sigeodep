@@ -112,7 +112,7 @@ public class IndicatorsCountMB {
     private Date endDate = new Date();
     private String initialDateStr;
     private String endDateStr;
-    private boolean invertMatrix = true;
+    private boolean invertMatrix = false;
     //private List<String> variablesGraph = new ArrayList<>();
     private List<String> valuesGraph = new ArrayList<>();
     private List<String> variablesList = new ArrayList<>();//lista de nombres de variables disponibles que sepueden cruzar(se visualizan en pagina)
@@ -158,6 +158,7 @@ public class IndicatorsCountMB {
     private boolean addAbuseTypes = false;
     private int heightGraph = 460;
     private int widthGraph = 660;
+    private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
     private String currentTypeGraph;
     //DecimalFormat formateador = new DecimalFormat("0.00");
@@ -169,12 +170,10 @@ public class IndicatorsCountMB {
     Calendar c = Calendar.getInstance();
 
     public IndicatorsCountMB() {
-        //-------------------------------------------------
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         geoDBConnection = (GeoDBConnection) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{geoDBConnectionMB}", GeoDBConnection.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         geoDBConnection = (GeoDBConnection) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{geoDBConnectionMB}", GeoDBConnection.class);
-
         currentYear = c.get(Calendar.YEAR);
         initialDate.setDate(1);
         initialDate.setMonth(0);
@@ -1216,7 +1215,7 @@ public class IndicatorsCountMB {
                 CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0"));
                 plot.getRenderer().setItemLabelGenerator(generator);
                 plot.getRenderer().setItemLabelsVisible(true);
-                plot.getRenderer().setItemLabelFont(new Font("arial", Font.BOLD, 12));
+                plot.getRenderer().setItemLabelFont(new Font("arial", Font.BOLD, sizeFont));
             }
             //----------GENERAR PNG A PARTIR DEL JCHART
             File chartFile = new File("grafico");
@@ -1589,16 +1588,270 @@ public class IndicatorsCountMB {
         return value;
     }
 
-    public void postProcessXLS(Object document) {
+    private void exportVerticalResult(Object document) {
+        /*
+         * Exportar los datos a un archivo excell de forma vertical
+         */
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
         HSSFRow fila;
         HSSFCell celda;
         HSSFRichTextString texto;
 
+        headers1 = new ArrayList<>();
+        headers2 = new String[columNames.size()];
+        int posRow = 0;
+        int posCol = 0;
+        int posF;
+        int posI;
 
-        if (columNames.size() > 200) {
+        //fila inicial        
+        fila = sheet.createRow(posRow);
+        posI = 1;    // 1 por que faltal nombres de columna                                       
+        if (variablesCrossData.size() == 3) {
+            posI = 2;    // 1 por que faltal nombres de columna                                       
         }
+
+        for (int i = 0; i < rowNames.size(); i++) {//NOMBRE PARA CADA COLUMNA                        
+            celda = fila.createCell((short) posI + i);
+            setValueCell(celda, determineHeader(rowNames.get(i)));
+        }
+        posRow = 1;
+
+        //columna(s) inicial        
+        if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
+            for (int i = 0; i < columNames.size(); i++) {
+                posCol = 0;
+                fila = sheet.createRow(posRow + i);
+                celda = fila.createCell(posCol);
+                setValueCell(celda, determineHeader(columNames.get(i)));
+                posCol++;
+                for (int l = 0; l < rowNames.size() - 1; l++) {//-1 por que le agrege "TOTALES"                                         
+                    celda = fila.createCell(posCol);
+                    setValueCell(celda, matrixResult[fila.getRowNum() - 1][l]);
+                    posCol++;
+                }
+                //total
+                celda = fila.createCell(posCol);
+                setValueCell(celda, totalsHorizontal.get(fila.getRowNum() - 1));
+            }
+            fila = sheet.createRow(posRow + columNames.size());
+            posCol = 0;
+            celda = fila.createCell(posCol);
+            setValueCell(celda, "Totales");
+            //fila totales            );
+            posCol++;
+            for (int i = 0; i < totalsVertical.size(); i++) {//AGREGO LA ULTIMA FILA CORRESPONDIENTE A LOS TOTALES                
+                celda = fila.createCell(posCol);
+                setValueCell(celda, totalsVertical.get(i));
+                posCol++;
+            }
+            //gran total
+            celda = fila.createCell(posCol);
+            setValueCell(celda, String.valueOf(grandTotal));
+        }
+        if (variablesCrossData.size() == 3) {
+            String currentVar = "";
+            String[] splitVars;
+            for (int i = 0; i < columNames.size(); i++) {
+                splitVars = columNames.get(i).split("\\}");//separo las dos variables
+                String first = splitVars[0];//invierto el orden de llegada
+                splitVars[0] = splitVars[1];
+                splitVars[1] = first;
+                if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
+                    int num = headers1.get(headers1.size() - 1).getColumns();
+                    headers1.get(headers1.size() - 1).setColumns(num + 1);
+                } else {//no existe la columna la debo crear y adicionar a la lista                    
+                    currentVar = splitVars[0];
+                    SpanColumns newSpanColumn = new SpanColumns();
+                    newSpanColumn.setLabel(splitVars[0]);
+                    newSpanColumn.setColumns(1);
+                    headers1.add(newSpanColumn);
+                }
+                headers2[i] = splitVars[1];//a la segunda cabecera le agrego la segunda variable separada
+            }
+            //AGREGO LA CABECERA 1 
+
+            posF = 0;
+            //posI = 1;
+            for (int j = 0; j < headers1.size(); j++) {
+                posI = posF + 1;
+                for (int i = 0; i < headers1.get(j).getColumns(); i++) {
+                    posF++;
+                }
+                sheet.addMergedRegion(new CellRangeAddress(posI, posF, 0, 0));
+                //posF++;
+            }
+            posI = 0;
+            for (int i = 0; i < headers1.size(); i++) {
+                fila = sheet.createRow(posRow);
+                celda = fila.createCell(0);
+                texto = new HSSFRichTextString(determineHeader(headers1.get(i).getLabel()));// Se crea el contenido y se asigna
+                celda.setCellValue(texto);
+
+                for (int j = 0; j < headers1.get(i).getColumns(); j++) {
+                    posCol = 1;
+                    if (j != 0) {
+                        fila = sheet.createRow(posRow + j);
+                    }
+                    celda = fila.createCell(posCol);
+                    texto = new HSSFRichTextString(determineHeader(headers2[posI]));// Se crea el contenido y se asigna                    
+                    celda.setCellValue(texto);
+                    posCol++;
+                    for (int l = 0; l < rowNames.size() - 1; l++) {//-1 por que le agrege "TOTALES"                                         
+                        celda = fila.createCell(posCol);
+                        setValueCell(celda, matrixResult[fila.getRowNum() - 1][l]);
+                        posCol++;
+                    }
+                    //total
+                    celda = fila.createCell(posCol);
+                    setValueCell(celda, totalsHorizontal.get(fila.getRowNum() - 1));
+
+                    posI++;
+                }
+                posRow = (short) (posRow + headers1.get(i).getColumns());
+            }
+            //fila totales            
+            fila = sheet.createRow(posRow);
+            posCol = 0;
+            celda = fila.createCell(posCol);
+            posCol++;
+            setValueCell(celda, "-");
+            celda = fila.createCell(posCol);
+            posCol++;
+            setValueCell(celda, "Totales");
+            for (int i = 0; i < totalsVertical.size(); i++) {//AGREGO LA ULTIMA FILA CORRESPONDIENTE A LOS TOTALES                
+                celda = fila.createCell(posCol);
+                setValueCell(celda, totalsVertical.get(i));
+                posCol++;
+            }
+            //gran total
+            celda = fila.createCell(posCol);
+            setValueCell(celda, String.valueOf(grandTotal));
+
+        }
+
+
+//        //-------------------------------------------------------------------
+//        //TABLA QUE CONTIENE LA CABECERA
+//        //-------------------------------------------------------------------                        
+//
+//        if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
+//            fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja            
+//            posRow++;
+//            posI = 1;
+//            for (int i = 0; i < columNames.size(); i++) {
+//                celda = fila.createCell((short) posI);// +2 por que faltal las filas               
+//                posI++;
+//                texto = new HSSFRichTextString(determineHeader(columNames.get(i)));// Se crea el contenido de la celda y se asigna en ella.
+//                celda.setCellValue(texto);
+//            }
+//            celda = fila.createCell((short) posI);// +2 por que faltal las filas               
+//            posI++;
+//            celda.setCellValue("Total");
+//        }
+//        if (variablesCrossData.size() == 3) {
+//            //-------------------------------------------------------------------
+//            //CABECERA COMPUESTA            
+//            String currentVar = "";
+//            String[] splitVars;
+//            for (int i = 0; i < columNames.size(); i++) {
+//                splitVars = columNames.get(i).split("\\}");//separo las dos variables
+//                String first = splitVars[0];//invierto el orden de llegada
+//                splitVars[0] = splitVars[1];
+//                splitVars[1] = first;
+//                if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
+//                    int num = headers1.get(headers1.size() - 1).getColumns();
+//                    headers1.get(headers1.size() - 1).setColumns(num + 1);
+//                } else {//no existe la columna la debo crear y adicionar a la lista                    
+//                    currentVar = splitVars[0];
+//                    SpanColumns newSpanColumn = new SpanColumns();
+//                    newSpanColumn.setLabel(splitVars[0]);
+//                    newSpanColumn.setColumns(1);
+//                    headers1.add(newSpanColumn);
+//                }
+//                headers2[i] = splitVars[1];//a la segunda cabecera le agrego la segunda variable separada
+//            }
+//            //AGREGO LA CABECERA 1 
+//            fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja
+//            posRow++;
+//            posF = 0;
+//            //posI = 1;
+//            for (int j = 0; j < headers1.size(); j++) {
+//                posI = posF + 1;
+//                for (int i = 0; i < headers1.get(j).getColumns(); i++) {
+//                    posF++;
+//                }
+//                sheet.addMergedRegion(new CellRangeAddress(0, 0, posI, posF));
+//                //posF++;
+//            }
+//            short posColumn = 1;// +2 por que faltal las filas               
+//            for (int i = 0; i < headers1.size(); i++) {
+//                celda = fila.createCell(posColumn);
+//                posColumn = (short) (posColumn + headers1.get(i).getColumns());
+//                texto = new HSSFRichTextString(determineHeader(headers1.get(i).getLabel()));// Se crea el contenido de la celda y se asigna en ella.
+//                celda.setCellValue(texto);
+//            }
+//            fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja
+//            posRow++;
+//            posI = 1;// +1 por que faltal nombre de filas
+//            for (int i = 0; i < headers2.length; i++) {
+//                celda = fila.createCell((short) posI);
+//                posI++;
+//                texto = new HSSFRichTextString(determineHeader(headers2[i]));// Se crea el contenido de la celda y se asigna en ella.
+//                celda.setCellValue(texto);
+//            }
+//            celda = fila.createCell((short) posI);
+//            celda.setCellValue("Total");
+//        }
+//
+//        //-------------------------------------------------------------------
+//        //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
+//        //-------------------------------------------------------------------      
+//        //rowNames.add("Totales");
+//        for (int j = 0; j < rowNames.size() - 1; j++) {
+//            fila = sheet.createRow(posRow);
+//            posRow++;
+//            //nombre fila
+//            celda = fila.createCell(0);
+//            celda.setCellValue(new HSSFRichTextString(determineHeader(rowNames.get(j))));
+//            posI = 1;// 1 por que faltal nombres de fila                               
+//            for (int i = 0; i < columNames.size(); i++) {
+//                celda = fila.createCell((short) posI);
+//                setValueCell(celda, matrixResult[i][j]);
+//                posI++;
+//            }
+//            //total Vertical
+//            celda = fila.createCell((short) posI);
+//            setValueCell(celda, totalsVertical.get(j));
+//            posI++;
+//        }
+//        //nombre fila para totales horizontales
+//        fila = sheet.createRow(posRow);
+//        celda = fila.createCell(0);
+//        celda.setCellValue("Totales ");
+//        posI = 1;// 1 por que faltal nombres de fila                               
+//        for (int i = 0; i < totalsHorizontal.size(); i++) {
+//            celda = fila.createCell((short) posI);
+//
+//            setValueCell(celda, totalsHorizontal.get(i));
+//            posI++;
+//        }
+//        //gran total
+//        celda = fila.createCell((short) posI);
+//        setValueCell(celda, String.valueOf(grandTotal));
+
+    }
+
+    private void exportHorizontalResult(Object document) {
+        /*
+         * Exportar los datos a un archivo excell de forma horizontal
+         */
+        HSSFWorkbook book = (HSSFWorkbook) document;
+        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+        HSSFRow fila;
+        HSSFCell celda;
+        HSSFRichTextString texto;
 
         headers1 = new ArrayList<>();
         headers2 = new String[columNames.size()];
@@ -1616,7 +1869,7 @@ public class IndicatorsCountMB {
             for (int i = 0; i < columNames.size(); i++) {
                 celda = fila.createCell((short) posI);// +2 por que faltal las filas               
                 posI++;
-                texto = new HSSFRichTextString(determineHeader(columNames.get(i)));// Se crea el contenido de la celda y se mete en ella.
+                texto = new HSSFRichTextString(determineHeader(columNames.get(i)));// Se crea el contenido de la celda y se asigna en ella.
                 celda.setCellValue(texto);
             }
             celda = fila.createCell((short) posI);// +2 por que faltal las filas               
@@ -1662,7 +1915,7 @@ public class IndicatorsCountMB {
             for (int i = 0; i < headers1.size(); i++) {
                 celda = fila.createCell(posColumn);
                 posColumn = (short) (posColumn + headers1.get(i).getColumns());
-                texto = new HSSFRichTextString(determineHeader(headers1.get(i).getLabel()));// Se crea el contenido de la celda y se mete en ella.
+                texto = new HSSFRichTextString(determineHeader(headers1.get(i).getLabel()));// Se crea el contenido de la celda y se asigna en ella.
                 celda.setCellValue(texto);
             }
             fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja
@@ -1671,7 +1924,7 @@ public class IndicatorsCountMB {
             for (int i = 0; i < headers2.length; i++) {
                 celda = fila.createCell((short) posI);
                 posI++;
-                texto = new HSSFRichTextString(determineHeader(headers2[i]));// Se crea el contenido de la celda y se mete en ella.
+                texto = new HSSFRichTextString(determineHeader(headers2[i]));// Se crea el contenido de la celda y se asigna en ella.
                 celda.setCellValue(texto);
             }
             celda = fila.createCell((short) posI);
@@ -1713,7 +1966,14 @@ public class IndicatorsCountMB {
         //gran total
         celda = fila.createCell((short) posI);
         setValueCell(celda, String.valueOf(grandTotal));
-        //celda.setCellValue(new HSSFRichTextString(String.valueOf(grandTotal)));
+    }
+
+    public void postProcessXLS(Object document) {
+        if (invertMatrix) {
+            exportVerticalResult(document);
+        } else {
+            exportHorizontalResult(document);
+        }
     }
 
     private void setValueCell(HSSFCell celda, String strValue) {
@@ -1755,14 +2015,15 @@ public class IndicatorsCountMB {
             strReturn = strReturn + "                                <td><div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
         }
         strReturn = strReturn + "                            </tr>\r\n";
-        strReturn = strReturn + "                        </table>\r\n";        
-        strReturn = strReturn + "                    </div>\r\n";        
+        strReturn = strReturn + "                        </table>\r\n";
+        strReturn = strReturn + "                    </div>\r\n";
         //FIN TABLA QUE CONTIENE LA CABECERA//-------------------------------------------------------------------
-        
+
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "            </tr>\r\n";
         strReturn = strReturn + "            <tr>\r\n";
-        strReturn = strReturn + "                <td valign=\"top\" class=\"ui-widget-header\">\r\n";        
+        strReturn = strReturn + "                <td valign=\"top\" class=\"ui-widget-header\">\r\n";
+
         //TABLA QUE CONTIENE LA PRIMER COLUMNA//-------------------------------------------------------------------        
         strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden; height:280px\">\r\n";//tamaño del div izquierdo
         strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
@@ -1805,7 +2066,7 @@ public class IndicatorsCountMB {
             int posh = 0;
             for (int i = 0; i < headers1.size(); i++) {//AGREGO LA COLUMNA 1 
                 strReturn = strReturn + "                            <tr>\r\n";
-                strReturn = strReturn + "                                <td rowspan=\"" + (headers1.get(i).getColumns()+1) + "\">\r\n";
+                strReturn = strReturn + "                                <td rowspan=\"" + (headers1.get(i).getColumns() + 1) + "\">\r\n";
                 strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
@@ -1816,11 +2077,11 @@ public class IndicatorsCountMB {
                     strReturn = strReturn + "                                </td>\r\n";
                     strReturn = strReturn + "                            </tr>\r\n";
                     posh++;
-                }                
+                }
             }
             strReturn = strReturn + "                            <tr>\r\n";
             strReturn = strReturn + "                                <td >\r\n";
-            strReturn = strReturn + "                                    <div style=\"height:20px; width:100px; white-space: nowrap;\">-</div>\r\n";            
+            strReturn = strReturn + "                                    <div style=\"height:20px; width:100px; white-space: nowrap;\">-</div>\r\n";
             strReturn = strReturn + "                                </td>\r\n";
             strReturn = strReturn + "                                <td >\r\n";
             strReturn = strReturn + "                                    <div style=\"height:20px; width:100px; white-space: nowrap;\">Total</div>\r\n";
@@ -1830,9 +2091,10 @@ public class IndicatorsCountMB {
         strReturn = strReturn + "                        </table>\r\n";
         strReturn = strReturn + "                    </div>\r\n";
         //FIN TABLA QUE CONTIENE LA PRIMER COLUMNA//-------------------------------------------------------------------
+
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td valign=\"top\">\r\n";
-        
+
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
         strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
@@ -1856,10 +2118,11 @@ public class IndicatorsCountMB {
             strReturn = strReturn + "                                <td><div style=\"overflow:hidden;  width:200px; height:20px; white-space: nowrap;\">" + totalsVertical.get(i) + "</div></td>\r\n";
         }
         strReturn = strReturn + "                                <td><div style=\"overflow:hidden;  width:200px; height:20px; white-space: nowrap;\">" + String.valueOf(grandTotal) + "</div></td>\r\n";
-        strReturn = strReturn + "                            </tr>\r\n";        
+        strReturn = strReturn + "                            </tr>\r\n";
         strReturn = strReturn + "                        </table>\r\n";
         strReturn = strReturn + "                    </div>\r\n";
         //FIN TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
+
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "            </tr>\r\n";
         strReturn = strReturn + "        </table>\r\n";
@@ -3633,5 +3896,13 @@ public class IndicatorsCountMB {
 
     public void setInvertMatrix(boolean invertMatrix) {
         this.invertMatrix = invertMatrix;
+    }
+
+    public int getSizeFont() {
+        return sizeFont;
+    }
+
+    public void setSizeFont(int sizeFont) {
+        this.sizeFont = sizeFont;
     }
 }

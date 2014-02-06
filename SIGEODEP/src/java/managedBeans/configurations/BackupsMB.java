@@ -133,7 +133,7 @@ public class BackupsMB {
     private boolean backupPGSQLDwh(String serverPath, String fileName) {
         boolean booleanReturn = false;
         try {
-            Runtime r = Runtime.getRuntime();
+            //Runtime r = Runtime.getRuntime();
             Process p;
             ProcessBuilder pb;
             java.io.File file = new java.io.File(serverPath);
@@ -146,17 +146,13 @@ public class BackupsMB {
                 if (ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
                     ficherofile.delete();//Lo Borramos
                 }
-                r = Runtime.getRuntime();
-                //pb = new ProcessBuilder("pg_dump", "-f", fechafile.toString(), "-F", "c", "-Z", "9", "-v", "-o", "-h", IP, "-U", user, dbase);
-                //pb = new ProcessBuilder("pg_dump", "-i", "-h", IP, "-p", "5432", "-U", user, "-F", "c", "-b", "-v", "-f", fechafile.toString(), dbase, "-T", "backups");
+                //r = Runtime.getRuntime();                
                 pb = new ProcessBuilder("pg_dump", "-i", "-h", IP, "-p", "5432", "-U", user, "-t", "*_sta", "-F", "c", "-b", "-v", "-f", fechafile.toString(), dbase);
-
                 pb.environment().put("PGPASSWORD", password);
                 pb.redirectErrorStream(true);
                 System.out.println("Inicia creacion de copia de seguridad: " + fechafile.toString());
                 p = pb.start();
-                try {
-                    //CODIGO PARA MOSTRAR EL PROGESO DE LA GENERACION DEL ARCHIVO
+                try {//CODIGO PARA MOSTRAR EL PROGRESO DE LA GENERACION DEL ARCHIVO
                     InputStream is = p.getInputStream();
                     InputStreamReader isr = new InputStreamReader(is);
                     BufferedReader br = new BufferedReader(isr);

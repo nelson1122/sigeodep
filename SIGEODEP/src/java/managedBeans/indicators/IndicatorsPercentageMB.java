@@ -119,7 +119,7 @@ public class IndicatorsPercentageMB {
     private Date endDate = new Date();
     private String initialDateStr;
     private String endDateStr;
-    private boolean invertMatrix = true;
+    private boolean invertMatrix = false;
     private LoginMB loginMB;
 //    private List<String> variablesGraph = new ArrayList<>();
 //    private List<String> valuesGraph = new ArrayList<>();
@@ -172,6 +172,7 @@ public class IndicatorsPercentageMB {
     private boolean addAbuseTypes = false;
     private int heightGraph = 460;
     private int widthGraph = 660;
+    private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
     private String currentTypeGraph;
     DecimalFormat formateador = new DecimalFormat("0.00");
@@ -2246,7 +2247,7 @@ public class IndicatorsPercentageMB {
                     renderer.setDrawBarOutline(false);
                     renderer.setBaseItemLabelsVisible(true);
                     renderer.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator("{3}", NumberFormat.getIntegerInstance(), new DecimalFormat("0.00%")));
-                    renderer.setItemLabelFont(new Font("arial", Font.BOLD, 12));
+                    renderer.setItemLabelFont(new Font("arial", Font.BOLD, sizeFont));
                 }
             }
             if (currentTypeGraph.compareTo("pastel") == 0) {
@@ -2748,8 +2749,224 @@ public class IndicatorsPercentageMB {
         return value;
     }
 
-    public void postProcessXLS(Object document) {
+    private void exportVerticalResult(Object document) {
+        /*
+         * Exportar los datos a un archivo excell de forma vertical
+         */
+        HSSFWorkbook book = (HSSFWorkbook) document;
+        HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
+        HSSFRow fila;
+        HSSFCell celda;
+        HSSFRichTextString texto;
 
+        headers1 = new ArrayList<>();
+        headers2 = new String[columNames.size()];
+        int posRow = 0;
+        int posCol;
+        int columnsForRecord = 0;//filas a crear por registro(inicia en 1 por el rowspan cuenta desde 1)        
+        int posF;
+        int posI;
+        int posCell;
+
+        //1. detrmino el numero de columnas por registro
+        if (showColumnPercentage) {
+            columnsForRecord++;
+        }
+        if (showRowPercentage) {
+            columnsForRecord++;
+        }
+        if (showCount) {
+            columnsForRecord++;
+        }
+        if (showTotalPercentage) {
+            columnsForRecord++;
+        }
+        //2. creo las regiones para primer(as) filas y primer(as) columnas
+        int posColAux;
+        posCol = 1;
+        if (variablesCrossData.size() == 3) {
+            posCol = 2;
+        }
+        posColAux = posCol;
+        fila = sheet.createRow(posRow++);
+        for (int i = 0; i < rowNames.size(); i++) {//nombres de columna en la primer fila            
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, posCol, posCol + columnsForRecord - 1));
+            celda = fila.createCell((short) posCol);
+            setValueCell(celda, determineHeader(rowNames.get(i)));
+            posCol = posCol + columnsForRecord;
+        }
+        posCol = posColAux;
+
+        //2. inserto las segunda(as) fila
+        fila = sheet.createRow(posRow++);
+        for (int i = 0; i < rowNames.size(); i++) {//nombres de columna en la primer fila                        
+
+            if (showCount) {
+                celda = fila.createCell((short) posCol);
+                setValueCell(celda, "Recuento");
+                posCol++;
+            }
+            if (showRowPercentage) {
+                celda = fila.createCell((short) posCol);
+                setValueCell(celda, "% por fila");
+                posCol++;
+            }
+            if (showColumnPercentage) {
+                celda = fila.createCell((short) posCol);
+                setValueCell(celda, "% por columna");
+                posCol++;
+            }
+            if (showTotalPercentage) {
+                celda = fila.createCell((short) posCol);
+                setValueCell(celda, "% del total");
+                posCol++;
+            }
+        }
+
+        //3. determino regiones para primer columna        
+        if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
+            for (int i = 0; i < columNames.size(); i++) {
+                fila = sheet.createRow(posRow++);
+                celda = fila.createCell(0);
+                texto = new HSSFRichTextString(determineHeader(columNames.get(i)));// Se crea el contenido de la celda y se mete en ella.
+                celda.setCellValue(texto);
+            }
+            fila = sheet.createRow(posRow++);
+            celda = fila.createCell(0);
+            celda.setCellValue("Total");
+        }
+        if (variablesCrossData.size() == 3) {
+            //-------------------------------------------------------------------
+            //CABECERA COMPUESTA            
+            String currentVar = "";
+            String[] splitVars;
+            for (int i = 0; i < columNames.size(); i++) {
+                splitVars = columNames.get(i).split("\\}");//separo las dos variables
+                String first = splitVars[0];//invierto el orden de llegada
+                splitVars[0] = splitVars[1];
+                splitVars[1] = first;
+                if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
+                    int num = headers1.get(headers1.size() - 1).getColumns();
+                    headers1.get(headers1.size() - 1).setColumns(num + 1);
+                } else {//no existe la columna la debo crear y adicionar a la lista                    
+                    currentVar = splitVars[0];
+                    SpanColumns newSpanColumn = new SpanColumns();
+                    newSpanColumn.setLabel(splitVars[0]);
+                    newSpanColumn.setColumns(1);
+                    headers1.add(newSpanColumn);
+                }
+                headers2[i] = splitVars[1];//a la segunda cabecera le agrego la segunda variable separada
+            }
+            //AGREGO LAS COLUMNAS CABECERAS
+            posF = 1;
+            posCol = 0;
+            for (int j = 0; j < headers1.size(); j++) {
+                posI = posF + 1;
+
+                for (int i = 0; i < headers1.get(j).getColumns(); i++) {
+                    posF++;
+                    posCell = 0;
+                    fila = sheet.createRow(posRow++);
+                    celda = fila.createCell(posCell++);
+                    texto = new HSSFRichTextString(determineHeader(headers1.get(j).getLabel()));
+                    celda.setCellValue(texto);
+                    celda = fila.createCell(posCell++);
+                    texto = new HSSFRichTextString(determineHeader(headers2[posCol++]));
+                    celda.setCellValue(texto);
+
+                    //posCol y .getRowNum()
+                    for (int l = 0; l < rowNames.size() - 1; l++) {//-1 por que le agrege "TOTALES"                                         
+                        if (showCount) {
+                            celda = fila.createCell(posCell++);
+                            setValueCell(celda, getMatrixValue("countXY", posCol - 1, l));
+                        }
+                        if (showRowPercentage) {
+                            celda = fila.createCell(posCell++);
+                            setValueCell(celda, getMatrixValue("columnPercentageXY", posCol - 1, l));
+                        }
+                        if (showColumnPercentage) {
+                            celda = fila.createCell(posCell++);
+                            setValueCell(celda, getMatrixValue("rowPercentageXY", posCol - 1, l));
+                        }
+                        if (showTotalPercentage) {
+                            celda = fila.createCell(posCell++);
+                            setValueCell(celda, getMatrixValue("totalPercentageXY", posCol - 1, l));
+                        }
+
+                    }
+                    //totales                    
+                    if (showCount) {
+                        celda = fila.createCell(posCell++);
+                        setValueCell(celda, getMatrixValue("columnTotal", posCol - 1, 0));
+                    }
+                    if (showRowPercentage) {
+                        celda = fila.createCell(posCell++);
+                        setValueCell(celda, getMatrixValue("percentageOfTotalColumnAccordingTotalColumn", posCol - 1, 0));
+                    }
+                    if (showColumnPercentage) {
+                        celda = fila.createCell(posCell++);
+                        setValueCell(celda, getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", posCol - 1, 0));
+                    }
+                    if (showTotalPercentage) {
+                        celda = fila.createCell(posCell++);
+                        setValueCell(celda, getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", posCol - 1, 0));
+                    }
+                }
+                sheet.addMergedRegion(new CellRangeAddress(posI, posF, 0, 0));
+                //posF++;
+            }
+            //total
+            fila = sheet.createRow(posRow++);
+            celda = fila.createCell(0);
+            texto = new HSSFRichTextString("-");
+            celda.setCellValue(texto);
+            celda = fila.createCell(1);
+            texto = new HSSFRichTextString("Total");
+            celda.setCellValue(texto);
+            posCell = posColAux;
+            for (int l = 0; l < rowNames.size() - 1; l++) {//-1 por que le agrege "TOTALES"                                         
+                if (showCount) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("rowTotal", -1, l));
+                }
+                if (showRowPercentage) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingGrandTotal", -1, l));
+                }
+                if (showColumnPercentage) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingTotalRow", -1, l));
+                    
+                }
+                if (showTotalPercentage) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingGrandTotal", 0, l));
+                }
+            }
+            //ultimos valores de la fila
+            if (showCount) {
+                celda = fila.createCell(posCell++);                                
+                setValueCell(celda, String.valueOf(grandTotal));
+            }
+            if (showRowPercentage) {
+                celda = fila.createCell(posCell++);
+                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0,0));
+            }
+            if (showColumnPercentage) {
+                celda = fila.createCell(posCell++);
+                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0,0));
+            }
+            if (showTotalPercentage) {
+                celda = fila.createCell(posCell++);
+                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0,0));
+            }
+        }
+    }
+
+    private void exportHorizontalResult(Object document) {
+        /*
+         * Exportar los datos a un archivo excell de forma horizontal
+         */
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
         HSSFRow fila;
@@ -3012,6 +3229,14 @@ public class IndicatorsPercentageMB {
         }
     }
 
+    public void postProcessXLS(Object document) {
+        if (invertMatrix) {
+            exportVerticalResult(document);
+        } else {
+            exportHorizontalResult(document);
+        }
+    }
+
     private void setValueCell(HSSFCell celda, String strValue) {
         /*determina si el valor a almacenar en una celda del 
          archivo excell debe ser numerica o cadena*/
@@ -3093,8 +3318,6 @@ public class IndicatorsPercentageMB {
         //TABLA QUE CONTIENE LA PRIMER COLUMNA//-------------------------------------------------------------------        
         strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden; height:280px\">\r\n";//tamaño del div izquierdo
         strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
-
-
         if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {//COLUMNA SIMPLE
 
             for (int i = 0; i < columNames.size(); i++) {
@@ -3158,13 +3381,13 @@ public class IndicatorsPercentageMB {
         strReturn = strReturn + "                        </table>\r\n";
         strReturn = strReturn + "                    </div>\r\n";
         //FIN TABLA QUE CONTIENE LA PRIMER COLUMNA//-------------------------------------------------------------------
+
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "                <td valign=\"top\">\r\n";
-        //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
 
+        //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
         strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
-
         //AGREGO LOS REGISTROS DE LA MATRIZ        
         for (int j = 0; j < columNames.size(); j++) {
             if (j == 0) {
@@ -4093,5 +4316,13 @@ public class IndicatorsPercentageMB {
 
     public void setInvertMatrix(boolean invertMatrix) {
         this.invertMatrix = invertMatrix;
+    }
+
+    public int getSizeFont() {
+        return sizeFont;
+    }
+
+    public void setSizeFont(int sizeFont) {
+        this.sizeFont = sizeFont;
     }
 }

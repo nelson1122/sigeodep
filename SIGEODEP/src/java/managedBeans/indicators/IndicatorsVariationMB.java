@@ -102,7 +102,7 @@ public class IndicatorsVariationMB {
     private String endDateStrA = "";
     private String initialDateStrB = "";
     private String endDateStrB = "";
-    private boolean invertMatrix = true;
+    private boolean invertMatrix = false;
     private Calendar c1A = Calendar.getInstance();
     private Calendar c2A = Calendar.getInstance();
     private Calendar c1B = Calendar.getInstance();
@@ -123,7 +123,6 @@ public class IndicatorsVariationMB {
     private String initialValue = "";
     private String endValue = "";
     private String dataTableHtml;
-    
     private String dataTableHtmlDiference;
     private String sql = "";
     private String[] headers2;//CABECERA 2 CUANDO EL CRUCE SE REALIZA SOBRE 3 VARIABLES
@@ -168,10 +167,10 @@ public class IndicatorsVariationMB {
     private StringBuilder sb;
     private int tuplesProcessed;
     private String sourceTable = "";//tabla adicional que se usara en la seccion "FROM" de la consulta sql
-    
     private boolean separateRecords = false;
     private int heightGraph = 460;
     private int widthGraph = 660;
+    private int sizeFont=12;
     private List<String> typesGraph = new ArrayList<>();
     private String currentTypeGraph;
     String variablesName = "";
@@ -221,26 +220,9 @@ public class IndicatorsVariationMB {
 
     public void loadValuesGraph() {
         valuesGraph1 = new ArrayList<>();
-        //valuesGraph2 = new ArrayList<>();
         currentVariableGraph1 = "";
-        //currentVariableGraph2 = "";
         currentValueGraph1 = null;
-        //currentValueGraph2 = null;
-
-//        if (variablesCrossData.size() > 1) {
-//            currentVariableGraph1 = variablesCrossData.get(1).getName();
-//            for (int j = 0; j < variablesCrossData.get(1).getValuesConfigured().size(); j++) {
-//                valuesGraph1.add(variablesCrossData.get(1).getValuesConfigured().get(j));
-//                currentValueGraph1 = variablesCrossData.get(1).getValuesConfigured().get(j);
-//            }
-//        }
-//        if (variablesCrossData.size() > 2) {
-//            currentVariableGraph2 = variablesCrossData.get(2).getName();
-//            for (int j = 0; j < variablesCrossData.get(2).getValuesConfigured().size(); j++) {
-//                valuesGraph2.add(variablesCrossData.get(2).getValuesConfigured().get(j));
-//                currentValueGraph2 = variablesCrossData.get(2).getValuesConfigured().get(j);
-//            }
-//        }
+        
         if (variablesCrossData.size() > 2) {
             currentVariableGraph1 = variablesCrossData.get(2).getName();
             for (int j = 0; j < variablesCrossData.get(2).getValuesConfigured().size(); j++) {
@@ -2173,7 +2155,7 @@ public class IndicatorsVariationMB {
             if (showItems) {//mostrar items
                 CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0"));
                 plot.getRenderer().setItemLabelGenerator(generator);
-                plot.getRenderer().setItemLabelFont(new Font("arial", Font.BOLD, 12));
+                plot.getRenderer().setItemLabelFont(new Font("arial", Font.BOLD, sizeFont));
                 plot.getRenderer().setItemLabelsVisible(true);
             }
             //----------GENERAR PNG A PARTIR DEL JCHART
@@ -2219,7 +2201,7 @@ public class IndicatorsVariationMB {
         }
         //dynamicDataTableGroup = new OutputPanel();//creo el panel grid
         dataTableHtml = "";
-        
+
         dataTableHtmlDiference = "";
         chartImage = null;
         variablesCrossList = new ArrayList<>();//SelectItem[variablesListData.size()];
@@ -2609,8 +2591,16 @@ public class IndicatorsVariationMB {
         }
         return value;
     }
-
-    public void postProcessXLS(Object document) {
+    
+    private void exportVerticalResult(Object document) {
+        /*
+         * Exportar los datos a un archivo excell de forma vertical
+         */
+    }
+    private void exportHorizontalResult(Object document) {
+        /*
+         * Exportar los datos a un archivo excell de forma horizontal
+         */
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
         HSSFRow fila;
@@ -2713,6 +2703,14 @@ public class IndicatorsVariationMB {
         }
     }
 
+    public void postProcessXLS(Object document) {
+        if (invertMatrix) {
+            exportVerticalResult(document);
+        } else {
+            exportHorizontalResult(document);
+        }        
+    }
+
     private void setValueCell(HSSFCell celda, String strValue) {
         /*determina si el valor a almacenar en una celda del 
          archivo excell debe ser numerica o cadena*/
@@ -2724,7 +2722,6 @@ public class IndicatorsVariationMB {
         }
     }
 
-    
     public void invertMatrixClick() {
         if (invertMatrix) {
             invertMatrix = false;
@@ -2737,13 +2734,132 @@ public class IndicatorsVariationMB {
     }
 
     private String verticalResult() {
-        
+
+        headers1 = new ArrayList<>();
+        headers2 = new String[columNamesFinal.size()];
+        String height = "height:20px;";
+        if (showCalculation) {
+            height = "height:30px;";
+        }
+
         String strReturn = " ";
-        
+        strReturn = strReturn + "    <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\r\n";
+        strReturn = strReturn + "            <tr>\r\n";
+        strReturn = strReturn + "                <td>\r\n";
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "                <td class=\"ui-widget-header\">\r\n";
+
+        //TABLA QUE CONTIENE LA CABECERA//-------------------------------------------------------------------                                
+        strReturn = strReturn + "                    <div id=\"divHeader\" style=\"overflow:hidden;width:434px;\">\r\n";
+        strReturn = strReturn + "                        <table width=\"200px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        strReturn = strReturn + "                            <tr>\r\n";
+        for (int j = 0; j < rowNames.size(); j++) {//NOMBRE PARA CADA COLUMNA                        
+            strReturn = strReturn + "                                <td><div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
+        }
+        strReturn = strReturn + "                            </tr>\r\n";
+        strReturn = strReturn + "                        </table>\r\n";
+        strReturn = strReturn + "                    </div>\r\n";
+        //FIN TABLA QUE CONTIENE LA CABECERA//-------------------------------------------------------------------
+
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "            </tr>\r\n";
+        strReturn = strReturn + "            <tr>\r\n";
+        strReturn = strReturn + "                <td valign=\"top\" class=\"ui-widget-header\">\r\n";
+
+        //TABLA QUE CONTIENE LA PRIMER COLUMNA//-------------------------------------------------------------------        
+        strReturn = strReturn + "                    <div id=\"firstcol\" style=\"overflow: hidden; height:280px\">\r\n";//tamaño del div izquierdo
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {//COLUMNA SIMPLE
+
+            for (int i = 0; i < columNamesFinal.size(); i++) {
+                strReturn = strReturn + "                            <tr>\r\n";
+                strReturn = strReturn + "                                <td>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; " + height + " width:200px; white-space: nowrap;\">" + determineHeader(columNamesFinal.get(i)) + "</div>\r\n";
+                strReturn = strReturn + "                                </td>\r\n";
+                strReturn = strReturn + "                            </tr>\r\n";
+            }
+        }
+        if (variablesCrossData.size() == 3) {//COLUMNA COMPUESTA            
+            String currentVar = "";
+            String[] splitVars;
+            for (int i = 0; i < columNamesFinal.size(); i++) {
+                splitVars = columNamesFinal.get(i).split("\\}");//separo las dos variables
+//                String first = splitVars[0];//invierto el orden de llegada
+//                splitVars[0] = splitVars[1];//
+//                splitVars[1] = first;
+                if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
+                    int num = headers1.get(headers1.size() - 1).getColumns();
+                    headers1.get(headers1.size() - 1).setColumns(num + 1);
+                } else {//no existe la columna la debo crear y adicionar a la lista                    
+                    currentVar = splitVars[0];
+                    SpanColumns newSpanColumn = new SpanColumns();
+                    newSpanColumn.setLabel(splitVars[0]);
+                    newSpanColumn.setColumns(1);
+                    headers1.add(newSpanColumn);
+                }
+                headers2[i] = splitVars[1];//a la segunda cabecera le agrego la segunda variable separada
+            }
+            int posh = 0;
+            for (int i = 0; i < headers1.size(); i++) {//AGREGO LA COLUMNA 1 
+                strReturn = strReturn + "                            <tr>\r\n";
+                strReturn = strReturn + "                                <td rowspan=\"" + (headers1.get(i).getColumns() + 1) + "\">\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; " + height + " width:100px; white-space: nowrap;\">" + determineHeader(headers1.get(i).getLabel()) + "</div>\r\n";
+                strReturn = strReturn + "                                </td>\r\n";
+                strReturn = strReturn + "                            </tr>\r\n";
+                for (int j = 0; j < headers1.get(i).getColumns(); j++) {//AGREGO LA COLUMNA 2 
+                    strReturn = strReturn + "                            <tr>\r\n";
+                    strReturn = strReturn + "                                <td>\r\n";
+                    strReturn = strReturn + "                                    <div style=\"overflow:hidden; " + height + " width:100px; white-space: nowrap;\">" + determineHeader(headers2[posh]) + "</div>\r\n";
+                    strReturn = strReturn + "                                </td>\r\n";
+                    strReturn = strReturn + "                            </tr>\r\n";
+                    posh++;
+                }
+            }
+        }
+        strReturn = strReturn + "                        </table>\r\n";
+        strReturn = strReturn + "                    </div>\r\n";
+        //FIN TABLA QUE CONTIENE LA PRIMER COLUMNA//-------------------------------------------------------------------
+
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "                <td valign=\"top\">\r\n";
+
+        //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
+        strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        for (int j = 0; j < columNamesFinal.size(); j++) {//AGREGO LOS REGISTROS DE LA MATRIZ
+            if (j == 0) {
+                strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+            } else {
+                strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
+            }
+            for (int i = 0; i < rowNames.size(); i++) {
+                String value;
+                if (showCalculation) {
+                    value = matrixResult[j][i];
+                } else {
+                    String[] splitColumn = matrixResult[j][i].split("<br/>");
+                    value = splitColumn[0];
+                }
+                strReturn = strReturn + "                                <td> \r\n";//mantenga dimension                
+                strReturn = strReturn + "                                <div style=\"overflow:hidden; " + height + " width:200px; white-space: nowrap;\">" + value + "</div>\r\n";
+                strReturn = strReturn + "                                </td > \r\n";
+            }
+            strReturn = strReturn + "                            </tr>\r\n";
+            changeColorType();//cambiar de color las filas de blanco a azul
+        }
+        strReturn = strReturn + "                        </table>\r\n";
+        strReturn = strReturn + "                    </div>\r\n";
+        //FIN TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
+
+        strReturn = strReturn + "                </td>\r\n";
+        strReturn = strReturn + "            </tr>\r\n";
+        strReturn = strReturn + "        </table>\r\n";
+        //System.out.println("---------------------------------\n" + strReturn + "\n---------------------------------");
         return strReturn;
     }
+
     private String horizontalResult() {
-        
+
         headers1 = new ArrayList<>();
         headers2 = new String[columNamesFinal.size()];
         String height = "height:20px;";
@@ -2773,9 +2889,7 @@ public class IndicatorsVariationMB {
             }
             strReturn = strReturn + "                            </tr>\r\n";
         }
-        if (variablesCrossData.size() == 3) {
-            //-------------------------------------------------------------------
-            //CABECERA COMPUESTA            
+        if (variablesCrossData.size() == 3) {  //CABECERA COMPUESTA            
             String currentVar = "";
             String[] splitVars;
             for (int i = 0; i < columNamesFinal.size(); i++) {
@@ -2826,7 +2940,7 @@ public class IndicatorsVariationMB {
         for (int j = 0; j < rowNames.size(); j++) {
             //----------------------------------------------------------------------
             //NOMBRE PARA CADA FILA            
-            strReturn = strReturn + "                            <tr>\r\n";            
+            strReturn = strReturn + "                            <tr>\r\n";
             strReturn = strReturn + "                                <td ><div style=\"overflow:hidden; " + height + " width:200px; white-space: nowrap;\">" + determineHeader(rowNames.get(j)) + "</div></td>\r\n";
             strReturn = strReturn + "                            </tr>\r\n";
         }
@@ -2838,10 +2952,8 @@ public class IndicatorsVariationMB {
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
         //-------------------------------------------------------------------      
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
-        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
-        //----------------------------------------------------------------------
-        //AGREGO LOS REGISTROS DE LA MATRIZ
-        for (int j = 0; j < rowNames.size(); j++) {//-1 por que le agrege "TOTALES"
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        for (int j = 0; j < rowNames.size(); j++) {//AGREGO LOS REGISTROS DE LA MATRIZ
             if (j == 0) {
                 strReturn = strReturn + "                            <tr " + getColorType() + " >\r\n";
             } else {
@@ -2882,10 +2994,7 @@ public class IndicatorsVariationMB {
             return horizontalResult();
         }
     }
-    
-   
 
-        
     private void createMatrixDifference() {
         try {
             columNamesFinal = new ArrayList<>();
@@ -3233,7 +3342,7 @@ public class IndicatorsVariationMB {
 
     public void setDataTableHtml(String dataTableHtml) {
         this.dataTableHtml = dataTableHtml;
-    }    
+    }
 
     public String getDataTableHtmlDiference() {
         return dataTableHtmlDiference;
@@ -3414,12 +3523,18 @@ public class IndicatorsVariationMB {
     public void setShowFrames(boolean showFrames) {
         this.showFrames = showFrames;
     }
-    
-     public boolean isInvertMatrix() {
+
+    public boolean isInvertMatrix() {
         return invertMatrix;
     }
 
     public void setInvertMatrix(boolean invertMatrix) {
         this.invertMatrix = invertMatrix;
+    }public int getSizeFont() {
+        return sizeFont;
+    }
+
+    public void setSizeFont(int sizeFont) {
+        this.sizeFont = sizeFont;
     }
 }

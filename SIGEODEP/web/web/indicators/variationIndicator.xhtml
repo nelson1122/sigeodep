@@ -344,23 +344,24 @@
                                                 render="IdImageChart"/>
                                         </p:spinner> 
                                     </p:column>
-                                    <!-- p:column styleClass="ui-widget-header">
-                                        Filtro 2
+                                    <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        Fuente
                                     </p:column>
                                     <p:column>
-                                        <h:outputText
-                                            id="IdVariableGraph2"
-                                            value="# {indicatorsVariationMB.currentVariableGraph2}"/>
-                                        <h:selectOneMenu
-                                            id="IdValueGraph2"
-                                            value="# {indicatorsVariationMB.currentValueGraph2}"> 
-                                            <f:selectItems value="# {indicatorsVariationMB.valuesGraph2}"/>
+                                        <p:spinner 
+                                            value="#{indicatorsVariationMB.sizeFont}"
+                                            min="1"
+                                            max="20"
+                                            stepFactor="1"
+                                            size="5">
                                             <f:ajax 
                                                 event="change"
-                                                listener="# {indicatorsVariationMB.createImage}"
+                                                listener="#{indicatorsVariationMB.createImage}"
                                                 render="IdImageChart"/>
-                                        </h:selectOneMenu>
-                                    </p:column -->
+                                        </p:spinner> 
+                                    </p:column>
+                                </p:row>
                                 </p:row>
 
                             </p:panelGrid>                                

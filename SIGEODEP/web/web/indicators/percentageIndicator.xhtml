@@ -332,6 +332,24 @@
                                         </p:spinner> 
                                     </p:column>
                                 </p:row>
+                                <p:row>
+                                    <p:column styleClass="ui-widget-header">
+                                        Fuente
+                                    </p:column>
+                                    <p:column>
+                                        <p:spinner 
+                                            value="#{indicatorsPercentageMB.sizeFont}"
+                                            min="1"
+                                            max="20"
+                                            stepFactor="1"
+                                            size="5">
+                                            <f:ajax 
+                                                event="change"
+                                                listener="#{indicatorsPercentageMB.createImage}"
+                                                render="IdImageChart"/>
+                                        </p:spinner> 
+                                    </p:column>
+                                </p:row>
                             </p:panelGrid>                                
                             <br/>
                             <div style="width: 680px; height: 480px; overflow: scroll">
