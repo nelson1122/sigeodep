@@ -7,6 +7,7 @@ package managedBeans.login;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,8 +20,11 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
@@ -38,24 +42,23 @@ import javax.swing.Timer;
 public class ApplicationControlMB {
 
     @Resource(name = "jdbc/od")
-    private DataSource ds;//fuente de datos(es configurada por glassfish)
-    Timer timer = new Timer(3600000, new ActionListener() {//cada hora
-        //Timer timer = new Timer(60000, new ActionListener() {//cada minuto
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            actionsPerHour();
-        }
-    });
+    private DataSource ds;//fuente de datos(es configurada por glassfish)  
     private ResultSet rs;
     private Statement st;
     private String user;
     private String db;
+    private String db_dwh;
     private String password;
     private String server;
     private String url = "";
     private ArrayList<String> currentIdSessions = new ArrayList<>();//lista de identificadores de sesiones
     private ArrayList<Integer> currentUserIdSessions = new ArrayList<>();//lista de id de usuarios logeados
-    private String value = "-";
+    private ArrayList<Integer> fatalReservedIdentifiers = new ArrayList<>();//identificador de registros fatales reservados
+    private ArrayList<Integer> victimsReservedIdentifiers = new ArrayList<>();//identificador de registros fatales reservados
+    private ArrayList<Integer> nonfatalReservedIdentifiers = new ArrayList<>();//identificador de registros fatales reservados
+    private ArrayList<Integer> sivigilaVictimReservedIdentifiers = new ArrayList<>();//identificador de registros fatales reservados
+    private ArrayList<Integer> sivigilaAggresorReservedIdentifiers = new ArrayList<>();//identificador de registros fatales reservados
+    private String value = "-";//desde pagina de login se llama a este valor para que el objeto applicationControlMB sea visible en el contexto 
     private String realPath = "";
     public Connection conn;
 
@@ -67,144 +70,182 @@ public class ApplicationControlMB {
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/");
         timer.start();
+
     }
+
+    @PostConstruct
+    private void event() {
+        connectToDb();
+    }
+
+    @PreDestroy
+    private void destroySession() {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                disconnect();
+            }
+        } catch (Exception e) {
+            //System.out.println("Termina session por inactividad 003 " + e.toString());
+        }
+    }
+
+    public void disconnect() {
+        try {
+            if (!conn.isClosed()) {
+                conn.close();
+                System.out.println("Cerrada conexion a base de datos " + url + " ... OK  " + this.getClass().getName());
+            }
+        } catch (Exception e) {
+            System.out.println("Error al cerrar conexion a base de datos " + url + " ... " + e.toString());
+        }
+    }
+    Timer timer = new Timer(3600000, new ActionListener() {//cada hora
+        //Timer timer = new Timer(60000, new ActionListener() {//cada minuto
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            actionsPerHour();
+        }
+    });
 
     private void actionsPerHour() {
         /*
-         * Metodo que se ejecuta cada hora, si no hay susuarios en el sistema realiza una copia de seguridad
+         * Metodo que se ejecuta cada hora, y si no hay usuarios logeados en el sistema realiza una copia de seguridad
          */
-        try {
-            if (currentUserIdSessions.isEmpty()) {
-                Calendar a = new GregorianCalendar();
-                TimeZone zonah = java.util.TimeZone.getTimeZone("GMT+1");
-                Calendar Calendario = java.util.GregorianCalendar.getInstance(zonah, new java.util.Locale("es"));
-                SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                SimpleDateFormat df2 = new java.text.SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
-                SimpleDateFormat df3 = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        boolean continueProcess;
+        String dateStr = "";
+        String fileName = "";
 
-                if (connectToDb()) {
-                    //determinar si existe una copia de seguridad para el dia actual
+        try {
+//            System.out.println(""
+//                    + " Revision si se crea copia de seguridad: "
+//                    + " currentUserIdSessions.size()=" + currentUserIdSessions.size()
+//                    + " currentIdSessions.size()=" + currentIdSessions.size());
+            if (currentUserIdSessions.isEmpty() && currentIdSessions.isEmpty()) {
+                continueProcess = true;
+            } else {
+                continueProcess = false;//System.out.println("no se realiza copia de seguridad por que existen usuarios en el sistema");
+            }
+            if (continueProcess) {
+                if (connectToDb()) {//determinar si existe una copia de seguridad para el dia actual
+                    TimeZone zonah = java.util.TimeZone.getTimeZone("GMT+1");
+                    Calendar Calendario = java.util.GregorianCalendar.getInstance(zonah, new java.util.Locale("es"));
+                    SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    SimpleDateFormat df2 = new java.text.SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+                    SimpleDateFormat df3 = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                    dateStr = df.format(Calendario.getTime());
+                    fileName = "backup_" + df2.format(Calendario.getTime());
                     String sql = "SELECT * FROM backups WHERE date_backup::date = to_date('" + df3.format(Calendario.getTime()) + "','yyyy-MM-dd') AND id_backup < 11";
                     rs = consult(sql);
                     if (rs.next()) {
-                        //System.out.println("Ya existe una copia de seguridad automatica para este dia");
-                    } else {
-                        String dateStr = df.format(Calendario.getTime());
-                        String fileName = "backup_" + df2.format(Calendario.getTime());
-                        if (backupPGSQL(realPath + "backups/", fileName)) {
-                            saveBackupInfo(realPath + "backups/", fileName, dateStr);
-                        }
+                        continueProcess = false;//System.out.println("no se realiza copia de seguridad por que existe una copia de seguridad para este dia");
                     }
                 }
-            } else {
-                //System.out.println("no se realiza copia de seguridad por que existen usuarios en el sistema");
             }
-        } catch (Exception e) {
-            //System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.getMessage());
-        }
-    }
 
-    public boolean saveBackupInfo(String serverPath, String fileName, String dateStr) {
-        /* 
-         * almacena nombre, hubicacion y fecha de creacion de la copia de seguridad en la base de datos
-         */
-        try {
-            rs = consult("SELECT * FROM backups WHERE id_backup < 11 ORDER BY id_backup");
-            int max = 0;
-            while (rs.next()) {
-                if (rs.getInt(1) > max) {
-                    max = rs.getInt(1);
-                }
-            }
-            if (max == 10) {
-                //ya existen 10 copias se debe sobreescribir una existente
-                rs = consult("SELECT MIN(date_backup) FROM backups where id_backup < 11");
-                String minDate = "";//fecha 
-                if (rs.next()) {
-                    minDate = rs.getString(1);
-                }
-                if (minDate.length() != 0) {
-                    //elimino el archivo 
-                    rs = consult("SELECT * FROM backups where date_backup = '" + rs.getString(1) + "'");
-                    if (rs.next()) {
-                        java.io.File ficherofile = new java.io.File(rs.getString("path_file") + rs.getString("name_backup") + ".backup");
-                        if (ficherofile.exists()) {
-                            ficherofile.delete();//Borramos archivo de la copia de seguridad
-                        }
-                        //actualizo el registro
-                        non_query("UPDATE backups SET "
-                                + " name_backup = '" + fileName + "',"
-                                + " date_backup = '" + dateStr + "',"
-                                + " type_backup = 'AUTOMATICO',"
-                                + " path_file = '" + serverPath + "'"
-                                + "WHERE "
-                                + " id_backup = " + rs.getString(1));
-                    }
-                }
-            } else {
-                //hay menos de diez copias automaticas se crea un nuevo registro
-                max++;
-                non_query(" INSERT INTO backups VALUES (" + String.valueOf(max) + ",'" + fileName + "','" + dateStr + "','AUTOMATICO','" + serverPath + "')");
-            }
-            return true;
-        } catch (Exception e) {
-            System.out.println("Error 6 en " + this.getClass().getName() + ":" + e.getMessage());
-            return false;
-        }
-    }
-
-    private boolean backupPGSQL(String serverPath, String fileName) {
-        /*
-         * generacion de un archivo de copia de seguridad mediante la opcion:
-         * pg_dump de postgres, recibe como parametro la carpeta en el servidor
-         * y el nombre que tendra la copia de seguridad
-         */
-        try {
-            Runtime r = Runtime.getRuntime();
-            Process p;
-            ProcessBuilder pb;
-            java.io.File file = new java.io.File(serverPath);
-            if (file.exists()) {//verificar que el directorio exista
-                StringBuilder fechafile = new StringBuilder();
-                fechafile.append(serverPath);
-                fechafile.append(fileName);
-                fechafile.append(".backup");
-                java.io.File ficherofile = new java.io.File(fechafile.toString());
-                if (ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
-                    ficherofile.delete();//Lo Borramos
-                }
-                r = Runtime.getRuntime();
-                //pb = new ProcessBuilder("pg_dump", "-f", fechafile.toString(), "-F", "c", "-Z", "9", "-v", "-o", "-h", IP, "-U", user, dbase);
-                pb = new ProcessBuilder("pg_dump", "-i", "-h", server, "-p", "5432", "-U", user, "-F", "c", "-b", "-v", "-f", fechafile.toString(), db, "-T", "backups");
-                pb.environment().put("PGPASSWORD", password);
-                pb.redirectErrorStream(true);
-//                System.out.println("Inicia creacion de copia de seguridad: " + fechafile.toString());
-                p = pb.start();
-                String outString = "";
+            if (continueProcess) {//almaceno la informacion de la copia de seguridad creada
                 try {
-                    //CODIGO PARA MOSTRAR EL PROGESO DE LA GENERACION DEL ARCHIVO
-                    InputStream is = p.getInputStream();
-                    InputStreamReader isr = new InputStreamReader(is);
-                    BufferedReader br = new BufferedReader(isr);
-                    String ll;
-                    while ((ll = br.readLine()) != null) {
-                        outString = ll;
+                    int max = 0;
+                    rs = consult("SELECT MAX(id_backup) FROM backups WHERE id_backup < 11 ");
+                    if (rs.next()) {
+                        max = rs.getInt(1);
                     }
-                    System.out.println("\nFinaliza creacion de copia de seguridad: " + fechafile.toString() + "   " + outString);
-                    return true;
-                } catch (IOException e) {
-                    System.out.println("Error 7 en " + this.getClass().getName() + ":" + e.getMessage());
-                    return false;
+                    if (max == 10) {//ya existen 10 copias se debe sobreescribir una existente
+                        rs = consult("SELECT MIN(date_backup) FROM backups where id_backup < 11");
+                        String minDate = "";//fecha 
+                        if (rs.next()) {
+                            minDate = rs.getString(1);
+                        }
+                        if (minDate.length() != 0) {//elimino los archivos asociados a la copia de seguridad
+                            rs = consult("SELECT * FROM backups where date_backup = '" + rs.getString(1) + "'");
+                            if (rs.next()) {
+                                File backupFile = new java.io.File(rs.getString("path_file") + rs.getString("name_backup") + "_od.backup");
+                                if (backupFile.exists()) {
+                                    backupFile.delete();//Borramos archivo
+                                }
+                                backupFile = new java.io.File(rs.getString("path_file") + rs.getString("name_backup") + "_od_dwh.backup");
+                                if (backupFile.exists()) {
+                                    backupFile.delete();//Borramos archivo
+                                }
+                                //actualizo el registro
+                                non_query("UPDATE backups SET "
+                                        + " name_backup = '" + fileName + "',"
+                                        + " date_backup = '" + dateStr + "',"
+                                        + " type_backup = 'AUTOMATICO',"
+                                        + " path_file = '" + realPath + "backups/" + "'"
+                                        + "WHERE "
+                                        + " id_backup = " + rs.getString(1));
+                            }
+                        }
+                    } else {//hay menos de diez copias automaticas se crea un nuevo registro
+                        max++;
+                        non_query(" INSERT INTO backups VALUES (" + String.valueOf(max) + ",'" + fileName + "','" + dateStr + "','AUTOMATICO','" + realPath + "backups/" + "')");
+                    }
+                } catch (Exception x) {
+                    System.out.println("Error 4 en " + this.getClass().getName() + ":" + x.getMessage());
+                    continueProcess = false;
                 }
-                //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Correcto", "La copia de seguridad ha sido creada correctamente"));
-            } else {
-                System.out.println("No se encontro la carpeta backups en el servidor ");
-                return false;
             }
-        } catch (IOException x) {
-            System.out.println("Error 8 en " + this.getClass().getName() + ":" + x.getMessage());
-            return false;
+
+            if (continueProcess) {//realizo los archivos de copia de seguridad
+                try {
+                    Process p;
+                    ProcessBuilder pb;
+                    if (new java.io.File(realPath + "backups/").exists()) {//verificar que el directorio exista                    
+
+                        File fiRcherofile = new java.io.File(realPath + "backups/" + fileName + "_od.backup");//si archivo od existe Lo eliminamos 
+                        if (fiRcherofile.exists()) {
+                            fiRcherofile.delete();
+                        }
+                        fiRcherofile = new java.io.File(realPath + "backups/" + fileName + "_od_dwh.backup");//si archivo od_dwh existe Lo eliminamos 
+                        if (fiRcherofile.exists()) {
+                            fiRcherofile.delete();
+                        }
+
+                        //copia de seguridad de od(sigeodep)
+                        pb = new ProcessBuilder("pg_dump", "-i", "-h", server, "-p", "5432", "-U", user, "-F", "c", "-b", "-v", "-f", realPath + "backups/" + fileName + "_od.backup", db);
+                        pb.environment().put("PGPASSWORD", password);
+                        pb.redirectErrorStream(true);
+                        p = pb.start();
+                        printOutputFromProcces(p, " crear copia de seguridad automatica : " + realPath + "backups/" + fileName + "_od.backup");
+
+                        //copia de seguridad de od_dwh(bodega)
+                        pb = new ProcessBuilder("pg_dump", "-i", "-h", server, "-p", "5432", "-U", user, "-F", "c", "-b", "-v", "-f", realPath + "backups/" + fileName + "_od_dwh.backup", db_dwh);
+                        pb.environment().put("PGPASSWORD", password);
+                        pb.redirectErrorStream(true);
+                        p = pb.start();
+                        printOutputFromProcces(p, " crear copia de seguridad automatica : " + realPath + "backups/" + fileName + "_od_dwh.backup");
+                    } else {
+                        System.out.println("Error 4 en " + this.getClass().getName() + ": Directorio 'backups' no existe en el servidor");
+                    }
+                    System.out.println("Fin copia seguridad aotomatica" + realPath + "backups/" + fileName);
+                } catch (IOException x) {
+                    System.out.println("Error 3 en " + this.getClass().getName() + ":" + x.getMessage());
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.getMessage());
         }
+    }
+
+    private void printOutputFromProcces(Process p, String description) {
+        /*
+         * mostrar por consola el progreso de un proceso externo invocado
+         */
+        System.out.println("\nInicia proceso " + description + " /////////////////////////////////////////");
+        try {
+            //CODIGO PARA MOSTRAR EL PROGESO DE LA GENERACION DEL ARCHIVO
+            InputStream is = p.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String ll;
+            while ((ll = br.readLine()) != null) {
+                System.out.println(ll);
+            }
+        } catch (IOException e) {
+            System.out.println("Error 99 " + e.getMessage());
+        }
+        System.out.println("Termina proceso " + description + " /////////////////////////////////////////\n");
     }
 
     public final boolean connectToDb() {
@@ -218,7 +259,7 @@ public class ApplicationControlMB {
             returnValue = false;
             try {
                 if (ds == null) {
-                    System.out.println("ERROR: No se obtubo data source");
+                    System.out.println("ERROR: No se obtubo data source... applicationControlMB");
                 } else {
                     conn = ds.getConnection();
                     if (conn == null) {
@@ -228,6 +269,7 @@ public class ApplicationControlMB {
                         if (rs1.next()) {
                             user = rs1.getString("user_db");
                             db = rs1.getString("name_db");
+                            db_dwh = rs1.getString("name_db_dwh");
                             password = rs1.getString("password_db");
                             server = rs1.getString("server_db");
                             url = "jdbc:postgresql://" + server + "/" + db;
@@ -236,7 +278,7 @@ public class ApplicationControlMB {
                             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                                 System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.getMessage());
                             }
-                            conn.close();
+                            //conn.close();
                             conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
                             if (conn != null) {
                                 System.out.println("Conexion a base de datos " + url + " " + this.getClass().getName());
@@ -301,8 +343,8 @@ public class ApplicationControlMB {
 
     public boolean hasLogged(int idUser) {
         /*
-         * determina si un usario tiene una sesion iniciada recibe como parametro 
-         * el identificador del usuario en la base de datos
+         * determina si un usario tiene una sesion iniciada 
+         * idUser= identificador del usuario en la base de datos
          */
         boolean foundIdUser = false;
         //determinar si el usuario ya tiene iniciada una sesion
@@ -398,6 +440,224 @@ public class ApplicationControlMB {
             return max;
         } else {
             return 0;
+        }
+    }
+
+    public synchronized int addNonfatalReservedIdentifiers() {
+        /*
+         * se reserva el identificador para un nuevo registro asi dos 
+         * usuarios no ingresen un registro con igual identificador
+         */
+        int intReturn = 0;
+        try {
+            rs = consult("SELECT MAX(non_fatal_injury_id) FROM non_fatal_injuries");
+            if (rs.next()) {//determino el maximo non_fatal_injury_id
+                intReturn = rs.getInt(1);
+                intReturn++;
+            }
+            boolean foundId = false;
+            while (true) {//si esta en la lista de reservado se aumenta                 
+                for (int i = 0; i < nonfatalReservedIdentifiers.size(); i++) {
+                    if (nonfatalReservedIdentifiers.get(i) == intReturn) {
+                        foundId = true;
+                        break;
+                    }
+                }
+                if (foundId) {
+                    intReturn++;
+                    foundId = false;
+                } else {
+                    nonfatalReservedIdentifiers.add(intReturn);
+                    return intReturn;
+                }
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(ApplicationControlMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return intReturn;
+    }
+
+    public synchronized void removeNonfatalReservedIdentifiers(int id) {
+        for (int i = 0; i < nonfatalReservedIdentifiers.size(); i++) {
+            if (nonfatalReservedIdentifiers.get(i) == id) {
+                nonfatalReservedIdentifiers.remove(i);
+            }
+        }
+    }
+
+    public synchronized int addFatalReservedIdentifiers() {
+        /*
+         * se reserva el identificador para un nuevo registro asi dos 
+         * usuarios no ingresen un registro con igual identificador
+         */
+        int intReturn = 0;
+        try {
+            rs = consult("SELECT MAX(fatal_injury_id) FROM fatal_injuries");
+            if (rs.next()) {//determino el maximo fatal_injury_id
+                intReturn = rs.getInt(1);
+                intReturn++;
+            }
+            boolean foundId = false;
+            while (true) {//si esta en la lista de reservado se aumenta                 
+                for (int i = 0; i < fatalReservedIdentifiers.size(); i++) {
+                    if (fatalReservedIdentifiers.get(i) == intReturn) {
+                        foundId = true;
+                        break;
+                    }
+                }
+                if (foundId) {
+                    intReturn++;
+                    foundId = false;
+                } else {
+                    fatalReservedIdentifiers.add(intReturn);
+                    return intReturn;
+                }
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(ApplicationControlMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return intReturn;
+    }
+
+    public synchronized void removeFatalReservedIdentifiers(int id) {
+        for (int i = 0; i < fatalReservedIdentifiers.size(); i++) {
+            if (fatalReservedIdentifiers.get(i) == id) {
+                fatalReservedIdentifiers.remove(i);
+            }
+        }
+    }
+
+    public synchronized int addVictimsReservedIdentifiers() {
+        /*
+         * se reserva el identificador para un nuevo registro asi dos 
+         * usuarios no ingresen un registro con igual identificador
+         */
+        int intReturn = 0;
+        try {
+            rs = consult("SELECT MAX(victim_id) FROM victims");
+            if (rs.next()) {//determino el maximo victim_id
+                intReturn = rs.getInt(1);
+                intReturn++;
+            }
+            boolean foundId = false;
+            while (true) {//si esta en la lista de reservado se aumenta                 
+                for (int i = 0; i < victimsReservedIdentifiers.size(); i++) {
+                    if (victimsReservedIdentifiers.get(i) == intReturn) {
+                        foundId = true;
+                        break;
+                    }
+                }
+                if (foundId) {
+                    intReturn++;
+                    foundId = false;
+                } else {
+                    victimsReservedIdentifiers.add(intReturn);
+                    return intReturn;
+                }
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(ApplicationControlMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return intReturn;
+
+    }
+
+    public synchronized void removeVictimsReservedIdentifiers(int id) {
+        for (int i = 0; i < victimsReservedIdentifiers.size(); i++) {
+            if (victimsReservedIdentifiers.get(i) == id) {
+                victimsReservedIdentifiers.remove(i);
+            }
+        }
+    }
+
+    public synchronized int addSivigilaVictimReservedIdentifiers() {
+        /*
+         * se reserva el identificador para un nuevo registro asi dos 
+         * usuarios no ingresen un registro con igual identificador
+         */
+        int intReturn = 0;
+        try {
+            rs = consult("SELECT MAX(sivigila_victim_id) FROM sivigila_victim");
+            if (rs.next()) {//determino el maximo sivigila_victim_id
+                intReturn = rs.getInt(1);
+                intReturn++;
+            }
+            boolean foundId = false;
+            while (true) {//si esta en la lista de reservado se aumenta                 
+                for (int i = 0; i < sivigilaVictimReservedIdentifiers.size(); i++) {
+                    if (sivigilaVictimReservedIdentifiers.get(i) == intReturn) {
+                        foundId = true;
+                        break;
+                    }
+                }
+                if (foundId) {
+                    intReturn++;
+                    foundId = false;
+                } else {
+                    sivigilaVictimReservedIdentifiers.add(intReturn);
+                    return intReturn;
+                }
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(ApplicationControlMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return intReturn;
+
+    }
+
+    public synchronized void removeSivigilaVictimReservedIdentifiers(int id) {
+        for (int i = 0; i < sivigilaVictimReservedIdentifiers.size(); i++) {
+            if (sivigilaVictimReservedIdentifiers.get(i) == id) {
+                sivigilaVictimReservedIdentifiers.remove(i);
+            }
+        }
+    }
+
+    public synchronized int addSivigilaAggresorReservedIdentifiers() {
+        /*
+         * se reserva el identificador para un nuevo registro asi dos 
+         * usuarios no ingresen un registro con igual identificador
+         */
+        int intReturn = 0;
+        try {
+            rs = consult("SELECT MAX(sivigila_agresor_id) FROM sivigila_aggresor");
+            if (rs.next()) {//determino el maximo sivigila_agresor_id
+                intReturn = rs.getInt(1);
+                intReturn++;
+            }
+            boolean foundId = false;
+            while (true) {//si esta en la lista de reservado se aumenta                 
+                for (int i = 0; i < sivigilaAggresorReservedIdentifiers.size(); i++) {
+                    if (sivigilaAggresorReservedIdentifiers.get(i) == intReturn) {
+                        foundId = true;
+                        break;
+                    }
+                }
+                if (foundId) {
+                    intReturn++;
+                    foundId = false;
+                } else {
+                    sivigilaAggresorReservedIdentifiers.add(intReturn);
+                    return intReturn;
+                }
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(ApplicationControlMB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return intReturn;
+
+    }
+
+    public synchronized void removeSivigilaAggresorReservedIdentifiers(int id) {
+        for (int i = 0; i < sivigilaAggresorReservedIdentifiers.size(); i++) {
+            if (sivigilaAggresorReservedIdentifiers.get(i) == id) {
+                sivigilaAggresorReservedIdentifiers.remove(i);
+            }
         }
     }
 

@@ -351,7 +351,7 @@ public class ErrorsControlMB implements Serializable {
                     value //                          column5 ==> descripcion de error(como corregir)
                     ));
 
-        } else if (relationVar == null) {//error cuando falta relacion oblicatoria
+        } else if (relationVar == null) {//error cuando falta relacion obligatoria
             errorsList.add(new RowDataTable(
                     String.valueOf(errorsNumber), //                    column1 ==> numero del error 
                     "-", //no rowId (problema en toda columna)          column2 ==> identificador del registro
@@ -393,6 +393,9 @@ public class ErrorsControlMB implements Serializable {
                 } else {
                     strReturn = "El valor (" + value + ") debe tener el formato (" + relationVar.getDateFormat() + ") y debe estar entre el 2002 al " + String.valueOf(new Date().getYear() + 1900);
                 }
+                break;
+            case date_of_birth:
+                strReturn = "El valor (" + value + ") debe tener el formato (" + relationVar.getDateFormat() + ") y no ser superior a " + String.valueOf(new Date().getYear() + 1900);
                 break;
             case day:
                 strReturn = "Digite en la casilla 'nuevo valor' un dia válido y presione resolver. El dia debe ser un número entero de 1 a 31";
@@ -543,6 +546,11 @@ public class ErrorsControlMB implements Serializable {
         if (selectedErrorRowTable != null) {
             switch (DataTypeEnum.convert(remove_v(selectedErrorRowTable.getColumn7()))) {//tipo de relacion()
                 case text:
+                    break;
+                case date_of_birth:
+                    if (validDateOfBirth(currentNewValue, selectedErrorRowTable.getColumn9())) {
+                        correction = true;
+                    }
                     break;
                 case integer:
                     if (isNumeric(currentNewValue)) {
@@ -856,6 +864,28 @@ public class ErrorsControlMB implements Serializable {
             return false;
         } catch (NumberFormatException nfe) {
             return false;
+        }
+    }
+
+    private boolean validDateOfBirth(String f, String format) {
+        /*
+         *  determinar si una fecha de naciemiento no supera a la fecha de sistema
+         */
+
+        if (f.trim().length() == 0) {
+            return false;
+        }
+        try {
+            //DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
+            DateTimeFormatter fmt2 = DateTimeFormat.forPattern(format);
+            DateTime the_date = DateTime.parse(f, fmt2);//trata de convertir al formato "format"(me llega por parametro)
+            if (the_date.getYear() < new Date().getYear() + 1901) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Throwable ex) {
+            return false;//invalida
         }
     }
 

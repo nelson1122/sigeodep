@@ -16,12 +16,12 @@
                 type="text/css" />
             <ui:insert name="head">  
             </ui:insert>
-            <script type="text/javascript">
-                function pageInactive() {//muestra la pagina deshabilitada
-                    document.getElementById('capa').style.display = "block";
+            <script type="text/javascript">                
+                function pageInactive() {//muestra la pagina deshabilitada                    
+                    document.getElementById('IdInactivityLayer').style.display = "block";
                 }
                 function pageActive() {//muestra la pagina habilitada
-                    document.getElementById('capa').style.display = "none";
+                    document.getElementById('IdInactivityLayer').style.display = "none";
                 }
             </script> 
             <title>
@@ -29,9 +29,10 @@
                 </ui:insert>
             </title>
         </h:head>
-        <!-- h:body onload="setInterval('contador()',2000);" -->
+
         <h:body>
-            <div class="capa1" id="capa">Procesando...</div>
+            <div class="InactivityLayer" id="IdInactivityLayer"> Procesando...</div>            
+
             <p:panelGrid rendered="#{!loginMB.autenticado}" style="margin-top: 160px; margin-left: 210px; ">
                 <p:row>
                     <p:column>
@@ -47,7 +48,13 @@
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <h:commandButton value="h"  action="help" image="../../resources/img/help.gif" />                        
                     </h:form>
-                    <h:form id="IdForm0">                                                
+                    <h:form id="IdForm0">                          
+                        <h:outputText 
+                            id="IdOutput"
+                            value="#{indicatorsAverageMB.dataTableHtml}" 
+                            escape="false"/>
+                        
+                        
                         <br/>
                         <p:accordionPanel  activeIndex="#{loginMB.activeIndexAcoordion1}" >                            
                             <p:tab title="REGISTRO DE DATOS"  rendered="#{loginMB.permissionRegistryDataSection}">

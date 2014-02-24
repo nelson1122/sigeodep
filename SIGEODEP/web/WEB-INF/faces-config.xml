@@ -14,7 +14,8 @@
     </application>
     <lifecycle>
         <phase-listener>beans.util.DefaultPhaseListener</phase-listener>
-    </lifecycle>    
+    </lifecycle> 
+       
     <navigation-rule>
         <from-view-id>*</from-view-id>
         <navigation-case>

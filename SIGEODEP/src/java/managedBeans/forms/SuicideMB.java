@@ -23,6 +23,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.login.ApplicationControlMB;
 import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
@@ -148,8 +149,6 @@ public class SuicideMB implements Serializable {
     FatalInjuriesFacade fatalInjuriesFacade;
     @EJB
     InjuriesFacade injuriesFacade;
-    //@EJB
-    //UsersFacade usersFacade;
     @EJB
     AlcoholLevelsFacade alcoholLevelsFacade;
     private String currentNarrative = "";
@@ -205,23 +204,17 @@ public class SuicideMB implements Serializable {
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
     private LoginMB loginMB;
-    /*
-     * primer funcion que se ejecuta despues del constructor que inicializa 
-     * variables y carga la conexion por jdbc
-     */
+    private ApplicationControlMB applicationControlMB;
 
-    @PostConstruct
-    private void initialize() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-    }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-
     public SuicideMB() {
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        applicationControlMB = (ApplicationControlMB) FacesContext.getCurrentInstance().getExternalContext().getApplicationMap().get("applicationControlMB");
     }
 
     public void loadValues(List<Tags> tagsList, FatalInjurySuicide currentFatalInjuryS) {
@@ -241,10 +234,7 @@ public class SuicideMB implements Serializable {
         }
     }
 
-    public void reset() {
-
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+    public void reset() {   
         currentUser = loginMB.getCurrentUser();
         loading = true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
@@ -822,7 +812,8 @@ public class SuicideMB implements Serializable {
                 //------------------------------------------------------------
                 Victims newVictim = new Victims();
 
-                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                //newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 if (currentIdentification != 0) {
                     newVictim.setTypeId(idTypesFacade.find(currentIdentification));
                 }
@@ -869,7 +860,8 @@ public class SuicideMB implements Serializable {
                 //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA FATAL
                 //------------------------------------------------------------
                 FatalInjuries newFatalInjurie = new FatalInjuries();
-                newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+                //newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+                newFatalInjurie.setFatalInjuryId(applicationControlMB.addFatalReservedIdentifiers());
 
                 newFatalInjurie.setInjuryId(injuriesFacade.find((short) 12));//es 12 por ser suicidio
 
@@ -1045,15 +1037,10 @@ public class SuicideMB implements Serializable {
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "REGISTRO ACTUALIZADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
+                applicationControlMB.removeFatalReservedIdentifiers(newFatalInjurie.getFatalInjuryId());
+                applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
                 return true;
-                //} else {
-                //    for (int i = 0; i < validationsErrors.size(); i++) {
-                //        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de validación", validationsErrors.get(i));
-                //        FacesContext.getCurrentInstance().addMessage(null, msg);
-                //    }
-                //   return false;
-                //}
-            } catch (Exception e) {
+            } catch (NumberFormatException | ParseException e) {
                 System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.toString());
                 FacesContext.getCurrentInstance().addMessage(null, msg);

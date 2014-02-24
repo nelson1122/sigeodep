@@ -146,7 +146,9 @@ public class IndicatorsCountMB {
     private boolean showFrames = true;//tramas
     private boolean showItems = true;
     private boolean showEmpty = false;
-    private boolean showGeo = false;
+    private boolean showGeo = false;//mostrar seccion de mapas
+    private boolean showGraphic = false;//mostrar seccion de graficos
+    private boolean showTableResult = false;//mostrar tabla de resultados
     private Integer tuplesProcessed = 0;
     private boolean colorType = true;
     private boolean btnExportDisabled = true;
@@ -160,7 +162,7 @@ public class IndicatorsCountMB {
     private int widthGraph = 660;
     private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
-    private String currentTypeGraph;
+    private String currentTypeGraph="barras";
     //DecimalFormat formateador = new DecimalFormat("0.00");
     String variablesName = "";
     String categoryAxixLabel = "";
@@ -302,11 +304,13 @@ public class IndicatorsCountMB {
     }
 
     public void process() {
+        showGraphic = false;
+        showTableResult = false;
         btnExportDisabled = true;
+        showGeo = false;
         variablesCrossData = new ArrayList<>();//lista de variables a cruzar            
         boolean continueProcess = true;
         message = null;
-        //variablesGraph = new ArrayList<>();
         valuesGraph = new ArrayList<>();
         currentValueGraph = "";
         currentVariableGraph = "";
@@ -325,30 +329,19 @@ public class IndicatorsCountMB {
             }
         }
 
-        if (continueProcess && sameRangeLimit) {
-            //se valida que exista diferencia de año
+        if (continueProcess && sameRangeLimit) {//se valida que exista diferencia de año
             if (initialDate.getYear() == endDate.getYear()) {
                 message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' la fecha inicial y final deben estar en diferentes años, desactive la opción o cambie las fechas");
                 continueProcess = false;
             }
-            //
         }
 
         if (continueProcess && sameRangeLimit) {
-            //se valida que mes de la fecha final sea igual o mayor que el mes de la fecha inicial
-//            if (initialDate.getMonth() == endDate.getMonth()) {
-//                if (initialDate.getDate() > endDate.getDate()) {
-//                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes de la fecha final sea igual o mayor que el mes de la fecha inicial");
-//                    continueProcess = false;
-//                }
-//            } else {
             if (initialDate.getMonth() > endDate.getMonth()) {
                 message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes de la fecha final sea igual o mayor que el mes de la fecha inicial");
                 continueProcess = false;
             }
-//            }
         }
-
 
         if (continueProcess) {//NUMERO DE VARIABLES A CRUZAR SEA MENOR O IGUAL AL LIMITE ESTABLECIDO
             if (currentIndicator.getIndicatorId() < 5) {//es un indicador general
@@ -368,13 +361,11 @@ public class IndicatorsCountMB {
             }
         }
         if (continueProcess) {//SI ES INDICADOR GENERAL AGREGO UNA NUEVA VARIABLE A CRUZAR(tipo lesion)
-            if (currentIndicator.getIndicatorId() == 1 || currentIndicator.getIndicatorId() == 2) {
-                //agrego a la lista de variables a cruzar "tipo de lesion fatal"
+            if (currentIndicator.getIndicatorId() == 1 || currentIndicator.getIndicatorId() == 2) {//agrego a la lista de variables a cruzar "tipo de lesion fatal"
                 Variable newVariable = createVariable("Tipo Lesion", "injuries_fatal", false, "");
                 variablesCrossData.add(newVariable);
             }
-            if (currentIndicator.getIndicatorId() == 3 || currentIndicator.getIndicatorId() == 4) {
-                //agrego a la lista de variables a cruzar "tipo de lesion fatal"
+            if (currentIndicator.getIndicatorId() == 3 || currentIndicator.getIndicatorId() == 4) {//agrego a la lista de variables a cruzar "tipo de lesion fatal"
                 Variable newVariable = createVariable("Tipo Lesion", "injuries_non_fatal", false, "");
                 variablesCrossData.add(newVariable);
             }
@@ -432,34 +423,33 @@ public class IndicatorsCountMB {
         if (continueProcess) {//GENERO TABLA E IMAGEN
             rowNames.add("Totales");
             dataTableHtml = createDataTableResult();
-
             createImage();//creo el grafico
-            btnExportDisabled = false;
+            showGraphic = true;
+            showTableResult = true;
+            if (matrixResult.length != 0) {
+                boolean loadGeo = false;
 
-            message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
-            //cuadrante comuna barrio corredor(solo entre aqui  )            
-            boolean loadGeo = false;
-            showGeo = false;
-            for (Variable var : variablesCrossData) {
-                if (var.getName().compareToIgnoreCase("cuadrante") == 0
-                        || var.getName().compareToIgnoreCase("barrio") == 0
-                        || var.getName().compareToIgnoreCase("comuna") == 0
-                        || var.getName().compareToIgnoreCase("corredor") == 0) {
-                    loadGeo = true;
-                    showGeo = true;
-                }
-            }
-            if (loadGeo) {
-                geoDBConnection.refreshIndicatorData(loginMB.getCurrentUser().getUserId(), currentIndicator.getIndicatorId(), variablesCrossData);
-                indicator_id = currentIndicator.getIndicatorId();
-                vars = "";
                 for (Variable var : variablesCrossData) {
-                    vars += var.getName() + ",";
+                    if (var.getName().compareToIgnoreCase("cuadrante") == 0
+                            || var.getName().compareToIgnoreCase("barrio") == 0
+                            || var.getName().compareToIgnoreCase("comuna") == 0
+                            || var.getName().compareToIgnoreCase("corredor") == 0) {
+                        loadGeo = true;
+                        showGeo = true;
+                    }
+                }
+                if (loadGeo) {//cuadrante comuna barrio corredor(solo entre aqui  )            
+                    geoDBConnection.refreshIndicatorData(loginMB.getCurrentUser().getUserId(), currentIndicator.getIndicatorId(), variablesCrossData);
+                    indicator_id = currentIndicator.getIndicatorId();
+                    vars = "";
+                    for (Variable var : variablesCrossData) {
+                        vars += var.getName() + ",";
+                    }
                 }
             }
-
+            //System.out.println("tamaño: " + matrixResult.length);
+            //System.out.println("tamaño: " + matrixResult[0].length);
         }
-
     }
     private int indicator_id;
     private String vars;
@@ -546,8 +536,7 @@ public class IndicatorsCountMB {
     }
 
     public void btnLoadConfigurationClick() {
-        //recargar las configuraciones existentes
-        //System.out.println("inicia carga de configuraciones");
+        //cargar las configuraciones almacenadas para la variable actualmente seleccionada
         currentConfigurationSelected = new ArrayList<>();
         configurationsList = new ArrayList<>();
         List<IndicatorsConfigurations> indicatorsConfigurationsList = indicatorsConfigurationsFacade.findAll();
@@ -555,7 +544,6 @@ public class IndicatorsCountMB {
             if (currentVariablesCrossSelected.get(0).compareTo(indicatorsConfigurationsList.get(i).getVariableName()) == 0) {
                 configurationsList.add(indicatorsConfigurationsList.get(i).getConfigurationName());
             }
-            //System.out.println("inicia carga de configuraciones");
         }
     }
 
@@ -791,14 +779,10 @@ public class IndicatorsCountMB {
             endValue = "";
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha adicionado la categoría"));
             return 0;
-
-
-
         } catch (Exception ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser numéricos"));
             return 0;
         }
-
     }
 
     public int btnAddCategoricalValueClick() {
@@ -875,25 +859,38 @@ public class IndicatorsCountMB {
         }
     }
 
+    public void changeDateRange() {
+        //cuando cambia el rango de fechas se configura las categorias de la 
+        //variable anual si esta agregada al cruce
+        for (int i = 0; i < variablesListData.size(); i++) {
+            if (variablesListData.get(i).getGeneric_table().compareTo("year") == 0) {
+                variablesListData.get(i).filterYear(initialDate, endDate);
+            }
+            currentVariablesCrossSelected = null;
+            btnRemoveVariableDisabled = true;
+            btnRemoveVariableDisabled=true;
+            break;
+        }
+    }
+
     public void changeCrossVariable() {
+        /*
+         * cambia la variable seleccionada que se esta cruzando
+         */
         btnRemoveVariableDisabled = true;
-        //btnRemoveCategoricalValueDisabled = true;
         currentCategoricalValuesSelected = new ArrayList<>();
         currentVariableConfiguring = null;
         initialValue = "";
-        endValue = "";
-        //cargo la lista de valores categoricos para la variable
-        if (!currentVariablesCrossSelected.isEmpty()) {
-            //btnRemoveCategoricalValueDisabled = true;
+        endValue = "";        
+        if (!currentVariablesCrossSelected.isEmpty()) {//cargo la lista de valores categoricos para la variable seleccionada
             btnRemoveVariableDisabled = false;
-            firstVariablesCrossSelected = currentVariablesCrossSelected.get(0);
-            //filtro los años segun la fecha
+            firstVariablesCrossSelected = currentVariablesCrossSelected.get(0);            
             currentCategoricalValuesSelected = new ArrayList<>();
             for (int i = 0; i < variablesListData.size(); i++) {
                 if (variablesListData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
-                    if (variablesListData.get(i).getGeneric_table().compareTo("year") == 0) {
-                        variablesListData.get(i).filterYear(initialDate, endDate);
-                    }
+//                    if (variablesListData.get(i).getGeneric_table().compareTo("year") == 0) {
+//                        variablesListData.get(i).filterYear(initialDate, endDate);
+//                    }
                     currentCategoricalValuesList = variablesListData.get(i).getValuesConfigured();
                     currentVariableConfiguring = variablesListData.get(i);
                     btnAddCategoricalValueDisabled = !currentVariableConfiguring.isConfigurable();
@@ -915,7 +912,7 @@ public class IndicatorsCountMB {
                 for (int j = 0; j < currentVariablesSelected.size(); j++) {
                     //System.out.println("comparar: " + variablesList.get(i)+ " CON "+currentVariablesSelected.get(j));
                     if (variablesList.get(i).compareTo(currentVariablesSelected.get(j)) == 0) {//esta es la variable encontrada que saldra de la lista                    
-                        //System.out.println("quitar: " + variablesList.get(i));
+
                         variablesList.remove(i);//la quito de este listado                    
                         variablesCrossList.add(currentVariablesSelected.get(j));//la agrego al otro                        
                         btnAddVariableDisabled = true;
@@ -929,6 +926,7 @@ public class IndicatorsCountMB {
         if (error.length() != 0) {//hay  errores al relacionar la variables 
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
         }
+        changeDateRange();
     }
 
     public int removeVariableClick() {
@@ -1222,13 +1220,15 @@ public class IndicatorsCountMB {
             ChartUtilities.saveChartAsPNG(chartFile, chart, widthGraph, heightGraph);
             chartImage = new DefaultStreamedContent(new FileInputStream(chartFile), "image/png");
         } catch (Exception e) {
-            System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
+            //System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
     public void reset() {
-        sameRangeLimit = false;
+        showGraphic = false;
+        showTableResult = false;
         btnExportDisabled = true;
+        sameRangeLimit = false;
         dataTableHtml = "";
         chartImage = null;
         currentVariableConfiguring = null;
@@ -1728,119 +1728,7 @@ public class IndicatorsCountMB {
             //gran total
             celda = fila.createCell(posCol);
             setValueCell(celda, String.valueOf(grandTotal));
-
         }
-
-
-//        //-------------------------------------------------------------------
-//        //TABLA QUE CONTIENE LA CABECERA
-//        //-------------------------------------------------------------------                        
-//
-//        if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
-//            fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja            
-//            posRow++;
-//            posI = 1;
-//            for (int i = 0; i < columNames.size(); i++) {
-//                celda = fila.createCell((short) posI);// +2 por que faltal las filas               
-//                posI++;
-//                texto = new HSSFRichTextString(determineHeader(columNames.get(i)));// Se crea el contenido de la celda y se asigna en ella.
-//                celda.setCellValue(texto);
-//            }
-//            celda = fila.createCell((short) posI);// +2 por que faltal las filas               
-//            posI++;
-//            celda.setCellValue("Total");
-//        }
-//        if (variablesCrossData.size() == 3) {
-//            //-------------------------------------------------------------------
-//            //CABECERA COMPUESTA            
-//            String currentVar = "";
-//            String[] splitVars;
-//            for (int i = 0; i < columNames.size(); i++) {
-//                splitVars = columNames.get(i).split("\\}");//separo las dos variables
-//                String first = splitVars[0];//invierto el orden de llegada
-//                splitVars[0] = splitVars[1];
-//                splitVars[1] = first;
-//                if (splitVars[0].compareTo(currentVar) == 0) {//ya existe solo le aumento el numero de columnas unidas al ultimo de la lista "headers1"
-//                    int num = headers1.get(headers1.size() - 1).getColumns();
-//                    headers1.get(headers1.size() - 1).setColumns(num + 1);
-//                } else {//no existe la columna la debo crear y adicionar a la lista                    
-//                    currentVar = splitVars[0];
-//                    SpanColumns newSpanColumn = new SpanColumns();
-//                    newSpanColumn.setLabel(splitVars[0]);
-//                    newSpanColumn.setColumns(1);
-//                    headers1.add(newSpanColumn);
-//                }
-//                headers2[i] = splitVars[1];//a la segunda cabecera le agrego la segunda variable separada
-//            }
-//            //AGREGO LA CABECERA 1 
-//            fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja
-//            posRow++;
-//            posF = 0;
-//            //posI = 1;
-//            for (int j = 0; j < headers1.size(); j++) {
-//                posI = posF + 1;
-//                for (int i = 0; i < headers1.get(j).getColumns(); i++) {
-//                    posF++;
-//                }
-//                sheet.addMergedRegion(new CellRangeAddress(0, 0, posI, posF));
-//                //posF++;
-//            }
-//            short posColumn = 1;// +2 por que faltal las filas               
-//            for (int i = 0; i < headers1.size(); i++) {
-//                celda = fila.createCell(posColumn);
-//                posColumn = (short) (posColumn + headers1.get(i).getColumns());
-//                texto = new HSSFRichTextString(determineHeader(headers1.get(i).getLabel()));// Se crea el contenido de la celda y se asigna en ella.
-//                celda.setCellValue(texto);
-//            }
-//            fila = sheet.createRow(posRow);// Se crea una fila dentro de la hoja
-//            posRow++;
-//            posI = 1;// +1 por que faltal nombre de filas
-//            for (int i = 0; i < headers2.length; i++) {
-//                celda = fila.createCell((short) posI);
-//                posI++;
-//                texto = new HSSFRichTextString(determineHeader(headers2[i]));// Se crea el contenido de la celda y se asigna en ella.
-//                celda.setCellValue(texto);
-//            }
-//            celda = fila.createCell((short) posI);
-//            celda.setCellValue("Total");
-//        }
-//
-//        //-------------------------------------------------------------------
-//        //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ
-//        //-------------------------------------------------------------------      
-//        //rowNames.add("Totales");
-//        for (int j = 0; j < rowNames.size() - 1; j++) {
-//            fila = sheet.createRow(posRow);
-//            posRow++;
-//            //nombre fila
-//            celda = fila.createCell(0);
-//            celda.setCellValue(new HSSFRichTextString(determineHeader(rowNames.get(j))));
-//            posI = 1;// 1 por que faltal nombres de fila                               
-//            for (int i = 0; i < columNames.size(); i++) {
-//                celda = fila.createCell((short) posI);
-//                setValueCell(celda, matrixResult[i][j]);
-//                posI++;
-//            }
-//            //total Vertical
-//            celda = fila.createCell((short) posI);
-//            setValueCell(celda, totalsVertical.get(j));
-//            posI++;
-//        }
-//        //nombre fila para totales horizontales
-//        fila = sheet.createRow(posRow);
-//        celda = fila.createCell(0);
-//        celda.setCellValue("Totales ");
-//        posI = 1;// 1 por que faltal nombres de fila                               
-//        for (int i = 0; i < totalsHorizontal.size(); i++) {
-//            celda = fila.createCell((short) posI);
-//
-//            setValueCell(celda, totalsHorizontal.get(i));
-//            posI++;
-//        }
-//        //gran total
-//        celda = fila.createCell((short) posI);
-//        setValueCell(celda, String.valueOf(grandTotal));
-
     }
 
     private void exportHorizontalResult(Object document) {
@@ -2097,7 +1985,7 @@ public class IndicatorsCountMB {
 
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
-        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" style=\"margin-left: 1px; margin-top: 1px;\">\r\n";
         for (int j = 0; j < columNames.size(); j++) {//AGREGO LOS REGISTROS DE LA MATRIZ        
             if (j == 0) {
                 strReturn = strReturn + "                            <tr " + getColorType() + ">\r\n";
@@ -2126,6 +2014,9 @@ public class IndicatorsCountMB {
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "            </tr>\r\n";
         strReturn = strReturn + "        </table>\r\n";
+        if (columNames.isEmpty() && rowNames.isEmpty()) {
+            strReturn = "<font color=\"Red\"><b> En este rango de fechas no existen registros para realizar el cruce</b></font><br/>";
+        }
         //System.out.println("---------------------------------\n" + strReturn + "\n---------------------------------");
         return strReturn;
     }
@@ -2223,7 +2114,7 @@ public class IndicatorsCountMB {
         //-------------------------------------------------------------------
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ        
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px; height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
-        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" style=\"margin-left: 1px; margin-top: 1px;\">\r\n";//
         //----------------------------------------------------------------------
         //AGREGO LOS REGISTROS DE LA MATRIZ        
         for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
@@ -2255,16 +2146,36 @@ public class IndicatorsCountMB {
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "            </tr>\r\n";
         strReturn = strReturn + "        </table>\r\n";
+        if (columNames.isEmpty() && rowNames.isEmpty()) {
+            strReturn = "<font color=\"Red\"><b> En este rango de fechas no existen registros para realizar el cruce</b></font><br/>";
+        }
         //System.out.println(strReturn);
         return strReturn;
     }
 
     private String createDataTableResult() {
-
-        if (invertMatrix) {
-            return verticalResult();
+        btnExportDisabled = true;
+        if (matrixResult.length == 0) {
+            message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado, no hay registros en este rango de fechas");
+            return "<font color=\"Red\"><b> En este rango de fechas no existen registros para realizar el cruce</b></font><br/>";
         } else {
-            return horizontalResult();
+            if (invertMatrix) {
+                if (matrixResult[0].length > 250) {
+                    message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado, la tabla de resultados contiene mas de 250 columnas, para su exportacion se debe filtrar los datos o invertir la tabla.");
+                } else {
+                    btnExportDisabled = false;
+                    message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
+                }
+                return verticalResult();
+            } else {
+                if (matrixResult.length > 250) {
+                    message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado, la tabla de resultados contiene mas de 250 columnas, para su exportacion se debe filtrar los datos o invertir la tabla.");
+                } else {
+                    btnExportDisabled = false;
+                    message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
+                }
+                return horizontalResult();
+            }
         }
     }
 
@@ -3194,15 +3105,15 @@ public class IndicatorsCountMB {
         Interval interval = new Interval(new DateTime(date1), (new DateTime(date2)).plusDays(1));
         if (typeDifference.compareTo("anual") == 0) {
             Years years34 = Years.yearsIn(interval);
-            System.out.println("Años" + years34.getYears());
+            //System.out.println("Años" + years34.getYears());
             return years34.getYears();
         } else if (typeDifference.compareTo("mensual") == 0) {
             Months months11 = Months.monthsIn(interval);
-            System.out.println("Meses" + months11.getMonths());
+            //System.out.println("Meses" + months11.getMonths());
             return months11.getMonths();
         } else if (typeDifference.compareTo("diaria") == 0) {
             Days days15 = Days.daysIn(interval);
-            System.out.println("Dias" + days15.getDays());
+            //System.out.println("Dias" + days15.getDays());
             return days15.getDays();
         }
         return 0;
@@ -3904,5 +3815,21 @@ public class IndicatorsCountMB {
 
     public void setSizeFont(int sizeFont) {
         this.sizeFont = sizeFont;
+    }
+
+    public boolean isShowGraphic() {
+        return showGraphic;
+    }
+
+    public void setShowGraphic(boolean showGraphic) {
+        this.showGraphic = showGraphic;
+    }
+
+    public boolean isShowTableResult() {
+        return showTableResult;
+    }
+
+    public void setShowTableResult(boolean showTableResult) {
+        this.showTableResult = showTableResult;
     }
 }

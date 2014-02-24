@@ -113,8 +113,7 @@ a:hover, a:focus, a:active {
 
 }  
 
-.capa1 {
-    /*display: block;*/
+.InactivityLayer {
     display: none;
     position: absolute;
     text-align: center;   

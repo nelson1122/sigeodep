@@ -10,8 +10,7 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />               
-            <script type="text/javascript">
-            </script> 
+
         </ui:define>
         <!--=================================================================-->
         <!--================================TITULOS==========================-->
@@ -29,7 +28,7 @@
                 style=" color: red;"
                 rendered="#{!loginMB.permissionAdministrator}"/> 
             <h:form enctype="multipart/form-data" id="IdForm1" rendered="#{loginMB.permissionAdministrator}">
-                <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />
+                <p:growl id="message"  showDetail="true" sticky="true" autoUpdate="true" life="1000"  />                
                 <!--===================================================================================-->
                 <br/>
                 <p:panelGrid id="IdPanel1" style="position: absolute;  width: 750px;  margin-left: -375px; left: 50%;" >                            
@@ -287,9 +286,10 @@
                             <br/>
                             <p:commandButton
                                 id="IdBtnImputation"
-                                value="Realizar Imputacion"                                 
-                                onclick="pageInactive();"
-                                oncomplete="pageActive();"
+                                value="Realizar Imputación"                                 
+                                onclick="pageInactive();
+                                        messageInactive();"
+                                oncomplete="pageActive(); messageActive();"
                                 rendered="#{closuresMB.renderedBtnImputation}"
                                 actionListener="#{closuresMB.startImputation}"                                
                                 update=":IdForm1"/>                            
@@ -349,8 +349,9 @@
                             <br/>
                             <p:commandButton                                 
                                 value="Cargar Datos a la Bodega"                                 
-                                onclick="pageInactive();"
-                                oncomplete="pageActive();"
+                                onclick="pageInactive();
+                                        messageInactive();"
+                                oncomplete="pageActive(); messageActive();"
                                 rendered="#{closuresMB.renderedBtnStoreData}"
                                 actionListener="#{closuresMB.startStoreData}"
                                 update=":IdForm1"/>
@@ -360,7 +361,7 @@
                                     <p:column>
                                         <h:outputText 
                                             value="#{closuresMB.outputTextStoreData}"
-                                        escape="false"/>
+                                            escape="false"/>
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>                            
@@ -401,9 +402,10 @@
                             <div></div>
                             <p:column  styleClass="ui-widget-header">
                                 <p:commandButton                                                           
-                                    oncomplete="pageActive();"
+                                    oncomplete="pageActive(); messageActive();"
                                     onclick="dialogConfirm.hide();
-                    pageInactive();"
+                                        pageInactive();
+                                        messageInactive();"
                                     actionListener="#{closuresMB.startClosure}"
                                     value="Continuar" 
                                     update=":IdForm1"/>   

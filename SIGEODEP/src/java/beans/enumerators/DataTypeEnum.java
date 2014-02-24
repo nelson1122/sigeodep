@@ -21,6 +21,7 @@ public enum DataTypeEnum {
     age,
     military,
     percentage,
+    date_of_birth,
     level,
     error,
     aggressor_types_v,

@@ -67,32 +67,30 @@ public class LoginMB {
     public LoginMB() {
     }
 
-    @PreDestroy
-    public void destroySession() {
-        /*
-         * antes de destruir esta clase se eliminan datos temporales a el usuario 
-         * que ingreso al sistema, esto ocurre si se para el servidor o la sesion es
-         * destruida por inactividad
-         */
-        try {
-            //elimino de la lista de usuarios actuales en el sistema
-            applicationControlMB.removeSession(idSession);
-            //elimino datos que este usuario tenga por realizacion de indicadores
-            connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());
-            //Elimino historial de filtros para este ususario
-            connectionJdbcMB.non_query("DELETE FROM project_history_filters WHERE project_id IN "
-                    + "(SELECT project_id FROM projects WHERE user_id = " + currentUser.getUserId() + ")");
-            //System.out.println("Eliminadas variables de session para: "+currentUser.getUserLogin());
-        } catch (Exception e) {
-            //System.out.println("Termina session por inactividad 003 " + e.toString());
-        }
-    }
-
+//    @PreDestroy
+//    public void destroySession() {
+//        /*
+//         * antes de destruir esta clase se eliminan datos temporales a el usuario 
+//         * que ingreso al sistema, esto ocurre si se para el servidor o la sesion es
+//         * destruida por inactividad
+//         */
+//        try {
+//            applicationControlMB.removeSession(idSession);//elimino de la lista de usuarios actuales en el sistema
+//            connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());//elimino datos que este usuario tenga por realizacion de indicadores
+//            connectionJdbcMB.non_query("DELETE FROM project_history_filters WHERE project_id IN "
+//                    + "(SELECT project_id FROM projects WHERE user_id = " + currentUser.getUserId() + ")");            //Elimino historial de filtros para este ususario
+//            
+//        } catch (Exception e) {
+//        }
+//    }
     public void logout1() {
         /*
          * fin de session por que se inicio una nueva session en otro equipo      
          */
-        applicationControlMB.removeSession(idSession);
+        applicationControlMB.removeSession(idSession);//elimino de la lista de usuarios actuales en el sistema
+        connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());//elimino datos que este usuario tenga por realizacion de indicadores
+        connectionJdbcMB.non_query("DELETE FROM project_history_filters WHERE project_id IN "
+                + "(SELECT project_id FROM projects WHERE user_id = " + currentUser.getUserId() + ")");            //Elimino historial de filtros para este ususario
         try {
             ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
             String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
@@ -107,6 +105,9 @@ public class LoginMB {
          * fin de sesion dada por el usuario: botón "cerrar cesion"
          */
         applicationControlMB.removeSession(idSession);//System.out.println("Finaliza session "+loginname+" ID: "+idSession);
+        connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());//elimino datos que este usuario tenga por realizacion de indicadores
+        connectionJdbcMB.non_query("DELETE FROM project_history_filters WHERE project_id IN "
+                + "(SELECT project_id FROM projects WHERE user_id = " + currentUser.getUserId() + ")");            //Elimino historial de filtros para este ususario
         try {
             ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
             String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
@@ -138,7 +139,7 @@ public class LoginMB {
 
     private String continueLogin() {
         /*
-         * instanciar todas las variables necesarias para que un usario inicie una session
+         * instanciar todas las variables necesarias para que un usuario inicie una session
          */
         context = FacesContext.getCurrentInstance();
         connectionJdbcMB = (ConnectionJdbcMB) context.getApplication().evaluateExpressionGet(context, "#{connectionJdbcMB}", ConnectionJdbcMB.class);
@@ -186,7 +187,7 @@ public class LoginMB {
          */
         int accion = 0;
         if (accion == 2) {
-            int count=0;
+            int count = 0;
             try {
                 ResultSet rs = connectionJdbcMB.consult(""
                         + " SELECT non_fatal_injury_id "
@@ -200,11 +201,11 @@ public class LoginMB {
                         + "    AND non_fatal_injury_id NOT IN "
                         + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_action_to_take)");
                 while (rs.next()) {
-                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString(1) + ",13);");                    
+                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString(1) + ",13);");
                     count++;
                 }
-                
-                System.out.println("Los cambios fueron: "+String.valueOf(count));
+
+                System.out.println("Los cambios fueron: " + String.valueOf(count));
             } catch (Exception e) {
             }
 
@@ -506,7 +507,7 @@ public class LoginMB {
          * determinar si el usuario puede acceder al sistema determinando si exite
          * el login, clave y la cuenta esta activa
          */
-        closeSessionDialog = "a";
+        closeSessionDialog = "-";
         password = stringEncryption.getStringMessageDigest(password, "SHA-1");
         currentUser = usersFacade.findUser(loginname, password);
         userSystem = true;//es usuario del sistema (no es usuario invitado)

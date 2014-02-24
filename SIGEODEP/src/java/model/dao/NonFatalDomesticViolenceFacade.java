@@ -7,6 +7,7 @@ package model.dao;
 
 import beans.connection.ConnectionJdbcMB;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
@@ -102,7 +103,7 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
             } else {
                 return null;
             }
-        } catch (Exception e) {
+        } catch (SQLException | NumberFormatException e) {
             return null;//no existe siguiente
         }
     }
@@ -151,7 +152,7 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
             } else {
                 return null;
             }
-        } catch (Exception e) {
+        } catch (SQLException | NumberFormatException e) {
             return null;//no existe siguiente
         }
     }
@@ -178,7 +179,7 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
             } else {
                 return null;
             }
-        } catch (Exception e) {
+        } catch (SQLException | NumberFormatException e) {
             return null;//no existe siguiente
         }
     }   
@@ -210,7 +211,7 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
             } else {
                 return null;
             }
-        } catch (Exception e) {
+        } catch (SQLException | NumberFormatException e) {
             return null;//no existe siguiente
         }
     }
@@ -242,7 +243,7 @@ public class NonFatalDomesticViolenceFacade extends AbstractFacade<NonFatalDomes
             } else {
                 return null;
             }
-        } catch (Exception e) {
+        } catch (SQLException | NumberFormatException e) {
             return null;//no existe siguiente
         }
     }    

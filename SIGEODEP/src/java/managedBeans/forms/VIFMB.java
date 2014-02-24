@@ -23,6 +23,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.login.ApplicationControlMB;
 import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
@@ -117,7 +118,6 @@ public class VIFMB implements Serializable {
     @EJB
     JobsFacade jobsFacade;
     private String currentJob = "";
-    //private SelectItem[] jobs;
     //------------------------
     @EJB
     NeighborhoodsFacade neighborhoodsFacade;
@@ -147,8 +147,6 @@ public class VIFMB implements Serializable {
     NonFatalInjuriesFacade nonFatalInjuriesFacade;
     @EJB
     InjuriesFacade injuriesFacade;
-    //@EJB
-    //UsersFacade usersFacade;
     @EJB
     AlcoholLevelsFacade alcoholLevelsFacade;
     @EJB
@@ -163,14 +161,6 @@ public class VIFMB implements Serializable {
     @EJB
     GenNnFacade genNnFacade;
     //--------------------
-    //@EJB
-    //StateTimeFacade stateTimeFacade;
-    //@EJB
-    //StateDateFacade stateDateFacade;
-    //private SelectItem[] stateDateList;
-    //private SelectItem[] stateTimeList;
-    //private Short currentStateDateEvent = 1;
-    //private Short currentStateTimeEvent = 1;
     private boolean strangerDisabled = true;
     private boolean currentDayEventDisabled = false;
     private boolean currentMonthEventDisabled = false;
@@ -178,8 +168,6 @@ public class VIFMB implements Serializable {
     private boolean currentHourEventDisabled = false;
     private boolean currentMinuteEventDisabled = false;
     private boolean currentAmPmEventDisabled = false;
-//    private Short currentStateDateConsult = 1;
-//    private Short currentStateTimeConsult = 1;
     private boolean currentDayConsultDisabled = false;
     private boolean currentMonthConsultDisabled = false;
     private boolean currentYearConsultDisabled = false;
@@ -187,7 +175,6 @@ public class VIFMB implements Serializable {
     private boolean currentMinuteConsultDisabled = false;
     private boolean currentAmPmConsultDisabled = false;
     private boolean stranger = false;
-    //-------------------------------------
     private boolean isSubmitted = false;
     private boolean fromWhereDisabled = true;
     //----------------------------------------------------------------------
@@ -237,7 +224,6 @@ public class VIFMB implements Serializable {
     private String currentDirectionEvent = "";
     private String currentOtherPlace = "";
     private String currentOtherActivitie = "";
-    //private String currentSurname = "";
     private Short currentLevelBurned = 0;
     private String currentPercentBurned = "";
     private String currentResponsible = "";
@@ -294,23 +280,17 @@ public class VIFMB implements Serializable {
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
     private LoginMB loginMB;
-    /*
-     * primer funcion que se ejecuta despues del constructor que inicializa
-     * variables y carga la conexion por jdbc
-     */
+    private ApplicationControlMB applicationControlMB;
 
-    @PostConstruct
-    private void initialize() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-    }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-
     public VIFMB() {
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        applicationControlMB = (ApplicationControlMB) FacesContext.getCurrentInstance().getExternalContext().getApplicationMap().get("applicationControlMB");
     }
 
     public void loadValues(List<Tags> tagsList, NonFatalDomesticViolence currentNonDomesticV) {
@@ -330,21 +310,18 @@ public class VIFMB implements Serializable {
         }
     }
 
-    public void reset() {
-
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+    public void reset() {        
         currentUser = loginMB.getCurrentUser();
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
         loading = true;
         save = true;
         stylePosition = "color: #1471B1;";
-        
+
         quadrantsEvent = new SelectItem[1];
-        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        quadrantsEvent[0] = new SelectItem(0, "SIN DATO");
         currentQuadrantEvent = 0;
-        
+
         try {
             //cargo los conjuntos de registros
             List<Tags> tagsList = tagsFacade.findAll();
@@ -376,8 +353,8 @@ public class VIFMB implements Serializable {
                         + " FROM non_fatal_data_sources "
                         + " WHERE non_fatal_data_source_form = 1 OR non_fatal_data_source_form = 3");
                 if (rs.next()) {
-                    
-                    violenceDataSources = new SelectItem[rs.getInt(1)];                    
+
+                    violenceDataSources = new SelectItem[rs.getInt(1)];
                     rs = connectionJdbcMB.consult(""
                             + " SELECT "
                             + "   * "
@@ -390,7 +367,7 @@ public class VIFMB implements Serializable {
                     }
                 }
             } catch (Exception e) {
-            }            
+            }
 
             //cargo los grupos vulnerables
             List<VulnerableGroups> vulnerableGroupsList = vulnerableGroupsFacade.findAll();
@@ -1280,7 +1257,8 @@ public class VIFMB implements Serializable {
                 //SE CREA VARIABLE PARA LA NUEVA VICTIMA
                 //------------------------------------------------------------
                 Victims newVictim = new Victims();
-                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                //newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 if (currentIdentification != 0) {
                     newVictim.setTypeId(idTypesFacade.find(currentIdentification));
                 }
@@ -1353,11 +1331,9 @@ public class VIFMB implements Serializable {
                 //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA NO FATAL
                 //------------------------------------------------------------
                 NonFatalInjuries newNonFatalInjuries = new NonFatalInjuries();
-
-
                 newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 53));//es 53 por ser vif
-
-                newNonFatalInjuries.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                //newNonFatalInjuries.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                newNonFatalInjuries.setNonFatalInjuryId(applicationControlMB.addNonfatalReservedIdentifiers());
 
                 if (currentDateConsult.trim().length() != 0) {
                     newNonFatalInjuries.setCheckupDate(formato.parse(currentDateConsult));
@@ -1685,7 +1661,7 @@ public class VIFMB implements Serializable {
                     }
                 } else {
                     newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
-                }                
+                }
                 //DETERMINAR EL NUMERO DE IDENTIFICACION
                 newVictim.setVictimClass((short) 1);
                 if (newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
@@ -1748,6 +1724,8 @@ public class VIFMB implements Serializable {
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "REGISTRO ACTUALIZADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
+                applicationControlMB.removeNonfatalReservedIdentifiers(newNonFatalInjuries.getNonFatalInjuryId());
+                applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
                 return true;
             } catch (NumberFormatException | ParseException e) {
                 System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
@@ -2061,7 +2039,7 @@ public class VIFMB implements Serializable {
         //municipalities = new SelectItem[1];
         //municipalities[0] = new SelectItem(0, "");
         quadrantsEvent = new SelectItem[1];
-        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        quadrantsEvent[0] = new SelectItem(0, "SIN DATO");
         currentQuadrantEvent = 0;
 
         currentDirectionHome = "";
@@ -2981,7 +2959,7 @@ public class VIFMB implements Serializable {
             valueAgeDisabled = true;
 
         } else {
-            valueAgeDisabled = false;            
+            valueAgeDisabled = false;
         }
     }
 
