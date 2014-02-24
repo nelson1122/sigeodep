@@ -572,7 +572,7 @@ public class ClosuresMB {
          * bodega de datos, si no se puede realizar la ejecucion de este script se debe
          * rebertir el proceso que haya realizado restaurando la ultima copia de seguridad de la bodega de datos
          */
-        boolean booleanReturn = false;
+        boolean booleanReturn = true;
         //Runtime r = Runtime.getRuntime();
         Process p;
         ProcessBuilder pb = new ProcessBuilder();
@@ -620,11 +620,13 @@ public class ClosuresMB {
                 while ((lineRead = br.readLine()) != null) {
                     System.out.println(lineRead);
                     
-                    if (lineRead.indexOf("Finished") != -1) {//si en el proceso aparece la palabra finished acabo correctamente
-                        booleanReturn = true;
-                        errorInProcess = "";
-                    } else {
+                    if (lineRead.indexOf("E=1)") > -1 || lineRead.indexOf("Processing has stopped because of an error:") > -1) {//si en el proceso aparece la palabra finished acabo correctamente
+                        booleanReturn = false;
                         errorInProcess = "</br>" + errorInProcess + lineRead;
+                        break;
+                    } else {
+                        
+                        errorInProcess = "";
                     }
                 }
                 
@@ -3965,10 +3967,10 @@ public class ClosuresMB {
                     + "    JOIN victims USING (victim_id)"
                     + "  WHERE\n"
                     + "       fatal_injuries.injury_id = 10 AND \n"
-                    //+ "       fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
-                    //+ "       fatal_injuries.injury_date <= to_date('01/01/2014','dd/MM/yyyy') ";
-                    + "       fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
-                    + "       fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
+                    + "       fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
+                    + "       fatal_injuries.injury_date <= to_date('01/01/2015','dd/MM/yyyy') ";
+            //+ "       fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
+            //+ "       fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
             //System.out.println("\nCONSULTA INSERT\n" + sql + "\n");
 
 
@@ -4040,10 +4042,10 @@ public class ClosuresMB {
                     + "    JOIN victims USING (victim_id)"
                     + "  WHERE\n"
                     + "    fatal_injuries.injury_id = 12 AND \n"
-                    //+ "    fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
-                    //+ "    fatal_injuries.injury_date <= to_date('01/01/2014','dd/MM/yyyy') ";
-                    + "    fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
-                    + "    fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
+                    + "       fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
+                    + "       fatal_injuries.injury_date <= to_date('01/01/2015','dd/MM/yyyy') ";
+            //+ "    fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
+            //+ "    fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
             //System.out.println("\nCONSULTA INSERT\n" + sql + "\n");
             connectionJdbcMB.non_query(sql);//se pasa la información a la tabla           
 
@@ -4120,10 +4122,10 @@ public class ClosuresMB {
                     + "    JOIN victims USING (victim_id)"
                     + "  WHERE\n"
                     + "    fatal_injuries.injury_id = 13 AND \n"
-                    //+ "    fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
-                    //+ "    fatal_injuries.injury_date <= to_date('01/01/2014','dd/MM/yyyy') ";
-                    + "    fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
-                    + "    fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
+                    + "       fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
+                    + "       fatal_injuries.injury_date <= to_date('01/01/2015','dd/MM/yyyy') ";
+            //+ "    fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
+            //+ "    fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
             //System.out.println("\nCONSULTA INSERT\n" + sql + "\n");
             connectionJdbcMB.non_query(sql);//se pasa la información a la tabla           
 
@@ -4207,8 +4209,10 @@ public class ClosuresMB {
                     + "    JOIN victims USING (victim_id)"
                     + " WHERE\n"
                     + "   fatal_injuries.injury_id = 11 AND \n"
-                    + "   fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
-                    + "   fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
+                    + "       fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
+                    + "       fatal_injuries.injury_date <= to_date('01/01/2015','dd/MM/yyyy') ";
+                    //+"   fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
+                    //+ "   fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
             //System.out.println("\nCONSULTA INSERT\n" + sql + "\n");
             connectionJdbcMB.non_query(sql);//se pasa la información a la tabla           
 
