@@ -14,8 +14,8 @@ import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.sql.DataSource;
 import model.dao.*;
@@ -26,7 +26,7 @@ import model.pojo.*;
  * @author SANTOS
  */
 @ManagedBean(name = "connectionJdbcMB")
-@ApplicationScoped
+@SessionScoped
 public class ConnectionJdbcMB implements Serializable {
 
     @Resource(name = "jdbc/od")
@@ -66,6 +66,7 @@ public class ConnectionJdbcMB implements Serializable {
     private String msj;
     private String user;
     private String db;
+    private String db_dwh;
     private String password;
     private String server;
     private String url = "";
@@ -78,31 +79,14 @@ public class ConnectionJdbcMB implements Serializable {
      * Creates a new instance of ConnectionJdbcMB
      */
     public ConnectionJdbcMB() {
-//        if (connectToDb()) {
-//            connectionIsConfigured = true;
-//            connectionNotConfigured = false;
-//        } else {
-//            connectionIsConfigured = false;
-//            connectionNotConfigured = true;
-//        }
     }
 
     @PreDestroy
-    private void destroySession() {
-        try {
-            if (!conn.isClosed()) {
-                disconnect();
-            }
-        } catch (Exception e) {
-            //System.out.println("Termina session por inactividad 003 " + e.toString());
-        }
-    }
-
-    public void disconnect() {
+    public synchronized void disconnect() {
         try {
             if (!conn.isClosed()) {
                 conn.close();
-                System.out.println("Cerrada conexion a base de datos " + url + " ... OK");
+                System.out.println("Cerrada conexion a base de datos " + url + " ... OK  " + this.getClass().getName());
             }
         } catch (Exception e) {
             System.out.println("Error al cerrar conexion a base de datos " + url + " ... " + e.toString());
@@ -110,91 +94,175 @@ public class ConnectionJdbcMB implements Serializable {
     }
 
     public String checkConnection() {
-        String returnValue = "";
+        /*
+         * verifica si se puede conectar a la bodega y db observatorio y almacena
+         * estos datos en la tabla configuraciones
+         * si se conecta retorna "index" que es la pagina de inicio de la aplicacion
+         */
+        boolean continueProcess = true;
         try {
             if (ds == null) {
                 System.out.println("ERROR: No se obtubo data source");
-            } else {
+                continueProcess = false;
+            }
+            if (continueProcess) {
                 conn = ds.getConnection();
-                if (conn == null) {
+                if (conn == null || conn.isClosed()) {
                     System.out.println("Error: No se obtubo conexion");
-                } else {
+                    continueProcess = false;
+                }
+            }
+            if (continueProcess) {
+                try {
+                    Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                    msj = e.toString() + " --- Clase: " + this.getClass().getName();
+                    continueProcess = false;
+                }
+            }
+            if (continueProcess) {
+
+                boolean correctConnection = true;
+
+                try {
+                    url = "jdbc:postgresql://" + server + "/" + db_dwh;
+                    conn = DriverManager.getConnection(url, user, password);//conectarse a bodega de datos                
+                    if (conn != null && !conn.isClosed()) {
+                        msj = " Conexión a bodega de datos Correcta.";
+                        if (!conn.isClosed()) {
+                        conn.close();
+                        }
+                    } else {
+                        msj = " Conexión a bodega de datos Fallida.";
+                    }
+                } catch (Exception e) {
+                    msj = " Conexión a bodega de datos Fallida.";
+                    correctConnection = false;
+                    conn = null;
+                }
+                try {
                     url = "jdbc:postgresql://" + server + "/" + db;
+                    conn = DriverManager.getConnection(url, user, password);//conectarse db del observatorio
+                    if (conn != null && !conn.isClosed()) {
+                        msj = msj + " Conexión a base de datos observatorio Correcta.";
+                    } else {
+                        msj = msj + " Conexión a base de datos observatorio Fallida.";
+                        correctConnection = false;
+                    }
+                } catch (Exception e) {
+                    msj = msj + " Conexión a base de datos observatorio Fallida.";
+                    correctConnection = false;
+                    conn = null;
+                }
+                if (correctConnection) {//se realizaron las dos conexiones(observatorio y bodega)                    
+                    non_query("delete from configurations");
+                    insert("configurations", "user_db,password_db,name_db,server_db,name_db_dwh",
+                            "'" + user + "','" + password + "','" + db + "','" + server + "','" + db_dwh + "'");
+                    //conn.close();
+                    return "index";//se redirirecciona a la pagina principal
+                }
+            }
+        } catch (Exception e) {
+            msj = e.toString();
+        }
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "La conexion no pudo ser creada con los datos suministrados. " + msj));
+        return "";
+    }
+
+    public final boolean connectToDb() {
+        /*
+         * conectarse a la base datos observatorio y bodega
+         * y retornar true si se realizo la conexion
+         */
+        boolean continueProcess = true;
+        try {
+            if (conn == null || conn.isClosed()) {
+                if (ds == null) {
+                    System.out.println("ERROR: No se obtubo data source");
+                    continueProcess = false;
+                }
+                if (continueProcess) {
+                    try {
+                        conn = ds.getConnection();
+                    } catch (Exception e) {
+                    }
+                    if (conn == null || conn.isClosed()) {
+                        System.out.println("Error: No se obtubo conexion");
+                        continueProcess = false;
+                    }
+                }
+
+                if (continueProcess) {
                     try {
                         Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
                     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                         System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
-                        msj = "ERROR: " + e.getMessage();
-                    }
-                    //conn.close();
-                    conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
-                    if (conn != null) {
-                        System.out.println("Conexion a base de datos " + url + " ... OK");
-                        //returnValue = "index";//regrece a index mediante reglas de navegacion
-                        non_query("delete from configurations");
-                        insert(
-                                "configurations",
-                                "user_db,password_db,name_db,server_db",
-                                "'" + user + "','" + password + "','" + db + "','" + server + "'");
-                        return "index";
-                    } else {
-                        System.out.println("2. No se pudo conectar a base de datos " + url + " ... FAIL");
+                        continueProcess = false;
                     }
                 }
-            }
 
-        } catch (Exception e) {
-            System.out.println("Error2: " + e.toString() + " --- Clase: " + this.getClass().getName());
-        }
-        FacesMessage msg2 = new FacesMessage(FacesMessage.SEVERITY_ERROR, "ERROR", "La conexion no pudo ser creada con los datos suministrados");
-        FacesContext.getCurrentInstance().addMessage(null, msg2);
-
-        return returnValue;
-    }
-
-    public final boolean connectToDb() {
-        boolean returnValue = true;
-        if (conn == null) {
-            returnValue = false;
-            try {
-                if (ds == null) {
-                    System.out.println("ERROR: No se obtubo data source");
-                } else {
-                    conn = ds.getConnection();
-                    if (conn == null) {
-                        System.out.println("Error: No se obtubo conexion");
-                    } else {
-                        ResultSet rs1 = consult("Select * from configurations");
+                if (continueProcess) {
+                    ResultSet rs1 = consult("Select * from configurations");
+                    try {
                         if (rs1.next()) {
                             user = rs1.getString("user_db");
                             db = rs1.getString("name_db");
+                            db_dwh = rs1.getString("name_db_dwh");
                             password = rs1.getString("password_db");
                             server = rs1.getString("server_db");
-                            url = "jdbc:postgresql://" + server + "/" + db;
-                            try {
-                                Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
-                            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                                System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
-                                msj = "ERROR: " + e.getMessage();
-                            }
-                            conn.close();
-                            conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
-                            if (conn != null) {
-                                System.out.println("Conexion a base de datos " + url + " ... OK");
-                                returnValue = true;
-                            } else {
-                                System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
-                            }
                         } else {
-                            System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
+                            continueProcess = false;
                         }
+                    } catch (Exception e) {
+                        continueProcess = false;
                     }
                 }
-            } catch (Exception e) {
-                System.out.println("Error2: " + e.toString() + " --- Clase: " + this.getClass().getName());
+
+                if (continueProcess) {
+                    boolean correctConnection = true;
+
+                    try {
+                        url = "jdbc:postgresql://" + server + "/" + db_dwh;
+                        conn = DriverManager.getConnection(url, user, password);//conectarse a bodega de datos                
+                        if (conn != null && !conn.isClosed()) {
+                            msj = " Conexión a bodega de datos Correcta.";
+                            if (!conn.isClosed()) {
+                            conn.close();
+                            }
+                        } else {
+                            msj = " Conexión a bodega de datos Fallida.";
+                        }
+                    } catch (Exception e) {
+                        msj = " Conexión a bodega de datos Fallida.";
+                        correctConnection = false;
+                        conn = null;
+                    }
+                    try {
+                        url = "jdbc:postgresql://" + server + "/" + db;
+                        conn = DriverManager.getConnection(url, user, password);//conectarse db del observatorio
+                        if (conn != null && !conn.isClosed()) {
+                            msj = msj + " Conexión a base de datos observatorio Correcta.";
+                        } else {
+                            msj = msj + " Conexión a base de datos observatorio Fallida.";
+                            correctConnection = false;
+                        }
+                    } catch (Exception e) {
+                        msj = msj + " Conexión a base de datos observatorio Fallida.";
+                        correctConnection = false;
+                        conn = null;
+                    }
+                    if (correctConnection) {//se realizaron las dos conexiones(observatorio y bodega)                    
+                        System.out.println("Conexion a base de datos " + url + " ... OK  " + this.getClass().getName());
+                        return true;
+                    } else {
+                        System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
+                        return false;
+                    }
+                }
             }
+        } catch (Exception e) {
         }
-        return returnValue;
+        return true;
     }
 
     public Connection getConn() {
@@ -218,7 +286,7 @@ public class ConnectionJdbcMB implements Serializable {
                 return null;
             }
         } catch (SQLException e) {
-            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+            System.out.println("Error: " + e.toString() + " - Clase: " + this.getClass().getName());
             msj = "ERROR: " + e.getMessage() + "---- CONSULTA:" + query;
             return null;
         }
@@ -237,7 +305,7 @@ public class ConnectionJdbcMB implements Serializable {
 
         } catch (SQLException e) {
             if (showMessages) {
-                System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+                System.out.println("Error: " + e.toString() + " -- Clase: " + this.getClass().getName()+" -  "+ query);
             }
             msj = "ERROR: " + e.getMessage();
         }
@@ -287,7 +355,7 @@ public class ConnectionJdbcMB implements Serializable {
                 msj = "ERROR: There don't exist connection";
             }
         } catch (SQLException e) {
-            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+            System.out.println("Error: " + e.toString() + " ---- Clase: " + this.getClass().getName());
             msj = "ERROR: " + e.getMessage();
         }
     }
@@ -307,7 +375,7 @@ public class ConnectionJdbcMB implements Serializable {
                 msj = "ERROR: There don't exist connection";
             }
         } catch (SQLException e) {
-            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
+            System.out.println("Error: " + e.toString() + " ----- Clase: " + this.getClass().getName());
             msj = "ERROR: " + e.getMessage();
         }
     }
@@ -3032,35 +3100,6 @@ public class ConnectionJdbcMB implements Serializable {
             } else {
                 strReturn = strReturn + "-0x-0x";
             }
-//            String nameSearch;
-//            List<Countries> countriesList = countriesFacade.findAll();
-//            for (int k = 0; k < countriesList.size(); k++) {
-//                nameSearch = countriesList.get(k).getName();
-//                if (nameSearch.compareTo("COLOMBIA") == 0) {
-//                    List<Departaments> departamentsList = departamentsFacade.findAll();
-//                    for (int l = 0; l < departamentsList.size(); l++) {
-//                        nameSearch = countriesList.get(k).getName() + "-" + departamentsList.get(l).getDepartamentName();
-//                        if (nameSearch.compareTo(value) == 0) {
-//                            nameSearch = countriesList.get(k).getIdCountry().toString();
-//                            nameSearch = nameSearch + "-" + departamentsList.get(l).getDepartamentId().toString();
-//                            return nameSearch;
-//                        }
-//                        for (int m = 0; m < departamentsList.get(l).getMunicipalitiesList().size(); m++) {
-//                            nameSearch = nameSearch + "-" + departamentsList.get(l).getMunicipalitiesList().get(m).getMunicipalityName();
-//                            if (nameSearch.compareTo(value) == 0) {
-//                                nameSearch = countriesList.get(k).getIdCountry().toString();
-//                                nameSearch = nameSearch + "-" + departamentsList.get(l).getDepartamentId().toString();
-//                                nameSearch = nameSearch + "-" + String.valueOf(departamentsList.get(l).getMunicipalitiesList().get(m).getMunicipalitiesPK().getMunicipalityId());
-//                                return nameSearch;
-//                            }
-//                        }
-//                    }
-//                } else {
-//                    if (nameSearch.compareTo(value) == 0) {
-//                        return countriesList.get(k).getIdCountry().toString();
-//                    }
-//                }
-//            }
             return strReturn;
         } catch (Exception e) {
             System.out.println("Error 12 en " + this.getClass().getName() + ":" + e.toString());
@@ -3249,12 +3288,8 @@ public class ConnectionJdbcMB implements Serializable {
         return returnList;
     }
 
-    /*
-     * -------------------------------------
-     * -------------------------------------
+    /*     
      * -- METODOS DE FILTER CONNECTION -----
-     * -------------------------------------
-     * -------------------------------------
      */
     public int getTempRowCount(int projectId) {
         try {
@@ -3310,10 +3345,10 @@ public class ConnectionJdbcMB implements Serializable {
         }
     }
 
-    /*
-     * Devuelve una lista con el resultado del query.
-     */
     public List<List> getListFromQuery(int first, int pageSize, int pojectId) {
+        /*
+         * Devuelve una lista con el resultado del query.
+         */
         List<List> data = new ArrayList<>();
         ArrayList<String> newRow;
         List<String> titles;
@@ -3366,6 +3401,9 @@ public class ConnectionJdbcMB implements Serializable {
         }
     }
 
+    // --------------------------    
+    // -- METODOS GET Y SET -----
+    // --------------------------    
     public String getTableName() {
         return tableName;
     }
@@ -3437,4 +3475,12 @@ public class ConnectionJdbcMB implements Serializable {
     public void setShowMessages(boolean showMessages) {
         this.showMessages = showMessages;
     }
+
+    public String getDb_dwh() {
+        return db_dwh;
+    }
+
+    public void setDb_dwh(String db_dwh) {
+        this.db_dwh = db_dwh;
+    }    
 }

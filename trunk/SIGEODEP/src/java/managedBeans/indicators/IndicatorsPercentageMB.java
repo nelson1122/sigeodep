@@ -121,8 +121,8 @@ public class IndicatorsPercentageMB {
     private String endDateStr;
     private boolean invertMatrix = false;
     private LoginMB loginMB;
-//    private List<String> variablesGraph = new ArrayList<>();
-//    private List<String> valuesGraph = new ArrayList<>();
+    private boolean showGraphic = false;//mostrar seccion de graficos
+    private boolean showTableResult = false;//mostrar tabla de resultados
     private List<String> variablesList = new ArrayList<>();//lista de nombres de variables disponibles que sepueden cruzar(se visualizan en pagina)
     private List<String> variablesCrossList = new ArrayList<>();//ista de nombres de variables que se van a cruzar(se visualizan en pagina)
     private List<String> currentVariablesSelected = new ArrayList<>();//lista de nombres seleccionados en la lista de variables disponibles
@@ -174,7 +174,7 @@ public class IndicatorsPercentageMB {
     private int widthGraph = 660;
     private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
-    private String currentTypeGraph;
+    private String currentTypeGraph="apiladas porcentual";
     DecimalFormat formateador = new DecimalFormat("0.00");
     String variablesName = "";
     String categoryAxixLabel = "";
@@ -422,16 +422,13 @@ public class IndicatorsPercentageMB {
     }
 
     public void process() {
+        showGraphic = false;
+        showTableResult = false;
         btnExportDisabled = true;
         variablesCrossData = new ArrayList<>();//lista de variables a cruzar            
         boolean continueProcess = true;
         message = null;
         categoryAxixLabel = "";
-//        variablesGraph = new ArrayList<>();
-//        valuesGraph = new ArrayList<>();
-//        currentValueGraph = "";
-//        currentVariableGraph = "";
-
         if (continueProcess) {//VALIDACION DE FECHAS            
             initialDateStr = formato.format(initialDate);
             endDateStr = formato.format(endDate);
@@ -444,28 +441,18 @@ public class IndicatorsPercentageMB {
             }
         }
 
-        if (continueProcess && sameRangeLimit) {
-            //se valida que exista diferencia de año
+        if (continueProcess && sameRangeLimit) {//se valida que exista diferencia de año
             if (initialDate.getYear() == endDate.getYear()) {
                 message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' la fecha inicial y final deben estar en diferentes años, desactive la opción o cambie las fechas");
                 continueProcess = false;
             }
-            //
         }
 
         if (continueProcess && sameRangeLimit) {
-            //se valida que mes de la fecha final sea igual o mayor que el mes de la fecha inicial
-//            if (initialDate.getMonth() == endDate.getMonth()) {
-//                if (initialDate.getDate() > endDate.getDate()) {
-//                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes de la fecha final sea igual o mayor que el mes de la fecha inicial");
-//                    continueProcess = false;
-//                }
-//            } else {
             if (initialDate.getMonth() > endDate.getMonth()) {
                 message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes de la fecha final sea igual o mayor que el mes de la fecha inicial");
                 continueProcess = false;
             }
-//            }
         }
         if (continueProcess) {//NUMERO DE VARIABLES A CRUZAR SEA MENOR O IGUAL AL LIMITE ESTABLECIDO
             if (currentIndicator.getIndicatorId() < 5) {//es un indicador general
@@ -485,13 +472,11 @@ public class IndicatorsPercentageMB {
             }
         }
         if (continueProcess) {//SI ES INDICADOR GENERAL AGREGO UNA NUEVA VARIABLE A CRUZAR(tipo lesion)
-            if (currentIndicator.getIndicatorId() == 1 || currentIndicator.getIndicatorId() == 2) {
-                //agrego a la lista de variables a cruzar "tipo de lesion fatal"
+            if (currentIndicator.getIndicatorId() == 1 || currentIndicator.getIndicatorId() == 2) {//agrego a la lista de variables a cruzar "tipo de lesion fatal"
                 Variable newVariable = createVariable("Tipo Lesion", "injuries_fatal", false, "");
                 variablesCrossData.add(newVariable);
             }
-            if (currentIndicator.getIndicatorId() == 3 || currentIndicator.getIndicatorId() == 4) {
-                //agrego a la lista de variables a cruzar "tipo de lesion fatal"
+            if (currentIndicator.getIndicatorId() == 3 || currentIndicator.getIndicatorId() == 4) {//agrego a la lista de variables a cruzar "tipo de lesion fatal"
                 Variable newVariable = createVariable("Tipo Lesion", "injuries_non_fatal", false, "");
                 variablesCrossData.add(newVariable);
             }
@@ -513,23 +498,6 @@ public class IndicatorsPercentageMB {
                 }
             }
         }
-//        if (continueProcess) {//CARGO LOS COMBOS PARA EL GRAFICO
-//            if (variablesCrossData.size() == 3) {
-//                for (int i = 0; i < variablesCrossData.size(); i++) {
-//                    if (i == 0) {
-//                        variablesGraph.add(variablesCrossData.get(i).getName());
-//                        currentVariableGraph = variablesGraph.get(0);
-//                        //cargo el combo de valores
-//                        for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
-//                            valuesGraph.add(variablesCrossData.get(i).getValuesConfigured().get(j));
-//                            currentValueGraph = valuesGraph.get(0);
-//                        }
-//                    } else {
-//                        variablesGraph.add(variablesCrossData.get(i).getName());
-//                    }
-//                }
-//            }
-//        }
 
         if (continueProcess) {
             removeIndicatorRecords();
@@ -542,9 +510,6 @@ public class IndicatorsPercentageMB {
                 separateRecordsFunction();
             }
         }
-//        if (continueProcess) {//ELIMINO LOS VALORES QUE SEAN CONFIGURADOS POR EL USUARIO
-//            removeValuesConfigured();
-//        }
         if (continueProcess) {//CREO TODAS LAS POSIBLES COMBINACIONES
             createCombinations();
         }
@@ -560,22 +525,12 @@ public class IndicatorsPercentageMB {
         if (continueProcess) {//GENERO TABLA E IMAGEN
             rowNames.add("Totales");
             dataTableHtml = createDataTableResult();
-            //createImage();//creo el grafico
+            showGraphic = true;
+            showTableResult = true;
             loadValuesGraph();//creo el grafico
-            btnExportDisabled = false;
-            message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
+            //btnExportDisabled = false;
+            //message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
         }
-
-//        if (currentVariablesCrossSelected != null) {
-//            System.err.println("currentVariablesCrossSelected:" + currentVariablesCrossSelected.toString());
-//        } else {
-//            System.err.println("currentVariablesCrossSelected es null");
-//        }
-//        if (variablesCrossList != null) {
-//            System.err.println("variablesCrossList" + variablesCrossList.toString());
-//        } else {
-//            System.err.println("variablesCrossList es null");
-//        }
         currentVariablesCrossSelected = new ArrayList<>();
     }
 
@@ -832,15 +787,15 @@ public class IndicatorsPercentageMB {
         Interval interval = new Interval(new DateTime(date1), (new DateTime(date2)).plusDays(1));
         if (typeDifference.compareTo("anual") == 0) {
             Years years34 = Years.yearsIn(interval);
-            System.out.println("Años" + years34.getYears());
+            //System.out.println("Años" + years34.getYears());
             return years34.getYears();
         } else if (typeDifference.compareTo("mensual") == 0) {
             Months months11 = Months.monthsIn(interval);
-            System.out.println("Meses" + months11.getMonths());
+            //System.out.println("Meses" + months11.getMonths());
             return months11.getMonths();
         } else if (typeDifference.compareTo("diaria") == 0) {
             Days days15 = Days.daysIn(interval);
-            System.out.println("Dias" + days15.getDays());
+            //System.out.println("Dias" + days15.getDays());
             return days15.getDays();
         }
         return 0;
@@ -1772,8 +1727,6 @@ public class IndicatorsPercentageMB {
     }
 
     public int btnAddCategoricalValueClick() {
-        int i;
-        int e;
         if (initialValue.trim().length() == 0) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Digite un valor inicial"));
             return 0;
@@ -1782,67 +1735,197 @@ public class IndicatorsPercentageMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Digite un valor final"));
             return 0;
         }
-        if (endValue.compareToIgnoreCase("n") == 0) {
-            endValue = "n";
+
+        if (currentVariableConfiguring != null) {
+            if (currentVariableConfiguring.getName().compareTo("hora") == 0) {
+                addCategoricalHour();
+                return 0;
+            }
+            if (currentVariableConfiguring.getName().compareTo("edad") == 0) {
+                addCategoricalAge();
+                return 0;
+            }
         }
+        return 0;
+    }
 
-        if (endValue.compareTo("n") == 0) {
-            try {//VALOR INICIAL NUMERICOS
-                i = Integer.parseInt(initialValue);
-                if (i < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
-                    return 0;
-                }
-            } catch (Exception ex) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser numéricos"));
-                return 0;
-            }
-        } else {
-            try {//VALOR INICIAL Y FINAL NUMERICOS
-                i = Integer.parseInt(initialValue);
-                e = Integer.parseInt(endValue);
+    private int addCategoricalHour() {
+        int i;
+        int e;
+        String msj = "";
+        try {
+            //asadero conjunto la colina 3207065386
 
-                if (i < 0 && e < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
-                    return 0;
-                }
-                if (i < 0 && e < 0) {//VALOR INICIAL Y FINAL MAYOR O IGUAL A CERO
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
-                    return 0;
-                }
-            } catch (Exception ex) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser numéricos"));
-                return 0;
-            }
-            if (i > e) {//VALOR INICIAL MAYOR QUE FINAL
+            //Valor inicial y final numericos
+            i = Integer.parseInt(initialValue);
+            e = Integer.parseInt(endValue);
+
+            if (i >= e) {//valor inicial mayor que valor final
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El valor inicial debe ser menor que el valor final"));
                 return 0;
             }
-        }
+            if (i < 0 || i > 23) {//valores entre 0 y 23
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El valor inicial para hora debe estar entre 0 y 23"));
+                return 0;
+            }
+            if (e < 0 || e > 23) {//valores entre 0 y 23
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El valor final para hora debe estar entre 0 y 23"));
+                return 0;
+            }
 
-        //EL RANGO NO ESTE DENTRO DE OTRO
-        if (endValue.compareTo("n") != 0) {
-            if (currentVariableConfiguring != null) {
-                for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
+            //los valores no esten contenidos dentro de otro
+            int initialValueFoundInteger;
+            int endValueFoundInteger;
+            int initialValueAddInteger;
+            int endValueAddInteger;
+            boolean continueProcces = true;
+
+            for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
+                if (currentVariableConfiguring.getValuesConfigured().get(j).compareToIgnoreCase("SIN DATO") != 0) {
                     String[] splitValues = currentVariableConfiguring.getValuesConfigured().get(j).split("/");
-                    int initialValueFoundInteger = Integer.parseInt(splitValues[0]);
-                    int endValueFoundInteger = Integer.parseInt(splitValues[1]);
-                    int initialValueAddInteger = Integer.parseInt(initialValue);
-                    int endValueAddInteger = Integer.parseInt(endValue);
-                    for (int k = initialValueFoundInteger; k < endValueFoundInteger; k++) {
+                    initialValueFoundInteger = Integer.parseInt(splitValues[0].split(":")[0]);
+                    endValueFoundInteger = Integer.parseInt(splitValues[1].split(":")[0]);
+                    initialValueAddInteger = Integer.parseInt(initialValue);
+                    endValueAddInteger = Integer.parseInt(endValue);
+                    for (int k = initialValueFoundInteger; k <= endValueFoundInteger; k++) {
                         for (int l = initialValueAddInteger; l < endValueAddInteger; l++) {
                             if (k == l) {
-                                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Dentro del rango ingresado el valor (" + String.valueOf(k) + ") esta contenido en la lista de valores"));
-                                return 0;
+                                continueProcces = false;
+                                msj = "El nuevo rango " + initialValue + ":00/" + endValue + ":59 foma parte del rango " + currentVariableConfiguring.getValuesConfigured().get(j);
+                            }
+                            if (!continueProcces) {
+                                break;
                             }
                         }
+                        if (!continueProcces) {
+                            break;
+                        }
+                    }
+                    if (!continueProcces) {
+                        break;
                     }
                 }
             }
-        }
-        //ingreso el nuevo valor a la categoria
-        if (currentVariableConfiguring != null) {
+            if (!continueProcces) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", msj));
+                return 0;
+            }
 
+            //completo los valores a dos cifras
+            if (initialValue.length() == 1) {
+                initialValue = "0" + initialValue;
+            }
+            if (endValue.length() == 1) {
+                endValue = "0" + endValue;
+            }
+
+            initialValue = initialValue + ":00";
+            endValue = endValue + ":59";
+
+            //se procede a guardar la nueva categoria
+            currentVariableConfiguring.getValuesConfigured().add(initialValue + "/" + endValue);
+
+
+
+            currentCategoricalValuesList = new ArrayList<>();
+            for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
+                currentCategoricalValuesList.add(currentVariableConfiguring.getValuesConfigured().get(j));
+            }
+            initialValue = "";
+            endValue = "";
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha adicionado la categoría"));
+            return 0;
+
+
+            //MODIFICAR XHTM PARA QUE SEA SOLO DOS CIFRAS
+        } catch (Exception ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores inicial y final para hora deben ser numéricos y estar entre 0 y 23"));
+            return 0;
+        }
+    }
+
+    private int addCategoricalAge() {
+        int i;
+        int e;
+        boolean isN = false;//determinar si valor final es N
+        if (endValue.compareToIgnoreCase("n") == 0) {
+            endValue = "201";
+            isN = true;
+        }
+
+        try {
+            //valor inicial y final deben ser numericos
+            i = Integer.parseInt(initialValue);
+            e = Integer.parseInt(endValue);
+
+            if (i < 0 && e < 0) {//valor inicial y final mayor o igual a cero
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+                return 0;
+            }
+            if (i >= e) {//Valor inicial mayor que valor final
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El valor inicial debe ser menor que el valor final"));
+                return 0;
+            }
+            if (isN) {
+                if (i >= 200) {//inicial menore que 200
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+                    return 0;
+                }
+            } else {
+                if (i >= 200 || e >= 200) {//valor inicial y final menores que 200
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser iguales o mayores que cero"));
+                    return 0;
+                }
+            }
+
+            //los valores no esten contenidos dentro de otro
+            int initialValueFoundInteger;
+            int endValueFoundInteger;
+            int initialValueAddInteger;
+            int endValueAddInteger;
+            boolean continueProcces = true;
+            String msj = "";
+            for (int j = 0; j < currentVariableConfiguring.getValuesConfigured().size(); j++) {
+                if (currentVariableConfiguring.getValuesConfigured().get(j).compareToIgnoreCase("SIN DATO") != 0) {
+                    String[] splitValues = currentVariableConfiguring.getValuesConfigured().get(j).split("/");
+                    initialValueFoundInteger = Integer.parseInt(splitValues[0]);
+                    if (splitValues[1].compareTo("n") == 0) {
+                        endValueFoundInteger = 201;
+                    } else {
+                        endValueFoundInteger = Integer.parseInt(splitValues[1]);
+                    }
+                    initialValueAddInteger = Integer.parseInt(initialValue);
+                    endValueAddInteger = Integer.parseInt(endValue);
+                    for (int k = initialValueFoundInteger; k <= endValueFoundInteger; k++) {
+                        for (int l = initialValueAddInteger; l < endValueAddInteger; l++) {
+                            if (k == l) {
+                                continueProcces = false;
+                                if (isN) {
+                                    msj = "El nuevo rango " + initialValue + "/n foma parte del rango " + currentVariableConfiguring.getValuesConfigured().get(j);
+                                } else {
+                                    msj = "El nuevo rango " + initialValue + "/" + endValue + " foma parte del rango " + currentVariableConfiguring.getValuesConfigured().get(j);
+                                }
+                            }
+                            if (!continueProcces) {
+                                break;
+                            }
+                        }
+                        if (!continueProcces) {
+                            break;
+                        }
+                    }
+                    if (!continueProcces) {
+                        break;
+                    }
+                }
+            }
+            if (!continueProcces) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", msj));
+                return 0;
+            }
+            if (isN) {
+                endValue = "n";
+            }
             if (initialValue.length() == 1) {
                 initialValue = "0" + initialValue;
             }
@@ -1856,13 +1939,14 @@ public class IndicatorsPercentageMB {
             }
             initialValue = "";
             endValue = "";
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha adicionado un nuevo valor a la categoría"));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha adicionado la categoría"));
+            return 0;
+        } catch (Exception ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Los valores deben ser numéricos"));
             return 0;
         }
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", "No hay categoria seleccionada"));
-        return 0;
     }
-
+    
     public void btnRemoveCategoryValueClick() {
         //btnRemoveCategoricalValueDisabled = false;
         if (currentVariableConfiguring != null) {
@@ -1911,6 +1995,20 @@ public class IndicatorsPercentageMB {
             if (!currentVariablesCrossSelected.isEmpty()) {
                 btnRemoveVariableDisabled = false;
             }
+        }
+    }
+
+    public void changeDateRange() {
+        //cuando cambia el rango de fechas se configura las categorias de la 
+        //variable anual si esta agregada al cruce
+        for (int i = 0; i < variablesListData.size(); i++) {
+            if (variablesListData.get(i).getGeneric_table().compareTo("year") == 0) {
+                variablesListData.get(i).filterYear(initialDate, endDate);
+            }
+            currentVariablesCrossSelected = null;
+            btnRemoveVariableDisabled = true;
+            btnRemoveVariableDisabled = true;
+            break;
         }
     }
 
@@ -1969,6 +2067,7 @@ public class IndicatorsPercentageMB {
         if (error.length() != 0) {//hay  errores al relacionar la variables 
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
         }
+        changeDateRange();
     }
 
     public void removeVariableClick() {
@@ -2302,8 +2401,10 @@ public class IndicatorsPercentageMB {
     }
 
     public void reset() {
-        sameRangeLimit = false;
+        showGraphic = false;
+        showTableResult = false;
         btnExportDisabled = true;
+        sameRangeLimit = false;
         dataTableHtml = "";
         chartImage = null;
         currentVariableConfiguring = null;
@@ -2826,14 +2927,87 @@ public class IndicatorsPercentageMB {
         //3. determino regiones para primer columna        
         if (variablesCrossData.size() == 2 || variablesCrossData.size() == 1) {
             for (int i = 0; i < columNames.size(); i++) {
+                posCell = 0;
                 fila = sheet.createRow(posRow++);
-                celda = fila.createCell(0);
+                celda = fila.createCell(posCell++);
                 texto = new HSSFRichTextString(determineHeader(columNames.get(i)));// Se crea el contenido de la celda y se mete en ella.
                 celda.setCellValue(texto);
+                for (int l = 0; l < rowNames.size() - 1; l++) {//-1 por que le agrege "TOTALES"                                         
+                    if (showCount) {
+                        celda = fila.createCell(posCell++);
+                        setValueCell(celda, getMatrixValue("countXY", i, l));
+                    }
+                    if (showRowPercentage) {
+                        celda = fila.createCell(posCell++);
+                        setValueCell(celda, getMatrixValue("columnPercentageXY", i, l));
+                    }
+                    if (showColumnPercentage) {
+                        celda = fila.createCell(posCell++);
+                        setValueCell(celda, getMatrixValue("rowPercentageXY", i, l));
+                    }
+                    if (showTotalPercentage) {
+                        celda = fila.createCell(posCell++);
+                        setValueCell(celda, getMatrixValue("totalPercentageXY", i, l));
+                    }
+
+                }
+                //totales                    
+                if (showCount) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("columnTotal", i, 0));
+                }
+                if (showRowPercentage) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("percentageOfTotalColumnAccordingTotalColumn", i, 0));
+                }
+                if (showColumnPercentage) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0));
+                }
+                if (showTotalPercentage) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("percentageOfTotalColumnAccordingGrandTotal", i, 0));
+                }
             }
+            posCell = 0;
             fila = sheet.createRow(posRow++);
-            celda = fila.createCell(0);
+            celda = fila.createCell(posCell++);
             celda.setCellValue("Total");
+            for (int l = 0; l < rowNames.size() - 1; l++) {//-1 por que le agrege "TOTALES"                                         
+                if (showCount) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("rowTotal", -1, l));
+                }
+                if (showRowPercentage) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingGrandTotal", -1, l));
+                }
+                if (showColumnPercentage) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingTotalRow", -1, l));
+                }
+                if (showTotalPercentage) {
+                    celda = fila.createCell(posCell++);
+                    setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingGrandTotal", 0, l));
+                }
+            }
+            //ultimos valores de la fila
+            if (showCount) {
+                celda = fila.createCell(posCell++);
+                setValueCell(celda, String.valueOf(grandTotal));
+            }
+            if (showRowPercentage) {
+                celda = fila.createCell(posCell++);
+                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+            }
+            if (showColumnPercentage) {
+                celda = fila.createCell(posCell++);
+                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+            }
+            if (showTotalPercentage) {
+                celda = fila.createCell(posCell++);
+                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
+            }
         }
         if (variablesCrossData.size() == 3) {
             //-------------------------------------------------------------------
@@ -2936,7 +3110,7 @@ public class IndicatorsPercentageMB {
                 if (showColumnPercentage) {
                     celda = fila.createCell(posCell++);
                     setValueCell(celda, getMatrixValue("percentageOfTotalRowAccordingTotalRow", -1, l));
-                    
+
                 }
                 if (showTotalPercentage) {
                     celda = fila.createCell(posCell++);
@@ -2945,20 +3119,20 @@ public class IndicatorsPercentageMB {
             }
             //ultimos valores de la fila
             if (showCount) {
-                celda = fila.createCell(posCell++);                                
+                celda = fila.createCell(posCell++);
                 setValueCell(celda, String.valueOf(grandTotal));
             }
             if (showRowPercentage) {
                 celda = fila.createCell(posCell++);
-                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0,0));
+                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
             }
             if (showColumnPercentage) {
                 celda = fila.createCell(posCell++);
-                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0,0));
+                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
             }
             if (showTotalPercentage) {
                 celda = fila.createCell(posCell++);
-                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0,0));
+                setValueCell(celda, getMatrixValue("percentageOfGrandTotalAccordingGrandTotal", 0, 0));
             }
         }
     }
@@ -3387,7 +3561,7 @@ public class IndicatorsPercentageMB {
 
         //TABLA QUE CONTIENE LOS DATOS DE LA MATRIZ//-------------------------------------------------------------------        
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
-        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" style=\"margin-left: 1px; margin-top: 1px;\">\r\n";
         //AGREGO LOS REGISTROS DE LA MATRIZ        
         for (int j = 0; j < columNames.size(); j++) {
             if (j == 0) {
@@ -3464,6 +3638,9 @@ public class IndicatorsPercentageMB {
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "            </tr>\r\n";
         strReturn = strReturn + "        </table>\r\n";
+        if (columNames.isEmpty() && rowNames.isEmpty()) {
+            strReturn = "<font color=\"Red\"><b> En este rango de fechas no existen registros para realizar el cruce</b></font><br/>";
+        }
         //System.out.println(strReturn);
         return strReturn;
     }
@@ -3631,7 +3808,7 @@ public class IndicatorsPercentageMB {
         //sizeTableMatrix = sizeTableMatrix + 100;//de los totales
         strReturn = strReturn + "                    <div id=\"table_div\" style=\"overflow: scroll;width:450px;height:300px;position:relative\" onscroll=\"fnScroll()\" >\r\n";//div que maneja la tabla
         //strReturn = strReturn + "                        <table width=\"" + sizeTableMatrix + "px\" cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
-        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" >\r\n";//
+        strReturn = strReturn + "                        <table cellspacing=\"0\" cellpadding=\"0\" border=\"1\" style=\"margin-left: 1px; margin-top: 1px;\">\r\n";//
         //----------------------------------------------------------------------
         //AGREGO LOS REGISTROS DE LA MATRIZ        
         for (int j = 0; j < rowNames.size() - 1; j++) {//-1 por que le agrege "TOTALES"
@@ -3734,16 +3911,36 @@ public class IndicatorsPercentageMB {
         strReturn = strReturn + "                </td>\r\n";
         strReturn = strReturn + "            </tr>\r\n";
         strReturn = strReturn + "        </table>\r\n";
+        if (columNames.isEmpty() && rowNames.isEmpty()) {
+            strReturn = "<font color=\"Red\"><b> En este rango de fechas no existen registros para realizar el cruce</b></font><br/>";
+        }
         //System.out.println(strReturn);
         return strReturn;
     }
 
     private String createDataTableResult() {
-
-        if (invertMatrix) {
-            return verticalResult();
+        btnExportDisabled = true;
+        if (matrixResult.length == 0) {
+            message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado, no hay registros en este rango de fechas");
+            return "<font color=\"Red\"><b> En este rango de fechas no existen registros para realizar el cruce</b></font><br/>";
         } else {
-            return horizontalResult();
+            if (invertMatrix) {
+                if (matrixResult[0].length > 250) {
+                    message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado, la tabla de resultados contiene mas de 250 columnas, para su exportacion se debe filtrar los datos o invertir la tabla.");
+                } else {
+                    btnExportDisabled = false;
+                    message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
+                }
+                return verticalResult();
+            } else {
+                if (matrixResult.length > 250) {
+                    message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado, la tabla de resultados contiene mas de 250 columnas, para su exportacion se debe filtrar los datos o invertir la tabla.");
+                } else {
+                    btnExportDisabled = false;
+                    message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
+                }
+                return horizontalResult();
+            }
         }
     }
 
@@ -4324,5 +4521,21 @@ public class IndicatorsPercentageMB {
 
     public void setSizeFont(int sizeFont) {
         this.sizeFont = sizeFont;
+    }
+
+    public boolean isShowGraphic() {
+        return showGraphic;
+    }
+
+    public void setShowGraphic(boolean showGraphic) {
+        this.showGraphic = showGraphic;
+    }
+
+    public boolean isShowTableResult() {
+        return showTableResult;
+    }
+
+    public void setShowTableResult(boolean showTableResult) {
+        this.showTableResult = showTableResult;
     }
 }

@@ -23,6 +23,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.login.ApplicationControlMB;
 import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
@@ -128,7 +129,6 @@ public class TransitMB implements Serializable {
     @EJB
     JobsFacade jobsFacade;
     private String currentJob = null;
-    //private SelectItem[] jobs;
     //--------------------
     @EJB
     NeighborhoodsFacade neighborhoodsFacade;
@@ -212,9 +212,7 @@ public class TransitMB implements Serializable {
     private String currentName = "";
     private String currentIdentificationNumber = "";
     private String currentDirectionEvent = "";
-    //private String currentSurname = "";
     private String currentNumberVictims = "1";
-    //private String currentVictimSource = "";
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
     private Date fechaI;
     private String currentCode = "";
@@ -238,15 +236,7 @@ public class TransitMB implements Serializable {
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
     private LoginMB loginMB;
-    /*
-     * primer funcion que se ejecuta despues del constructor que inicializa 
-     * variables y carga la conexion por jdbc
-     */
-
-    @PostConstruct
-    private void initialize() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-    }
+    private ApplicationControlMB applicationControlMB;
 
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
@@ -255,6 +245,8 @@ public class TransitMB implements Serializable {
     //----------------------------------------------------------------------
     public TransitMB() {
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        applicationControlMB = (ApplicationControlMB) FacesContext.getCurrentInstance().getExternalContext().getApplicationMap().get("applicationControlMB");
     }
 
     public void loadValues(List<Tags> tagsList, FatalInjuryTraffic currentFatalInjuryT) {
@@ -275,17 +267,14 @@ public class TransitMB implements Serializable {
     }
 
     public void reset() {
-
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         currentUser = loginMB.getCurrentUser();
         loading = true;
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
-        
+
         quadrantsEvent = new SelectItem[1];
-        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        quadrantsEvent[0] = new SelectItem(0, "SIN DATO");
         currentQuadrantEvent = 0;
-        
+
         try {
             //determinePosition();
             //cargo los conjuntos de registros
@@ -1040,7 +1029,8 @@ public class TransitMB implements Serializable {
                 //******eps_id
                 //******victim_class
                 //******victim_id
-                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                //newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimId(applicationControlMB.addFatalReservedIdentifiers());
                 //******residence_municipality
                 newVictim.setResidenceMunicipality(currentMunicipalitie);
                 newVictim.setResidenceDepartment(currentDepartamentHome);
@@ -1103,7 +1093,8 @@ public class TransitMB implements Serializable {
                 //******victim_id
                 newFatalInjurie.setVictimId(newVictim);
                 //******fatal_injury_id
-                newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+                //newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+                newFatalInjurie.setFatalInjuryId(applicationControlMB.addFatalReservedIdentifiers());
                 //******alcohol_level_victim_id, alcohol_level_victim
                 if (currentAlcoholLevel.trim().length() != 0) {
                     newFatalInjurie.setAlcoholLevelVictim(Short.parseShort(currentAlcoholLevel));
@@ -1261,7 +1252,7 @@ public class TransitMB implements Serializable {
                     }
                 } else {
                     newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
-                }                
+                }
                 //DETERMINAR EL NUMERO DE IDENTIFICACION
                 newVictim.setVictimClass((short) 1);
                 if (newVictim.getVictimNid() != null && newVictim.getVictimNid().trim().length() == 0) {
@@ -1322,6 +1313,8 @@ public class TransitMB implements Serializable {
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "REGISTRO ACTUALIZADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
+                applicationControlMB.removeFatalReservedIdentifiers(newFatalInjurie.getFatalInjuryId());
+                applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
                 return true;
             } catch (NumberFormatException | ParseException e) {
                 System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
@@ -1702,9 +1695,9 @@ public class TransitMB implements Serializable {
         currentNeighborhoodEvent = "";
         currentVictimCharacteristics = 0;
         currentProtectiveMeasures = 0;
-        
+
         quadrantsEvent = new SelectItem[1];
-        quadrantsEvent[0]=new SelectItem(0, "SIN DATO");
+        quadrantsEvent[0] = new SelectItem(0, "SIN DATO");
         currentQuadrantEvent = 0;
 
         currentVictimVehicle = 0;

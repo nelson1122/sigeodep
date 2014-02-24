@@ -50,6 +50,10 @@
                                 converterMessage="La fecha inicial no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
+                                <f:ajax 
+                                    event="change"
+                                    listener="#{indicatorsPercentageMB.changeDateRange}"
+                                    render="IdSelectOneListCrossVariables IdBtnRemove IdBtnAdd IdBtnOptions"/>
                             </p:calendar>
                             <br/>
                             <br/>
@@ -60,6 +64,10 @@
                                 converterMessage="La fecha final no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
+                                <f:ajax 
+                                    event="change"
+                                    listener="#{indicatorsPercentageMB.changeDateRange}"
+                                    render="IdSelectOneListCrossVariables IdBtnRemove IdBtnAdd IdBtnOptions"/>
                             </p:calendar>
                             <br/>
                             <br/>
@@ -182,7 +190,7 @@
                                 actionListener="#{indicatorsPercentageMB.process}"
                                 oncomplete="showTableResult(); pageActive();"  
                                 onclick="pageInactive();" 
-                                update="IdImageChart IdPanelGraphConfig IdDataTableHtml IdBtnExport">
+                                update="IdForm">
                             </p:commandButton>  
                             &nbsp;&nbsp;
                             <h:selectBooleanCheckbox value="#{indicatorsPercentageMB.showEmpty}" />
@@ -203,7 +211,7 @@
                         </p:fieldset>
                         <br/>
                         <br/>
-                        <p:fieldset legend="TABLA DE RESULTADOS"> 
+                        <p:fieldset legend="TABLA DE RESULTADOS" rendered="#{indicatorsPercentageMB.showTableResult}"> 
                             <br/>
                             <h:outputText 
                                 id="IdDataTableHtml"
@@ -217,10 +225,12 @@
                             <p:commandButton                                 
                                 icon="ui-icon-transferthick-e-w"
                                 actionListener="#{indicatorsPercentageMB.invertMatrixClick}"
-                                oncomplete="showTableResult();"  
-                                update="IdDataTableHtml"/> 
+                                oncomplete="showTableResult(); pageActive();"
+                                onclick="pageInactive();"
+                                value="Invertir"
+                                update="IdDataTableHtml IdBtnExport"/> 
                             <h:commandLink id="IdBtnExport" disabled="#{indicatorsPercentageMB.btnExportDisabled}">  
-                                <p:button  value="Exportar datos" />                                
+                                <p:button  value="Exportar datos" disabled="#{indicatorsPercentageMB.btnExportDisabled}"/>
                                 <p:dataExporter encoding="UTF8" type="xls" target="IdOutFile" fileName="salida" postProcessor="#{indicatorsPercentageMB.postProcessXLS}"/>  
                             </h:commandLink>
                             <br/>
@@ -228,7 +238,7 @@
                         </p:fieldset>
                         <br/>
                         <br/>                        
-                        <p:fieldset legend="GRAFICOS">
+                        <p:fieldset legend="GRAFICOS" rendered="#{indicatorsPercentageMB.showGraphic}">
                             <br/>
                             <p:panelGrid id="IdPanelGraphConfig">
                                 <p:row>
@@ -527,7 +537,7 @@
                     resizable="false"                    
                     widgetVar="configurationsDialog">  
                     <br/>
-                    <p:panelGrid>
+                    <p:panelGrid rendered="#{!indicatorsPercentageMB.btnAddCategoricalValueDisabled}">
                         <p:row>
                             <p:column styleClass="ui-widget-header">
                                 Nueva categoria

@@ -6,7 +6,6 @@ package managedBeans.fileProcessing;
 
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.*;
-import static beans.enumerators.SCC_F_032Enum.usaba_cinturon;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,6 +21,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import managedBeans.login.ApplicationControlMB;
 import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
@@ -39,8 +39,6 @@ public class RecordDataMB implements Serializable {
 
     @EJB
     FormsFacade formsFacade;
-//    @EJB
-//    SourcesFacade sourcesFacade;
     @EJB
     FieldsFacade fieldsFacade;
     @EJB
@@ -69,8 +67,6 @@ public class RecordDataMB implements Serializable {
     VictimCharacteristicsFacade victimCharacteristicsFacade;
     @EJB
     NonFatalPlacesFacade nonFatalPlacesFacade;
-//    @EJB
-//    DomesticViolenceDataSourcesFacade domesticViolenceDataSourcesFacade;
     @EJB
     UseAlcoholDrugsFacade useAlcoholDrugsFacade;
     @EJB
@@ -205,16 +201,13 @@ public class RecordDataMB implements Serializable {
     SivigilaMechanismFacade sivigilaMechanismFacade;
     @EJB
     SivigilaOtherMechanismFacade sivigilaOtherMechanismFacade;
-    //private RelationshipOfVariablesMB relationshipOfVariablesMB;
     private RelationGroup currentRelationsGroup;
-    //private FormsAndFieldsDataMB formsAndFieldsDataMB;
-    //private StoredRelationsMB storedRelationsMB;
     private ProjectsMB projectsMB;
     private LoginMB loginMB;
     private ErrorsControlMB errorsControlMB;
     private ArrayList<String> columnsNames;
     private String nameForm = "";
-    private boolean isValidate = false;//se ha realizado la validacion de los datos
+    //private boolean isValidate = false;//se ha realizado la validacion de los datos
     private RelationVariables relationVar;
     private int tuplesNumber;
     private int tuplesProcessed;
@@ -241,7 +234,7 @@ public class RecordDataMB implements Serializable {
     private String dia = "";//dia evento
     private String mes = "";//mes evento
     private String ao = "";//año del evento
-    private String diacon = "";//dia de la semana cnsulta
+    //private String diacon = "";//dia de la semana cnsulta
     private String sql = "";
     private String dia1 = "";//dia de la consulta
     private String mes1 = "";//mes de la consulta
@@ -265,6 +258,7 @@ public class RecordDataMB implements Serializable {
     private Tags newTag;
     private UngroupedTags newUngroupedTags;
     String fieldType = "";
+    private ApplicationControlMB applicationControlMB;
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     //MANEJO E LA BARRA DE PROGRESO DEL ALMACENAMIENTO ---------------------
@@ -315,19 +309,10 @@ public class RecordDataMB implements Serializable {
     //FUNCIONES DE PROPOSITO GENERAL ---------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    /*
-     * primer funcion que se ejecuta despues del constructor que inicializa
-     * variables y carga la conexion por jdbc
-     */
-    @PostConstruct
-    private void initialize() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-    }
-
     public RecordDataMB() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        //nameTableTemp = "temp" + loginMB.getLoginname();
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
+        applicationControlMB = (ApplicationControlMB) FacesContext.getCurrentInstance().getExternalContext().getApplicationMap().get("applicationControlMB");
     }
 
     public void reset() {
@@ -520,9 +505,6 @@ public class RecordDataMB implements Serializable {
          * click sobre el boton iniciar validacion aqui se generaran los errores
          * que salgan de analizar el archivo
          */
-        //int pos = 0;
-        isValidate = false;
-        //int currentNumberOfRow = 1;
         columnsNames = new ArrayList<>();
         progressValidate = 0;
         continueProcces = true;
@@ -544,7 +526,6 @@ public class RecordDataMB implements Serializable {
                 tuplesNumber = determineTuplesNumber();//determino numero de tuplas  
                 columnsNames = determineColumnNames();//determino nombres de columnas
                 resultSetFileData = determineRecords();//resulset con los registros a procesar
-                //errorsControlMB.setErrorControlArrayList(new ArrayList<ErrorControl>());//arreglo de errores                
                 while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                                                
                     //VARIABLES PARA SABER SI ES POSIBLE DETERMINAR LA INTENCIONALIDAD, Y FECHA DEL EVENTO
                     fechaev = "";
@@ -556,20 +537,16 @@ public class RecordDataMB implements Serializable {
                     mes1 = "";
                     ao1 = "";
                     intencionality = "";
-
-                    //String intencionalityValue = "";
                     String mechanism = "";
                     String traficValues = "";
                     String interpersonalValues = "";
                     String selftInflictedValues = "";
                     String domesticViolenceValues = "";
-
                     for (int i = 0; i < columnsNames.size(); i++) {//recorro cada una de las columnas de cada registro                                            
                         registryData = determineRegistryData((Object[]) resultSetFileData.getArray(3).getArray(), columnsNames.get(i));
                         relationVar = currentRelationsGroup.findRelationVarByNameFound(columnsNames.get(i));//determino la relacion de variables
                         value = null;
                         if (relationVar != null && registryData != null) {
-
                             fieldType = remove_v(relationVar.getFieldType());
                             switch (DataTypeEnum.convert(fieldType)) {//tipo de relacion
                                 case text:
@@ -583,17 +560,13 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case age:
                                     value = isAge(registryData);
-                                    //System.out.println("Validando Age: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//error = "dia_evento no corresponde al formato";
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
                                     }
                                     break;
                                 case date:
-
                                     value = isDate(registryData, relationVar.getDateFormat());
-                                    //System.out.println("Validando fecha: " + registryData + "   Resultado: " + value);
-
                                     if (value == null) {
                                         errorsNumber++;//error = "dia_evento no corresponde al formato";
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
@@ -603,9 +576,7 @@ public class RecordDataMB implements Serializable {
                                             if (!validYear(registryData, relationVar.getDateFormat())) {
                                                 errorsNumber++;//error = "dia_evento no corresponde al formato";                                                
                                                 errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
-                                                //errorsControlMB.addError(errorsNumber, null, "Fecha de ecento inválida", "La fecha: " + fechaev + " debe estar dentro del rango del 2002 hasta: " + String.valueOf(new Date().getYear() + 1901));
                                             }
-
                                         }
                                         if (relationVar.getNameExpected().compareTo("fecha_consulta") == 0) {
                                             fechacon = value;
@@ -616,11 +587,17 @@ public class RecordDataMB implements Serializable {
                                             }
                                         }
                                     }
+                                    break;
+                                case date_of_birth:
+                                    if (!validDateOfBirth(registryData, relationVar.getDateFormat())) {
+                                        errorsNumber++;//error = "dia_evento no corresponde al formato";
+                                        errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
+                                        //errorsControlMB.addError(errorsNumber, null, "Fecha de consulta inválida", "La fecha: " + fechaev + " debe estar dentro del rango del 2002 hasta: " + String.valueOf(new Date().getYear() + 1901));
+                                    }
 
                                     break;
                                 case military:
                                     value = isMilitary(registryData);
-                                    //System.out.println("Validando Militar: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
@@ -628,7 +605,6 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case hour:
                                     value = isHour(registryData);
-                                    //System.out.println("Validando Hora: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
@@ -636,7 +612,6 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case minute:
                                     value = isMinute(registryData);
-                                    //System.out.println("Validando Minuto: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
@@ -644,7 +619,6 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case day:
                                     value = isDay(registryData);
-                                    //System.out.println("Validando Dia: " + registryData + "   Resultado: " + value);
                                     if (relationVar.getNameExpected().compareTo("dia_evento") == 0) {
                                         dia = value;
                                     }
@@ -658,7 +632,6 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case month:
                                     value = isMonth(registryData);
-                                    //System.out.println("Validando Mes: " + registryData + "   Resultado: " + value);
                                     if (relationVar.getNameExpected().compareTo("mes_evento") == 0) {
                                         mes = value;
                                     }
@@ -678,7 +651,6 @@ public class RecordDataMB implements Serializable {
                                     if (relationVar.getNameExpected().compareTo("año_consulta") == 0) {
                                         ao1 = value;
                                     }
-                                    //System.out.println("Validando Año: " + registryData + "   Resultado: " + value);
                                     if (value == null) {
                                         errorsNumber++;//la hora_evento militar no puede ser determinada
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
@@ -686,7 +658,6 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case percentage:
                                     value = isPercentage(registryData);
-                                    //System.out.println("Validando porcentaje: " + registryData + "   Resultado: " + String.valueOf(value));
                                     if (value == null) {
                                         errorsNumber++;//el porcentaje no puede ser determinado
                                         errorsControlMB.addError(errorsNumber, relationVar, registryData, resultSetFileData.getString("record_id"));
@@ -694,11 +665,7 @@ public class RecordDataMB implements Serializable {
                                     break;
                                 case NOVALUE:
                                     value = isCategorical(registryData, relationVar);
-                                    if (relationVar.getNameExpected().compareTo("aseguradora") == 0) {
-                                        System.out.println("Validando Categoria: " + registryData + "   Resultado: " + value);
-                                    }
                                     if (relationVar.getNameExpected().compareTo("intencionalidad") == 0) {
-                                        //intencionality = registryData;
                                         intencionality = value;
                                     }
                                     if (value == null) {
@@ -709,9 +676,6 @@ public class RecordDataMB implements Serializable {
                             }
                         }
 
-                        //(((((((((((((((((((((((((((((((((((((((((((((((((((((((
-                        //(((((((((((((((((((((((((((((((((((((((((((((((((((((((
-                        //(((((((((((((((((((((((((((((((((((((((((((((((((((((((
                         if (nameForm.replace("-", "_").compareTo("SCC_F_032") == 0) {
 
                             continueProcces = false;
@@ -813,11 +777,6 @@ public class RecordDataMB implements Serializable {
                                 }
                             }
                         }
-                        //)))))))))))))))))))))))))))))))))))))))))))))))))))))))))
-                        //)))))))))))))))))))))))))))))))))))))))))))))))))))))))))
-                        //)))))))))))))))))))))))))))))))))))))))))))))))))))))))))
-
-
                     }
 
                     //..........................................................
@@ -1051,9 +1010,6 @@ public class RecordDataMB implements Serializable {
          * CARGA DE REGISTROS DE LA FICHA HOMICIDIOS
          * ********************************************************************
          */
-        //int contadorMasculino = 0;
-        //int contadorFemenino = 0;
-        //int contadorOtro = 0;
         tuplesNumber = 0;
         tuplesProcessed = 0;
         progress = 0;
@@ -1078,18 +1034,16 @@ public class RecordDataMB implements Serializable {
             newTag.setTagFileStored(projectsMB.getCurrentFileName());
             newTag.setFormId(formsFacade.find(nameForm));
             tagsFacade.create(newTag);
-
-
-
-
             lastTagNameCreated = newTag.getTagName();
 
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
-                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                //newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 newVictim.setVictimClass((short) 1);
                 FatalInjuries newFatalInjurie = new FatalInjuries();
-                newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+                //newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+                newFatalInjurie.setFatalInjuryId(applicationControlMB.addFatalReservedIdentifiers());
                 newFatalInjurie.setInputTimestamp(new Date());
                 newFatalInjurie.setInjuryId(injuriesFacade.find((short) 10));//es 10 por ser homicidio
                 newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
@@ -1104,7 +1058,6 @@ public class RecordDataMB implements Serializable {
                 dia = "";//dia evento
                 mes = "";//mes evento
                 ao = "";//año del evento
-                diacon = "";//dia de la semana cnsulta                                
                 dia1 = "";//dia de la consulta
                 mes1 = "";//mes de la consulta
                 ao1 = "";//año de la consulta
@@ -1122,7 +1075,6 @@ public class RecordDataMB implements Serializable {
                     value = null;
                     String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
                     relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
-                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
@@ -1175,16 +1127,8 @@ public class RecordDataMB implements Serializable {
                     if (continueProcces) {
                         switch (SCC_F_028Enum.convert(relationVar.getNameExpected())) {
                             // ************************************************DATOS PARA LA TABLA victims                                
-//                            case tipo_agresor_padre:
-//                                break;
-//                            case clave:
-//                                break;
-//                            case ficha:
-//                                break;
                             case departamento_evento:
                                 break;
-//                            case codigo_departamento_evento:
-//                                break;
                             case municipio_evento:
                                 splitArray = value.split("-");
                                 if (splitArray.length == 2) {
@@ -1192,13 +1136,6 @@ public class RecordDataMB implements Serializable {
                                     newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
                                 }
                                 break;
-//                            case codigo_municipio_evento:
-//                                splitArray = value.split("-");
-//                                if (splitArray.length == 2) {
-//                                    newVictim.setResidenceDepartment(Short.parseShort(splitArray[0]));
-//                                    newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
-//                                }
-//                                break;
                             case certificado_defuncion:
                                 newFatalInjurie.setCode(value);
                                 break;
@@ -1236,18 +1173,12 @@ public class RecordDataMB implements Serializable {
                                 n.setSeconds(0);
                                 newFatalInjurie.setInjuryTime(n);
                                 break;
-//                            case hora_sin_establecer://hora si determinar
-//                                si no hay hora_evento es si determinar                                
-//                                break;
                             case direccion_evento:
                                 newFatalInjurie.setInjuryAddress(value);
                                 break;
                             case barrio_evento:
                                 newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(value));
                                 break;
-//                            case codigo_barrio_evento:
-//                                newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(value));
-//                                break;
                             case area_evento://ZONA URBANA O RURAL //SE DETERMINA CON EL BARRIO
                                 newFatalInjurie.setAreaId(areasFacade.find(Short.parseShort(value)));
                                 break;
@@ -1268,15 +1199,6 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case sexo_victima:
                                 newVictim.setGenderId(gendersFacade.find(Short.parseShort(value)));
-
-//                                if (value.compareTo("1") == 0) {
-//                                    contadorMasculino++;
-//                                } else if (value.compareTo("2") == 0) {
-//                                    contadorFemenino++;
-//                                } else {
-//                                    System.out.print("QUE SERA:("+value+")");
-//                                    contadorOtro++;
-//                                }                                
                                 break;
                             case tipo_edad_victima:
                                 newVictim.setAgeTypeId(Short.parseShort(value));
@@ -1428,7 +1350,6 @@ public class RecordDataMB implements Serializable {
                     newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
                 }
 
-
                 //SI NO SE DETERMINA LA EDAD VERIFICAR SI HAY FECHA DE NACIMIENTO
                 if (newVictim.getVictimDateOfBirth() != null) {
                     if (newVictim.getVictimAge() == null) {
@@ -1461,13 +1382,6 @@ public class RecordDataMB implements Serializable {
                                 }
                                 newVictim.setVictimAge((short) ageYears);
                                 newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
-//                                if (newVictim.getTypeId() == null) {
-//                                    if (ageYears >= 18) {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-//                                    } else {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-//                                    }
-//                                }
                             }
                         } catch (Exception ex) {
                             System.out.println("Error 5 en " + this.getClass().getName() + ":" + ex.toString());
@@ -1528,6 +1442,8 @@ public class RecordDataMB implements Serializable {
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryMurderFacade.create(newFatalInjuryMurder);
+                    applicationControlMB.removeFatalReservedIdentifiers(newFatalInjurie.getFatalInjuryId());
+                    applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
                 } catch (Exception e) {
                     System.out.println("Error 6 en " + this.getClass().getName() + ":" + e.toString());
                 }
@@ -1542,10 +1458,6 @@ public class RecordDataMB implements Serializable {
         } catch (Exception ex) {
             System.out.println("Error 8 en " + this.getClass().getName() + ":" + ex.toString());
         }
-//        System.out.println("#############LOS CONTADORES DETERMINARON QUE#############");
-//        System.out.println("CASOS PARA MASCULINO: " + String.valueOf(contadorMasculino));
-//        System.out.println("CASOS PARA FEMENINO: " + String.valueOf(contadorFemenino));
-//        System.out.println("CASOS PARA OTRO: " + String.valueOf(contadorOtro));
     }
 
     public void registerSCC_F_029() {
@@ -1583,10 +1495,10 @@ public class RecordDataMB implements Serializable {
 
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
-                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 newVictim.setVictimClass((short) 1);
                 FatalInjuries newFatalInjurie = new FatalInjuries();
-                newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+                newFatalInjurie.setFatalInjuryId(applicationControlMB.addFatalReservedIdentifiers());
                 newFatalInjurie.setInputTimestamp(new Date());
                 newFatalInjurie.setInjuryId(injuriesFacade.find((short) 11));//es 10 transito
                 newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
@@ -1602,8 +1514,7 @@ public class RecordDataMB implements Serializable {
                 surname = "";
                 dia = "";//dia evento
                 mes = "";//mes evento
-                ao = "";//año del evento
-                diacon = "";//dia de la semana cnsulta                                
+                ao = "";//año del evento                    
                 dia1 = "";//dia de la consulta
                 mes1 = "";//mes de la consulta
                 ao1 = "";//año de la consulta
@@ -1621,7 +1532,6 @@ public class RecordDataMB implements Serializable {
                     value = null;
                     String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
                     relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
-                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
@@ -1672,16 +1582,8 @@ public class RecordDataMB implements Serializable {
                     if (continueProcces) {
                         switch (SCC_F_029Enum.convert(relationVar.getNameExpected())) {
                             // ************************************************DATOS PARA LA TABLA victims                                
-//                            case tipo_agresor_padre:
-//                                break;
-//                            case clave:
-//                                break;
-//                            case ficha:
-//                                break;
                             case departamento_evento:
                                 break;
-//                            case codigo_departamento_evento:
-//                                break;
                             case municipio_evento:
                                 splitArray = value.split("-");
                                 if (splitArray.length == 2) {
@@ -1689,13 +1591,6 @@ public class RecordDataMB implements Serializable {
                                     newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
                                 }
                                 break;
-//                            case codigomuni:
-//                                splitArray = value.split("-");
-//                                if (splitArray.length == 2) {
-//                                    newVictim.setResidenceDepartment(Short.parseShort(splitArray[0]));
-//                                    newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
-//                                }
-//                                break;
                             case certificado_defuncion:
                                 newFatalInjurie.setCode(value);
                                 break;
@@ -1733,18 +1628,12 @@ public class RecordDataMB implements Serializable {
                                 n.setSeconds(0);
                                 newFatalInjurie.setInjuryTime(n);
                                 break;
-//                            case hora_sin_establecer://hora si determinar
-//                                si no hay hora_evento es si determinar                                
-//                                break;
                             case direccion_evento:
                                 newFatalInjurie.setInjuryAddress(value);
                                 break;
                             case barrio_evento:
                                 newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(value));
                                 break;
-//                            case codbar:
-//                                newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(value));
-//                                break;
                             case area_evento://ZONA URBANA O RURAL //SE DETERMINA CON EL BARRIO
                                 newFatalInjurie.setAreaId(areasFacade.find(Short.parseShort(value)));
                                 break;
@@ -2029,6 +1918,8 @@ public class RecordDataMB implements Serializable {
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryTrafficFacade.create(newFatalInjuryTraffic);
+                    applicationControlMB.removeFatalReservedIdentifiers(newFatalInjurie.getFatalInjuryId());
+                    applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
                 } catch (Exception e) {
                     System.out.println("Error 10 en " + this.getClass().getName() + ":" + e.toString());
                 }
@@ -2079,10 +1970,10 @@ public class RecordDataMB implements Serializable {
 
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
-                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 newVictim.setVictimClass((short) 1);
                 FatalInjuries newFatalInjurie = new FatalInjuries();
-                newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+                newFatalInjurie.setFatalInjuryId(applicationControlMB.addFatalReservedIdentifiers());
                 newFatalInjurie.setInputTimestamp(new Date());
                 newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
                 newFatalInjurie.setVictimId(newVictim);
@@ -2096,8 +1987,7 @@ public class RecordDataMB implements Serializable {
                 surname = "";
                 dia = "";//dia evento
                 mes = "";//mes evento
-                ao = "";//año del evento
-                diacon = "";//dia de la semana cnsulta                                
+                ao = "";//año del evento                    
                 dia1 = "";//dia de la consulta
                 mes1 = "";//mes de la consulta
                 ao1 = "";//año de la consulta
@@ -2115,7 +2005,6 @@ public class RecordDataMB implements Serializable {
                     value = null;
                     String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
                     relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
-                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
@@ -2166,16 +2055,8 @@ public class RecordDataMB implements Serializable {
                     if (continueProcces) {
                         switch (SCC_F_030Enum.convert(relationVar.getNameExpected())) {
                             // ************************************************DATOS PARA LA TABLA victims                                
-//                            case tipo_agresor_padre:
-//                                break;
-//                            case clave:
-//                                break;
-//                            case ficha:
-//                                break;
                             case departamento_evento:
                                 break;
-//                            case codigodepa:
-//                                break;
                             case municipio_evento:
                                 splitArray = value.split("-");
                                 if (splitArray.length == 2) {
@@ -2183,13 +2064,6 @@ public class RecordDataMB implements Serializable {
                                     newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
                                 }
                                 break;
-//                            case codigomuni:
-//                                splitArray = value.split("-");
-//                                if (splitArray.length == 2) {
-//                                    newVictim.setResidenceDepartment(Short.parseShort(splitArray[0]));
-//                                    newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
-//                                }
-//                                break;
                             case certificado_defuncion:
                                 newFatalInjurie.setCode(value);
                                 break;
@@ -2227,18 +2101,12 @@ public class RecordDataMB implements Serializable {
                                 n.setSeconds(0);
                                 newFatalInjurie.setInjuryTime(n);
                                 break;
-//                            case hora_sin_establecer://hora si determinar
-//                                si no hay hora_evento es si determinar                                
-//                                break;
                             case direccion_evento:
                                 newFatalInjurie.setInjuryAddress(value);
                                 break;
                             case barrio_evento:
                                 newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(value));
                                 break;
-//                            case codbar:
-//                                newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(value));
-//                                break;
                             case area_evento://ZONA URBANA O RURAL //SE DETERMINA CON EL BARRIO
                                 newFatalInjurie.setAreaId(areasFacade.find(Short.parseShort(value)));
                                 break;
@@ -2445,13 +2313,6 @@ public class RecordDataMB implements Serializable {
                                 }
                                 newVictim.setVictimAge((short) ageYears);
                                 newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
-//                                if (newVictim.getTypeId() == null) {
-//                                    if (ageYears >= 18) {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-//                                    } else {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-//                                    }
-//                                }
                             }
                         } catch (Exception ex) {
                             System.out.println("Error 13 en " + this.getClass().getName() + ":" + ex.toString());
@@ -2514,6 +2375,8 @@ public class RecordDataMB implements Serializable {
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjurySuicideFacade.create(newFatalInjurySuicide);
+                    applicationControlMB.removeFatalReservedIdentifiers(newFatalInjurie.getFatalInjuryId());
+                    applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
                 } catch (Exception e) {
                     System.out.println("Error 14 en " + this.getClass().getName() + ":" + e.toString());
                 }
@@ -2564,10 +2427,10 @@ public class RecordDataMB implements Serializable {
 
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
-                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 newVictim.setVictimClass((short) 1);
                 FatalInjuries newFatalInjurie = new FatalInjuries();
-                newFatalInjurie.setFatalInjuryId(fatalInjuriesFacade.findMax() + 1);
+                newFatalInjurie.setFatalInjuryId(applicationControlMB.addFatalReservedIdentifiers());
                 newFatalInjurie.setInputTimestamp(new Date());
 
                 newFatalInjurie.setUserId(usersFacade.find(1));//usuario que se encuentre logueado
@@ -2583,7 +2446,7 @@ public class RecordDataMB implements Serializable {
                 dia = "";//dia evento
                 mes = "";//mes evento
                 ao = "";//año del evento
-                diacon = "";//dia de la semana cnsulta                                
+                //diacon = "";//dia de la semana cnsulta                                
                 dia1 = "";//dia de la consulta
                 mes1 = "";//mes de la consulta
                 ao1 = "";//año de la consulta
@@ -2654,16 +2517,8 @@ public class RecordDataMB implements Serializable {
                     if (continueProcces) {
                         switch (SCC_F_031Enum.convert(relationVar.getNameExpected())) {
                             // ************************************************DATOS PARA LA TABLA victims                                
-//                            case tipo_agresor_padre:
-//                                break;
-//                            case clave:
-//                                break;
-//                            case ficha:
-//                                break;
                             case departamento_evento:
                                 break;
-//                            case codigodepa:
-//                                break;
                             case municipio_evento:
                                 splitArray = value.split("-");
                                 if (splitArray.length == 2) {
@@ -2671,13 +2526,6 @@ public class RecordDataMB implements Serializable {
                                     newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
                                 }
                                 break;
-//                            case codigomuni:
-//                                splitArray = value.split("-");
-//                                if (splitArray.length == 2) {
-//                                    newVictim.setResidenceDepartment(Short.parseShort(splitArray[0]));
-//                                    newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
-//                                }
-//                                break;
                             case certificado_defuncion:
                                 newFatalInjurie.setCode(value);
                                 break;
@@ -2715,18 +2563,12 @@ public class RecordDataMB implements Serializable {
                                 n.setSeconds(0);
                                 newFatalInjurie.setInjuryTime(n);
                                 break;
-//                            case hora_sin_establecer://hora si determinar
-//                                si no hay hora_evento es si determinar                                
-//                                break;
                             case direccion_evento:
                                 newFatalInjurie.setInjuryAddress(value);
                                 break;
                             case barrio_evento:
                                 newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(value));
                                 break;
-//                            case codbar:
-//                                newFatalInjurie.setInjuryNeighborhoodId(Integer.parseInt(value));
-//                                break;
                             case area_evento://ZONA URBANA O RURAL //SE DETERMINA CON EL BARRIO
                                 newFatalInjurie.setAreaId(areasFacade.find(Short.parseShort(value)));
                                 break;
@@ -2928,13 +2770,6 @@ public class RecordDataMB implements Serializable {
                                 }
                                 newVictim.setVictimAge((short) ageYears);
                                 newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
-//                                if (newVictim.getTypeId() == null) {
-//                                    if (ageYears >= 18) {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-//                                    } else {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-//                                    }
-//                                }
                             }
                         } catch (Exception ex) {
                             System.out.println("Error 17 en " + this.getClass().getName() + ":" + ex.toString());
@@ -2998,6 +2833,8 @@ public class RecordDataMB implements Serializable {
                     victimsFacade.create(newVictim);
                     fatalInjuriesFacade.create(newFatalInjurie);
                     fatalInjuryAccidentFacade.create(newFatalInjuryAccident);
+                    applicationControlMB.removeFatalReservedIdentifiers(newFatalInjurie.getFatalInjuryId());
+                    applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
                 } catch (Exception e) {
                     System.out.println("Error 18 en " + this.getClass().getName() + ":" + e.toString());
                 }
@@ -3045,12 +2882,14 @@ public class RecordDataMB implements Serializable {
             lastTagNameCreated = newTag.getTagName();
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
-                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                //newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 newVictim.setVictimClass((short) 1);
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
                 newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
-                newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                //newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                newNonFatalInjury.setNonFatalInjuryId(applicationControlMB.addNonfatalReservedIdentifiers());
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
                 newNonFatalDomesticViolence.setNonFatalInjuryId(newNonFatalInjury.getNonFatalInjuryId());
                 newNonFatalDomesticViolence.setNonFatalInjuries(newNonFatalInjury);
@@ -3078,7 +2917,7 @@ public class RecordDataMB implements Serializable {
                 dia = "";//dia evento
                 mes = "";//mes evento
                 ao = "";//año del evento
-                diacon = "";//dia de la semana cnsulta                                
+                //diacon = "";//dia de la semana cnsulta                                
                 dia1 = "";//dia de la consulta
                 mes1 = "";//mes de la consulta
                 ao1 = "";//año de la consulta
@@ -3096,9 +2935,6 @@ public class RecordDataMB implements Serializable {
                     String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
                     relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
                     if (relationVar != null) {
-//                        if(relationVar.getNameExpected().compareTo("tipo_transporte_lesionado")==0||relationVar.getNameExpected().compareTo("tipo_transporte_contraparte")==0||relationVar.getNameExpected().compareTo("tipo_usuario_transporte")==0){
-//                            System.out.print("aqui3");
-//                        }                        
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
                                 value = splitColumnAndValue[1];
@@ -3141,23 +2977,12 @@ public class RecordDataMB implements Serializable {
 
                     continueProcces = false;
                     if (value != null) {
-                        if (value.compareTo("87450201") == 0 //|| value.compareTo("1802058") == 0
-                                //|| value.compareTo("1840600") == 0
-                                //|| value.compareTo("4871203") == 0
-                                //|| value.compareTo("5194128") == 0
-                                //|| value.compareTo("5199446") == 0
-                                //|| value.compareTo("5207257") == 0
-                                ) {
-                            System.out.print("aqui");
-                        }
+                        //if (value.compareTo("87450201") == 0 ) {System.out.print("-");}
                         if (value.trim().length() != 0) {
                             continueProcces = true;
                         }
                     }
                     if (continueProcces) {
-//                        if(relationVar.getNameExpected().compareTo("tipo_transporte_lesionado")==0||relationVar.getNameExpected().compareTo("tipo_transporte_contraparte")==0||relationVar.getNameExpected().compareTo("tipo_usuario_transporte")==0){
-//                            System.out.print("aqui2");
-//                        }
                         switch (SCC_F_032Enum.convert(relationVar.getNameExpected())) {
                             // ************************************************DATOS PARA LA TABLA victims                                
                             case primer_nombre:
@@ -3192,9 +3017,6 @@ public class RecordDataMB implements Serializable {
                                 newVictim.setTypeId(idTypesFacade.find(Short.parseShort(value)));
                                 break;
                             case numero_identificacion_victima:
-//                                if (value.compareTo("30744424") == 0) {
-//                                    System.out.println("aqui");
-//                                }
                                 newVictim.setVictimNid(value);
                                 break;
                             case aseguradora:
@@ -3434,140 +3256,117 @@ public class RecordDataMB implements Serializable {
                             case sitio_anatomico_sistemico:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 1));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_craneo:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 2));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_afectado_ojos:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 3));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_maxilofacial:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 4));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_cuello:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 5));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_torax:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 6));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_abdomen:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 7));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_columna:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 8));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_pelvis:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 9));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_miembros_superiores:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 10));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_miembros_inferiores:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 11));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case sitio_anatomico_otro:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     anatomicalLocationsList.add(new AnatomicalLocations((short) 98));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_kind_of_injury
                             case naturaleza_lesion_laceracion:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 1));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_cortada:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 2));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_profunda:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 3));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_esgince:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 4));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_fractura:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 5));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_quemadura:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 6));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_contusion:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 7));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_organo_sitemica:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 8));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_trauma_craneoencefalico:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 9));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_otro_tipo:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 98));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             case naturaleza_lesion_no_se_sabe:
                                 if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                     kindsOfInjurysList.add(new KindsOfInjury((short) 99));
-                                    //selectInjuryDetermined = injuriesFacade.find((short) 50);
                                 }
                                 break;
                             // ************************************************DATOS PARA LA TABLA non_fatal_diagnosis
@@ -3760,8 +3559,6 @@ public class RecordDataMB implements Serializable {
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
-//                            case oanimal://cual animal 8
-//                                break;
                             case otro_factor_precipitante://otro factor precipitante
                                 selectInjuryDetermined = injuriesFacade.find((short) 52);//autoinflingida intencional
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 9));
@@ -3822,24 +3619,10 @@ public class RecordDataMB implements Serializable {
                             case medico_diligencio_ficha:
                                 newNonFatalInjury.setHealthProfessionalId(healthProfessionalsFacade.find(Integer.parseInt(value)));
                                 break;
-                            case digitador_ficha:
-                                //newNonFatalInjury.setUserId(usersFacade.find(Integer.parseInt(value)));
-                                break;
                             default:
                         }
                     }
                 }
-
-////                if (newNonFatalInjury.getInjuryDate() == null) {
-////                    if (tuplesProcessed == 2417
-////                            || tuplesProcessed == 2420
-////                            || tuplesProcessed == 2421
-////                            || tuplesProcessed == 2438
-////                            || tuplesProcessed == 2453
-////                            || tuplesProcessed == 2455) {
-////                        System.out.print("");
-////                    }
-////                }
 
                 //SI NO HAY INSTITUCION RECEPTORA SE TRATA DE COLOCAR LA FUENTE DEL PROYECTO
                 if (newNonFatalDomesticViolence.getDomesticViolenceDataSourceId() == null) {
@@ -3924,7 +3707,6 @@ public class RecordDataMB implements Serializable {
                     }
                 }
 
-
                 //SI LA HORA DE LA CONSULTA ES 0000 PASAR LA HORA DEL EVENTO A LA DE LA CONSULTA
                 if (newNonFatalInjury.getCheckupTime() != null) {
                     if (newNonFatalInjury.getInjuryTime() != null) {
@@ -3937,7 +3719,6 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setInjuryTime(newNonFatalInjury.getCheckupTime());
                     }
                 }
-
 
                 //SI NO HAY FECHA DE EVENTO PASAR LA DE CONSULTA
                 if (newNonFatalInjury.getInjuryDate() == null) {
@@ -4113,11 +3894,9 @@ public class RecordDataMB implements Serializable {
                 if (!securityElementList.isEmpty()) {
                     newNonFatalTransport.setSecurityElementsList(securityElementList);
                 } else {
-                    securityElementList.add(new SecurityElements((short) 8));
+                    securityElementList.add(new SecurityElements((short) 7));
                     newNonFatalTransport.setSecurityElementsList(securityElementList);
                 }
-
-
 
                 if (newVictim.getVictimNid() == null) {//NO HAY NUMERO DE IDENTIFICACION 
                     newVictim.setVictimNid(String.valueOf(genNnFacade.findMax() + 1));//asigno un consecutivo a la identificacion
@@ -4168,23 +3947,7 @@ public class RecordDataMB implements Serializable {
 
                     }
                 }
-//                if (newNonFatalInjury.getInjuryDate() != null) {
-//                    if (newNonFatalInjury.getInjuryDate().getYear() + 1900 != 2011) {
-//                        System.out.print("aqui el error se guarda");
-//                    }
-//                }
                 //PERSISTO//////////////////////////////////////////////////////
-                if (newNonFatalInjury.getInjuryId().getInjuryId() == 53
-                        || newNonFatalInjury.getInjuryId().getInjuryId() == 55
-                        || newNonFatalInjury.getInjuryId().getInjuryId() == 56) {
-                    //es intrafamiliar
-                    if (newNonFatalInjury.getMechanismId().getMechanismId() == 1) {
-                        //dice que es transito
-                        System.out.println("Aqui esta el error");
-
-                    }
-                }
-
                 try {
                     if (!othersList.isEmpty()) {
                         newVictim.setOthersList(othersList);
@@ -4207,23 +3970,16 @@ public class RecordDataMB implements Serializable {
                         newNonFatalDomesticViolence.setNonFatalInjuries(nonFatalInjuriesFacade.find(newNonFatalInjury.getNonFatalInjuryId()));
                         nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
                     } else if (newNonFatalInjury.getInjuryId().getInjuryId().compareTo((short) 54) == 0) {//NO INTENCIONAL 
-                        //POR DEFECTO ES INTENCIONAL
+                        //POR DEFECTO ES NO INTENCIONAL
                     }
+                    applicationControlMB.removeNonfatalReservedIdentifiers(newNonFatalInjury.getNonFatalInjuryId());
+                    applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
                 } catch (Exception e) {
                     System.out.println("Error 22 en " + this.getClass().getName() + ":" + e.toString());
                 }
-
                 tuplesProcessed++;
                 progress = (int) (tuplesProcessed * 100) / tuplesNumber;
                 System.out.println("PROGRESO INGRESANDO LCENF: " + String.valueOf(progress));
-//                ResultSet rs = connectionJdbcMB.consult("select count(*) from victims where tag_id = " + newVictim.getTagId().getTagId());
-//                if (rs.next()) {
-//                    if (tuplesProcessed != rs.getInt(1)) {
-//                        System.out.println("FALLO " + String.valueOf(progress) + "% registros:" + tuplesProcessed);
-//                    } else {
-//                        System.out.println(String.valueOf(progress) + "% registros:" + tuplesProcessed);
-//                    }
-//                }
             }
             progress = 100;
             System.out.println("PROGRESO INGRESANDO LCENF: " + String.valueOf(progress));
@@ -4266,21 +4022,20 @@ public class RecordDataMB implements Serializable {
             tagsFacade.create(newTag);
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
-                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 newVictim.setVictimClass((short) 1);
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
                 newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
                 newNonFatalInjury.setUserId(usersFacade.find(1));//usuario administrador
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
-                newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                newNonFatalInjury.setNonFatalInjuryId(applicationControlMB.addNonfatalReservedIdentifiers());
                 newNonFatalInjury.setInputTimestamp(new Date());
                 List<ActionsToTake> actionsToTakeList = new ArrayList<>();
                 List<AnatomicalLocations> anatomicalLocationsList = new ArrayList<>();
                 List<AbuseTypes> abuseTypesList = new ArrayList<>();
                 List<AggressorTypes> aggressorTypesList = new ArrayList<>();
                 List<Others> othersList = new ArrayList<>();
-                //diagnosesList = new ArrayList<Diagnoses>();//lista non_fatal_diagnosis
                 List<VulnerableGroups> vulnerableGroupList = new ArrayList<>();// lista vector victim_vulnerable_group
 
                 value = "";
@@ -4289,7 +4044,6 @@ public class RecordDataMB implements Serializable {
                 dia = "";//dia evento
                 mes = "";//mes evento
                 ao = "";//año del evento
-                diacon = "";//dia de la semana cnsulta                                
                 dia1 = "";//dia de la consulta
                 mes1 = "";//mes de la consulta
                 ao1 = "";//año de la consulta
@@ -4306,7 +4060,6 @@ public class RecordDataMB implements Serializable {
                     value = null;
                     String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
                     relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
-                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(relationVar.getFieldType())) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
@@ -4344,7 +4097,6 @@ public class RecordDataMB implements Serializable {
                                 break;
                             case NOVALUE:
                                 value = isCategorical(splitColumnAndValue[1], relationVar);
-                                //value = isCategorical(resultSetFileData.getString(relationVar.getNameFound()), relationVar);
                                 break;
                         }
                     }
@@ -4359,10 +4111,6 @@ public class RecordDataMB implements Serializable {
 
                         switch (SCC_F_033Enum.convert(relationVar.getNameExpected())) {
                             // ************************************************DATOS PARA LA TABLA victims                                
-                            //case registro:
-                            //    break;
-                            //case clave:
-                            //    break;
                             case institucion_receptora:
                                 newNonFatalDomesticViolence.setDomesticViolenceDataSourceId(nonFatalDataSourcesFacade.find(Short.parseShort(value)));
                                 newNonFatalInjury.setNonFatalDataSourceId(nonFatalDataSourcesFacade.find(Short.parseShort(value)));
@@ -4419,9 +4167,6 @@ public class RecordDataMB implements Serializable {
                             case departamento_residencia:
                                 newVictim.setResidenceDepartment(Short.parseShort(value));
                                 break;
-//                            case codigo:
-//                                newVictim.setResidenceDepartment(Short.parseShort(value));
-//                                break;
                             case municipio_residencia:
                                 splitArray = value.split("-");
                                 if (splitArray.length == 2) {
@@ -4429,33 +4174,15 @@ public class RecordDataMB implements Serializable {
                                     newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
                                 }
                                 break;
-//                            case codigo1:
-//                                splitArray = value.split("-");
-//                                if (splitArray.length == 2) {
-//                                    newVictim.setResidenceDepartment(Short.parseShort(splitArray[0]));
-//                                    newVictim.setResidenceMunicipality(Short.parseShort(splitArray[1]));
-//                                }
-//                                break;
                             case barrio_residencia_victima://barrio barrio_residencia_victima
                                 newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(value)));
                                 break;
-//                            case codigo2://barrio barrio_residencia_victima
-//                                newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(value)));
-//                                break;
                             case direccion_residencia://direccion barrio_residencia_victima
                                 newVictim.setVictimAddress(value);
                                 break;
                             case telefono_residencia:
                                 newVictim.setVictimTelephone(value);
                                 break;
-                            //case departamento_evento://departamento evento
-                            //    break;
-                            //case codigo3://departamento evento
-                            //    break;
-                            //case municipio_evento://municpio evento
-                            //    break;
-                            //case codigo4://municipio evento
-                            //    break;
                             case barrio_evento://barrio evento
                                 newNonFatalInjury.setInjuryNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(value)));
                                 break;
@@ -4563,7 +4290,6 @@ public class RecordDataMB implements Serializable {
                             case mecanismo_objeto_lesion:
                                 newNonFatalInjury.setMechanismId(mechanismsFacade.find(Short.parseShort(value)));
                                 break;
-
                             //CAMPOS OTROS
                             case otro_lugar://otro lugar_ocurrio_lesion
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 1));
@@ -4585,8 +4311,7 @@ public class RecordDataMB implements Serializable {
                                 newOther.setValueText(value);
                                 othersList.add(newOther);
                                 break;
-                            case cual_desastre_natural://"En caso de desastre natural: que tipo_identificacion_victima de desastre fue"
-                                //AL PARECER NO SE USA
+                            case cual_desastre_natural://"En caso de desastre natural: que tipo_identificacion_victima de desastre fue"                                
                                 break;
                             case otro_tipo_mecanismo_objeto_lesion://"Otro tipo_identificacion_victima de mecanismo u objeto"
                                 newOther = new Others(new OthersPK(newVictim.getVictimId(), (short) 6));
@@ -5024,13 +4749,6 @@ public class RecordDataMB implements Serializable {
                                 }
                                 newVictim.setVictimAge((short) ageYears);
                                 newVictim.setAgeTypeId((short) 1);//aqui por defecto seria sin dato, si no se conoce
-//                                if (newVictim.getTypeId() == null) {
-//                                    if (ageYears >= 18) {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 1));
-//                                    } else {
-//                                        newVictim.setTypeId(idTypesFacade.find((short) 5));
-//                                    }
-//                                }
                             }
                         } catch (Exception ex) {
                             System.out.println("Error 24 en " + this.getClass().getName() + ":" + ex.toString());
@@ -5039,13 +4757,6 @@ public class RecordDataMB implements Serializable {
                 }
 
                 //agrego las listas no vacias
-//                if (!anatomicalLocationsList.isEmpty()) {
-//                    newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
-//                } else {
-//                    anatomicalLocationsList.add(new AnatomicalLocations((short) 99));
-//                    newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
-//                }
-
                 if (!abuseTypesList.isEmpty()) {
                     newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
                 } else {
@@ -5067,10 +4778,6 @@ public class RecordDataMB implements Serializable {
                     actionsToTakeList.add(new ActionsToTake((short) 13));
                     newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
                 }
-//                if (actionsToTakeList.size() > 5) {
-//                    System.out.println("Aqui hay mas de 5");
-//                }
-
 
                 if (!vulnerableGroupList.isEmpty()) {
                     newVictim.setVulnerableGroupsList(vulnerableGroupList);
@@ -5133,12 +4840,13 @@ public class RecordDataMB implements Serializable {
 
                 //PERSISTO//////////////////////////////////////////////////////////////////
                 try {
-
                     newNonFatalInjury.setVictimId(newVictim);
                     victimsFacade.create(newVictim);//PERSISTO LA VICTIMA                
                     nonFatalInjuriesFacade.create(newNonFatalInjury);//PERSISTO LA LESION NO FATAL                    
                     newNonFatalDomesticViolence.setNonFatalInjuryId(newNonFatalInjury.getNonFatalInjuryId());
                     nonFatalDomesticViolenceFacade.create(newNonFatalDomesticViolence);
+                    applicationControlMB.removeNonfatalReservedIdentifiers(newNonFatalInjury.getNonFatalInjuryId());
+                    applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
 
                 } catch (Exception e) {
                     System.out.println("Error 25 en " + this.getClass().getName() + ":" + e.toString());
@@ -5146,8 +4854,6 @@ public class RecordDataMB implements Serializable {
                 tuplesProcessed++;
                 progress = (int) (tuplesProcessed * 100) / tuplesNumber;
                 System.out.println("PROGRESO INGRESANDO VIF: " + String.valueOf(progress));
-
-
             }
             progress = 100;
             System.out.println("PROGRESO INGRESANDO VIF: " + String.valueOf(progress));
@@ -5193,17 +4899,17 @@ public class RecordDataMB implements Serializable {
 
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
-                newVictim.setVictimId(victimsFacade.findMax() + 1);
+                newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 newVictim.setVictimClass((short) 1);
                 newVictim.setTagId(tagsFacade.find(newTag.getTagId()));
                 newVictim.setFirstTagId(newVictim.getTagId().getTagId());
                 NonFatalInjuries newNonFatalInjury = new NonFatalInjuries();
 
                 NonFatalDomesticViolence newNonFatalDomesticViolence = new NonFatalDomesticViolence();
-                newNonFatalInjury.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                newNonFatalInjury.setNonFatalInjuryId(applicationControlMB.addNonfatalReservedIdentifiers());
                 SivigilaEvent newSivigilaEvent = new SivigilaEvent(newNonFatalInjury.getNonFatalInjuryId());
-                SivigilaVictim newSivigilaVictim = new SivigilaVictim(sivigilaVictimFacade.findMax() + 1);
-                SivigilaAggresor newSivigilaAggresor = new SivigilaAggresor(sivigilaAggresorFacade.findMax() + 1);
+                SivigilaVictim newSivigilaVictim = new SivigilaVictim(applicationControlMB.addSivigilaVictimReservedIdentifiers());
+                SivigilaAggresor newSivigilaAggresor = new SivigilaAggresor(applicationControlMB.addSivigilaAggresorReservedIdentifiers());
                 newNonFatalInjury.setInputTimestamp(new Date());
                 List<AbuseTypes> abuseTypesList = new ArrayList<>();
                 List<PublicHealthActions> publicHealthActionsList = new ArrayList<>();
@@ -5218,7 +4924,6 @@ public class RecordDataMB implements Serializable {
                     value = null;
                     String splitColumnAndValue[] = arrayInJava[posCol].toString().split("<=>");
                     relationVar = currentRelationsGroup.findRelationVarByNameFound(splitColumnAndValue[0]);//determino la relacion de variables
-                    //if (splitColumnAndValue[0].compareTo("edad_paciente") == 0 && tuplesProcessed > 309) { splitColumnAndValue[0] = "edad_paciente"; }
                     if (relationVar != null) {
                         switch (DataTypeEnum.convert(remove_v(relationVar.getFieldType()))) {//determino valor a ingresar usando: isNumeric,isAge... etc
                             case text:
@@ -5366,11 +5071,7 @@ public class RecordDataMB implements Serializable {
                                 newNonFatalInjury.setHealthProfessionalId(healthProfessionalsFacade.find(Integer.parseInt(value)));
                                 break;
                             case naturaleza_violencia:
-                                //if (value.compareTo("1") == 0 || value.compareTo("SI") == 0) {
                                 abuseTypesList.add(new AbuseTypes(Short.parseShort(value)));
-                                //selectInjuryDetermined = injuriesFacade.find((short) 55);
-                                //}
-                                //newNonFatalDomesticViolence.setAbuseTypesList(abuseTypesList);
                                 break;
                             case escolaridad_victima:
                                 newSivigilaVictim.setEducationalLevelId(sivigilaEducationalLevelFacade.find(Short.parseShort(value)));
@@ -5692,6 +5393,12 @@ public class RecordDataMB implements Serializable {
                     newSivigilaEvent.setNonFatalDomesticViolence(newNonFatalDomesticViolence);
                     newSivigilaEvent.setSivigilaAgresorId(newSivigilaAggresor);
                     sivigilaEventFacade.create(newSivigilaEvent);
+
+                    applicationControlMB.removeNonfatalReservedIdentifiers(newNonFatalInjury.getNonFatalInjuryId());
+                    applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
+                    applicationControlMB.removeSivigilaAggresorReservedIdentifiers(newSivigilaAggresor.getSivigilaAgresorId());
+                    applicationControlMB.removeSivigilaVictimReservedIdentifiers(newSivigilaVictim.getSivigilaVictimId());
+
                 } catch (Exception e) {
                     System.out.println("Error 29 en " + this.getClass().getName() + ":" + e.toString());
                 }
@@ -5947,7 +5654,7 @@ public class RecordDataMB implements Serializable {
         /*
          *  determinar si una fecha se encuentra desde el año 2002 hasta el año actual
          */
-        boolean booleanreturn = false;
+
         if (f.trim().length() == 0) {
             return false;
         }
@@ -5956,6 +5663,28 @@ public class RecordDataMB implements Serializable {
             DateTimeFormatter fmt2 = DateTimeFormat.forPattern(format);
             DateTime the_date = DateTime.parse(f, fmt2);//trata de convertir al formato "format"(me llega por parametro)
             if (the_date.getYear() >= 2002 && the_date.getYear() < new Date().getYear() + 1901) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Throwable ex) {
+            return false;//invalida
+        }
+    }
+
+    private boolean validDateOfBirth(String f, String format) {
+        /*
+         *  determinar si una fecha de naciemiento no supera a la fecha de sistema
+         */
+
+        if (f.trim().length() == 0) {
+            return false;
+        }
+        try {
+            //DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd");
+            DateTimeFormatter fmt2 = DateTimeFormat.forPattern(format);
+            DateTime the_date = DateTime.parse(f, fmt2);//trata de convertir al formato "format"(me llega por parametro)
+            if (the_date.getYear() < new Date().getYear() + 1901) {
                 return true;
             } else {
                 return false;

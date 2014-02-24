@@ -6,6 +6,7 @@ package managedBeans.closures;
  */
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.ClosuresEnum;
+import beans.util.RowDataTable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -44,7 +45,6 @@ public class ClosuresMB {
     private boolean disabledInjury = false;
     private SelectItem[] injuriesList;
     private short currentInjury = 10;
-    //private String currentInjuryName;
     private ConnectionJdbcMB connectionJdbcMB;
     private BackupsMB backupsMB;
     private String nameBackup = "";
@@ -118,6 +118,8 @@ public class ClosuresMB {
     private DecimalFormat formatD = new DecimalFormat("0.00");
     private ArrayList<Short> injuriesToImputation;//lista de lesiones que se imputaran(ejemplo: 'Todas las LCENF' son varias al tiempo)
     private String realPath = "";
+    
+    private String outputMessage="-";//mensaje que se muestra cuando la pantalla esta deshabilitada y el proceso es largo
 
     public ClosuresMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
@@ -177,6 +179,9 @@ public class ClosuresMB {
     }
 
     public void reset() {
+        /*
+         * reinicio de todos los controles
+         */
         disabledInjury = false;
         renderedBtnAnalysis = true;
         renderedBtnImputation = false;
@@ -294,16 +299,41 @@ public class ClosuresMB {
             outputTextConfirmationMessage = outputTextConfirmationMessage + "<br/> Desde " + startDate;
             outputTextConfirmationMessage = outputTextConfirmationMessage + "<br/> Hasta " + endDate;
             activeTabs();
+
+            //si no existe ninguna copia de seguridad de la bodega se crea una por defecto
+            backupsMB.removeNotFoundBackups();
+            int count = 0;
+            rs = connectionJdbcMB.consult("select count(*) from backups_dwh");
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+            if (count == 0) {//sin existe ninguna crear 'COPIA_INICIAL'
+                backupsMB.setNewNameDwh("COPIA_INICIAL");
+                backupsMB.createBackupClickDwh();
+            } else if (count > 1) {//si hay mas de una copia de seguridad eliminar 'COPIA_INICIAL'
+                rs = connectionJdbcMB.consult("SELECT * FROM backups_dwh WHERE name_backup LIKE 'COPIA_INICIAL'");
+                if (rs.next()) {
+                    RowDataTable newRowDataTable = new RowDataTable(rs.getString("id_backup"), rs.getString("name_backup"), rs.getString("date_backup"), rs.getString("path_file"));
+                    backupsMB.setSelectedRowDataTableDwh(newRowDataTable);
+                    backupsMB.deleteBackupClickDwh();
+                    backupsMB.setSelectedRowDataTableDwh(null);
+                }
+            }
+            //se revisa si alguno de los cierren no finalizo correctamente (clsure_state=false en tabla injuries)
+            rs = connectionJdbcMB.consult("SELECT * FROM injuries WHERE closure_state = 'FALSE'");
+            if (rs.next()) {
+                backupsMB.restoreLastBackupDwh();
+            }
+
         } catch (SQLException | NumberFormatException e) {
         }
+
     }
 
     public void startImputation() {
         /*
          * se realiza las operaciones de imputacion
          */
-
-
         for (int posInjury = 0; posInjury < injuriesToImputation.size(); posInjury++) {
 
             ArrayList<AnalysisColumn> analyzedColumns = new ArrayList<>();
@@ -539,7 +569,8 @@ public class ClosuresMB {
     private boolean runPdi(String table) {
         /*
          * se ejecutan scripts que se encargan de pasar los datos de tal tablas sta a la 
-         * bodega de datos
+         * bodega de datos, si no se puede realizar la ejecucion de este script se debe
+         * rebertir el proceso que haya realizado restaurando la ultima copia de seguridad de la bodega de datos
          */
         boolean booleanReturn = false;
         //Runtime r = Runtime.getRuntime();
@@ -575,165 +606,173 @@ public class ClosuresMB {
                     pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_unintentional.ktr");
                     break;
                 case sivigila_sta:
-                    //pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_sivigila.ktr");
+                    pb = new ProcessBuilder("/opt/pentaho/data-integration/pan.sh", "-file", realPath + "web/configurations/pdi/load_sivigila.ktr");
                     break;
             }
-            //r = Runtime.getRuntime();
+
             p = pb.start();
             try {
                 //CODIGO PARA MOSTRAR EL PROGESO DE LA GENERACION DEL ARCHIVO
                 InputStream is = p.getInputStream();
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
-                String ll;
-                while ((ll = br.readLine()) != null) {
-                    System.out.println(ll);
+                String lineRead;
+                while ((lineRead = br.readLine()) != null) {
+                    System.out.println(lineRead);
+                    
+                    if (lineRead.indexOf("Finished") != -1) {//si en el proceso aparece la palabra finished acabo correctamente
+                        booleanReturn = true;
+                        errorInProcess = "";
+                    } else {
+                        errorInProcess = "</br>" + errorInProcess + lineRead;
+                    }
                 }
+                
+                System.out.println("Finaliza cargar datos");
             } catch (IOException e) {
-                System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.getMessage());
+                //setOutputMessage("Error 1 en " + this.getClass().getName() + ":" + e.getMessage());
+                
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
             }
-            booleanReturn = true;
-            System.out.println("Finaliza cargar datos");
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Correcto", "La copia de seguridad ha sido creada correctamente"));
-
         } catch (IOException x) {
-            System.out.println("Error 2 en " + this.getClass().getName() + ":" + x.getMessage());
+            errorInProcess = errorInProcess + "</br>" + x.getMessage();
+            //setOutputMessage("Error 2 en " + this.getClass().getName() + ":" + x.getMessage());            
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
         }
         return booleanReturn;
     }
+    String errorInProcess = "";
 
     public void startStoreData() {
 
+        /*
+         * se realiza el envio de la informacion imputada a la bodega de datos
+         */
+
         ResultSet rs;
+        boolean correctProcess = true;
+        errorInProcess = "";
         outputTextStoreData = ""
                 + "Se ha realizado el cierre comprendido desde <font color=\"blue\"><b>" + startDate + "</b></font> hasta <font color=\"blue\"><b>" + endDate + "</b></font>";
         try {
+
             for (int i = 0; i < injuriesToImputation.size(); i++) {
                 switch (injuriesToImputation.get(i)) {
                     case 10://;"HOMICIDIO"
-                        replaceToCommaStaTemp("fatal_injury_murder_sta");//remplazo '-' por ','
-                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_HOMICIDIOS";
-                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM fatal_injury_murder_sta WHERE estado != 1; ");
-                        if (rs.next()) {
-                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por homicidios almacenados";
+                        connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'FALSE' WHERE injury_id = 10");
+                        if (copyToDataWarehouse("fatal_injury_murder_sta", i)) {//se transfiere datos a la bodega                                
+                            connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'TRUE' WHERE injury_id = 10");
+                            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_HOMICIDIOS";
+                        } else {
+                            correctProcess = false;
                         }
-                        copyToDataWarehouse("fatal_injury_murder_sta");//se transfiere datos a la bodega                                
-                        //actualizo la fecha que se realizo el ultimocierre
-                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
-
                         break;
                     case 11://;"MUERTE EN ACCIDENTE DE TRANSITO"        
-                        replaceToCommaStaTemp("fatal_injury_traffic_sta");//remplazo '-' por ','
-                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_MUERTES_TRANSITO";
-                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM fatal_injury_traffic_sta WHERE estado != 1; ");
-                        if (rs.next()) {
-                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por muerte en accidente de tránsito almacenados";
+                        connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'FALSE' WHERE injury_id = 11");
+                        if (copyToDataWarehouse("fatal_injury_traffic_sta", i)) {//se transfiere datos a la bodega                                
+                            connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'TRUE' WHERE injury_id = 11");
+                            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_MUERTES_TRANSITO";                            
+                        } else {
+                            correctProcess = false;
                         }
-                        copyToDataWarehouse("fatal_injury_traffic_sta");//se transfiere datos a la bodega                
-                        //actualizo la fecha que se realizo el ultimocierre
-                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
                         break;
                     case 12://;"SUICIDIO"
-                        replaceToCommaStaTemp("fatal_injury_suicide_sta");//remplazo '-' por ','
-                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_SUICIDIOS";
-                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM fatal_injury_suicide_sta WHERE estado != 1; ");
-                        if (rs.next()) {
-                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por suicidios almacenados";
+                        connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'FALSE' WHERE injury_id = 12");
+                        if (copyToDataWarehouse("fatal_injury_suicide_sta", i)) {//se transfiere datos a la bodega  
+                            connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'TRUE' WHERE injury_id = 12");
+                            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_SUICIDIOS";                            
+                        } else {
+                            correctProcess = false;
                         }
-                        copyToDataWarehouse("fatal_injury_suicide_sta");//se transfiere datos a la bodega                
-                        //actualizo la fecha que se realizo el ultimocierre
-                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
                         break;
                     case 13://;"MUERTE ACCIDENTAL"
-                        replaceToCommaStaTemp("fatal_injury_accident_sta");//remplazo '-' por ','
-                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_MUERTES_ACCIDENTALES";
-                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM fatal_injury_accident_sta WHERE estado != 1; ");
-                        if (rs.next()) {
-                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por muerte accidental almacenados";
+                        connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'FALSE' WHERE injury_id = 13");
+                        if (copyToDataWarehouse("fatal_injury_accident_sta", i)) {//se transfiere datos a la bodega
+                            connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'TRUE' WHERE injury_id = 13");
+                            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_MUERTES_ACCIDENTALES";                            
+                        } else {
+                            correctProcess = false;
                         }
-                        copyToDataWarehouse("fatal_injury_accident_sta");//se transfiere datos a la bodega
-                        //actualizo la fecha que se realizo el ultimocierre
-                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
                         break;
                     case 50://;"VIOLENCIA INTERPERSONAL"
-                        replaceToCommaStaTemp("non_fatal_interpersonal_sta");//remplazo '-' por ','
-                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_VIOLENCIA_INTERPERSONAL";
-                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM non_fatal_interpersonal_sta WHERE estado != 1; ");
-                        if (rs.next()) {
-                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por homicidios almacenados";
+                        connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'FALSE' WHERE injury_id = 50");
+                        if (copyToDataWarehouse("non_fatal_interpersonal_sta", i)) {//se transfiere datos a la bodega                                
+                            connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'TRUE' WHERE injury_id = 50");
+                            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_VIOLENCIA_INTERPERSONAL";                            
+                        } else {
+                            correctProcess = false;
                         }
-                        copyToDataWarehouse("non_fatal_interpersonal_sta");//se transfiere datos a la bodega
-                        //actualizo la fecha que se realizo el ultimocierre
-                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
                         break;
                     case 51://;"LESION EN ACCIDENTE DE TRANSITO"
-                        replaceToCommaStaTemp("non_fatal_transport_sta");//remplazo '-' por ','
-                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_LESION_EN_TRANSITO";
-                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM non_fatal_transport_sta WHERE estado != 1; ");
-                        if (rs.next()) {
-                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por lesión en transito almacenados";
+                        connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'FALSE' WHERE injury_id = 51");
+                        if (copyToDataWarehouse("non_fatal_transport_sta", i)) {//se transfiere datos a la bodega  
+                            connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'TRUE' WHERE injury_id = 51");
+                            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_LESION_EN_TRANSITO";                            
+                        } else {
+                            correctProcess = false;
                         }
-                        copyToDataWarehouse("non_fatal_transport_sta");//se transfiere datos a la bodega
-                        //actualizo la fecha que se realizo el ultimocierre
-                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
                         break;
                     case 52://;"INTENCIONAL AUTOINFLINGIDA"
-                        replaceToCommaStaTemp("non_fatal_self_inflicted_sta");//remplazo '-' por ','
-                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_INTENCIONAL_AUTOINFLINGIDA";
-                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM non_fatal_self_inflicted_sta WHERE estado != 1; ");
-                        if (rs.next()) {
-                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por lesiones autoinflingidas almacenados";
+                        connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'FALSE' WHERE injury_id = 52");
+                        if (copyToDataWarehouse("non_fatal_self_inflicted_sta", i)) {//se transfiere datos a la bodega                                
+                            connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'TRUE' WHERE injury_id = 52");
+                            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_INTENCIONAL_AUTOINFLINGIDA";                            
+                        } else {
+                            correctProcess = false;
                         }
-                        copyToDataWarehouse("non_fatal_self_inflicted_sta");//se transfiere datos a la bodega
-                        //actualizo la fecha que se realizo el ultimocierre
-                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
                         break;
-                    case 53://;"VIOLENCIA INTRAFAMILIAR"                
-                        replaceToCommaStaTemp("non_fatal_domestic_violence_sta");//remplazo '-' por ','
-                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_VIOLENCIA_INTRAFAMILIAR";
-                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM non_fatal_domestic_violence_sta WHERE estado != 1; ");
-                        if (rs.next()) {
-                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por violencia intrafamiliar almacenados";
+                    case 53://;"VIOLENCIA INTRAFAMILIAR"   
+                        connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'FALSE' WHERE injury_id = 53");
+                        if (copyToDataWarehouse("non_fatal_domestic_violence_sta", i)) {//se transfiere datos a la bodega                                
+                            connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'TRUE' WHERE injury_id = 53");
+                            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_VIOLENCIA_INTRAFAMILIAR";                            
+                        } else {
+                            correctProcess = false;
                         }
-                        copyToDataWarehouse("non_fatal_domestic_violence_sta");//se transfiere datos a la bodega
-                        //actualizo la fecha que se realizo el ultimocierre
-                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
                         break;
                     case 54://;"NO INTENCIONAL"
-                        replaceToCommaStaTemp("non_fatal_non_intentional_sta");//remplazo '-' por ','
-                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_LESION_NO_INTENCIONAL";
-                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM non_fatal_non_intentional_sta WHERE estado != 1; ");
-                        if (rs.next()) {
-                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por lesiones no intencionales almacenados";
+                        connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'FALSE' WHERE injury_id = 54");
+                        if (copyToDataWarehouse("non_fatal_non_intentional_sta", i)) {//se transfiere datos a la bodega                                
+                            connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'TRUE' WHERE injury_id = 54");
+                            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_LESION_NO_INTENCIONAL";                            
+                        } else {
+                            correctProcess = false;
                         }
-                        copyToDataWarehouse("non_fatal_non_intentional_sta");//se transfiere datos a la bodega
-                        //actualizo la fecha que se realizo el ultimocierre
-                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
                         break;
-                    case 56://;"SIVIGILA-VIF"                
-                        replaceToCommaStaTemp("sivigila_sta");//remplazo '-' por ','
-                        nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_SIVIGILA_VIF";
-                        rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM sivigila_sta WHERE estado != 1; ");
-                        if (rs.next()) {
-                            outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por SIVIGILA-VIF almacenados";
+                    case 56://;"SIVIGILA-VIF"                          
+                        connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'FALSE' WHERE injury_id = 56");
+                        if (copyToDataWarehouse("sivigila_sta", i)) {//se transfiere datos a la bodega             
+                            connectionJdbcMB.non_query("UPDATE injuries SET closure_state = 'TRUE' WHERE injury_id = 56");
+                            nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_SIVIGILA_VIF";                            
+                        } else {
+                            correctProcess = false;
                         }
-                        copyToDataWarehouse("sivigila_sta");//se transfiere datos a la bodega
-                        //actualizo la fecha que se realizo el ultimocierre
-                        connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(i));
                         break;
+                }
+                if (!correctProcess) {
+                    break;
                 }
             }
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
+            errorInProcess = "</br>" + errorInProcess + e.getMessage();
+            correctProcess = false;
         }
         if (currentInjury == 60) {
             nameBackup = "CIERRE_" + startDate.replace("/", "_") + "_TODAS_LCENF";
         }
-        outputTextStoreData = outputTextStoreData + "</br>Se creó una copia de seguridad con el nombre: <font color=\"blue\"><b>" + nameBackup + "</b></font>";
-        backupsMB.setNewNameDwh(nameBackup);
-        backupsMB.createBackupClickDwh();
+
+        if (correctProcess == true) {//el proceso de cierre finalizo correctamente
+            outputTextStoreData = outputTextStoreData + "</br>Se creó una copia de seguridad con el nombre: <font color=\"blue\"><b>" + nameBackup + "</b></font>";
+            backupsMB.setNewNameDwh(nameBackup);
+            backupsMB.createBackupClickDwh();
+        } else {//no se pudo realizar el proceso de cierre
+            outputTextStoreData = "</br> <font color=\"red\"><b>No se pudo realizar el proceso de cierre: </b>  " + nameBackup + "</b></font>";
+            outputTextStoreData = outputTextStoreData + "</br>" + errorInProcess;
+            backupsMB.removeNotFoundBackups();
+            backupsMB.restoreLastBackupDwh();
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Alerta", "No se pudo realizar el cierre, se ha restaurado la ultima copia de seguridad de la bodega, en la parte inferior de la pagina se describe el error."));
+        }
 
         renderedBtnAnalysis = false;
         renderedBtnImputation = false;
@@ -1349,8 +1388,8 @@ public class ClosuresMB {
     public void startClosure() {
         /*
          * se analiza y imprime el resultado del analisis
-         */
-
+         */        
+        
         disabledInjury = true;
 
         analyzedColumnsFatalInjuryMurder = new ArrayList<>();
@@ -1444,7 +1483,8 @@ public class ClosuresMB {
         renderedBtnStoreData = false;
         renderedAnalysisResult = true;
         renderedImputationResult = false;
-        renderedStoreDataResult = false;
+        renderedStoreDataResult = false;        
+        
         //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Empieza proceso de cierre"));
     }
 
@@ -1684,11 +1724,14 @@ public class ClosuresMB {
                         if (rs.next()) {
                             if (rs.getMetaData().getColumnCount() == splitTuple.length) {
                                 System.err.println("== analizando columna " + analyzedColumn.getColumnName());
+                                
                             } else {
-                                System.err.println("<> analizando columna " + analyzedColumn.getColumnName() + " rs:" + rs.getMetaData().getColumnCount() + " tupla:" + splitTuple.length);
+                                System.err.println("<> analizando columna " + analyzedColumn.getColumnName() + " rs:" + rs.getMetaData().getColumnCount() + " tupla:" + splitTuple.length);                                
+                                
                             }
                             for (int h = 0; h < rs.getMetaData().getColumnCount(); h++) {
-                                System.out.println("compara " + rs.getMetaData().getColumnName(h + 1) + ": \t" + rs.getString(h + 1) + "\tcon \t" + splitTuple[h]);
+                                //System.out.println("compara " + rs.getMetaData().getColumnName(h + 1) + ": \t" + rs.getString(h + 1) + "\tcon \t" + splitTuple[h]);
+                                //connectionJdbcMB.setOutputMessage("compara " + rs.getMetaData().getColumnName(h + 1) + ": \t" + rs.getString(h + 1) + "\tcon \t" + splitTuple[h]);
                             }
                             for (int i = 0; i < splitTuple.length; i++) {
 
@@ -1702,6 +1745,7 @@ public class ClosuresMB {
                                                 + " WHERE \n"
                                                 + "   id_lesion LIKE '" + idLesionArray.get(k) + "'\n");
                                         System.out.println("Se actualiza >> Columna: " + rs.getMetaData().getColumnName(i + 1) + "\t\t Nuevo valor: " + splitTuple[i] + "\t\t id_lesion: " + idLesionArray.get(k));
+                                        
                                     }
                                 }
                             }
@@ -1823,31 +1867,52 @@ public class ClosuresMB {
         return outputTextAnalysis;
     }
 
-    private void copyToDataWarehouse(String table) {
+    private boolean copyToDataWarehouse(String table, int pos) {
 
-        //1. se transfiere datos a la bodega
-        runPdi(table);
 
-        //2. convierto los registros cargados en registros que forman parte del cache
-        connectionJdbcMB.non_query(" UPDATE " + table + " SET estado = 1; ");
+        /*
+         * Transfiere los datos a bodega
+         * table= tipo de lesion
+         * pos= posicion en vector (El vector existe por que en ocasiones se deben cerrar varias lesiones al tiempo )
+         * retorna false al no poder realizar el proceso de almacenamiento
+         */
 
-        //3. se eliminan los datos que esten un año antes de este cierre para las lesiones no fatales
-        switch (ClosuresEnum.convert(table)) {//nombre de variable                                                             
-            case fatal_injury_murder_sta:
-            case fatal_injury_traffic_sta:
-            case fatal_injury_suicide_sta:
-            case fatal_injury_accident_sta:
-                break;
-            case non_fatal_interpersonal_sta:
-            case non_fatal_transport_sta:
-            case non_fatal_self_inflicted_sta:
-            case non_fatal_domestic_violence_sta:
-            case non_fatal_non_intentional_sta:
-            case sivigila_sta:
-                connectionJdbcMB.non_query(""
-                        + " DELETE FROM " + table
-                        + " WHERE " + table + ".fecha_evento <= to_date('" + yearBeforeDate + "','dd/MM/yyyy')");
-                break;
+        //1. reemplazo '-' por ','
+        replaceToCommaStaTemp(table);
+
+
+        if (runPdi(table)) {//2. se intenta transferire datos a la bodega            
+
+            try {//3. convierto los registros cargados en registros que forman parte del cache
+                ResultSet rs = connectionJdbcMB.consult("SELECT COUNT(*) FROM " + table + " WHERE estado != 1; ");
+                if (rs.next()) {
+                    outputTextStoreData = outputTextStoreData + "</br><font color=\"blue\"><b>" + rs.getString(1) + "</b></font> casos por homicidios almacenados";
+                }
+                connectionJdbcMB.non_query(" UPDATE " + table + " SET estado = 1; ");
+            } catch (Exception e) {
+            }
+            switch (ClosuresEnum.convert(table)) {//4. se eliminan los datos que esten un año antes de este cierre para las lesiones no fatales
+                case fatal_injury_murder_sta:
+                case fatal_injury_traffic_sta:
+                case fatal_injury_suicide_sta:
+                case fatal_injury_accident_sta:
+                    break;
+                case non_fatal_interpersonal_sta:
+                case non_fatal_transport_sta:
+                case non_fatal_self_inflicted_sta:
+                case non_fatal_domestic_violence_sta:
+                case non_fatal_non_intentional_sta:
+                case sivigila_sta:
+                    connectionJdbcMB.non_query(""
+                            + " DELETE FROM " + table
+                            + " WHERE " + table + ".fecha_evento <= to_date('" + yearBeforeDate + "','dd/MM/yyyy')");
+                    break;
+            }
+            //5. actualizo la fecha que se realizo el ultimocierre
+            connectionJdbcMB.non_query(" UPDATE injuries SET closure_date = to_date('" + nextDateClosure + "','dd/MM/yyyy') WHERE injury_id = " + injuriesToImputation.get(pos));
+            return true;
+        } else {//no se pudo correr los scripts de almacenamiento a bodega
+            return false;
         }
     }
 
@@ -5090,4 +5155,14 @@ public class ClosuresMB {
     public void setRenderedImputationSivigila(boolean renderedImputationSivigila) {
         this.renderedImputationSivigila = renderedImputationSivigila;
     }
+
+//    public String getOutputMessage() {
+//        return outputMessage;
+//    }
+//
+//    public void setOutputMessage(String outputMessage) {
+//        this.outputMessage = outputMessage;
+//    }
+    
+    
 }

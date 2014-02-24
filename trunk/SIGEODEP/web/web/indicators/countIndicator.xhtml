@@ -11,7 +11,7 @@
         <!--========================CABECERA SCRIPTS==========================-->                    
         <ui:define name="head">
             <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />
-            <script>                
+            <script>
                 //function to support scrolling of title and first column
                 fnScroll = function() {
                     $('#divHeader').scrollLeft($('#table_div').scrollLeft());
@@ -52,6 +52,10 @@
                                 converterMessage="La fecha inicial no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
+                                <f:ajax 
+                                    event="change"
+                                    listener="#{indicatorsCountMB.changeDateRange}"
+                                    render="IdSelectOneListCrossVariables IdBtnRemove IdBtnAdd IdBtnOptions"/>
                             </p:calendar>
                             <br/>
                             <br/>
@@ -62,6 +66,10 @@
                                 converterMessage="La fecha final no es válida, por favor corríjala." 
                                 showOn="button" 
                                 pattern="dd/MM/yyyy">
+                                <f:ajax 
+                                    event="change"
+                                    listener="#{indicatorsCountMB.changeDateRange}"
+                                    render="IdSelectOneListCrossVariables IdBtnRemove IdBtnAdd IdBtnOptions"/>
                             </p:calendar>
                             <br/>
                             <br/>
@@ -167,7 +175,7 @@
                                 actionListener="#{indicatorsCountMB.process}"
                                 oncomplete="showTableResult(); pageActive();"  
                                 onclick="pageInactive();"                                                        
-                                update="IdImageChart IdPanelGraphConfig IdDataTableHtml IdBtnExport :IdTabView:maps_form"/>
+                                update="IdForm :IdTabView:maps_form"/>
                             &nbsp;&nbsp;
                             <h:selectBooleanCheckbox value="#{indicatorsCountMB.showEmpty}" />
                             &nbsp;Ver vacios
@@ -189,7 +197,7 @@
                         </p:fieldset>
                         <br/>
                         <br/>
-                        <p:fieldset legend="TABLA DE RESULTADOS"> 
+                        <p:fieldset legend="TABLA DE RESULTADOS" rendered="#{indicatorsCountMB.showTableResult}"> 
                             <br/>
                             <h:outputText 
                                 id="IdDataTableHtml"
@@ -203,10 +211,12 @@
                             <p:commandButton                                 
                                 icon="ui-icon-transferthick-e-w"
                                 actionListener="#{indicatorsCountMB.invertMatrixClick}"
-                                oncomplete="showTableResult();"  
-                                update="IdDataTableHtml"/> 
+                                oncomplete="showTableResult(); pageActive();"  
+                                onclick="pageInactive();"                                                         
+                                value="Invertir"
+                                update="IdDataTableHtml IdBtnExport"/> 
                             <h:commandLink id="IdBtnExport" disabled="#{indicatorsCountMB.btnExportDisabled}">  
-                                <p:button  value="Exportar datos" />                                
+                                <p:button  value="Exportar datos" disabled="#{indicatorsCountMB.btnExportDisabled}"/>                                
                                 <p:dataExporter type="xls" target="IdOutFile" fileName="salida" postProcessor="#{indicatorsCountMB.postProcessXLS}"/>  
                             </h:commandLink>
 
@@ -215,7 +225,7 @@
                         </p:fieldset>
                         <br/>
                         <br/>                        
-                        <p:fieldset legend="GRAFICOS">
+                        <p:fieldset legend="GRAFICOS" rendered="#{indicatorsCountMB.showGraphic}">
                             <br/> 
                             <p:panelGrid id="IdPanelGraphConfig">
                                 <p:row>
@@ -496,7 +506,7 @@
                     resizable="false"                    
                     widgetVar="configurationsDialog">  
                     <br/>
-                    <p:panelGrid>
+                    <p:panelGrid rendered="#{!indicatorsCountMB.btnAddCategoricalValueDisabled}">
                         <p:row>
                             <p:column styleClass="ui-widget-header">
                                 Nueva categoria

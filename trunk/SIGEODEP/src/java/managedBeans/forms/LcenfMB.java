@@ -23,6 +23,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import managedBeans.login.ApplicationControlMB;
 import managedBeans.login.LoginMB;
 import model.dao.*;
 import model.pojo.*;
@@ -39,8 +40,6 @@ public class LcenfMB implements Serializable {
     // DECLARACION DE VARIABLES --------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-
-    //-------------------
     @EJB
     QuadrantsFacade quadrantsFacade;
     private SelectItem[] quadrantsEvent;
@@ -49,7 +48,6 @@ public class LcenfMB implements Serializable {
     @EJB
     InsuranceFacade insuranceFacade;
     private String currentInsurance = null;
-    //private SelectItem[] insurances;
     //-----------------
     @EJB
     OthersFacade othersFacade;
@@ -294,11 +292,8 @@ public class LcenfMB implements Serializable {
     private short aggressionPast = 0;
     private String otherFactor = "";
     private boolean otherFactorDisabled = true;
-    //private boolean relationshipToVictimDisabled = true;
-    //private boolean contextDisabled = true;
     private String otherRelation = "";
     private boolean otherRelationDisabled = true;
-    //private boolean aggressorGendersDisabled = true;
     private boolean checkOtherInjury = false;
     private boolean checkOtherPlace = false;
     private boolean otherInjuryDisabled = true;
@@ -345,7 +340,6 @@ public class LcenfMB implements Serializable {
     private String currentOtherIntentionality = "";
     private String currentOtherPlace = "";
     private String currentOtherActivitie = "";
-    //private String currentSurname = "";
     private Short currentLevelBurned = 0;
     private String currentPercentBurned = "";
     private String currentResponsible = "";
@@ -413,7 +407,6 @@ public class LcenfMB implements Serializable {
     private String openDialogPrevious = "";
     private String openDialogNew = "";
     private String openDialogDelete = "";
-    //private String stylePosition="color: red; font-weight: 900;";
     private String stylePosition = "color: #1471B1;";
     private Calendar c = Calendar.getInstance();
     private Date date1;
@@ -422,11 +415,8 @@ public class LcenfMB implements Serializable {
     private Users currentUser;
     ConnectionJdbcMB connectionJdbcMB;
     private LoginMB loginMB;
+    private ApplicationControlMB applicationControlMB;
 
-//    @PostConstruct
-//    private void initialize() {
-//        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-//    }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES VARIAS ----------------------------------------------------
@@ -478,7 +468,10 @@ public class LcenfMB implements Serializable {
                 + ":IdForm1:IdIdCIE10_2 :IdForm1:IdTxtCIE10_2 :IdForm1:IdIdCIE10_3 :IdForm1:IdTxtCIE10_3 :IdForm1:IdIdCIE10_4 :IdForm1:IdTxtCIE10_4 "
                 + ":IdForm1:IdHealthProfessionals :IdForm1:IdResponsible :IdForm1:IdControls :IdForm1:message :IdForm2:IdSearchCriteria :IdForm2:IdSearcValue :IdForm2:IdSearchTable "
                 + ":IdForm1:IdInsurance :IdForm1:IdFormId";
+
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        applicationControlMB = (ApplicationControlMB) FacesContext.getCurrentInstance().getExternalContext().getApplicationMap().get("applicationControlMB");
     }
 
     /*
@@ -502,13 +495,9 @@ public class LcenfMB implements Serializable {
         }
     }
 
-    public void reset() {
-
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        //determino el usuario
-        loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
+    public void reset() {        
+        
         currentUser = loginMB.getCurrentUser();
-
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
 
@@ -1915,7 +1904,8 @@ public class LcenfMB implements Serializable {
                 //------------------------------------------------------------
                 Victims newVictim = new Victims();
                 if (currentNonFatalInjuriId == -1) {//SI ES NUEVO
-                    newVictim.setVictimId(victimsFacade.findMax() + 1);
+                    //newVictim.setVictimId(victimsFacade.findMax() + 1);
+                    newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 } else {//SI SE ESTA MODIFICANDO
                     newVictim.setVictimId(currentNonFatalInjury.getVictimId().getVictimId());
                 }
@@ -2015,8 +2005,9 @@ public class LcenfMB implements Serializable {
                 //}
 
                 if (currentNonFatalInjuriId == -1) {//SI ES NUEVO
-                    newNonFatalInjuries.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
-                    //newNonFatalInjuries.setTagId(currentNonFatalInjury.getTagId());
+                    //newNonFatalInjuries.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
+                    newNonFatalInjuries.setNonFatalInjuryId(applicationControlMB.addNonfatalReservedIdentifiers());
+                    
                 } else {//SI SE ESTA MODIFICANDO
                     newNonFatalInjuries.setNonFatalInjuryId(currentNonFatalInjury.getNonFatalInjuryId());
                     newVictim.setTagId(currentNonFatalInjury.getVictimId().getTagId());
@@ -2815,6 +2806,8 @@ public class LcenfMB implements Serializable {
                     FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "REGISTRO ACTUALIZADO");
                     FacesContext.getCurrentInstance().addMessage(null, msg);
                 }
+                applicationControlMB.removeNonfatalReservedIdentifiers(newNonFatalInjuries.getNonFatalInjuryId());
+                applicationControlMB.removeVictimsReservedIdentifiers(newVictim.getVictimId());
                 return true;
             } catch (NumberFormatException | ParseException e) {
                 System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());

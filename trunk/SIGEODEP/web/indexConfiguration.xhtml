@@ -10,7 +10,7 @@
             function mostrar(bloq) {
                 obj = document.getElementById(bloq);
                 var uname = document.getElementById("IdImgCarga");
-                obj.style.display = (obj.style.display=='none') ? 'block' : 'none';
+                obj.style.display = (obj.style.display==='none') ? 'block' : 'none';
             }
             function show() {
                 uname = document.getElementById("IdImgCarga");
@@ -58,6 +58,10 @@
                     <p:row>
                         <p:column styleClass="ui-widget-header" ><h:outputText value="Base de Datos: " /></p:column>
                         <p:column ><h:inputText value="#{connectionJdbcMB.db}" /></p:column>
+                    </p:row>  
+                    <p:row>
+                        <p:column styleClass="ui-widget-header" ><h:outputText value="Base de Datos Bodega: " /></p:column>
+                        <p:column ><h:inputText value="#{connectionJdbcMB.db_dwh}" /></p:column>
                     </p:row>  
                     <p:row>
                         <p:column styleClass="ui-widget-header" ><h:outputText value="Contraseña: " /></p:column>

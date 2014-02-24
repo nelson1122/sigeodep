@@ -8,14 +8,13 @@ import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -32,7 +31,6 @@ import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
-import managedBeans.closures.ClosuresMB;
 import managedBeans.login.ApplicationControlMB;
 
 /**
@@ -44,7 +42,7 @@ import managedBeans.login.ApplicationControlMB;
 public class BackupsMB {
 
     private ConnectionJdbcMB connectionJdbcMB;
-    ApplicationControlMB applicationControlMB;
+    private ApplicationControlMB applicationControlMB;
     private List<RowDataTable> rowDataTableList;
     private RowDataTable selectedRowDataTable;
     private List<RowDataTable> rowDataTableListDwh;
@@ -52,27 +50,18 @@ public class BackupsMB {
     private String newName = "";//Nombre del la copia de seguridad.
     private String newNameDwh = "";//Nombre del la copia de seguridad.
     private String realPath = "";
-    String IP = "";
-    String user = "";
-    String dbase = "";
-    String password = "";
 
     public BackupsMB() {
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/"); // Sustituye "/" por el directorio ej: "/upload"
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
 
-        ExternalContext contexto = FacesContext.getCurrentInstance().getExternalContext();
-        applicationControlMB = (ApplicationControlMB) contexto.getApplicationMap().get("applicationControlMB");
-
-        HttpSession session = (HttpSession) contexto.getSession(false);
-        user = session.getAttribute("db_user").toString();
-        dbase = session.getAttribute("db_name").toString();
-        IP = session.getAttribute("db_host").toString();
-        password = session.getAttribute("db_pass").toString();
+        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
+        applicationControlMB = (ApplicationControlMB) context.getApplicationMap().get("applicationControlMB");
     }
 
     public void reset() {
+        removeNotFoundBackups();
         rowDataTableList = new ArrayList<>();
         selectedRowDataTable = null;
         newName = "";
@@ -83,430 +72,468 @@ public class BackupsMB {
         createDynamicTableDwh();
     }
 
-    private boolean backupPGSQL(String serverPath, String fileName) {
-        boolean booleanReturn = false;
-        try {
-            Runtime r = Runtime.getRuntime();
-            Process p;
-            ProcessBuilder pb;
-            java.io.File file = new java.io.File(serverPath);
-            if (file.exists()) {//verificar que el directorio exista
-                StringBuilder fechafile = new StringBuilder();
-                fechafile.append(serverPath);
-                fechafile.append(fileName);
-                fechafile.append(".backup");
-                java.io.File ficherofile = new java.io.File(fechafile.toString());
-                if (ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
-                    ficherofile.delete();//Lo Borramos
-                }
-                r = Runtime.getRuntime();
-                //pb = new ProcessBuilder("pg_dump", "-f", fechafile.toString(), "-F", "c", "-Z", "9", "-v", "-o", "-h", IP, "-U", user, dbase);
-                pb = new ProcessBuilder("pg_dump", "-i", "-h", IP, "-p", "5432", "-U", user, "-F", "c", "-b", "-v", "-f", fechafile.toString(), dbase, "-T", "backups");
-                pb.environment().put("PGPASSWORD", password);
-                pb.redirectErrorStream(true);
-                System.out.println("Inicia creacion de copia de seguridad: " + fechafile.toString());
-                p = pb.start();
-                try {
-                    //CODIGO PARA MOSTRAR EL PROGESO DE LA GENERACION DEL ARCHIVO
-                    InputStream is = p.getInputStream();
-                    InputStreamReader isr = new InputStreamReader(is);
-                    BufferedReader br = new BufferedReader(isr);
-                    String ll;
-                    while ((ll = br.readLine()) != null) {
-                        System.out.println(ll);
-                    }
-                } catch (IOException e) {
-                    System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.getMessage());
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
-                }
-                booleanReturn = true;
-                System.out.println("Finaliza creacion de copia de seguridad: " + fechafile.toString());
-                //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Correcto", "La copia de seguridad ha sido creada correctamente"));
-            }
-        } catch (IOException x) {
-            System.out.println("Error 2 en " + this.getClass().getName() + ":" + x.getMessage());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
-        }
-        return booleanReturn;
-    }
-
-    private boolean backupPGSQLDwh(String serverPath, String fileName) {
-        boolean booleanReturn = false;
-        try {
-            //Runtime r = Runtime.getRuntime();
-            Process p;
-            ProcessBuilder pb;
-            java.io.File file = new java.io.File(serverPath);
-            if (file.exists()) {//verificar que el directorio exista
-                StringBuilder fechafile = new StringBuilder();
-                fechafile.append(serverPath);
-                fechafile.append(fileName);
-                fechafile.append(".backup");
-                java.io.File ficherofile = new java.io.File(fechafile.toString());
-                if (ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
-                    ficherofile.delete();//Lo Borramos
-                }
-                //r = Runtime.getRuntime();                
-                pb = new ProcessBuilder("pg_dump", "-i", "-h", IP, "-p", "5432", "-U", user, "-t", "*_sta", "-F", "c", "-b", "-v", "-f", fechafile.toString(), dbase);
-                pb.environment().put("PGPASSWORD", password);
-                pb.redirectErrorStream(true);
-                System.out.println("Inicia creacion de copia de seguridad: " + fechafile.toString());
-                p = pb.start();
-                try {//CODIGO PARA MOSTRAR EL PROGRESO DE LA GENERACION DEL ARCHIVO
-                    InputStream is = p.getInputStream();
-                    InputStreamReader isr = new InputStreamReader(is);
-                    BufferedReader br = new BufferedReader(isr);
-                    String ll;
-                    while ((ll = br.readLine()) != null) {
-                        System.out.println(ll);
-                    }
-                } catch (IOException e) {
-                    System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.getMessage());
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
-                }
-                booleanReturn = true;
-                System.out.println("Finaliza creacion de copia de seguridad: " + fechafile.toString());
-                //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Correcto", "La copia de seguridad ha sido creada correctamente"));
-            }
-        } catch (IOException x) {
-            System.out.println("Error 2 en " + this.getClass().getName() + ":" + x.getMessage());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
-        }
-        return booleanReturn;
-    }
-
-    public void saveBackupInfo(String serverPath, String fileName) {
-        /* 
-         * almacena nombre, hubicacion y fecha de creacion de la copia de seguridad en la base de datos
+    public void removeNotFoundBackups() {
+        /*
+         * elimina las copias de seguridad que no tengan el archivo 
+         * almacenado en la carpeta del servidor
          */
+        File backupFile;
+        ArrayList<String> idToRemove = new ArrayList<>();
         try {
-            ResultSet rs = connectionJdbcMB.consult("SELECT MAX(id_backup) FROM backups");
-            if (rs.next()) {
-                int max = rs.getInt(1);
-                if (max < 11) {
-                    max = 11;
-                } else {
-                    max++;
+            //elimnacion backups sigeodep
+            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM backups");
+            while (rs.next()) {
+                backupFile = new File(rs.getString("path_file") + rs.getString("name_backup") + "_od.backup");
+                if (!backupFile.exists()) {//si no existe se elimina de tabla backups
+                    idToRemove.add(rs.getString("id_backup"));
                 }
-                TimeZone zonah = java.util.TimeZone.getTimeZone("GMT+1");
-                Calendar Calendario = java.util.GregorianCalendar.getInstance(zonah, new java.util.Locale("es"));
-                SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String dateStr = df.format(Calendario.getTime());
-                connectionJdbcMB.non_query(" INSERT INTO backups VALUES (" + String.valueOf(max) + ",'" + fileName + "','" + dateStr + "','MANUAL','" + serverPath + "')");
             }
-        } catch (Exception e) {
-            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.getMessage());
-        }
-    }
-
-    public void saveBackupInfoDwh(String serverPath, String fileName) {
-        /* 
-         * almacena nombre, hubicacion y fecha de creacion de la copia de seguridad en la base de datos
-         */
-        try {
-            ResultSet rs = connectionJdbcMB.consult("SELECT MAX(id_backup) FROM backups_dwh");
-            if (rs.next()) {
-                int max = rs.getInt(1);
-                if (max < 11) {
-                    max = 11;
-                } else {
-                    max++;
+            if (!idToRemove.isEmpty()) {
+                for (int i = 0; i < idToRemove.size(); i++) {
+                    connectionJdbcMB.non_query("DELETE FROM backups WHERE id_backup = " + idToRemove.get(i));
                 }
-                TimeZone zonah = java.util.TimeZone.getTimeZone("GMT+1");
-                Calendar Calendario = java.util.GregorianCalendar.getInstance(zonah, new java.util.Locale("es"));
-                SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String dateStr = df.format(Calendario.getTime());
-                connectionJdbcMB.non_query(" INSERT INTO backups_dwh VALUES (" + String.valueOf(max) + ",'" + fileName + "','" + dateStr + "','" + serverPath + "')");
             }
-        } catch (Exception e) {
-            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.getMessage());
+            //elimnacion backups bodega
+            rs = connectionJdbcMB.consult("SELECT * FROM backups_dwh");
+            while (rs.next()) {
+                backupFile = new File(rs.getString("path_file") + rs.getString("name_backup") + "_od_dwh.backup");
+                if (!backupFile.exists()) {//si no existe se elimina de tabla backups
+                    idToRemove.add(rs.getString("id_backup"));
+                }
+            }
+            if (!idToRemove.isEmpty()) {
+                for (int i = 0; i < idToRemove.size(); i++) {
+                    connectionJdbcMB.non_query("DELETE FROM backups_dwh WHERE id_backup = " + idToRemove.get(i));
+                }
+            }
+        } catch (Exception x) {
         }
     }
 
     public void createBackupClick() {
-        if (newName != null && newName.trim().length() != 0) {
-            //determinar si el nombre ya esta ingresado
-            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM backups WHERE name_backup ILIKE '" + newName.trim() + "'");
-            try {
-                //connectionJdbcMB.non_query("DELETE FROM non_fatal_non_intentional_sta");
-                if (rs.next()) {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una copia de seguridad con el nombre ingresado"));
-                } else {
-                    if (backupPGSQL(realPath + "backups/", newName)) {
-                        saveBackupInfo(realPath + "backups/", newName);
-                        newName = "";
-                        createDynamicTable();
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La copia de seguridad ha sido creada correctamente"));
-                    }
-                }
-            } catch (Exception x) {
-                System.out.println("Error 4 en " + this.getClass().getName() + ":" + x.getMessage());
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
-            }
+        /*
+         * click sobre crear backup de od(sigeodep)
+         */
+        boolean continueProcess;
+        ResultSet rs;
+
+        if (newName != null && newName.trim().length() != 0) {//determinar si se ingreso nombre
+            continueProcess = true;
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe escribir un nombre para la copia de seguridad"));
+            continueProcess = false;
         }
-    }
 
-    private void createDwhBackupFile() {
-        /*
-         * creacion del archivo para restarurar una carga de la bodega de datos
-         */
-        ResultSet rs;
-        java.io.File folder = new java.io.File(realPath + "backups");
-        if (folder.exists()) {
+        if (continueProcess) {//determinar si el nombre ya esta ingresado
             try {
-                //verificar que el directorio exista
-                String nameAndPathFile = realPath + "backups/" + newNameDwh + "_file.backup";
-                java.io.File ficherofile = new java.io.File(nameAndPathFile);
-                if (ficherofile.exists()) {//Lo Borramos
-                    ficherofile.delete();//Lo Borramos
+                rs = connectionJdbcMB.consult("SELECT * FROM backups WHERE name_backup ILIKE '" + newName.trim() + "'");
+                if (rs.next()) {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una copia de seguridad con el nombre ingresado"));
+                    continueProcess = false;
                 }
-                FileWriter fw = new FileWriter(nameAndPathFile);
-                BufferedWriter bw = new BufferedWriter(fw);
-                try (PrintWriter salArch = new PrintWriter(bw)) {
-                    salArch.println("DELETE FROM fatal_injury_accident_sta;");
-                    salArch.println("DELETE FROM fatal_injury_murder_sta;");
-                    salArch.println("DELETE FROM fatal_injury_suicide_sta;");
-                    salArch.println("DELETE FROM fatal_injury_traffic_sta;");
-                    salArch.println("DELETE FROM non_fatal_domestic_violence_sta;");
-                    salArch.println("DELETE FROM non_fatal_interpersonal_sta;");
-                    salArch.println("DELETE FROM non_fatal_non_intentional_sta;");
-                    salArch.println("DELETE FROM non_fatal_self_inflicted_sta;");
-                    salArch.println("DELETE FROM non_fatal_transport_sta;");
-                    //salArch.println("DELETE FROM sivigila_sta;");
-                    salArch.println("DELETE FROM backups_dwh;");
-                    rs = connectionJdbcMB.consult("SELECT * FROM injuries");
-                    while (rs.next()) {
-                        salArch.println("UPDATE injuries set closure_date = '" + rs.getString("closure_date") + "' WHERE injury_id=" + rs.getString("injury_id") + ";");
-                    }
-                    rs = connectionJdbcMB.consult("SELECT * FROM backups_dwh");
-                    while (rs.next()) {
-                        salArch.println("INSERT INTO backups_dwh VALUES (" + rs.getString(1) + ",'" + rs.getString(2) + "','" + rs.getString(3) + "','" + rs.getString(4) + "')");
-                    }
-
-                    salArch.close();
-                } catch (Exception ex) {
-                    Logger.getLogger(ClosuresMB.class.getName()).log(Level.SEVERE, null, ex);
+                rs = connectionJdbcMB.consult("SELECT * FROM backups_dwh WHERE name_backup ILIKE '" + newName.trim() + "'");
+                if (rs.next()) {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una copia de seguridad con el nombre ingresado"));
+                    continueProcess = false;
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(ClosuresMB.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception x) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
+                continueProcess = false;
             }
-        } else {
-            System.out.println("No se encuentra la carpeta");
+        }
+
+        if (continueProcess) {//almaceno la informacion de la copia de seguridad a crear
+            try {
+                if (new java.io.File(realPath + "backups/").exists()) {//verificar que el directorio exista                    
+                    rs = connectionJdbcMB.consult("SELECT MAX(id_backup) FROM backups");
+                    if (rs.next()) {
+                        int max = rs.getInt(1);
+                        if (max < 11) {
+                            max = 11;
+                        } else {
+                            max++;
+                        }
+                        TimeZone zonah = java.util.TimeZone.getTimeZone("GMT+1");
+                        Calendar Calendario = java.util.GregorianCalendar.getInstance(zonah, new java.util.Locale("es"));
+                        SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        String dateStr = df.format(Calendario.getTime());
+                        connectionJdbcMB.non_query(" INSERT INTO backups VALUES (" + String.valueOf(max) + ",'" + newName + "','" + dateStr + "','MANUAL','" + realPath + "backups/" + "')");
+                    }
+                } else {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Directorio 'backups' no existe en el servidor"));
+                    continueProcess = false;
+                }
+            } catch (Exception x) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
+            }
+        }
+
+        if (continueProcess) {//realizo los archivos de copia de seguridad
+            try {
+                Process p;
+                ProcessBuilder pb;
+
+                String backupFilePath = realPath + "backups/" + newName;
+                File fiRcherofile = new java.io.File(backupFilePath + "_od.backup");//si archivo od existe Lo eliminamos 
+                if (fiRcherofile.exists()) {
+                    fiRcherofile.delete();
+                }
+                fiRcherofile = new java.io.File(backupFilePath + "_od_dwh.backup");//si archivo od_dwh existe Lo eliminamos 
+                if (fiRcherofile.exists()) {
+                    fiRcherofile.delete();
+                }
+
+                //copia de seguridad de od(sigeodep)
+                pb = new ProcessBuilder("pg_dump", "-i", "-h", connectionJdbcMB.getServer(), "-p", "5432", "-U", connectionJdbcMB.getUser(), "-F", "c", "-b", "-v", "-f", backupFilePath + "_od.backup", connectionJdbcMB.getDb());
+                pb.environment().put("PGPASSWORD", connectionJdbcMB.getPassword());
+                pb.redirectErrorStream(true);
+                p = pb.start();
+                printOutputFromProcces(p, " crear copia de seguridad: " + backupFilePath + "_od.backup");
+
+                //copia de seguridad de od_dwh(bodega)
+                pb = new ProcessBuilder("pg_dump", "-i", "-h", connectionJdbcMB.getServer(), "-p", "5432", "-U", connectionJdbcMB.getUser(), "-F", "c", "-b", "-v", "-f", backupFilePath + "_od_dwh.backup", connectionJdbcMB.getDb_dwh());
+                pb.environment().put("PGPASSWORD", connectionJdbcMB.getPassword());
+                pb.redirectErrorStream(true);
+                p = pb.start();
+                printOutputFromProcces(p, " crear copia de seguridad: " + backupFilePath + "_od_dwh.backup");
+
+                newName = "";
+                createDynamicTable();
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La copia de seguridad ha sido creada correctamente"));
+
+            } catch (IOException x) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
+            }
         }
 
     }
 
     public void createBackupClickDwh() {
-        if (newNameDwh != null && newNameDwh.trim().length() != 0) {
-            //determinar si el nombre ya esta ingresado
-            ResultSet rs = connectionJdbcMB.consult("SELECT * FROM backups_dwh WHERE name_backup ILIKE '" + newNameDwh.trim() + "'");
-            try {
-                if (rs.next()) {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una copia de seguridad con el nombre ingresado"));
-                } else {
-                    //creo el archivo de injuries 
-                    createDwhBackupFile();
-                    //creo las backup de tablas sta
-                    if (backupPGSQLDwh(realPath + "backups/", newNameDwh)) {
-                        saveBackupInfoDwh(realPath + "backups/", newNameDwh);
-                        newNameDwh = "";
-                        createDynamicTableDwh();
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La copia de seguridad y Cierre se han realizado correctamente"));
-                    }
-                }
-            } catch (Exception x) {
-                System.out.println("Error 4 en " + this.getClass().getName() + ":" + x.getMessage());
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
-            }
+        /*
+         * click sobre crear copia de seguridad de od_dwh(bodega)
+         */
+        boolean continueProcess;
+        ResultSet rs;
+
+        if (newNameDwh != null && newNameDwh.trim().length() != 0) {//determinar si se digito nombre            
+            continueProcess = true;
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe escribir un nombre para la copia de seguridad"));
+            continueProcess = false;
+        }
+
+        if (continueProcess) {//determinar si el nombre ya esta registrado            
+            try {
+                rs = connectionJdbcMB.consult("SELECT * FROM backups_dwh WHERE name_backup ILIKE '" + newNameDwh.trim() + "'");
+                if (rs.next()) {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una copia de seguridad con el nombre ingresado"));
+                    continueProcess = false;
+                }
+                rs = connectionJdbcMB.consult("SELECT * FROM backups WHERE name_backup ILIKE '" + newName.trim() + "'");
+                if (rs.next()) {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe una copia de seguridad con el nombre ingresado"));
+                    continueProcess = false;
+                }
+            } catch (Exception x) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
+                continueProcess = false;
+            }
+        }
+
+        if (continueProcess) {//creacion de archivos
+            try {
+                Process p;
+                ProcessBuilder pb;
+                if (new java.io.File(realPath + "backups/").exists()) {//verificar que el directorio exista                    
+                    File backupFile = new java.io.File(realPath + "backups/" + newNameDwh + "_od.backup");
+                    if (backupFile.exists()) {//eliminar si existe
+                        backupFile.delete();
+                    }
+                    backupFile = new java.io.File(realPath + "backups/" + newNameDwh + "_od_dwh.backup");
+                    if (backupFile.exists()) {//eliminar si existe
+                        backupFile.delete();
+                    }
+                    backupFile = new java.io.File(realPath + "backups/" + newNameDwh + "_file.backup");
+                    if (backupFile.exists()) {//eliminar si existe
+                        backupFile.delete();
+                    }
+                    //copia de seguridad de tablas sta de od(sigeodep)
+                    pb = new ProcessBuilder(
+                            "pg_dump",
+                            "-i",
+                            "-h", connectionJdbcMB.getServer(),
+                            "-p", "5432",
+                            "-U", connectionJdbcMB.getUser(),
+                            "-t", "*_sta",
+                            "-F", "c", "-b", "-v", "-f",
+                            realPath + "backups/" + newNameDwh + "_od.backup",
+                            connectionJdbcMB.getDb());
+                    pb.environment().put("PGPASSWORD", connectionJdbcMB.getPassword());
+                    pb.redirectErrorStream(true);
+                    p = pb.start();
+                    printOutputFromProcces(p, " creacion copia seguridad: " + realPath + "backups/" + newNameDwh + "_od_dwh.backup");
+                    //copia de seguridad de od_dwh(bodega)
+                    pb = new ProcessBuilder(
+                            "pg_dump",
+                            "-i",
+                            "-h", connectionJdbcMB.getServer(),
+                            "-p", "5432",
+                            "-U", connectionJdbcMB.getUser(),
+                            "-F", "c", "-b", "-v", "-f",
+                            realPath + "backups/" + newNameDwh + "_od_dwh.backup",
+                            connectionJdbcMB.getDb_dwh());
+                    pb.environment().put("PGPASSWORD", connectionJdbcMB.getPassword());
+                    pb.redirectErrorStream(true);
+                    p = pb.start();
+                    printOutputFromProcces(p, " creacion copia seguridad: " + realPath + "backups/" + newNameDwh + "_od_dwh.backup");
+
+                } else {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se encuentra la carpeta" + realPath + "backups/"));
+                    continueProcess = false;
+                }
+            } catch (IOException x) {
+                continueProcess = false;
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
+            }
+        }
+
+        if (continueProcess) {//almaceno la informacion de la copia de seguridad creada
+            try {
+                rs = connectionJdbcMB.consult("SELECT MAX(id_backup) FROM backups_dwh");
+                if (rs.next()) {
+                    int max = rs.getInt(1);
+                    if (max < 11) {
+                        max = 11;
+                    } else {
+                        max++;
+                    }
+                    TimeZone zonah = java.util.TimeZone.getTimeZone("GMT+1");
+                    Calendar Calendario = java.util.GregorianCalendar.getInstance(zonah, new java.util.Locale("es"));
+                    SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String dateStr = df.format(Calendario.getTime());
+                    connectionJdbcMB.non_query(" INSERT INTO backups_dwh VALUES (" + String.valueOf(max) + ",'" + newNameDwh + "','" + dateStr + "','" + realPath + "backups/" + "')");
+                }
+
+                //archivo para actualizar campo closure_date de la tabla injuries
+                FileWriter fw = new FileWriter(realPath + "backups/" + newNameDwh + "_file.backup");
+                BufferedWriter bw = new BufferedWriter(fw);
+                try (PrintWriter outFile = new PrintWriter(bw)) {
+                    outFile.println("DELETE FROM fatal_injury_accident_sta;");
+                    outFile.println("DELETE FROM fatal_injury_murder_sta;");
+                    outFile.println("DELETE FROM fatal_injury_suicide_sta;");
+                    outFile.println("DELETE FROM fatal_injury_traffic_sta;");
+                    outFile.println("DELETE FROM non_fatal_domestic_violence_sta;");
+                    outFile.println("DELETE FROM non_fatal_interpersonal_sta;");
+                    outFile.println("DELETE FROM non_fatal_non_intentional_sta;");
+                    outFile.println("DELETE FROM non_fatal_self_inflicted_sta;");
+                    outFile.println("DELETE FROM non_fatal_transport_sta;");
+                    outFile.println("DELETE FROM sivigila_sta;");
+                    outFile.println("DELETE FROM backups_dwh;");
+                    rs = connectionJdbcMB.consult("SELECT * FROM injuries");
+                    while (rs.next()) {
+                        outFile.println("UPDATE injuries set closure_date = '" + rs.getString("closure_date") + "' WHERE injury_id=" + rs.getString("injury_id") + ";");
+                    }
+                    rs = connectionJdbcMB.consult("SELECT * FROM backups_dwh");
+                    while (rs.next()) {
+                        outFile.println("INSERT INTO backups_dwh VALUES (" + rs.getString(1) + ",'" + rs.getString(2) + "','" + rs.getString(3) + "','" + rs.getString(4) + "')");
+                    }
+                    outFile.close();
+                } catch (Exception ex) {
+                    //continueProcess = false;
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", ex.getMessage()));
+                }
+                newNameDwh = "";
+                createDynamicTableDwh();
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La copia de seguridad y Cierre se han realizado correctamente"));
+            } catch (SQLException | IOException x) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
+            }
         }
     }
 
-    private void removeAllTables() {
+    private void printOutputFromProcces(Process p, String description) {
+        /*
+         * mostrar por consola el progreso de un proceso externo invocado
+         */
+        System.out.println("\nInicia proceso " + description + " /////////////////////////////////////////");
         try {
-            DatabaseMetaData metaData = connectionJdbcMB.getConn().getMetaData();
-            String[] params = new String[1];
-            params[0] = "TABLE";
-            ResultSet rs = metaData.getTables(null, "public", null, params);
-            ArrayList<String> tableNames = new ArrayList<>();
-            while (rs.next()) {
-                if (rs.getString("TABLE_NAME").compareTo("backups") != 0) {
-                    tableNames.add(rs.getString("TABLE_NAME"));
-                }
+            //CODIGO PARA MOSTRAR EL PROGESO DE LA GENERACION DEL ARCHIVO
+            InputStream is = p.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String ll;
+            while ((ll = br.readLine()) != null) {
+                System.out.println(ll);
             }
-            int errors = 1;
-            connectionJdbcMB.setShowMessages(false);//no mostrar mensajes
-            while (errors != 0) {
-                errors = 0;
-                for (int j = 0; j < tableNames.size(); j++) {
-                    connectionJdbcMB.non_query("DROP TABLE IF EXISTS " + tableNames.get(j) + " CASCADE");
-                    if (connectionJdbcMB.getMsj().startsWith("ERROR")) {
-                        errors++;
-                    } else {
-                        tableNames.remove(j);
-                        j--;
-                    }
-                }
-                System.err.println("Errores :" + errors);
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(BackupsMB.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } catch (IOException e) {
+            System.out.println("Error 99 " + e.getMessage());            
+        }        
+        System.out.println("Termina proceso " + description + " /////////////////////////////////////////");
     }
 
     public void restoreBackupClick() {
-        if (selectedRowDataTable != null) {
-            //valido que el archivo exista
-            java.io.File ficherofile = new java.io.File(selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + ".backup");
+        /*
+         * click sobre restaurar una copia de seguridad de od(sigeodep)
+         */
+        boolean continueProcess;
 
-            if (!ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se encontro el archivo en el servidor"));
-            } else {
-                //reaizo la eliminacion de todas las tablas
-                removeAllTables();
-                //realizo la restauracion de la copia de seguridad
-                restorePGSQL(selectedRowDataTable.getColumn5(), selectedRowDataTable.getColumn2());
-                //finalizo todas las sessiones
-                applicationControlMB.closeAllSessions();
-                //me redirijo a la pagina inicial
-                try {
-                    ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
-                    String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
-                    ((HttpSession) ctx.getSession(false)).invalidate();//System.out.println("se redirecciona");
-                    ctx.redirect(ctxPath + "/index.html");
-                } catch (Exception ex) {
-                    System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
-                }
-            }
+        if (selectedRowDataTable != null) {
+            continueProcess = true;
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una copia de seguridad para realizar la restauración"));
+            continueProcess = false;
+        }
+        if (continueProcess) {//valido que el archivo exista        
+            if (!new java.io.File(selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + "_od.backup").exists()) {//Probamos a ver si existe ese ultimo dato                    
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se encontro el archivo: " + selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + "_od.backup" + " en el servidor"));
+                continueProcess = false;
+            }
+            if (!new java.io.File(selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + "_od_dwh.backup").exists()) {//Probamos a ver si existe ese ultimo dato                    
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se encontro el archivo: " + selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + "_od_dwh.backup" + " en el servidor"));
+                continueProcess = false;
+            }
+        }
+
+        if (continueProcess) {//realizo la restauracion de la copia de seguridad            
+            try {
+                Process p;
+                ProcessBuilder pb;
+                //restauracion de od(sigeodep) ---------------------------------
+                pb = new ProcessBuilder("pg_restore", "-i", "-h", connectionJdbcMB.getServer(), "-p", "5432", "-U", connectionJdbcMB.getUser(), "-d", connectionJdbcMB.getDb(), "-v", "-F", "c", "-c", selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + "_od.backup");
+                pb.environment().put("PGPASSWORD", connectionJdbcMB.getPassword());
+                pb.redirectErrorStream(true);
+                p = pb.start();
+                printOutputFromProcces(p, " restauracion copia seguridad: " + selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + "_od.backup");
+
+                //restauracion de od_dwh(bodega) ---------------------------------
+                pb = new ProcessBuilder("pg_restore", "-i", "-h", connectionJdbcMB.getServer(), "-p", "5432", "-U", connectionJdbcMB.getUser(), "-d", connectionJdbcMB.getDb_dwh(), "-v", "-F", "c", "-c", selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + "_od_dwh.backup");
+                pb.environment().put("PGPASSWORD", connectionJdbcMB.getPassword());
+                pb.redirectErrorStream(true);
+                p = pb.start();
+                printOutputFromProcces(p, " restauracion copia seguridad: " + selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + "_od_dwh.backup");
+            } catch (IOException x) {
+                System.err.println("Caught: " + x.getMessage());
+                continueProcess = false;
+            }
+        }
+        if (continueProcess) {
+            applicationControlMB.closeAllSessions();//finalizo todas las sessiones            
+            try {//me redirijo a la pagina inicial
+                ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+                String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
+                ((HttpSession) ctx.getSession(false)).invalidate();//System.out.println("se redirecciona");
+                ctx.redirect(ctxPath + "/index.html");
+            } catch (Exception ex) {
+                System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
+            }
+        }
+    }
+
+    public void restoreLastBackupDwh() {
+        /*
+         * restauración de la última copia de seguridad de la bodega
+         */
+        try {
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + "SELECT \n"
+                    + "   *\n"
+                    + "FROM "
+                    + "   backups_dwh \n"
+                    + "WHERE \n"
+                    + "   date_backup = (SELECT MIN(date_backup) \n"
+                    + "                   FROM backups_dwh)");
+            if (rs.next()) {
+                RowDataTable newRowDataTable = new RowDataTable(rs.getString("id_backup"), rs.getString("name_backup"), rs.getString("date_backup"), rs.getString("path_file"));
+                setSelectedRowDataTableDwh(newRowDataTable);
+                restoreBackupClickDwh();
+                setSelectedRowDataTableDwh(null);
+            } else {
+                //no se existe ultima copia de seguridad de bodega
+            }
+        } catch (SQLException ex) {
         }
     }
 
     public void restoreBackupClickDwh() {
-        if (selectedRowDataTableDwh != null) {
-            //valido que el archivo exista
-            java.io.File ficherofile = new java.io.File(selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_file.backup");
+        /*
+         * click sobre restaurar una copia de seguridad de od_dwh(bodega)
+         */
+        boolean continueProcess;
+        java.io.File ficherofile;
 
-            if (!ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se encontro el archivo en el servidor"));
-            } else {
-                //leeo el archivo y ejecuto cada una de las instrucciones
-                FileReader fr;
-                try {
-                    fr = new FileReader(ficherofile);
-                    BufferedReader br = new BufferedReader(fr);
-                    String linea;
-                    while ((linea = br.readLine()) != null) {
-                        connectionJdbcMB.non_query(linea);
-                    }
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(BackupsMB.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(BackupsMB.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                //restauro tablas
-                restorePGSQLDwh(selectedRowDataTableDwh.getColumn4(), selectedRowDataTableDwh.getColumn2());
-                createDynamicTableDwh();
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La copia de seguridad se ha restaurado correctamente"));
-            }
+        if (selectedRowDataTableDwh != null) {//validar que se aya seleccionado una copia de seguridad de la tabla
+            continueProcess = true;
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una copia de seguridad para realizar la restauración"));
+            continueProcess = false;
         }
-    }
 
-    public void restorePGSQLDwh(String serverPath, String fileName) {
-        try {
-            Runtime r = Runtime.getRuntime();
+        if (continueProcess) {//valido los archivos existan
+            //archivo de restauracion de injuries
+            if (!new java.io.File(selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_file.backup").exists()) {//valido que el archivo exista
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se encontro el archivo: " + selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_file.backup" + " en el servidor"));
+                continueProcess = false;
+            }
+            //archivo de od
+            if (!new java.io.File(selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_od.backup").exists()) {//valido que el archivo exista
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se encontro el archivo: " + selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_od.backup" + " en el servidor"));
+                continueProcess = false;
+            }
+            //archivo de bodega
+            if (!new java.io.File(selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_od_dwh.backup").exists()) {//valido que el archivo exista
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se encontro el archivo: " + selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_od_dwh.backup" + " en el servidor"));
+                continueProcess = false;
+            }
+        }
+
+        if (continueProcess) {
             Process p;
             ProcessBuilder pb;
-            java.io.File ficherofile = new java.io.File(serverPath + fileName + ".backup");
-            String rutaCT = serverPath + fileName + ".backup";
-            if (ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
-                r = Runtime.getRuntime();
-                //pb = new ProcessBuilder("pg_restore", "-i", "-h", IP, "-p", "5432", "-U", user, "-d", dbase, "-t", "*_sta", "-v", rutaCT);                
-                pb = new ProcessBuilder("pg_restore", "-i", "-h", IP, "-p", "5432", "-U", user, "-d", dbase, "-v", "-F", "c","-c", rutaCT);
-                //pb = new ProcessBuilder("pg_dump", "-i", "-h", IP, "-p", "5432", "-U", user, "-t", "*_sta", "-F", "p", "-b", "-v", "-f", fechafile.toString(), dbase);
-                pb.environment().put("PGPASSWORD", password);
-                pb.redirectErrorStream(true);
-                System.out.println("Inicia restauracion de copia de seguridad: " + rutaCT);
-                p = pb.start();
-                String outString = "";
-                try {
-                    //CODIGO PARA MOSTRAR EL PROGESO DE LA GENERACION DEL ARCHIVO
-                    InputStream is = p.getInputStream();
-                    InputStreamReader isr = new InputStreamReader(is);
-                    BufferedReader br = new BufferedReader(isr);
-                    String ll;
-                    while ((ll = br.readLine()) != null) {
-                        outString = ll;
-                        System.out.println(ll);
-                    }
-                } catch (IOException e) {
-                    System.out.println("Error 10 en " + this.getClass().getName() + ":" + e.getMessage());
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
+            try {
+                //restauracion de campo closure_date de tabla injuries 
+                ficherofile = new java.io.File(selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_file.backup");
+                FileReader fr = new FileReader(ficherofile);
+                BufferedReader br = new BufferedReader(fr);
+                String linea;
+                while ((linea = br.readLine()) != null) {
+                    connectionJdbcMB.non_query(linea);
                 }
-                
-                System.out.println("\nFinaliza resturacion de copia de seguridad.... " + rutaCT + "......   " + outString);
-                //System.out.println("Finaliza restauracion de copia de seguridad: " + rutaCT);
-            } else {
-                System.err.println("No se encontro el archivo");
+                //restauracion de od(sigeodep)
+                pb = new ProcessBuilder("pg_restore", "-i", "-h", connectionJdbcMB.getServer(), "-p", "5432", "-U", connectionJdbcMB.getUser(), "-d", connectionJdbcMB.getDb(), "-v", "-F", "c", "-c", selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_od.backup");
+                pb.environment().put("PGPASSWORD", connectionJdbcMB.getPassword());
+                pb.redirectErrorStream(true);
+                p = pb.start();
+                printOutputFromProcces(p, " restauracion copia seguridad " + selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_od.backup");
+                //restauracion de od_dwh(bodega)
+                pb = new ProcessBuilder("pg_restore", "-i", "-h", connectionJdbcMB.getServer(), "-p", "5432", "-U", connectionJdbcMB.getUser(), "-d", connectionJdbcMB.getDb_dwh(), "-v", "-F", "c", "-c", selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_od_dwh.backup");
+                pb.environment().put("PGPASSWORD", connectionJdbcMB.getPassword());
+                pb.redirectErrorStream(true);
+                p = pb.start();
+                printOutputFromProcces(p, " restauracion copia seguridad " + selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_od_dwh.backup");
+            } catch (IOException x) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", x.getMessage()));
             }
-        } catch (IOException x) {
-            System.err.println("Caught: " + x.getMessage());
         }
-    }
 
-    public void restorePGSQL(String serverPath, String fileName) {
-        try {
-            Runtime r = Runtime.getRuntime();
-            Process p;
-            ProcessBuilder pb;
-            java.io.File ficherofile = new java.io.File(serverPath + fileName + ".backup");
-            String rutaCT = serverPath + fileName + ".backup";
-            if (ficherofile.exists()) {//Probamos a ver si existe ese ultimo dato                    
-                r = Runtime.getRuntime();
-                pb = new ProcessBuilder("pg_restore", "-i", "-h", IP, "-p", "5432", "-U", user, "-d", dbase, "-v", rutaCT);
-                pb.environment().put("PGPASSWORD", password);
-                pb.redirectErrorStream(true);
-                System.out.println("Inicia restauracion de copia de seguridad: " + rutaCT);
-                p = pb.start();
-                String outString = "";
-                try {
-                    //CODIGO PARA MOSTRAR EL PROGESO DE LA GENERACION DEL ARCHIVO
-                    InputStream is = p.getInputStream();
-                    InputStreamReader isr = new InputStreamReader(is);
-                    BufferedReader br = new BufferedReader(isr);
-                    String ll;
-                    while ((ll = br.readLine()) != null) {
-                        outString = ll;//System.out.println(ll);
-                    }
-                } catch (IOException e) {
-                    System.out.println("Error 10 en " + this.getClass().getName() + ":" + e.getMessage());
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", e.getMessage()));
-                }
-                System.out.println("\nFinaliza creacion de copia de seguridad.... " + rutaCT + "......   " + outString);
-                //System.out.println("Finaliza restauracion de copia de seguridad: " + rutaCT);
-            } else {
-                System.err.println("No se encontro el archivo");
-            }
-        } catch (IOException x) {
-            System.err.println("Caught: " + x.getMessage());
+        if (continueProcess) {
+            createDynamicTableDwh();
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La copia de seguridad se ha restaurado correctamente"));
         }
     }
 
     public void deleteBackupClick() {
+        /*
+         * click sobre eliminar un backup de od(sigeodep)
+         */
+        File backupFile;
         if (selectedRowDataTable != null) {
-
-            String filePath = selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + ".backup";
-            java.io.File ficherofile = new java.io.File(filePath);
-            if (ficherofile.exists()) {
-                ficherofile.delete();//elimino el archivo
-            } else {
-                //System.out.println("No se localizo el archivo: " + filePath);
+            backupFile = new java.io.File(selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + "_od.backup");
+            if (backupFile.exists()) {
+                backupFile.delete();//elimino el archivo
+            }
+            backupFile = new java.io.File(selectedRowDataTable.getColumn5() + selectedRowDataTable.getColumn2() + "_od_dwh.backup");
+            if (backupFile.exists()) {
+                backupFile.delete();//elimino el archivo
             }
             connectionJdbcMB.non_query("DELETE FROM backups WHERE id_backup = " + selectedRowDataTable.getColumn1());
             createDynamicTable();
@@ -517,16 +544,22 @@ public class BackupsMB {
     }
 
     public void deleteBackupClickDwh() {
+        /*
+         * click sobre eliminar un backup de od_dwh(bodega)
+         */
+        File backupFile;
         if (selectedRowDataTableDwh != null) {
-            String filePath = selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + ".backup";
-            java.io.File ficherofile = new java.io.File(filePath);
-            if (ficherofile.exists()) {
-                ficherofile.delete();//elimino el archivo
+            backupFile = new java.io.File(selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_od.backup");
+            if (backupFile.exists()) {
+                backupFile.delete();//elimino el archivo
             }
-            filePath = selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_file.backup";
-            ficherofile = new java.io.File(filePath);
-            if (ficherofile.exists()) {
-                ficherofile.delete();//elimino el archivo
+            backupFile = new java.io.File(selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_od_dwh.backup");
+            if (backupFile.exists()) {
+                backupFile.delete();//elimino el archivo
+            }
+            backupFile = new java.io.File(selectedRowDataTableDwh.getColumn4() + selectedRowDataTableDwh.getColumn2() + "_file.backup");
+            if (backupFile.exists()) {
+                backupFile.delete();//elimino el archivo
             }
             connectionJdbcMB.non_query("DELETE FROM backups_dwh WHERE id_backup = " + selectedRowDataTableDwh.getColumn1());
             createDynamicTableDwh();
@@ -537,6 +570,9 @@ public class BackupsMB {
     }
 
     private void createDynamicTable() {
+        /*
+         * creacion de la tabla con el listado de backups de od(sigeodep)
+         */
         ResultSet rs = connectionJdbcMB.consult("SELECT * FROM backups ORDER BY id_backup");
         try {
             rowDataTableList = new ArrayList<>();
@@ -555,6 +591,9 @@ public class BackupsMB {
     }
 
     private void createDynamicTableDwh() {
+        /*
+         * creacion de la tabla con el listado de backups de od_dwh(bodega)
+         */
         ResultSet rs = connectionJdbcMB.consult("SELECT * FROM backups_dwh ORDER BY id_backup");
         try {
             rowDataTableListDwh = new ArrayList<>();
@@ -570,6 +609,9 @@ public class BackupsMB {
         }
     }
 
+    // --------------------------    
+    // -- METODOS GET Y SET -----
+    // --------------------------    
     public List<RowDataTable> getRowDataTableList() {
         return rowDataTableList;
     }

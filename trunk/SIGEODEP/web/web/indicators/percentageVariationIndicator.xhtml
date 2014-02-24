@@ -236,7 +236,7 @@
                                 actionListener="#{indicatorsPercentageVariationMB.process}"
                                 oncomplete="showTableResult(); pageActive();"  
                                 onclick="pageInactive();"                                                                                                                    
-                                update="IdImageChart IdPanelGraphConfig IdDataTableHtml IdBtnExport">
+                                update="IdForm">
                             </p:commandButton>  
                             &nbsp;&nbsp;
                             <h:selectBooleanCheckbox value="#{indicatorsPercentageVariationMB.showEmpty}" />
@@ -257,7 +257,7 @@
                         </p:fieldset>
                         <br/>
                         <br/>
-                        <p:fieldset legend="TABLA DE RESULTADOS"> 
+                        <p:fieldset legend="TABLA DE RESULTADOS" rendered="#{indicatorsPercentageVariationMB.showTableResult}"> 
                             <br/>
                             <h:outputText 
                                 id="IdDataTableHtml"
@@ -271,10 +271,12 @@
                             <p:commandButton                                 
                                 icon="ui-icon-transferthick-e-w"
                                 actionListener="#{indicatorsPercentageVariationMB.invertMatrixClick}"
-                                oncomplete="showTableResult();"  
-                                update="IdDataTableHtml"/> 
+                                oncomplete="showTableResult(); pageActive();"
+                                onclick="pageInactive();"
+                                value="Invertir"
+                                update="IdDataTableHtml IdBtnExport"/> 
                             <h:commandLink id="IdBtnExport" disabled="#{indicatorsPercentageVariationMB.btnExportDisabled}">  
-                                <p:button  value="Exportar datos" />                                
+                                <p:button  value="Exportar datos" disabled="#{indicatorsPercentageVariationMB.btnExportDisabled}"/>
                                 <p:dataExporter type="xls" target="IdOutFile" fileName="salida" postProcessor="#{indicatorsPercentageVariationMB.postProcessXLS}"/>  
                             </h:commandLink>                             
                             <br/>
@@ -282,7 +284,7 @@
                         </p:fieldset>
                         <br/>
                         <br/>                        
-                        <p:fieldset legend="GRAFICOS">                            
+                        <p:fieldset legend="GRAFICOS" rendered="#{indicatorsPercentageVariationMB.showGraphic}">                            
                             <br/> 
                             <p:panelGrid id="IdPanelGraphConfig">
                                 <p:row>
@@ -568,7 +570,7 @@
                     resizable="false"                    
                     widgetVar="configurationsDialog">  
                     <br/>
-                    <p:panelGrid>
+                    <p:panelGrid rendered="#{!indicatorsPercentageVariationMB.btnAddCategoricalValueDisabled}">
                         <p:row>
                             <p:column styleClass="ui-widget-header">
                                 Nueva categoria
