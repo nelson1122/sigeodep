@@ -236,8 +236,8 @@
     <access>Native</access>
     <database>od</database>
     <port>5432</port>
-    <username>santos</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb79ce108fc0fc8e</password>
+    <username>and</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ce7edf9cacc3</password>
     <servername/>
     <data_tablespace/>
     <index_tablespace/>
