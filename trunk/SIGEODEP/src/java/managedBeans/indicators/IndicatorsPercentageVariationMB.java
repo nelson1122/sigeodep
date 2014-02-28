@@ -556,7 +556,7 @@ public class IndicatorsPercentageVariationMB {
         if (continueProcess) {//CADA VARIABLE A CRUZAR TENGA VALORES CONFIGURADOS
             for (int i = 0; i < variablesCrossData.size(); i++) {
                 if (variablesCrossData.get(i).getValuesConfigured().isEmpty()) {
-                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La variable " + variablesListData.get(i).getName() + " no tiene valores configurados, para continuar debe ser configurada.");
+                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La variable " + variablesCrossData.get(i).getName() + " no tiene valores configurados, para continuar debe ser configurada.");
                     continueProcess = false;
                 }
             }
@@ -592,7 +592,7 @@ public class IndicatorsPercentageVariationMB {
         if (continueProcess) {//CADA VARIABLE A CRUZAR TENGA VALORES CONFIGURADOS
             for (int i = 0; i < variablesCrossData.size(); i++) {
                 if (variablesCrossData.get(i).getValuesConfigured().isEmpty()) {
-                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La variable " + variablesListData.get(i).getName() + " no tiene valores configurados, para continuar debe ser configurada.");
+                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La variable " + variablesCrossData.get(i).getName() + " no tiene valores configurados, para continuar debe ser configurada.");
                     continueProcess = false;
                 }
             }
@@ -3199,7 +3199,7 @@ public class IndicatorsPercentageVariationMB {
                 strReturn = strReturn + "                                <td><div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">Recuento</div></td>\r\n";
             }
             if (showRowPercentage) {
-                strReturn = strReturn + "                                <td><div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">% por fila</div></td>\r\n";
+                strReturn = strReturn + "                                <td><div style=\"overflow:hidden; height:20px; width:100px; white-space: nowrap;\">% por columna</div></td>\r\n";
             }
         }
         strReturn = strReturn + "                            </tr>\r\n";

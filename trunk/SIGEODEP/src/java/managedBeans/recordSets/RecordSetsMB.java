@@ -85,6 +85,7 @@ public class RecordSetsMB implements Serializable {
     private ConnectionJdbcMB connectionJdbcMB;
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
     private FacesMessage msg;
+    String sizeData = "-";
 
     public RecordSetsMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
@@ -122,6 +123,48 @@ public class RecordSetsMB implements Serializable {
 
     public String openRecordSets() {
         return openRecordSets;
+    }
+
+    public void determineSizeData() {
+        //determinar el numero de registros sobre los que se va a realizar la deteccion de duplicados
+        sizeData = "-";
+        try {
+            if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
+                if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {//homicidios
+                    ResultSet rs = connectionJdbcMB.consult(""
+                            + " select "
+                            + "   count(*) "
+                            + " from "
+                            + "   fatal_injuries "
+                            + " where "
+                            + "   fatal_injuries.injury_id = 10 "
+                            + "   AND fatal_injuries.injury_date >= to_date('" + formato.format(initialDateDuplicate) + "','dd/MM/yyyy') "
+                            + "   AND fatal_injuries.injury_date <= to_date('" + formato.format(endDateDuplicate) + "','dd/MM/yyyy') \n");
+                    if (rs.next()) {
+                        sizeData= rs.getString(1);
+                        System.err.println("tamaño es: "+sizeData);
+                    }
+
+                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {//muertes transito
+
+
+                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {//suicidios
+
+
+
+                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {//muerte accidental
+
+
+
+                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {//lcenf
+
+
+                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0 || selectedRowsDataTable[0].getColumn3().compareTo("SIVIGILA-VIF") == 0) {
+                }
+            } 
+        } catch (Exception e) {
+            System.err.println("error: "+e.getMessage());
+        }
     }
 
     public void detectDuplicateClick() {
@@ -324,6 +367,7 @@ public class RecordSetsMB implements Serializable {
     }
 
     public void load() {
+        
         currentTag = null;
         String currentTagName = "";
         boolean equalTagName = true;
@@ -334,6 +378,7 @@ public class RecordSetsMB implements Serializable {
         btnJoinDisabled = true;
         btnDuplicateDisabled = true;
         name = "";
+        determineSizeData();
         if (selectedRowsDataTable != null) {
             //SI ALGUNO DE LOS SELECCIONADOS ES GENERAL NO REALIZAR ELIMINACION
             for (int i = 0; i < selectedRowsDataTable.length; i++) {//verificar si esta seleccionado uno de las cargas por defecto
@@ -1056,7 +1101,7 @@ public class RecordSetsMB implements Serializable {
                     + "   ut.ungrouped_tag_id != ut.current_tag_id \n"
                     + " ORDER BY \n"
                     + "   ut.ungrouped_tag_date DESC");
-            int count= 0;
+            int count = 0;
             while (rs.next()) {
                 count++;
                 RowDataTable newRowDataTable = new RowDataTable();
@@ -1326,5 +1371,13 @@ public class RecordSetsMB implements Serializable {
 
     public void setCurrentSearchValue2(String currentSearchValue2) {
         this.currentSearchValue2 = currentSearchValue2;
+    }
+
+    public String getSizeData() {
+        return sizeData;
+    }
+
+    public void setSizeData(String sizeData) {
+        this.sizeData = sizeData;
     }
 }
