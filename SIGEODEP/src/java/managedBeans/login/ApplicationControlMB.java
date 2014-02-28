@@ -224,7 +224,7 @@ public class ApplicationControlMB {
             }
 
         } catch (Exception e) {
-            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.getMessage());
+            //System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.getMessage());
         }
     }
 

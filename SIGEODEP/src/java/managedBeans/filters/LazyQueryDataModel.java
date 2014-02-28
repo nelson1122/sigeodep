@@ -8,7 +8,6 @@ import beans.connection.ConnectionJdbcMB;
 import java.util.List;
 import java.util.Map;
 import javax.faces.context.FacesContext;
-import model.pojo.Projects;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 

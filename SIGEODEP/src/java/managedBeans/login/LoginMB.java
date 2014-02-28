@@ -7,6 +7,7 @@ package managedBeans.login;
 import managedBeans.filters.FilterMB;
 import beans.connection.ConnectionJdbcMB;
 import beans.util.StringEncryption;
+import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -23,6 +24,8 @@ import javax.servlet.http.HttpSession;
 import managedBeans.fileProcessing.*;
 import model.dao.UsersFacade;
 import model.pojo.Users;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -63,26 +66,38 @@ public class LoginMB {
     UsersFacade usersFacade;
     private String closeSessionDialog = "";
     private boolean autenticado = false;
+    //private String realPath = "";
 
     public LoginMB() {
     }
 
-//    @PreDestroy
-//    public void destroySession() {
-//        /*
-//         * antes de destruir esta clase se eliminan datos temporales a el usuario 
-//         * que ingreso al sistema, esto ocurre si se para el servidor o la sesion es
-//         * destruida por inactividad
-//         */
-//        try {
-//            applicationControlMB.removeSession(idSession);//elimino de la lista de usuarios actuales en el sistema
-//            connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());//elimino datos que este usuario tenga por realizacion de indicadores
-//            connectionJdbcMB.non_query("DELETE FROM project_history_filters WHERE project_id IN "
-//                    + "(SELECT project_id FROM projects WHERE user_id = " + currentUser.getUserId() + ")");            //Elimino historial de filtros para este ususario
-//            
-//        } catch (Exception e) {
-//        }
-//    }
+
+    private StreamedContent fileHelp; 
+    
+    public StreamedContent getFileHelp() {  
+        InputStream stream = ((ServletContext)FacesContext.getCurrentInstance().getExternalContext().getContext()).getResourceAsStream("/resources/help/manual.pdf");  
+        fileHelp = new DefaultStreamedContent(stream, "application/pdf", "manual.pdf");
+        return fileHelp;  
+    } 
+
+    @PreDestroy
+    public void destroySession() {
+        /*
+         * antes de destruir esta clase se eliminan datos temporales a el usuario 
+         * que ingreso al sistema, esto ocurre si se para el servidor o la sesion es
+         * destruida por inactividad
+         */
+        try {
+            applicationControlMB.removeSession(idSession);//elimino de la lista de usuarios actuales en el sistema
+            if (connectionJdbcMB.getConn() != null && !connectionJdbcMB.getConn().isClosed()) {
+                connectionJdbcMB.non_query("DELETE FROM indicators_records WHERE user_id = " + currentUser.getUserId());//elimino datos que este usuario tenga por realizacion de indicadores
+                connectionJdbcMB.non_query("DELETE FROM project_history_filters WHERE project_id IN "
+                        + "(SELECT project_id FROM projects WHERE user_id = " + currentUser.getUserId() + ")");            //Elimino historial de filtros para este ususario
+            }
+        } catch (Exception e) {
+        }
+    }
+
     public void logout1() {
         /*
          * fin de session por que se inicio una nueva session en otro equipo      

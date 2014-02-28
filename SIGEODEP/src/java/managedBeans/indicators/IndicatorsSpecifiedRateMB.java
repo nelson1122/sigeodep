@@ -385,7 +385,7 @@ public class IndicatorsSpecifiedRateMB {
         if (continueProcess) {//CADA VARIABLE A CRUZAR TENGA VALORES CONFIGURADOS
             for (int i = 0; i < variablesCrossData.size(); i++) {
                 if (variablesCrossData.get(i).getValuesConfigured().isEmpty()) {
-                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La variable " + variablesListData.get(i).getName() + " no tiene valores configurados, para continuar debe ser configurada.");
+                    message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La variable " + variablesCrossData.get(i).getName() + " no tiene valores configurados, para continuar debe ser configurada.");
                     continueProcess = false;
                 }
             }

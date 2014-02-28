@@ -1038,7 +1038,7 @@ public class FilterMB {
                     ResultSet rs2;
                     sqlUndo = sqlUndo + " INSERT INTO project_records VALUES ";
                     boolean first = true;
-                    if (rs.next()) {
+                    while (rs.next()) {
                         rs2 = connectionJdbcMB.consult(""
                                 + " SELECT "
                                 + "    * "

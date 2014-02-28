@@ -46,15 +46,14 @@
                     <h:form target="_blank">
                         <h:commandButton value="+" action="home" image="../../resources/img/logo2.png" />                        
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <h:commandButton value="h"  action="help" image="../../resources/img/help.gif" />                        
+                        <!-- h:commandButton value="h"  action="help" image="../../resources/img/help.gif" /-->                        
+                        
                     </h:form>
+                    
                     <h:form id="IdForm0">                          
-                        <h:outputText 
-                            id="IdOutput"
-                            value="#{indicatorsAverageMB.dataTableHtml}" 
-                            escape="false"/>
-                        
-                        
+                        <h:commandButton image="../../resources/img/help.gif" value="Download" >  
+                            <p:fileDownload value="#{loginMB.fileHelp}" />  
+                        </h:commandButton>                         
                         <br/>
                         <p:accordionPanel  activeIndex="#{loginMB.activeIndexAcoordion1}" >                            
                             <p:tab title="REGISTRO DE DATOS"  rendered="#{loginMB.permissionRegistryDataSection}">
