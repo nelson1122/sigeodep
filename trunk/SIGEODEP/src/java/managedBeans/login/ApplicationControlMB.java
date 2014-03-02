@@ -219,7 +219,7 @@ public class ApplicationControlMB {
                     }
                     System.out.println("Fin copia seguridad aotomatica" + realPath + "backups/" + fileName);
                 } catch (IOException x) {
-                    System.out.println("Error 3 en " + this.getClass().getName() + ":" + x.getMessage());
+                    System.out.println("Error 13 en " + this.getClass().getName() + ":" + x.getMessage());
                 }
             }
 
@@ -315,7 +315,7 @@ public class ApplicationControlMB {
                 return null;
             }
         } catch (SQLException e) {
-            System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.getMessage() + "---- CONSULTA:" + query);
+            //System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.getMessage() + "---- CONSULTA:" + query);
             return null;
         }
     }

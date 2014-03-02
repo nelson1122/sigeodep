@@ -99,7 +99,7 @@
                                         <p:ajax
                                             event="rowSelect"
                                             listener="#{recordSetsMB.load}"                                    
-                                            update=":IdForm1:IdTabRecordSets:IdControls :IdForm1:message" />
+                                            update=":IdForm1:IdTabRecordSets:IdControls :IdForm1:message :IdForm2:IdDialogDuplicate" />
 
                                         <p:column headerText="CODIGO" width="100">  
                                             #{rowX.column3}
@@ -128,8 +128,7 @@
                                                     oncomplete="dialogDelete.show()"                                            
                                                     update=":IdForm2:IdDialogDelete :IdForm1:message"/>                                                
                                                 <p:commandButton 
-                                                    id="IdView"                                            
-                                                    actionListener="#{recordSetsMB.resetDates}"
+                                                    id="IdView"                                                                                                
                                                     disabled="#{recordSetsMB.btnViewDisabled}"
                                                     value="Mostrar Datos"
                                                     oncomplete="dialogView.show()"
@@ -407,21 +406,25 @@
                     </p:panelGrid>                     
                 </p:dialog>  
                 <!-- DIALOGO DETECTAR DUPLICADOS-->
-                <p:dialog                                                         
+                <p:dialog                          
                     id="IdDialogDuplicate"
                     modal="true"
                     resizable="false"
                     header="Rango a detectar duplicados" 
                     widgetVar="dialogDuplicate"> 
                     <p:panelGrid >                          
-                        <!-- p:row>
+                        <p:row>
                             <p:column>
                                 <h:outputText value="Numero de registros:" />                                
                             </p:column>
-                            <p:column>                                     
-                                <h:outputText id="sizeData" value="# {recordSetsMB.sizeData}" />                                
+                            <p:column>  
+                                <p:inputTextarea 
+                                    id="sizeData"
+                                    value="#{recordSetsMB.sizeData}" 
+                                    readonly="true" 
+                                    style="text-align: match-parent; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 60px; width: 200px;"/>                                
                             </p:column>
-                        </p:row -->
+                        </p:row>
                         <p:row>
                             <p:column>
                                 <h:outputText value="Fecha Inicial:" />                                
@@ -432,10 +435,10 @@
                                     converterMessage="La fecha inicial no es válida, por favor corríjala."                                     
                                     showOn="button" 
                                     pattern="dd/MM/yyyy">
-                                    <!-- f:ajax
+                                    <f:ajax
                                         event="change"
-                                        listener="# {recordSetsMB.determineSizeData}"                                    
-                                        render="sizeData" /-->
+                                        listener="#{recordSetsMB.determineSizeData}"                                    
+                                        render="sizeData"/>
                                 </p:calendar> 
                             </p:column>
                         </p:row>
@@ -448,7 +451,12 @@
                                     value="#{recordSetsMB.endDateDuplicate}" 
                                     converterMessage="La fecha final no es válida, por favor corríjala." 
                                     showOn="button"                                     
-                                    pattern="dd/MM/yyyy"/> 
+                                    pattern="dd/MM/yyyy"> 
+                                    <f:ajax
+                                        event="change"
+                                        listener="#{recordSetsMB.determineSizeData}"                                    
+                                        render="sizeData"/>
+                                </p:calendar>
                             </p:column>
                         </p:row>
                         <p:row>
