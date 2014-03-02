@@ -5,6 +5,8 @@
 package managedBeans.recordSets;
 
 import beans.connection.ConnectionJdbcMB;
+import beans.enumerators.FormsEnum;
+import beans.enumerators.VariablesEnum;
 import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -23,6 +25,7 @@ import javax.faces.model.SelectItem;
 import managedBeans.duplicateSets.*;
 import model.dao.*;
 import model.pojo.*;
+import org.joda.time.DateTime;
 
 /**
  *
@@ -85,7 +88,7 @@ public class RecordSetsMB implements Serializable {
     private ConnectionJdbcMB connectionJdbcMB;
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
     private FacesMessage msg;
-    String sizeData = "-";
+    String sizeData = "Número de registros no determinado";
 
     public RecordSetsMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
@@ -97,14 +100,18 @@ public class RecordSetsMB implements Serializable {
         endDateView.setDate(c.get(Calendar.DATE));
         endDateView.setMonth(c.get(Calendar.MONTH));
         endDateView.setYear(c.get(Calendar.YEAR) - 1900);
-        initialDateDuplicate.setDate(1);
-        initialDateDuplicate.setMonth(0);
-        initialDateDuplicate.setYear(2002 - 1900);
+        
+        
         endDateDuplicate.setDate(c.get(Calendar.DATE));
         endDateDuplicate.setMonth(c.get(Calendar.MONTH));
         endDateDuplicate.setYear(c.get(Calendar.YEAR) - 1900);
-
-
+        
+        
+        initialDateDuplicate.setDate(1);
+        initialDateDuplicate.setMonth(0);
+        initialDateDuplicate.setYear(2002 - 1900);
+        
+        
     }
 
     public void onCompleteLoad() {
@@ -127,43 +134,58 @@ public class RecordSetsMB implements Serializable {
 
     public void determineSizeData() {
         //determinar el numero de registros sobre los que se va a realizar la deteccion de duplicados
-        sizeData = "-";
+        sizeData = "Número de registros no determinado";
+        int size = 0;
+        ResultSet rs;
         try {
-            if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
-                if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {//homicidios
-                    ResultSet rs = connectionJdbcMB.consult(""
-                            + " select "
-                            + "   count(*) "
-                            + " from "
-                            + "   fatal_injuries "
-                            + " where "
-                            + "   fatal_injuries.injury_id = 10 "
-                            + "   AND fatal_injuries.injury_date >= to_date('" + formato.format(initialDateDuplicate) + "','dd/MM/yyyy') "
-                            + "   AND fatal_injuries.injury_date <= to_date('" + formato.format(endDateDuplicate) + "','dd/MM/yyyy') \n");
-                    if (rs.next()) {
-                        sizeData= rs.getString(1);
-                        System.err.println("tamaño es: "+sizeData);
+            if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {//se ha seleccionado algo de la tabla de conjuntos
+                for (int i = 0; i < selectedRowsDataTable.length; i++) {//ciclo por cada uno de los conunjuntos seleccionados
+                    switch (FormsEnum.convert(selectedRowsDataTable[i].getColumn3().replace("-", "_"))) {
+                        case SCC_F_028:
+                        case SCC_F_029:
+                        case SCC_F_030:
+                        case SCC_F_031:
+                            rs = connectionJdbcMB.consult(""
+                                    + " select "
+                                    + "   count(*) "
+                                    + " from "
+                                    + "   fatal_injuries, victims"
+                                    + " where "
+                                    + "   victims.victim_id = fatal_injuries.victim_id AND "
+                                    + "   victims.tag_id =  " + selectedRowsDataTable[i].getColumn1() + " AND "
+                                    + "   fatal_injuries.injury_date >= to_date('" + formato.format(initialDateDuplicate) + "','dd/MM/yyyy') AND "
+                                    + "   fatal_injuries.injury_date <= to_date('" + formato.format(endDateDuplicate) + "','dd/MM/yyyy') \n");
+                            if (rs.next()) {
+                                size = size + rs.getInt(1);
+                            }
+                            break;
+                        case SCC_F_032:
+                        case SCC_F_033:
+                        case SIVIGILA_VIF:
+                            rs = connectionJdbcMB.consult(""
+                                    + " select "
+                                    + "   count(*) "
+                                    + " from "
+                                    + "   non_fatal_injuries, victims"
+                                    + " where "
+                                    + "   victims.victim_id = non_fatal_injuries.victim_id AND "
+                                    + "   victims.tag_id =  " + selectedRowsDataTable[i].getColumn1() + " AND "
+                                    + "   non_fatal_injuries.injury_date >= to_date('" + formato.format(initialDateDuplicate) + "','dd/MM/yyyy') AND "
+                                    + "   non_fatal_injuries.injury_date <= to_date('" + formato.format(endDateDuplicate) + "','dd/MM/yyyy') \n");
+                            if (rs.next()) {
+                                size = size + rs.getInt(1);
+                            }
+                            break;
                     }
-
-                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {//muertes transito
-
-
-                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {//suicidios
-
-
-
-                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {//muerte accidental
-
-
-
-                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {//lcenf
-
-
-                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0 || selectedRowsDataTable[0].getColumn3().compareTo("SIVIGILA-VIF") == 0) {
                 }
-            } 
+                if (size < 2000) {
+                    sizeData = "Número de registros: " + size;
+                } else {
+                    sizeData = "Número de registros: " + size + " se recomienda sea menor a 2000 ya que el proceso podría tomar varios minutos";
+                }
+            }
         } catch (Exception e) {
-            System.err.println("error: "+e.getMessage());
+            System.err.println("error: " + e.getMessage());
         }
     }
 
@@ -255,18 +277,6 @@ public class RecordSetsMB implements Serializable {
 
     public String openDuplicateSets() {
         return openDuplicateSets;
-    }
-
-    public void resetDates() {
-//        Calendar c = Calendar.getInstance();
-//        Calendar c2 = Calendar.getInstance();
-//        
-//        initialDate.setDate(1);
-//        initialDate.setMonth(0);
-//        initialDate.setYear(2003-1900);
-//        endDate.setDate(c.get(Calendar.DATE));
-//        endDate.setMonth(c.get(Calendar.MONTH));
-//        endDate.setYear(c.get(Calendar.YEAR)-1900);
     }
 
     public void selectTagClick() {
@@ -367,7 +377,7 @@ public class RecordSetsMB implements Serializable {
     }
 
     public void load() {
-        
+
         currentTag = null;
         String currentTagName = "";
         boolean equalTagName = true;
@@ -1132,6 +1142,7 @@ public class RecordSetsMB implements Serializable {
     @PostConstruct
     public void reset() {
 
+        determineSizeData();
         List<Forms> formsList = formsFacade.findAll();
         forms = new SelectItem[formsList.size()];
         for (int i = 0; i < formsList.size(); i++) {

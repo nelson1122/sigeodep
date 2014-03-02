@@ -196,10 +196,10 @@ public class DuplicateSetsHomicideMB implements Serializable {
         tuplesProcessed = 0;
 
         selectedRowDataTable = null;
-        rowDataTableList = new ArrayList<RowDataTable>();
+        rowDataTableList = new ArrayList<>();
         data = "- ";
         //CREO LA LISTA DE TAGS SELECCIONADOS, Y NUMERO DE REGISTROS
-        tagsList = new ArrayList<Tags>();
+        tagsList = new ArrayList<>();
         for (int i = 0; i < selectedRowsDataTableTags.length; i++) {
             data = data + selectedRowsDataTableTags[i].getColumn2() + " -";
             tagsList.add(tagsFacade.find(Integer.parseInt(selectedRowsDataTableTags[i].getColumn1())));

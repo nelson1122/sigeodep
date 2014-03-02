@@ -3015,7 +3015,16 @@ public class IndicatorsCountMB {
             addToSourceTable("sivigila_event");
             addToSourceTable("sivigila_aggresor");
             filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id is not null AND \n";
+            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 8 AND \n";//no tomar otro cual
             filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 9 AND \n";//no tomar los sin dato
+            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 10 AND \n";//no tomar novio
+            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 11 AND \n";//no tomar encargado adulto mayor
+            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 14 AND \n";//no tomar amnte
+            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 15 AND \n";//exesposo
+            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 18 AND \n";//cuñado
+            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 19 AND \n";//suegro
+            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 21 AND \n";//exnovio
+            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 22 AND \n";//examante
         }
         if (currentIndicator.getIndicatorId() == 70 || currentIndicator.getIndicatorId() == 74) {//CASOS DE VIOLENCIA CONTRA LA MUJER (VCM) EN EL SECTOR SALUD
             filterSourceTable = filterSourceTable + " victims.gender_id = 2 AND \n";
@@ -3093,11 +3102,15 @@ public class IndicatorsCountMB {
             sqlReturn = sqlReturn + "\n"
                     + " ) as mmm \n"
                     + " WHERE "
-                    + " naturaleza_violencia not like '%>1}' AND "
-                    + " naturaleza_violencia not like '%>2}' AND "
-                    + " naturaleza_violencia not like '%>4}' ";
+                    + " naturaleza_violencia not like '%>1}' AND "//no sea fisico
+                    + " naturaleza_violencia not like '%>2}' AND "//no sea psicológico
+                    + " naturaleza_violencia not like '%>4}' AND "//no sea negligencia
+                    + " naturaleza_violencia not like '%>5}' AND "//no seaa abandono
+                    + " naturaleza_violencia not like '%>6}' AND "//no sea institucional
+                    + " naturaleza_violencia not like '%>7}' AND "//no sea sin dato
+                    + " naturaleza_violencia not like '%>8}' ";//no sea otro
         }
-        //System.out.println("CONSULTA (indicators count) \n " + sqlReturn);
+        System.out.println("CONSULTA (indicators count) \n " + sqlReturn);
         return sqlReturn;
     }
 
