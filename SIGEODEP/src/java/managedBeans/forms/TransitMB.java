@@ -1030,7 +1030,7 @@ public class TransitMB implements Serializable {
                 //******victim_class
                 //******victim_id
                 //newVictim.setVictimId(victimsFacade.findMax() + 1);
-                newVictim.setVictimId(applicationControlMB.addFatalReservedIdentifiers());
+                newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
                 //******residence_municipality
                 newVictim.setResidenceMunicipality(currentMunicipalitie);
                 newVictim.setResidenceDepartment(currentDepartamentHome);
