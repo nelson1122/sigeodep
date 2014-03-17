@@ -4342,6 +4342,8 @@ public class ClosuresMB {
                     + "   JOIN sivigila_victim USING (sivigila_victim_id)\n"
                     + " WHERE\n"
                     + "   injury_id = 56   AND"
+//                    + "       non_fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
+//                    + "       non_fatal_injuries.injury_date <= to_date('01/01/2015','dd/MM/yyyy') ";
                     + "   non_fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
                     + "   non_fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
             //System.out.println("\nCONSULTA INSERT\n" + sql + "\n");
