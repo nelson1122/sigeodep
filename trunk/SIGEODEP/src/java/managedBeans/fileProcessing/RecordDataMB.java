@@ -2970,7 +2970,11 @@ public class RecordDataMB implements Serializable {
                                 value = isPercentage(splitColumnAndValue[1]);
                                 break;
                             case NOVALUE:
-                                value = isCategorical(splitColumnAndValue[1], relationVar);
+                                try{
+                                    value = isCategorical(splitColumnAndValue[1], relationVar);
+                                } catch(ArrayIndexOutOfBoundsException ex){
+                                    System.out.println("Captura excepcion cuando splitColumnAndValue no es un arreglo valido. La varaible value conserva el valor de null.");
+                                }
                                 break;
                         }
                     }
