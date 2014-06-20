@@ -93,16 +93,16 @@ public class RelationshipOfVariablesMB implements Serializable {
     public void refresh() {
         loadVarsExpectedAndFound();//recargo listas de variables esperadas y encontradas                       
         changeVarExpected();
-        changeVarFound();        
+        changeVarFound();
     }
-    
-    public void convertAllIdSivigila(){
+
+    public void convertAllIdSivigila() {
         /*
          * realiza las conversiones necesarias para pasar de archivo a sivigila
          */
         if (projectsMB.getCurrentFormName().compareTo("SIVIGILA-VIF") == 0) {//ES FORMULARIO SIVIGILA-VIF
             try {
-                ResultSet rs;                
+                ResultSet rs;
                 sql = ""
                         + " SELECT \n"
                         + "    relation_variables.name_expected, \n"
@@ -114,12 +114,12 @@ public class RelationshipOfVariablesMB implements Serializable {
                         + "    relation_variables.id_relation_group = relation_group.id_relation_group AND \n"
                         + "    relation_group.name_relation_group LIKE '" + projectsMB.getCurrentRelationsGroupName() + "' \n";
                 rs = connectionJdbcMB.consult(sql);
-                while (rs.next()) {                    
+                while (rs.next()) {
                     convertIdToNameSIVIGILA(rs.getString(1), rs.getString(2), projectsFacade.find(projectsMB.getCurrentProjectId()));
                 }
             } catch (Exception e) {
                 System.out.println("Error 13 en " + this.getClass().getName() + ":" + e.toString());
-            }            
+            }
         }
     }
 
@@ -364,6 +364,10 @@ public class RelationshipOfVariablesMB implements Serializable {
                     break;
                 case minute:
                     valuesExpected.add("Minutos representados por un entero de 1 a 59");
+                    break;
+                case date_of_birth:
+                    valuesExpected.add("Cualquier fecha");
+                    selectDateFormatDisabled = false;
                     break;
                 case hour:
                     valuesExpected.add("La hora se representa por un entero de 0 a 24");
