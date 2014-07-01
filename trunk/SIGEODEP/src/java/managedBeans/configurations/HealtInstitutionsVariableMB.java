@@ -354,16 +354,33 @@ public class HealtInstitutionsVariableMB implements Serializable {
         } else {
             currentSearchValue = currentSearchValue.toUpperCase();
             rowDataTableList = new ArrayList<>();
-            nonFatalDataSourcesList = nonFatalDataSourcesFacade.findCriteria(currentSearchCriteria, currentSearchValue);
-            if (nonFatalDataSourcesList.isEmpty()) {
+            ResultSet rs;
+            try {
+                
+                if (currentSearchCriteria == 2) {
+                    rs = connectionJdbcMB.consult("select * from non_fatal_data_sources where non_fatal_data_source_name like '%" + currentSearchValue + "%'");
+                } else {
+                    rs = connectionJdbcMB.consult("select * from non_fatal_data_sources where non_fatal_data_source_id::text like '%" + currentSearchValue + "%'");
+                }
+                while (rs.next()) {                    
+                    rowDataTableList.add(new RowDataTable(rs.getString("non_fatal_data_source_id"), rs.getString("non_fatal_data_source_name")));
+                }
+            } catch (SQLException ex) {
+            }
+            if (rowDataTableList.isEmpty()) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
-            for (int i = 0; i < nonFatalDataSourcesList.size(); i++) {
-                rowDataTableList.add(new RowDataTable(
-                        nonFatalDataSourcesList.get(i).getNonFatalDataSourceId().toString(),
-                        nonFatalDataSourcesList.get(i).getNonFatalDataSourceName()));
-            }
+//            nonFatalDataSourcesList = nonFatalDataSourcesFacade.findCriteria(currentSearchCriteria, currentSearchValue);
+//            if (nonFatalDataSourcesList.isEmpty()) {
+//                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
+//                FacesContext.getCurrentInstance().addMessage(null, msg);
+//            }
+//            for (int i = 0; i < nonFatalDataSourcesList.size(); i++) {
+//                rowDataTableList.add(new RowDataTable(
+//                        nonFatalDataSourcesList.get(i).getNonFatalDataSourceId().toString(),
+//                        nonFatalDataSourcesList.get(i).getNonFatalDataSourceName()));
+//            }
         }
     }
 

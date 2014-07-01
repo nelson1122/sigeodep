@@ -393,7 +393,7 @@ public class CommunesVariableMB implements Serializable {
             if (continueProcess) {
                 communeName = communeName.toUpperCase();
                 currentCommune.setCommuneName(communeName);
-                
+
                 if (poligonText != null && poligonText.trim().length() != 0) {
                     currentCommune.setGeom(poligonText);
                 }
@@ -643,24 +643,31 @@ public class CommunesVariableMB implements Serializable {
         }
         currentSearchValue = currentSearchValue.toUpperCase();
         rowDataTableList = new ArrayList<>();
-        communesList = communesFacade.findCriteria(currentSearchCriteria, currentSearchValue);
-        if (communesList != null && communesList.isEmpty()) {
+        try {
+            ResultSet rs;
+            if (currentSearchCriteria == 2) {
+                rs = connectionJdbcMB.consult("select * from communes where commune_name like '%" + currentSearchValue + "%'");
+            } else {
+                rs = connectionJdbcMB.consult("select * from communes where commune_id::text like '%" + currentSearchValue + "%'");
+            }
+            while (rs.next()) {
+                if (rs.getString("area_id") != null) {
+                    if (rs.getInt("area_id") == 1) {
+                        type = "ZONA URBANA";
+                    } else {
+                        type = "ZONA RURAL";
+                    }
+                } else {
+                    type = "";
+                }
+                rowDataTableList.add(new RowDataTable(rs.getString("commune_id"), rs.getString("commune_name"), type));
+            }
+        } catch (SQLException ex) {
+        }
+        if (rowDataTableList.isEmpty()) {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
-        for (int i = 0; i < communesList.size(); i++) {
-            if (communesList.get(i).getAreaId() != null) {
-                if (communesList.get(i).getAreaId() == 1) {
-                    type = "ZONA URBANA";
-                } else {
-                    type = "ZONA RURAL";
-                }
-            } else {
-                type = "";
-            }
-            rowDataTableList.add(new RowDataTable(communesList.get(i).getCommuneId().toString(), communesList.get(i).getCommuneName(), type));
-        }
-
     }
 
     public void reset() {

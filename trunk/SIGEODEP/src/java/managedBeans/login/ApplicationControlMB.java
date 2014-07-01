@@ -58,7 +58,6 @@ public class ApplicationControlMB {
     private ArrayList<Integer> nonfatalReservedIdentifiers = new ArrayList<>();//identificador de registros fatales reservados
     private ArrayList<Integer> sivigilaVictimReservedIdentifiers = new ArrayList<>();//identificador de registros fatales reservados
     private ArrayList<Integer> sivigilaAggresorReservedIdentifiers = new ArrayList<>();//identificador de registros fatales reservados
-    private String value = "-";//desde pagina de login se llama a este valor para que el objeto applicationControlMB sea visible en el contexto 
     private String realPath = "";
     public Connection conn;
 
@@ -71,6 +70,9 @@ public class ApplicationControlMB {
         realPath = (String) servletContext.getRealPath("/");
         timer.start();
 
+    }
+
+    public void reset() {//funcion llamada en la pagina de login para que la instancia de esta clase sea visible en el contexto
     }
 
     @PostConstruct
@@ -659,13 +661,5 @@ public class ApplicationControlMB {
                 sivigilaAggresorReservedIdentifiers.remove(i);
             }
         }
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 }

@@ -2539,17 +2539,15 @@ public class IndicatorsCountMB {
                     //sqlReturn = sqlReturn + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
                     sqlReturn = sqlReturn + ""
                             + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".quadrant_id is null THEN 'SIN DATO' \n\r"
                             + "    ELSE \n\r"
                             + "    ( \n\r"
                             + "       SELECT \n\r"
                             + "          quadrants.quadrant_name \n\r"
                             + "       FROM \n\r"
-                            + "          public.quadrants, \n\r"
-                            + "          public.neighborhoods \n\r"
-                            + "       WHERE \n\r"
-                            + "          neighborhoods.neighborhood_quadrant = quadrants.quadrant_id AND \n\r"
-                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
+                            + "          public.quadrants \n\r"
+                            + "       WHERE \n\r"                            
+                            + "          quadrants.quadrant_id=" + currentIndicator.getInjuryType() + ".quadrant_id \n\r"
                             + "    )"
                             + " END AS cuadrante";
                     break;
@@ -3110,7 +3108,7 @@ public class IndicatorsCountMB {
                     + " naturaleza_violencia not like '%>7}' AND "//no sea sin dato
                     + " naturaleza_violencia not like '%>8}' ";//no sea otro
         }
-        System.out.println("CONSULTA (indicators count) \n " + sqlReturn);
+        //System.out.println("CONSULTA (indicators count) \n " + sqlReturn);
         return sqlReturn;
     }
 

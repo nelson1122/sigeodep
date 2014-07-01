@@ -4,8 +4,11 @@
  */
 package managedBeans.configurations;
 
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -35,17 +38,17 @@ public class CountriesVariableMB implements Serializable {
     @EJB
     CountriesFacade countriesFacade;
     private List<Countries> countriesList;
-    private Countries currentCountry;    
+    private Countries currentCountry;
     private String name = "";//Nombre del barrio.
     private String newName = "";//Nombre del barrio.
-    private boolean btnEditDisabled=true;
-    private boolean btnRemoveDisabled=true;
-    
-    
+    private boolean btnEditDisabled = true;
+    private boolean btnRemoveDisabled = true;
+    private ConnectionJdbcMB connectionJdbcMB;
 
     public CountriesVariableMB() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-    
+
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
@@ -71,7 +74,7 @@ public class CountriesVariableMB implements Serializable {
         row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
         createCell(cellStyle, row, 0, "CODIGO");//"100">#{rowX.column1}</p:column>
         createCell(cellStyle, row, 1, "NOMBRE");//"100">#{rowX.column23}</p:column>                                
-        countriesList=countriesFacade.findAll();
+        countriesList = countriesFacade.findAll();
         for (int i = 0; i < countriesList.size(); i++) {
             row = sheet.createRow(i + 1);
             createCell(row, 0, countriesList.get(i).getIdCountry().toString());//CODIGO
@@ -85,8 +88,8 @@ public class CountriesVariableMB implements Serializable {
             currentCountry = countriesFacade.find(Short.parseShort(selectedRowDataTable.getColumn1()));
         }
         if (currentCountry != null) {
-            btnEditDisabled=false;
-            btnRemoveDisabled=false;
+            btnEditDisabled = false;
+            btnRemoveDisabled = false;
             if (currentCountry.getName() != null) {
                 name = currentCountry.getName();
             } else {
@@ -98,83 +101,92 @@ public class CountriesVariableMB implements Serializable {
     public void deleteRegistry() {
         if (currentCountry != null) {
             countriesFacade.remove(currentCountry);
-            currentCountry=null;            
-            selectedRowDataTable=null;
+            currentCountry = null;
+            selectedRowDataTable = null;
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
-        createDynamicTable();btnEditDisabled=true; btnRemoveDisabled=true;
+        createDynamicTable();
+        btnEditDisabled = true;
+        btnRemoveDisabled = true;
     }
 
     public void updateRegistry() {
         //determinar consecutivo
         if (currentCountry != null) {
             if (name.trim().length() != 0) {
-                name=name.toUpperCase();
+                name = name.toUpperCase();
                 currentCountry.setName(name);
                 countriesFacade.edit(currentCountry);
                 name = "";
-                currentCountry=null;                
-                selectedRowDataTable=null;
-                createDynamicTable(); btnEditDisabled=true; btnRemoveDisabled=true;
+                currentCountry = null;
+                selectedRowDataTable = null;
+                createDynamicTable();
+                btnEditDisabled = true;
+                btnRemoveDisabled = true;
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
-            } else {                
+            } else {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
-        
+
     }
 
     public void saveRegistry() {
         //determinar consecutivo
         if (newName.trim().length() != 0) {
             int max = countriesFacade.findMax() + 1;
-            newName=newName.toUpperCase();
+            newName = newName.toUpperCase();
             Countries newRegistry = new Countries((short) max);
             newRegistry.setName(newName);
             countriesFacade.create(newRegistry);
             newName = "";
-            currentCountry=null;
-            selectedRowDataTable=null;
-            createDynamicTable(); btnEditDisabled=true; btnRemoveDisabled=true;
+            currentCountry = null;
+            selectedRowDataTable = null;
+            createDynamicTable();
+            btnEditDisabled = true;
+            btnRemoveDisabled = true;
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         } else {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
             FacesContext.getCurrentInstance().addMessage(null, msg);
-        }        
+        }
     }
 
     public void newRegistry() {
         name = "";
-        newName="";
+        newName = "";
     }
 
-    public void createDynamicTable() {
-        boolean s = true;
+    public void createDynamicTable() {        
         if (currentSearchValue.trim().length() == 0) {
             reset();
         } else {
             currentSearchValue = currentSearchValue.toUpperCase();
-            rowDataTableList = new ArrayList<RowDataTable>();
-            countriesList = countriesFacade.findCriteria(currentSearchCriteria, currentSearchValue);
-            if (countriesList.isEmpty()) {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
-                FacesContext.getCurrentInstance().addMessage(null, msg);
-            }
-            for (int i = 0; i < countriesList.size(); i++) {
-                rowDataTableList.add(new RowDataTable(
-                        countriesList.get(i).getIdCountry().toString(),
-                        countriesList.get(i).getName()));
+            rowDataTableList = new ArrayList<>();
+            ResultSet rs;
+            String type;
+            try {
+
+                if (currentSearchCriteria == 2) {
+                    rs = connectionJdbcMB.consult("select * from countries where name like '%" + currentSearchValue + "%'");
+                } else {
+                    rs = connectionJdbcMB.consult("select * from countries where id_country::text like '%" + currentSearchValue + "%'");
+                }
+                while (rs.next()) {                    
+                    rowDataTableList.add(new RowDataTable(rs.getString("id_country"), rs.getString("name")));
+                }
+            } catch (SQLException ex) {
             }
         }
     }
 
     public void reset() {
-        rowDataTableList = new ArrayList<RowDataTable>();
-        countriesList = countriesFacade.findAll();        
+        rowDataTableList = new ArrayList<>();
+        countriesList = countriesFacade.findAll();
         for (int i = 0; i < countriesList.size(); i++) {
             rowDataTableList.add(new RowDataTable(
                     countriesList.get(i).getIdCountry().toString(),
@@ -238,7 +250,7 @@ public class CountriesVariableMB implements Serializable {
     public void setNewName(String newName) {
         this.newName = newName;
     }
-    
+
     public boolean isBtnEditDisabled() {
         return btnEditDisabled;
     }
@@ -254,5 +266,4 @@ public class CountriesVariableMB implements Serializable {
     public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
         this.btnRemoveDisabled = btnRemoveDisabled;
     }
-    
 }

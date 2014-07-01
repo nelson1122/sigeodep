@@ -52,24 +52,24 @@ public class MunicipalitiesFacade extends AbstractFacade<Municipalities> {
         }
     }
 
-    public List<Municipalities> findCriteria(int variable, String value) {
-        String hql;
-        try {
-            switch (variable) {
-                case 1:
-                    hql = "Select x from Municipalities x where x.municipalityName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-                case 2:
-                    List<Municipalities> neighborhoodsList = (List<Municipalities>) em.createNativeQuery("select * from municipalities where municipality_id::text ilike '%" + value + "%';", Municipalities.class).getResultList();
-                    return neighborhoodsList;
-                case 3:
-                    hql = "Select x from Municipalities x where x.departaments.departamentName like '" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
+//    public List<Municipalities> findCriteria(int variable, String value) {
+//        String hql;
+//        try {
+//            switch (variable) {
+//                case 1:
+//                    hql = "Select x from Municipalities x where x.municipalityName like '%" + value + "%'";
+//                    return em.createQuery(hql).getResultList();
+//                case 2:
+//                    List<Municipalities> neighborhoodsList = (List<Municipalities>) em.createNativeQuery("select * from municipalities where municipality_id::text ilike '%" + value + "%';", Municipalities.class).getResultList();
+//                    return neighborhoodsList;
+//                case 3:
+//                    hql = "Select x from Municipalities x where x.departaments.departamentName like '" + value + "%'";
+//                    return em.createQuery(hql).getResultList();
+//            }
+//        } catch (Exception e) {
+//            System.out.println(e.toString() + "----------------------------------------------------");
+//            return null;
+//        }
+//        return null;
+//    }
 }

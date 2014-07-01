@@ -325,7 +325,7 @@ public class CorridorsVariableMB implements Serializable {
     public void loadGeometrySelected() {
         if (poligonText != null && poligonText.trim().length() != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "la geometria ha sido cargada"));
-            geomText = "<div style=\"color: blue;\"><b>Geometría cargada</b></div>";            
+            geomText = "<div style=\"color: blue;\"><b>Geometría cargada</b></div>";
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado ninguna geometria"));
         }
@@ -616,15 +616,22 @@ public class CorridorsVariableMB implements Serializable {
         }
         currentSearchValue = currentSearchValue.toUpperCase();
         rowDataTableList = new ArrayList<>();
-        corridorsList = corridorsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
-        if (corridorsList != null && corridorsList.isEmpty()) {
+        ResultSet rs;
+        try {
+            if (currentSearchCriteria == 2) {
+                rs = connectionJdbcMB.consult("select * from corridors where corridor_name like '%" + currentSearchValue + "%'");
+            } else {
+                rs = connectionJdbcMB.consult("select * from corridors where corridor_id::text like '%" + currentSearchValue + "%'");
+            }
+            while (rs.next()) {                
+                rowDataTableList.add(new RowDataTable(rs.getString("corridor_id"), rs.getString("corridor_name")));
+            }
+        } catch (SQLException ex) {
+        }
+        if (rowDataTableList.isEmpty()) {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
-        for (int i = 0; i < corridorsList.size(); i++) {
-            rowDataTableList.add(new RowDataTable(corridorsList.get(i).getCorridorId().toString(), corridorsList.get(i).getCorridorName()));
-        }
-
     }
 
     public void reset() {

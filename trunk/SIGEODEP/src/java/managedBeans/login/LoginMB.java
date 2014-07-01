@@ -4,7 +4,6 @@
  */
 package managedBeans.login;
 
-import managedBeans.filters.FilterMB;
 import beans.connection.ConnectionJdbcMB;
 import beans.util.StringEncryption;
 import java.io.InputStream;
@@ -22,8 +21,13 @@ import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import managedBeans.fileProcessing.*;
+import managedBeans.filters.FilterMB;
 import model.dao.UsersFacade;
 import model.pojo.Users;
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
+import org.joda.time.Years;
+import org.primefaces.context.RequestContext;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -64,21 +68,19 @@ public class LoginMB {
     ErrorsControlMB errorsControlMB;
     @EJB
     UsersFacade usersFacade;
-    private String closeSessionDialog = "";
+    //private String closeSessionDialog = "";
     private boolean autenticado = false;
     //private String realPath = "";
 
     public LoginMB() {
     }
+    private StreamedContent fileHelp;
 
-
-    private StreamedContent fileHelp; 
-    
-    public StreamedContent getFileHelp() {  
-        InputStream stream = ((ServletContext)FacesContext.getCurrentInstance().getExternalContext().getContext()).getResourceAsStream("/resources/help/manual.pdf");  
+    public StreamedContent getFileHelp() {
+        InputStream stream = ((ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext()).getResourceAsStream("/resources/help/manual.pdf");
         fileHelp = new DefaultStreamedContent(stream, "application/pdf", "manual.pdf");
-        return fileHelp;  
-    } 
+        return fileHelp;
+    }
 
     @PreDestroy
     public void destroySession() {
@@ -200,218 +202,211 @@ public class LoginMB {
          * funcion exclusiva cuando accede el usuario santos
          * sirve para administracion del sistema
          */
-        int accion = 0;
-        if (accion == 2) {
-            int count = 0;
+        int accion = 100;
+        boolean continuar;
+        int num;
+
+        if (accion == 100) {
+            int count;
+            //1.LAS QUE TENGAN FECHA SUPERIOR A LA FECHA ACTUAL RESTAR 100 Y CALCULAR EDAD ----------------------------------------------------------------------
             try {
+                count = 0;
                 ResultSet rs = connectionJdbcMB.consult(""
-                        + " SELECT non_fatal_injury_id "
-                        + " FROM non_fatal_injuries "
-                        + " WHERE "
-                        + "    ("
-                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                        + "    injury_id = 55 OR"//"VIOLENCIA INTRAFAMILIAR LCENF"
-                        + "    injury_id = 56 "//"SIVIGILA
-                        + "    )"
-                        + "    AND non_fatal_injury_id NOT IN "
-                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_action_to_take)");
+                        + " select "
+                        + "    victims.victim_id, "
+                        + "    victims.victim_date_of_birth, "
+                        + "    to_date(((( "
+                        + "       extract(year from victim_date_of_birth)::int-100)::text||'-'|| "
+                        + "       extract(month from victim_date_of_birth)::text ||'-'|| "
+                        + "       extract(day from victim_date_of_birth)::text)), 'yyyy-MM-DD') as newdate, "
+                        + "    non_fatal_injuries.injury_date "
+                        + " from "
+                        + "    victims, "
+                        + "    non_fatal_injuries "
+                        + " where "
+                        + "    non_fatal_injuries.victim_id = victims.victim_id AND"
+                        + "    extract(year from victim_date_of_birth)::int > 2014 "
+                        + " AND "
+                        + "    victim_age is null ");
                 while (rs.next()) {
-                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString(1) + ",13);");
+                    //determino la edad segun la fecha de nacimiento y fecha de evento
+                    Interval interval = new Interval(new DateTime(rs.getDate(3)), (new DateTime(rs.getDate(4))).plusDays(1));
+                    //edad=Years.yearsIn(interval).getYears();
+                    //System.out.println("Nacimiento: " + rs.getDate(3) + " Evento: " + rs.getDate(4) + " Edad: " + edad);
+                    connectionJdbcMB.non_query(""
+                            + " UPDATE "
+                            + "   victims "
+                            + " SET "
+                            + "   victim_date_of_birth = '" + rs.getString("newdate") + "', "
+                            + "   victim_age = '" + Years.yearsIn(interval).getYears() + "' "
+                            + " WHERE "
+                            + "  victim_id = " + rs.getString(1));
+
+                    //LAS EDADES QUE ESTEN EN CERO PASAN A 1 POR QUE SE MIDE EN AÑOS NO EN MESES
+                    connectionJdbcMB.non_query(" UPDATE victims SET victim_age = 1 WHERE victim_age = 0;");
                     count++;
                 }
 
-                System.out.println("Los cambios fueron: " + String.valueOf(count));
+                System.out.println("SE ACTUALIZARON  " + String.valueOf(count) + " restar 100 años y actualizar edad en no fatales");
             } catch (Exception e) {
+                System.out.println("ERROR 002: " + e.getMessage());
+            }
+            //2.LAS QUE TENGAN FECHA SUPERIOR A LA FECHA ACTUAL RESTAR 100 Y CALCULAR EDAD ----------------------------------------------------------------------
+            try {
+                count = 0;
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " select "
+                        + "    victims.victim_id, "
+                        + "    victims.victim_date_of_birth, "
+                        + "    to_date(((( "
+                        + "       extract(year from victim_date_of_birth)::int-100)::text||'-'|| "
+                        + "       extract(month from victim_date_of_birth)::text ||'-'|| "
+                        + "       extract(day from victim_date_of_birth)::text)), 'yyyy-MM-DD') as newdate, "
+                        + "    fatal_injuries.injury_date "
+                        + " from "
+                        + "    victims, "
+                        + "    fatal_injuries "
+                        + " where "
+                        + "    fatal_injuries.victim_id = victims.victim_id AND"
+                        + "    extract(year from victim_date_of_birth)::int > 2014 "
+                        + " AND "
+                        + "    victim_age is null ");
+                while (rs.next()) {
+                    //determino la edad segun la fecha de nacimiento y fecha de evento
+                    Interval interval = new Interval(new DateTime(rs.getDate(3)), (new DateTime(rs.getDate(4))).plusDays(1));
+                    //edad=Years.yearsIn(interval).getYears();
+                    //System.out.println("Nacimiento: " + rs.getDate(3) + " Evento: " + rs.getDate(4) + " Edad: " + edad);
+                    connectionJdbcMB.non_query(""
+                            + " UPDATE "
+                            + "   victims "
+                            + " SET "
+                            + "   victim_date_of_birth = '" + rs.getString("newdate") + "', "
+                            + "   victim_age = '" + Years.yearsIn(interval).getYears() + "' "
+                            + " WHERE "
+                            + "  victim_id = " + rs.getString(1));
+
+                    //LAS EDADES QUE ESTEN EN CERO PASAN A 1 POR QUE SE MIDE EN AÑOS NO EN MESES
+                    connectionJdbcMB.non_query(" UPDATE victims SET victim_age = 1 WHERE victim_age = 0;");
+                    count++;
+                }
+
+                System.out.println("SE ACTUALIZARON  " + String.valueOf(count) + " restar 100 años y actualizar edad en fatales");
+            } catch (Exception e) {
+                System.out.println("ERROR 002: " + e.getMessage());
             }
 
-        }
 
-        if (accion == 0) {
+            //3. FECHA DE NACIMIENTO > FECHA DE EVENTO SE ELIMINA FECHA DE NACIMIENTO EN NO FATALES            
             try {
-                ResultSet rs = connectionJdbcMB.consult("Select victim_id from victims");
-                int pos = 0;
+                count = 0;
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " SELECT "
+                        + "    victims.victim_id, "
+                        + "    victims.victim_date_of_birth, "
+                        + "    non_fatal_injuries.injury_date "
+                        + " FROM"
+                        + "    victims, non_fatal_injuries "
+                        + " WHERE "
+                        + "    victims.victim_id = non_fatal_injuries.victim_id AND "
+                        + "    victims.victim_date_of_birth > non_fatal_injuries.injury_date;");
                 while (rs.next()) {
                     connectionJdbcMB.non_query(""
-                            + " UPDATE victims "
+                            + " UPDATE "
+                            + "   victims "
                             + " SET "
-                            + " victim_nid = " + pos + ", "
-                            + " victim_name = '" + pos + "',"
-                            + " victim_address = '" + pos + "',"
-                            + " victim_telephone = '" + pos + "'"
-                            + " WHERE"
-                            + " victim_id = " + rs.getString("victim_id"));
-                    System.out.println(pos);
-                    pos++;
-                    //break;
+                            + "   victim_date_of_birth = null "
+                            + " WHERE "
+                            + "  victim_id = " + rs.getString(1));
+                    count++;
                 }
+
+                System.out.println("SE ELIMINARON " + String.valueOf(count) + " valores, por que fecha de nacimiento > fecha de evento en lesiones no fatales");
             } catch (Exception e) {
+                System.out.println("ERROR 001: " + e.getMessage());
             }
-        }
-
-
-        if (accion == 1) {
+            //4. FECHA DE NACIMIENTO > FECHA DE EVENTO SE ELIMINA FECHA DE NACIMIENTO EN FATALES            
             try {
-                //DETERMINAR EN CUANTO ESTA GEN_NN
-            /*
-                 ResultSet rs = connectionJdbcMB.consult("Select * from victims where victim_nid is null");
-                 boolean determinada;
-                 while (rs.next()) {
-                 determinada = false;
-                 if (rs.getString("victim_age") != null && rs.getString("victim_age").length() != 0) {
-                 if (rs.getString("age_type_id") != null && rs.getString("age_type_id").length() != 0 && rs.getString("age_type_id").compareTo("1") == 0) {
-                 }
-                 }
-                 if (determinada == false) {
-                 connectionJdbcMB.consult("UPDATE victims SET  where victim_nid is null");
-                 }
-                 }*/
-                //-------------------------------------------------------------
-                //-----------correcion para sitio anatomico -------------------
-                //-------------------------------------------------------------
-                int count = 0;
+                count = 0;
                 ResultSet rs = connectionJdbcMB.consult(""
-                        + " SELECT non_fatal_injury_id "
-                        + " FROM non_fatal_injuries "
+                        + " SELECT "
+                        + "    victims.victim_id, "
+                        + "    victims.victim_date_of_birth, "
+                        + "    fatal_injuries.injury_date "
+                        + " FROM"
+                        + "    victims, fatal_injuries "
                         + " WHERE "
-                        + "    ("
-                        + "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
-                        + "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
-                        + "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
-                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                        + "    injury_id = 54 OR"//"NO INTENCIONAL"
-                        + "    injury_id = 55"//"VIOLENCIA INTRAFAMILIAR LCENF"
-                        + "    )"
-                        + "    AND non_fatal_injury_id NOT IN "
-                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_anatomical_location)");
+                        + "    victims.victim_id = fatal_injuries.victim_id AND "
+                        + "    victims.victim_date_of_birth > fatal_injuries.injury_date;");
                 while (rs.next()) {
-                    //connectionJdbcMB.non_query("INSERT INTO non_fatal_anatomical_location VALUES (99," + rs.getString(1) + ");");
-                    System.out.println("Operaciones (A): " + String.valueOf(count));
-                    count++;
-                }
-                //-------------------------------------------------------------
-                //-----------naturaleza de lesion -----------------------------
-                //-------------------------------------------------------------
-                rs = connectionJdbcMB.consult(""
-                        + " SELECT non_fatal_injury_id "
-                        + " FROM non_fatal_injuries "
-                        + " WHERE "
-                        + "    ("
-                        + "    injury_id = 50 OR"//"VIOLENCIA INTERPERSONAL"
-                        + "    injury_id = 51 OR"//"LESION EN ACCIDENTE DE TRANSITO"
-                        + "    injury_id = 52 OR"//"INTENCIONAL AUTOINFLINGIDA"
-                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                        + "    injury_id = 54 OR"//"NO INTENCIONAL"
-                        + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
-                        + "    )"
-                        + "    AND non_fatal_injury_id NOT IN "
-                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_kind_of_injury)");
-                while (rs.next()) {
-                    //connectionJdbcMB.non_query("INSERT INTO non_fatal_kind_of_injury VALUES (99," + rs.getString(1) + ");");
-                    System.out.println("Operaciones (B): " + String.valueOf(count));
-                    count++;
-                }
-                //-------------------------------------------------------------
-                //-----------tipo de maltrato -----------------------------
-                //-------------------------------------------------------------
-                rs = connectionJdbcMB.consult(""
-                        + " SELECT non_fatal_injury_id "
-                        + " FROM non_fatal_injuries "
-                        + " WHERE "
-                        + "    ("
-                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                        + "    injury_id = 55 OR"//"VIOLENCIA INTRAFAMILIAR LCENF"
-                        + "    injury_id = 56"//"SIVIGILA-VIF" (tambien va esta)
-                        + "    )"
-                        + "    AND non_fatal_injury_id NOT IN "
-                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_abuse_type)");
-                while (rs.next()) {
-                    //connectionJdbcMB.non_query("INSERT INTO domestic_violence_abuse_type VALUES (" + rs.getString(1) + ",7);");
-                    System.out.println("Operaciones (C): " + String.valueOf(count));
-                    count++;
-                }
-                //-------------------------------------------------------------
-                //-----------tipo de agresor -----------------------------
-                //-------------------------------------------------------------
-                rs = connectionJdbcMB.consult(""
-                        + " SELECT non_fatal_injury_id "
-                        + " FROM non_fatal_injuries "
-                        + " WHERE "
-                        + "    ("
-                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                        + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
-                        + "    )"
-                        + "    AND non_fatal_injury_id NOT IN "
-                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_aggressor_type)");
-                while (rs.next()) {
-                    //connectionJdbcMB.non_query("INSERT INTO domestic_violence_aggressor_type VALUES (" + rs.getString(1) + ",9);");
-                    System.out.println("Operaciones (D): " + String.valueOf(count));
-                    count++;
-                }
-                //-------------------------------------------------------------
-                //-----------acciones a realizar -----------------------------
-                //-------------------------------------------------------------
-                rs = connectionJdbcMB.consult(""
-                        + " SELECT non_fatal_injury_id "
-                        + " FROM non_fatal_injuries "
-                        + " WHERE "
-                        + "    ("
-                        + "    injury_id = 53 OR"//"VIOLENCIA INTRAFAMILIAR"
-                        + "    injury_id = 55 "//"VIOLENCIA INTRAFAMILIAR LCENF"
-                        + "    )"
-                        + "    AND non_fatal_injury_id NOT IN "
-                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM domestic_violence_action_to_take)");
-                while (rs.next()) {
-                    //connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString(1) + ",13);");
-                    System.out.println("Operaciones (E): " + String.valueOf(count));
-                    count++;
-                }
-                //-------------------------------------------------------------
-                //-----------acciones en salud publica ------------------------
-                //-------------------------------------------------------------
-                rs = connectionJdbcMB.consult(""
-                        + " SELECT non_fatal_injury_id "
-                        + " FROM non_fatal_injuries "
-                        + " WHERE "
-                        + "    ("
-                        + "    injury_id = 56"//"SIVIGILA-VIF"
-                        + "    )"
-                        + "    AND non_fatal_injury_id NOT IN "
-                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM sivigila_event_public_health)");
-                while (rs.next()) {
-                    //connectionJdbcMB.non_query("INSERT INTO sivigila_event_public_health VALUES (" + rs.getString(1) + ",8);");
-                    System.out.println("Operaciones (F): " + String.valueOf(count));
-                    count++;
-                }
-                //-------------------------------------------------------------
-                //-----------elementos de seguridad------------------------
-                //-------------------------------------------------------------
-                ResultSet rs2;
-                rs = connectionJdbcMB.consult(""
-                        + " SELECT non_fatal_injury_id "
-                        + " FROM non_fatal_injuries "
-                        + " WHERE "
-                        + "    ("
-                        + "    injury_id = 51 "//"LESION EN ACCIDENTE DE TRANSITO"
-                        + "    )"
-                        + "    AND non_fatal_injury_id NOT IN "
-                        + "    (SELECT DISTINCT (non_fatal_injury_id) FROM non_fatal_transport_security_element)");
-                while (rs.next()) {
-//                rs2 = connectionJdbcMB.consult("SELECT * FROM non_fatal_transport WHERE non_fatal_injury_id = " + rs.getString(1));
-//                if (!rs2.next()) {
-//                    connectionJdbcMB.non_query("INSERT INTO non_fatal_transport VALUES (null,null,null," + rs.getString(1) + ");");
-//                    connectionJdbcMB.non_query("INSERT INTO non_fatal_transport_security_element VALUES (8," + rs.getString(1) + ");");
-//                } else {
-//                    connectionJdbcMB.non_query("INSERT INTO non_fatal_transport_security_element VALUES (8," + rs.getString(1) + ");");
-//                }
-
-                    System.out.println("Operaciones (G): " + String.valueOf(count));
+                    connectionJdbcMB.non_query(""
+                            + " UPDATE "
+                            + "   victims "
+                            + " SET "
+                            + "   victim_date_of_birth = null"
+                            + " WHERE "
+                            + "  victim_id = " + rs.getString(1));
                     count++;
                 }
 
-                System.out.println("Proceso de mantenimiento de base de datos realizado, PROCESOS: " + String.valueOf(count));
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "correcto", "operaciones de correccion y mantenimiento realizadas");
+                System.out.println("SE ELIMINARON " + String.valueOf(count) + " fechas de nacimiento, por que fecha de nacimiento > fecha de evento en lesiones fatales");
             } catch (Exception e) {
-                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "" + e.getMessage());
+                System.out.println("ERROR 002: " + e.getMessage());
+            }
+
+            //5. SI NO SE TIENE EDAD SE SACA DE rup Y SE ACTUALIZA FECHA_NACIMIENTO Y EDAD (cedula < genNN)
+            try {
+                count = 0;
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " SELECT "
+                        + "   victims.victim_nid, "
+                        + "   victims.victim_date_of_birth, "
+                        + "   rup.dob, "
+                        + "   non_fatal_injuries.injury_date, "
+                        + "   rup.id "
+                        + " FROM "
+                        + "   public.victims, "
+                        + "   public.rup, "
+                        + "   public.non_fatal_injuries "
+                        + " WHERE "
+                        + "   non_fatal_injuries.victim_id = victims.victim_id AND "
+                        + "   victims.victim_nid = rup.id AND "
+                        + "   victim_age IS NULL; ");
+
+                int aaa = 0;
+                while (rs.next()) {
+                    continuar = true;
+                    try {//valido que la identificacion se pueda convertir a entero y sea menor que gen_nn
+                        num = Integer.parseInt(rs.getString(1));
+                        if (num > 6930) {
+                            continuar = false;
+                        }
+                    } catch (SQLException | NumberFormatException e) {
+                        aaa++;
+                    }
+
+                    if (continuar) {
+                        //determino la edad segun la fecha de nacimiento y fecha de evento
+                        Interval interval = new Interval(new DateTime(rs.getDate(3)), (new DateTime(rs.getDate(4))).plusDays(1));
+                        //int  edad=Years.yearsIn(interval).getYears();
+                        //System.out.println("Nacimiento: " + rs.getDate(3) + " Evento: " + rs.getDate(4) + " Edad: " + edad);
+                        connectionJdbcMB.non_query(""
+                                + " UPDATE "
+                                + "   victims "
+                                + " SET "
+                                + "   victim_date_of_birth = '" + rs.getString(3) + "', "
+                                + "   victim_age = '" + Years.yearsIn(interval).getYears() + "' "
+                                + " WHERE "
+                                + "  victim_id = " + rs.getString(1));
+
+                        //LAS EDADES QUE ESTEN EN CERO PASAN A 1 POR QUE SE MIDE EN AÑOS NO EN MESES
+                        connectionJdbcMB.non_query(" UPDATE victims SET victim_age = 1 WHERE victim_age = 0;");
+                        count++;
+                    }
+                }
+
+                System.out.println("SE ACTUALIZARON  " + String.valueOf(count) + " edades desde RUP, errores de conversion a entero de identificacion = " + aaa);
+            } catch (Exception e) {
+                System.out.println("ERROR 002: " + e.getMessage());
             }
         }
     }
@@ -522,7 +517,7 @@ public class LoginMB {
          * determinar si el usuario puede acceder al sistema determinando si exite
          * el login, clave y la cuenta esta activa
          */
-        closeSessionDialog = "-";
+        //closeSessionDialog = "-";
         password = stringEncryption.getStringMessageDigest(password, "SHA-1");
         currentUser = usersFacade.findUser(loginname, password);
         userSystem = true;//es usuario del sistema (no es usuario invitado)
@@ -546,7 +541,8 @@ public class LoginMB {
         applicationControlMB = (ApplicationControlMB) contexto.getApplicationMap().get("applicationControlMB");
         //determino si el usuario tiene una session alctiva
         if (applicationControlMB.hasLogged(currentUser.getUserId())) {//System.out.println("Ingreso rechazado, ya tiene otra session activa");
-            closeSessionDialog = "closeSessionDialog.show()";//dialog que permite terminar sesion desde otra terminal
+            RequestContext.getCurrentInstance().execute("closeSessionDialog.show();");
+            //closeSessionDialog = "closeSessionDialog.show()";//dialog que permite terminar sesion desde otra terminal
             return "";//no dirigir a ninguna pagina
         } else {
             return continueLogin();
@@ -617,14 +613,13 @@ public class LoginMB {
         this.activeIndexAcoordion2 = activeIndexAcoordion2;
     }
 
-    public String getCloseSessionDialog() {
-        return closeSessionDialog;
-    }
-
-    public void setCloseSessionDialog(String closeSessionDialog) {
-        this.closeSessionDialog = closeSessionDialog;
-    }
-
+//    public String getCloseSessionDialog() {
+//        return closeSessionDialog;
+//    }
+//
+//    public void setCloseSessionDialog(String closeSessionDialog) {
+//        this.closeSessionDialog = closeSessionDialog;
+//    }
     public String getIdSession() {
         return idSession;
     }

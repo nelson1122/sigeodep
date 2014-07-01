@@ -16,6 +16,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -58,12 +60,10 @@ public class NeighborhoodsVariableMB implements Serializable {
     private SelectItem[] corridorsList;
     private Neighborhoods currentNeighborhood;
     private String type = "";
-    
     private String poligonText = "";//poligono para el nuevo barrio    
     private boolean disabledShowGeomFile = true;//activar/desactivar boton de ver archivo KML
     private String geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";//aviso de si la geometria esta o no cargada
     private String nameGeomFile = "";//nombre del archivo de geometria para barrio existente
-    
     private String neighborhoodName = "";//Nombre del barrio.
     private String neighborhoodId = "";//Código del barrio.
     private String neighborhoodSuburbId = "";//Código de la comuna.
@@ -97,7 +97,7 @@ public class NeighborhoodsVariableMB implements Serializable {
     public NeighborhoodsVariableMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
-        realPath = (String) servletContext.getRealPath("/"); 
+        realPath = (String) servletContext.getRealPath("/");
     }
 
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
@@ -341,7 +341,7 @@ public class NeighborhoodsVariableMB implements Serializable {
             } else {
                 neighborhoodSuburbId = "";
             }
-            
+
             //determino si la geometria ya esta cargada
             if (currentNeighborhood.getGeom() != null && currentNeighborhood.getGeom().trim().length() != 0) {
                 geomText = "<div style=\"color: blue;\"><b>Tiene geometría</b></div>";
@@ -457,6 +457,14 @@ public class NeighborhoodsVariableMB implements Serializable {
                 connectionJdbcMB.non_query("DELETE FROM neighborhood_quadrant WHERE neighborhood_id = " + currentNeighborhood.getNeighborhoodId());
                 //se inserta los diferentes cuadrantes que se haya indicado
                 if (availableAddQuadrants != null && !availableAddQuadrants.isEmpty()) {
+                    if (availableAddQuadrants.size() > 1) {//quitar sin dato si existe mas de un cuadrante agregado
+                        for (int i = 0; i < availableAddQuadrants.size(); i++) {
+                            if (availableAddQuadrants.get(i).compareToIgnoreCase("SIN DATO") == 0) {
+                                availableAddQuadrants.remove(i);
+                                break;
+                            }
+                        }
+                    }
                     for (int i = 0; i < availableAddQuadrants.size(); i++) {
                         ResultSet rs = connectionJdbcMB.consult(""
                                 + "SELECT quadrant_id FROM quadrants WHERE quadrant_name LIKE '" + availableAddQuadrants.get(i) + "'");
@@ -477,6 +485,29 @@ public class NeighborhoodsVariableMB implements Serializable {
                             + "0); \n";//id_corredor
                 }
                 connectionJdbcMB.non_query(sql);
+
+                //1. modifico los eventos para que no tengan ningun cuadrante
+                connectionJdbcMB.non_query(""
+                        + " update non_fatal_injuries set quadrant_id = 0 WHERE injury_neighborhood_id = " + neighborhoodId + "; \n"
+                        + " update fatal_injuries set quadrant_id = 0 WHERE injury_neighborhood_id = " + neighborhoodId + "; \n");
+                //2.  actualizo el cuadrante de los eventos en base a barrio donde cuadrante sea null
+                connectionJdbcMB.non_query(""
+                        + " UPDATE non_fatal_injuries "
+                        + " SET quadrant_id = "
+                        + " (SELECT quadrant_id FROM neighborhood_quadrant where neighborhood_quadrant.neighborhood_id = non_fatal_injuries.injury_neighborhood_id limit 1) "
+                        + " WHERE quadrant_id = 0; "
+                        + " UPDATE fatal_injuries "
+                        + " SET quadrant_id = "
+                        + " (SELECT quadrant_id FROM neighborhood_quadrant where neighborhood_quadrant.neighborhood_id = fatal_injuries.injury_neighborhood_id limit 1) "
+                        + " WHERE quadrant_id = 0; ");
+                //4. cuando el cuadrante sea null colocar cuadrante 0
+                connectionJdbcMB.non_query(""
+                        + " UPDATE non_fatal_injuries SET quadrant_id = 0 WHERE quadrant_id is null; "
+                        + " UPDATE fatal_injuries SET quadrant_id = 0 WHERE quadrant_id is null; ");
+                //5. para los barrios SIN DATO RURAL y SIN DATO URBANO el cuadrante es cero
+                connectionJdbcMB.non_query(""
+                        + " UPDATE non_fatal_injuries SET quadrant_id = 0 WHERE injury_neighborhood_id = 52001; "
+                        + " UPDATE fatal_injuries SET quadrant_id = 0 WHERE injury_neighborhood_id = 52002; ");
                 //reinicio controles
                 neighborhoodName = "";
                 currentNeighborhood = null;
@@ -491,6 +522,9 @@ public class NeighborhoodsVariableMB implements Serializable {
     }
 
     public void saveRegistry() {
+        /*
+         * 
+         */
         boolean continueProcess = true;
 
         if (newNeighborhoodName.trim().length() == 0) {
@@ -529,22 +563,32 @@ public class NeighborhoodsVariableMB implements Serializable {
         if (continueProcess) {
             try {
                 String sql = "INSERT INTO neighborhoods VALUES (";
-                String geom="null";
-                if(poligonText!=null&&poligonText.trim().length()!=0){
-                    geom="'"+poligonText+"'";
+                String geom = "null";
+                if (poligonText != null && poligonText.trim().length() != 0) {
+                    geom = "'" + poligonText + "'";
                 }
                 sql = sql
                         + newNeighborhoodId + ",'"//codigo
                         + newNeighborhoodName + "',"//nombre
                         + newNeighborhoodSuburbId + ","//comuna
                         + newPopuation + ","//poblacion
-                        + geom+","//geometria
+                        + geom + ","//geometria
                         + "0,"//cuadrante
                         + newNeighborhoodType + ","//area
                         + newNeighborhoodLevel + ","//estrato
                         + newNeighborhoodCorridor + "); \n";//corredor
                 //se inserta los diferentes cuadrantes que se haya indicado
                 if (newAvailableAddQuadrants != null && !newAvailableAddQuadrants.isEmpty()) {
+
+                    if (newAvailableAddQuadrants.size() > 1) {//quitar sin dato si existe mas de un cuadrante agregado
+                        for (int i = 0; i < newAvailableAddQuadrants.size(); i++) {
+                            if (newAvailableAddQuadrants.get(i).compareToIgnoreCase("SIN DATO") == 0) {
+                                newAvailableAddQuadrants.remove(i);
+                                break;
+                            }
+                        }
+                    }
+
                     for (int i = 0; i < newAvailableAddQuadrants.size(); i++) {
                         ResultSet rs = connectionJdbcMB.consult(""
                                 + "SELECT quadrant_id FROM quadrants WHERE quadrant_name LIKE '" + newAvailableAddQuadrants.get(i) + "'");
@@ -555,7 +599,7 @@ public class NeighborhoodsVariableMB implements Serializable {
                                     + rs.getString(1) + "); \n";//corredor
                         }
                     }
-                } else {//se agrega sin dato si no se ha seleccionado algun corredor
+                } else {//se agrega sin dato si no se ha seleccionado algun cuadrante
                     sql = sql
                             + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
                             + newNeighborhoodId + ","//id_barrio
@@ -565,6 +609,10 @@ public class NeighborhoodsVariableMB implements Serializable {
                 connectionJdbcMB.non_query(sql);
             } catch (Exception e) {
             }
+
+
+
+
             reset();
             newRegistry();//limpiar formulario
             currentNeighborhood = null;
@@ -593,7 +641,7 @@ public class NeighborhoodsVariableMB implements Serializable {
         newNeighborhoodCorridor = "0";
         changeNewArea();//se determina el codigo
         changeNewQuadrantsFilter();//determinar cuadrantes
-        
+
         nameGeomFile = "";
         geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";//nombre del archivo de geometria para nuevo barrio
         poligonText = "";
@@ -816,23 +864,30 @@ public class NeighborhoodsVariableMB implements Serializable {
         } else {
             currentSearchValue = currentSearchValue.toUpperCase();
             rowDataTableList = new ArrayList<>();
-            neighborhoodsList = neighborhoodsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
-            if (neighborhoodsList.isEmpty()) {
+            try {
+                ResultSet rs;
+                if (currentSearchCriteria == 2) {
+                    rs = connectionJdbcMB.consult("select * from neighborhoods where neighborhood_name like '%" + currentSearchValue + "%'");
+                } else {
+                    rs = connectionJdbcMB.consult("select * from neighborhoods where neighborhood_id::text like '%" + currentSearchValue + "%'");
+                }
+                while (rs.next()) {
+                    if (rs.getString("neighborhood_area") != null) {
+                        if (rs.getInt("neighborhood_area") == 1) {
+                            type = "ZONA URBANA";
+                        } else {
+                            type = "ZONA RURAL";
+                        }
+                    } else {
+                        type = "";
+                    }
+                    rowDataTableList.add(new RowDataTable(rs.getString("neighborhood_id"), rs.getString("neighborhood_name"), type));
+                }
+            } catch (SQLException ex) {
+            }
+            if (rowDataTableList.isEmpty()) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
-            }
-
-            for (int i = 0; i < neighborhoodsList.size(); i++) {
-                if (neighborhoodsList.get(i).getNeighborhoodArea() != null) {
-                    if (neighborhoodsList.get(i).getNeighborhoodArea() == 1) {
-                        type = "ZONA URBANA";
-                    } else {
-                        type = "ZONA RURAL";
-                    }
-                } else {
-                    type = "";
-                }
-                rowDataTableList.add(new RowDataTable(neighborhoodsList.get(i).getNeighborhoodId().toString(), neighborhoodsList.get(i).getNeighborhoodName(), type));
             }
         }
     }
@@ -1169,8 +1224,6 @@ public class NeighborhoodsVariableMB implements Serializable {
         this.quadrantsFilter = quadrantsFilter;
     }
 
-    
-
     public String getNameGeomFile() {
         return nameGeomFile;
     }
@@ -1193,7 +1246,7 @@ public class NeighborhoodsVariableMB implements Serializable {
 
     public void setGeomText(String geomText) {
         this.geomText = geomText;
-    }    
+    }
 
     public String getPoligonText() {
         return poligonText;
@@ -1202,6 +1255,4 @@ public class NeighborhoodsVariableMB implements Serializable {
     public void setPoligonText(String poligonText) {
         this.poligonText = poligonText;
     }
-
-
 }

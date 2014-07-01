@@ -116,6 +116,7 @@
                                     <p:column colspan="1">
                                         <p:selectOneMenu id="IdSearchCriteria" value="#{corridorsVariableMB.currentSearchCriteria}" > 
                                             <f:selectItem itemLabel="NOMBRE" itemValue="2" />
+                                            <f:selectItem itemLabel="CODIGO" itemValue="1" />
                                         </p:selectOneMenu>
                                     </p:column>                                                                        
                                     <p:column styleClass="ui-widget-header ui-state-focus" colspan="1">
@@ -162,9 +163,6 @@
                                 </p:column>  
                                 <p:column headerText="NOMBRE" width="390">  
                                     #{rowX.column2}  
-                                </p:column>  
-                                <p:column headerText="ZONA" width="136">  
-                                    #{rowX.column3}  
                                 </p:column>  
                             </p:dataTable>          
                             <br/>

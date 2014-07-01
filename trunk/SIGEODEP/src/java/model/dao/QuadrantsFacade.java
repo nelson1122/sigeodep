@@ -39,31 +39,31 @@ public class QuadrantsFacade extends AbstractFacade<Quadrants> {
         }
     }
 
-    public List<Quadrants> findCriteria(int variable, String value) {
-        try {
-            switch (variable) {
-                case 1:
-                    if (value == null || value.trim().length() == 0) {
-                        List<Quadrants> quadrantsList = (List<Quadrants>) em.createNativeQuery("select * from quadrants ORDER BY quadrant_id;", Quadrants.class).getResultList();
-                        return quadrantsList;
-                    } else {
-                        List<Quadrants> quadrantsList = (List<Quadrants>) em.createNativeQuery("select * from quadrants where quadrant_id::text like '" + value + "' ORDER BY quadrant_id;", Quadrants.class).getResultList();
-                        return quadrantsList;
-                    }
-                case 2:
-                    if (value == null || value.trim().length() == 0) {
-                        String hql = "Select x from Quadrants x ORDER BY x.quadrantId";
-                        return em.createQuery(hql).getResultList();
-                    } else {
-                        String hql = "Select x from Quadrants x where x.quadrantName like '%" + value + "%' ORDER BY x.quadrantId";
-                        return em.createQuery(hql).getResultList();
-                    }
-
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
+//    public List<Quadrants> findCriteria(int variable, String value) {
+//        try {
+//            switch (variable) {
+//                case 1:
+//                    if (value == null || value.trim().length() == 0) {
+//                        List<Quadrants> quadrantsList = (List<Quadrants>) em.createNativeQuery("select * from quadrants ORDER BY quadrant_id;", Quadrants.class).getResultList();
+//                        return quadrantsList;
+//                    } else {
+//                        List<Quadrants> quadrantsList = (List<Quadrants>) em.createNativeQuery("select * from quadrants where quadrant_id::text like '" + value + "' ORDER BY quadrant_id;", Quadrants.class).getResultList();
+//                        return quadrantsList;
+//                    }
+//                case 2:
+//                    if (value == null || value.trim().length() == 0) {
+//                        String hql = "Select x from Quadrants x ORDER BY x.quadrantId";
+//                        return em.createQuery(hql).getResultList();
+//                    } else {
+//                        String hql = "Select x from Quadrants x where x.quadrantName like '%" + value + "%' ORDER BY x.quadrantId";
+//                        return em.createQuery(hql).getResultList();
+//                    }
+//
+//            }
+//        } catch (Exception e) {
+//            System.out.println(e.toString() + "----------------------------------------------------");
+//            return null;
+//        }
+//        return null;
+//    }
 }

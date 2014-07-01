@@ -4,8 +4,11 @@
  */
 package managedBeans.configurations;
 
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -38,14 +41,14 @@ public class DepartamentsVariableMB implements Serializable {
     private Departaments currentDepartament;
     private String name = "";
     private String newName = "";
-    private boolean btnEditDisabled=true;
-    private boolean btnRemoveDisabled=true;
-    
-    
+    private boolean btnEditDisabled = true;
+    private boolean btnRemoveDisabled = true;
+    private ConnectionJdbcMB connectionJdbcMB;
 
     public DepartamentsVariableMB() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-    
+
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
@@ -71,7 +74,7 @@ public class DepartamentsVariableMB implements Serializable {
         row = sheet.createRow(0);// Se crea una fila dentro de la hoja        
         createCell(cellStyle, row, 0, "CODIGO");//"100">#{rowX.column1}</p:column>
         createCell(cellStyle, row, 1, "NOMBRE");//"100">#{rowX.column23}</p:column>                                
-        departamentsList=departamentsFacade.findAll();
+        departamentsList = departamentsFacade.findAll();
         for (int i = 0; i < departamentsList.size(); i++) {
             row = sheet.createRow(i + 1);
             createCell(row, 0, departamentsList.get(i).getDepartamentId().toString());//CODIGO
@@ -85,8 +88,8 @@ public class DepartamentsVariableMB implements Serializable {
             currentDepartament = departamentsFacade.find(Short.parseShort(selectedRowDataTable.getColumn1()));
         }
         if (currentDepartament != null) {
-            btnEditDisabled=false;
-            btnRemoveDisabled=false;
+            btnEditDisabled = false;
+            btnRemoveDisabled = false;
             if (currentDepartament.getDepartamentName() != null) {
                 name = currentDepartament.getDepartamentName();
             } else {
@@ -98,57 +101,63 @@ public class DepartamentsVariableMB implements Serializable {
     public void deleteRegistry() {
         if (currentDepartament != null) {
             departamentsFacade.remove(currentDepartament);
-            currentDepartament=null;            
-            selectedRowDataTable=null;
+            currentDepartament = null;
+            selectedRowDataTable = null;
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "El registro fue eliminado");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
-        createDynamicTable(); btnEditDisabled=true; btnRemoveDisabled=true;
+        createDynamicTable();
+        btnEditDisabled = true;
+        btnRemoveDisabled = true;
     }
 
     public void updateRegistry() {
         //determinar consecutivo
         if (currentDepartament != null) {
             if (name.trim().length() != 0) {
-                name=name.toUpperCase();
+                name = name.toUpperCase();
                 currentDepartament.setDepartamentName(name);
                 departamentsFacade.edit(currentDepartament);
                 name = "";
-                currentDepartament=null;                
-                selectedRowDataTable=null;
-                createDynamicTable(); btnEditDisabled=true; btnRemoveDisabled=true;
+                currentDepartament = null;
+                selectedRowDataTable = null;
+                createDynamicTable();
+                btnEditDisabled = true;
+                btnRemoveDisabled = true;
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
-            } else {                
+            } else {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
-        
+
     }
 
     public void saveRegistry() {
         //determinar consecutivo
         if (newName.trim().length() != 0) {
             int max = departamentsFacade.findMax() + 1;
-            newName=newName.toUpperCase();
+            newName = newName.toUpperCase();
             Departaments newRegistry = new Departaments((short) max, newName);
             departamentsFacade.create(newRegistry);
             newName = "";
-            currentDepartament=null;
-            selectedRowDataTable=null;
-            createDynamicTable(); btnEditDisabled=true; btnRemoveDisabled=true;
+            currentDepartament = null;
+            selectedRowDataTable = null;
+            createDynamicTable();
+            btnEditDisabled = true;
+            btnRemoveDisabled = true;
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Nuevo registro almacenado");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         } else {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "SIN NOMBRE", "Se debe digitar un nombre");
             FacesContext.getCurrentInstance().addMessage(null, msg);
-        }        
+        }
     }
 
     public void newRegistry() {
         name = "";
-        newName="";
+        newName = "";
     }
 
     public void createDynamicTable() {
@@ -157,23 +166,39 @@ public class DepartamentsVariableMB implements Serializable {
             reset();
         } else {
             currentSearchValue = currentSearchValue.toUpperCase();
-            rowDataTableList = new ArrayList<RowDataTable>();
-            departamentsList = departamentsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
-            if (departamentsList.isEmpty()) {
+            rowDataTableList = new ArrayList<>();
+            ResultSet rs;
+            try {
+                if (currentSearchCriteria == 2) {
+                    rs = connectionJdbcMB.consult("select * from departaments where departament_name like '%" + currentSearchValue + "%'");
+                } else {
+                    rs = connectionJdbcMB.consult("select * from departaments where departament_id::text like '%" + currentSearchValue + "%'");
+                }
+                while (rs.next()) {
+                    rowDataTableList.add(new RowDataTable(rs.getString("departament_id"), rs.getString("departament_name")));
+                }
+            } catch (SQLException ex) {
+            }
+            if (rowDataTableList.isEmpty()) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             }
-            for (int i = 0; i < departamentsList.size(); i++) {
-                rowDataTableList.add(new RowDataTable(
-                        departamentsList.get(i).getDepartamentId().toString(),
-                        departamentsList.get(i).getDepartamentName()));
-            }
+//            departamentsList = departamentsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
+//            if (departamentsList.isEmpty()) {
+//                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
+//                FacesContext.getCurrentInstance().addMessage(null, msg);
+//            }
+//            for (int i = 0; i < departamentsList.size(); i++) {
+//                rowDataTableList.add(new RowDataTable(
+//                        departamentsList.get(i).getDepartamentId().toString(),
+//                        departamentsList.get(i).getDepartamentName()));
+//            }
         }
     }
 
     public void reset() {
         rowDataTableList = new ArrayList<RowDataTable>();
-        departamentsList = departamentsFacade.findAll();        
+        departamentsList = departamentsFacade.findAll();
         for (int i = 0; i < departamentsList.size(); i++) {
             rowDataTableList.add(new RowDataTable(
                     departamentsList.get(i).getDepartamentId().toString(),
@@ -245,5 +270,4 @@ public class DepartamentsVariableMB implements Serializable {
     public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
         this.btnRemoveDisabled = btnRemoveDisabled;
     }
-    
 }

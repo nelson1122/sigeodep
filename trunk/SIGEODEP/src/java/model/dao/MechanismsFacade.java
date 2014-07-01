@@ -37,22 +37,4 @@ public class MechanismsFacade extends AbstractFacade<Mechanisms> {
             return 0;
         }
     }
-
-    public List<Mechanisms> findCriteria(int variable, String value) {
-        String hql;
-        try {
-            switch (variable) {
-                case 1:
-                    hql = "Select x from Mechanisms x where x.mechanismName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-                case 2:
-                    hql = "Select x from Mechanisms x where x.mechanismName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
 }

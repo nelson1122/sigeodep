@@ -37,22 +37,4 @@ public class RelatedEventsFacade extends AbstractFacade<RelatedEvents> {
             return 0;
         }
     }
-    
-    public List<RelatedEvents> findCriteria(int variable, String value) {
-        String hql;
-        try {
-            switch (variable) {
-                case 1:
-                    hql = "Select x from RelatedEvents x where x.relatedEventName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-                case 2:
-                    hql = "Select x from RelatedEvents x where x.relatedEventName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
 }

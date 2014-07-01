@@ -65,7 +65,7 @@ public class NeighborhoodsFacade extends AbstractFacade<Neighborhoods> {
         String hql;
         int valueInt = 0;
         String valueStr;
-        int t=Integer.valueOf(type);
+        int t = Integer.valueOf(type);
         try {
             switch (t) {
                 case 1://zona urbana
@@ -74,12 +74,12 @@ public class NeighborhoodsFacade extends AbstractFacade<Neighborhoods> {
                     valueInt = em.createQuery(hql, Integer.class).getSingleResult();
                     if (valueInt == 0) {
                         valueStr = "52";
-                        if(suburb.length()==1){
-                            valueStr = valueStr +"0";                                                    
+                        if (suburb.length() == 1) {
+                            valueStr = valueStr + "0";
                         }
-                        valueStr = valueStr+String.valueOf(suburb);                            
-                        valueStr = valueStr+"01";
-                        valueInt=Integer.parseInt(valueStr);                        
+                        valueStr = valueStr + String.valueOf(suburb);
+                        valueStr = valueStr + "01";
+                        valueInt = Integer.parseInt(valueStr);
                     }
                     break;
                 case 2://zona rural
@@ -87,9 +87,9 @@ public class NeighborhoodsFacade extends AbstractFacade<Neighborhoods> {
                             + "x.neighborhoodArea = 2";
                     valueInt = em.createQuery(hql, Integer.class).getSingleResult();
                     if (valueInt == 0) {
-                        valueStr = "52";                        
-                        valueStr = valueStr+"01";
-                        valueInt=Integer.parseInt(valueStr);                        
+                        valueStr = "52";
+                        valueStr = valueStr + "01";
+                        valueInt = Integer.parseInt(valueStr);
                     }
                     break;
             }
@@ -98,22 +98,5 @@ public class NeighborhoodsFacade extends AbstractFacade<Neighborhoods> {
         } catch (Exception e) {
             return 0;
         }
-    }
-
-    public List<Neighborhoods> findCriteria(int variable, String value) {
-        try {
-            switch (variable) {
-                case 1:
-                    List<Neighborhoods> neighborhoodsList = (List<Neighborhoods>) em.createNativeQuery("select * from neighborhoods where neighborhood_id::text like '" + value + "';", Neighborhoods.class).getResultList();
-                    return neighborhoodsList;
-                case 2:
-                    String hql = "Select x from Neighborhoods x where x.neighborhoodName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
     }
 }

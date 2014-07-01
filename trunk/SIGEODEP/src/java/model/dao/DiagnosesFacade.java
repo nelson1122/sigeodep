@@ -37,22 +37,4 @@ public class DiagnosesFacade extends AbstractFacade<Diagnoses> {
             return null;
         }
     }
-
-    public List<Diagnoses> findCriteria(int variable, String value) {
-        String hql;
-        try {
-            switch (variable) {
-                case 1:
-                    hql = "Select x from Diagnoses x where x.diagnosisId like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-                case 2:
-                    hql = "Select x from Diagnoses x where x.diagnosisName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
 }
