@@ -22,7 +22,6 @@ import managedBeans.recordSets.RecordSetsMB;
 import model.dao.*;
 import model.pojo.FatalInjuries;
 import model.pojo.FatalInjuryMurder;
-import model.pojo.MunicipalitiesPK;
 import model.pojo.Tags;
 import model.pojo.Victims;
 
@@ -208,8 +207,8 @@ public class DuplicateSetsHomicideMB implements Serializable {
 
         selectedRowDuplicatedTable = null;
         selectedRowDataTable = null;
-        rowDataTableList = new ArrayList<RowDataTable>();
-        rowDuplicatedTableList = new ArrayList<RowDataTable>();
+        rowDataTableList = new ArrayList<>();
+        rowDuplicatedTableList = new ArrayList<>();
         btnViewDisabled = true;
         btnRemoveDisabled = true;
 
@@ -268,9 +267,9 @@ public class DuplicateSetsHomicideMB implements Serializable {
             }
             //------------
 
-            rowDuplicatedTableList = new ArrayList<RowDataTable>();
+            rowDuplicatedTableList = new ArrayList<>();
             ResultSet resultSetFileData = connectionJdbcMB.consult("Select * from duplicate");
-            ArrayList<String> addedRecords = new ArrayList<String>();
+            ArrayList<String> addedRecords = new ArrayList<>();
             boolean first;
             boolean found;
             int countRegisters;
