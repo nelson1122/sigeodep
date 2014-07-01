@@ -204,7 +204,7 @@ public class LoginMB {
          */
         int accion = 100;
         boolean continuar;
-        int num;
+        double num;
 
         if (accion == 100) {
             int count;
@@ -358,7 +358,7 @@ public class LoginMB {
                 count = 0;
                 ResultSet rs = connectionJdbcMB.consult(""
                         + " SELECT "
-                        + "   victims.victim_nid, "
+                        + "   victims.victim_id, "
                         + "   victims.victim_date_of_birth, "
                         + "   rup.dob, "
                         + "   non_fatal_injuries.injury_date, "
@@ -373,12 +373,16 @@ public class LoginMB {
                         + "   victim_age IS NULL; ");
 
                 int aaa = 0;
+                int ingreso = 0;
                 while (rs.next()) {
+                    ingreso++;
                     continuar = true;
                     try {//valido que la identificacion se pueda convertir a entero y sea menor que gen_nn
-                        num = Integer.parseInt(rs.getString(1));
-                        if (num > 6930) {
-                            continuar = false;
+                        if (rs.getString(1).length() < 5) {
+                            num = Double.parseDouble(rs.getString(1));
+                            if (num < 6930) {
+                                continuar = false;
+                            }
                         }
                     } catch (SQLException | NumberFormatException e) {
                         aaa++;
@@ -394,17 +398,78 @@ public class LoginMB {
                                 + "   victims "
                                 + " SET "
                                 + "   victim_date_of_birth = '" + rs.getString(3) + "', "
-                                + "   victim_age = '" + Years.yearsIn(interval).getYears() + "' "
+                                + "   victim_age = '" + Years.yearsIn(interval).getYears() + "', "
+                                + "   age_type_id = '1' "
                                 + " WHERE "
                                 + "  victim_id = " + rs.getString(1));
 
                         //LAS EDADES QUE ESTEN EN CERO PASAN A 1 POR QUE SE MIDE EN AÑOS NO EN MESES
-                        connectionJdbcMB.non_query(" UPDATE victims SET victim_age = 1 WHERE victim_age = 0;");
+                        
                         count++;
                     }
                 }
+                connectionJdbcMB.non_query(" UPDATE victims SET victim_age = 1 WHERE victim_age = 0;");
+                System.out.println("SE ACTUALIZARON  " + String.valueOf(count) + " edades desde RUP para FATALES, errores de conversion a entero de identificacion = " + aaa + " Ingreso: " + ingreso);
+            } catch (Exception e) {
+                System.out.println("ERROR 002: " + e.getMessage());
+            }
+            //5. SI NO SE TIENE EDAD SE SACA DE rup Y SE ACTUALIZA FECHA_NACIMIENTO Y EDAD (cedula < genNN)
+            try {
+                count = 0;
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + " SELECT "
+                        + "   victims.victim_id, "
+                        + "   victims.victim_date_of_birth, "
+                        + "   rup.dob, "
+                        + "   fatal_injuries.injury_date, "
+                        + "   rup.id "
+                        + " FROM "
+                        + "   public.victims, "
+                        + "   public.rup, "
+                        + "   public.fatal_injuries "
+                        + " WHERE "
+                        + "   fatal_injuries.victim_id = victims.victim_id AND "
+                        + "   victims.victim_nid = rup.id AND "
+                        + "   victim_age IS NULL; ");
 
-                System.out.println("SE ACTUALIZARON  " + String.valueOf(count) + " edades desde RUP, errores de conversion a entero de identificacion = " + aaa);
+                int aaa = 0;
+                int ingreso = 0;
+                while (rs.next()) {
+                    continuar = true;
+                    ingreso++;
+                    try {//valido que la identificacion se pueda convertir a entero y sea menor que gen_nn
+                        if (rs.getString(1).length() < 5) {
+                            num = Double.parseDouble(rs.getString(1));
+                            if (num < 6930) {
+                                continuar = false;
+                            }
+                        }
+                    } catch (SQLException | NumberFormatException e) {
+                        aaa++;
+                    }
+
+                    if (continuar) {
+                        //determino la edad segun la fecha de nacimiento y fecha de evento
+                        Interval interval = new Interval(new DateTime(rs.getDate(3)), (new DateTime(rs.getDate(4))).plusDays(1));
+                        //int  edad=Years.yearsIn(interval).getYears();
+                        //System.out.println("Nacimiento: " + rs.getDate(3) + " Evento: " + rs.getDate(4) + " Edad: " + edad);
+                        connectionJdbcMB.non_query(""
+                                + " UPDATE "
+                                + "   victims "
+                                + " SET "
+                                + "   victim_date_of_birth = '" + rs.getString(3) + "', "
+                                + "   victim_age = '" + Years.yearsIn(interval).getYears() + "', "
+                                + "   age_type_id = '1' "
+                                + " WHERE "
+                                + "  victim_id = " + rs.getString(1));
+
+                        //LAS EDADES QUE ESTEN EN CERO PASAN A 1 POR QUE SE MIDE EN AÑOS NO EN MESES
+                        
+                        count++;
+                    }
+                }
+                connectionJdbcMB.non_query(" UPDATE victims SET victim_age = 1 WHERE victim_age = 0;");
+                System.out.println("SE ACTUALIZARON  " + String.valueOf(count) + " edades desde RUP para FATALES, errores de conversion a entero de identificacion = " + aaa + " Ingreso: " + ingreso);
             } catch (Exception e) {
                 System.out.println("ERROR 002: " + e.getMessage());
             }
