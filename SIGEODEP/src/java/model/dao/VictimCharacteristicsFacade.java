@@ -37,22 +37,4 @@ public class VictimCharacteristicsFacade extends AbstractFacade<VictimCharacteri
             return 0;
         }
     }
-
-    public List<VictimCharacteristics> findCriteria(int variable, String value) {
-        String hql;
-        try {
-            switch (variable) {
-                case 1:
-                    hql = "Select x from VictimCharacteristics x where x.characteristicName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-                case 2:
-                    hql = "Select x from VictimCharacteristics x where x.characteristicName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
 }

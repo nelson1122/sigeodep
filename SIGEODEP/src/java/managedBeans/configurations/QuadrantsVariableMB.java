@@ -16,6 +16,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -58,19 +60,16 @@ public class QuadrantsVariableMB implements Serializable {
     private String quadrantId = "";//Código del cuadrante.
     private String quadrantPopuation = "0";
     private String neighborhoodFilter = "";
-    private String neighborhoodFilter2 = "";    
+    private String neighborhoodFilter2 = "";
     private String newQuadrantName = "";//Nombre del cuadrante.
     private String newQuadrantId = "";//Código del cuadrante.
     private String newQuadrantPopuation = "0";
     private String newNeighborhoodFilter = "";
     private String newNeighborhoodFilter2 = "";
-    
     private String poligonText = "";//poligono para el nuevo cuadrante
     private boolean disabledShowGeomFile = true;//activar/desactivar boton de ver archivo KML    
     private String nameGeomFile = "";//nombre del archivo de geometria para nuevo cuadrante
     private String geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";//aviso de si la geometria esta o no cargada
-    
-    
     private UploadedFile file;
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
@@ -345,22 +344,62 @@ public class QuadrantsVariableMB implements Serializable {
 
     public void deleteRegistry() {
         if (currentQuadrant != null) {
-            //se elimina de la tabla cuadrantes 
-            connectionJdbcMB.setShowMessages(false);
+            //connectionJdbcMB.setShowMessages(false);//se desactiva la visualizacion de mensajes a traves de consola
+            //1. modifico los eventos para que no tengan este cuadrante
+            connectionJdbcMB.non_query(""
+                    + " update non_fatal_injuries set quadrant_id = null WHERE quadrant_id = " + currentQuadrant.getQuadrantId() + "; \n"
+                    + " update fatal_injuries set quadrant_id = null WHERE quadrant_id = " + currentQuadrant.getQuadrantId() + "; \n");
+            //2. elimino este cuadrante
             connectionJdbcMB.non_query(""
                     + " DELETE FROM neighborhood_quadrant WHERE quadrant_id = " + currentQuadrant.getQuadrantId() + "; \n"
                     + " DELETE FROM quadrants WHERE quadrant_id = " + currentQuadrant.getQuadrantId() + "; \n");
-            if (connectionJdbcMB.getMsj().startsWith("ERROR")) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "El sistema esta haciendo uso de este cuadrante por lo cual no puede ser eliminado"));
-            } else {
-                currentQuadrant = null;
-                selectedRowDataTable = null;
-                createDynamicTable();
-                btnEditDisabled = true;
-                btnRemoveDisabled = true;
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El registro fue eliminado"));
+            //3.  actualizo el cuadrante de los eventos en base donde cuadrante sea null
+            connectionJdbcMB.non_query(""
+                    + " UPDATE non_fatal_injuries "
+                    + " SET quadrant_id = "
+                    + " (SELECT quadrant_id FROM neighborhood_quadrant where neighborhood_quadrant.neighborhood_id = non_fatal_injuries.injury_neighborhood_id limit 1) "
+                    + " WHERE quadrant_id is null; "
+                    + " UPDATE fatal_injuries "
+                    + " SET quadrant_id = "
+                    + " (SELECT quadrant_id FROM neighborhood_quadrant where neighborhood_quadrant.neighborhood_id = fatal_injuries.injury_neighborhood_id limit 1) "
+                    + " WHERE quadrant_id is null; ");
+            //4. cuando el cuadrante sea null colocar cuadrante 0
+            connectionJdbcMB.non_query(""
+                    + " UPDATE non_fatal_injuries SET quadrant_id = 0 WHERE quadrant_id is null; "
+                    + " UPDATE fatal_injuries SET quadrant_id = 0 WHERE quadrant_id is null; ");
+            //5. pueden haber barrios sin cuadrante, se debe asociarles sin dato         
+            connectionJdbcMB.non_query(""
+                    + " INSERT INTO neighborhood_quadrant (neighborhood_id,quadrant_id) "
+                    + " SELECT neighborhood_id,'0' FROM neighborhoods WHERE neighborhood_id NOT IN "
+                    + " (SELECT distinct neighborhood_id FROM neighborhood_quadrant) ");
+            //6. cuando hay barrios con dos cuadrantes y alguno es sin dato se quita el sin dato
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + "SELECT * from ( "
+                    + "SELECT count(neighborhood_id) AS num,neighborhood_id "
+                    + "FROM neighborhood_quadrant group by neighborhood_id "
+                    + ") AS a WHERE a.num > 1;");
+            try {
+                while (rs.next()) {
+                    connectionJdbcMB.non_query(""
+                            + " DELETE  FROM neighborhood_quadrant "
+                            + " WHERE neighborhood_id = " + rs.getString("neighborhood_id") + " AND "
+                            + " quadrant_id = 0 ");
+                }
+            } catch (SQLException ex) {
             }
-            connectionJdbcMB.setShowMessages(true);
+            //7. para los barrios SIN DATO RURAL y SIN DATO URBANO el cuadrante es cero
+            connectionJdbcMB.non_query(""
+                    + " UPDATE non_fatal_injuries SET quadrant_id = 0 WHERE injury_neighborhood_id = 52001; "
+                    + " UPDATE fatal_injuries SET quadrant_id = 0 WHERE injury_neighborhood_id = 52002; ");
+
+            currentQuadrant = null;
+            selectedRowDataTable = null;
+            createDynamicTable();
+            btnEditDisabled = true;
+            btnRemoveDisabled = true;
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El registro fue eliminado"));
+
+            //connectionJdbcMB.setShowMessages(true);se activa la visualizacion de mensajes a traves de consola
         }
     }
 
@@ -422,9 +461,52 @@ public class QuadrantsVariableMB implements Serializable {
                     sql = sql
                             + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
                             + "52001,"//id_barrio
-                            + newQuadrantId + "); \n";//id_cuadrante
+                            + quadrantId + "); \n";//id_cuadrante
                 }
                 connectionJdbcMB.non_query(sql);
+
+                //1. modifico los eventos para que no tengan este cuadrante
+                connectionJdbcMB.non_query(""
+                        + " update non_fatal_injuries set quadrant_id = 0 WHERE quadrant_id = " + currentQuadrant.getQuadrantId() + "; \n"
+                        + " update fatal_injuries set quadrant_id = 0 WHERE quadrant_id = " + currentQuadrant.getQuadrantId() + "; \n");
+                //2.  actualizo el cuadrante de los eventos en base donde cuadrante sea 0
+                connectionJdbcMB.non_query(""
+                        + " UPDATE non_fatal_injuries "
+                        + " SET quadrant_id = "
+                        + " (SELECT quadrant_id FROM neighborhood_quadrant where neighborhood_quadrant.neighborhood_id = non_fatal_injuries.injury_neighborhood_id limit 1) "
+                        + " WHERE quadrant_id = 0; "
+                        + " UPDATE fatal_injuries "
+                        + " SET quadrant_id = "
+                        + " (SELECT quadrant_id FROM neighborhood_quadrant where neighborhood_quadrant.neighborhood_id = fatal_injuries.injury_neighborhood_id limit 1) "
+                        + " WHERE quadrant_id = 0; ");
+                //3. cuando el cuadrante sea null colocar cuadrante 0
+                connectionJdbcMB.non_query(""
+                        + " UPDATE non_fatal_injuries SET quadrant_id = 0 WHERE quadrant_id is null; "
+                        + " UPDATE fatal_injuries SET quadrant_id = 0 WHERE quadrant_id is null; ");
+                //4.pueden haber barrios sin cuadrante, se debe asociarles sin dato         
+                connectionJdbcMB.non_query(""
+                        + " INSERT INTO neighborhood_quadrant (neighborhood_id,quadrant_id) "
+                        + " SELECT neighborhood_id,'0' FROM neighborhoods WHERE neighborhood_id NOT IN "
+                        + " (SELECT distinct neighborhood_id FROM neighborhood_quadrant) ");
+                //5. cuando hay barrios con dos cuadrantes y alguno es sin dato se quita el sin dato
+                ResultSet rs = connectionJdbcMB.consult(""
+                        + "SELECT * from ( "
+                        + "SELECT count(neighborhood_id) AS num,neighborhood_id "
+                        + "FROM neighborhood_quadrant group by neighborhood_id "
+                        + ") AS a WHERE a.num > 1;");
+                try {
+                    while (rs.next()) {
+                        connectionJdbcMB.non_query(""
+                                + " DELETE  FROM neighborhood_quadrant "
+                                + " WHERE neighborhood_id = " + rs.getString("neighborhood_id") + " AND "
+                                + " quadrant_id = 0 ");
+                    }
+                } catch (SQLException ex) {
+                }
+                //5. para los barrios SIN DATO RURAL y SIN DATO URBANO el cuadrante es cero
+                connectionJdbcMB.non_query(""
+                        + " UPDATE non_fatal_injuries SET quadrant_id = 0 WHERE injury_neighborhood_id = 52001; "
+                        + " UPDATE fatal_injuries SET quadrant_id = 0 WHERE injury_neighborhood_id = 52002; ");
 
                 createDynamicTable();
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "CORRECTO", "Registro actualizado");
@@ -502,6 +584,46 @@ public class QuadrantsVariableMB implements Serializable {
                 connectionJdbcMB.non_query(sql);
             } catch (Exception e) {
             }
+
+
+            //2.  actualizo el cuadrante de los eventos en base a barrio donde cuadrante sea null
+            connectionJdbcMB.non_query(""
+                    + " UPDATE non_fatal_injuries "
+                    + " SET quadrant_id = "
+                    + " (SELECT quadrant_id FROM neighborhood_quadrant where neighborhood_quadrant.neighborhood_id = non_fatal_injuries.injury_neighborhood_id limit 1) "
+                    + " WHERE quadrant_id = 0; "
+                    + " UPDATE fatal_injuries "
+                    + " SET quadrant_id = "
+                    + " (SELECT quadrant_id FROM neighborhood_quadrant where neighborhood_quadrant.neighborhood_id = fatal_injuries.injury_neighborhood_id limit 1) "
+                    + " WHERE quadrant_id = 0; ");
+            //4. cuando el cuadrante sea null colocar cuadrante 0
+            connectionJdbcMB.non_query(""
+                    + " UPDATE non_fatal_injuries SET quadrant_id = 0 WHERE quadrant_id is null; "
+                    + " UPDATE fatal_injuries SET quadrant_id = 0 WHERE quadrant_id is null; ");
+            //pueden haber barrios sin cuadrante, se debe asociarles sin dato         
+            connectionJdbcMB.non_query(""
+                    + " INSERT INTO neighborhood_quadrant (neighborhood_id,quadrant_id) "
+                    + " SELECT neighborhood_id,'0' FROM neighborhoods WHERE neighborhood_id NOT IN "
+                    + " (SELECT distinct neighborhood_id FROM neighborhood_quadrant) ");
+            //cuando hay barrios con dos cuadrantes y uno de esos cuadrantes es sin dato se quita
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + "SELECT * from ( "
+                    + "SELECT count(neighborhood_id) AS num,neighborhood_id "
+                    + "FROM neighborhood_quadrant group by neighborhood_id "
+                    + ") AS a WHERE a.num > 1;");
+            try {
+                while (rs.next()) {
+                    connectionJdbcMB.non_query(""
+                            + " DELETE  FROM neighborhood_quadrant "
+                            + " WHERE neighborhood_id = " + rs.getString("neighborhood_id") + " AND "
+                            + " quadrant_id = 0 ");
+                }
+            } catch (SQLException ex) {
+            }
+            //5. para los barrios SIN DATO RURAL y SIN DATO URBANO el cuadrante es cero
+            connectionJdbcMB.non_query(""
+                    + " UPDATE non_fatal_injuries SET quadrant_id = 0 WHERE injury_neighborhood_id = 52001; "
+                    + " UPDATE fatal_injuries SET quadrant_id = 0 WHERE injury_neighborhood_id = 52002; ");
 
             currentQuadrant = null;
             selectedRowDataTable = null;
@@ -626,14 +748,30 @@ public class QuadrantsVariableMB implements Serializable {
         }
         currentSearchValue = currentSearchValue.toUpperCase();
         rowDataTableList = new ArrayList<>();
-        quadrantsList = quadrantsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
-        if (quadrantsList.isEmpty()) {
+        try {
+            ResultSet rs;
+            if (currentSearchCriteria == 2) {
+                rs = connectionJdbcMB.consult("select * from quadrants where quadrant_name like '%" + currentSearchValue + "%'");
+            } else {
+                rs = connectionJdbcMB.consult("select * from quadrants where quadrant_id::text like '%" + currentSearchValue + "%'");
+            }
+            while (rs.next()) {
+                rowDataTableList.add(new RowDataTable(rs.getString("quadrant_id"), rs.getString("quadrant_name")));
+            }
+        } catch (SQLException ex) {
+        }
+        if (rowDataTableList.isEmpty()) {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
-        for (int i = 0; i < quadrantsList.size(); i++) {
-            rowDataTableList.add(new RowDataTable(quadrantsList.get(i).getQuadrantId().toString(), quadrantsList.get(i).getQuadrantName(), type));
-        }
+//        quadrantsList = quadrantsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
+//        if (quadrantsList.isEmpty()) {
+//            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
+//            FacesContext.getCurrentInstance().addMessage(null, msg);
+//        }
+//        for (int i = 0; i < quadrantsList.size(); i++) {
+//            rowDataTableList.add(new RowDataTable(quadrantsList.get(i).getQuadrantId().toString(), quadrantsList.get(i).getQuadrantName(), type));
+//        }
     }
 
     public void newRegistry() {

@@ -4,8 +4,11 @@
  */
 package managedBeans.configurations;
 
+import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.PostConstruct;
@@ -51,8 +54,10 @@ public class MunicipalitiesVariableMB implements Serializable {
     private String newName = "";
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
+    private ConnectionJdbcMB connectionJdbcMB;
 
     public MunicipalitiesVariableMB() {
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
@@ -192,17 +197,53 @@ public class MunicipalitiesVariableMB implements Serializable {
         } else {
             currentSearchValue = currentSearchValue.toUpperCase();
             rowDataTableList = new ArrayList<>();
-            municipalitiesList = municipalitiesFacade.findCriteria(currentSearchCriteria, currentSearchValue);
-            if (municipalitiesList.isEmpty()) {
+            ResultSet rs;
+            try {
+                if (currentSearchCriteria == 1) {                    
+                    rs = connectionJdbcMB.consult(""
+                            + " select "
+                            + "    municipalities.municipality_id, "
+                            + "    municipalities.municipality_name, "
+                            + "    departaments.departament_name, "
+                            + "    departaments.departament_id "
+                            + " from "
+                            + "    municipalities,departaments "
+                            + " where "
+                            + "    municipality_id::text ilike '%" + currentSearchValue + "%' AND "
+                            + "    departaments.departament_id = municipalities.departament_id ");
+                } else if (currentSearchCriteria == 2) {
+                    rs = connectionJdbcMB.consult(""
+                            + " select "
+                            + "    municipalities.municipality_id, "
+                            + "    municipalities.municipality_name, "
+                            + "    departaments.departament_name, "
+                            + "    departaments.departament_id "
+                            + " from "
+                            + "    municipalities,departaments "
+                            + " where "
+                            + "    municipality_name ilike '%" + currentSearchValue + "%' AND "
+                            + "    departaments.departament_id = municipalities.departament_id ");
+                } else {
+                    rs = connectionJdbcMB.consult(""
+                            + " select "
+                            + "    municipalities.municipality_id, "
+                            + "    municipalities.municipality_name, "
+                            + "    departaments.departament_name, "
+                            + "    departaments.departament_id "
+                            + " from "
+                            + "    municipalities,departaments "
+                            + " where "
+                            + "    departaments.departament_id IN (select departament_id from departaments where departament_name ilike '%" + currentSearchValue + "%') AND "
+                            + "    departaments.departament_id = municipalities.departament_id ");
+                }
+                while (rs.next()) {
+                    rowDataTableList.add(new RowDataTable(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)));
+                }
+            } catch (SQLException ex) {
+            }
+            if (rowDataTableList.isEmpty()) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
-            }
-            for (int i = 0; i < municipalitiesList.size(); i++) {
-                rowDataTableList.add(new RowDataTable(
-                        String.valueOf(municipalitiesList.get(i).getMunicipalitiesPK().getMunicipalityId()),
-                        municipalitiesList.get(i).getMunicipalityName(),
-                        municipalitiesList.get(i).getDepartaments().getDepartamentName(),
-                        String.valueOf(i)));
             }
         }
     }

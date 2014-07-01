@@ -50,22 +50,4 @@ public class HealthProfessionalsFacade extends AbstractFacade<HealthProfessional
         }
     }
     
-    public List<HealthProfessionals> findCriteria(int variable, String value) {
-        String hql;
-        try {
-            switch (variable) {
-                case 1:
-                    hql = "Select x from HealthProfessionals x where x.healthProfessionalName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-                case 2:
-                    hql = "Select x from HealthProfessionals x where x.healthProfessionalName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
-    
 }

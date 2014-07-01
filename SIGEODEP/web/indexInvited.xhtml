@@ -6,13 +6,7 @@
       xmlns:p="http://primefaces.org/ui">
     <h:head>
         <link rel="shortcut icon" href="resources/img/icon.gif"/>
-        <title>INICIO</title>	        
-        <script type="text/javascript">  
-            
-            function clickSeeDialog() {
-                document.getElementById('IdForm:IdBtnSeeDialog').click();                    
-            }
-        </script>
+        <title>INICIO</title>	                
     </h:head>
     <h:body style="font-size: 10px;">    
 
@@ -26,11 +20,7 @@
                  top: 50%;
                  margin-top: -190px;">
                 <p:growl id="message"  showDetail="true" sticky="true" />
-                <p:commandButton
-                    id="IdBtnSeeDialog"
-                    oncomplete="#{loginMB.closeSessionDialog}"
-                    value="#{applicationControlMB.value}"
-                    style="width: 0px;height: 0px; display: none;"/> 
+                #{applicationControlMB.reset()}                
                 <h:graphicImage id="IdImgCarga" value="resources/img/ajaxloading.gif"  style="display: none" />                
                 <p:graphicImage value="../resources/img/img_login.png" />
                 <p:panelGrid style="margin-left: 100px; "> 
@@ -44,37 +34,12 @@
                         <p:column colspan="2" style="text-align: center;" >                            
                             <p:commandButton 
                                 value="INGRESAR" 												
-                                action="#{loginMB.CheckValidInvited}"                                 
-                                oncomplete="clickSeeDialog()"
+                                action="#{loginMB.CheckValidInvited}"                                                                 
                                 update="@form"/>                            
                         </p:column>
                     </p:row>  
                 </p:panelGrid>
-
-                <p:dialog 
-                    id="IdCloseSessionDialog"  
-                    modal="true"
-                    header="Otra Session Iniciada"         
-                    resizable="false"                    
-                    widgetVar="closeSessionDialog">  
-                    <br/>
-                    <p:inputTextarea 
-                        value="Este usuario tiene otra session en uso, desea cerrar la otra session e iniciar una nueva en este momento?" 
-                        readonly="true" 
-                        style="text-align: match-parent; background: #ebf4fb; font-size: 13px; font-weight: 900; height: 60px; width: 320px;"/>
-                    <br/>                    
-                    <br/>
-                    <p:commandButton                        
-                        value="Continuar"
-                        style="margin:0;"
-                        action="#{loginMB.closeSessionAndLogin}"
-                        oncomplete="closeSessionDialog.hide()"
-                        update="@form"/>                      
-                </p:dialog>
-
             </div>
-
         </h:form>  
-
     </h:body>
 </html>

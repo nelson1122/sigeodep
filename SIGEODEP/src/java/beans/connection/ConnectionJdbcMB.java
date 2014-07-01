@@ -392,7 +392,7 @@ public class ConnectionJdbcMB implements Serializable {
      * ------------METODOS PARA MANEJOS DE CONJUNTOS----------
      */
     public RowDataTable loadFatalInjuryMurderRecord(String idVIctim) {
-        //CARGO LOS DATOS DE UN REGISTRO DE LESION NO FATAL EN UNA FILA PARA LA TABLA
+        //CARGO LOS DATOS DE UN REGISTRO DE LESION FATAL EN UNA FILA PARA LA TABLA
         FatalInjuryMurder currentFatalInjuryMurder = fatalInjuryMurderFacade.findByIdVictim(idVIctim);
 
         if (currentFatalInjuryMurder == null) {
@@ -547,6 +547,13 @@ public class ConnectionJdbcMB implements Serializable {
             }
         } catch (Exception e) {
         }
+        //******quadrant_id
+        try {
+            if (currentFatalInjuryMurder.getFatalInjuries().getQuadrantId() != null) {
+                newRowDataTable.setColumn32(currentFatalInjuryMurder.getFatalInjuries().getQuadrantId().getQuadrantName());
+            }
+        } catch (Exception e) {
+        }
         //******injury_place_id
         try {
             if (currentFatalInjuryMurder.getFatalInjuries().getInjuryPlaceId() != null) {
@@ -645,7 +652,7 @@ public class ConnectionJdbcMB implements Serializable {
     }
 
     public RowDataTable loadFatalInjuryAccidentRecord(String idVIctim) {
-        //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
+        //CARGO LOS DATOS DE UNA DETERMINA FATAL ACCIDENTAL EN UNA FILA PARA LA TABLA
         //btnEditDisabled = true;
         //btnRemoveDisabled = true;
         FatalInjuryAccident currentFatalInjuryA = fatalInjuryAccidentFacade.findByIdVictim(idVIctim);
@@ -798,6 +805,13 @@ public class ConnectionJdbcMB implements Serializable {
             if (currentFatalInjuryA.getFatalInjuries().getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryA.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
                 newRowDataTable.setColumn30(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryA.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodSuburb()));
+            }
+        } catch (Exception e) {
+        }
+        //******quadrant_id
+        try {
+            if (currentFatalInjuryA.getFatalInjuries().getQuadrantId() != null) {
+                newRowDataTable.setColumn32(currentFatalInjuryA.getFatalInjuries().getQuadrantId().getQuadrantName());
             }
         } catch (Exception e) {
         }
@@ -1169,6 +1183,13 @@ public class ConnectionJdbcMB implements Serializable {
             if (currentNonFatalI.getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn42(currentNonFatalI.getInjuryNeighborhoodId().getNeighborhoodName());
                 newRowDataTable.setColumn120(String.valueOf(currentNonFatalI.getInjuryNeighborhoodId().getNeighborhoodSuburb()));
+            }
+        } catch (Exception e) {
+        }
+        //******quadrant_id
+        try {
+            if (currentNonFatalI.getQuadrantId() != null) {
+                newRowDataTable.setColumn126(currentNonFatalI.getQuadrantId().getQuadrantName());
             }
         } catch (Exception e) {
         }
@@ -1654,7 +1675,7 @@ public class ConnectionJdbcMB implements Serializable {
     }
 
     public RowDataTable loadFatalInjurySuicideRecord(String idVIctim) {
-        //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
+        //CARGO LOS DATOS DE UN SUICIDIO EN UNA FILA PARA LA TABLA
         //btnEditDisabled = true;
         //btnRemoveDisabled = true;
 
@@ -1807,6 +1828,13 @@ public class ConnectionJdbcMB implements Serializable {
             if (currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId() != null) {
                 newRowDataTable.setColumn16(neighborhoodsFacade.find(currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodName());
                 newRowDataTable.setColumn33(String.valueOf(neighborhoodsFacade.find(currentFatalInjuryS.getFatalInjuries().getInjuryNeighborhoodId()).getNeighborhoodSuburb()));
+            }
+        } catch (Exception e) {
+        }
+        //******quadrant_id
+        try {
+            if (currentFatalInjuryS.getFatalInjuries().getQuadrantId() != null) {
+                newRowDataTable.setColumn34(currentFatalInjuryS.getFatalInjuries().getQuadrantId().getQuadrantName());
             }
         } catch (Exception e) {
         }
@@ -2078,6 +2106,13 @@ public class ConnectionJdbcMB implements Serializable {
             }
         } catch (Exception e) {
         }
+        //******quadrant_id
+        try {
+            if (currentFatalInjuryT.getFatalInjuries().getQuadrantId() != null) {
+                newRowDataTable.setColumn45(currentFatalInjuryT.getFatalInjuries().getQuadrantId().getQuadrantName());
+            }
+        } catch (Exception e) {
+        }
         //******injury_place_id
         try {
             if (currentFatalInjuryT.getFatalInjuries().getInjuryPlaceId() != null) {
@@ -2239,7 +2274,7 @@ public class ConnectionJdbcMB implements Serializable {
     }
 
     public RowDataTable loadNonFatalDomesticViolenceRecord(String idVIctim) {
-        //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
+        //CARGO LOS DATOS DE UNA DETERMINADA LESION VIF EN UNA FILA PARA LA TABLA
 
         NonFatalDomesticViolence currentNonFatalDomesticV = nonFatalDomesticViolenceFacade.findByIdVictim(idVIctim);
         if (currentNonFatalDomesticV == null) {
@@ -2483,6 +2518,13 @@ public class ConnectionJdbcMB implements Serializable {
             }
         } catch (Exception e) {
         }
+        //******quadrant_id
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getQuadrantId() != null) {
+                newRowDataTable.setColumn45(currentNonFatalDomesticV.getNonFatalInjuries().getQuadrantId().getQuadrantName());
+            }
+        } catch (Exception e) {
+        }
         //******injury_place_id
         try {
             if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryPlaceId() != null) {
@@ -2543,12 +2585,12 @@ public class ConnectionJdbcMB implements Serializable {
         }
         //******destination_patient_id        
         //******input_timestamp
-        try {
-            if (currentNonFatalDomesticV.getNonFatalInjuries().getInputTimestamp() != null) {
-                newRowDataTable.setColumn45(sdf2.format(currentNonFatalDomesticV.getNonFatalInjuries().getInputTimestamp()));
-            }
-        } catch (Exception e) {
-        }
+//        try {
+//            if (currentNonFatalDomesticV.getNonFatalInjuries().getInputTimestamp() != null) {
+//                newRowDataTable.setColumn45(sdf2.format(currentNonFatalDomesticV.getNonFatalInjuries().getInputTimestamp()));
+//            }
+//        } catch (Exception e) {
+//        }
         //******health_professional_id        
         //******non_fatal_data_source_id
         //******mechanism_id
@@ -2724,7 +2766,7 @@ public class ConnectionJdbcMB implements Serializable {
     }
 
     public RowDataTable loadSivigilaVifRecord(String idVIctim) {
-        //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
+        //CARGO LOS DATOS DE UN EVENTO SIVIGILA EN UNA FILA PARA LA TABLA
 
         NonFatalDomesticViolence currentNonFatalDomesticV = nonFatalDomesticViolenceFacade.findByIdVictim(idVIctim);
         if (currentNonFatalDomesticV == null) {
@@ -2834,6 +2876,13 @@ public class ConnectionJdbcMB implements Serializable {
         if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId() != null) {
             newRowDataTable.setColumn22(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId().getNeighborhoodName());
             newRowDataTable.setColumn23(String.valueOf(currentNonFatalDomesticV.getNonFatalInjuries().getInjuryNeighborhoodId().getNeighborhoodSuburb()));
+        }
+        //******quadrant_id
+        try {
+            if (currentNonFatalDomesticV.getNonFatalInjuries().getQuadrantId() != null) {
+                newRowDataTable.setColumn71(currentNonFatalDomesticV.getNonFatalInjuries().getQuadrantId().getQuadrantName());
+            }
+        } catch (Exception e) {
         }
         //******direccion evento
         if (currentNonFatalDomesticV.getNonFatalInjuries().getInjuryAddress() != null) {

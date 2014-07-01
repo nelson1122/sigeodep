@@ -116,6 +116,7 @@
                                     <p:column colspan="1">
                                         <p:selectOneMenu id="IdSearchCriteria" value="#{quadrantsVariableMB.currentSearchCriteria}" > 
                                             <f:selectItem itemLabel="NOMBRE" itemValue="2" />
+                                            <f:selectItem itemLabel="CODIGO" itemValue="1" />
                                         </p:selectOneMenu>
                                     </p:column>                                                                        
                                     <p:column styleClass="ui-widget-header ui-state-focus" colspan="1">
@@ -475,7 +476,7 @@
                     widgetVar="dialogDelete"> 
                     <p:panelGrid id="displayDelete">
                         <p:row>  
-                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">
+                            <p:column style="width: 200px; height: 80px; text-align: center; background: #fbef9a;">                                
                                 Confirma la Eliminacion de este registro?
                             </p:column>
                         </p:row>

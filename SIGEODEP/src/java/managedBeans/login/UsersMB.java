@@ -8,6 +8,7 @@ import beans.connection.ConnectionJdbcMB;
 import beans.util.RowDataTable;
 import beans.util.StringEncryption;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -442,37 +443,44 @@ public class UsersMB {
     }
 
     public void createDynamicTable() {
-        boolean s = true;
         if (currentSearchValue.trim().length() == 0) {
             reset();
         } else {
             currentSearchValue = currentSearchValue.toUpperCase();
             rowDataTableList = new ArrayList<>();
-            usersList = usersFacade.findCriteria(currentSearchCriteria, currentSearchValue);
-            if (usersList.isEmpty()) {
+            ResultSet rs;
+
+            try {
+                if (currentSearchCriteria == 1) {
+                    rs = connectionJdbcMB.consult("select * from users where user_name ilike '%" + currentSearchValue + "%'");
+                } else if (currentSearchCriteria == 2) {
+                    rs = connectionJdbcMB.consult("select * from users where user_login ilike '%" + currentSearchValue + "%'");
+                } else {
+                    rs = connectionJdbcMB.consult("select * from users where user_job ilike '%" + currentSearchValue + "%'");
+                }
+                String active;
+                while (rs.next()) {
+                    if (rs.getBoolean("active") == false) {
+                        active = "Inactiva";
+                    } else {
+                        active = "Activa";
+                    }
+                    rowDataTableList.add(new RowDataTable(
+                            rs.getString("user_id"),
+                            active,
+                            rs.getString("user_login"),
+                            rs.getString("user_name"),
+                            rs.getString("user_job"),
+                            rs.getString("user_institution"),
+                            rs.getString("user_telephone"),
+                            rs.getString("user_email"),
+                            rs.getString("user_address")));
+                }
+            } catch (SQLException ex) {
+            }
+            if (rowDataTableList.isEmpty()) {
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
-            }
-            String active;
-            for (int i = 0; i < usersList.size(); i++) {
-
-
-                if (usersList.get(i).getActive() == null || usersList.get(i).getActive() == false) {
-                    active = "Inactiva";
-                } else {
-                    active = "Activa";
-                }
-
-                rowDataTableList.add(new RowDataTable(
-                        usersList.get(i).getUserId().toString(),
-                        active,
-                        usersList.get(i).getUserLogin(),
-                        usersList.get(i).getUserName(),
-                        usersList.get(i).getUserJob(),
-                        usersList.get(i).getUserInstitution(),
-                        usersList.get(i).getUserTelephone(),
-                        usersList.get(i).getUserEmail(),
-                        usersList.get(i).getUserAddress()));
             }
         }
     }

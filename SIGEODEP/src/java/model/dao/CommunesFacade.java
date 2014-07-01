@@ -39,32 +39,32 @@ public class CommunesFacade extends AbstractFacade<Communes> {
         }
     }
 
-    public List<Communes> findCriteria(int variable, String value) {
-        try {
-            switch (variable) {
-                case 1:
-                    if (value == null || value.trim().length() == 0) {
-                        List<Communes> quadrantsList = (List<Communes>) em.createNativeQuery("select * from communes ORDER BY commune_id;", Quadrants.class).getResultList();
-                        return quadrantsList;
-                    } else {
-                        List<Communes> quadrantsList = (List<Communes>) em.createNativeQuery("select * from communes where commune_id::text like '" + value + "' ORDER BY commune_id;", Quadrants.class).getResultList();
-                        return quadrantsList;
-                    }
-                case 2:
-                    if (value == null || value.trim().length() == 0) {
-                        String hql = "Select x from Communes x ORDER BY x.communeId";
-                        return em.createQuery(hql).getResultList();
-                    } else {
-                        String hql = "Select x from Communes x where x.communeName like '%" + value + "%' ORDER BY x.communeId";
-                        return em.createQuery(hql).getResultList();
-                    }
-
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
+//    public List<Communes> findCriteria(int variable, String value) {
+//        try {
+//            switch (variable) {
+//                case 1:
+//                    if (value == null || value.trim().length() == 0) {
+//                        List<Communes> quadrantsList = (List<Communes>) em.createNativeQuery("select * from communes ORDER BY commune_id;", Quadrants.class).getResultList();
+//                        return quadrantsList;
+//                    } else {
+//                        List<Communes> quadrantsList = (List<Communes>) em.createNativeQuery("select * from communes where commune_id::text like '" + value + "' ORDER BY commune_id;", Quadrants.class).getResultList();
+//                        return quadrantsList;
+//                    }
+//                case 2:
+//                    if (value == null || value.trim().length() == 0) {
+//                        String hql = "Select x from Communes x ORDER BY x.communeId";
+//                        return em.createQuery(hql).getResultList();
+//                    } else {
+//                        String hql = "Select x from Communes x where x.communeName like '%" + value + "%' ORDER BY x.communeId";
+//                        return em.createQuery(hql).getResultList();
+//                    }
+//
+//            }
+//        } catch (Exception e) {
+//            System.out.println(e.toString() + "----------------------------------------------------");
+//            return null;
+//        }
+//        return null;
+//    }
     
 }

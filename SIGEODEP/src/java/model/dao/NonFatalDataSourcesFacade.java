@@ -47,21 +47,21 @@ public class NonFatalDataSourcesFacade extends AbstractFacade<NonFatalDataSource
         }
     }
 
-    public List<NonFatalDataSources> findCriteria(int variable, String value) {
-        String hql;
-        try {
-            switch (variable) {
-                case 1:
-                    hql = "Select x from NonFatalDataSources x where x.nonFatalDataSourceName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-                case 2:
-                    hql = "Select x from NonFatalDataSources x where x.nonFatalDataSourceName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
+//    public List<NonFatalDataSources> findCriteria(int variable, String value) {
+//        String hql;
+//        try {
+//            switch (variable) {
+//                case 1:
+//                    hql = "Select x from NonFatalDataSources x where x.nonFatalDataSourceName like '%" + value + "%'";
+//                    return em.createQuery(hql).getResultList();
+//                case 2:
+//                    hql = "Select x from NonFatalDataSources x where x.nonFatalDataSourceName like '%" + value + "%'";
+//                    return em.createQuery(hql).getResultList();
+//            }
+//        } catch (Exception e) {
+//            System.out.println(e.toString() + "----------------------------------------------------");
+//            return null;
+//        }
+//        return null;
+//    }
 }

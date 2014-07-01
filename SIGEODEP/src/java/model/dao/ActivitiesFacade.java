@@ -37,24 +37,4 @@ public class ActivitiesFacade extends AbstractFacade<Activities> {
             return 0;
         }
     }
-
-    public List<Activities> findCriteria(int variable, String value) {
-        String hql;
-        try {
-            switch (variable) {
-                case 1:
-                    hql = "Select x from Activities x where x.activityName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-
-                case 2:
-                    hql = "Select x from Activities x where x.activityName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
 }

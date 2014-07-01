@@ -33,34 +33,34 @@ public class CorridorsFacade extends AbstractFacade<Corridors> {
             return 0;
         }
     }
-
-    public List<Corridors> findCriteria(int variable, String value) {
-        try {
-            switch (variable) {
-                case 1:
-                    if (value == null || value.trim().length() == 0) {
-                        List<Corridors> quadrantsList = (List<Corridors>) em.createNativeQuery("select * from corridors ORDER BY corridor_id;", Corridors.class).getResultList();
-                        return quadrantsList;
-                    } else {
-                        List<Corridors> quadrantsList = (List<Corridors>) em.createNativeQuery("select * from corridors where corridor_id::text like '" + value + "' ORDER BY corridor_id;", Corridors.class).getResultList();
-                        return quadrantsList;
-                    }
-                case 2:
-                    if (value == null || value.trim().length() == 0) {
-                        String hql = "Select x from Corridors x ORDER BY x.corridorId";
-                        return em.createQuery(hql).getResultList();
-                    } else {
-                        String hql = "Select x from Corridors x where x.corridorName like '%" + value + "%' ORDER BY x.corridorId";
-                        return em.createQuery(hql).getResultList();
-                    }
-
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
+//
+//    public List<Corridors> findCriteria(int variable, String value) {
+//        try {
+//            switch (variable) {
+//                case 1:
+//                    if (value == null || value.trim().length() == 0) {
+//                        List<Corridors> quadrantsList = (List<Corridors>) em.createNativeQuery("select * from corridors ORDER BY corridor_id;", Corridors.class).getResultList();
+//                        return quadrantsList;
+//                    } else {
+//                        List<Corridors> quadrantsList = (List<Corridors>) em.createNativeQuery("select * from corridors where corridor_id::text like '" + value + "' ORDER BY corridor_id;", Corridors.class).getResultList();
+//                        return quadrantsList;
+//                    }
+//                case 2:
+//                    if (value == null || value.trim().length() == 0) {
+//                        String hql = "Select x from Corridors x ORDER BY x.corridorId";
+//                        return em.createQuery(hql).getResultList();
+//                    } else {
+//                        String hql = "Select x from Corridors x where x.corridorName like '%" + value + "%' ORDER BY x.corridorId";
+//                        return em.createQuery(hql).getResultList();
+//                    }
+//
+//            }
+//        } catch (Exception e) {
+//            System.out.println(e.toString() + "----------------------------------------------------");
+//            return null;
+//        }
+//        return null;
+//    }
 
     public CorridorsFacade() {
         super(Corridors.class);

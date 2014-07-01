@@ -58,21 +58,21 @@ public class DepartamentsFacade extends AbstractFacade<Departaments> {
         }
     }
 
-    public List<Departaments> findCriteria(int variable, String value) {
-        String hql;
-        try {
-            switch (variable) {
-                case 1:
-                    hql = "Select x from Departaments x where x.departamentName like '%" + value + "%'";
-                    return em.createQuery(hql).getResultList();
-                case 2:
-                    List<Departaments> neighborhoodsList = (List<Departaments>) em.createNativeQuery("select * from departaments where departament_id::text like '%" + value + "%';", Departaments.class).getResultList();
-                    return neighborhoodsList;
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString() + "----------------------------------------------------");
-            return null;
-        }
-        return null;
-    }
+//    public List<Departaments> findCriteria(int variable, String value) {
+//        String hql;
+//        try {
+//            switch (variable) {
+//                case 1:
+//                    hql = "Select x from Departaments x where x.departamentName like '%" + value + "%'";
+//                    return em.createQuery(hql).getResultList();
+//                case 2:
+//                    List<Departaments> neighborhoodsList = (List<Departaments>) em.createNativeQuery("select * from departaments where departament_id::text like '%" + value + "%';", Departaments.class).getResultList();
+//                    return neighborhoodsList;
+//            }
+//        } catch (Exception e) {
+//            System.out.println(e.toString() + "----------------------------------------------------");
+//            return null;
+//        }
+//        return null;
+//    }
 }
