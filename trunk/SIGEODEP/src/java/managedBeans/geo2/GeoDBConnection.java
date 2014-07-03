@@ -222,9 +222,13 @@ public class GeoDBConnection implements Serializable {
                 + " ON "
                 + "         (neighborhood_suburb = commune_id) "
                 + " JOIN "
-                + "         quadrants "
-                + " ON "
-                + "         (neighborhood_quadrant = quadrant_id) "
+                + "         neighborhood_quadrant "
+                + " USING "
+                + "         (neighborhood_id) "
+                + " JOIN "
+                + "         quadrants  "
+                + " USING "
+                + "         (quadrant_id) "
                 + " JOIN "
                 + "         corridors "
                 + " ON "
@@ -250,6 +254,7 @@ public class GeoDBConnection implements Serializable {
                 + "         count DESC";
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
+        System.out.println(query);
         ResultSet records = this.consult(query);
         try {
             while (records.next()) {
@@ -605,10 +610,14 @@ public class GeoDBConnection implements Serializable {
                 + "     REPLACE(CAST(array_agg(neighborhood_name) AS TEXT),'\"','') AS neighborhoods "
                 + " FROM "
                 + "     quadrants  q"
-                + " JOIN "
-                + "	neighborhoods "
-                + " ON "
-                + "	(neighborhood_quadrant = quadrant_id)"
+                + " JOIN 	"
+                + "     neighborhood_quadrant " 
+                + " USING	"
+                + "     (quadrant_id) "
+                + " JOIN	"
+                + "     neighborhoods "
+                + " USING	"
+                + "     (neighborhood_id) "
                 + " INNER JOIN "
                 + "     (SELECT "
                 + "             min(record_id) AS record_id, " + geo_column + ", sum(count) AS count "
