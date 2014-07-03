@@ -107,7 +107,7 @@ Ext.onReady(function() {
             fillOpacity: 0.0,
             label : "${getLabel}",
             fontColor: "black",
-            fontSize: "16px",
+            fontSize: "10px",
             fontFamily: "Arial",
             fontWeight: "bold",
             labelOutlineColor: "white",
@@ -115,7 +115,7 @@ Ext.onReady(function() {
         }, {
             context: {
                 getLabel: function(feature) {
-                    if(feature.layer.map.getZoom() > 12) {
+                    if(feature.layer.map.getZoom() > 15) {
                         if(feature.data.name !== null){
                             return feature.data.name;
                         } else {
@@ -136,7 +136,7 @@ Ext.onReady(function() {
             fillOpacity: 0.8,
             label : "${getLabel}",
             fontColor: "black",
-            fontSize: "16px",
+            fontSize: "${getSize}",
             fontFamily: "Arial",
             fontWeight: "bold",
             labelOutlineColor: "white",
@@ -144,7 +144,17 @@ Ext.onReady(function() {
         }, {
             context: {
                 getLabel: function(feature) {
-                    if(geo_vars[index_g] !== 'Barrios'){
+                    if(geo_vars[index_g] === 'Comunas' || geo_vars[index_g] === 'Corredores'){
+                        if(feature.layer.map.getZoom() > 12) {
+                            if(feature.data.name !== null){
+                                return feature.data.name;
+                            } else {
+                                return ""
+                            }
+                        } else {
+                            return "";
+                        }
+                    } else if(geo_vars[index_g] === 'Cuadrantes'){
                         if(feature.layer.map.getZoom() > 12) {
                             if(feature.data.name !== null){
                                 return feature.data.name;
@@ -157,6 +167,13 @@ Ext.onReady(function() {
                     } else {
                         return ""
                     }
+                },
+                getSize: function(feature){
+                    if(geo_vars[index_g] === 'Cuadrantes'){
+                        var the_size = feature.layer.map.getZoom() - 5;
+                        return the_size + "px";
+                    }
+                    return "14px";
                 }
             }
         })
