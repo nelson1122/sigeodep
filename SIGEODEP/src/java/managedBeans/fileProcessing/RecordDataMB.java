@@ -1493,6 +1493,7 @@ public class RecordDataMB implements Serializable {
 
             lastTagNameCreated = newTag.getTagName();
 
+
             while (resultSetFileData.next()) {//recorro cada uno de los registros de la tabla temp                    
                 Victims newVictim = new Victims();
                 newVictim.setVictimId(applicationControlMB.addVictimsReservedIdentifiers());
@@ -1712,7 +1713,7 @@ public class RecordDataMB implements Serializable {
                                 newCounterpartInvolvedVehicle = new CounterpartInvolvedVehicle();
                                 newCounterpartInvolvedVehicle.setInvolvedVehicleId(involvedVehiclesFacade.find(Short.parseShort(value)));
                                 newCounterpartInvolvedVehicle.setFatalInjuryId(newFatalInjurie);
-                                newCounterpartInvolvedVehicle.setCounterpartInvolvedVehicleId(counterpartInvolvedVehicleFacade.findMax() + 1);
+                                newCounterpartInvolvedVehicle.setCounterpartInvolvedVehicleId(counterpartInvolvedVehicleFacade.findMax() + 1 + involvedVehiclesList.size());
                                 involvedVehiclesList.add(newCounterpartInvolvedVehicle);
                                 break;
                             case tipo_servicio_vehiculo_victima:
@@ -1724,7 +1725,7 @@ public class RecordDataMB implements Serializable {
                                 newCounterpartServiceType = new CounterpartServiceType();
                                 newCounterpartServiceType.setServiceTypeId(serviceTypesFacade.find(Short.parseShort(value)));
                                 newCounterpartServiceType.setFatalInjuryId(newFatalInjurie);
-                                newCounterpartServiceType.setCounterpartServiceTypeId(counterpartServiceTypeFacade.findMax() + 1);
+                                newCounterpartServiceType.setCounterpartServiceTypeId(counterpartServiceTypeFacade.findMax() + 1 + serviceTypesList.size());
                                 serviceTypesList.add(newCounterpartServiceType);
                                 break;
                             case narracion_evento:
@@ -2970,9 +2971,9 @@ public class RecordDataMB implements Serializable {
                                 value = isPercentage(splitColumnAndValue[1]);
                                 break;
                             case NOVALUE:
-                                try{
+                                try {
                                     value = isCategorical(splitColumnAndValue[1], relationVar);
-                                } catch(ArrayIndexOutOfBoundsException ex){
+                                } catch (ArrayIndexOutOfBoundsException ex) {
                                     System.out.println("Captura excepcion cuando splitColumnAndValue no es un arreglo valido. La varaible value conserva el valor de null.");
                                 }
                                 break;
