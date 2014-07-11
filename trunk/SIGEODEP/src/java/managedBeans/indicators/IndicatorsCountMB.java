@@ -3045,8 +3045,9 @@ public class IndicatorsCountMB {
 
         //------DETERMINAR RANGOS DE FECHAS ---------------------------
         if (sameRangeLimit) {
-            //determinar cuantos años existen entre las dos fechas
-            int years = getDateDifference(initialDate, endDate, "anual") + 1;
+            //determinar cuantos años existen entre las dos fechas            
+            Interval interval = new Interval(new DateTime(initialDate), (new DateTime(endDate)));        
+            int years= Years.yearsIn(interval).getYears()+1;            
             String startDateRange;
             String endDateRange;
             sqlReturn = sqlReturn + " (\n";
@@ -3110,24 +3111,6 @@ public class IndicatorsCountMB {
         }
         //System.out.println("CONSULTA (indicators count) \n " + sqlReturn);
         return sqlReturn;
-    }
-
-    private int getDateDifference(Date date1, Date date2, String typeDifference) {
-        Interval interval = new Interval(new DateTime(date1), (new DateTime(date2)).plusDays(1));
-        if (typeDifference.compareTo("anual") == 0) {
-            Years years34 = Years.yearsIn(interval);
-            //System.out.println("Años" + years34.getYears());
-            return years34.getYears();
-        } else if (typeDifference.compareTo("mensual") == 0) {
-            Months months11 = Months.monthsIn(interval);
-            //System.out.println("Meses" + months11.getMonths());
-            return months11.getMonths();
-        } else if (typeDifference.compareTo("diaria") == 0) {
-            Days days15 = Days.daysIn(interval);
-            //System.out.println("Dias" + days15.getDays());
-            return days15.getDays();
-        }
-        return 0;
     }
 
     private void saveIndicatorRecords(String sqlConsult) {
