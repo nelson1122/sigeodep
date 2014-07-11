@@ -157,7 +157,12 @@ Ext.onReady(function() {
                     } else if(geo_vars[index_g] === 'Cuadrantes'){
                         if(feature.layer.map.getZoom() > 12) {
                             if(feature.data.name !== null){
-                                return feature.data.name;
+                                var the_name = feature.data.name
+                                the_name = the_name.replace("E.CENTRO", "E.C");
+                                the_name = the_name.replace("E.NORTE", "E.N");
+                                the_name = the_name.replace("E.SUR", "E.S");
+                                
+                                return the_name;
                             } else {
                                 return ""
                             }
