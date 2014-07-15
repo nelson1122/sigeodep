@@ -15,22 +15,19 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
 import javax.servlet.ServletContext;
 import model.dao.NeighborhoodsFacade;
 import model.dao.QuadrantsFacade;
 import model.pojo.Quadrants;
 import org.apache.poi.hssf.usermodel.*;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
 
 /**
  *
@@ -40,57 +37,56 @@ import org.primefaces.model.UploadedFile;
 @SessionScoped
 public class QuadrantsVariableMB implements Serializable {
 
-    /*
-     * CUADRANTES
-     */
-    private List<RowDataTable> rowDataTableList;
-    private RowDataTable selectedRowDataTable;
-    private int currentSearchCriteria = 2;
-    private String currentSearchValue = "";
     @EJB
     QuadrantsFacade quadrantsFacade;
     @EJB
     NeighborhoodsFacade neighborhoodsFacade;
-    private List<Quadrants> quadrantsList;
-    //private SelectItem[] stationsList;
-    private SelectItem[] newStationsList;
-    private Quadrants currentQuadrant;
-    private String type = "";
-    private String quadrantName = "";//Nombre del cuadrante.
-    private String quadrantId = "";//Código del cuadrante.
-    private String quadrantPopuation = "0";
-    private String neighborhoodFilter = "";
-    private String neighborhoodFilter2 = "";
-    private String newQuadrantName = "";//Nombre del cuadrante.
-    private String newQuadrantId = "";//Código del cuadrante.
-    private String newQuadrantPopuation = "0";
-    private String newNeighborhoodFilter = "";
-    private String newNeighborhoodFilter2 = "";
+    ConnectionJdbcMB connectionJdbcMB;//clase para la administracion de conexion JDBC
+    private List<Quadrants> quadrantsList;//Lista de cuadrantes
+    private Quadrants currentQuadrant; //Cuadrante seleccionado
+    private List<RowDataTable> rowDataTableList;//Filas de la tabla cuadrantes
+    private RowDataTable selectedRowDataTable;  //Filas seleccionada de la tabla cuadrantes  
+    private int currentSearchCriteria = 2;//criterio de busqueda en cuadrantes 1. CODIGO 2. NOMBRE
+    private String currentSearchValue = "";//valor que se buscara cuando se busca cuadrantes    
+    private String quadrantName = "";//Nombre del cuadrante(actualizando existente).
+    private String quadrantId = "";//Código del cuadrante(actualizando existente).
+    private String quadrantPopuation = "0";//poblacion cuadrante(actualizando existente).
+    private String neighborhoodFilter = "";//filtro de barrios disponibles(actualizando existente).
+    private String neighborhoodFilter2 = "";//filtro de barrios agregados(actualizando existente).
+    private String newQuadrantName = "";//Nombre del cuadrante (creando nuevo cuadrante)
+    private String newQuadrantId = "";//Código del cuadrante (creando nuevo cuadrante)
+    private String newQuadrantPopuation = "0";//poblacion cuadrante (creando nuevo cuadrante)
+    private String newNeighborhoodFilter = "";//filtro de barrios disponibles(creando nuevo cuadrante).
+    private String newNeighborhoodFilter2 = "";//filtro de barrios agregados(creando nuevo cuadrante).
     private String poligonText = "";//poligono para el nuevo cuadrante
-    private boolean disabledShowGeomFile = true;//activar/desactivar boton de ver archivo KML    
     private String nameGeomFile = "";//nombre del archivo de geometria para nuevo cuadrante
     private String geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";//aviso de si la geometria esta o no cargada
-    private UploadedFile file;
-    private boolean btnEditDisabled = true;
-    private boolean btnRemoveDisabled = true;
-    private List<String> availableNeighborhoods = new ArrayList<>();
-    private List<String> selectedAvailableNeighborhoods = new ArrayList<>();
-    private List<String> availableAddNeighborhoods = new ArrayList<>();
-    private List<String> selectedAvailableAddNeighborhoods = new ArrayList<>();
-    private List<String> newAvailableNeighborhoods = new ArrayList<>();
-    private List<String> newSelectedAvailableNeighborhoods = new ArrayList<>();
-    private List<String> newAvailableAddNeighborhoods = new ArrayList<>();
-    private List<String> newSelectedAvailableAddNeighborhoods = new ArrayList<>();
-    ConnectionJdbcMB connectionJdbcMB;
-    private String realPath = "";
+    private String realPath = "";//Ruta real en el servidor de la aplicacion
+    private boolean disabledShowGeomFile = true;//activar/desactivar boton de ver archivo KML        
+    private boolean btnEditDisabled = true;//Valor que determina si se activa o no el botón editar cuadrante
+    private boolean btnRemoveDisabled = true;//Valor que determina si se activa o no el botón eliminar cuadrante
+    private List<String> availableNeighborhoods = new ArrayList<>();//listado de barrios disponibles para agregar al cuadrante(Modificando un cuadrante existente)
+    private List<String> selectedAvailableNeighborhoods = new ArrayList<>();//listado de barrios seleccionados para agregar al cuadrante(Modificando un cuadrante existente)
+    private List<String> availableAddNeighborhoods = new ArrayList<>();//listado de barrios agregados al cuadrante(Modificando un cuadrante existente)
+    private List<String> selectedAvailableAddNeighborhoods = new ArrayList<>();//listado de barrios seleciconados de los agregados al cuadrante(Modificando un cuadrante existente)
+    private List<String> newAvailableNeighborhoods = new ArrayList<>();//listado de barrios disponibles para agregar al cuadrante(Creando un cuadrante nuevo)
+    private List<String> newSelectedAvailableNeighborhoods = new ArrayList<>();//listado de barrios seleccionados para agregar al cuadrante(Creando un cuadrante nuevo)
+    private List<String> newAvailableAddNeighborhoods = new ArrayList<>();//listado de barrios agregados al cuadrante(Creando un cuadrante nuevo)
+    private List<String> newSelectedAvailableAddNeighborhoods = new ArrayList<>();//listado de barrios seleciconados de los agregados al cuadrante(Creando un cuadrante nuevo)
 
     public QuadrantsVariableMB() {
+        /*
+         *Constructor de la clase, se btiene la clase que administra la conexion JDBC y la ruta real en servidor
+         */
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/");
     }
 
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
+        /*
+         *Crea una celda dentro de una fila de un archivo excell, aplicando un determinado estilo a la celde
+         */
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
@@ -98,12 +94,18 @@ public class QuadrantsVariableMB implements Serializable {
     }
 
     private void createCell(HSSFRow fila, int position, String value) {
+        /*
+         *Crea una celda dentro de una fila de un archivo excell
+         */
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
 
     public void postProcessXLS(Object document) {
+        /*
+         *Creacion de un archivo excell para exportar todos los cuadrantes
+         */
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
         HSSFRow row;
@@ -131,7 +133,6 @@ public class QuadrantsVariableMB implements Serializable {
         nameGeomFile = "";
         disabledShowGeomFile = true;
         try {
-            file = event.getFile();
             if (copyFile(event.getFile().getFileName(), event.getFile().getInputstream())) {
                 disabledShowGeomFile = false;
             }
@@ -201,8 +202,6 @@ public class QuadrantsVariableMB implements Serializable {
             }
             newSelectedAvailableAddNeighborhoods = new ArrayList<>();
         }
-        //newQuadrantsFilter = "";
-        //changeNewQuadrantsFilter();
     }
 
     public void addNeighborhoodInExistingQuadrantClick() {
@@ -223,8 +222,6 @@ public class QuadrantsVariableMB implements Serializable {
             }
             selectedAvailableAddNeighborhoods = new ArrayList<>();
         }
-        //quadrantsFilter = "";
-        //changeQuadrantsFilter();
     }
 
     public void removeNeighborhoodInNewQuadrantClick() {
@@ -245,8 +242,6 @@ public class QuadrantsVariableMB implements Serializable {
             }
             newSelectedAvailableAddNeighborhoods = new ArrayList<>();
         }
-        //newQuadrantsFilter = "";
-        //changeNewQuadrantsFilter();
     }
 
     public void removeNeighborhoodInExistingQuadrantClick() {
@@ -267,8 +262,6 @@ public class QuadrantsVariableMB implements Serializable {
             }
             selectedAvailableAddNeighborhoods = new ArrayList<>();
         }
-        //quadrantsFilter = "";
-        //changeQuadrantsFilter();
     }
 
     public void loadRegistry() {
@@ -404,6 +397,10 @@ public class QuadrantsVariableMB implements Serializable {
     }
 
     public void updateRegistry() {
+        /*
+         * Actualizar la informacion de un cuadrante existente
+         */
+
         if (currentQuadrant != null) {
             boolean continueProcess = true;
             if (quadrantName.trim().length() == 0) {
@@ -444,11 +441,14 @@ public class QuadrantsVariableMB implements Serializable {
                 connectionJdbcMB.non_query("DELETE FROM neighborhood_quadrant WHERE quadrant_id = " + currentQuadrant.getQuadrantId());
                 //se inserta los diferentes barrios que se haya indicado
                 if (availableAddNeighborhoods != null && !availableAddNeighborhoods.isEmpty()) {
+                    HashSet<String> hashSet = new HashSet<>(availableAddNeighborhoods);
+                    availableAddNeighborhoods.clear();
+                    availableAddNeighborhoods.addAll(hashSet);
                     for (int i = 0; i < availableAddNeighborhoods.size(); i++) {
                         ResultSet rs = connectionJdbcMB.consult(""
                                 + "SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_name LIKE '" + availableAddNeighborhoods.get(i) + "'");
                         try {
-                            if (rs.next()) {
+                            while (rs.next()) {
                                 sql = sql
                                         + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
                                         + rs.getString(1) + ","//id_cuadrante
@@ -522,6 +522,10 @@ public class QuadrantsVariableMB implements Serializable {
     }
 
     public void saveRegistry() {
+        /*
+         * Almacenar un nuevo cuadrantre dentro de la base de datos
+         */
+
         boolean continueProcess = true;
 
         if (newQuadrantName.trim().length() == 0) {
@@ -565,10 +569,13 @@ public class QuadrantsVariableMB implements Serializable {
                         + geom + "); \n";//geometria
                 //se inserta los diferentes cuadrantes que se haya indicado
                 if (newAvailableAddNeighborhoods != null && !newAvailableAddNeighborhoods.isEmpty()) {
+                    HashSet<String> hashSet = new HashSet<>(newAvailableAddNeighborhoods);
+                    newAvailableAddNeighborhoods.clear();
+                    newAvailableAddNeighborhoods.addAll(hashSet);
                     for (int i = 0; i < newAvailableAddNeighborhoods.size(); i++) {
                         ResultSet rs = connectionJdbcMB.consult(""
                                 + "SELECT neighborhood_id FROM neighborhoods WHERE neighborhood_name LIKE '" + newAvailableAddNeighborhoods.get(i) + "'");
-                        if (rs.next()) {
+                        while (rs.next()) {
                             sql = sql
                                     + "INSERT INTO neighborhood_quadrant VALUES ("//codigo
                                     + rs.getString(1) + ","//id_barrio
@@ -638,6 +645,9 @@ public class QuadrantsVariableMB implements Serializable {
     }
 
     public void changeNewPopulation() {
+        /*
+         * Funcion llamada cuando se modifica el campo de poblacion al crear un nuevo cuadrante
+         */
         try {
             int c = Integer.parseInt(newQuadrantPopuation);
             if (c < 1) {
@@ -655,6 +665,9 @@ public class QuadrantsVariableMB implements Serializable {
     }
 
     public void changePopulation() {
+        /*
+         * Funcion llamada cuando se modifica el campo de poblacion al modificar cuadrante existente
+         */
         try {
             int c = Integer.parseInt(quadrantPopuation);
             if (c < 1) {
@@ -672,7 +685,9 @@ public class QuadrantsVariableMB implements Serializable {
     }
 
     public void changeNewNeighborhoodFilter() {
-
+        /*
+         * funcion llamada cuando se modifica el campo que filtra los barrios que se agregaran a un nuevo cuadrante
+         */
         newAvailableNeighborhoods = new ArrayList<>();
         newSelectedAvailableNeighborhoods = new ArrayList<>();
         boolean foundQuadrant;
@@ -708,6 +723,10 @@ public class QuadrantsVariableMB implements Serializable {
     }
 
     public void changeNeighborhoodFilter() {
+        /*
+         * funcion llamada cuando se modifica el campo que filtra los barrios 
+         * que se agregaran cuando se esta editano un cadrante
+         */
         availableNeighborhoods = new ArrayList<>();
         selectedAvailableNeighborhoods = new ArrayList<>();
         boolean foundQuadrant;
@@ -743,6 +762,10 @@ public class QuadrantsVariableMB implements Serializable {
     }
 
     public void createDynamicTable() {
+        /*
+         * Se crea la tabla que inicial que muestra todos los cuadrantes existentes 
+         * o filtrados por el criterio de busqueda dado por el usuario.
+         */
         if (currentSearchValue == null || currentSearchValue.trim().length() == 0) {
             currentSearchValue = "";
         }
@@ -775,14 +798,15 @@ public class QuadrantsVariableMB implements Serializable {
     }
 
     public void newRegistry() {
-
-        //se quita elemento seleccionado de la tabla, se inhabilitan controles
-        selectedRowDataTable = null;
+        /*
+         * Funcion usada cuando se presiona el botón nuevo, y se encarga de inicializar
+         * todos los controles para la creacion de un nuevo cuadrante
+         */
+        selectedRowDataTable = null;//se quita elemento seleccionado de la tabla, se inhabilitan controles
         btnEditDisabled = true;
         btnRemoveDisabled = true;
-        //se limpia el formulario de nuevo cuadrante        
-        newQuadrantId = String.valueOf(quadrantsFacade.findMax() + 1);//id del cuadrante.
-        newQuadrantName = "";//Nombre del cuadrante.                
+        newQuadrantId = String.valueOf(quadrantsFacade.findMax() + 1);//se limpia el formulario de nuevo cuadrante        
+        newQuadrantName = "";
         newQuadrantPopuation = "0";
         newAvailableNeighborhoods = new ArrayList<>();
         newSelectedAvailableNeighborhoods = new ArrayList<>();
@@ -796,6 +820,9 @@ public class QuadrantsVariableMB implements Serializable {
     }
 
     public void reset() {
+        /*
+         * Reinicio de controles y carga de la taba con el listado completo de cuadrantes
+         */
         rowDataTableList = new ArrayList<>();
         createDynamicTable();
         newQuadrantPopuation = "0";
@@ -809,6 +836,11 @@ public class QuadrantsVariableMB implements Serializable {
         geomText = "<div style=\"color: red;\"><b>Geometría no cargada</b></div>";
     }
 
+    //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    //--------------------------FUNCIONES GET Y SET ----------------------------
+    //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     public List<RowDataTable> getRowDataTableList() {
         return rowDataTableList;
     }
@@ -841,87 +873,6 @@ public class QuadrantsVariableMB implements Serializable {
     public void setCurrentSearchValue(String currentSearchValue) {
         this.currentSearchValue = currentSearchValue;
     }
-//
-//    public String getQuadrantId() {
-//        return neighborhoodId;
-//    }
-//
-//    public void setNeighborhoodId(String neighborhoodId) {
-//        this.neighborhoodId = neighborhoodId;
-//    }
-//
-//    public String getNeighborhoodLevel() {
-//        return neighborhoodLevel;
-//    }
-//
-//    public void setNeighborhoodLevel(String neighborhoodLevel) {
-//        this.neighborhoodLevel = neighborhoodLevel;
-//    }
-//
-//    public String getQuadrantName() {
-//        return neighborhoodName;
-//    }
-//
-//    public void setNeighborhoodName(String neighborhoodName) {
-//        this.neighborhoodName = neighborhoodName;
-//    }
-//
-//    public String getNeighborhoodSuburbId() {
-//        return neighborhoodSuburbId;
-//    }
-//
-//    public void setNeighborhoodSuburbId(String neighborhoodSuburbId) {
-//        this.neighborhoodSuburbId = neighborhoodSuburbId;
-//    }
-//
-//    public String getNewNeighborhoodId() {
-//        return newNeighborhoodId;
-//    }
-//
-//    public void setNewNeighborhoodId(String newNeighborhoodId) {
-//        this.newNeighborhoodId = newNeighborhoodId;
-//    }
-//
-//    public String getNewNeighborhoodLevel() {
-//        return newNeighborhoodLevel;
-//    }
-//
-//    public void setNewNeighborhoodLevel(String newNeighborhoodLevel) {
-//        this.newNeighborhoodLevel = newNeighborhoodLevel;
-//    }
-//
-//    public String getNewNeighborhoodName() {
-//        return newNeighborhoodName;
-//    }
-//
-//    public void setNewNeighborhoodName(String newNeighborhoodName) {
-//        this.newNeighborhoodName = newNeighborhoodName;
-//    }
-//
-//    public String getNewNeighborhoodSuburbId() {
-//        return newNeighborhoodSuburbId;
-//    }
-//
-//    public void setNewNeighborhoodSuburbId(String newNeighborhoodSuburbId) {
-//        this.newNeighborhoodSuburbId = newNeighborhoodSuburbId;
-//    }
-//
-//    public String getNewNeighborhoodType() {
-//        return newNeighborhoodType;
-//    }
-//
-//    public void setNewNeighborhoodType(String newNeighborhoodType) {
-//        this.newNeighborhoodType = newNeighborhoodType;
-//    }
-//
-//    public String getNeighborhoodType() {
-//        return neighborhoodType;
-//    }
-//
-//    public void setNeighborhoodType(String neighborhoodType) {
-//        this.neighborhoodType = neighborhoodType;
-//    }
-//
 
     public boolean isBtnEditDisabled() {
         return btnEditDisabled;
@@ -939,142 +890,6 @@ public class QuadrantsVariableMB implements Serializable {
         this.btnRemoveDisabled = btnRemoveDisabled;
     }
 
-    //
-    //    public SelectItem[] getCommunesList() {
-    //        return communesList;
-    //    }
-    //
-    //    public void setCommunesList(SelectItem[] communesList) {
-    //        this.communesList = communesList;
-    //    }
-    //
-    //    public SelectItem[] getNewCommunesList() {
-    //        return newCommunesList;
-    //    }
-    //
-    //    public void setNewCommunesList(SelectItem[] newCommunesList) {
-    //        this.newCommunesList = newCommunesList;
-    //    }
-    //
-    //    public SelectItem[] getCorridorsList() {
-    //        return corridorsList;
-    //    }
-    //
-    //    public void setCorridorsList(SelectItem[] corridorsList) {
-    //        this.corridorsList = corridorsList;
-    //    }
-    //
-    //    public List<String> getAvailableQuadrants() {
-    //        return availableQuadrants;
-    //    }
-    //
-    //    public void setAvailableQuadrants(List<String> availableQuadrants) {
-    //        this.availableQuadrants = availableQuadrants;
-    //    }
-    //
-    //    public List<String> getSelectedAvailableQuadrants() {
-    //        return selectedAvailableQuadrants;
-    //    }
-    //
-    //    public void setSelectedAvailableQuadrants(List<String> selectedAvailableQuadrants) {
-    //        this.selectedAvailableQuadrants = selectedAvailableQuadrants;
-    //    }
-    //
-    //    public List<String> getAvailableAddQuadrants() {
-    //        return availableAddQuadrants;
-    //    }
-    //
-    //    public void setAvailableAddQuadrants(List<String> availableAddQuadrants) {
-    //        this.availableAddQuadrants = availableAddQuadrants;
-    //    }
-    //
-    //    public List<String> getSelectedAvailableAddQuadrants() {
-    //        return selectedAvailableAddQuadrants;
-    //    }
-    //
-    //    public void setSelectedAvailableAddQuadrants(List<String> selectedAvailableAddQuadrants) {
-    //        this.selectedAvailableAddQuadrants = selectedAvailableAddQuadrants;
-    //    }
-    //
-    //    public List<String> getNewAvailableQuadrants() {
-    //        return newAvailableQuadrants;
-    //    }
-    //
-    //    public void setNewAvailableQuadrants(List<String> newAvailableQuadrants) {
-    //        this.newAvailableQuadrants = newAvailableQuadrants;
-    //    }
-    //
-    //    public List<String> getNewSelectedAvailableQuadrants() {
-    //        return newSelectedAvailableQuadrants;
-    //    }
-    //
-    //    public void setNewSelectedAvailableQuadrants(List<String> newSelectedAvailableQuadrants) {
-    //        this.newSelectedAvailableQuadrants = newSelectedAvailableQuadrants;
-    //    }
-    //
-    //    public List<String> getNewAvailableAddQuadrants() {
-    //        return newAvailableAddQuadrants;
-    //    }
-    //
-    //    public void setNewAvailableAddQuadrants(List<String> newAvailableAddQuadrants) {
-    //        this.newAvailableAddQuadrants = newAvailableAddQuadrants;
-    //    }
-    //
-    //    public List<String> getNewSelectedAvailableAddQuadrants() {
-    //        return newSelectedAvailableAddQuadrants;
-    //    }
-    //
-    //    public void setNewSelectedAvailableAddQuadrants(List<String> newSelectedAvailableAddQuadrants) {
-    //        this.newSelectedAvailableAddQuadrants = newSelectedAvailableAddQuadrants;
-    //    }
-    //
-    //    public String getNewPopuation() {
-    //        return newPopuation;
-    //    }
-    //
-    //    public void setNewPopuation(String newPopuation) {
-    //        this.newPopuation = newPopuation;
-    //    }
-    //
-    //    public String getNewNeighborhoodCorridor() {
-    //        return newNeighborhoodCorridor;
-    //    }
-    //
-    //    public void setNewNeighborhoodCorridor(String newNeighborhoodCorridor) {
-    //        this.newNeighborhoodCorridor = newNeighborhoodCorridor;
-    //    }
-    //
-    //    public String getNeighborhoodCorridor() {
-    //        return neighborhoodCorridor;
-    //    }
-    //
-    //    public void setNeighborhoodCorridor(String neighborhoodCorridor) {
-    //        this.neighborhoodCorridor = neighborhoodCorridor;
-    //    }
-    //
-    //    public String getPopuation() {
-    //        return popuation;
-    //    }
-    //
-    //    public void setPopuation(String popuation) {
-    //        this.popuation = popuation;
-    //    }
-    //
-    //    public String getNewQuadrantsFilter() {
-    //        return newQuadrantsFilter;
-    //    }
-    //
-    //    public void setNewQuadrantsFilter(String newQuadrantsFilter) {
-    //        this.newQuadrantsFilter = newQuadrantsFilter;
-    //    }
-    //
-    //    public String getQuadrantsFilter() {
-    //        return quadrantsFilter;
-    //    }
-    //
-    //    public void setQuadrantsFilter(String quadrantsFilter) {
-    //    }
-    //    }
     public QuadrantsFacade getQuadrantsFacade() {
         return quadrantsFacade;
     }
@@ -1089,14 +904,6 @@ public class QuadrantsVariableMB implements Serializable {
 
     public void setQuadrantsList(List<Quadrants> quadrantsList) {
         this.quadrantsList = quadrantsList;
-    }
-
-    public SelectItem[] getNewStationsList() {
-        return newStationsList;
-    }
-
-    public void setNewStationsList(SelectItem[] newStationsList) {
-        this.newStationsList = newStationsList;
     }
 
     public String getQuadrantName() {
