@@ -72,90 +72,6 @@
   <modified_date>2013&#x2f;12&#x2f;09 09&#x3a;12&#x3a;57.275</modified_date>
   </info>
   <notepads>
-    <notepad>
-      <note>Victims</note>
-      <xloc>722</xloc>
-      <yloc>26</yloc>
-      <width>54</width>
-      <heigth>26</heigth>
-      <fontname>Arial</fontname>
-      <fontsize>10</fontsize>
-      <fontbold>N</fontbold>
-      <fontitalic>N</fontitalic>
-      <fontcolorred>0</fontcolorred>
-      <fontcolorgreen>0</fontcolorgreen>
-      <fontcolorblue>0</fontcolorblue>
-      <backgroundcolorred>255</backgroundcolorred>
-      <backgroundcolorgreen>205</backgroundcolorgreen>
-      <backgroundcolorblue>112</backgroundcolorblue>
-      <bordercolorred>100</bordercolorred>
-      <bordercolorgreen>100</bordercolorgreen>
-      <bordercolorblue>100</bordercolorblue>
-      <drawshadow>Y</drawshadow>
-    </notepad>
-    <notepad>
-      <note>Date and time</note>
-      <xloc>714</xloc>
-      <yloc>150</yloc>
-      <width>92</width>
-      <heigth>26</heigth>
-      <fontname>Arial</fontname>
-      <fontsize>10</fontsize>
-      <fontbold>N</fontbold>
-      <fontitalic>N</fontitalic>
-      <fontcolorred>0</fontcolorred>
-      <fontcolorgreen>0</fontcolorgreen>
-      <fontcolorblue>0</fontcolorblue>
-      <backgroundcolorred>255</backgroundcolorred>
-      <backgroundcolorgreen>205</backgroundcolorgreen>
-      <backgroundcolorblue>112</backgroundcolorblue>
-      <bordercolorred>100</bordercolorred>
-      <bordercolorgreen>100</bordercolorgreen>
-      <bordercolorblue>100</bordercolorblue>
-      <drawshadow>Y</drawshadow>
-    </notepad>
-    <notepad>
-      <note>Fatal</note>
-      <xloc>752</xloc>
-      <yloc>273</yloc>
-      <width>39</width>
-      <heigth>26</heigth>
-      <fontname>Arial</fontname>
-      <fontsize>10</fontsize>
-      <fontbold>N</fontbold>
-      <fontitalic>N</fontitalic>
-      <fontcolorred>0</fontcolorred>
-      <fontcolorgreen>0</fontcolorgreen>
-      <fontcolorblue>0</fontcolorblue>
-      <backgroundcolorred>255</backgroundcolorred>
-      <backgroundcolorgreen>205</backgroundcolorgreen>
-      <backgroundcolorblue>112</backgroundcolorblue>
-      <bordercolorred>100</bordercolorred>
-      <bordercolorgreen>100</bordercolorgreen>
-      <bordercolorblue>100</bordercolorblue>
-      <drawshadow>Y</drawshadow>
-    </notepad>
-    <notepad>
-      <note>Group and write</note>
-      <xloc>711</xloc>
-      <yloc>384</yloc>
-      <width>102</width>
-      <heigth>26</heigth>
-      <fontname>Arial</fontname>
-      <fontsize>10</fontsize>
-      <fontbold>N</fontbold>
-      <fontitalic>N</fontitalic>
-      <fontcolorred>0</fontcolorred>
-      <fontcolorgreen>0</fontcolorgreen>
-      <fontcolorblue>0</fontcolorblue>
-      <backgroundcolorred>255</backgroundcolorred>
-      <backgroundcolorgreen>205</backgroundcolorgreen>
-      <backgroundcolorblue>112</backgroundcolorblue>
-      <bordercolorred>100</bordercolorred>
-      <bordercolorgreen>100</bordercolorgreen>
-      <bordercolorblue>100</bordercolorblue>
-      <drawshadow>Y</drawshadow>
-    </notepad>
   </notepads>
   <connection>
     <name>od</name>
@@ -265,9 +181,26 @@
   <hop> <from>Select values q</from><to>Sort rows</to><enabled>Y</enabled> </hop>
   <hop> <from>Sort rows</from><to>Group by</to><enabled>Y</enabled> </hop>
   <hop> <from>Update accident key</from><to>Select values q</to><enabled>Y</enabled> </hop>
-  <hop> <from>Group by</from><to>Write accidents</to><enabled>Y</enabled> </hop>
   <hop> <from>Set unknown date</from><to>Set unknown quadrant</to><enabled>Y</enabled> </hop>
   <hop> <from>Set unknown quadrant</from><to>Update fatal key</to><enabled>Y</enabled> </hop>
+  <hop> <from>Select initial values</from><to>Join neighborhoods</to><enabled>Y</enabled> </hop>
+  <hop> <from>Read neighborhoods</from><to>Join neighborhoods</to><enabled>Y</enabled> </hop>
+  <hop> <from>Join neighborhoods</from><to>Get year and month</to><enabled>Y</enabled> </hop>
+  <hop> <from>Get year and month</from><to>Select the values</to><enabled>Y</enabled> </hop>
+  <hop> <from>Select the values</from><to>Sort rows rates</to><enabled>Y</enabled> </hop>
+  <hop> <from>Sort rows rates</from><to>Group by rates</to><enabled>Y</enabled> </hop>
+  <hop> <from>Group by rates</from><to>Join population</to><enabled>Y</enabled> </hop>
+  <hop> <from>Read population</from><to>Join population</to><enabled>Y</enabled> </hop>
+  <hop> <from>Join population</from><to>Select final values rates</to><enabled>Y</enabled> </hop>
+  <hop> <from>Select final values rates</from><to>Set month name</to><enabled>Y</enabled> </hop>
+  <hop> <from>Set month name</from><to>Write rates</to><enabled>Y</enabled> </hop>
+  <hop> <from>Read accidents</from><to>Select initial values</to><enabled>Y</enabled> </hop>
+  <hop> <from>Read neighborhoods 2</from><to>Merge Join</to><enabled>Y</enabled> </hop>
+  <hop> <from>Merge Join</from><to>Get neighborhood_key</to><enabled>Y</enabled> </hop>
+  <hop> <from>Sort by neighborhood</from><to>Merge Join</to><enabled>Y</enabled> </hop>
+  <hop> <from>Get neighborhood_key</from><to>Select new values </to><enabled>Y</enabled> </hop>
+  <hop> <from>Select new values </from><to>Write accidents</to><enabled>Y</enabled> </hop>
+  <hop> <from>Group by</from><to>Sort by neighborhood</to><enabled>Y</enabled> </hop>
   </order>
   <step>
     <name>Calculator</name>
@@ -420,6 +353,53 @@
     </step>
 
   <step>
+    <name>Get year and month</name>
+    <type>Calculator</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+       <calculation><field_name>year_key</field_name>
+<calc_type>YEAR_OF_DATE</calc_type>
+<field_a>injury_date</field_a>
+<field_b/>
+<field_c/>
+<value_type>Integer</value_type>
+<value_length>-1</value_length>
+<value_precision>-1</value_precision>
+<remove>N</remove>
+<conversion_mask/>
+<decimal_symbol/>
+<grouping_symbol/>
+<currency_symbol/>
+</calculation>
+       <calculation><field_name>month_key</field_name>
+<calc_type>MONTH_OF_DATE</calc_type>
+<field_a>injury_date</field_a>
+<field_b/>
+<field_c/>
+<value_type>Integer</value_type>
+<value_length>-1</value_length>
+<value_precision>-1</value_precision>
+<remove>N</remove>
+<conversion_mask/>
+<decimal_symbol/>
+<grouping_symbol/>
+<currency_symbol/>
+</calculation>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>321</xloc>
+      <yloc>489</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Group by</name>
     <type>GroupBy</type>
     <description/>
@@ -478,7 +458,162 @@
     </step>
 
   <step>
+    <name>Group by rates</name>
+    <type>GroupBy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <all_rows>N</all_rows>
+      <ignore_aggregate>N</ignore_aggregate>
+      <field_ignore/>
+      <directory>&#x25;&#x25;java.io.tmpdir&#x25;&#x25;</directory>
+      <prefix>grp</prefix>
+      <add_linenr>N</add_linenr>
+      <linenr_fieldname/>
+      <give_back_row>N</give_back_row>
+      <group>
+        <field>
+          <name>suburb_key</name>
+        </field>
+        <field>
+          <name>age_five_year_key</name>
+        </field>
+        <field>
+          <name>age_five_year</name>
+        </field>
+        <field>
+          <name>victim_gender</name>
+        </field>
+        <field>
+          <name>year_key</name>
+        </field>
+        <field>
+          <name>month_key</name>
+        </field>
+      </group>
+      <fields>
+        <field>
+          <aggregate>counts</aggregate>
+          <subject>id</subject>
+          <type>COUNT_ALL</type>
+          <valuefield/>
+        </field>
+      </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>446</xloc>
+      <yloc>660</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Join neighborhoods</name>
+    <type>JoinRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <directory>&#x25;&#x25;java.io.tmpdir&#x25;&#x25;</directory>
+      <prefix>out</prefix>
+      <cache_size>500</cache_size>
+      <main/>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <leftvalue>neighborhood_id</leftvalue>
+ <function>&#x3d;</function>
+ <rightvalue>neighborhood_key</rightvalue>
+ </condition>
+    </compare>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>167</xloc>
+      <yloc>489</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Join population</name>
+    <type>JoinRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <directory>&#x25;&#x25;java.io.tmpdir&#x25;&#x25;</directory>
+      <prefix>out</prefix>
+      <cache_size>500</cache_size>
+      <main/>
+    <compare>
+<condition>
+ <negated>N</negated>
+ <conditions>
+  <condition>
+   <negated>N</negated>
+   <leftvalue>year_key</leftvalue>
+   <function>&#x3d;</function>
+   <rightvalue>year</rightvalue>
+   </condition>
+  <condition>
+   <negated>N</negated>
+   <operator>AND</operator>
+   <leftvalue>suburb</leftvalue>
+   <function>&#x3d;</function>
+   <rightvalue>suburb_key</rightvalue>
+   </condition>
+  </conditions>
+ </condition>
+    </compare>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>292</xloc>
+      <yloc>660</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Read accidents</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>N</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>od_test</connection>
+    <sql>SELECT DISTINCT&#xa;	CAST&#x28;id_lesion AS INT&#x29;&#xa;	, CASE&#xa;		WHEN edad_victima IS NULL THEN 99&#xa;		WHEN edad_victima LIKE &#x27;0-4&#x27; THEN 0&#xa;		WHEN edad_victima LIKE &#x27;5-9&#x27; THEN 5&#xa;		WHEN edad_victima LIKE &#x27;10-14&#x27; THEN 10&#xa;		WHEN edad_victima LIKE &#x27;15-19&#x27; THEN 15&#xa;		WHEN edad_victima LIKE &#x27;20-24&#x27; THEN 20&#xa;		WHEN edad_victima LIKE &#x27;25-29&#x27; THEN 25&#xa;		WHEN edad_victima LIKE &#x27;30-34&#x27; THEN 30&#xa;		WHEN edad_victima LIKE &#x27;35-39&#x27; THEN 35&#xa;		WHEN edad_victima LIKE &#x27;40-44&#x27; THEN 40&#xa;		WHEN edad_victima LIKE &#x27;45-49&#x27; THEN 45&#xa;		WHEN edad_victima LIKE &#x27;50-54&#x27; THEN 50&#xa;		WHEN edad_victima LIKE &#x27;55-59&#x27; THEN 55&#xa;		WHEN edad_victima LIKE &#x27;60-64&#x27; THEN 60&#xa;		ELSE 65&#xa;	END AS age_five_year_key&#xa;	, CASE &#xa;		WHEN edad_victima IS NULL THEN &#x27;Desconocido&#x27;&#xa;		WHEN edad_victima LIKE &#x27;0-4&#x27; THEN &#x27;De 0 a 5 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;5-9&#x27; THEN &#x27;De 5 a 10 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;10-14&#x27; THEN &#x27;De 10 a 15 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;15-19&#x27; THEN &#x27;De 15 a 20 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;20-24&#x27; THEN &#x27;De 20 a 25 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;25-29&#x27; THEN &#x27;De 25 a 30 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;30-34&#x27; THEN &#x27;De 30 a 35 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;35-39&#x27; THEN &#x27;De 35 a 40 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;40-44&#x27; THEN &#x27;De 40 a 45 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;45-49&#x27; THEN &#x27;De 45 a 50 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;50-54&#x27; THEN &#x27;De 50 a 55 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;55-59&#x27; THEN &#x27;De 55 a 60 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;60-64&#x27; THEN &#x27;De 60 a 65 a&#xf1;os&#x27;&#xa;		ELSE &#x27;Mayor de 65  a&#xf1;os&#x27;&#xa;	END AS age_five_year&#xa;	, CASE &#xa;		WHEN edad_victima IS NULL THEN &#x27;Desconocido&#x27;&#xa;		WHEN edad_victima LIKE &#x27;0-4&#x27; THEN &#x27;Ni&#xf1;o&#x27;&#xa;		WHEN edad_victima LIKE &#x27;5-9&#x27; THEN &#x27;Ni&#xf1;o&#x27;&#xa;		WHEN edad_victima LIKE &#x27;10-14&#x27; THEN &#x27;Ni&#xf1;o&#x27;&#xa;		WHEN edad_victima LIKE &#x27;15-19&#x27; THEN &#x27;Joven&#x27;&#xa;		WHEN edad_victima LIKE &#x27;20-24&#x27; THEN &#x27;Joven&#x27;&#xa;		WHEN edad_victima LIKE &#x27;25-29&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;30-34&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;35-39&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;40-44&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;45-49&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;50-54&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;55-59&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;60-64&#x27; THEN &#x27;Adulto&#x27;&#xa;		ELSE &#x27;Adulto Mayor&#x27;&#xa;	END AS age_groups&#xa;	, CASE &#xa;		WHEN mayor_edad IS NULL THEN &#x27;Desconocido&#x27;&#xa;		WHEN mayor_edad LIKE &#x27;MENOR&#x27; THEN &#x27;Menor de Edad&#x27;&#xa;		ELSE &#x27;Adulto&#x27;&#xa;	END AS is_adult&#xa;	, CASE &#xa;		WHEN genero IS NULL THEN &#x27;NS&#x27;&#xa;		WHEN genero &#x3d; &#x27;1&#x27; THEN &#x27;M&#x27;&#xa;		WHEN genero &#x3d; &#x27;2&#x27; THEN &#x27;F&#x27;&#xa;		ELSE &#x27;NS&#x27;&#xa;	END AS victim_gender&#xa;	, COALESCE&#x28;job_id, 0&#x29; AS job_key&#xa;	, COALESCE&#x28;job_name, &#x27;SIN DATO&#x27;&#x29; AS job_name&#xa;	, COALESCE&#x28;CAST&#x28;barrio_residencia AS INT&#x29;, 52001&#x29; AS residence_key&#xa;	, fecha_evento AS injury_date&#xa;	, hora_evento AS injury_time&#xa;	, COALESCE&#x28;CAST&#x28;barrio_evento AS INT&#x29;, 52001&#x29; AS neighborhood_key&#xa;	, CAST&#x28;cuadrante AS INT&#x29; AS quadrant_key&#xa;	, COALESCE&#x28;place_id, 9&#x29; AS place_key&#xa;	, COALESCE&#x28;place_name, &#x27;NO SE SABE&#x27;&#x29; AS place_name&#xa;	, CAST&#x28;SUBSTRING&#x28;numero_victimas_fatales_mismo_hecho from 1 for 1&#x29; AS INT&#x29; AS additional_victims_key&#xa;	, numero_victimas_fatales_mismo_hecho AS additional_victims_name&#xa;	, COALESCE&#x28;alcohol_level_id, 2&#x29; AS alcohol_level_key&#xa;	, COALESCE&#x28;alcohol_level_name, &#x27;SIN DATO&#x27;&#x29; AS alcohol_level_name&#xa;	-- Accidents&#xa;	, COALESCE&#x28;accident_mechanism_id, 5&#x29; AS accident_mechanism_key&#xa;	, COALESCE&#x28;accident_mechanism_name, &#x27;OTROS MEDIOS&#x27;&#x29; AS accident_mechanism_name&#xa;	, CAST&#x28;SUBSTRING&#x28;numero_victimas_no_fatales_mismo_hecho from 1 for 1&#x29; AS INT&#x29; AS additional_victims_key&#xa;	, numero_victimas_no_fatales_mismo_hecho AS additional_victims_name&#xa;FROM&#xa;	fatal_injury_accident_sta&#xa;LEFT JOIN&#xa;	jobs&#xa;ON&#xa;	&#x28;CAST&#x28;ocupacion AS INT&#x29; &#x3d; job_id&#x29;&#xa;LEFT JOIN&#xa;	places&#xa;ON&#xa;	&#x28;CAST&#x28;clase_lugar_hecho AS INT&#x29; &#x3d; place_id&#x29;&#xa;LEFT JOIN&#xa;	alcohol_levels&#xa;ON&#xa;	&#x28;CAST&#x28;nivel_alcohol AS INT&#x29; &#x3d; alcohol_level_id&#x29;&#xa;	-- Accidents&#xa;LEFT JOIN&#xa;	accident_mechanisms&#xa;ON&#xa;	&#x28;CAST&#x28;mecanismo_muerte AS INT&#x29; &#x3d; accident_mechanism_id&#x29;&#xa;	-- &#xa;ORDER BY &#xa;	1</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>48</xloc>
+      <yloc>32</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Read neighborhoods</name>
     <type>TableInput</type>
     <description/>
     <distribute>Y</distribute>
@@ -489,7 +624,7 @@
            <schema_name/>
            </partitioning>
     <connection>od_test</connection>
-    <sql>SELECT DISTINCT&#xa;	CAST&#x28;id_lesion AS INT&#x29;&#xa;	, CASE&#xa;		WHEN edad_victima IS NULL THEN 99&#xa;		WHEN edad_victima LIKE &#x27;0-4&#x27; THEN 0&#xa;		WHEN edad_victima LIKE &#x27;5-9&#x27; THEN 5&#xa;		WHEN edad_victima LIKE &#x27;10-14&#x27; THEN 10&#xa;		WHEN edad_victima LIKE &#x27;15-19&#x27; THEN 15&#xa;		WHEN edad_victima LIKE &#x27;20-24&#x27; THEN 20&#xa;		WHEN edad_victima LIKE &#x27;25-29&#x27; THEN 25&#xa;		WHEN edad_victima LIKE &#x27;30-34&#x27; THEN 30&#xa;		WHEN edad_victima LIKE &#x27;35-39&#x27; THEN 35&#xa;		WHEN edad_victima LIKE &#x27;40-44&#x27; THEN 40&#xa;		WHEN edad_victima LIKE &#x27;45-49&#x27; THEN 45&#xa;		WHEN edad_victima LIKE &#x27;50-54&#x27; THEN 50&#xa;		WHEN edad_victima LIKE &#x27;55-59&#x27; THEN 55&#xa;		WHEN edad_victima LIKE &#x27;60-64&#x27; THEN 60&#xa;		ELSE 65&#xa;	END AS age_five_year_key&#xa;	, CASE &#xa;		WHEN edad_victima IS NULL THEN &#x27;Desconocido&#x27;&#xa;		WHEN edad_victima LIKE &#x27;0-4&#x27; THEN &#x27;De 0 a 5 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;5-9&#x27; THEN &#x27;De 5 a 10 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;10-14&#x27; THEN &#x27;De 10 a 15 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;15-19&#x27; THEN &#x27;De 15 a 20 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;20-24&#x27; THEN &#x27;De 20 a 25 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;25-29&#x27; THEN &#x27;De 25 a 30 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;30-34&#x27; THEN &#x27;De 30 a 35 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;35-39&#x27; THEN &#x27;De 35 a 40 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;40-44&#x27; THEN &#x27;De 40 a 45 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;45-49&#x27; THEN &#x27;De 45 a 50 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;50-54&#x27; THEN &#x27;De 50 a 55 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;55-59&#x27; THEN &#x27;De 55 a 60 a&#xf1;os&#x27;&#xa;		WHEN edad_victima LIKE &#x27;60-64&#x27; THEN &#x27;De 60 a 65 a&#xf1;os&#x27;&#xa;		ELSE &#x27;Mayor de 65  a&#xf1;os&#x27;&#xa;	END AS age_five_year&#xa;	, CASE &#xa;		WHEN edad_victima IS NULL THEN &#x27;Desconocido&#x27;&#xa;		WHEN edad_victima LIKE &#x27;0-4&#x27; THEN &#x27;Ni&#xf1;o&#x27;&#xa;		WHEN edad_victima LIKE &#x27;5-9&#x27; THEN &#x27;Ni&#xf1;o&#x27;&#xa;		WHEN edad_victima LIKE &#x27;10-14&#x27; THEN &#x27;Ni&#xf1;o&#x27;&#xa;		WHEN edad_victima LIKE &#x27;15-19&#x27; THEN &#x27;Joven&#x27;&#xa;		WHEN edad_victima LIKE &#x27;20-24&#x27; THEN &#x27;Joven&#x27;&#xa;		WHEN edad_victima LIKE &#x27;25-29&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;30-34&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;35-39&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;40-44&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;45-49&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;50-54&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;55-59&#x27; THEN &#x27;Adulto&#x27;&#xa;		WHEN edad_victima LIKE &#x27;60-64&#x27; THEN &#x27;Adulto&#x27;&#xa;		ELSE &#x27;Adulto Mayor&#x27;&#xa;	END AS age_groups&#xa;	, CASE &#xa;		WHEN mayor_edad IS NULL THEN &#x27;Desconocido&#x27;&#xa;		WHEN mayor_edad LIKE &#x27;MENOR&#x27; THEN &#x27;Menor de Edad&#x27;&#xa;		ELSE &#x27;Adulto&#x27;&#xa;	END AS is_adult&#xa;	, CASE &#xa;		WHEN genero IS NULL THEN &#x27;NS&#x27;&#xa;		WHEN genero &#x3d; &#x27;1&#x27; THEN &#x27;M&#x27;&#xa;		WHEN genero &#x3d; &#x27;2&#x27; THEN &#x27;F&#x27;&#xa;		ELSE &#x27;NS&#x27;&#xa;	END AS victim_gender&#xa;	, COALESCE&#x28;job_id, 0&#x29; AS job_key&#xa;	, COALESCE&#x28;job_name, &#x27;SIN DATO&#x27;&#x29; AS job_name&#xa;	, COALESCE&#x28;CAST&#x28;barrio_residencia AS INT&#x29;, 52001&#x29; AS residence_key&#xa;	, fecha_evento AS injury_date&#xa;	, hora_evento AS injury_time&#xa;	, COALESCE&#x28;CAST&#x28;barrio_evento AS INT&#x29;, 52001&#x29; AS neighborhood_key&#xa;	, CAST&#x28;cuadrante AS INT&#x29; AS quadrant_key&#xa;	, COALESCE&#x28;place_id, 9&#x29; AS place_key&#xa;	, COALESCE&#x28;place_name, &#x27;NO SE SABE&#x27;&#x29; AS place_name&#xa;	, CAST&#x28;SUBSTRING&#x28;numero_victimas_fatales_mismo_hecho from 1 for 1&#x29; AS INT&#x29; AS additional_victims_key&#xa;	, numero_victimas_fatales_mismo_hecho AS additional_victims_name&#xa;	, COALESCE&#x28;alcohol_level_id, 2&#x29; AS alcohol_level_key&#xa;	, COALESCE&#x28;alcohol_level_name, &#x27;SIN DATO&#x27;&#x29; AS alcohol_level_name&#xa;	-- Accidents&#xa;	, COALESCE&#x28;accident_mechanism_id, 5&#x29; AS accident_mechanism_key&#xa;	, COALESCE&#x28;accident_mechanism_name, &#x27;OTROS MEDIOS&#x27;&#x29; AS accident_mechanism_name&#xa;	, CAST&#x28;SUBSTRING&#x28;numero_victimas_no_fatales_mismo_hecho from 1 for 1&#x29; AS INT&#x29; AS non_fatal_victims_key&#xa;	, numero_victimas_no_fatales_mismo_hecho AS non_fatal_victims_name&#xa;FROM&#xa;	fatal_injury_accident_sta_temp&#xa;LEFT JOIN&#xa;	jobs&#xa;ON&#xa;	&#x28;CAST&#x28;ocupacion AS INT&#x29; &#x3d; job_id&#x29;&#xa;LEFT JOIN&#xa;	places&#xa;ON&#xa;	&#x28;CAST&#x28;clase_lugar_hecho AS INT&#x29; &#x3d; place_id&#x29;&#xa;LEFT JOIN&#xa;	alcohol_levels&#xa;ON&#xa;	&#x28;CAST&#x28;nivel_alcohol AS INT&#x29; &#x3d; alcohol_level_id&#x29;&#xa;	-- Accidents&#xa;LEFT JOIN&#xa;	accident_mechanisms&#xa;ON&#xa;	&#x28;CAST&#x28;mecanismo_muerte AS INT&#x29; &#x3d; accident_mechanism_id&#x29;&#xa;	-- &#xa;ORDER BY &#xa;	1</sql>
+    <sql>SELECT&#xa;	neighborhood_id, neighborhood_suburb AS suburb_key&#xa;FROM&#xa;	neighborhoods&#xa;WHERE	&#xa;	neighborhood_suburb &#x3c;&#x3d; 12&#xa;	AND neighborhood_id &#x21;&#x3d; 52001</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
@@ -497,8 +632,178 @@
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>48</xloc>
-      <yloc>32</yloc>
+      <xloc>167</xloc>
+      <yloc>566</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Read population</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>od_dwh_test</connection>
+    <sql>SELECT&#xa;	&#x2a;&#xa;FROM&#xa;	dim_population</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>292</xloc>
+      <yloc>573</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select final values rates</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>year_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>month_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>suburb_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>age_five_year_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>age_five_year</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>victim_gender</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>counts</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>population</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>        <select_unspecified>N</select_unspecified>
+    </fields>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>166</xloc>
+      <yloc>660</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select initial values</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>id_lesion</name>
+        <rename>id</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>age_five_year_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>age_five_year</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>victim_gender</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>neighborhood_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>injury_date</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>        <select_unspecified>N</select_unspecified>
+    </fields>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>47</xloc>
+      <yloc>489</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select the values</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>suburb_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>id</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>age_five_year_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>age_five_year</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>victim_gender</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>year_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>month_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>        <select_unspecified>N</select_unspecified>
+    </fields>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>442</xloc>
+      <yloc>490</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -631,6 +936,78 @@
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>300</xloc>
       <yloc>31</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Set month name</name>
+    <type>ValueMapper</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <field_to_use>month_key</field_to_use>
+    <target_field>month_name</target_field>
+    <non_match_default/>
+    <fields>
+      <field>
+        <source_value>1</source_value>
+        <target_value>Ene</target_value>
+      </field>
+      <field>
+        <source_value>2</source_value>
+        <target_value>Feb</target_value>
+      </field>
+      <field>
+        <source_value>3</source_value>
+        <target_value>Mar</target_value>
+      </field>
+      <field>
+        <source_value>4</source_value>
+        <target_value>Abr</target_value>
+      </field>
+      <field>
+        <source_value>5</source_value>
+        <target_value>May</target_value>
+      </field>
+      <field>
+        <source_value>6</source_value>
+        <target_value>Jun</target_value>
+      </field>
+      <field>
+        <source_value>7</source_value>
+        <target_value>Jul</target_value>
+      </field>
+      <field>
+        <source_value>8</source_value>
+        <target_value>Ago</target_value>
+      </field>
+      <field>
+        <source_value>9</source_value>
+        <target_value>Sep</target_value>
+      </field>
+      <field>
+        <source_value>10</source_value>
+        <target_value>Oct</target_value>
+      </field>
+      <field>
+        <source_value>11</source_value>
+        <target_value>Nov</target_value>
+      </field>
+      <field>
+        <source_value>12</source_value>
+        <target_value>Dic</target_value>
+      </field>
+    </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>38</xloc>
+      <yloc>660</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -794,6 +1171,70 @@
     </step>
 
   <step>
+    <name>Sort rows rates</name>
+    <type>SortRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <directory>&#x25;&#x25;java.io.tmpdir&#x25;&#x25;</directory>
+      <prefix>out</prefix>
+      <sort_size>1000000</sort_size>
+      <free_memory/>
+      <compress>N</compress>
+      <compress_variable/>
+      <unique_rows>N</unique_rows>
+    <fields>
+      <field>
+        <name>suburb_key</name>
+        <ascending>Y</ascending>
+        <case_sensitive>N</case_sensitive>
+        <presorted>N</presorted>
+      </field>
+      <field>
+        <name>age_five_year_key</name>
+        <ascending>Y</ascending>
+        <case_sensitive>N</case_sensitive>
+        <presorted>N</presorted>
+      </field>
+      <field>
+        <name>age_five_year</name>
+        <ascending>Y</ascending>
+        <case_sensitive>N</case_sensitive>
+        <presorted>N</presorted>
+      </field>
+      <field>
+        <name>victim_gender</name>
+        <ascending>Y</ascending>
+        <case_sensitive>N</case_sensitive>
+        <presorted>N</presorted>
+      </field>
+      <field>
+        <name>year_key</name>
+        <ascending>Y</ascending>
+        <case_sensitive>N</case_sensitive>
+        <presorted>N</presorted>
+      </field>
+      <field>
+        <name>month_key</name>
+        <ascending>Y</ascending>
+        <case_sensitive>N</case_sensitive>
+        <presorted>N</presorted>
+      </field>
+    </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>445</xloc>
+      <yloc>582</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
     <name>Update accident key</name>
     <type>CombinationLookup</type>
     <description/>
@@ -822,11 +1263,11 @@
           <lookup>accident_mechanism_name</lookup>
         </key>
         <key>
-          <name>non_fatal_victims_key</name>
+          <name>additional_victims_key</name>
           <lookup>non_fatal_victims_key</lookup>
         </key>
         <key>
-          <name>non_fatal_victims_name</name>
+          <name>additional_victims_name</name>
           <lookup>non_fatal_victims_name</lookup>
         </key>
         <return>
@@ -1045,7 +1486,317 @@
     </fields>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>570</xloc>
+      <xloc>951</xloc>
+      <yloc>522</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Write rates</name>
+    <type>TableOutput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>od_dwh_test</connection>
+    <schema/>
+    <table>accident_rates</table>
+    <commit>1000</commit>
+    <truncate>N</truncate>
+    <ignore_errors>N</ignore_errors>
+    <use_batch>Y</use_batch>
+    <specify_fields>Y</specify_fields>
+    <partitioning_enabled>N</partitioning_enabled>
+    <partitioning_field/>
+    <partitioning_daily>N</partitioning_daily>
+    <partitioning_monthly>Y</partitioning_monthly>
+    <tablename_in_field>N</tablename_in_field>
+    <tablename_field/>
+    <tablename_in_table>Y</tablename_in_table>
+    <return_keys>N</return_keys>
+    <return_field/>
+    <fields>
+        <field>
+          <column_name>year_key</column_name>
+          <stream_name>year_key</stream_name>
+        </field>
+        <field>
+          <column_name>month_key</column_name>
+          <stream_name>month_key</stream_name>
+        </field>
+        <field>
+          <column_name>month_name</column_name>
+          <stream_name>month_name</stream_name>
+        </field>
+        <field>
+          <column_name>suburb_key</column_name>
+          <stream_name>suburb_key</stream_name>
+        </field>
+        <field>
+          <column_name>age_five_year_key</column_name>
+          <stream_name>age_five_year_key</stream_name>
+        </field>
+        <field>
+          <column_name>age_five_year</column_name>
+          <stream_name>age_five_year</stream_name>
+        </field>
+        <field>
+          <column_name>victim_gender</column_name>
+          <stream_name>victim_gender</stream_name>
+        </field>
+        <field>
+          <column_name>counts</column_name>
+          <stream_name>counts</stream_name>
+        </field>
+        <field>
+          <column_name>population</column_name>
+          <stream_name>population</stream_name>
+        </field>
+    </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>39</xloc>
+      <yloc>745</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Read neighborhoods 2</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>od_test</connection>
+    <sql>SELECT&#xa;	neighborhood_id&#xa;	, neighborhood_name AS neighborhood_name&#xa;	, commune_id AS suburb_key&#xa;	, commune_name AS suburb_name&#xa;	, CASE WHEN area_id IS NULL THEN 0  &#xa;		ELSE area_id END AS zone_key&#xa;	, CASE WHEN area_id IS NULL THEN &#x27;SIN DATO&#x27;  &#xa;		WHEN area_id &#x3d; 1 THEN &#x27;URBANA&#x27;&#xa;		WHEN area_id &#x3d; 2 THEN &#x27;RURAL&#x27;&#xa;		END AS zone_name&#xa;	, CASE WHEN neighborhood_corridor IS NULL THEN 9  &#xa;		WHEN neighborhood_corridor &#x3d; 0 THEN 9&#xa;		ELSE neighborhood_corridor END AS corridor_key&#xa;	, CASE WHEN neighborhood_corridor IS NULL THEN &#x27;NO APLICA&#x27; &#xa;		WHEN neighborhood_corridor &#x3d; 1 THEN &#x27;CENTRAL&#x27;&#xa;		WHEN neighborhood_corridor &#x3d; 2 THEN &#x27;OCCIDENTAL&#x27;&#xa;		WHEN neighborhood_corridor &#x3d; 3 THEN &#x27;ORIENTAL&#x27;&#xa;		WHEN neighborhood_corridor &#x3d; 4 THEN &#x27;SURORIENTAL&#x27;&#xa;		ELSE &#x27;NO APLICA&#x27; END AS corridor_name&#xa;FROM&#xa;	neighborhoods&#xa;LEFT JOIN&#xa;	communes&#xa;ON&#xa;	&#x28;neighborhood_suburb &#x3d; commune_id&#x29;&#xa;ORDER BY&#xa;	neighborhood_id</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>691</xloc>
+      <yloc>514</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Merge Join</name>
+    <type>MergeJoin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+<join_type>INNER</join_type>
+<step1>Sort by neighborhood</step1>
+<step2>Read neighborhoods 2</step2>
+    <keys_1>
+      <key>neighborhood_key</key>
+    </keys_1>
+    <keys_2>
+      <key>neighborhood_id</key>
+    </keys_2>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>691</xloc>
+      <yloc>394</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Sort by neighborhood</name>
+    <type>SortRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <directory>&#x25;&#x25;java.io.tmpdir&#x25;&#x25;</directory>
+      <prefix>out</prefix>
+      <sort_size>1000000</sort_size>
+      <free_memory/>
+      <compress>N</compress>
+      <compress_variable/>
+      <unique_rows>N</unique_rows>
+    <fields>
+      <field>
+        <name>neighborhood_key</name>
+        <ascending>Y</ascending>
+        <case_sensitive>N</case_sensitive>
+        <presorted>N</presorted>
+      </field>
+    </fields>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>582</xloc>
+      <yloc>394</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Get neighborhood_key</name>
+    <type>CombinationLookup</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+      <schema/>
+      <table>dim_neighborhood</table>
+      <connection>od_dwh_test</connection>
+      <commit>100</commit>
+      <cache_size>9999</cache_size>
+      <replace>N</replace>
+      <crc>N</crc>
+      <crcfield>hashcode</crcfield>
+      <fields>
+        <key>
+          <name>neighborhood_name</name>
+          <lookup>neighborhood_name</lookup>
+        </key>
+        <key>
+          <name>suburb_key</name>
+          <lookup>suburb_key</lookup>
+        </key>
+        <key>
+          <name>suburb_name</name>
+          <lookup>suburb_name</lookup>
+        </key>
+        <key>
+          <name>zone_key</name>
+          <lookup>zone_key</lookup>
+        </key>
+        <key>
+          <name>zone_name</name>
+          <lookup>zone_name</lookup>
+        </key>
+        <key>
+          <name>corridor_key</name>
+          <lookup>corridor_key</lookup>
+        </key>
+        <key>
+          <name>corridor_name</name>
+          <lookup>corridor_name</lookup>
+        </key>
+        <return>
+          <name>neighborhood_key</name>
+          <creation_method>tablemax</creation_method>
+          <use_autoinc>N</use_autoinc>
+        </return>
+      </fields>
+      <sequence/>
+      <last_update_field/>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>822</xloc>
+      <yloc>394</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Select new values </name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <fields>      <field>        <name>victim_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>date_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>time_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>quadrant_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>fatal_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>accident_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>counts</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>neighborhood_id</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>neighborhood_name</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>suburb_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>suburb_name</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>zone_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>zone_name</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>corridor_key</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>corridor_name</name>
+        <rename/>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>      <field>        <name>neighborhood_key_1</name>
+        <rename>neighborhood_key</rename>
+        <length>-2</length>
+        <precision>-2</precision>
+      </field>        <select_unspecified>N</select_unspecified>
+    </fields>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>951</xloc>
       <yloc>394</yloc>
       <draw>Y</draw>
       </GUI>

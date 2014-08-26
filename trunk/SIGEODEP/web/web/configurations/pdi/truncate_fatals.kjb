@@ -133,8 +133,8 @@
     <access>Native</access>
     <database>od_dwh3</database>
     <port>5432</port>
-    <username>and</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb79ce7edf9cacc3</password>
+    <username>santos</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ce108fc0fc8e</password>
     <servername/>
     <data_tablespace/>
     <index_tablespace/>
@@ -157,8 +157,8 @@
     <access>Native</access>
     <database>od</database>
     <port>5432</port>
-    <username>and</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb79ce7edf9cacc3</password>
+    <username>santos</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ce108fc0fc8e</password>
     <servername/>
     <data_tablespace/>
     <index_tablespace/>
@@ -237,6 +237,22 @@
         </field>
         <field>
           <name>fact_accidents</name>
+          <schemaname/>
+        </field>
+        <field>
+          <name>suicide_rates</name>
+          <schemaname/>
+        </field>
+        <field>
+          <name>murder_rates</name>
+          <schemaname/>
+        </field>
+        <field>
+          <name>accident_rates</name>
+          <schemaname/>
+        </field>
+        <field>
+          <name>traffic_rates</name>
           <schemaname/>
         </field>
       </fields>
