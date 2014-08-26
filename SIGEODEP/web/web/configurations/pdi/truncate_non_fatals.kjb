@@ -132,8 +132,8 @@
     <access>Native</access>
     <database>od_dwh3</database>
     <port>5432</port>
-    <username>and</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb79ce7edf9cacc3</password>
+    <username>santos</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ce108fc0fc8e</password>
     <servername/>
     <data_tablespace/>
     <index_tablespace/>
@@ -156,8 +156,8 @@
     <access>Native</access>
     <database>od</database>
     <port>5432</port>
-    <username>and</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb79ce7edf9cacc3</password>
+    <username>santos</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ce108fc0fc8e</password>
     <servername/>
     <data_tablespace/>
     <index_tablespace/>
@@ -227,23 +227,11 @@
           <schemaname>public</schemaname>
         </field>
         <field>
-          <name>fact_unintentional_q</name>
-          <schemaname>public</schemaname>
-        </field>
-        <field>
           <name>fact_intrafamiliar</name>
           <schemaname>public</schemaname>
         </field>
         <field>
-          <name>fact_intrafamiliar_q</name>
-          <schemaname>public</schemaname>
-        </field>
-        <field>
           <name>fact_interpersonal</name>
-          <schemaname>public</schemaname>
-        </field>
-        <field>
-          <name>fact_interpersonal_q</name>
           <schemaname>public</schemaname>
         </field>
         <field>
@@ -253,6 +241,26 @@
         <field>
           <name>fact_self_inflicted</name>
           <schemaname>public</schemaname>
+        </field>
+        <field>
+          <name>transport_rates</name>
+          <schemaname/>
+        </field>
+        <field>
+          <name>interpersonal_rates</name>
+          <schemaname/>
+        </field>
+        <field>
+          <name>unintentional_rates</name>
+          <schemaname/>
+        </field>
+        <field>
+          <name>self_inflicted_rates</name>
+          <schemaname/>
+        </field>
+        <field>
+          <name>intrafamiliar_rates</name>
+          <schemaname/>
         </field>
       </fields>
       <parallel>N</parallel>
