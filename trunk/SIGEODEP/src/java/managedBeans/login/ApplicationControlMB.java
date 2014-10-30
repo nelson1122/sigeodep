@@ -66,6 +66,17 @@ public class ApplicationControlMB {
          * Constuctor de la clase: obtiene la ruta real del servidor e 
          * inicia un timer que es llamado cada hora
          */
+//        //CODIGO QUE PERMITE CREAR ARCHIVOS CON LO QUE SE ESCRIBA EN LA SALIDA POR CONSOLA
+//        try {
+//            PrintStream out = new PrintStream(new FileOutputStream("output.txt"));
+//            System.setOut(out);
+//            PrintStream out2 = new PrintStream(new FileOutputStream("output2.txt"));
+//            System.setErr(out2);
+//        } catch (Exception e) {
+//            System.out.println("error:    " + e);
+//        }
+        
+        
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/");
         timer.start();

@@ -162,7 +162,7 @@ public class IndicatorsCountMB {
     private int widthGraph = 660;
     private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
-    private String currentTypeGraph="barras";
+    private String currentTypeGraph = "barras";
     //DecimalFormat formateador = new DecimalFormat("0.00");
     String variablesName = "";
     String categoryAxixLabel = "";
@@ -172,6 +172,7 @@ public class IndicatorsCountMB {
     Calendar c = Calendar.getInstance();
 
     public IndicatorsCountMB() {
+        
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         geoDBConnection = (GeoDBConnection) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{geoDBConnectionMB}", GeoDBConnection.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
@@ -338,7 +339,14 @@ public class IndicatorsCountMB {
 
         if (continueProcess && sameRangeLimit) {
             if (initialDate.getMonth() > endDate.getMonth()) {
-                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes de la fecha final sea igual o mayor que el mes de la fecha inicial");
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el mes de la fecha final debe ser igual o mayor que el mes de la fecha inicial");
+                continueProcess = false;
+            }
+        }
+
+        if (continueProcess && sameRangeLimit) {
+            if (initialDate.getDate() > endDate.getDate()) {
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el dia de la fecha final debe ser igual o mayor que el dia de la fecha inicial");
                 continueProcess = false;
             }
         }
@@ -868,7 +876,7 @@ public class IndicatorsCountMB {
             }
             currentVariablesCrossSelected = null;
             btnRemoveVariableDisabled = true;
-            btnRemoveVariableDisabled=true;
+            btnRemoveVariableDisabled = true;
             break;
         }
     }
@@ -881,10 +889,10 @@ public class IndicatorsCountMB {
         currentCategoricalValuesSelected = new ArrayList<>();
         currentVariableConfiguring = null;
         initialValue = "";
-        endValue = "";        
+        endValue = "";
         if (!currentVariablesCrossSelected.isEmpty()) {//cargo la lista de valores categoricos para la variable seleccionada
             btnRemoveVariableDisabled = false;
-            firstVariablesCrossSelected = currentVariablesCrossSelected.get(0);            
+            firstVariablesCrossSelected = currentVariablesCrossSelected.get(0);
             currentCategoricalValuesSelected = new ArrayList<>();
             for (int i = 0; i < variablesListData.size(); i++) {
                 if (variablesListData.get(i).getName().compareTo(firstVariablesCrossSelected) == 0) {
@@ -1138,11 +1146,7 @@ public class IndicatorsCountMB {
             //-----CREACION DEL TITULO
             indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n" + variablesName + "\n ";
             if (sameRangeLimit) {
-                if (initialDate.getMonth() == endDate.getMonth()) {
-                    indicatorName = indicatorName + intToMonth(initialDate.getMonth());
-                } else {
-                    indicatorName = indicatorName + intToMonth(initialDate.getMonth()) + " a " + intToMonth(endDate.getMonth());
-                }
+                indicatorName = indicatorName + initialDate.getDate() + " de " + intToMonth(initialDate.getMonth()) + " a " + endDate.getDate() + " de " + intToMonth(endDate.getMonth()) + "\n";
                 indicatorName = indicatorName + " de los años " + String.valueOf(initialDate.getYear() + 1900) + " a " + String.valueOf(endDate.getYear() + 1900);
             } else {
                 indicatorName = indicatorName + "Periodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);
@@ -2546,7 +2550,7 @@ public class IndicatorsCountMB {
                             + "          quadrants.quadrant_name \n\r"
                             + "       FROM \n\r"
                             + "          public.quadrants \n\r"
-                            + "       WHERE \n\r"                            
+                            + "       WHERE \n\r"
                             + "          quadrants.quadrant_id=" + currentIndicator.getInjuryType() + ".quadrant_id \n\r"
                             + "    )"
                             + " END AS cuadrante";
@@ -3046,39 +3050,38 @@ public class IndicatorsCountMB {
         //------DETERMINAR RANGOS DE FECHAS ---------------------------
         if (sameRangeLimit) {
             //determinar cuantos años existen entre las dos fechas            
-            Interval interval = new Interval(new DateTime(initialDate), (new DateTime(endDate)));        
-            int years= Years.yearsIn(interval).getYears()+1;            
+            Interval interval = new Interval(new DateTime(initialDate), (new DateTime(endDate)));
+            int years = Years.yearsIn(interval).getYears() + 1;
             String startDateRange;
             String endDateRange;
             sqlReturn = sqlReturn + " (\n";
-            for (int i = 0; i < years; i++) {//cilco que se repite por cada año
-
+            for (int i = 0; i < years; i++) {//ciclo que se repite por cada año
                 //DETERMINAR FECHA INICIAL EN PARA ESTE AÑO(debe tener el primer dia del mes de la fecha inicial)
-                startDateRange = "";
-                startDateRange = startDateRange + "01/";//primer dia del mes
+                startDateRange = "";                
+                if (String.valueOf(initialDate.getDate()).length() == 1) {
+                    startDateRange = startDateRange + "0" + String.valueOf(initialDate.getDate()) + "/";
+                } else {
+                    startDateRange = startDateRange + String.valueOf(initialDate.getDate()) + "/";
+                }
                 if (String.valueOf(initialDate.getMonth() + 1).length() == 1) {
                     startDateRange = startDateRange + "0" + String.valueOf(initialDate.getMonth() + 1) + "/";
                 } else {
                     startDateRange = startDateRange + String.valueOf(initialDate.getMonth() + 1) + "/";
                 }
                 startDateRange = startDateRange + String.valueOf(initialDate.getYear() + i + 1900);
-
                 //DETERMINAR FECHA FINAL PARA ESTE AÑO(debe tener ultimo dia del mes de la fecha final)
                 endDateRange = "";
-                DateTime f = new DateTime(new Date(initialDate.getYear() + i, endDate.getMonth(), 1));
-                DateTime fEnd = f.dayOfMonth().withMaximumValue();//ultimo dia del mes
-
-                if (String.valueOf(fEnd.getDayOfMonth()).length() == 1) {
-                    endDateRange = endDateRange + "0" + String.valueOf(fEnd.getDayOfMonth()) + "/";
+                if (String.valueOf(endDate.getDate()).length() == 1) {
+                    endDateRange = endDateRange + "0" + String.valueOf(endDate.getDate()) + "/";
                 } else {
-                    endDateRange = endDateRange + String.valueOf(fEnd.getDayOfMonth()) + "/";
+                    endDateRange = endDateRange + String.valueOf(endDate.getDate()) + "/";
                 }
-                if (String.valueOf(fEnd.getMonthOfYear() + 1).length() == 1) {
-                    endDateRange = endDateRange + "0" + String.valueOf(fEnd.getMonthOfYear()) + "/";
+                if (String.valueOf(endDate.getMonth() + 1).length() == 1) {
+                    endDateRange = endDateRange + "0" + String.valueOf(endDate.getMonth() + 1) + "/";
                 } else {
-                    endDateRange = endDateRange + String.valueOf(fEnd.getMonthOfYear()) + "/";
+                    endDateRange = endDateRange + String.valueOf(endDate.getMonth() + 1) + "/";
                 }
-                endDateRange = endDateRange + String.valueOf(fEnd.getYear());
+                endDateRange = endDateRange + String.valueOf(initialDate.getYear() + i + 1900);
                 sqlReturn = sqlReturn
                         + "       ( \n"
                         + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + startDateRange + "','dd/MM/yyyy') AND \n\r"

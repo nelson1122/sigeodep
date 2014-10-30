@@ -4,9 +4,10 @@
  */
 package managedBeans.indicators;
 
-import beans.util.LineLegendItemSource;
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.VariablesEnum;
+import beans.util.LineLegendItemSource;
+import beans.util.SpanColumns;
 import beans.util.Variable;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -37,7 +38,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import managedBeans.login.LoginMB;
-import beans.util.SpanColumns;
 import model.dao.IndicatorsConfigurationsFacade;
 import model.dao.IndicatorsFacade;
 import model.pojo.Indicators;
@@ -164,7 +164,7 @@ public class IndicatorsRateMB {
     private int widthGraph = 660;
     private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
-    private String currentTypeGraph="barras";
+    private String currentTypeGraph = "barras";
     DecimalFormat formateador = new DecimalFormat("0.00");
     String variablesName = "";
     String categoryAxixLabel = "";
@@ -690,7 +690,7 @@ public class IndicatorsRateMB {
                     for (int i = 0; i < 3 - ncol; i++) {//variables no usadas(vacias)
                         sb.append("-").append("\t");
                     }
-                    if (rs.getString("poblacion").compareTo("SIN DATO") == 0) {
+                    if (rs.getString("poblacion") == null || rs.getString("poblacion").compareTo("SIN DATO") == 0) {
                         sb.append(0).append("\t").append(0).append("\n");//count queda como 0
                     } else {
                         sb.append(0).append("\t").append(Integer.valueOf(rs.getString("poblacion"))).append("\n");//count queda como 0
@@ -885,29 +885,6 @@ public class IndicatorsRateMB {
                             + "      CAST((SELECT population FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) \n\r"
                             + " END AS poblacion ";
                     break;
-                case communes://COMUNA -----------------------
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
-                            + "    ELSE \n\r"
-                            + "    ( \n\r"
-                            + "       SELECT \n\r"
-                            + "          communes.commune_name \n\r"
-                            + "       FROM \n\r"
-                            + "          public.communes, \n\r"
-                            + "          public.neighborhoods \n\r"
-                            + "       WHERE \n\r"
-                            + "          neighborhoods.neighborhood_suburb = communes.commune_id AND \n\r"
-                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
-                            + "    )"
-                            + " END AS comuna";
-                    sqlPopulate = ""
-                            + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
-                            + "    ELSE \n\r"
-                            + "      CAST((SELECT population FROM communes WHERE commune_id=(SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as text) \n\r"
-                            + " END AS poblacion ";
-                    break;
                 case quadrants://CUADRANTE -----------------------
                     //sqlReturn = sqlReturn + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
                     sqlReturn = sqlReturn + ""
@@ -919,11 +896,11 @@ public class IndicatorsRateMB {
                             + "          quadrants.quadrant_name \n\r"
                             + "       FROM \n\r"
                             + "          public.quadrants \n\r"
-                            + "       WHERE \n\r"                            
+                            + "       WHERE \n\r"
                             + "          quadrants.quadrant_id=" + currentIndicator.getInjuryType() + ".quadrant_id \n\r"
                             + "    )"
                             + " END AS cuadrante";
-                    
+
                     sqlPopulate = ""
                             + " CASE \n\r"
                             + "    WHEN " + currentIndicator.getInjuryType() + ".quadrant_id is null THEN 'SIN DATO' \n\r"
@@ -954,6 +931,39 @@ public class IndicatorsRateMB {
                             + "      CAST((SELECT population FROM corridors WHERE corridor_id=(SELECT neighborhood_corridor FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as text) \n\r"
                             + " END AS poblacion ";
                     break;
+                case communes://COMUNA -----------------------
+                    sqlReturn = sqlReturn + ""
+                            + " CASE \n\r"
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+                            + "    ELSE \n\r"
+                            + "    ( \n\r"
+                            + "       SELECT \n\r"
+                            + "          communes.commune_name \n\r"
+                            + "       FROM \n\r"
+                            + "          public.communes, \n\r"
+                            + "          public.neighborhoods \n\r"
+                            + "       WHERE \n\r"
+                            + "          neighborhoods.neighborhood_suburb = communes.commune_id AND \n\r"
+                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
+                            + "    )"
+                            + " END AS comuna";
+                    sqlPopulate = ""
+                            + " CASE  "
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO'  "
+                            + "    ELSE  "
+                            + "      CAST "
+                            + "      (( "
+                            + "        SELECT  "
+                            + "           sum(population) "
+                            + "        FROM  "
+                            + "           populations_by_commune "
+                            + "        WHERE  "
+                            + "           commune_id=(SELECT neighborhood_suburb FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) AND  "
+                            + "           year_population::text = extract(year from " + currentIndicator.getInjuryType() + ".injury_date)::text "
+                            + "        "
+                            + "      ) as text)  "
+                            + " END AS poblacion ";
+                    break;
                 case areas://ZONA -----------------------        
                     sqlReturn = sqlReturn + ""
                             + " CASE \n\r"
@@ -970,11 +980,27 @@ public class IndicatorsRateMB {
                             + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
                             + "    )"
                             + " END AS zona";
+//                    sqlPopulate = ""
+//                            + " CASE \n\r"
+//                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
+//                            + "    ELSE \n\r"
+//                            + "      CAST((SELECT population FROM areas WHERE area_id=(SELECT neighborhood_area FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as text) \n\r"
+//                            + " END AS poblacion ";
                     sqlPopulate = ""
-                            + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
-                            + "    ELSE \n\r"
-                            + "      CAST((SELECT population FROM areas WHERE area_id=(SELECT neighborhood_area FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as text) \n\r"
+                            + " CASE  "
+                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO'  "
+                            + "    ELSE  "
+                            + "      CAST "
+                            + "      (( "
+                            + "        SELECT  "
+                            + "           sum(population) "
+                            + "        FROM  "
+                            + "           populations_by_area "
+                            + "        WHERE  "
+                            + "           area_id=(SELECT neighborhood_area FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) AND  "
+                            + "           year_population::text = extract(year from " + currentIndicator.getInjuryType() + ".injury_date)::text "
+                            + "        "
+                            + "      ) as text)  "
                             + " END AS poblacion ";
                     break;
                 case genders://GENERO  ----------------------
@@ -1370,7 +1396,7 @@ public class IndicatorsRateMB {
                     }
                     break;
             }
-            if (i == variablesCrossData.size() - 1) {//si es la ultima instruccion se agrega salto de linea
+            if (i == variablesCrossData.size() - 1) {//si es la ultima instruccion se agrega salto de linea y poblacion
                 sqlReturn = sqlReturn + ", \n" + sqlPopulate + " \n";
             } else {//si no es la ultima instruccion se agrega coma y salto de linea
                 sqlReturn = sqlReturn + ", \n";
@@ -1392,9 +1418,11 @@ public class IndicatorsRateMB {
         }
         sqlReturn = sqlReturn + ""
                 + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + initialDateStr + "','dd/MM/yyyy') AND \n\r"
-                + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy'); ";
+                + "       " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + endDateStr + "','dd/MM/yyyy')       ";
+
         //System.out.println("CONSULTA (indicators rate) \n " + sqlReturn);
         return sqlReturn;
+
     }
 
     public void changeCategoticalList() {
@@ -1539,7 +1567,7 @@ public class IndicatorsRateMB {
         }
         return 0;
     }
-    
+
     private int addCategoricalHour() {
         int i;
         int e;
@@ -2215,8 +2243,11 @@ public class IndicatorsRateMB {
         for (int i = 0; i < completeListOfVariableData.size(); i++) {
             listOfAvailableVariablesNames.add(completeListOfVariableData.get(i).getName());
         }
-        completeListOfVariableData.add(createVariable("zona", "areas", false, ""));//agrego de ultima la desagregacion espacial
-        listOfCrossVariablesNames.add("zona");//agrego de primera en la lista de nombres a cruzar
+        //completeListOfVariableData.add(createVariable("zona", "areas", false, ""));//agrego de ultima la desagregacion espacial
+        //listOfCrossVariablesNames.add("zona");//agrego de primera en la lista de nombres a cruzar
+
+        completeListOfVariableData.add(createVariable("comuna", "communes", false, ""));//agrego de ultima la desagregacion espacial
+        listOfCrossVariablesNames.add("comuna");//agrego de primera en la lista de nombres a cruzar                        
 
 //        variablesGraph = new ArrayList<>();
         valuesGraph = new ArrayList<>();
@@ -2231,16 +2262,16 @@ public class IndicatorsRateMB {
 
         spatialDisaggregationTypes = new ArrayList<>();
         spatialDisaggregationTypes.add("Zona");
-        spatialDisaggregationTypes.add("Cuadrante");
+        //spatialDisaggregationTypes.add("Cuadrante");
         spatialDisaggregationTypes.add("Comuna");
-        spatialDisaggregationTypes.add("Corredor");
-        spatialDisaggregationTypes.add("Barrio");
-        currentSpatialDisaggregation = "Zona";
+        //spatialDisaggregationTypes.add("Corredor");
+        //spatialDisaggregationTypes.add("Barrio");
+        currentSpatialDisaggregation = "Comuna";
 
         temporalDisaggregationTypes = new ArrayList<>();
         temporalDisaggregationTypes.add("Anual");
         temporalDisaggregationTypes.add("Mensual");
-        temporalDisaggregationTypes.add("Diaria");
+        //temporalDisaggregationTypes.add("Diaria");
         currentTemporalDisaggregation = "Mensual";
 
         typesGraph = new ArrayList<>();
@@ -2275,22 +2306,22 @@ public class IndicatorsRateMB {
         }
 
         //agrego la nueva variable
-        if (currentSpatialDisaggregation.compareTo("Barrio") == 0) {
-            completeListOfVariableData.add(createVariable("barrio", "neighborhoods", false, ""));//agrego de ultima la desagregacion espacial
-            listOfCrossVariablesNames.add("barrio");//agrego de primera en la lista de nombres a cruzar                        
-        }
+//        if (currentSpatialDisaggregation.compareTo("Barrio") == 0) {
+//            completeListOfVariableData.add(createVariable("barrio", "neighborhoods", false, ""));//agrego de ultima la desagregacion espacial
+//            listOfCrossVariablesNames.add("barrio");//agrego de primera en la lista de nombres a cruzar                        
+//        }
         if (currentSpatialDisaggregation.compareTo("Comuna") == 0) {
             completeListOfVariableData.add(createVariable("comuna", "communes", false, ""));//agrego de ultima la desagregacion espacial
             listOfCrossVariablesNames.add("comuna");//agrego de primera en la lista de nombres a cruzar                        
         }
-        if (currentSpatialDisaggregation.compareTo("Corredor") == 0) {
-            completeListOfVariableData.add(createVariable("corredor", "corridors", false, ""));//agrego de ultima la desagregacion espacial
-            listOfCrossVariablesNames.add("corredor");//agrego de primera en la lista de nombres a cruzar                      
-        }
-        if (currentSpatialDisaggregation.compareTo("Cuadrante") == 0) {
-            completeListOfVariableData.add(createVariable("cuadrante", "quadrants", false, ""));//agrego de ultima la desagregacion espacial
-            listOfCrossVariablesNames.add("cuadrante");//agrego de primera en la lista de nombres a cruzar                        
-        }
+//        if (currentSpatialDisaggregation.compareTo("Corredor") == 0) {
+//            completeListOfVariableData.add(createVariable("corredor", "corridors", false, ""));//agrego de ultima la desagregacion espacial
+//            listOfCrossVariablesNames.add("corredor");//agrego de primera en la lista de nombres a cruzar                      
+//        }
+//        if (currentSpatialDisaggregation.compareTo("Cuadrante") == 0) {
+//            completeListOfVariableData.add(createVariable("cuadrante", "quadrants", false, ""));//agrego de ultima la desagregacion espacial
+//            listOfCrossVariablesNames.add("cuadrante");//agrego de primera en la lista de nombres a cruzar                        
+//        }
         if (currentSpatialDisaggregation.compareTo("Zona") == 0) {
             completeListOfVariableData.add(createVariable("zona", "areas", false, ""));//agrego de ultima la desagregacion espacial
             listOfCrossVariablesNames.add("zona");//agrego de primera en la lista de nombres a cruzar                                    
@@ -2556,9 +2587,23 @@ public class IndicatorsRateMB {
                 //15;"TURISMO SEXUAL"
 
                 break;
+
+            case communes://comuna,
+                try {
+                    ResultSet rs = connectionJdbcMB.consult(
+                            "Select * from " + generic_table + " where area_id = 1 order by 1");
+                    while (rs.next()) {
+                        valuesName.add(rs.getString(2));
+                        valuesConf.add(rs.getString(2));
+                        valuesId.add(rs.getString(1));
+                    }
+                } catch (Exception e) {
+                }
+                break;
+
             case non_fatal_data_sources:
             case neighborhoods://barrio,
-            case communes://comuna,
+
             case corridors://corredor,
             case areas://zona,
             case genders://genero,
@@ -2593,7 +2638,6 @@ public class IndicatorsRateMB {
             case transport_users:
             case involved_vehicles:
             case road_types:
-
             //case abuse_types:
             case aggressor_types:
             case ethnic_groups:
@@ -2998,7 +3042,7 @@ public class IndicatorsRateMB {
             for (int i = 0; i < columNames.size(); i++) {
                 strReturn = strReturn + "                            <tr>\r\n";
                 strReturn = strReturn + "                                <td>\r\n";
-                strReturn = strReturn + "                                    <div style=\"overflow:hidden; height:20px; width:200px; white-space: nowrap;\">" + determineHeader(columNames.get(i)) + "</div>\r\n";
+                strReturn = strReturn + "                                    <div style=\"overflow:hidden; " + height + " width:200px; white-space: nowrap;\">" + determineHeader(columNames.get(i)) + "</div>\r\n";
                 strReturn = strReturn + "                                </td>\r\n";
                 strReturn = strReturn + "                            </tr>\r\n";
             }
@@ -3082,7 +3126,7 @@ public class IndicatorsRateMB {
         if (columNames.isEmpty() && rowNames.isEmpty()) {
             strReturn = "<font color=\"Red\"><b> En este rango de fechas no existen registros para realizar el cruce</b></font><br/>";
         }
-        //System.out.println(strReturn);        
+        ///System.out.println("AAAAAAAAAAAAAAAAA"+strReturn);        
         return strReturn;
     }
 
@@ -3227,7 +3271,7 @@ public class IndicatorsRateMB {
         if (columNames.isEmpty() && rowNames.isEmpty()) {
             strReturn = "<font color=\"Red\"><b> En este rango de fechas no existen registros para realizar el cruce</b></font><br/>";
         }
-        //System.out.println(strReturn);
+        ///System.out.println("BBBBBBBBBBBBBBBB"+strReturn);
         return strReturn;
     }
 

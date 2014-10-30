@@ -549,7 +549,7 @@ public class RelationshipOfVariablesMB implements Serializable {
         }
         if (variableExpectedSIVIGILA.compareTo("grupo_vulnerable") == 0) {
             compareForCode = false;
-            connectionJdbcMB.non_query(sql1 + "CAMPESINO" + sql2 + "5" + sql3);
+            connectionJdbcMB.non_query(sql1 + "CAMPESINO" + sql2 + "98" + sql3);
             connectionJdbcMB.non_query(sql1 + "DISCAPACITADO" + sql2 + "7" + sql3);
             connectionJdbcMB.non_query(sql1 + "DESPLAZADO" + sql2 + "9" + sql3);
             connectionJdbcMB.non_query(sql1 + "MIGRANTES" + sql2 + "13" + sql3);
@@ -662,7 +662,7 @@ public class RelationshipOfVariablesMB implements Serializable {
 //                connectionJdbcMB.non_query(sql1 + "" + sql2 + "OTRO" + sql3);
         }
         if (variableExpectedSIVIGILA.compareTo("grupo_vulnerable") == 0) {
-            connectionJdbcMB.non_query(sql1 + "5" + sql2 + "CAMPESINO" + sql3);
+            connectionJdbcMB.non_query(sql1 + "5" + sql2 + "OTRO" + sql3);
             connectionJdbcMB.non_query(sql1 + "7" + sql2 + "DISCAPACITADO" + sql3);
             connectionJdbcMB.non_query(sql1 + "9" + sql2 + "DESPLAZADO" + sql3);
             connectionJdbcMB.non_query(sql1 + "13" + sql2 + "MIGRANTES" + sql3);

@@ -174,7 +174,7 @@ public class IndicatorsPercentageMB {
     private int widthGraph = 660;
     private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
-    private String currentTypeGraph="apiladas porcentual";
+    private String currentTypeGraph = "apiladas porcentual";
     DecimalFormat formateador = new DecimalFormat("0.00");
     String variablesName = "";
     String categoryAxixLabel = "";
@@ -454,6 +454,14 @@ public class IndicatorsPercentageMB {
                 continueProcess = false;
             }
         }
+
+        if (continueProcess && sameRangeLimit) {
+            if (initialDate.getDate() > endDate.getDate()) {
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Cuando se utiliza la opcion 'Limitar a rangos similares' el dia de la fecha final debe ser igual o mayor que el dia de la fecha inicial");
+                continueProcess = false;
+            }
+        }
+
         if (continueProcess) {//NUMERO DE VARIABLES A CRUZAR SEA MENOR O IGUAL AL LIMITE ESTABLECIDO
             if (currentIndicator.getIndicatorId() < 5) {//es un indicador general
                 if (variablesCrossList.size() <= numberCross) {
@@ -1021,7 +1029,7 @@ public class IndicatorsPercentageMB {
                             + "          quadrants.quadrant_name \n\r"
                             + "       FROM \n\r"
                             + "          public.quadrants \n\r"
-                            + "       WHERE \n\r"                            
+                            + "       WHERE \n\r"
                             + "          quadrants.quadrant_id=" + currentIndicator.getInjuryType() + ".quadrant_id \n\r"
                             + "    )"
                             + " END AS cuadrante";
@@ -1485,7 +1493,7 @@ public class IndicatorsPercentageMB {
         if (currentIndicator.getIndicatorId() == 69 || currentIndicator.getIndicatorId() == 73) {//CASOS DE VIOLENCIA INTRAFAMILIAR (VIF) SECTOR SALUD            
             addToSourceTable("sivigila_event");
             addToSourceTable("sivigila_aggresor");
-            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id is not null AND \n\r";            
+            filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id is not null AND \n\r";
             filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 8 AND \n";//no tomar otro cual
             filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 9 AND \n";//no tomar los sin dato
             filterSourceTable = filterSourceTable + " sivigila_aggresor.relative_id != 10 AND \n";//no tomar novio
@@ -1517,40 +1525,39 @@ public class IndicatorsPercentageMB {
         //------DETERMINAR RANGOS DE FECHAS ---------------------------
         if (sameRangeLimit) {
             //determinar cuantos años existen entre las dos fechas
-            Interval interval = new Interval(new DateTime(initialDate), (new DateTime(endDate)));        
-            int years= Years.yearsIn(interval).getYears()+1;            
+            Interval interval = new Interval(new DateTime(initialDate), (new DateTime(endDate)));
+            int years = Years.yearsIn(interval).getYears() + 1;
             //int years = getDateDifference(initialDate, endDate, "anual") + 1;
             String startDateRange;
             String endDateRange;
             sqlReturn = sqlReturn + " (\n";
             for (int i = 0; i < years; i++) {//cilco que se repite por cada año
-
                 //DETERMINAR FECHA INICIAL EN PARA ESTE AÑO(debe tener el primer dia del mes de la fecha inicial)
                 startDateRange = "";
-                startDateRange = startDateRange + "01/";//primer dia del mes
+                if (String.valueOf(initialDate.getDate()).length() == 1) {
+                    startDateRange = startDateRange + "0" + String.valueOf(initialDate.getDate()) + "/";
+                } else {
+                    startDateRange = startDateRange + String.valueOf(initialDate.getDate()) + "/";
+                }
                 if (String.valueOf(initialDate.getMonth() + 1).length() == 1) {
                     startDateRange = startDateRange + "0" + String.valueOf(initialDate.getMonth() + 1) + "/";
                 } else {
                     startDateRange = startDateRange + String.valueOf(initialDate.getMonth() + 1) + "/";
                 }
                 startDateRange = startDateRange + String.valueOf(initialDate.getYear() + i + 1900);
-
                 //DETERMINAR FECHA FINAL PARA ESTE AÑO(debe tener ultimo dia del mes de la fecha final)
                 endDateRange = "";
-                DateTime f = new DateTime(new Date(initialDate.getYear() + i, endDate.getMonth(), 1));
-                DateTime fEnd = f.dayOfMonth().withMaximumValue();//ultimo dia del mes
-
-                if (String.valueOf(fEnd.getDayOfMonth()).length() == 1) {
-                    endDateRange = endDateRange + "0" + String.valueOf(fEnd.getDayOfMonth()) + "/";
+                if (String.valueOf(endDate.getDate()).length() == 1) {
+                    endDateRange = endDateRange + "0" + String.valueOf(endDate.getDate()) + "/";
                 } else {
-                    endDateRange = endDateRange + String.valueOf(fEnd.getDayOfMonth()) + "/";
+                    endDateRange = endDateRange + String.valueOf(endDate.getDate()) + "/";
                 }
-                if (String.valueOf(fEnd.getMonthOfYear() + 1).length() == 1) {
-                    endDateRange = endDateRange + "0" + String.valueOf(fEnd.getMonthOfYear()) + "/";
+                if (String.valueOf(endDate.getMonth() + 1).length() == 1) {
+                    endDateRange = endDateRange + "0" + String.valueOf(endDate.getMonth() + 1) + "/";
                 } else {
-                    endDateRange = endDateRange + String.valueOf(fEnd.getMonthOfYear()) + "/";
+                    endDateRange = endDateRange + String.valueOf(endDate.getMonth() + 1) + "/";
                 }
-                endDateRange = endDateRange + String.valueOf(fEnd.getYear());
+                endDateRange = endDateRange + String.valueOf(initialDate.getYear() + i + 1900);
                 sqlReturn = sqlReturn
                         + "       ( \n"
                         + "       " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + startDateRange + "','dd/MM/yyyy') AND \n\r"
@@ -1941,7 +1948,7 @@ public class IndicatorsPercentageMB {
             return 0;
         }
     }
-    
+
     public void btnRemoveCategoryValueClick() {
         //btnRemoveCategoricalValueDisabled = false;
         if (currentVariableConfiguring != null) {
@@ -2283,11 +2290,7 @@ public class IndicatorsPercentageMB {
             //-----CREACION DEL TITULO
             indicatorName = currentIndicator.getIndicatorName() + " - Municipo de Pasto.\n" + variablesName + "\n ";
             if (sameRangeLimit) {
-                if (initialDate.getMonth() == endDate.getMonth()) {
-                    indicatorName = indicatorName + intToMonth(initialDate.getMonth());
-                } else {
-                    indicatorName = indicatorName + intToMonth(initialDate.getMonth()) + " a " + intToMonth(endDate.getMonth());
-                }
+                indicatorName = indicatorName + initialDate.getDate() + " de " + intToMonth(initialDate.getMonth()) + " a " + endDate.getDate() + " de " + intToMonth(endDate.getMonth()) + "\n";
                 indicatorName = indicatorName + " de los años " + String.valueOf(initialDate.getYear() + 1900) + " a " + String.valueOf(endDate.getYear() + 1900);
             } else {
                 indicatorName = indicatorName + "Periodo " + sdf.format(initialDate) + " a " + sdf.format(endDate);

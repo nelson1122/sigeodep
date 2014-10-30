@@ -4,7 +4,6 @@
  */
 package managedBeans.indicators;
 
-import beans.util.LineLegendItemSource;
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.VariablesEnum;
 import static beans.enumerators.VariablesEnum.accident_classes;
@@ -35,6 +34,8 @@ import static beans.enumerators.VariablesEnum.transport_users;
 import static beans.enumerators.VariablesEnum.use_alcohol_drugs;
 import static beans.enumerators.VariablesEnum.victim_characteristics;
 import static beans.enumerators.VariablesEnum.weapon_types;
+import beans.util.LineLegendItemSource;
+import beans.util.SpanColumns;
 import beans.util.Variable;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -59,6 +60,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -66,7 +69,6 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.component.html.HtmlOutputText;
 import javax.faces.context.FacesContext;
 import managedBeans.login.LoginMB;
-import beans.util.SpanColumns;
 import model.dao.IndicatorsConfigurationsFacade;
 import model.dao.IndicatorsFacade;
 import model.pojo.Indicators;
@@ -188,13 +190,13 @@ public class IndicatorsSpecifiedRateMB {
     private CopyManager cpManager;
     private StringBuilder sb;
     private int tuplesProcessed;
-    private String sourceTable = "";//tabla adicional que se usara en la seccion "FROM" de la consulta sql
-    private boolean separateRecords = false;
+    //private String sourceTable = "";//tabla adicional que se usara en la seccion "FROM" de la consulta sql
+    //private boolean separateRecords = false;
     private int heightGraph = 460;
     private int widthGraph = 660;
     private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
-    private String currentTypeGraph="barras";
+    private String currentTypeGraph = "barras";
     DecimalFormat formateador = new DecimalFormat("0.00");
     String variablesName = "";
     String categoryAxixLabel = "";
@@ -253,7 +255,7 @@ public class IndicatorsSpecifiedRateMB {
         //---------------------------------------------------------            
         //ELIMINO LOS NOMBRES DE COLUMNAS NO NECESARIOS
         //---------------------------------------------------------            
-        ResultSet rs = null;
+        ResultSet rs;
         if (variablesCrossData.size() < 3) { //una o dos variables
             sql = ""
                     + " SELECT column_1 FROM  indicators_records \n"
@@ -403,23 +405,20 @@ public class IndicatorsSpecifiedRateMB {
         if (continueProcess) {//ELIMINO DATOS DE UN PROCESO ANTERIOR
             removeIndicatorRecords();
         }
-        if (continueProcess) {//ALMACENO EN BASE DE DATOS LOS REGISTROS DE ESTE CRUCE
+        if (continueProcess) {
+            //ALMACENO EN BASE DE DATOS LOS REGISTROS DE ESTE CRUCE
             saveIndicatorRecords(createIndicatorConsult());
-        }
-        if (continueProcess) {//DE SER NECESARIO SEPARO LOS REGISTROS(cuando son variables con relaciones de uno a muchos)
-            if (separateRecords) {
-                separateRecordsFunction();
-            }
-        }
-        if (continueProcess) {//CREO TODAS LAS POSIBLES COMBINACIONES
+            //DETRMINO LA POBLACION
+            calculatePopulation();
+            //CONVIERTO A CATEGORIAS
+            convertToCategorical();
+            //CREO TODAS LAS POSIBLES COMBINACIONES
             createCombinations();
-        }
-        if (continueProcess) {//AGRUPO LOS VALORES
+            //AGRUPO LOS VALORES
             groupingOfValues();
         }
-        if (continueProcess) {//DETERMINO LA COLUMNA POBLACION
-            createColumnPopulation();
-        }
+
+
         if (!showEmpty) {
             removeEmpty();
         }
@@ -480,127 +479,17 @@ public class IndicatorsSpecifiedRateMB {
                     + "    indicators_records \n"
                     + " WHERE \n"
                     + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-                    + "    indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n";
+                    + "    indicator_id = 1" + currentIndicator.getIndicatorId() + " \n";
             connectionJdbcMB.non_query(sql);//elimino los valores del indicador 100
         } catch (Exception e) {
             System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
 
-    private void separateRecordsFunction() {
-        ResultSet rs;
-        ResultSet rs2;
-        String valueColumn;
-        String[] splitRegisters;
-        String[] splitForSql;
-        try {
-            //determinar el maximo
-            sql = ""
-                    + " SELECT  \n\r"
-                    + "	MAX(record_id) \n\r"
-                    + " FROM \n\r"
-                    + "	indicators_records \n\r"
-                    + " WHERE \n\r"
-                    + "     user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-                    + "     indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
-            rs = connectionJdbcMB.consult(sql);
-            rs.next();
-            tuplesProcessed = rs.getInt(1);
-            sql = ""
-                    + " SELECT  \n\r"
-                    + "	* \n\r"
-                    + " FROM \n\r"
-                    + "	indicators_records \n\r"
-                    + " WHERE \n\r"
-                    + "     user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-                    + "     indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " \n\r";
-            cpManager = new CopyManager((BaseConnection) connectionJdbcMB.getConn());
-            for (int col = 1; col < 4; col++) {//se repite tres veces por cada una de las columnas
-                sb = new StringBuilder();
-                rs = connectionJdbcMB.consult(sql);
-                while (rs.next()) {
-                    if (rs.getString("column_" + col).indexOf("<=>") != -1) {
-                        valueColumn = rs.getString("column_" + col);
-                        valueColumn = valueColumn.substring(1, valueColumn.length() - 1);
-                        splitRegisters = valueColumn.split(",");
-                        for (int i = 0; i < splitRegisters.length; i++) {
-                            splitForSql = splitRegisters[i].split("<=>");
-                            if (splitForSql.length == 4) {
-                                tuplesProcessed++;
-                                if (splitForSql[1].compareTo("abuse_types") == 0) {
-                                    //para el caso de "tipos de maltrato"="abuse_types" se debe agrupar valores
-                                    if (splitForSql[3].compareTo("9") == 0 //        9;"PORNOGRAFIA CON NNA"
-                                            || splitForSql[3].compareTo("10") == 0// 10;"TRATA DE PERSONAL PARA EXPLOTACION SEXUAL"
-                                            || splitForSql[3].compareTo("11") == 0// 11;"ABUSO SEXUAL"
-                                            || splitForSql[3].compareTo("12") == 0// 12;"ACOSO SEXUAL"
-                                            || splitForSql[3].compareTo("13") == 0// 13;"ASALTO SEXUAL"
-                                            || splitForSql[3].compareTo("14") == 0// 14;"EXPLOTACION SEXUAL"
-                                            || splitForSql[3].compareTo("15") == 0)//15;"TURISMO SEXUAL"
-                                    {
-                                        splitForSql[3] = "3";//3;"VIOLENCIA SEXUAL"
-                                    }
-                                }
-                                rs2 = connectionJdbcMB.consult("SELECT " + splitForSql[0] + " FROM " + splitForSql[1] + " WHERE " + splitForSql[2] + " = " + splitForSql[3]);
-                                rs2.next();
-                                if (col == 1) {
-                                    sb.
-                                            append(rs.getInt("user_id")).append("\t"). //  user_id integer NOT NULL, -- usuario que genera el indicador
-                                            append(rs.getInt("indicator_id")).append("\t"). //  indicator_id integer NOT NULL, -- identificador del indicador
-                                            append(tuplesProcessed).append("\t"). //  record_id integer NOT NULL, -- identificador del registro para ordenamiento
-                                            append(rs2.getString(1)).append("\t"). //  column_1 text, -- valor de la primer variable cruzada
-                                            append(rs.getString("column_2")).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
-                                            append(rs.getString("column_3")).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
-                                            append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
-                                            append(0).append("\n");                             //  population integer,
-                                }
-                                if (col == 2) {
-                                    sb.
-                                            append(rs.getInt("user_id")).append("\t"). //  user_id integer NOT NULL, -- usuario que genera el indicador
-                                            append(rs.getInt("indicator_id")).append("\t"). //  indicator_id integer NOT NULL, -- identificador del indicador
-                                            append(tuplesProcessed).append("\t"). //  record_id integer NOT NULL, -- identificador del registro para ordenamiento
-                                            append(rs.getString("column_1")).append("\t"). //  column_1 text, -- valor de la primer variable cruzada
-                                            append(rs2.getString(1)).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
-                                            append(rs.getString("column_3")).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
-                                            append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
-                                            append(0).append("\n");                             //  population integer,
-                                }
-                                if (col == 3) {
-                                    sb.
-                                            append(rs.getInt("user_id")).append("\t"). //  user_id integer NOT NULL, -- usuario que genera el indicador
-                                            append(rs.getInt("indicator_id")).append("\t"). //  indicator_id integer NOT NULL, -- identificador del indicador
-                                            append(tuplesProcessed).append("\t"). //  record_id integer NOT NULL, -- identificador del registro para ordenamiento
-                                            append(rs.getString("column_1")).append("\t"). //  column_1 text, -- valor de la primer variable cruzada
-                                            append(rs.getString("column_2")).append("\t"). //  column_2 text, -- valor de la segunda variable cruzada
-                                            append(rs2.getString(1)).append("\t"). //  column_3 text, -- valor de la tercer variable cruzada
-                                            append(0).append("\t"). //  count integer, -- numero de coincidencias para este cruce
-                                            append(0).append("\n");                             //  population integer,
-                                }
-                            }
-                        }
-                    }
-                }
-                //REALIZO LA INSERCION
-                cpManager.copyIn("COPY indicators_records FROM STDIN", new StringReader(sb.toString()));
-                sb.delete(0, sb.length()); //System.out.println("Procesando... filas " + tuplesProcessed + " cargadas");
-                //elimino registro que contengan 
-                String sqlRemove = ""
-                        + " DELETE  \n\r"
-                        + " FROM \n\r"
-                        + "	    indicators_records \n\r"
-                        + " WHERE \n\r"
-                        + "     user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n\r"
-                        + "     indicator_id = " + (currentIndicator.getIndicatorId() + 100) + " AND \n\r"
-                        + "     ( column_" + col + " like '%<=>%')";
-                connectionJdbcMB.non_query(sqlRemove);
-            }
-        } catch (SQLException | IOException e) {
-            System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.toString());
-        }
-    }
-
     private void createCombinations() {
         //---------------------------------------------------------
         //FORMAR POSIBLES COMBINACIONES PARA QUE LOS DATOS QUEDEN ORDENADOS SEGUN COMO SE ENCUENTRE LA CONFIGURACION
+        //osea que permite la eliminacion de las categorias que no se encuentren dentro de la configuracion
         //---------------------------------------------------------
         columNames = new ArrayList<>();
         rowNames = new ArrayList<>();
@@ -741,619 +630,218 @@ public class IndicatorsSpecifiedRateMB {
         }
     }
 
-    private void addToSourceTable(String tableName) {
-        /*
-         * cuando se necesita una tabla adicional se agrega
-         * en la seccion FROM y en la seccion WHERE de la consulta SQL
-         */
-        if (tableName.indexOf("sivigila_event") == 0 && sourceTable.indexOf("sivigila_event") == -1) {
-            sourceTable = sourceTable + " LEFT JOIN sivigila_event USING (non_fatal_injury_id) \n";
-        }
-        if (tableName.indexOf("sivigila_aggresor") == 0 && sourceTable.indexOf("sivigila_aggresor") == -1) {
-            sourceTable = sourceTable + " JOIN  sivigila_aggresor USING (sivigila_agresor_id) \n";
-        }
-        if (tableName.indexOf("sivigila_victim") == 0 && sourceTable.indexOf("sivigila_victim") == -1) {
-            sourceTable = sourceTable + " JOIN  sivigila_victim USING (sivigila_victim_id) \n";
-        }
-        if (tableName.indexOf("fatal_injury_murder") == 0 && sourceTable.indexOf("fatal_injury_murder") == -1) {
-            sourceTable = sourceTable + " LEFT JOIN fatal_injury_murder USING (fatal_injury_id) \n";
-        }
-        if (tableName.indexOf("fatal_injury_traffic") == 0 && sourceTable.indexOf("fatal_injury_traffic") == -1) {
-            sourceTable = sourceTable + " LEFT JOIN fatal_injury_traffic USING (fatal_injury_id) \n";
-        }
-        if (tableName.indexOf("fatal_injury_suicide") == 0 && sourceTable.indexOf("fatal_injury_suicide") == -1) {
-            sourceTable = sourceTable + " LEFT JOIN fatal_injury_suicide USING (fatal_injury_id) \n";
-        }
-        if (tableName.indexOf("fatal_injury_accident") == 0 && sourceTable.indexOf("fatal_injury_accident") == -1) {
-            sourceTable = sourceTable + " LEFT JOIN fatal_injury_accident USING (fatal_injury_id) \n";
-        }
-        if (tableName.indexOf("non_fatal_interpersonal") == 0 && sourceTable.indexOf("non_fatal_interpersonal") == -1) {
-            sourceTable = sourceTable + " LEFT JOIN non_fatal_interpersonal USING (non_fatal_injury_id) \n";
-        }
-        if (tableName.indexOf("non_fatal_self_inflicted") == 0 && sourceTable.indexOf("non_fatal_self_inflicted") == -1) {
-            sourceTable = sourceTable + " LEFT JOIN non_fatal_self_inflicted USING (non_fatal_injury_id) \n";
-        }
-        if (tableName.indexOf("non_fatal_transport") == 0 && sourceTable.indexOf("non_fatal_transport") == -1) {
-            sourceTable = sourceTable + " LEFT JOIN non_fatal_transport USING (non_fatal_injury_id) \n";
-        }
-        if (tableName.indexOf("non_fatal_domestic_violence") == 0 && sourceTable.indexOf("non_fatal_domestic_violence") == -1) {
-            sourceTable = sourceTable + " LEFT JOIN non_fatal_domestic_violence USING (non_fatal_injury_id) \n";
+    public void calculatePopulation() {
+        try {
+            /*
+             * calcular la poblacion de cada uno de los registros
+             */
+
+
+            ResultSet rs = connectionJdbcMB.consult(""
+                    + " SELECT \n"
+                    + "    * \n"
+                    + " FROM \n"
+                    + "    indicators_records \n"
+                    + " WHERE \n"
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                    + "    indicator_id = 1" + currentIndicator.getIndicatorId());
+            while (rs.next()) {
+                if (rs.getInt("count") == 0) {//la poblacion es igual a cero, se debe calcular
+                    sql = "UPDATE indicators_records set population = ( \n\r";
+                    for (int i = 0; i < variablesCrossData.size(); i++) {//determinar si se usa populations_by_commune o populations_by_area
+                        if (variablesCrossData.get(i).getName().compareTo("comuna") == 0) {
+                            sql = sql + " Select SUM(population) from populations_by_commune where \n\r";
+                            break;
+                        }
+                    }
+                    for (int i = 0; i < variablesCrossData.size(); i++) {//determinar si se usa populations_by_commune o populations_by_area
+                        if (variablesCrossData.get(i).getName().compareTo("zona") == 0) {
+                            sql = sql + " Select SUM(population) from populations_by_area where \n\r";
+                            break;
+                        }
+                    }
+                    if (sql.indexOf("populations_by_") == -1) {//no se cruza ni zona ni comuna entonces se usa comuna
+                        sql = sql + " Select SUM(population) from populations_by_commune where ";
+                    }
+                    for (int i = 0; i < variablesCrossData.size(); i++) {
+                        if (variablesCrossData.get(i).getName().compareTo("comuna") == 0) {
+                            sql = sql + "\n commune_id = column_" + (i + 1) + "::smallint AND ";
+                        }
+                        if (variablesCrossData.get(i).getName().compareTo("genero") == 0) {
+                            sql = sql + "\n gender_id = column_" + (i + 1) + "::smallint AND  ";
+                        }
+                        if (variablesCrossData.get(i).getName().compareTo("zona") == 0) {
+                            sql = sql + "\n area_id = column_" + (i + 1) + "::smallint AND ";
+                        }
+                        if (variablesCrossData.get(i).getName().compareTo("edad") == 0) {
+                            //determino la instuccion para la edad
+
+                            String ages = "IN (-1)";
+                            int age = Integer.parseInt(rs.getString("column_" + (i + 1)));
+                            for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
+                                if (variablesCrossData.get(i).getValuesConfigured().get(j).compareTo("SIN DATO") != 0) {
+                                    String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
+                                    if (splitAge[1].compareTo("n") == 0) {
+                                        splitAge[1] = "200";
+                                    }
+
+                                    if (Integer.parseInt(splitAge[0]) <= age && Integer.parseInt(splitAge[1]) >= age) {
+                                        ages = "IN (";
+                                        for (int k = Integer.parseInt(splitAge[0]); k <= Integer.parseInt(splitAge[1]); k++) {
+                                            ages = ages + String.valueOf(k) + ",";
+                                        }
+                                        ages = ages.substring(0, ages.length() - 1);//quito ultima coma
+                                        ages = ages + ")";
+                                        break;
+                                    }
+                                }
+                            }
+                            sql = sql + "\n age " + ages + "  AND ";
+                        }
+                    }
+                    sql = sql + "\n year_population = extract(year from to_date(column_1,'yyyy-MM-dd'))::integer \n)";
+                    sql = sql
+                            + " WHERE  \n"
+                            + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                            + "    indicator_id = 1" + currentIndicator.getIndicatorId() + " AND \n"
+                            + "    column_1 like '" + rs.getString("column_1") + "' AND \n"
+                            + "    column_2 like '" + rs.getString("column_2") + "' AND \n"
+                            + "    column_3 like '" + rs.getString("column_3") + "'";
+                    //System.out.println("CONSULTA 002 \n" + sql);        
+                    connectionJdbcMB.non_query(sql);
+                }
+            }
+            connectionJdbcMB.non_query(""
+                    + " UPDATE "
+                    + "   indicators_records "
+                    + " set "
+                    + "   population = 0 "
+                    + " where "
+                    + "    population is null AND "
+                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND "
+                    + "    indicator_id = 1" + currentIndicator.getIndicatorId());//colocar en cero las casillas vacias
+
+        } catch (SQLException ex) {
+            Logger.getLogger(IndicatorsSpecifiedRateMB.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private String createCase(String sqlReturn, String source_table, String column_whit_name, String category_table, String column_whit_id, String as_name) {
-        String strReturn = sqlReturn + ""
-                + " CASE \n\r"
-                + "    WHEN " + source_table + " is null THEN 'SIN DATO' \n\r"
-                + "    ELSE \n\r"
-                + "    ( \n\r"
-                + "       SELECT \n\r"
-                + "          " + column_whit_name + " \n\r"
-                + "       FROM \n\r"
-                + "          " + category_table + " \n\r"
-                + "       WHERE \n\r"
-                + "          " + column_whit_id + " = " + source_table + " \n\r"
-                + "    )"
-                + " END AS " + as_name;
-        return strReturn;
+    private void convertToCategorical() {
+        /*
+         * convertir los valores de indicator_records en valores categoricos
+         * ejemplos: si la variable es genero y aparece 1           se convierte en 'MASCULINO'
+         *           si la variable es edad   y aparece 20          se convierte en '16 a 20 años' 
+         *           si la variable es fecha  y aparece 22-01-2014  se convierte en 'enero de 2014'   
+         */
+
+        for (int i = 0; i < variablesCrossData.size(); i++) {
+            if (variablesCrossData.get(i).getGeneric_table().compareTo("temporalDisaggregation") == 0) {
+                sql = "UPDATE indicators_records SET column_" + (i + 1) + " = (" + "\n   CASE \n\r";
+                for (int j = 0; j < variablesCrossData.get(i).getValuesId().size(); j++) {
+                    String[] splitDates = variablesCrossData.get(i).getValuesId().get(j).split("}");
+                    sql = sql + "       WHEN ( \n\r";
+                    sql = sql + "           to_date(column_" + (i + 1) + ",'yyyy-MM-dd')" + " >= to_date('" + splitDates[0] + "','dd/MM/yyyy') AND \n\r";
+                    sql = sql + "           to_date(column_" + (i + 1) + ",'yyyy-MM-dd')" + " <= to_date('" + splitDates[1] + "','dd/MM/yyyy') \n\r";
+                    sql = sql + "       ) THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
+                }
+                sql = sql + " END) \n";
+                connectionJdbcMB.non_query(sql);//System.out.println("CONSULTA (actualizar fecha specified rate) \n " + sql);
+            }
+            if (variablesCrossData.get(i).getName().compareTo("comuna") == 0) {
+                sql = "UPDATE indicators_records SET column_" + (i + 1) + " = ( \n"
+                        + "       SELECT \n\r"
+                        + "          communes.commune_name \n\r"
+                        + "       FROM \n\r"
+                        + "          public.communes "
+                        + "       WHERE \n\r"
+                        + "          column_" + (i + 1) + "::integer = communes.commune_id \n"
+                        + "    ) ";
+                connectionJdbcMB.non_query(sql);//System.out.println("CONSULTA (actualizar comuna specified rate) \n " + sql);
+            }
+            if (variablesCrossData.get(i).getName().compareTo("genero") == 0) {
+                sql = "UPDATE indicators_records SET column_" + (i + 1) + " = ( \n"
+                        + "       SELECT \n\r"
+                        + "          gender_name \n\r"
+                        + "       FROM \n\r"
+                        + "          genders \n\r"
+                        + "       WHERE \n\r"
+                        + "          gender_id = column_" + (i + 1) + "::integer \n\r"
+                        + "    )";
+                connectionJdbcMB.non_query(sql);//System.out.println("CONSULTA (actualizar genero specified rate) \n " + sql);
+            }
+            if (variablesCrossData.get(i).getName().compareTo("zona") == 0) {
+                sql = "UPDATE indicators_records SET column_" + (i + 1) + " = ("
+                        + "       SELECT \n\r"
+                        + "          areas.area_name \n\r"
+                        + "       FROM \n\r"
+                        + "          public.areas \n"
+                        + "       WHERE \n\r"
+                        + "          column_" + (i + 1) + "::integer =  areas.area_id \n\r"
+                        + "     )";
+                connectionJdbcMB.non_query(sql);//System.out.println("CONSULTA (actualizar area specified rate) \n " + sql);
+            }
+            if (variablesCrossData.get(i).getName().compareTo("edad") == 0) {
+                sql = "UPDATE indicators_records SET column_" + (i + 1) + " = (" + "\n   CASE \n\r";
+                for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
+                    if (variablesCrossData.get(i).getValuesConfigured().get(j).compareTo("SIN DATO") != 0) {
+                        String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
+                        if (splitAge[1].compareTo("n") == 0) {
+                            splitAge[1] = "200";
+                        }
+                        sql = sql + ""
+                                + "       WHEN (column_" + (i + 1) + "::integer"
+                                + "        between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
+                    }
+                }
+                sql = sql + " END) \n";
+                connectionJdbcMB.non_query(sql);//System.out.println("CONSULTA (actualizar edad specified rate) \n " + sql);
+            }
+        }
+        //los valores que queden null se vuelven sin dato
+        connectionJdbcMB.non_query("UPDATE indicators_records SET column_1='SIN DATO' WHERE column_1 is null");
+        connectionJdbcMB.non_query("UPDATE indicators_records SET column_2='SIN DATO' WHERE column_2 is null");
+        connectionJdbcMB.non_query("UPDATE indicators_records SET column_3='SIN DATO' WHERE column_3 is null");
+
     }
 
     private String createIndicatorConsult() {
         String sqlReturn = " SELECT  \n\r";
-        separateRecords = false;
-        sourceTable = "";//tabla adicional que se usara en la seccion "FROM" de la consulta sql
-        String filterSourceTable = "";//filtro adicional usado en la seccion "WHERE" de la consulta sql
-        ResultSet rs = null;
         for (int i = 0; i < variablesCrossData.size(); i++) {
             switch (VariablesEnum.convert(variablesCrossData.get(i).getGeneric_table())) {//nombre de variable 
                 case temporalDisaggregation://DETERMINAR LA DESAGREGACION TEMPORAL -----------------------                   
-                    sqlReturn = sqlReturn + "   CASE \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValuesId().size(); j++) {
-                        String[] splitDates = variablesCrossData.get(i).getValuesId().get(j).split("}");
-                        sqlReturn = sqlReturn + "       WHEN ( \n\r";
-                        sqlReturn = sqlReturn + "           " + currentIndicator.getInjuryType() + ".injury_date >= to_date('" + splitDates[0] + "','dd/MM/yyyy') AND \n\r";
-                        sqlReturn = sqlReturn + "           " + currentIndicator.getInjuryType() + ".injury_date <= to_date('" + splitDates[1] + "','dd/MM/yyyy') \n\r";
-                        sqlReturn = sqlReturn + "       ) THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-                    }
-                    sqlReturn = sqlReturn + "   END AS fecha";
-                    break;
-                case injuries_fatal://TIPO DE LESION FATAL-----------------------
-                    sqlReturn = sqlReturn + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
-                        sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-                    }
-                    sqlReturn = sqlReturn + "   END AS tipo_lesion";
-                    break;
-                case injuries_non_fatal://TIPO DE LESION NO FATAL-----------------------
-                    sqlReturn = sqlReturn + "   CASE (SELECT injury_id FROM injuries WHERE injury_id=" + currentIndicator.getInjuryType() + ".injury_id) \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValues().size(); j++) {
-                        sqlReturn = sqlReturn + "       WHEN '" + variablesCrossData.get(i).getValuesId().get(j) + "' THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
-                    }
-                    sqlReturn = sqlReturn + "       WHEN '55' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
-                    sqlReturn = sqlReturn + "       WHEN '56' THEN 'VIOLENCIA INTRAFAMILIAR'  \n\r";
-                    sqlReturn = sqlReturn + "   END AS tipo_lesion";
+                    sqlReturn = sqlReturn + " " + currentIndicator.getInjuryType() + ".injury_date as fecha \n\r ";
                     break;
                 case age://DETERMINAR EDAD -----------------------          
-                    if (variablesCrossData.get(i).getSource_table().compareTo("victims.victim_age") == 0) {
-                        sqlReturn = sqlReturn + "   CASE \n\r";
-                        sqlReturn = sqlReturn + "       WHEN (victims.victim_age is null)  THEN 'SIN DATO' \n\r";
-                        for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
-                            if (variablesCrossData.get(i).getValuesConfigured().get(j).compareTo("SIN DATO") != 0) {
-                                String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
-                                if (splitAge[1].compareTo("n") == 0) {
-                                    splitAge[1] = "200";
-                                }
-                                sqlReturn = sqlReturn + ""
-                                        + "       WHEN (( \n\r"
-                                        + "           CASE \n\r"
-                                        + "               WHEN (victims.age_type_id = 2 or victims.age_type_id = 3) THEN 1 \n\r"
-                                        + "               WHEN (victims.age_type_id = 1 or victims.age_type_id is null) THEN victims.victim_age \n\r"
-                                        + "           END \n\r"
-                                        + "       ) between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
-                            }
-                        }
-                        sqlReturn = sqlReturn + "   END AS edad";
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_aggresor.age") == 0) {
-                        addToSourceTable("sivigila_event");
-                        addToSourceTable("sivigila_aggresor");
-                        sqlReturn = sqlReturn + "   CASE \n\r";
-                        sqlReturn = sqlReturn + "       WHEN (sivigila_aggresor.age is null)  THEN 'SIN DATO' \n\r";
-                        for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
-                            if (variablesCrossData.get(i).getValuesConfigured().get(j).compareTo("SIN DATO") != 0) {
-                                String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
-                                if (splitAge[1].compareTo("n") == 0) {
-                                    splitAge[1] = "200";
-                                }
-                                sqlReturn = sqlReturn + ""
-                                        + "       WHEN ( sivigila_aggresor.age between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
-                            }
-                        }
-                        sqlReturn = sqlReturn + "   END AS edad_agresor";
-                    }
-                    break;
-                case hour://HORA -----------------------
-                    sqlReturn = sqlReturn + ""
-                            + "   CASE \n\r"
-                            + "       WHEN (" + currentIndicator.getInjuryType() + ".injury_time is null)  THEN 'SIN DATO' \n\r";
-                    for (int j = 0; j < variablesCrossData.get(i).getValuesConfigured().size(); j++) {
-                        if (variablesCrossData.get(i).getValuesConfigured().get(j).compareTo("SIN DATO") != 0) {
-                            String[] splitAge = variablesCrossData.get(i).getValuesConfigured().get(j).split("/");
-                            String[] splitAge2 = splitAge[0].split(":");
-                            String[] splitAge3 = splitAge[1].split(":");
-                            sqlReturn = sqlReturn + ""
-                                    + "       WHEN (extract(hour from " + currentIndicator.getInjuryType() + ".injury_time) \n\r"
-                                    + "       between " + splitAge2[0] + " and " + splitAge3[0] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
-                        }
-                    }
-                    sqlReturn = sqlReturn + "   END AS hora";
-                    break;
-                case neighborhoods://NOMBRE DEL BARRIO -----------------------
-                    sqlReturn = sqlReturn + ""
-                            + "   CASE \n\r"
-                            + "      WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
-                            + "      ELSE (SELECT neighborhood_name FROM neighborhoods WHERE neighborhood_id = " + currentIndicator.getInjuryType() + ".injury_neighborhood_id) \n\r"
-                            //                            + "           AND neighborhood_area != 2) \n\r"
-                            + "   END AS barrio";
+                    sqlReturn = sqlReturn + " victims.victim_age AS edad ";
                     break;
                 case communes://COMUNA -----------------------
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
-                            + "    ELSE \n\r"
+                    sqlReturn = sqlReturn
                             + "    ( \n\r"
                             + "       SELECT \n\r"
-                            + "          communes.commune_name \n\r"
+                            + "          communes.commune_id \n\r"
                             + "       FROM \n\r"
                             + "          public.communes, \n\r"
                             + "          public.neighborhoods \n\r"
                             + "       WHERE \n\r"
                             + "          neighborhoods.neighborhood_suburb = communes.commune_id AND \n\r"
                             + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
-                            + "    )"
-                            + " END AS comuna";
-                    break;
-                case quadrants://CUADRANTE -----------------------
-                    //sqlReturn = sqlReturn + "   CAST((SELECT neighborhood_quadrant FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id) as text) as cuadrante \n\r";
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".quadrant_id is null THEN 'SIN DATO' \n\r"
-                            + "    ELSE \n\r"
-                            + "    ( \n\r"
-                            + "       SELECT \n\r"
-                            + "          quadrants.quadrant_name \n\r"
-                            + "       FROM \n\r"
-                            + "          public.quadrants \n\r"
-                            + "       WHERE \n\r"                            
-                            + "          quadrants.quadrant_id=" + currentIndicator.getInjuryType() + ".quadrant_id \n\r"
-                            + "    )"
-                            + " END AS cuadrante";
-                    break;
-                case corridors://CORREDOR -----------------------
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
-                            + "    ELSE \n\r"
-                            + "    ( \n\r"
-                            + "       SELECT \n\r"
-                            + "          corridors.corridor_name \n\r"
-                            + "       FROM \n\r"
-                            + "          public.corridors, \n\r"
-                            + "          public.neighborhoods \n\r"
-                            + "       WHERE \n\r"
-                            + "          neighborhoods.neighborhood_corridor = corridors.corridor_id AND \n\r"
-                            + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
-                            + "    )"
-                            + " END AS corredor";
+                            + "    ) AS comuna";
                     break;
                 case areas://ZONA -----------------------        
                     sqlReturn = sqlReturn + ""
-                            + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
-                            + "    ELSE \n\r"
                             + "    ( \n\r"
                             + "       SELECT \n\r"
-                            + "          areas.area_name \n\r"
+                            + "          areas.area_id \n\r"
                             + "       FROM \n\r"
                             + "          public.areas, \n\r"
                             + "          public.neighborhoods \n\r"
                             + "       WHERE \n\r"
                             + "          neighborhoods.neighborhood_area = areas.area_id AND \n\r"
                             + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
-                            + "    )"
-                            + " END AS zona";
+                            + "    ) AS zona";
                     break;
-                case genders://GENERO  ----------------------
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_aggresor.gender") == 0) {
-                        addToSourceTable("sivigila_event");
-                        addToSourceTable("sivigila_aggresor");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "gender_name", "genders", "gender_id", "genero_agresor");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("victims.gender_id") == 0) {
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "gender_name", "genders", "gender_id", "genero_victima");
-                    }
-                    break;
-                case days://DIA SEMANA ---------------------
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_day_of_week is null THEN 'SIN DATO' \n\r"
-                            + "    ELSE ( " + currentIndicator.getInjuryType() + ".injury_day_of_week )"
-                            + " END AS dia_semana";
-                    break;
-                case year://AÑO -----------------------
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_date is null THEN 'SIN DATO' \n\r"
-                            + "    ELSE ( CAST(extract(year from " + currentIndicator.getInjuryType() + ".injury_date)::int as text) )"
-                            + " END AS anyo";
-                    break;
-                case month://MES 
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n\r"
-                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_date is null THEN 'SIN DATO' \n\r"
-                            + "    ELSE \n\r"
-                            + "    ( \n\r"
-                            + "       SELECT \n\r"
-                            + "          months.month_name \n\r"
-                            + "       FROM \n\r"
-                            + "          public.months \n\r"
-                            + "       WHERE \n\r"
-                            + "          (extract(month from " + currentIndicator.getInjuryType() + ".injury_date)::int) = months.month_id \n\r"
-                            + "    )"
-                            + " END AS mes";
-                    break;
-                case sivigila_educational_level://escolaridad agresor
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_aggresor.educational_level_id") == 0) {
-                        addToSourceTable("sivigila_event");
-                        addToSourceTable("sivigila_aggresor");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "sivigila_educational_level_name", "sivigila_educational_level", "sivigila_educational_level_id", "escolaridad_agresor");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_victim.educational_level_id") == 0) {
-                        addToSourceTable("sivigila_event");
-                        addToSourceTable("sivigila_victim");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "sivigila_educational_level_name", "sivigila_educational_level", "sivigila_educational_level_id", "escolaridad_victima");
-                    }
-                    break;
-                case sivigila_vulnerability://factor de vulnerabilidad
-                    addToSourceTable("sivigila_event");
-                    addToSourceTable("sivigila_victim");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "sivigila_vulnerability_name", "sivigila_vulnerability", "sivigila_vulnerability_id", "factor_vulnerabilidad");
-                    break;
-                case sivigila_group://";"grupo agresor"
-                    addToSourceTable("sivigila_event");
-                    addToSourceTable("sivigila_aggresor");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "sivigila_group_name", "sivigila_group", "sivigila_group_id", "grupo_agresor");
-                    break;
-                case degree:
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "name_degree", "degree", "degree_id", "grado_quemadura");
-                    break;
-                case kinds_of_injury://RELACION DE UNO A MUCHOS
-                    separateRecords = true;
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n"
-                            + "    WHEN( SELECT cast(array_agg('kind_injury_name<=>kinds_of_injury<=>kind_injury_id<=>'||kind_injury_id) as text \n)"
-                            + "          FROM non_fatal_kind_of_injury \n"
-                            + "          WHERE non_fatal_kind_of_injury.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
-                            + "    ELSE( SELECT cast(array_agg('kind_injury_name<=>kinds_of_injury<=>kind_injury_id<=>'||kind_injury_id) as text \n)"
-                            + "          FROM non_fatal_kind_of_injury \n"
-                            + "          WHERE non_fatal_kind_of_injury.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
-                            + " END AS naturaleza_lesion \n";
-                    break;
-                case anatomical_locations://RELACION DE UNO A MUCHOS
-                    separateRecords = true;
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n"
-                            + "    WHEN (SELECT cast(array_agg('anatomical_location_name<=>anatomical_locations<=>anatomical_location_id<=>'||anatomical_location_id) as text \n)"
-                            + "          FROM non_fatal_anatomical_location \n"
-                            + "          WHERE non_fatal_anatomical_location.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
-                            + "    ELSE (SELECT cast(array_agg('anatomical_location_name<=>anatomical_locations<=>anatomical_location_id<=>'||anatomical_location_id) as text \n)"
-                            + "         FROM non_fatal_anatomical_location \n"
-                            + "         WHERE non_fatal_anatomical_location.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
-                            + " END AS sitio_anatomico \n";
-                    break;
-
-                case actions_to_take://RELACION DE UNO A MUCHOS
-                    separateRecords = true;
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n"
-                            + "    WHEN (SELECT cast(array_agg('action_name<=>actions_to_take<=>action_id<=>'||action_id) as text \n)"
-                            + "          FROM domestic_violence_action_to_take \n"
-                            + "          WHERE domestic_violence_action_to_take.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
-                            + "    ELSE (SELECT cast(array_agg('action_name<=>actions_to_take<=>action_id<=>'||action_id) as text \n)"
-                            + "          FROM domestic_violence_action_to_take \n"
-                            + "          WHERE domestic_violence_action_to_take.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
-                            + " END AS acciones_a_realizar \n";
-                    break;
-                case security_elements://RELACION DE UNO A MUCHOS
-                    separateRecords = true;
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n"
-                            + "    WHEN (SELECT cast(array_agg('security_element_name<=>security_elements<=>security_element_id<=>'||security_element_id) as text \n)"
-                            + "          FROM non_fatal_transport_security_element \n"
-                            + "          WHERE non_fatal_transport_security_element.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
-                            + "    ELSE (SELECT cast(array_agg('security_element_name<=>security_elements<=>security_element_id<=>'||security_element_id) as text \n)"
-                            + "          FROM non_fatal_transport_security_element \n"
-                            + "          WHERE non_fatal_transport_security_element.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
-                            + " END AS elementos_seguridad \n";
-                    break;
-                case vulnerable_groups://";"grupo poblacional"//RELACION DE UNO A MUCHOS
-                    separateRecords = true;
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n"
-                            + "    WHEN (SELECT cast(array_agg('vulnerable_group_name<=>vulnerable_groups<=>vulnerable_group_id<=>'||vulnerable_group_id) as text \n)"
-                            + "          FROM victim_vulnerable_group \n"
-                            + "          WHERE victim_vulnerable_group.victim_id=victims.victim_id ) is null THEN 'SIN DATO'\n"
-                            + "    ELSE (SELECT cast(array_agg('vulnerable_group_name<=>vulnerable_groups<=>vulnerable_group_id<=>'||vulnerable_group_id) as text \n)"
-                            + "          FROM victim_vulnerable_group \n"
-                            + "          WHERE victim_vulnerable_group.victim_id=victims.victim_id )\n"
-                            + " END AS grupo_poblacional \n";
-                    break;
-                case abuse_types://";"tipo maltrato" //RELACION DE UNO A MUCHOS
-                    separateRecords = true;
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n"
-                            + "    WHEN (SELECT cast(array_agg('abuse_type_name<=>abuse_types<=>abuse_type_id<=>'||abuse_type_id) as text \n)"
-                            + "          FROM domestic_violence_abuse_type \n"
-                            + "          WHERE domestic_violence_abuse_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
-                            + "    ELSE (SELECT cast(array_agg('abuse_type_name<=>abuse_types<=>abuse_type_id<=>'||abuse_type_id) as text \n)"
-                            + "          FROM domestic_violence_abuse_type \n"
-                            + "          WHERE domestic_violence_abuse_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
-                            + " END AS tipo_maltrato \n";
-                    break;
-                case ethnic_groups://";"pertenecia étnica"
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "ethnic_group_name", "ethnic_groups", "ethnic_group_id", "grupo_etnico");
-                    break;
-                case aggressor_types:
-                    //tipo agresor vif
-                    if (variablesCrossData.get(i).getSource_table().compareTo("domestic_violence_aggressor_type") == 0) {
-                        separateRecords = true;
-                        sqlReturn = sqlReturn + ""
-                                + " CASE \n"
-                                + "    WHEN (SELECT cast(array_agg('aggressor_type_name<=>aggressor_types<=>aggressor_type_id<=>'||aggressor_type_id) as text \n)"
-                                + "          FROM domestic_violence_aggressor_type \n"
-                                + "          WHERE domestic_violence_aggressor_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
-                                + "    ELSE (SELECT cast(array_agg('aggressor_type_name<=>aggressor_types<=>aggressor_type_id<=>'||aggressor_type_id) as text \n)"
-                                + "          FROM domestic_violence_aggressor_type \n"
-                                + "          WHERE domestic_violence_aggressor_type.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) \n"
-                                + " END AS tipo_agresor \n";
-                    }
-                    //relacion familiar victima sivigila"
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_aggresor.relative_id") == 0) {
-                        addToSourceTable("sivigila_event");
-                        addToSourceTable("sivigila_aggresor");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "aggressor_type_name", "aggressor_types", "aggressor_type_id", "relacion_familiar_victima");
-                    }
-                    break;
-                case sivigila_no_relative://";"relación no familiar víctima"
-                    addToSourceTable("sivigila_event");
-                    addToSourceTable("sivigila_aggresor");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "sivigila_no_relative_name", "sivigila_no_relative", "sivigila_no_relative_id", "relacion_no_familiar_victima");
-                    break;
-                case sivigila_tip_ss://";"tipo régimen"                    
-                    addToSourceTable("sivigila_event");
-                    addToSourceTable("sivigila_victim");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "sivigila_tip_ss_name", "sivigila_tip_ss", "sivigila_tip_ss_id", "tipo_regimen");
-                    break;
-                case public_health_actions://acciones en salud publica //RELACION DE UNO A MUCHOS
-                    separateRecords = true;
-                    sqlReturn = sqlReturn + ""
-                            + " CASE \n"
-                            + "    WHEN (SELECT cast(array_agg('action_name<=>public_health_actions<=>action_id<=>'||action_id) as text \n)"
-                            + "          FROM sivigila_event_public_health \n"
-                            + "          WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id ) is null THEN 'SIN DATO'\n"
-                            + "    ELSE (SELECT cast(array_agg('action_name<=>public_health_actions<=>action_id<=>'||action_id) as text \n)"
-                            + "          FROM sivigila_event_public_health \n"
-                            + "          WHERE sivigila_event_public_health.non_fatal_injury_id=non_fatal_injuries.non_fatal_injury_id )\n"
-                            + " END AS aciones_salud \n";
-                    break;
-                case jobs:
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_aggresor.occupation") == 0) {
-                        addToSourceTable("sivigila_event");
-                        addToSourceTable("sivigila_aggresor");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "job_name", "jobs", "job_id", "ocupacion_agresor");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("victims.job_id") == 0) {
-                        sqlReturn = createCase(sqlReturn, "victims.job_id", "job_name", "jobs", "job_id", "ocupacion_victima");
-                    }
-                    break;
-                case sivigila_mechanism:
-                    addToSourceTable("sivigila_event");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "sivigila_mechanism_name", "sivigila_mechanism", "sivigila_mechanism_id", "mecanismo_sivigila");
-                    break;
-                case insurance:
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "insurance_name", "insurance", "insurance_id", "aseguradora");
-                    break;
-                case contexts://(interpersonale en comunidad)
-                    addToSourceTable("non_fatal_interpersonal");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "context_name", "contexts", "context_id", "contexto");
-                    break;
-                case aggressor_genders://(interpersonale en comunidad)
-                    addToSourceTable("non_fatal_interpersonal");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "gender_name", "aggressor_genders", "gender_id", "sexo_agresor");
-                    break;
-                case relationships_to_victim://(interpersonale en comunidad)
-                    addToSourceTable("non_fatal_interpersonal");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "relationship_victim_name", "relationships_to_victim", "relationship_victim_id", "relacion_agresor_victima");
-                    break;
-                case precipitating_factors://(violencia autoinflingida)
-                    addToSourceTable("non_fatal_self_inflicted");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "precipitating_factor_name", "precipitating_factors", "precipitating_factor_id", "factor_precipitante");
-                    break;
-                case transport_users://(accidentes transito)
-                    addToSourceTable("non_fatal_transport");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "transport_user_name", "transport_users", "transport_user_id", "tipo_usuario");
-                    break;
-                case transport_counterparts://(accidentes transito)
-                    addToSourceTable("non_fatal_transport");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "transport_counterpart_name", "transport_counterparts", "transport_counterpart_id", "tipo_transporte_contraparte");
-                    break;
-                case transport_types://(accidentes transito)
-                    addToSourceTable("non_fatal_transport");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "transport_type_name", "transport_types", "transport_type_id", "tipo_transporte_victima");
-                    break;
-                case destinations_of_patient://(Violencia Interpersonal en Familia)(lesiones en transporte)
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "destination_patient_name", "destinations_of_patient", "destination_patient_id", "destino_paciente");
-                    break;
-                case activities://(Violencia Interpersonal en Familia)(lesiones en transporte)
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "activity_name", "activities", "activity_id", "actividad_realizada");
-                    break;
-                case non_fatal_places://(Violencia Interpersonal en Familia)(lesiones en transporte)(interpersonal en comunidad)
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "non_fatal_place_name", "non_fatal_places", "non_fatal_place_id", "lugar_hecho");
-                    break;
-                case use_alcohol_drugs://(Violencia Interpersonal en Familia)(lesiones en transporte)                    
-                    if (variablesCrossData.get(i).getSource_table().indexOf("use_alcohol_id") != -1) {
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "use_alcohol_drugs_name", "use_alcohol_drugs", "use_alcohol_drugs_id", "uso_alcohol");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().indexOf("use_drugs_id") != -1) {
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "use_alcohol_drugs_name", "use_alcohol_drugs", "use_alcohol_drugs_id", "uso_drogas");
-                    }
-                    break;
-                case mechanisms://(Violencia Interpersonal en Familia)(lesiones en transporte)
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "mechanism_name", "mechanisms", "mechanism_id", "mecanismo");
-                    break;
-                case protective_measures://(transito)
-                    addToSourceTable("fatal_injury_traffic");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "protective_measures_name", "protective_measures", "protective_measures_id", "medidas_proteccion");
-                    break;
-                case victim_characteristics://(transito)
-                    addToSourceTable("fatal_injury_traffic");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "characteristic_name", "victim_characteristics", "characteristic_id", "caracteristicas_victima");
-                    break;
-                case road_types://(transito)
-                    addToSourceTable("fatal_injury_traffic");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "road_type_name", "road_types", "road_type_id", "tipo_via");
-                    break;
-                case service_types://(transito)
-                    //contraparte
-                    if (variablesCrossData.get(i).getSource_table().indexOf("counterpart_service_type.service_type_id") != -1) {
-                        separateRecords = true;
-                        sqlReturn = sqlReturn + ""
-                                + "CASE \n"
-                                + "    WHEN( SELECT cast(array_agg('service_type_name<=>service_types<=>service_type_id<=>'||service_type_id) as text)  \n"
-                                + "          FROM counterpart_service_type \n"
-                                + "          WHERE counterpart_service_type.fatal_injury_id=fatal_injuries.fatal_injury_id) is null THEN 'SIN DATO'\n"
-                                + "    ELSE (SELECT cast(array_agg('service_type_name<=>service_types<=>service_type_id<=>'||service_type_id) as text)  \n"
-                                + "          FROM counterpart_service_type \n"
-                                + "          WHERE counterpart_service_type.fatal_injury_id=fatal_injuries.fatal_injury_id)     \n"
-                                + "    END AS servicio_contraparte \n";
-                    }
-                    //victima
-                    if (variablesCrossData.get(i).getSource_table().indexOf("fatal_injury_traffic.service_type_id") != -1) {
-                        addToSourceTable("fatal_injury_traffic");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "service_type_name", "service_types", "service_type_id", "servicio_victima");
-                    }
-                    break;
-                case involved_vehicles://(transito)
-                    //contraparte
-                    if (variablesCrossData.get(i).getSource_table().indexOf("counterpart_involved_vehicle.involved_vehicle_id") != -1) {
-                        separateRecords = true;
-                        sqlReturn = sqlReturn + ""
-                                + "CASE \n"
-                                + "    WHEN( SELECT cast(array_agg('involved_vehicle_name<=>involved_vehicles<=>involved_vehicle_id<=>'||involved_vehicle_id) as text)  \n"
-                                + "          FROM counterpart_involved_vehicle \n"
-                                + "          WHERE counterpart_involved_vehicle.fatal_injury_id=fatal_injuries.fatal_injury_id) is null THEN 'SIN DATO'\n"
-                                + "    ELSE (SELECT cast(array_agg('involved_vehicle_name<=>involved_vehicles<=>involved_vehicle_id<=>'||involved_vehicle_id) as text)  \n"
-                                + "          FROM counterpart_involved_vehicle \n"
-                                + "          WHERE counterpart_involved_vehicle.fatal_injury_id=fatal_injuries.fatal_injury_id)     \n"
-                                + "    END AS vehiculo_contraparte \n";
-                    }
-                    //victima
-                    if (variablesCrossData.get(i).getSource_table().indexOf("fatal_injury_traffic.involved_vehicle_id") != -1) {
-                        addToSourceTable("fatal_injury_traffic");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "involved_vehicle_name", "involved_vehicles", "involved_vehicle_id", "vehiculo_victima");
-                    }
-                    break;
-                case accident_classes://(transito)
-                    addToSourceTable("fatal_injury_traffic");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "accident_class_name", "accident_classes", "accident_class_id", "clase_accidente");
-                    break;
-                case boolean3:
-                    if (variablesCrossData.get(i).getSource_table().compareTo("fatal_injury_suicide.previous_attempt") == 0) {
-                        addToSourceTable("fatal_injury_suicide");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean_name", "boolean3", "boolean_id", "intento_previo");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("fatal_injury_suicide.mental_antecedent") == 0) {
-                        addToSourceTable("fatal_injury_suicide");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean_name", "boolean3", "boolean_id", "antecedentes_mentales");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("non_fatal_self_inflicted.previous_attempt") == 0) {
-                        addToSourceTable("non_fatal_self_inflicted");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean_name", "boolean3", "boolean_id", "intento_previo");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("non_fatal_self_inflicted.mental_antecedent") == 0) {
-                        addToSourceTable("non_fatal_self_inflicted");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean_name", "boolean3", "boolean_id", "antecedentes_mentales");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("non_fatal_interpersonal.previous_antecedent") == 0) {
-                        addToSourceTable("non_fatal_interpersonal");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean_name", "boolean3", "boolean_id", "antecedente_previo");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_event.further_fieldwork") == 0) {
-                        addToSourceTable("sivigila_event");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean_name", "boolean3", "boolean_id", "trabajo_campo");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_victim.antecedent") == 0) {
-                        addToSourceTable("sivigila_event");
-                        addToSourceTable("sivigila_victim");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean_name", "boolean3", "boolean_id", "antecedentes_similares");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_aggresor.live_together") == 0) {
-                        addToSourceTable("sivigila_event");
-                        addToSourceTable("sivigila_aggresor");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean_name", "boolean3", "boolean_id", "convive_con_agresor");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_aggresor.alcohol_or_drugs") == 0) {
-                        addToSourceTable("sivigila_event");
-                        addToSourceTable("sivigila_aggresor");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean_name", "boolean3", "boolean_id", "presencia_alcohol_agresor");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_event.recommended_protection") == 0) {
-                        addToSourceTable("sivigila_event");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean3.boolean_name", "boolean3", "boolean_id", "recomienda_proteccion");
-                    }
-                    if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_event.conflict_zone") == 0) {
-                        addToSourceTable("sivigila_event");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "boolean3.boolean_name", "boolean3", "boolean_id", "zona_conflicto");
-                    }
-                    break;
-                case related_events://EVENTOS RELACIONADOS (suicidio)
-                    addToSourceTable("fatal_injury_suicide");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "related_event_name", "related_events", "related_event_id", "eventos_relacionados");
-                    break;
-                case accident_mechanisms://MECANISMO (muerte accidental)                     
-                    addToSourceTable("fatal_injury_accident");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "accident_mechanism_name", "accident_mechanisms", "accident_mechanism_id", "mecanismo_accidente");
-                    break;
-                case suicide_mechanisms://MECANISMO (suicidio)
-                    addToSourceTable("fatal_injury_suicide");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "suicide_mechanism_name", "suicide_mechanisms", "suicide_mechanism_id", "mecanismo_suicidio");
-                    break;
-                case murder_contexts://CONTEXTO (homicidios)
-                    addToSourceTable("fatal_injury_murder");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "murder_context_name", "murder_contexts", "murder_context_id", "contexto");
-                    break;
-                case alcohol_levels://CONSUMO ALCOHOL                     
-                    if (variablesCrossData.get(i).getSource_table().compareTo("fatal_injury_traffic.alcohol_level_counterpart_id") == 0) {//(transito)
-                        addToSourceTable("fatal_injury_traffic");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "alcohol_level_name", "alcohol_levels", "alcohol_level_id", "consumo_alcohol_contraparte");
-                    } else {//(homicidios)(suicidios)(muerte accidental)
-                        sqlReturn = createCase(sqlReturn, currentIndicator.getInjuryType() + ".alcohol_level_victim_id", "alcohol_level_name", "alcohol_levels", "alcohol_level_id", "consumo_alcohol");
-                    }
-                    break;
-                case places://SITIO EVENTO (homicidios)(muerte accidental)                                       
-                    sqlReturn = createCase(sqlReturn, currentIndicator.getInjuryType() + ".injury_place_id", "place_name", "places", "place_id", "lugar_hecho");
-                    break;
-                case weapon_types://TIPO DE ARMA (homicidios)
-                    addToSourceTable("fatal_injury_murder");
-                    sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "weapon_type_name", "weapon_types", "weapon_type_id", "tipo_arma");
-                    break;
-                case non_fatal_data_sources:
-                    if ((currentIndicator.getIndicatorId() >= 33 && currentIndicator.getIndicatorId() <= 39) || (currentIndicator.getIndicatorId() >= 68 && currentIndicator.getIndicatorId() <= 75)) {//se lista las receptoras                        
-                        addToSourceTable("non_fatal_domestic_violence");
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "non_fatal_data_source_name", "non_fatal_data_sources", "non_fatal_data_source_id", "institucion_salud");
-                    } else {//se lista las de salud
-                        sqlReturn = createCase(sqlReturn, variablesCrossData.get(i).getSource_table(), "non_fatal_data_source_name", "non_fatal_data_sources", "non_fatal_data_source_id", "institucion_salud");
-                    }
+                case genders://GENERO  ----------------------                    
+                    sqlReturn = sqlReturn + variablesCrossData.get(i).getSource_table() + " AS genero";
                     break;
             }
             if (i == variablesCrossData.size() - 1) {//si es la ultima instruccion se agrega salto de linea
@@ -1362,13 +850,12 @@ public class IndicatorsSpecifiedRateMB {
                 sqlReturn = sqlReturn + ", \n\r";
             }
         }
+        //finalizo la instruccion
         sqlReturn = sqlReturn + ""
                 + "   FROM  \n"
                 + "       " + currentIndicator.getInjuryType() + "\n"
-                + "       " + sourceTable
                 + "       JOIN victims USING (victim_id) \n"
-                + "   WHERE  \n\r"
-                + "       " + filterSourceTable;
+                + "   WHERE  \n\r";
         if (currentIndicator.getIndicatorId() > 4) { //si no es uno de los indicadores generales se filtra por tipo de lesion
             if (currentIndicator.getIndicatorId() > 32 && currentIndicator.getIndicatorId() < 40) {//si es interpersonal en familia injury_id=53,55,56
                 sqlReturn = sqlReturn + "       " + currentIndicator.getInjuryType() + ".injury_id IN (53,55,56) AND \n\r";
@@ -1542,7 +1029,7 @@ public class IndicatorsSpecifiedRateMB {
         }
         return 0;
     }
-    
+
     private int addCategoricalHour() {
         int i;
         int e;
@@ -1837,6 +1324,27 @@ public class IndicatorsSpecifiedRateMB {
                         variablesCrossList.add(currentVariablesSelected.get(j));//la agrego al otro                        
                         btnAddVariableDisabled = true;
                         i = -1;
+
+                        if (currentVariablesSelected.get(j).compareTo("zona") == 0) {
+                            for (int k = 0; k < variablesCrossList.size(); k++) {//si hay comuna en variablesCrossList se quita
+                                if (variablesCrossList.get(k).compareTo("comuna") == 0) {
+                                    variablesList.add(variablesCrossList.get(k));
+                                    variablesCrossList.remove(k);
+                                    k = -1;
+                                }
+                            }
+                        }
+                        if (currentVariablesSelected.get(j).compareTo("comuna") == 0) {
+                            for (int k = 0; k < variablesCrossList.size(); k++) {//si hay zona en variablesCrossList se quita
+                                if (variablesCrossList.get(k).compareTo("zona") == 0) {
+                                    variablesList.add(variablesCrossList.get(k));
+                                    variablesCrossList.remove(k);
+                                    k = -1;
+                                }
+                            }
+                        }
+
+
                         break;
                     }
                 }
@@ -1899,9 +1407,9 @@ public class IndicatorsSpecifiedRateMB {
             if (currentTemporalDisaggregation.compareTo("Mensual") == 0) {
                 variablesName = variablesName + "meses, ";
             }
-            if (currentTemporalDisaggregation.compareTo("Diaria") == 0) {
-                variablesName = variablesName + "dias, ";
-            }
+//            if (currentTemporalDisaggregation.compareTo("Diaria") == 0) {
+//                variablesName = variablesName + "dias, ";
+//            }
 
             if (variablesCrossData.size() == 2) {
                 rs = connectionJdbcMB.consult(sql + " ORDER BY record_id");
@@ -2233,7 +1741,7 @@ public class IndicatorsSpecifiedRateMB {
         temporalDisaggregationTypes = new ArrayList<>();
         temporalDisaggregationTypes.add("Anual");
         temporalDisaggregationTypes.add("Mensual");
-        temporalDisaggregationTypes.add("Diaria");
+        //temporalDisaggregationTypes.add("Diaria");
         currentTemporalDisaggregation = "Anual";
 
         multiplers = new ArrayList<>();
@@ -2500,9 +2008,20 @@ public class IndicatorsSpecifiedRateMB {
                 //15;"TURISMO SEXUAL"
 
                 break;
-            case non_fatal_data_sources:
-            case neighborhoods://barrio,
             case communes://comuna,
+                try {
+                    ResultSet rs = connectionJdbcMB.consult(
+                            "Select * from " + generic_table + " where area_id = 1 order by 1");
+                    while (rs.next()) {
+                        valuesName.add(rs.getString(2));
+                        valuesConf.add(rs.getString(2));
+                        valuesId.add(rs.getString(1));
+                    }
+                } catch (Exception e) {
+                }
+                break;
+            case non_fatal_data_sources:
+            case neighborhoods://barrio,            
             case corridors://corredor,
             case areas://zona,
             case genders://genero,
@@ -2661,7 +2180,7 @@ public class IndicatorsSpecifiedRateMB {
         headers1 = new ArrayList<>();
         headers2 = new String[columNames.size()];
         int posRow = 0;
-        int posCol = 0;
+        int posCol;
         int posF;
         int posI;
         String value;
@@ -3348,87 +2867,6 @@ public class IndicatorsSpecifiedRateMB {
             }
         } catch (SQLException | NumberFormatException e) {
             System.out.println("Error 7 en " + this.getClass().getName() + ":" + e.toString());
-        }
-    }
-
-    public void createColumnPopulation() {
-
-        try {
-            //---------------------------------------------------------------
-            //agrego columna poblaciones
-            //connectionJdbcMB.non_query("ALTER TABLE " + pivotTableName + " ADD COLUMN population integer;");
-            String totalPopulation;
-            ResultSet rs2;
-            sql = ""
-                    + " SELECT \n"
-                    + "    * \n"
-                    + " FROM \n"
-                    + "    indicators_records \n"
-                    + " WHERE \n"
-                    + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-                    + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
-            ResultSet rs = connectionJdbcMB.consult(sql);
-            while (rs.next()) {
-                //---------------------------------------------------------------
-                //determino instruccion para determinar total de poblacion para una fila de la tabla pivot
-                sql = "Select SUM(population) from populations where ";
-                for (int i = 0; i < variablesCrossData.size(); i++) {
-                    if (variablesCrossData.get(i).getName().compareTo("genero") == 0) {
-                        if (rs.getString("column_" + (i + 1)).compareTo("MASCULINO") == 0) {
-                            sql = sql + " gender_id = 1 AND ";
-                        } else if (rs.getString("column_" + (i + 1)).compareTo("FEMENINO") == 0) {
-                            sql = sql + " gender_id = 2 AND ";
-                        } else {
-                            sql = sql + " gender_id = -1 AND ";//sin dato
-                        }
-                    }
-                    if (variablesCrossData.get(i).getName().compareTo("zona") == 0) {
-                        if (rs.getString("column_" + (i + 1)).compareTo("ZONA URBANA") == 0) {
-                            sql = sql + " area_id = 1 AND ";
-                        } else if (rs.getString("column_" + (i + 1)).compareTo("ZONA RURAL") == 0) {
-                            sql = sql + " area_id = 2 AND ";
-                        } else {
-                            sql = sql + " area_id = -1 AND ";//sin dato
-                        }
-                    }
-                    if (variablesCrossData.get(i).getName().compareTo("edad") == 0) {
-                        String aux;
-                        aux = rs.getString("column_" + (i + 1)).replace("n", "300");
-                        String[] splitAge = aux.split("/");
-                        if (splitAge.length == 2) {
-                            sql = sql + " age >= " + splitAge[0] + " AND  age <= " + splitAge[1] + " AND ";
-                        } else {
-                            sql = sql + " age = -1 AND ";//es "SIN DATO"
-                        }
-                    }
-                }
-                sql = sql.substring(0, sql.length() - 4);//eliminar ultimo AND
-                rs2 = connectionJdbcMB.consult(sql);
-                rs2.next();
-                totalPopulation = rs2.getString(1);
-                //---------------------------------------------------------------
-                //actualizamos el total de poblacion en tabla pivot
-                sql = "UPDATE indicators_records set population = " + totalPopulation + " where ";
-                for (int i = 0; i < variablesCrossData.size(); i++) {
-                    if (variablesCrossData.get(i).getName().compareTo("genero") == 0) {
-                        sql = sql + "column_" + (i + 1) + " = '" + rs.getString("column_" + (i + 1)) + "' AND ";
-                    }
-                    if (variablesCrossData.get(i).getName().compareTo("zona") == 0) {
-                        sql = sql + "column_" + (i + 1) + " = '" + rs.getString("column_" + (i + 1)) + "' AND ";
-                    }
-                    if (variablesCrossData.get(i).getName().compareTo("edad") == 0) {
-                        sql = sql + "column_" + (i + 1) + " = '" + rs.getString("column_" + (i + 1)) + "' AND ";
-                    }
-                }
-                sql = sql + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
-                        + "    indicator_id = " + currentIndicator.getIndicatorId() + "  \n";
-                //sql = sql.substring(0, sql.length() - 4);//eliminar ultimo AND
-                connectionJdbcMB.non_query(sql);
-                //colocar en cero las casillas vacias
-                connectionJdbcMB.non_query("UPDATE indicators_records set population = 0 where population is null");
-            }
-        } catch (SQLException ex) {
-            System.out.println("Error 8 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
 
