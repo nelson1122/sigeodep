@@ -257,6 +257,7 @@ public class VIFMB implements Serializable {
     private boolean isAction10 = false;
     private boolean isAction11 = false;
     private boolean isAction12 = false;
+    private boolean isAction14 = false;
     private boolean isUnknownAction = false;
     private boolean loading = false;
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
@@ -310,7 +311,7 @@ public class VIFMB implements Serializable {
         }
     }
 
-    public void reset() {        
+    public void reset() {
         currentUser = loginMB.getCurrentUser();
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
@@ -1100,6 +1101,7 @@ public class VIFMB implements Serializable {
         isAction10 = false;
         isAction11 = false;
         isAction12 = false;
+        isAction14 = false;
         isUnknownAction = false;
         for (int i = 0; i < actionsToTakeList.size(); i++) {
             int caso = (int) actionsToTakeList.get(i).getActionId();
@@ -1143,6 +1145,9 @@ public class VIFMB implements Serializable {
                     break;
                 case 13:
                     isUnknownAction = true;
+                    break;
+                case 14:
+                    isAction14 = true;
                     break;
 
             }
@@ -1537,6 +1542,9 @@ public class VIFMB implements Serializable {
                 }
                 if (isAction12) {
                     actionsToTakeList.add(actionsToTakeFacade.find((short) 12));
+                }
+                if (isAction14) {
+                    actionsToTakeList.add(actionsToTakeFacade.find((short) 14));
                 }
                 if (isUnknownAction) {
                     actionsToTakeList.add(actionsToTakeFacade.find((short) 13));
@@ -2149,6 +2157,7 @@ public class VIFMB implements Serializable {
         isAction10 = false;
         isAction11 = false;
         isAction12 = false;
+        isAction14 = false;
         otherActionDisabled = true;
         otherAction = "";
         isUnknownAction = false;
@@ -2470,6 +2479,7 @@ public class VIFMB implements Serializable {
             isAction10 = false;
             isAction11 = false;
             isAction12 = false;
+            isAction14 = false;
             otherAction = "";
             isUnknownAction = true;
             otherActionDisabled = true;
@@ -3341,6 +3351,14 @@ public class VIFMB implements Serializable {
 
     public void setIsAction12(boolean isAction12) {
         this.isAction12 = isAction12;
+    }
+    
+    public boolean isIsAction14() {
+        return isAction14;
+    }
+
+    public void setIsAction14(boolean isAction14) {
+        this.isAction14 = isAction14;
     }
 
     public boolean isIsAction2() {
@@ -4588,4 +4606,5 @@ public class VIFMB implements Serializable {
     public void setCurrentQuadrantEvent(int currentQuadrantEvent) {
         this.currentQuadrantEvent = currentQuadrantEvent;
     }
+    
 }

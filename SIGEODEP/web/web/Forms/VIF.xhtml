@@ -1716,7 +1716,21 @@
                                                                     <f:ajax 
                                                                         event="change"
                                                                         listener="#{vifMB.changeUnknownAction}"
-                                                                        render="IdControls message IdOtherAction IdAC1 IdAC2 IdAC3 IdAC4 IdAC5 IdAC6 IdAC7 IdAC8 IdAC9 IdAC10 IdAC11 IdAC12"/>
+                                                                        render="IdControls message IdOtherAction IdAC1 IdAC2 IdAC3 IdAC4 IdAC5 IdAC6 IdAC7 IdAC8 IdAC9 IdAC10 IdAC11 IdAC12 IdAC14"/>
+                                                                </h:selectBooleanCheckbox>
+                                                            </p:column>    
+                                                        </p:row>
+                                                        <p:row>  
+                                                            <p:column>ATENCION EN SALUD</p:column>
+                                                            <p:column>
+                                                                <h:selectBooleanCheckbox 
+                                                                    id="IdAC14"
+                                                                    value="#{vifMB.isAction14}"
+                                                                    disabled="#{vifMB.isUnknownAction}">
+                                                                    <f:ajax 
+                                                                        event="change"
+                                                                        listener="#{vifMB.changeForm}"
+                                                                        render="IdControls message"/>
                                                                 </h:selectBooleanCheckbox>
                                                             </p:column>    
                                                         </p:row>

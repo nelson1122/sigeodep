@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -3859,7 +3858,18 @@ public class RecordDataMB implements Serializable {
                     newNonFatalInjury.setInjuryId(injuriesFacade.find((short) 55));//CAMBIA A 55 PARA SER VIF INGRESADA DESDE LCENF
                 }
 
+                //destino del paciente
+                //
+                if (newNonFatalInjury.getDestinationPatientId()==null) {
+                    newNonFatalInjury.setDestinationPatientId(destinationsOfPatientFacade.find((short)11));//se usa acciones en salud
+                    
+                }
+                
                 //AGREGO LAS LISTAS NO VACIAS///////////////////////////////////
+                
+                
+                
+                
                 if (!anatomicalLocationsList.isEmpty()) {
                     newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
                 } else {
@@ -4776,14 +4786,35 @@ public class RecordDataMB implements Serializable {
                     newNonFatalDomesticViolence.setAggressorTypesList(aggressorTypesList);
                 }
 
-
-                if (!actionsToTakeList.isEmpty()) {
-                    newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
-                } else {
-                    actionsToTakeList.add(new ActionsToTake((short) 13));
-                    newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
+                //acciones a realizar                
+                boolean actionIsEmpty;
+                if (actionsToTakeList.isEmpty()) {//esta vacio
+                    actionIsEmpty = true;
+                } else {//no esta vacio
+                    if (actionsToTakeList.size() == 1) {//puede que diga sin dato
+                        if (actionsToTakeList.get(0).getActionId() == 13) {//es sin dato
+                            actionIsEmpty = true;
+                        } else {//no esta vacio
+                            actionIsEmpty = false;
+                        }
+                    } else {//tiene mas de uno no esta vacio
+                        actionIsEmpty = false;
+                    }
                 }
 
+                if (!actionIsEmpty) {//no esta vacio se ingresa
+                    newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
+                } else {//se debe calcular en base a source(fuente) y form(ficha)
+                    actionsToTakeList = calculeActionToTake(projectsMB.getCurrentSourceId(), projectsMB.getCurrentFormId());
+
+                    if (actionsToTakeList.isEmpty()) { //no se pudo determinar accion a realizar a traves de fuente
+                        actionsToTakeList.add(new ActionsToTake((short) 13));                        
+                    } else { //se determino la accion a realizar a traves de la fuente
+                        newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
+                    }
+                }
+                
+                //grupo vulnerable
                 if (!vulnerableGroupList.isEmpty()) {
                     newVictim.setVulnerableGroupsList(vulnerableGroupList);
                 }
@@ -4868,6 +4899,47 @@ public class RecordDataMB implements Serializable {
         } catch (Exception ex) {
             System.out.println("Error 27 en " + this.getClass().getName() + ":" + ex.toString());
         }
+    }
+
+    private List<ActionsToTake> calculeActionToTake(int source, String form) {
+        List<ActionsToTake> ids = new ArrayList<>();
+        switch (source) {
+            case 70://INSTITUTO DE MEDICINA LEGAL Y CIENCIAS FORENSES
+                ids.add(actionsToTakeFacade.find((short) 3));//dictamen medicina legal
+                break;
+            case 66://ZONAL 1 ICBF
+            case 67://ZONAL 2 ICBF
+                ids.add(actionsToTakeFacade.find((short) 8));//medidas de proteccion
+                ids.add(actionsToTakeFacade.find((short) 10));//atencion psicosocial
+                ids.add(actionsToTakeFacade.find((short) 11));//restablecimiento de derechos                
+                break;
+            case 82://"CAIVAS 15 FISCALIA"
+            case 80://CAIVAS 52"
+            case 68://CAIVAS FISCALIA 15"
+            case 71://CAIVAS FISCALIA 52"
+                ids.add(actionsToTakeFacade.find((short) 5));//remision a medicina legal
+                break;
+
+            case 69://CAVIF  FISCALIA 10"
+                ids.add(actionsToTakeFacade.find((short) 12));//OTRO
+                break;
+        }
+        //si ids sigue vacio se verifica si la fuente 
+        if (ids.isEmpty()) {
+            switch (form) {
+                case "SCC-F-032"://LCENF
+                case "SCC-F-033"://VIF      //si esta vacio es por que no era los validados por source
+                case "SIVIGILA-VIF"://SIVIGILA
+                    ids.add(actionsToTakeFacade.find((short) 14));//atencion en salud
+                    break;
+
+            }
+        }
+
+
+
+
+        return ids;
     }
 
     public void register_SIVIGILA() {
@@ -5314,12 +5386,12 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-
+                
                 //agrego las listas no vacias
                 if (!publicHealthActionsList.isEmpty()) {
                     newSivigilaEvent.setPublicHealthActionsList(publicHealthActionsList);
                 } else {
-                    publicHealthActionsList.add(new PublicHealthActions((short) 8));
+                    publicHealthActionsList.add(new PublicHealthActions((short) 9));//ATENCION en salud
                     newSivigilaEvent.setPublicHealthActionsList(publicHealthActionsList);
                 }
 
