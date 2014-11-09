@@ -9,7 +9,7 @@
         <!--=================================================================-->
         <!--======================= CABECERA Y SCRIPTS ======================-->                    
         <ui:define name="head">
-            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css" />  
+            <link href="../../resources/css/style.css" rel="stylesheet" type="text/css"/>  
             <style type="text/css">
                 .bla div { width: 125px; white-space:nowrap;}
             </style>
@@ -1272,7 +1272,6 @@
                                     id="IdBtnDeshacer"
                                     value="DESHACER"
                                     update="IdHistorialList :IdForm:message"/>
-
                             </p:tab>                              
                             <!--======================== SECCION PARA EL REGISTRO DE LA INFORMACION======================-->
                             <p:tab title="REGISTRO DE LA INFORMACION">
@@ -1311,8 +1310,8 @@
                                                 disabled="#{recordDataMB.btnRegisterDataDisabled}"
                                                 actionListener="#{recordDataMB.btnRegisterDataClick}" 
                                                 onclick="pbAjax.start();
-                    startButton2.disable();
-                    pageInactive();"  
+                                                startButton2.disable();
+                                                pageInactive();"  
                                                 oncomplete="pageActive();"
                                                 widgetVar="startButton2" />                                              
                                         </p:column>
