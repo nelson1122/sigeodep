@@ -406,6 +406,11 @@
             <redirect/>
         </navigation-case>                          
         <navigation-case>
+            <from-outcome>populate</from-outcome>
+            <to-view-id>/web/configurations/populate.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>                          
+        <navigation-case>
             <from-outcome>registerControl</from-outcome>
             <to-view-id>/web/configurations/registerControl.xhtml</to-view-id>
             <redirect/>

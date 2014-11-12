@@ -3758,6 +3758,12 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
                     }
                 }
+                //SI FECHA DE EVENTO MAYOR A FECHA DE CONSULTA SE INVIERTEN                
+                if (newNonFatalInjury.getInjuryDate().getTime() > newNonFatalInjury.getCheckupDate().getTime()) {
+                    Date auxInjuryDate=newNonFatalInjury.getInjuryDate();
+                    newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
+                    newNonFatalInjury.setCheckupDate(auxInjuryDate);
+                }
 
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newVictim.getVictimNeighborhoodId() == null) {
@@ -3825,6 +3831,8 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
+                
+                
 
                 //DETERMINO TIPO DE LESION//////////////////////////////////////
                 if (selectInjuryDetermined == null) {//no se pudo determinar se coloca por defecto //54. No intencional
@@ -4674,7 +4682,9 @@ public class RecordDataMB implements Serializable {
                     if (newNonFatalInjury.getCheckupDate() != null) {
                         newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
                     }
-                }
+                }               
+                
+                
                 //SI NO HAY HORA DE EVENTO PASAR LA DE CONSULTA
                 if (newNonFatalInjury.getInjuryTime() == null) {
                     if (newNonFatalInjury.getCheckupTime() != null) {
@@ -4702,6 +4712,13 @@ public class RecordDataMB implements Serializable {
                         cal.setTime(newNonFatalInjury.getInjuryDate());
                         newNonFatalInjury.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
                     }
+                }                
+                
+                //SI FECHA DE EVENTO MAYOR A FECHA DE CONSULTA SE INVIERTEN                
+                if (newNonFatalInjury.getInjuryDate().getTime() > newNonFatalInjury.getCheckupDate().getTime()) {
+                    Date auxInjuryDate=newNonFatalInjury.getInjuryDate();
+                    newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
+                    newNonFatalInjury.setCheckupDate(auxInjuryDate);
                 }
 
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
@@ -5322,6 +5339,13 @@ public class RecordDataMB implements Serializable {
                         newNonFatalInjury.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
                     }
                 }
+                //SI FECHA DE EVENTO MAYOR A FECHA DE CONSULTA SE INVIERTEN                
+                if (newNonFatalInjury.getInjuryDate().getTime() > newNonFatalInjury.getCheckupDate().getTime()) {
+                    Date auxInjuryDate=newNonFatalInjury.getInjuryDate();
+                    newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
+                    newNonFatalInjury.setCheckupDate(auxInjuryDate);
+                }                
+                
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newVictim.getVictimNeighborhoodId() == null) {
                     newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));

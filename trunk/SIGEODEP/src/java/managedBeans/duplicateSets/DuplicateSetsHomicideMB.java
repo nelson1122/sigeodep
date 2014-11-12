@@ -185,7 +185,7 @@ public class DuplicateSetsHomicideMB implements Serializable {
     public void loadValues(RowDataTable[] selectedRowsDataTableTags) {
         /*
          * se llama a esta funcion desde record sets cuando se presiona el boton
-         * "registros duplicados"
+         * "detectar duplicados"
          */
         FacesContext context = FacesContext.getCurrentInstance();
         recordSetsMB = (RecordSetsMB) context.getApplication().evaluateExpressionGet(context, "#{recordSetsMB}", RecordSetsMB.class);
@@ -218,9 +218,9 @@ public class DuplicateSetsHomicideMB implements Serializable {
          */
         try {
 
-            connectionJdbcMB.non_query("DROP VIEW IF EXISTS duplicate");
+            connectionJdbcMB.non_query("DROP TABLE IF EXISTS duplicate");
             String sql = ""
-                    + "create view duplicate as \n"
+                    + "create TABLE duplicate as \n"
                     + "   SELECT \n"
                     + "      victims.victim_id, \n"
                     + "      victims.victim_nid, \n"
