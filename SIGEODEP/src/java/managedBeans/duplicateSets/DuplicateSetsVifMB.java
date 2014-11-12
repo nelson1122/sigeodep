@@ -182,9 +182,9 @@ public class DuplicateSetsVifMB implements Serializable {
          * posiblemente son duplicados
          */
         try {
-            connectionJdbcMB.non_query("DROP VIEW IF EXISTS duplicate");
+            connectionJdbcMB.non_query("DROP TABLE IF EXISTS duplicate");
             String sql = ""
-                    + "create view duplicate as \n"
+                    + "create TABLE duplicate as \n"
                     + "   SELECT \n"
                     + "      victims.victim_id, \n"
                     + "      victims.victim_nid, \n"

@@ -215,9 +215,9 @@ public class DuplicateSetsAccidentalMB implements Serializable {
          * posiblemente son duplicados
          */
         try {
-            connectionJdbcMB.non_query("DROP VIEW IF EXISTS duplicate");
+            connectionJdbcMB.non_query("DROP TABLE IF EXISTS duplicate");
             String sql = ""
-                    + "create view duplicate as \n"
+                    + "create TABLE duplicate as \n"
                     + "   SELECT \n"
                     + "      victims.victim_id, \n"
                     + "      victims.victim_nid, \n"
@@ -275,6 +275,9 @@ public class DuplicateSetsAccidentalMB implements Serializable {
                 //contamos el numero de registros que pueden ser posibles repeticiones
                 //si supera la validacion se agregamos a la lista
                 found = false;
+                if(resultSetFileData.getString("victim_nid").compareTo("5282865") == 0){
+                    found = false;                    
+                }
                 for (int i = 0; i < addedRecords.size(); i++) {//saber si ya fue evaluado
                     if (resultSetFileData.getString("victim_id").compareTo(addedRecords.get(i)) == 0) {
                         found = true;

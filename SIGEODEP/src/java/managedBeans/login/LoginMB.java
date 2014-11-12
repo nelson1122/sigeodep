@@ -208,242 +208,276 @@ public class LoginMB {
         double num;
 
         if (continuar) {
-            int countNecesitaCalculo = 0;
-            int countNoNecesitaCalculo = 0;
-            int fuenteDeDatos = 0;
-
-            //--------------------------------------------------
-            //--------- accion a realizar en VIF ---21483------------
-            //--------------------------------------------------
-            //*
             try {
-                ArrayList<String> conjuntosDeRegistrosBuscados = new ArrayList<>();
                 ResultSet rs = connectionJdbcMB.consult(""
-                        + " SELECT "
-                        + "   * "
-                        + " FROM "
-                        + "   public.ungrouped_tags "
-                        + " WHERE "
-                        + "   form_id like 'SCC-F-033'");
+                        + " select "
+                        + "    non_fatal_injury_id,"
+                        + "    injury_date,"
+                        + "    checkup_date "
+                        + " from "
+                        + "    non_fatal_injuries "
+                        + " where "
+                        + "    injury_date > checkup_date;");
+                int count = 0;
                 while (rs.next()) {
-                    conjuntosDeRegistrosBuscados.add(rs.getString("ungrouped_tag_id"));
-                }
-
-                for (String idConjunto : conjuntosDeRegistrosBuscados) {
-                    //determino la fuente que se uso para este registro  
-
-                    rs = connectionJdbcMB.consult(""
-                            + " SELECT "
-                            + "    projects.source_id "
-                            + " FROM "
-                            + "    projects, "
-                            + "    ungrouped_tags "
-                            + " WHERE "
-                            + "    projects.project_name like ungrouped_tags.ungrouped_tag_name AND "
-                            + "    ungrouped_tags.ungrouped_tag_id = " + idConjunto);
-                    if (rs.next()) {//puede ser que haya sido creado por formulario por lo que no tiene conjunto
-                        fuenteDeDatos = rs.getShort(1);//fuente de datos del proyecto
-                    } else {
-                        fuenteDeDatos = 14;//fuente de datos del proyecto ATENCION EN SALUD
-                    }
-
-
-                    //determino todos los registros para este conjunto
-                    rs = connectionJdbcMB.consult(""
-                            + " SELECT "
-                            + "    * "
-                            + " FROM "
-                            + "    victims, "
+                    String nonFatalInjuryId = rs.getString(1);
+                    String injuryDate = rs.getString(2);
+                    String checkupDate = rs.getString(3);
+                    connectionJdbcMB.non_query(""
+                            + " UPDATE "
                             + "    non_fatal_injuries "
+                            + " SET"
+                            + "    injury_date = to_date('" + checkupDate + "','yyyy/MM/dd'), "
+                            + "    checkup_date = to_date('" + injuryDate + "','yyyy/MM/dd') "
                             + " WHERE "
-                            + "    victims.victim_id = non_fatal_injuries.victim_id and "
-                            + "    victims.first_tag_id = " + idConjunto);
-
-                    while (rs.next()) {
-                        ResultSet rs2 = connectionJdbcMB.consult(""
-                                + " SELECT "
-                                + "   * "
-                                + " FROM "
-                                + "   domestic_violence_action_to_take "
-                                + " WHERE "
-                                + "   non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
-                        ArrayList<String> encontrados = new ArrayList<>();
-                        while (rs2.next()) {
-                            encontrados.add(rs2.getString("action_id"));
-                        }
-
-
-                        boolean necesitaCalculo = false;
-                        boolean necesitaEliminacion = false;
-                        if (encontrados.isEmpty()) {
-                            necesitaCalculo = true;//necesita calculo de accion a realizar
-                        } else if (encontrados.size() == 1) {
-                            if (encontrados.get(0).compareTo("13") == 0) {
-                                necesitaEliminacion = true;//necesita Eliminacion de accion a realizar sin dato
-                                necesitaCalculo = true;//necesita calculo de accion a realizar                                
-                            }
-                        }
-
-
-                        if (necesitaEliminacion) {
-                            connectionJdbcMB.non_query("DELETE FROM domestic_violence_action_to_take WHERE non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
-                        }
-                        if (necesitaCalculo) {
-                            countNecesitaCalculo++;
-                            boolean realizo = false;
-                            switch (fuenteDeDatos) {
-                                case 14://VIF
-                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",14)");//ATENCION EN SALUD                                    
-                                    realizo = true;
-                                    break;
-                                case 70://INSTITUTO DE MEDICINA LEGAL Y CIENCIAS FORENSES
-                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",3)");//dictamen medicina legal
-                                    realizo = true;
-                                    break;
-
-                                case 66://ZONAL 1 ICBF
-                                case 67://ZONAL 2 ICBF
-                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",8)");//medidas de proteccion
-                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",10)");//atencion psicosocial
-                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",11)");//restablecimiento de derechos                
-                                    realizo = true;
-                                    break;
-                                case 82://"CAIVAS 15 FISCALIA"
-                                case 80://CAIVAS 52"
-                                case 68://CAIVAS FISCALIA 15"
-                                case 71://CAIVAS FISCALIA 52"
-                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",5)");//remision a medicina legal
-                                    realizo = true;
-                                    break;
-                                case 69://CAVIF  FISCALIA 10"
-                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",12)");//OTRO
-                                    realizo = true;
-                                    break;
-                            }
-                            //si ids sigue vacio se verifica si la fuente 
-                            if (!realizo) {
-                                connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",14)");//atencion en salud
-                            }
-                        } else {
-                            countNoNecesitaCalculo++;
-                        }
-                    }
+                            + "    non_fatal_injury_id = "+nonFatalInjuryId );
+                    System.out.println(nonFatalInjuryId + "\t\t" + injuryDate + "\t" + checkupDate);
+                    count++;
                 }
-                System.out.println("---VIF------- SE ACTUALIZARON  " + String.valueOf(countNecesitaCalculo) + "No fueron necesarios " + String.valueOf(countNoNecesitaCalculo));
+                System.out.println("Registros prcesados: " + count);
             } catch (Exception e) {
-                System.out.println("ERROR 002: count:" + countNecesitaCalculo + "" + e.getMessage());
             }
-            //--------------------------------------------------
-            //--------- accion a realizar en SIVIGILA ---------------
-            //--------------------------------------------------
-            countNoNecesitaCalculo = 0;
-            countNecesitaCalculo = 0;
-            try {
-                ArrayList<String> conjuntosDeRegistrosBuscados = new ArrayList<>();
-                ResultSet rs = connectionJdbcMB.consult(""
-                        + " SELECT "
-                        + "   * "
-                        + " FROM "
-                        + "   public.ungrouped_tags "
-                        + " WHERE "
-                        + "   form_id like 'SIVIGILA-VIF'");
-                while (rs.next()) {
-                    conjuntosDeRegistrosBuscados.add(rs.getString("ungrouped_tag_id"));
-                }
 
-                for (String idConjunto : conjuntosDeRegistrosBuscados) {
-                    //determino todos los registros para este conjunto
-                    rs = connectionJdbcMB.consult(""
-                            + " SELECT "
-                            + "    * "
-                            + " FROM "
-                            + "    victims, "
-                            + "    non_fatal_injuries "
-                            + " WHERE "
-                            + "    victims.victim_id = non_fatal_injuries.victim_id and "
-                            + "    victims.first_tag_id = " + idConjunto);
-
-                    while (rs.next()) {
-                        ResultSet rs2 = connectionJdbcMB.consult(""
-                                + " SELECT "
-                                + "   * "
-                                + " FROM "
-                                + "   sivigila_event_public_health "
-                                + " WHERE "
-                                + "   non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
-                        ArrayList<String> encontrados = new ArrayList<>();
-                        while (rs2.next()) {
-                            encontrados.add(rs2.getString("action_id"));
-                        }
-
-
-                        boolean necesitaCalculo = false;
-                        boolean necesitaEliminacion = false;
-                        if (encontrados.isEmpty()) {
-                            necesitaCalculo = true;//necesita calculo de accion a realizar
-                        } else if (encontrados.size() == 1) {
-                            if (encontrados.get(0).compareTo("8") == 0) {
-                                necesitaEliminacion = true;//necesita Eliminacion de accion a realizar sin dato
-                                necesitaCalculo = true;//necesita calculo de accion a realizar                                
-                            }
-                        }
-
-                        if (necesitaEliminacion) {
-                            connectionJdbcMB.non_query("DELETE FROM sivigila_event_public_health WHERE non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
-                        }
-                        if (necesitaCalculo) {
-                            connectionJdbcMB.non_query("INSERT INTO sivigila_event_public_health VALUES (" + rs.getString("non_fatal_injury_id") + ",9)");//public_healt_action ATENCION EN SALUD
-                            countNecesitaCalculo++;
-                        } else {
-                            countNoNecesitaCalculo++;
-                        }
-                    }
-                }
-                System.out.println("-------SIVIGILA VIF ---SE ACTUALIZARON  " + String.valueOf(countNecesitaCalculo) + "No fueron necesarios " + String.valueOf(countNoNecesitaCalculo));
-            } catch (Exception e) {
-                System.out.println("ERROR 002: count:" + countNecesitaCalculo + "" + e.getMessage());
-            }
-            //*/
-            //--------------------------------------------------
-            //--------- accion a realizar en LCENF ---------------
-            //--------------------------------------------------            
-            countNecesitaCalculo = 0;
-            countNoNecesitaCalculo = 0;
-            try {
-                ArrayList<String> conjuntosDeRegistrosBuscados = new ArrayList<>();
-                ResultSet rs = connectionJdbcMB.consult(""
-                        + " SELECT "
-                        + "   * "
-                        + " FROM "
-                        + "   public.ungrouped_tags "
-                        + " WHERE "
-                        + "   form_id like 'SCC-F-032'");
-                while (rs.next()) {
-                    conjuntosDeRegistrosBuscados.add(rs.getString("ungrouped_tag_id"));
-                }
-
-                for (String idConjunto : conjuntosDeRegistrosBuscados) {
-                    //determino todos los registros para este conjunto
-                    rs = connectionJdbcMB.consult(""
-                            + " SELECT "
-                            + "    * "
-                            + " FROM "
-                            + "    victims, "
-                            + "    non_fatal_injuries "
-                            + " WHERE "
-                            + "    victims.victim_id = non_fatal_injuries.victim_id and "
-                            + "    victims.first_tag_id = " + idConjunto + " AND "
-                            + "    non_fatal_injuries.destination_patient_id IS NULL");
-                    while (rs.next()) {
-                        connectionJdbcMB.non_query("UPDATE non_fatal_injuries SET destination_patient_id = 11 WHERE non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));//destination_patient_id = 11 ATENCION EN SALUD
-                        countNecesitaCalculo++;
-                    }
-                }
-                System.out.println("-------LCENF ---SE ACTUALIZARON  " + String.valueOf(countNecesitaCalculo));
-            } catch (Exception e) {
-                System.out.println("ERROR 002: count:" + countNecesitaCalculo + "" + e.getMessage());
-            }
         }
+
+
+//        if (continuar) {
+//            int countNecesitaCalculo = 0;
+//            int countNoNecesitaCalculo = 0;
+//            int fuenteDeDatos = 0;
+//
+//            //--------------------------------------------------
+//            //--------- accion a realizar en VIF ---21483------------
+//            //--------------------------------------------------
+//            //*
+//            try {
+//                ArrayList<String> conjuntosDeRegistrosBuscados = new ArrayList<>();
+//                ResultSet rs = connectionJdbcMB.consult(""
+//                        + " SELECT "
+//                        + "   * "
+//                        + " FROM "
+//                        + "   public.ungrouped_tags "
+//                        + " WHERE "
+//                        + "   form_id like 'SCC-F-033'");
+//                while (rs.next()) {
+//                    conjuntosDeRegistrosBuscados.add(rs.getString("ungrouped_tag_id"));
+//                }
+//
+//                for (String idConjunto : conjuntosDeRegistrosBuscados) {
+//                    //determino la fuente que se uso para este registro  
+//
+//                    rs = connectionJdbcMB.consult(""
+//                            + " SELECT "
+//                            + "    projects.source_id "
+//                            + " FROM "
+//                            + "    projects, "
+//                            + "    ungrouped_tags "
+//                            + " WHERE "
+//                            + "    projects.project_name like ungrouped_tags.ungrouped_tag_name AND "
+//                            + "    ungrouped_tags.ungrouped_tag_id = " + idConjunto);
+//                    if (rs.next()) {//puede ser que haya sido creado por formulario por lo que no tiene conjunto
+//                        fuenteDeDatos = rs.getShort(1);//fuente de datos del proyecto
+//                    } else {
+//                        fuenteDeDatos = 14;//fuente de datos del proyecto ATENCION EN SALUD
+//                    }
+//
+//
+//                    //determino todos los registros para este conjunto
+//                    rs = connectionJdbcMB.consult(""
+//                            + " SELECT "
+//                            + "    * "
+//                            + " FROM "
+//                            + "    victims, "
+//                            + "    non_fatal_injuries "
+//                            + " WHERE "
+//                            + "    victims.victim_id = non_fatal_injuries.victim_id and "
+//                            + "    victims.first_tag_id = " + idConjunto);
+//
+//                    while (rs.next()) {
+//                        ResultSet rs2 = connectionJdbcMB.consult(""
+//                                + " SELECT "
+//                                + "   * "
+//                                + " FROM "
+//                                + "   domestic_violence_action_to_take "
+//                                + " WHERE "
+//                                + "   non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
+//                        ArrayList<String> encontrados = new ArrayList<>();
+//                        while (rs2.next()) {
+//                            encontrados.add(rs2.getString("action_id"));
+//                        }
+//
+//
+//                        boolean necesitaCalculo = false;
+//                        boolean necesitaEliminacion = false;
+//                        if (encontrados.isEmpty()) {
+//                            necesitaCalculo = true;//necesita calculo de accion a realizar
+//                        } else if (encontrados.size() == 1) {
+//                            if (encontrados.get(0).compareTo("13") == 0) {
+//                                necesitaEliminacion = true;//necesita Eliminacion de accion a realizar sin dato
+//                                necesitaCalculo = true;//necesita calculo de accion a realizar                                
+//                            }
+//                        }
+//
+//
+//                        if (necesitaEliminacion) {
+//                            connectionJdbcMB.non_query("DELETE FROM domestic_violence_action_to_take WHERE non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
+//                        }
+//                        if (necesitaCalculo) {
+//                            countNecesitaCalculo++;
+//                            boolean realizo = false;
+//                            switch (fuenteDeDatos) {
+//                                case 14://VIF
+//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",14)");//ATENCION EN SALUD                                    
+//                                    realizo = true;
+//                                    break;
+//                                case 70://INSTITUTO DE MEDICINA LEGAL Y CIENCIAS FORENSES
+//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",3)");//dictamen medicina legal
+//                                    realizo = true;
+//                                    break;
+//
+//                                case 66://ZONAL 1 ICBF
+//                                case 67://ZONAL 2 ICBF
+//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",8)");//medidas de proteccion
+//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",10)");//atencion psicosocial
+//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",11)");//restablecimiento de derechos                
+//                                    realizo = true;
+//                                    break;
+//                                case 82://"CAIVAS 15 FISCALIA"
+//                                case 80://CAIVAS 52"
+//                                case 68://CAIVAS FISCALIA 15"
+//                                case 71://CAIVAS FISCALIA 52"
+//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",5)");//remision a medicina legal
+//                                    realizo = true;
+//                                    break;
+//                                case 69://CAVIF  FISCALIA 10"
+//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",12)");//OTRO
+//                                    realizo = true;
+//                                    break;
+//                            }
+//                            //si ids sigue vacio se verifica si la fuente 
+//                            if (!realizo) {
+//                                connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",14)");//atencion en salud
+//                            }
+//                        } else {
+//                            countNoNecesitaCalculo++;
+//                        }
+//                    }
+//                }
+//                System.out.println("---VIF------- SE ACTUALIZARON  " + String.valueOf(countNecesitaCalculo) + "No fueron necesarios " + String.valueOf(countNoNecesitaCalculo));
+//            } catch (Exception e) {
+//                System.out.println("ERROR 002: count:" + countNecesitaCalculo + "" + e.getMessage());
+//            }
+//            //--------------------------------------------------
+//            //--------- accion a realizar en SIVIGILA ---------------
+//            //--------------------------------------------------
+//            countNoNecesitaCalculo = 0;
+//            countNecesitaCalculo = 0;
+//            try {
+//                ArrayList<String> conjuntosDeRegistrosBuscados = new ArrayList<>();
+//                ResultSet rs = connectionJdbcMB.consult(""
+//                        + " SELECT "
+//                        + "   * "
+//                        + " FROM "
+//                        + "   public.ungrouped_tags "
+//                        + " WHERE "
+//                        + "   form_id like 'SIVIGILA-VIF'");
+//                while (rs.next()) {
+//                    conjuntosDeRegistrosBuscados.add(rs.getString("ungrouped_tag_id"));
+//                }
+//
+//                for (String idConjunto : conjuntosDeRegistrosBuscados) {
+//                    //determino todos los registros para este conjunto
+//                    rs = connectionJdbcMB.consult(""
+//                            + " SELECT "
+//                            + "    * "
+//                            + " FROM "
+//                            + "    victims, "
+//                            + "    non_fatal_injuries "
+//                            + " WHERE "
+//                            + "    victims.victim_id = non_fatal_injuries.victim_id and "
+//                            + "    victims.first_tag_id = " + idConjunto);
+//
+//                    while (rs.next()) {
+//                        ResultSet rs2 = connectionJdbcMB.consult(""
+//                                + " SELECT "
+//                                + "   * "
+//                                + " FROM "
+//                                + "   sivigila_event_public_health "
+//                                + " WHERE "
+//                                + "   non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
+//                        ArrayList<String> encontrados = new ArrayList<>();
+//                        while (rs2.next()) {
+//                            encontrados.add(rs2.getString("action_id"));
+//                        }
+//
+//
+//                        boolean necesitaCalculo = false;
+//                        boolean necesitaEliminacion = false;
+//                        if (encontrados.isEmpty()) {
+//                            necesitaCalculo = true;//necesita calculo de accion a realizar
+//                        } else if (encontrados.size() == 1) {
+//                            if (encontrados.get(0).compareTo("8") == 0) {
+//                                necesitaEliminacion = true;//necesita Eliminacion de accion a realizar sin dato
+//                                necesitaCalculo = true;//necesita calculo de accion a realizar                                
+//                            }
+//                        }
+//
+//                        if (necesitaEliminacion) {
+//                            connectionJdbcMB.non_query("DELETE FROM sivigila_event_public_health WHERE non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
+//                        }
+//                        if (necesitaCalculo) {
+//                            connectionJdbcMB.non_query("INSERT INTO sivigila_event_public_health VALUES (" + rs.getString("non_fatal_injury_id") + ",9)");//public_healt_action ATENCION EN SALUD
+//                            countNecesitaCalculo++;
+//                        } else {
+//                            countNoNecesitaCalculo++;
+//                        }
+//                    }
+//                }
+//                System.out.println("-------SIVIGILA VIF ---SE ACTUALIZARON  " + String.valueOf(countNecesitaCalculo) + "No fueron necesarios " + String.valueOf(countNoNecesitaCalculo));
+//            } catch (Exception e) {
+//                System.out.println("ERROR 002: count:" + countNecesitaCalculo + "" + e.getMessage());
+//            }
+//            //*/
+//            //--------------------------------------------------
+//            //--------- accion a realizar en LCENF ---------------
+//            //--------------------------------------------------            
+//            countNecesitaCalculo = 0;
+//            countNoNecesitaCalculo = 0;
+//            try {
+//                ArrayList<String> conjuntosDeRegistrosBuscados = new ArrayList<>();
+//                ResultSet rs = connectionJdbcMB.consult(""
+//                        + " SELECT "
+//                        + "   * "
+//                        + " FROM "
+//                        + "   public.ungrouped_tags "
+//                        + " WHERE "
+//                        + "   form_id like 'SCC-F-032'");
+//                while (rs.next()) {
+//                    conjuntosDeRegistrosBuscados.add(rs.getString("ungrouped_tag_id"));
+//                }
+//
+//                for (String idConjunto : conjuntosDeRegistrosBuscados) {
+//                    //determino todos los registros para este conjunto
+//                    rs = connectionJdbcMB.consult(""
+//                            + " SELECT "
+//                            + "    * "
+//                            + " FROM "
+//                            + "    victims, "
+//                            + "    non_fatal_injuries "
+//                            + " WHERE "
+//                            + "    victims.victim_id = non_fatal_injuries.victim_id and "
+//                            + "    victims.first_tag_id = " + idConjunto + " AND "
+//                            + "    non_fatal_injuries.destination_patient_id IS NULL");
+//                    while (rs.next()) {
+//                        connectionJdbcMB.non_query("UPDATE non_fatal_injuries SET destination_patient_id = 11 WHERE non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));//destination_patient_id = 11 ATENCION EN SALUD
+//                        countNecesitaCalculo++;
+//                    }
+//                }
+//                System.out.println("-------LCENF ---SE ACTUALIZARON  " + String.valueOf(countNecesitaCalculo));
+//            } catch (Exception e) {
+//                System.out.println("ERROR 002: count:" + countNecesitaCalculo + "" + e.getMessage());
+//            }
+//        }
     }
 
     private String inicializeVariables() {

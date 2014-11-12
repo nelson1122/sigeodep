@@ -373,6 +373,23 @@ public class IndicatorsSpecifiedRateMB {
             }
         }
 
+        if (continueProcess) {//AGREGUE ZONA O COMUNA
+            continueProcess = false;
+            for (int i = 0; i < variablesCrossList.size(); i++) {
+                if (variablesCrossList.get(i).compareTo("zona") == 0) {
+                    continueProcess = true;
+                    break;
+                }
+                if (variablesCrossList.get(i).compareTo("comuna") == 0) {
+                    continueProcess = true;
+                    break;
+                }
+            }
+            if (!continueProcess) {
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Debe adicionar la variable zona o comuna, para determinar que población se usará");
+            }
+        }
+
         if (continueProcess) {//AGREGO LAS VARIABLES INDICADAS POR EL USUARIO
             variablesCrossData.add(createTemporalDisaggregationVariable(initialDate, endDate));//variable de desagregacion temporal
             for (int j = 0; j < variablesCrossList.size(); j++) {
@@ -737,6 +754,8 @@ public class IndicatorsSpecifiedRateMB {
         for (int i = 0; i < variablesCrossData.size(); i++) {
             if (variablesCrossData.get(i).getGeneric_table().compareTo("temporalDisaggregation") == 0) {
                 sql = "UPDATE indicators_records SET column_" + (i + 1) + " = (" + "\n   CASE \n\r";
+                sql = sql + "       WHEN column_" + (i + 1) + "= 'SIN DATO' THEN 'SIN DATO'";
+
                 for (int j = 0; j < variablesCrossData.get(i).getValuesId().size(); j++) {
                     String[] splitDates = variablesCrossData.get(i).getValuesId().get(j).split("}");
                     sql = sql + "       WHEN ( \n\r";
@@ -744,7 +763,10 @@ public class IndicatorsSpecifiedRateMB {
                     sql = sql + "           to_date(column_" + (i + 1) + ",'yyyy-MM-dd')" + " <= to_date('" + splitDates[1] + "','dd/MM/yyyy') \n\r";
                     sql = sql + "       ) THEN '" + variablesCrossData.get(i).getValues().get(j) + "'  \n\r";
                 }
-                sql = sql + " END) \n";
+                sql = sql + " END) \n"
+                        + " WHERE  \n"
+                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                        + "    indicator_id = 1" + currentIndicator.getIndicatorId();
                 connectionJdbcMB.non_query(sql);//System.out.println("CONSULTA (actualizar fecha specified rate) \n " + sql);
             }
             if (variablesCrossData.get(i).getName().compareTo("comuna") == 0) {
@@ -755,7 +777,10 @@ public class IndicatorsSpecifiedRateMB {
                         + "          public.communes "
                         + "       WHERE \n\r"
                         + "          column_" + (i + 1) + "::integer = communes.commune_id \n"
-                        + "    ) ";
+                        + "    ) "
+                        + " WHERE  \n"
+                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                        + "    indicator_id = 1" + currentIndicator.getIndicatorId();
                 connectionJdbcMB.non_query(sql);//System.out.println("CONSULTA (actualizar comuna specified rate) \n " + sql);
             }
             if (variablesCrossData.get(i).getName().compareTo("genero") == 0) {
@@ -766,7 +791,10 @@ public class IndicatorsSpecifiedRateMB {
                         + "          genders \n\r"
                         + "       WHERE \n\r"
                         + "          gender_id = column_" + (i + 1) + "::integer \n\r"
-                        + "    )";
+                        + "    )"
+                        + " WHERE  \n"
+                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                        + "    indicator_id = 1" + currentIndicator.getIndicatorId();
                 connectionJdbcMB.non_query(sql);//System.out.println("CONSULTA (actualizar genero specified rate) \n " + sql);
             }
             if (variablesCrossData.get(i).getName().compareTo("zona") == 0) {
@@ -777,7 +805,10 @@ public class IndicatorsSpecifiedRateMB {
                         + "          public.areas \n"
                         + "       WHERE \n\r"
                         + "          column_" + (i + 1) + "::integer =  areas.area_id \n\r"
-                        + "     )";
+                        + "     )"
+                        + " WHERE  \n"
+                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                        + "    indicator_id = 1" + currentIndicator.getIndicatorId();
                 connectionJdbcMB.non_query(sql);//System.out.println("CONSULTA (actualizar area specified rate) \n " + sql);
             }
             if (variablesCrossData.get(i).getName().compareTo("edad") == 0) {
@@ -793,14 +824,28 @@ public class IndicatorsSpecifiedRateMB {
                                 + "        between " + splitAge[0] + " and " + splitAge[1] + ") THEN '" + variablesCrossData.get(i).getValuesConfigured().get(j) + "'  \n\r";
                     }
                 }
-                sql = sql + " END) \n";
+                sql = sql + " END) "
+                        + " WHERE  \n"
+                        + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                        + "    indicator_id = 1" + currentIndicator.getIndicatorId();
                 connectionJdbcMB.non_query(sql);//System.out.println("CONSULTA (actualizar edad specified rate) \n " + sql);
             }
         }
         //los valores que queden null se vuelven sin dato
-        connectionJdbcMB.non_query("UPDATE indicators_records SET column_1='SIN DATO' WHERE column_1 is null");
-        connectionJdbcMB.non_query("UPDATE indicators_records SET column_2='SIN DATO' WHERE column_2 is null");
-        connectionJdbcMB.non_query("UPDATE indicators_records SET column_3='SIN DATO' WHERE column_3 is null");
+        connectionJdbcMB.non_query("UPDATE indicators_records SET column_1='SIN DATO' "
+                + " WHERE  \n"
+                + "    column_1 is null AND "
+                + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                + "    indicator_id = 1" + currentIndicator.getIndicatorId());
+
+        connectionJdbcMB.non_query("UPDATE indicators_records SET column_2='SIN DATO' "
+                + " WHERE column_2 is null AND "
+                + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                + "    indicator_id = 1" + currentIndicator.getIndicatorId());
+        connectionJdbcMB.non_query("UPDATE indicators_records SET column_3='SIN DATO' "
+                + "WHERE column_3 is null AND "
+                + "    user_id = " + loginMB.getCurrentUser().getUserId() + " AND \n"
+                + "    indicator_id = 1" + currentIndicator.getIndicatorId());
 
     }
 

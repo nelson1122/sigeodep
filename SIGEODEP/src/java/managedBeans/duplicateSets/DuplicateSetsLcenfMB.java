@@ -112,20 +112,6 @@ public class DuplicateSetsLcenfMB implements Serializable {
                     printMessage(FacesMessage.SEVERITY_WARN, "Registro eliminado", "Se ha eliminado el registro con el cual se estaba comparando");
                 } else {
                     rowDataTableList.add(newRow);
-
-//                int idNFI;
-//                //cargo el registro con el que estoy comparando
-//                ResultSet resultSet2 = connectionJdbcMB.consult(""
-//                        + "SELECT "
-//                        + "   non_fatal_injuries.non_fatal_injury_id "
-//                        + "FROM "
-//                        + "   non_fatal_injuries "
-//                        + "WHERE"
-//                        + "   non_fatal_injuries.victim_id = " + selectedRowDuplicatedTable.getColumn1() + "");
-//                resultSet2.next();
-//                idNFI = Integer.parseInt(resultSet2.getString(1));
-//                rowDataTableList.add(loadValues("", nonFatalInjuriesFacade.find(idNFI)));
-
                     String sql = "";
                     sql = sql + "SELECT ";
                     sql = sql + "t1.victim_id ";
@@ -137,10 +123,7 @@ public class DuplicateSetsLcenfMB implements Serializable {
                     sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 4 ";
                     sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 4 ";
                     ResultSet resultSetCount = connectionJdbcMB.consult(sql);
-
-                    //idNFI = -1;
                     int cont = 0;
-                    //cargo los posibles duplicados 
 
                     while (resultSetCount.next()) {
 //                    resultSet2 = connectionJdbcMB.consult(""
@@ -218,9 +201,9 @@ public class DuplicateSetsLcenfMB implements Serializable {
 //                    sql = sql + " OR tag_id = " + tagsList.get(i).getTagId().toString() + " ";
 //                }
 //            }
-            connectionJdbcMB.non_query("DROP VIEW IF EXISTS duplicate");
+            connectionJdbcMB.non_query("DROP TABLE IF EXISTS duplicate");
             String sql = ""
-                    + "create view duplicate as \n"
+                    + "create TABLE duplicate as \n"
                     + "   SELECT \n"
                     + "      victims.victim_id, \n"
                     + "      victims.victim_nid, \n"
