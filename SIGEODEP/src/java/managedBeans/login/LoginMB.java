@@ -113,7 +113,7 @@ public class LoginMB {
             ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
             String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
             ((HttpSession) ctx.getSession(false)).invalidate();  //System.out.println("se redirecciona");
-            ctx.redirect(ctxPath + "/index.html?v=close");
+            ctx.redirect(ctxPath + "/index2.html?v=close");
         } catch (Exception ex) {//System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
         }
     }
@@ -130,7 +130,7 @@ public class LoginMB {
             ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
             String ctxPath = ((ServletContext) ctx.getContext()).getContextPath();
             ((HttpSession) ctx.getSession(false)).invalidate();//System.out.println("se redirecciona");
-            ctx.redirect(ctxPath + "/index.html");
+            ctx.redirect(ctxPath + "/index2.html");
         } catch (Exception ex) {
             System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
         }

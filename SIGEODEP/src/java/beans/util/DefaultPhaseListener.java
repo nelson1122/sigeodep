@@ -64,7 +64,7 @@ public class DefaultPhaseListener implements PhaseListener {
             if (!isLoginPage) {
                 if (session == null) {
                     try {//System.out.println("salida del programa por que sesion es null" + ctxPath);
-                        ext.redirect(ctxPath + "/index.html?v=timeout");//System.out.println("enviado a: " + ctxPath + "/index.html?v=timeout");
+                        ext.redirect(ctxPath + "/index2.html?v=timeout");//System.out.println("enviado a: " + ctxPath + "/index.html?v=timeout");
                     } catch (Throwable t) {//System.out.println("Fallo al expirar sesion " + t.toString());
                         throw new FacesException("Session timed out", t);
                     }
@@ -72,7 +72,7 @@ public class DefaultPhaseListener implements PhaseListener {
                     Object currentUser = session.getAttribute("username");
                     if (!isLoginPage && (currentUser == null || currentUser == "")) {
                         try {//System.out.println("salida del programa por que no hay usuario registrado" + ctxPath);
-                            ext.redirect(ctxPath + "/index.html?v=nosession");
+                            ext.redirect(ctxPath + "/index2.html?v=nosession");
                         } catch (Exception e) {//System.out.println("Fallo al expirar sesion " + e.toString());
                             throw new FacesException("Session no login", e);
                         }
