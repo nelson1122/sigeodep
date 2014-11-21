@@ -26,6 +26,7 @@ import managedBeans.duplicateSets.*;
 import model.dao.*;
 import model.pojo.*;
 import org.joda.time.DateTime;
+import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -89,6 +90,7 @@ public class RecordSetsMB implements Serializable {
     private SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
     private FacesMessage msg;
     String sizeData = "Número de registros no determinado";
+    int sizeInt = 0;
 
     public RecordSetsMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
@@ -100,22 +102,23 @@ public class RecordSetsMB implements Serializable {
         endDateView.setDate(c.get(Calendar.DATE));
         endDateView.setMonth(c.get(Calendar.MONTH));
         endDateView.setYear(c.get(Calendar.YEAR) - 1900);
-        
-        
+
+
         endDateDuplicate.setDate(c.get(Calendar.DATE));
         endDateDuplicate.setMonth(c.get(Calendar.MONTH));
         endDateDuplicate.setYear(c.get(Calendar.YEAR) - 1900);
-        
-        
+
+
         initialDateDuplicate.setDate(1);
         initialDateDuplicate.setMonth(0);
         initialDateDuplicate.setYear(2002 - 1900);
-        
-        
+
+
     }
+    
 
     public void onCompleteLoad() {
-        progress = 0;
+        progress = 100;
     }
 
     public void onCompleteDelete() {
@@ -135,7 +138,7 @@ public class RecordSetsMB implements Serializable {
     public void determineSizeData() {
         //determinar el numero de registros sobre los que se va a realizar la deteccion de duplicados
         sizeData = "Número de registros no determinado";
-        int size = 0;
+        sizeInt = 0;
         ResultSet rs;
         try {
             if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {//se ha seleccionado algo de la tabla de conjuntos
@@ -156,7 +159,7 @@ public class RecordSetsMB implements Serializable {
                                     + "   fatal_injuries.injury_date >= to_date('" + formato.format(initialDateDuplicate) + "','dd/MM/yyyy') AND "
                                     + "   fatal_injuries.injury_date <= to_date('" + formato.format(endDateDuplicate) + "','dd/MM/yyyy') \n");
                             if (rs.next()) {
-                                size = size + rs.getInt(1);
+                                sizeInt = sizeInt + rs.getInt(1);
                             }
                             break;
                         case SCC_F_032:
@@ -173,15 +176,15 @@ public class RecordSetsMB implements Serializable {
                                     + "   non_fatal_injuries.injury_date >= to_date('" + formato.format(initialDateDuplicate) + "','dd/MM/yyyy') AND "
                                     + "   non_fatal_injuries.injury_date <= to_date('" + formato.format(endDateDuplicate) + "','dd/MM/yyyy') \n");
                             if (rs.next()) {
-                                size = size + rs.getInt(1);
+                                sizeInt = sizeInt + rs.getInt(1);
                             }
                             break;
                     }
                 }
-                if (size < 2000) {
-                    sizeData = "Número de registros: " + size;
+                if (sizeInt <= 3000) {
+                    sizeData = "Número de registros: " + sizeInt;
                 } else {
-                    sizeData = "Número de registros: " + size + " se recomienda sea menor a 2000 ya que el proceso podría tomar varios minutos";
+                    sizeData = "Número de registros: " + sizeInt + ", el número de registros debe ser inerior a 3000";
                 }
             }
         } catch (Exception e) {
@@ -190,89 +193,96 @@ public class RecordSetsMB implements Serializable {
     }
 
     public void detectDuplicateClick() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
-            if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {
-                duplicateSetsHomicideMB = (DuplicateSetsHomicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsHomicideMB}", DuplicateSetsHomicideMB.class);
-                duplicateSetsHomicideMB.setInitialDateStr(formato.format(initialDateDuplicate));
-                duplicateSetsHomicideMB.setEndDateStr(formato.format(endDateDuplicate));
-                duplicateSetsHomicideMB.loadValues(selectedRowsDataTable);
-                openRecordSets = "recordSetsHomicide";
-                openDuplicateSets = "duplicateSetsHomicide";
-            } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {
-                duplicateSetsTransitMB = (DuplicateSetsTransitMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsTransitMB}", DuplicateSetsTransitMB.class);
-                duplicateSetsTransitMB.setInitialDateStr(formato.format(initialDateDuplicate));
-                duplicateSetsTransitMB.setEndDateStr(formato.format(endDateDuplicate));
-                duplicateSetsTransitMB.loadValues(selectedRowsDataTable);
-                openRecordSets = "recordSetsTransit";
-                openDuplicateSets = "duplicateSetsTransit";
-            } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {
-                duplicateSetsSuicideMB = (DuplicateSetsSuicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsSuicideMB}", DuplicateSetsSuicideMB.class);
-                duplicateSetsSuicideMB.setInitialDateStr(formato.format(initialDateDuplicate));
-                duplicateSetsSuicideMB.setEndDateStr(formato.format(endDateDuplicate));
-                duplicateSetsSuicideMB.loadValues(selectedRowsDataTable);
-                openRecordSets = "recordSetsSuicide";
-                openDuplicateSets = "duplicateSetsSuicide";
-            } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {
-                duplicateSetsAccidentalMB = (DuplicateSetsAccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsAccidentalMB}", DuplicateSetsAccidentalMB.class);
-                duplicateSetsAccidentalMB.setInitialDateStr(formato.format(initialDateDuplicate));
-                duplicateSetsAccidentalMB.setEndDateStr(formato.format(endDateDuplicate));
-                duplicateSetsAccidentalMB.loadValues(selectedRowsDataTable);
-                openRecordSets = "recordSetsAccidental";
-                openDuplicateSets = "duplicateSetsAccidental";
-            } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {
-                duplicateSetsLcenfMB = (DuplicateSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsLcenfMB}", DuplicateSetsLcenfMB.class);
-                duplicateSetsLcenfMB.setInitialDateStr(formato.format(initialDateDuplicate));
-                duplicateSetsLcenfMB.setEndDateStr(formato.format(endDateDuplicate));
-                duplicateSetsLcenfMB.loadValues(selectedRowsDataTable);
-                openRecordSets = "recordSetsLCENF";
-                openDuplicateSets = "duplicateSetsLCENF";
-            } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0 || selectedRowsDataTable[0].getColumn3().compareTo("SIVIGILA-VIF") == 0) {
-                int countTagsSivigila = 0;
-                int countTagsVif = 0;
-                for (int i = 0; i < selectedRowsDataTable.length; i++) {
-                    if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0) {
-                        countTagsVif++;
+        openRecordSets = null;
+        openDuplicateSets = null;
+
+        if (sizeInt > 3000) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La detección de duĺicados debe realizarce en un número inferior a 3000 registros."));            
+
+        } else {
+            FacesContext context = FacesContext.getCurrentInstance();
+            if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
+                if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {
+                    duplicateSetsHomicideMB = (DuplicateSetsHomicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsHomicideMB}", DuplicateSetsHomicideMB.class);
+                    duplicateSetsHomicideMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                    duplicateSetsHomicideMB.setEndDateStr(formato.format(endDateDuplicate));
+                    duplicateSetsHomicideMB.loadValues(selectedRowsDataTable);
+                    openRecordSets = "recordSetsHomicide";
+                    openDuplicateSets = "duplicateSetsHomicide";
+                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-029") == 0) {
+                    duplicateSetsTransitMB = (DuplicateSetsTransitMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsTransitMB}", DuplicateSetsTransitMB.class);
+                    duplicateSetsTransitMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                    duplicateSetsTransitMB.setEndDateStr(formato.format(endDateDuplicate));
+                    duplicateSetsTransitMB.loadValues(selectedRowsDataTable);
+                    openRecordSets = "recordSetsTransit";
+                    openDuplicateSets = "duplicateSetsTransit";
+                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-030") == 0) {
+                    duplicateSetsSuicideMB = (DuplicateSetsSuicideMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsSuicideMB}", DuplicateSetsSuicideMB.class);
+                    duplicateSetsSuicideMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                    duplicateSetsSuicideMB.setEndDateStr(formato.format(endDateDuplicate));
+                    duplicateSetsSuicideMB.loadValues(selectedRowsDataTable);
+                    openRecordSets = "recordSetsSuicide";
+                    openDuplicateSets = "duplicateSetsSuicide";
+                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-031") == 0) {
+                    duplicateSetsAccidentalMB = (DuplicateSetsAccidentalMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsAccidentalMB}", DuplicateSetsAccidentalMB.class);
+                    duplicateSetsAccidentalMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                    duplicateSetsAccidentalMB.setEndDateStr(formato.format(endDateDuplicate));
+                    duplicateSetsAccidentalMB.loadValues(selectedRowsDataTable);
+                    openRecordSets = "recordSetsAccidental";
+                    openDuplicateSets = "duplicateSetsAccidental";
+                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-032") == 0) {
+                    duplicateSetsLcenfMB = (DuplicateSetsLcenfMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsLcenfMB}", DuplicateSetsLcenfMB.class);
+                    duplicateSetsLcenfMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                    duplicateSetsLcenfMB.setEndDateStr(formato.format(endDateDuplicate));
+                    duplicateSetsLcenfMB.loadValues(selectedRowsDataTable);
+                    openRecordSets = "recordSetsLCENF";
+                    openDuplicateSets = "duplicateSetsLCENF";
+                } else if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0 || selectedRowsDataTable[0].getColumn3().compareTo("SIVIGILA-VIF") == 0) {
+                    int countTagsSivigila = 0;
+                    int countTagsVif = 0;
+                    for (int i = 0; i < selectedRowsDataTable.length; i++) {
+                        if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-033") == 0) {
+                            countTagsVif++;
+                        }
+                        if (selectedRowsDataTable[0].getColumn3().compareTo("SIVIGILA-VIF") == 0) {
+                            countTagsSivigila++;
+                        }
                     }
-                    if (selectedRowsDataTable[0].getColumn3().compareTo("SIVIGILA-VIF") == 0) {
-                        countTagsSivigila++;
+                    int caso = 0;
+                    if (countTagsVif == 0 && countTagsSivigila != 0) {//solo cargas de sivigila
+                        caso = 1;//abre sivigila
+                    } else if (countTagsVif != 0 && countTagsSivigila == 0) {//solo cargas de vif
+                        caso = 2;//abre vif
+                    } else if (countTagsVif != 0 && countTagsSivigila != 0) {//cargas de vif y de sivigila
+                        caso = 2;//abre vif para los dos
                     }
-                }
-                int caso = 0;
-                if (countTagsVif == 0 && countTagsSivigila != 0) {//solo cargas de sivigila
-                    caso = 1;//abre sivigila
-                } else if (countTagsVif != 0 && countTagsSivigila == 0) {//solo cargas de vif
-                    caso = 2;//abre vif
-                } else if (countTagsVif != 0 && countTagsSivigila != 0) {//cargas de vif y de sivigila
-                    caso = 2;//abre vif para los dos
-                }
-                switch (caso) {
-                    case 1://abrir duplicados de SIVIGILA
-                        duplicateSetsSivigilaVifMB = (DuplicateSetsSIvigilaVifMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsSivigilaVifMB}", DuplicateSetsSIvigilaVifMB.class);
-                        duplicateSetsSivigilaVifMB.setInitialDateStr(formato.format(initialDateDuplicate));
-                        duplicateSetsSivigilaVifMB.setEndDateStr(formato.format(endDateDuplicate));
-                        duplicateSetsSivigilaVifMB.loadValues(selectedRowsDataTable);
-                        openRecordSets = "recordSetsSivigilaVif";
-                        openDuplicateSets = "duplicateSetsSivigilaVif";
-                        break;
-                    case 2://abrir duplicados de VIF
-                        duplicateSetsVifMB = (DuplicateSetsVifMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsVifMB}", DuplicateSetsVifMB.class);
-                        duplicateSetsVifMB.setInitialDateStr(formato.format(initialDateDuplicate));
-                        duplicateSetsVifMB.setEndDateStr(formato.format(endDateDuplicate));
-                        duplicateSetsVifMB.loadValues(selectedRowsDataTable);
-                        openRecordSets = "recordSetsVIF";
-                        openDuplicateSets = "duplicateSetsVIF";
-                        break;
+                    switch (caso) {
+                        case 1://abrir duplicados de SIVIGILA
+                            duplicateSetsSivigilaVifMB = (DuplicateSetsSIvigilaVifMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsSivigilaVifMB}", DuplicateSetsSIvigilaVifMB.class);
+                            duplicateSetsSivigilaVifMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                            duplicateSetsSivigilaVifMB.setEndDateStr(formato.format(endDateDuplicate));
+                            duplicateSetsSivigilaVifMB.loadValues(selectedRowsDataTable);
+                            openRecordSets = "recordSetsSivigilaVif";
+                            openDuplicateSets = "duplicateSetsSivigilaVif";
+                            break;
+                        case 2://abrir duplicados de VIF
+                            duplicateSetsVifMB = (DuplicateSetsVifMB) context.getApplication().evaluateExpressionGet(context, "#{duplicateSetsVifMB}", DuplicateSetsVifMB.class);
+                            duplicateSetsVifMB.setInitialDateStr(formato.format(initialDateDuplicate));
+                            duplicateSetsVifMB.setEndDateStr(formato.format(endDateDuplicate));
+                            duplicateSetsVifMB.loadValues(selectedRowsDataTable);
+                            openRecordSets = "recordSetsVIF";
+                            openDuplicateSets = "duplicateSetsVIF";
+                            break;
+                    }
+                } else {
+
+                    printMessage(FacesMessage.SEVERITY_WARN, "Alerta", "no se pudo cargar ");
                 }
             } else {
-                openRecordSets = null;
-                openDuplicateSets = null;
-                printMessage(FacesMessage.SEVERITY_WARN, "Alerta", "no se pudo cargar ");
+                printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar uno o varios conjuntos para iniciar la detección");
             }
-        } else {
-            printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar uno o varios conjuntos para iniciar la detección");
         }
-        progress = 0;
+        progress = 100;
     }
 
     public String openDuplicateSets() {
