@@ -467,7 +467,7 @@
                                     widgetVar="pbAjaxValidate" 
                                     ajax="true" 
                                     value="#{recordSetsMB.progress}" 
-                                    labelTemplate="{value}%">          
+                                    labelTemplate="{value}%">                                              
                                     <p:ajax 
                                         event="complete" 
                                         listener="#{recordSetsMB.onCompleteLoad}" 
@@ -481,8 +481,8 @@
                                     action="#{recordSetsMB.openDuplicateSets}"
                                     actionListener="#{recordSetsMB.detectDuplicateClick}"                                    
                                     onclick="pbAjaxValidate.start();
-                    btnStarDetection.disable();
-                    pageInactive();"  
+                                        btnStarDetection.disable();
+                                        pageInactive();"
                                     oncomplete="btnStarDetection.enable(); pageActive();"
                                     widgetVar="btnStarDetection"
                                     value="Iniciar detección"/>
@@ -522,9 +522,9 @@
                         oncomplete="dialogDelete.hide(); pageActive();"
                         actionListener="#{recordSetsMB.deleteTag}"
                         onclick="pbAjaxDelete.start();
-                    pageInactive();
-                    btnDelete.disable();
-                    btnCancelDelete.disable();"  
+                            pageInactive();
+                            btnDelete.disable();
+                            btnCancelDelete.disable();"  
                         value="Eliminar"                        
                         widgetVar="btnDelete"/>   
                     <p:commandButton
