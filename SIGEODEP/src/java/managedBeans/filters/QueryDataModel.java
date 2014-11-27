@@ -10,8 +10,8 @@ import javax.faces.model.ListDataModel;
 import org.primefaces.model.SelectableDataModel;
 
 /**
- *
- * @author and
+ * This class allows the system to handle the pagination in the tables, allows the system to query the database to be realized each time the user presses on the next, previous button or any position in the table to not consume a lot of server memory.
+ * 
  */
 public class QueryDataModel extends ListDataModel<FieldCount> implements SelectableDataModel<FieldCount>, Serializable{
 

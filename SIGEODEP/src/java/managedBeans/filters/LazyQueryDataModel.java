@@ -12,15 +12,18 @@ import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
 /**
- *
- * @author and
+ * This class allows the system to handle the pagination in the tables, allows to system to query the database to be realized each time the user presses on the next, previous button or any position in the table to not consume a lot of server memory.
+ * 
  */
 public class LazyQueryDataModel extends LazyDataModel<List> {
 
     private List<List> datasource;
     private ConnectionJdbcMB connection;
     private int pojectId = -1;
-
+/**
+ * This is the constructor method  of the class, this method receives as parameter the identify of the project for which the user is working.
+ * @param pojectId 
+ */
     public LazyQueryDataModel(int pojectId) {
         this.pojectId = pojectId;
         connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);

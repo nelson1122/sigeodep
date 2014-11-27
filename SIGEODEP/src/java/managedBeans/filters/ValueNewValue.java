@@ -5,8 +5,8 @@
 package managedBeans.filters;
 
 /**
- *
- * @author and
+ * This class is used to give a better structure and management to the classes who use it, the clases are ErrorsControlMB and FilterMB.
+ * 
  */
 public class ValueNewValue {
     private String columnName;
