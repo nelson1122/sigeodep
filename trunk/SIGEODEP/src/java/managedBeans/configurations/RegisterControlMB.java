@@ -19,7 +19,7 @@ import javax.faces.context.FacesContext;
 import org.apache.poi.hssf.usermodel.*;
 
 /**
- *
+ *The RegisterControlMB class is responsible  for keeping track of records by a date range to  which a report in xls format,Which yields control is done by the user who entered the system.
  * @author SANTOS
  */
 @ManagedBean(name = "registerControlMB")
@@ -38,7 +38,9 @@ public class RegisterControlMB implements Serializable {
     SimpleDateFormat format_es = new SimpleDateFormat("dd MMM yyyy", new Locale("ES"));
     SimpleDateFormat format_sql = new SimpleDateFormat("dd/MM/yyyy");
     SimpleDateFormat format_postgres = new SimpleDateFormat("yyyy-MM-dd");
-
+/**
+ * It is responsible to connect to the database and perform validations if month, day, valid year.
+ */
     public RegisterControlMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         
@@ -52,11 +54,19 @@ public class RegisterControlMB implements Serializable {
         exportFileName = format_es.format(initialDate) + " - " + format_es.format(endDate);
         
     }
-
+/**
+ * permit to change the date.
+ */
     public void changeDate() {
         exportFileName = format_es.format(initialDate) + " - " + format_es.format(endDate);
     }
-
+/**
+ * It is responsible to create a cell within the row.
+ * @param cellStyle: Style that will have the cell.
+ * @param fila: row where create the cell
+ * @param position: Determines the position where anger cell within the row.
+ * @param value: Sets the value that will be created within the cell. 
+ */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                                
@@ -68,7 +78,12 @@ public class RegisterControlMB implements Serializable {
         }        
         cell.setCellStyle(cellStyle);
     }
-
+/**
+ * It is responsible to create a cell within the row.
+ * @param fila: row where create the cell 
+ * @param position: Determines the position where anger cell within the row.
+ * @param value: Sets the value that will be created within the cell. 
+ */
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
@@ -79,7 +94,10 @@ public class RegisterControlMB implements Serializable {
             cell.setCellValue(new HSSFRichTextString(value));
         }
     }
-
+/**
+ * runs a xls file where the user inserts a row within a worksheet where two fields are set: CODE, NAME.
+ * @param document: Document to modify the name and code field. 
+ */
     public void postProcessXLS(Object document) {
 
         boolean continueProcess = true;
