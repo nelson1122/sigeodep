@@ -56,7 +56,6 @@ public class RecordSetsTransitMB implements Serializable {
     private String name = "";
     private String newName = "";
     private boolean btnEditDisabled = true;
-    //private boolean btnRemoveDisabled = true;
     private String data = "-";
     private TransitMB transitMB;
     private String openForm = "";
@@ -384,18 +383,14 @@ public class RecordSetsTransitMB implements Serializable {
     public void load() {
         currentFatalInjuryTraffic = null;
         btnEditDisabled = true;
-//        btnRemoveDisabled = true;
         if (selectedRowsDataTable != null) {
             if (selectedRowsDataTable.length == 1) {
                 currentFatalInjuryTraffic = fatalInjuryTrafficFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
             }
             if (selectedRowsDataTable.length > 1) {
-
                 btnEditDisabled = true;
-//                btnRemoveDisabled = false;
             } else {
                 btnEditDisabled = false;
-//                btnRemoveDisabled = false;
             }
         }
     }
@@ -425,14 +420,7 @@ public class RecordSetsTransitMB implements Serializable {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
         }
     }
-
-//    public List<RowDataTable> getRowDataTableList() {
-//        return rowDataTableList;
-//    }
-//
-//    public void setRowDataTableList(List<RowDataTable> rowDataTableList) {
-//        this.rowDataTableList = rowDataTableList;
-//    }
+    
     public RowDataTable[] getSelectedRowsDataTable() {
         return selectedRowsDataTable;
     }
@@ -480,14 +468,7 @@ public class RecordSetsTransitMB implements Serializable {
     public void setBtnEditDisabled(boolean btnEditDisabled) {
         this.btnEditDisabled = btnEditDisabled;
     }
-
-//    public boolean isBtnRemoveDisabled() {
-//        return btnRemoveDisabled;
-//    }
-//
-//    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
-//        this.btnRemoveDisabled = btnRemoveDisabled;
-//    }
+    
     public String getData() {
         return data;
     }

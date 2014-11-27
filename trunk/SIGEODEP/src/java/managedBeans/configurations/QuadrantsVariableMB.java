@@ -30,7 +30,10 @@ import org.apache.poi.hssf.usermodel.*;
 import org.primefaces.event.FileUploadEvent;
 
 /**
- *The QuadrantsVariableMB class is responsible for managing everything related to one quadrant, allowing to the user to have the functionality to edit, delete, new and exported in xls list.
+ * The QuadrantsVariableMB class is responsible for managing everything related
+ * to one quadrant, allowing to the user to have the functionality to edit,
+ * delete, new and exported in xls list.
+ *
  * @author SANTOS
  */
 @ManagedBean(name = "quadrantsVariableMB")
@@ -73,9 +76,10 @@ public class QuadrantsVariableMB implements Serializable {
     private List<String> newSelectedAvailableNeighborhoods = new ArrayList<>();//listado de barrios seleccionados para agregar al cuadrante(Creando un cuadrante nuevo)
     private List<String> newAvailableAddNeighborhoods = new ArrayList<>();//listado de barrios agregados al cuadrante(Creando un cuadrante nuevo)
     private List<String> newSelectedAvailableAddNeighborhoods = new ArrayList<>();//listado de barrios seleciconados de los agregados al cuadrante(Creando un cuadrante nuevo)
-/**
- * establishes the connection to the database and directory.
- */
+
+    /**
+     * establishes the connection to the database and directory.
+     */
     public QuadrantsVariableMB() {
         /*
          *Constructor de la clase, se btiene la clase que administra la conexion JDBC y la ruta real en servidor
@@ -84,13 +88,15 @@ public class QuadrantsVariableMB implements Serializable {
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/");
     }
-/**
- * It is responsible for creating a cell within the row.
- * @param cellStyle: Style that will have the cell.
- * @param fila: row where create the cell
- * @param position: Determines the position where anger cell within the row.
- * @param value: Sets the value that will be created within the cell. 
- */
+
+    /**
+     * It is responsible for creating a cell within the row.
+     *
+     * @param cellStyle: Style that will have the cell.
+     * @param fila: row where create the cell
+     * @param position: Determines the position where anger cell within the row.
+     * @param value: Sets the value that will be created within the cell.
+     */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         /*
          *Crea una celda dentro de una fila de un archivo excell, aplicando un determinado estilo a la celde
@@ -100,12 +106,14 @@ public class QuadrantsVariableMB implements Serializable {
         cell.setCellValue(new HSSFRichTextString(value));
         cell.setCellStyle(cellStyle);
     }
-/**
- * It is responsible to create a cell within the row.
- * @param fila: row where create the cell 
- * @param position: Determines the position where anger cell within the row.
- * @param value: Sets the value that will be created within the cell. 
- */
+
+    /**
+     * It is responsible to create a cell within the row.
+     *
+     * @param fila: row where create the cell
+     * @param position: Determines the position where anger cell within the row.
+     * @param value: Sets the value that will be created within the cell.
+     */
     private void createCell(HSSFRow fila, int position, String value) {
         /*
          *Crea una celda dentro de una fila de un archivo excell
@@ -114,10 +122,13 @@ public class QuadrantsVariableMB implements Serializable {
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
-/**
- * runs a xls file where the user inserts a row within a worksheet where two fields are set: CODE, NAME.
- * @param document: Document to modify the name and code field. 
- */
+
+    /**
+     * runs a xls file where the user inserts a row within a worksheet where two
+     * fields are set: CODE, NAME.
+     *
+     * @param document: Document to modify the name and code field.
+     */
     public void postProcessXLS(Object document) {
         /*
          *Creacion de un archivo excell para exportar todos los cuadrantes
@@ -141,10 +152,12 @@ public class QuadrantsVariableMB implements Serializable {
 
         }
     }
-/**
- * This method is responsible to upload the new geometry quadrant.
- * @param event 
- */
+
+    /**
+     * This method is responsible to upload the new geometry quadrant.
+     *
+     * @param event
+     */
     public void handleFileUpload(FileUploadEvent event) {
         /*
          * cargar el archivo de geometria de cuadrante nuevo
@@ -159,12 +172,15 @@ public class QuadrantsVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se pudo realizar la carga de este archivo"));
         }
     }
-/**
- * This method is responsible to realize the copy of a file and returns "TRUE" if it was possible to realize this copy.
- * @param fileName
- * @param in
- * @return 
- */
+
+    /**
+     * This method is responsible to realize the copy of a file and returns
+     * "TRUE" if it was possible to realize this copy.
+     *
+     * @param fileName
+     * @param in
+     * @return
+     */
     private boolean copyFile(String fileName, InputStream in) {
         /*
          * realiza la copia de un archivo, y retorna si se pudo o realizar esta copia
@@ -207,9 +223,11 @@ public class QuadrantsVariableMB implements Serializable {
             return false;
         }
     }
-/**
- * This method is responsible to add a neighborhood when you are creating a new quadrant.
- */
+
+    /**
+     * This method is responsible to add a neighborhood when you are creating a
+     * new quadrant.
+     */
     public void addNeighborhoodInNewQuadrantClick() {
         /*
          * adicionar un barrio cuando se esta creando un nuevo cuadrante
@@ -229,9 +247,11 @@ public class QuadrantsVariableMB implements Serializable {
             newSelectedAvailableAddNeighborhoods = new ArrayList<>();
         }
     }
-/**
- * This method is responsible to add a neighborhood a the list of added, when you are editing an existing quadrant.
- */
+
+    /**
+     * This method is responsible to add a neighborhood a the list of added,
+     * when you are editing an existing quadrant.
+     */
     public void addNeighborhoodInExistingQuadrantClick() {
         /*
          * adicionar un barrio a la lista de agregados, cuando se esta editando un cuadrante existente
@@ -251,9 +271,11 @@ public class QuadrantsVariableMB implements Serializable {
             selectedAvailableAddNeighborhoods = new ArrayList<>();
         }
     }
-/**
- * remove a neighborhood the list of aggregates, when you are creating a new quadrant.
- */
+
+    /**
+     * remove a neighborhood the list of aggregates, when you are creating a new
+     * quadrant.
+     */
     public void removeNeighborhoodInNewQuadrantClick() {
         /*
          * quitar un barrio de la lista de agregados, cuando se esta creando un nuevo cuadrante
@@ -273,9 +295,11 @@ public class QuadrantsVariableMB implements Serializable {
             newSelectedAvailableAddNeighborhoods = new ArrayList<>();
         }
     }
-/**
- * remove a neighborhood the list of aggregates, when you are editing an existing quadrant.
- */
+
+    /**
+     * remove a neighborhood the list of aggregates, when you are editing an
+     * existing quadrant.
+     */
     public void removeNeighborhoodInExistingQuadrantClick() {
         /*
          * quitar un barrio de la lista de agregados, cuando se esta editando un cuadrante existente
@@ -295,9 +319,11 @@ public class QuadrantsVariableMB implements Serializable {
             selectedAvailableAddNeighborhoods = new ArrayList<>();
         }
     }
-/**
- * load data of a record when select a row of the table that show the existing quadrant
- */
+
+    /**
+     * load data of a record when select a row of the table that show the
+     * existing quadrant
+     */
     public void loadRegistry() {
         /*
          * carga de los datos de un registro cuando se selecciona una fila de 
@@ -359,9 +385,10 @@ public class QuadrantsVariableMB implements Serializable {
             }
         }
     }
-/**
- * This method is responsible to load the selected geometry.
- */
+
+    /**
+     * This method is responsible to load the selected geometry.
+     */
     public void loadGeometrySelected() {
         if (poligonText != null && poligonText.trim().length() != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "la geometria ha sido cargada"));
@@ -370,9 +397,10 @@ public class QuadrantsVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado ninguna geometria"));
         }
     }
-/**
- * delete a record of the table quadrant, provided and when not in use
- */
+
+    /**
+     * delete a record of the table quadrant, provided and when not in use
+     */
     public void deleteRegistry() {
         if (currentQuadrant != null) {
             //connectionJdbcMB.setShowMessages(false);//se desactiva la visualizacion de mensajes a traves de consola
@@ -433,9 +461,10 @@ public class QuadrantsVariableMB implements Serializable {
             //connectionJdbcMB.setShowMessages(true);se activa la visualizacion de mensajes a traves de consola
         }
     }
-/**
- * updates a record corresponding to a quadrant.
- */
+
+    /**
+     * updates a record corresponding to a quadrant.
+     */
     public void updateRegistry() {
         /*
          * Actualizar la informacion de un cuadrante existente
@@ -560,9 +589,10 @@ public class QuadrantsVariableMB implements Serializable {
         btnEditDisabled = true;
         btnRemoveDisabled = true;
     }
-/**
- * save a record but in turn verifies that the record name already exists.
- */
+
+    /**
+     * save a record but in turn verifies that the record name already exists.
+     */
     public void saveRegistry() {
         /*
          * Almacenar un nuevo cuadrantre dentro de la base de datos
@@ -685,9 +715,11 @@ public class QuadrantsVariableMB implements Serializable {
         }
 
     }
-/**
- * change the value to a new population, this value numeric must be  greater or equal to zero
- */
+
+    /**
+     * change the value to a new population, this value numeric must be greater
+     * or equal to zero
+     */
     public void changeNewPopulation() {
         /*
          * Funcion llamada cuando se modifica el campo de poblacion al crear un nuevo cuadrante
@@ -707,9 +739,11 @@ public class QuadrantsVariableMB implements Serializable {
             newQuadrantPopuation = "0";
         }
     }
-/**
- * change the value to  population, this value numeric must be  greater or equal to zero.
- */
+
+    /**
+     * change the value to population, this value numeric must be greater or
+     * equal to zero.
+     */
     public void changePopulation() {
         /*
          * Funcion llamada cuando se modifica el campo de poblacion al modificar cuadrante existente
@@ -729,9 +763,11 @@ public class QuadrantsVariableMB implements Serializable {
             quadrantPopuation = "0";
         }
     }
-/**
- * This method is responsible to realize a filtering of available quadrant, by the search for an input string.
- */
+
+    /**
+     * This method is responsible to realize a filtering of available quadrant,
+     * by the search for an input string.
+     */
     public void changeNewNeighborhoodFilter() {
         /*
          * funcion llamada cuando se modifica el campo que filtra los barrios que se agregaran a un nuevo cuadrante
@@ -769,9 +805,11 @@ public class QuadrantsVariableMB implements Serializable {
         } catch (Exception e) {
         }
     }
-/**
- * This method is responsible to realize a filtering of available quadrant, by the search for an input string.
- */
+
+    /**
+     * This method is responsible to realize a filtering of available quadrant,
+     * by the search for an input string.
+     */
     public void changeNeighborhoodFilter() {
         /*
          * funcion llamada cuando se modifica el campo que filtra los barrios 
@@ -810,9 +848,10 @@ public class QuadrantsVariableMB implements Serializable {
         } catch (Exception e) {
         }
     }
-/**
- * Create a dynamic table with the results of a search.
- */
+
+    /**
+     * Create a dynamic table with the results of a search.
+     */
     public void createDynamicTable() {
         /*
          * Se crea la tabla que inicial que muestra todos los cuadrantes existentes 
@@ -839,18 +878,11 @@ public class QuadrantsVariableMB implements Serializable {
             FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
-//        quadrantsList = quadrantsFacade.findCriteria(currentSearchCriteria, currentSearchValue);
-//        if (quadrantsList.isEmpty()) {
-//            FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "SIN DATOS", "No existen resultados para esta busqueda");
-//            FacesContext.getCurrentInstance().addMessage(null, msg);
-//        }
-//        for (int i = 0; i < quadrantsList.size(); i++) {
-//            rowDataTableList.add(new RowDataTable(quadrantsList.get(i).getQuadrantId().toString(), quadrantsList.get(i).getQuadrantName(), type));
-//        }
     }
-/**
- * clean the form is initialized to add a new quadrant.
- */
+
+    /**
+     * clean the form is initialized to add a new quadrant.
+     */
     public void newRegistry() {
         /*
          * Funcion usada cuando se presiona el botón nuevo, y se encarga de inicializar
@@ -872,9 +904,10 @@ public class QuadrantsVariableMB implements Serializable {
         poligonText = "";
         disabledShowGeomFile = true;
     }
-/**
- * Resets the values of the Dynamic Table and the variables.
- */
+
+    /**
+     * Resets the values of the Dynamic Table and the variables.
+     */
     public void reset() {
         /*
          * Reinicio de controles y carga de la taba con el listado completo de cuadrantes

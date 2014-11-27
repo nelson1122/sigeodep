@@ -5,18 +5,23 @@
 package managedBeans.filters;
 
 /**
- *This class manages the number of fields of a table.
+ * This class manages the number of fields of a table.
+ *
  * @author and
  */
-public class FieldCount{
+public class FieldCount {
+
     private String field;
     private int count;
-/**
- * This method is the class constructor, receives as a parameter the field and quantity.
- * @param field
- * @param count 
- */    
-    public FieldCount(String field, int count){
+
+    /**
+     * This method is the class constructor, receives as a parameter the field
+     * and quantity.
+     *
+     * @param field
+     * @param count
+     */
+    public FieldCount(String field, int count) {
         this.field = field;
         this.count = count;
     }
@@ -36,5 +41,4 @@ public class FieldCount{
     public void setField(String field) {
         this.field = field;
     }
-    
 }

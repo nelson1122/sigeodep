@@ -99,11 +99,7 @@
                                 emptyMessage="No existen resultados."
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15"
-                                scrollable="true">                     
-                                <p:ajax
-                                    event="rowSelect"
-                                    listener="#{recordSetsSivigilaVifMB.load}"                                    
-                                    update=":IdForm1:IdControls :IdForm1:message" />
+                                scrollable="true">                                                     
                                 <p:column headerText="CODIGO INTERNO" width="50">#{rowX.column1}</p:column>
                                 <p:column headerText="INSTITUCION RECEPTORA" width="300">#{rowX.column42}</p:column>
                                 <p:column headerText="NOMBRES Y APELLIDOS" width="400">#{rowX.column2}</p:column>                                                

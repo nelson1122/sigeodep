@@ -14,7 +14,7 @@ import org.primefaces.model.SelectableDataModel;
  *
  * @author and
  */
-public class DataTableModel extends ListDataModel<FieldCount> implements SelectableDataModel<FieldCount>, Serializable{
+public class DataTableModel extends ListDataModel<FieldCount> implements SelectableDataModel<FieldCount>, Serializable {
 
     private List<FieldCount> model;
 
@@ -24,7 +24,7 @@ public class DataTableModel extends ListDataModel<FieldCount> implements Selecta
 
     @Override
     public Object getRowKey(FieldCount record) {
-            return record.getField();
+        return record.getField();
     }
 
     @Override
@@ -44,5 +44,4 @@ public class DataTableModel extends ListDataModel<FieldCount> implements Selecta
     public void setModel(List<FieldCount> model) {
         this.model = model;
     }
-
 }

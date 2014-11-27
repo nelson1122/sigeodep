@@ -16,7 +16,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -33,12 +32,13 @@ import model.pojo.*;
  * @author SANTOS
  */
 /**
- * TransitMB is responsible to request the user data about the occurrence of events of transit accident and details of the victim to be processed and recorded in the database.
- * 
+ * TransitMB is responsible to request the user data about the occurrence of
+ * events of transit accident and details of the victim to be processed and
+ * recorded in the database.
+ *
  */
 @ManagedBean(name = "transitMB")
 @SessionScoped
-
 public class TransitMB implements Serializable {
 
     //----------------------------------------------------------------------
@@ -248,19 +248,23 @@ public class TransitMB implements Serializable {
     // FUNCIONES VARIAS ----------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-     /**
-     * This constructor is responsible for verifying the start of session and make the connection to database
-     * 
-     */ 
+    /**
+     * This constructor is responsible for verifying the start of session and
+     * make the connection to database
+     *
+     */
     public TransitMB() {
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         applicationControlMB = (ApplicationControlMB) FacesContext.getCurrentInstance().getExternalContext().getApplicationMap().get("applicationControlMB");
     }
+
     /**
-     * This method is responsible to load the information corresponding to a victim within the form.
+     * This method is responsible to load the information corresponding to a
+     * victim within the form.
+     *
      * @param tagsList
-     * @param currentFatalInjuryT 
+     * @param currentFatalInjuryT
      */
     public void loadValues(List<Tags> tagsList, FatalInjuryTraffic currentFatalInjuryT) {
         for (int i = 0; i < tagsList.size(); i++) {
@@ -278,9 +282,12 @@ public class TransitMB implements Serializable {
             }
         }
     }
-/**
- * This method is responsible for reset all form fields, also this method load the default values for that the user can to register data of a victim.
- */
+
+    /**
+     * This method is responsible for reset all form fields, also this method
+     * load the default values for that the user can to register data of a
+     * victim.
+     */
     public void reset() {
         currentUser = loginMB.getCurrentUser();
         loading = true;
@@ -348,13 +355,7 @@ public class TransitMB implements Serializable {
             for (int i = 0; i < gendersList.size(); i++) {
                 genders[i + 1] = new SelectItem(gendersList.get(i).getGenderId(), gendersList.get(i).getGenderName());
             }
-            //trabajos
-//            List<Jobs> jobsList = jobsFacade.findAllOrder();
-//            jobs = new SelectItem[jobsList.size() + 1];
-//            jobs[0] = new SelectItem(0, "");
-//            for (int i = 0; i < jobsList.size(); i++) {
-//                jobs[i + 1] = new SelectItem(jobsList.get(i).getJobId(), jobsList.get(i).getJobName());
-//            }
+
             //cargo las areas del hecho
             List<Areas> areasList = areasFacade.findAll();
             areas = new SelectItem[areasList.size() + 1];
@@ -444,9 +445,11 @@ public class TransitMB implements Serializable {
         loading = false;
         //System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////t");
     }
-/**
- * This method is responsible to load the information corresponding to a victim within the form.
- */
+
+    /**
+     * This method is responsible to load the information corresponding to a
+     * victim within the form.
+     */
     public void loadValues() {
         save = true;
         stylePosition = "color: #1471B1;";
@@ -947,10 +950,13 @@ public class TransitMB implements Serializable {
         //******fatal_injury_id
         loading = false;
     }
-/**
- * validates required fields before register a form. validates user permission, the date of the event and the existence of errors.
- * @return 
- */
+
+    /**
+     * validates required fields before register a form. validates user
+     * permission, the date of the event and the existence of errors.
+     *
+     * @return
+     */
     private boolean validateFields() {
         validationsErrors = new ArrayList<>();
         //---------VALIDAR EL USUARIO TENGA PERMISMOS SUFIENTES
@@ -988,10 +994,14 @@ public class TransitMB implements Serializable {
             return false;
         }
     }
-/**
- * register all data of a new victim obtained from the form, this registry is made in the database, whether it is a form already registered, can update the information.
- * @return 
- */
+
+    /**
+     * register all data of a new victim obtained from the form, this registry
+     * is made in the database, whether it is a form already registered, can
+     * update the information.
+     *
+     * @return
+     */
     private boolean saveRegistry() {
         //realizo validaciones
         if (validateFields()) {
@@ -1349,12 +1359,14 @@ public class TransitMB implements Serializable {
             return false;
         }
     }
-/**
- * updated data of a victim who is already registered
- * @param victim
- * @param fatalInjurie
- * @param fatalInjuryTraffic 
- */
+
+    /**
+     * updated data of a victim who is already registered
+     *
+     * @param victim
+     * @param fatalInjurie
+     * @param fatalInjuryTraffic
+     */
     private void updateRegistry(Victims victim, FatalInjuries fatalInjurie, FatalInjuryTraffic fatalInjuryTraffic) {
 
         try {
@@ -1488,9 +1500,12 @@ public class TransitMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-/**
- * This method determines the position of the data  of a victim to be loaded into the form, this method is used with the following function: next, previous, first, last, and when the form is reset.
- */
+
+    /**
+     * This method determines the position of the data of a victim to be loaded
+     * into the form, this method is used with the following function: next,
+     * previous, first, last, and when the form is reset.
+     */
     public void determinePosition() {
         totalRegisters = fatalInjuryTrafficFacade.countTraffic(currentTag);
 
@@ -1506,6 +1521,7 @@ public class TransitMB implements Serializable {
         }
         //System.out.println("POSICION DETERMINADA: " + currentPosition);
     }
+
     /**
      * save changes realized to a victim and proceeds to next form
      */
@@ -1516,9 +1532,10 @@ public class TransitMB implements Serializable {
             //System.out.println("No se guardo");
         }
     }
-/**
- * save changes realized to a victim and proceeds to previous form
- */
+
+    /**
+     * save changes realized to a victim and proceeds to previous form
+     */
     public void saveAndGoPrevious() {//guarda cambios si se han realizado y se dirije al anterior
         if (currentFatalInjuriId != -1) {
             if (saveRegistry()) {
@@ -1530,33 +1547,37 @@ public class TransitMB implements Serializable {
             }
         }
     }
-/**
- * save changes realized to a victim and proceeds to first form
- */
+
+    /**
+     * save changes realized to a victim and proceeds to first form
+     */
     public void saveAndGoFirst() {//guarda cambios si se han realizado y se dirije al primero
         if (saveRegistry()) {
             first();
         }
     }
-/**
- * save changes realized to a victim and proceeds to last form
- */
+
+    /**
+     * save changes realized to a victim and proceeds to last form
+     */
     public void saveAndGoLast() {//guarda cambios si se han realizado y se dirije al ultimo
         if (saveRegistry()) {
             last();
         }
     }
-/**
- * save changes realized to a victim and create a new form
- */
+
+    /**
+     * save changes realized to a victim and create a new form
+     */
     public void saveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
         if (saveRegistry()) {
             newForm();
         }
     }
-/**
- * discards all changes realized to a victim and create a new form
- */
+
+    /**
+     * discards all changes realized to a victim and create a new form
+     */
     public void noSaveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
         openDialogFirst = "";
         openDialogNext = "";
@@ -1569,9 +1590,10 @@ public class TransitMB implements Serializable {
         newForm();
 
     }
-/**
- * discards all changes realized to a victim and proceeds to next form
- */
+
+    /**
+     * discards all changes realized to a victim and proceeds to next form
+     */
     public void noSaveAndGoNext() {//va al siguiente sin guardar cambios si se han realizado
         openDialogFirst = "";
         openDialogNext = "";
@@ -1583,9 +1605,10 @@ public class TransitMB implements Serializable {
         stylePosition = "color: #1471B1;";
         next();
     }
-/**
- * discards all changes realized to a victim and proceeds to previous form
- */
+
+    /**
+     * discards all changes realized to a victim and proceeds to previous form
+     */
     public void noSaveAndGoPrevious() {//va al anterior sin guardar cambios si se han realizado
         openDialogFirst = "";
         openDialogNext = "";
@@ -1601,9 +1624,10 @@ public class TransitMB implements Serializable {
             last();
         }
     }
-/**
- * Discards all changes realized to a victim and proceeds to the first form.
- */
+
+    /**
+     * Discards all changes realized to a victim and proceeds to the first form.
+     */
     public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
         openDialogFirst = "";
         openDialogNext = "";
@@ -1615,9 +1639,10 @@ public class TransitMB implements Serializable {
         stylePosition = "color: #1471B1;";
         first();
     }
-/**
- * discards all changes realized to a victim and proceeds to last form
- */
+
+    /**
+     * discards all changes realized to a victim and proceeds to last form
+     */
     public void noSaveAndGoLast() {//va al ultimo sin guardar cambios si se han realizado
         openDialogFirst = "";
         openDialogNext = "";
@@ -1629,9 +1654,12 @@ public class TransitMB implements Serializable {
         stylePosition = "color: #1471B1;";
         last();
     }
-/**
- * This method displays the next record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record. 	
- */
+
+    /**
+     * This method displays the next record, if the current record is not
+     * recorded then this method displays a dialog that allows the user to save
+     * the current record.
+     */
     public void next() {
         if (save) {//se busca el siguiente se el registro esta guardado (si esta guardado se abrira un dialogo que pregunta si guardar)             
             //System.out.println("cargando siguiente registro");
@@ -1650,9 +1678,12 @@ public class TransitMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar siguiente registro)");
         }
     }
-/**
- * This method displays the previous record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record. 
- */
+
+    /**
+     * This method displays the previous record, if the current record is not
+     * recorded then this method displays a dialog that allows the user to save
+     * the current record.
+     */
     public void previous() {
         if (save) {
             //System.out.println("cargando anterior registro");
@@ -1672,9 +1703,12 @@ public class TransitMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar anterior registro)");
         }
     }
-/**
- * This method displays the first record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record.
- */
+
+    /**
+     * This method displays the first record, if the current record is not
+     * recorded then this method displays a dialog that allows the user to save
+     * the current record.
+     */
     public void first() {
         if (save) {
             //System.out.println("cargando primer registro");
@@ -1690,9 +1724,12 @@ public class TransitMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar primer registro)");
         }
     }
-/**
- * This method displays the last record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record. 
- */
+
+    /**
+     * This method displays the last record, if the current record is not
+     * recorded then this method displays a dialog that allows the user to save
+     * the current record.
+     */
     public void last() {
         if (save) {
             //System.out.println("cargando ultimo registro");
@@ -1708,9 +1745,10 @@ public class TransitMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar ultimo registro)");
         }
     }
-/**
- * This method clears all form fields to enter data for a new victim.
- */
+
+    /**
+     * This method clears all form fields to enter data for a new victim.
+     */
     public void clearForm() {
 
         //System.out.println("Limpiando formulario");
@@ -1831,9 +1869,12 @@ public class TransitMB implements Serializable {
         //currentArea = 0;
         loading = false;
     }
-/**
- * This method displays a blank form for the user to enter data about a victim, if fields without saving then this method displays a dialog that allows the user to save the changes.
- */
+
+    /**
+     * This method displays a blank form for the user to enter data about a
+     * victim, if fields without saving then this method displays a dialog that
+     * allows the user to save the changes.
+     */
     public void newForm() {
         //currentFatalInjuryTraffic = null;
         if (save) {
@@ -1848,9 +1889,11 @@ public class TransitMB implements Serializable {
 
     public void nada() {
     }
-/**
- * This method deletes a record from the database, for this verifies that the user has sufficient privileges.
- */
+
+    /**
+     * This method deletes a record from the database, for this verifies that
+     * the user has sufficient privileges.
+     */
     public void deleteRegistry() {
         if (currentFatalInjuriId != -1) {
             if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentFatalInjuryTraffic.getFatalInjuries().getUserId().getUserId()) {
@@ -1897,9 +1940,11 @@ public class TransitMB implements Serializable {
     public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
         this.selectedRowDataTable = selectedRowDataTable;
     }
-/**
- * This method is responsible to load the corresponding form to a victim who was selected in the option "Buscar" .
- */
+
+    /**
+     * This method is responsible to load the corresponding form to a victim who
+     * was selected in the option "Buscar" .
+     */
     public void openForm() {
         if (selectedRowDataTable != null) {
             //auxFatalInjuryTraffic = fatalInjuryTrafficFacade.findByIdVictim(selectedRowDataTable.getColumn1());
@@ -1914,18 +1959,22 @@ public class TransitMB implements Serializable {
         }
         clearSearch();
     }
-/**
- * This method cleans all fields of result of a search for realize a new one.
- */
+
+    /**
+     * This method cleans all fields of result of a search for realize a new
+     * one.
+     */
     public void clearSearch() {
         currentSearchValue = "";
         currentSearchCriteria = 1;
         rowDataTableList = new ArrayList<>();
 
     }
-/**
- * This method creates a Dinamic Table to display the fields of a search realized.
- */
+
+    /**
+     * This method creates a Dinamic Table to display the fields of a search
+     * realized.
+     */
     public void createDynamicTable() {
         boolean s = true;
         if (currentSearchValue.trim().length() == 0) {
@@ -1962,18 +2011,6 @@ public class TransitMB implements Serializable {
                 }
                 sql = sql + "fatal_injuries.injury_id = 11";
 
-//                if (date1 != null) {
-//                    sql = sql + "non_fatal_injuries.input_timestamp < " + date1.toString() + " AND ";
-//                }
-//                if (date2 != null) {
-//                    sql = sql + "non_fatal_injuries.input_timestamp > " + date2.toString() + " AND ";
-//                }
-//                sql = sql + "(injuries.injury_id = 53 OR ";
-//                sql = sql + "injuries.injury_id = 50 OR ";
-//                sql = sql + "injuries.injury_id = 51 OR ";
-//                sql = sql + "injuries.injury_id = 52 OR ";
-//                sql = sql + "injuries.injury_id = 54 OR ";
-//                sql = sql + "injuries.injury_id = 55);";
                 //System.out.println(sql);
                 ResultSet rs = connectionJdbcMB.consult(sql);
                 while (rs.next()) {
@@ -1994,11 +2031,13 @@ public class TransitMB implements Serializable {
     // FUNCIONES PARA AUTOCOMPLETAR ----------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-/**
- * This method is responsible to display a neighborhoods list that have a similar name to which the user is typing.
- * @param entered
- * @return 
- */  
+    /**
+     * This method is responsible to display a neighborhoods list that have a
+     * similar name to which the user is typing.
+     *
+     * @param entered
+     * @return
+     */
     public List<String> suggestNeighborhoods(String entered) {
         List<String> list = new ArrayList<>();
         try {
@@ -2019,11 +2058,14 @@ public class TransitMB implements Serializable {
         }
         return list;
     }
-/**
- * This method is responsible to display a jobs list that have a similar name to which the user is typing.
- * @param entered
- * @return 
- */
+
+    /**
+     * This method is responsible to display a jobs list that have a similar
+     * name to which the user is typing.
+     *
+     * @param entered
+     * @return
+     */
     public List<String> suggestJobs(String entered) {
         List<String> list = new ArrayList<>();
         try {
@@ -2045,40 +2087,21 @@ public class TransitMB implements Serializable {
         return list;
     }
 
-//    public List<String> suggestHealthProfessionals(String entered) {
-//        List<String> list = new ArrayList<String>();
-//        try {
-//            ResultSet rs;            
-//            String sql=""
-//                    + " SELECT "
-//                    + "    health_professionals.health_professional_name"
-//                    + " FROM "
-//                    + "    public.health_professionals"
-//                    + " WHERE "
-//                    + "    health_professionals.health_professional_name ILIKE '%"+entered+"%'"
-//                    + " LIMIT 10;";
-//            rs=connectionJdbcMB.consult(sql);            
-//            while(rs.next()){
-//                list.add(rs.getString(1));
-//            }
-//        } catch (Exception e) {
-//        }
-//        return list;
-//    }
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     // FUNCIONES CUANDO LISTAS Y CAMPOS CAMBIAN DE VALOR -------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-/**
- * This method changes the records set.
- */
+    /**
+     * This method changes the records set.
+     */
     public void changeTag() {//cambia el conjunto de registros
         noSaveAndGoNew();
     }
-/**
- * This method restores the values of stranger
- */
+
+    /**
+     * This method restores the values of stranger
+     */
     public void changeStranger() {
         if (loading == false) {
             changeForm();
@@ -2098,60 +2121,10 @@ public class TransitMB implements Serializable {
         }
     }
 
-//    public void changeStateDate() {
-//        if (loading == false) {             changeForm();         }
-//        currentDayEventDisabled = true;
-//        currentMonthEventDisabled = true;
-//        currentYearEventDisabled = true;
-//        currentDayEvent = "";
-//        currentMonthEvent = "";
-//        currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
-//        switch (currentStateDate) {
-//            case 1://fecha determinada
-//                currentDayEventDisabled = false;
-//                currentMonthEventDisabled = false;
-//                currentYearEventDisabled = false;
-//                break;
-//            case 2://sin determinar
-//                break;
-//            case 3://sin dia                
-//                currentMonthEventDisabled = false;
-//                currentYearEventDisabled = false;
-//                break;
-//            case 4://sin mes
-//                currentYearEventDisabled = false;
-//                break;
-//        }
-//    }
-//
-//    public void changeStateTime() {
-//        if (loading == false) {             changeForm();         }
-//        currentHourEventDisabled = true;
-//        currentMinuteEventDisabled = true;
-//        currentAmPmEventDisabled = true;
-//        currentHourEvent = "";
-//        currentMinuteEvent = "";
-//        currentAmPmEvent = "AM";
-//        switch (currentStateTime) {
-//            case 1://hora determinada
-//                currentHourEventDisabled = false;
-//                currentMinuteEventDisabled = false;
-//                currentAmPmEventDisabled = false;
-//                break;
-//            case 2://hora sin determinar
-//                break;
-//            case 3://sin minutos                
-//                currentHourEventDisabled = false;
-//                currentAmPmEventDisabled = false;
-//                break;
-//            case 4://sin horas
-//                currentAmPmEventDisabled = false;
-//                break;
-//        }
-//    }
-/**
- * This method is responsible to display all departments corresponding to a country.
- */    
+    /**
+     * This method is responsible to display all departments corresponding to a
+     * country.
+     */
     public void findSourceDepartaments() {
         if (!loading) {
             if (loading == false) {
@@ -2186,9 +2159,11 @@ public class TransitMB implements Serializable {
         }
 
     }
-/**
- * This method is responsible to display all municipalities corresponding to a departament.
- */
+
+    /**
+     * This method is responsible to display all municipalities corresponding to
+     * a departament.
+     */
     public void findSourceMunicipalities() {
         if (!loading) {
             if (loading == false) {
@@ -2209,9 +2184,10 @@ public class TransitMB implements Serializable {
         }
 
     }
-/**
- * This method is responsible to Load municipalities of residence.
- */
+
+    /**
+     * This method is responsible to Load municipalities of residence.
+     */
     public void findMunicipalities() {
         Departaments d = departamentsFacade.findById((short) 52);
         municipalities = new SelectItem[d.getMunicipalitiesList().size()];
@@ -2222,9 +2198,10 @@ public class TransitMB implements Serializable {
         currentMunicipalitie = d.getMunicipalitiesList().get(0).getMunicipalitiesPK().getMunicipalityId();
 
     }
-/**
- * This method displays all departments of residence.
- */
+
+    /**
+     * This method displays all departments of residence.
+     */
     public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
@@ -2252,9 +2229,10 @@ public class TransitMB implements Serializable {
 
         changeMunicipalitieHome();
     }
-/**
- * This method is responsible to Show all municipalities of residence
- */
+
+    /**
+     * This method is responsible to Show all municipalities of residence
+     */
     public void changeMunicipalitieHome() {
         //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, currentDepartamentHome);
         if (loading == false) {
@@ -2271,9 +2249,11 @@ public class TransitMB implements Serializable {
             currentNeighborhoodHomeCode = "";
         }
     }
-/**
- * This method enables or disables the types of identification depending on the selected option.
- */
+
+    /**
+     * This method enables or disables the types of identification depending on
+     * the selected option.
+     */
     public void changeIdentificationType() {
         if (!loading) {
             if (loading == false) {
@@ -2293,9 +2273,11 @@ public class TransitMB implements Serializable {
             currentIdentificationNumber = "";
         }
     }
-/**
- * This method changes the form according to the modifications that have been made.
- */
+
+    /**
+     * This method changes the form according to the modifications that have
+     * been made.
+     */
     public void changeForm() {//el formulario fue modificado        
         openDialogFirst = "dialogFirst.show();";
         openDialogNext = "dialogNext.show();";
@@ -2306,9 +2288,11 @@ public class TransitMB implements Serializable {
         save = false;
         stylePosition = "color: red; font-weight: 900;";
     }
-/**
- * This method verifies that the value of age is correct, if not, then display an error message and clean the field.
- */
+
+    /**
+     * This method verifies that the value of age is correct, if not, then
+     * display an error message and clean the field.
+     */
     public void changeValueAge() {
         try {
             int ageInt = Integer.parseInt(currentAge);
@@ -2326,9 +2310,11 @@ public class TransitMB implements Serializable {
             }
         }
     }
-/**
- * This method verifies that the entered date is correct, if it is wrong then display an error message and clean the field.
- */
+
+    /**
+     * This method verifies that the entered date is correct, if it is wrong
+     * then display an error message and clean the field.
+     */
     public void changeDayEvent() {
         try {
             int dayInt = Integer.parseInt(currentDayEvent);
@@ -2347,9 +2333,11 @@ public class TransitMB implements Serializable {
         calculateDate1();
 
     }
-/**
- * This method checks that the month entered is correct, if not, then display an error message and clean the field.
- */
+
+    /**
+     * This method checks that the month entered is correct, if not, then
+     * display an error message and clean the field.
+     */
     public void changeMonthEvent() {
         try {
             int monthInt = Integer.parseInt(currentMonthEvent);
@@ -2367,9 +2355,11 @@ public class TransitMB implements Serializable {
         }
         calculateDate1();
     }
-/**
- * This method verifies that the year of the event entered is correct, if not, then display a message and clean the field.
- */
+
+    /**
+     * This method verifies that the year of the event entered is correct, if
+     * not, then display a message and clean the field.
+     */
     public void changeYearEvent() {
         Calendar cal = Calendar.getInstance();
         int yearSystem = cal.get(Calendar.YEAR);
@@ -2390,9 +2380,11 @@ public class TransitMB implements Serializable {
         }
         calculateDate1();
     }
-/**
- * This method checks that the hour entered is correct, if it is not then display an error message and clean the field.
- */ 
+
+    /**
+     * This method checks that the hour entered is correct, if it is not then
+     * display an error message and clean the field.
+     */
     public void changeHourEvent() {
         try {
             int hourInt = Integer.parseInt(currentHourEvent);
@@ -2411,9 +2403,11 @@ public class TransitMB implements Serializable {
         }
         calculateTime1();
     }
-/**
- * This method verifies that the hour AM PM entered is correct, if is NO DATO, then disable the box of event time and the minute event.
- */
+
+    /**
+     * This method verifies that the hour AM PM entered is correct, if is NO
+     * DATO, then disable the box of event time and the minute event.
+     */
     public void changeAmPmEvent() {
         if (loading == false) {
             if (loading == false) {
@@ -2436,9 +2430,11 @@ public class TransitMB implements Serializable {
             currentHourEventDisabled = false;
         }
     }
-/**
- * This method verifies that the minutes entered are correct, if not, then display an error message and clean the field.
- */ 
+
+    /**
+     * This method verifies that the minutes entered are correct, if not, then
+     * display an error message and clean the field.
+     */
     public void changeMinuteEvent() {
         try {
             int minuteInt = Integer.parseInt(currentMinuteEvent);
@@ -2457,9 +2453,11 @@ public class TransitMB implements Serializable {
         }
         calculateTime1();
     }
-/**
- * This method verifies that the alcohol level is entered correctly, if is wrong then display an error message and clean  the field.
- */
+
+    /**
+     * This method verifies that the alcohol level is entered correctly, if is
+     * wrong then display an error message and clean the field.
+     */
     public void changeAlcoholLevelNumber() {
         try {
             int alcoholLevel = Integer.parseInt(currentAlcoholLevel);
@@ -2476,9 +2474,11 @@ public class TransitMB implements Serializable {
             }
         }
     }
-/**
- * This method verifies that the alcohol level of the culpable is entered correctly, if is wrong then display an error message and clean  the field.
- */
+
+    /**
+     * This method verifies that the alcohol level of the culpable is entered
+     * correctly, if is wrong then display an error message and clean the field.
+     */
     public void changeAlcoholLevelNumberC() {
         try {
             int alcoholLevel = Integer.parseInt(currentAlcoholLevelC);
@@ -2495,9 +2495,11 @@ public class TransitMB implements Serializable {
             }
         }
     }
-/**
- * This method verifies that the number of victims entered is correct, if not, then display an error message and clean the field.
- */
+
+    /**
+     * This method verifies that the number of victims entered is correct, if
+     * not, then display an error message and clean the field.
+     */
     public void changeNumberVictims() {
 
         try {
@@ -2516,9 +2518,11 @@ public class TransitMB implements Serializable {
             }
         }
     }
-/**
- * This method verifies that the number of injured entered is correct, if not, then display an error message and clean the field.
- */
+
+    /**
+     * This method verifies that the number of injured entered is correct, if
+     * not, then display an error message and clean the field.
+     */
     public void changeNumberInjured() {
         try {
             int numberInt = Integer.parseInt(currentNumberInjured);
@@ -2535,9 +2539,12 @@ public class TransitMB implements Serializable {
             }
         }
     }
-/**
- * This method is responsible to display all levels of alcohol, so that the user can select one. The alcohol levels are: NO DATO, PENDIENTE, NEGATIVO and DESCONOCIDO.
- */
+
+    /**
+     * This method is responsible to display all levels of alcohol, so that the
+     * user can select one. The alcohol levels are: NO DATO, PENDIENTE, NEGATIVO
+     * and DESCONOCIDO.
+     */
     public void changeAlcoholLevel() {
         if (loading == false) {
             changeForm();
@@ -2585,9 +2592,12 @@ public class TransitMB implements Serializable {
             }
         }
     }
-/**
- * This method is responsible to display all levels of alcohol, so that the user can select one. The alcohol levels are: NO DATO, PENDIENTE, NEGATIVO and DESCONOCIDO. here the alcohol level of culpable is recorded
- */
+
+    /**
+     * This method is responsible to display all levels of alcohol, so that the
+     * user can select one. The alcohol levels are: NO DATO, PENDIENTE, NEGATIVO
+     * and DESCONOCIDO. here the alcohol level of culpable is recorded
+     */
     public void changeAlcoholLevelC() {
         if (loading == false) {
             changeForm();
@@ -2635,9 +2645,11 @@ public class TransitMB implements Serializable {
             }
         }
     }
-/**
- * this method is responsible to complete the fields: CODIGO BARRIO, CUADRANTE and AREA DEL HECHO when a neighborhood is selected by the user.
- */
+
+    /**
+     * this method is responsible to complete the fields: CODIGO BARRIO,
+     * CUADRANTE and AREA DEL HECHO when a neighborhood is selected by the user.
+     */
     public void changeNeighborhoodEvent() {
         if (loading == false) {
             changeForm();
@@ -2688,9 +2700,11 @@ public class TransitMB implements Serializable {
             currentArea = 0;
         }
     }
-/**
- * Shows all Neighborhoods having a similar name to which the user is writing.
- */
+
+    /**
+     * Shows all Neighborhoods having a similar name to which the user is
+     * writing.
+     */
     public void changeNeighborhoodHomeName() {
         if (loading == false) {
             changeForm();
@@ -2703,9 +2717,11 @@ public class TransitMB implements Serializable {
             }
         }
     }
-/**
- * This method enables or disables the measure of age according to the selected option.
- */
+
+    /**
+     * This method enables or disables the measure of age according to the
+     * selected option.
+     */
     public void changeMeasuresOfAge() {
         if (loading == false) {
             changeForm();
@@ -2728,8 +2744,9 @@ public class TransitMB implements Serializable {
     //----------------------------------------------------------------------
     /**
      * gets the name day from the number day
+     *
      * @param i
-     * @return 
+     * @return
      */
     private String intToDay(int i) {
         if (i == Calendar.MONDAY) {
@@ -2748,9 +2765,10 @@ public class TransitMB implements Serializable {
             return "Domingo";
         }
     }
-/**
- * calculates the date on which the event occurred
- */
+
+    /**
+     * calculates the date on which the event occurred
+     */
     private void calculateDate1() {
         try {
             fechaI = formato.parse(currentDayEvent + "/" + currentMonthEvent + "/" + currentYearEvent);
@@ -2764,9 +2782,10 @@ public class TransitMB implements Serializable {
             currentWeekdayEvent = "";
         }
     }
-/**
- * calculates the time on which the event occurred
- */
+
+    /**
+     * calculates the time on which the event occurred
+     */
     private boolean calculateTime1() {
         int hourInt = 0;
         int minuteInt = 0;
@@ -3010,12 +3029,6 @@ public class TransitMB implements Serializable {
         this.currentJob = currentJob;
     }
 
-//    public SelectItem[] getJobs() {
-//        return jobs;
-//    }
-//    public void setJobs(SelectItem[] jobs) {
-//        this.jobs = jobs;
-//    }
     public Short getCurrentMeasureOfAge() {
         return currentMeasureOfAge;
     }
@@ -3088,13 +3101,6 @@ public class TransitMB implements Serializable {
         this.currentName = currentName;
     }
 
-//    public String getCurrentSurname() {
-//        return currentSurname;
-//    }
-//
-//    public void setCurrentSurname(String currentSurname) {
-//        this.currentSurname = currentSurname;
-//    }
     public SelectItem[] getAreas() {
         return areas;
     }
@@ -3119,13 +3125,6 @@ public class TransitMB implements Serializable {
         this.currentNumberVictims = currentNumberVictims;
     }
 
-//    public String getCurrentVictimSource() {
-//	return currentVictimSource;
-//    }
-//
-//    public void setCurrentVictimSource(String currentVictimSource) {
-//	this.currentVictimSource = currentVictimSource;
-//    }
     public String getCurrentNarrative() {
         return currentNarrative;
     }
@@ -3662,38 +3661,6 @@ public class TransitMB implements Serializable {
         this.stylePosition = stylePosition;
     }
 
-//    //------------------
-//    public Short getCurrentStateDate() {
-//        return currentStateDate;
-//    }
-//
-//    public void setCurrentStateDate(Short currentStateDate) {
-//        this.currentStateDate = currentStateDate;
-//    }
-//
-//    public Short getCurrentStateTime() {
-//        return currentStateTime;
-//    }
-//
-//    public void setCurrentStateTime(Short currentStateTime) {
-//        this.currentStateTime = currentStateTime;
-//    }
-//
-//    public SelectItem[] getStateDateList() {
-//        return stateDateList;
-//    }
-//
-//    public void setStateDateList(SelectItem[] stateDateList) {
-//        this.stateDateList = stateDateList;
-//    }
-//
-//    public SelectItem[] getStateTimeList() {
-//        return stateTimeList;
-//    }
-//
-//    public void setStateTimeList(SelectItem[] stateTimeList) {
-//        this.stateTimeList = stateTimeList;
-//    }
     public boolean isCurrentDayEventDisabled() {
         return currentDayEventDisabled;
     }

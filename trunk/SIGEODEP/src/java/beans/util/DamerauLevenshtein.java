@@ -7,24 +7,19 @@ package beans.util;
 import java.io.Serializable;
 
 /**
- *is a pre-built class that provides various functions to other classes, this class is used by the RelationshipOfValues class. The functionality of this class is reflected in it searches the proximity between words.
+ * is a pre-built class that provides various functions to other classes, this
+ * class is used by the RelationshipOfValues class. The functionality of this
+ * class is reflected in it searches the proximity between words.
+ *
  * @author SANTOS
  */
-public class DamerauLevenshtein implements Serializable{
+public class DamerauLevenshtein implements Serializable {
 
     private String compOne;
     private String compTwo;
     private int[][] matrix;
     private Boolean calculated = false;
 
-//    public DamerauLevenshtein(String a, String b) {
-//        
-//        if ((a.length() > 0 || !a.isEmpty()) || (b.length() > 0 || !b.isEmpty())) {
-//            compOne = a;
-//            compTwo = b;
-//        }
-//    }
-    
     public DamerauLevenshtein() {
     }
 
@@ -36,11 +31,9 @@ public class DamerauLevenshtein implements Serializable{
     public int getSimilarity(String a, String b) {
         compOne = a;
         compTwo = b;
-        
         //if (!calculated) {
-            setupMatrix();
+        setupMatrix();
         //}
-
         return matrix[compOne.length()][compTwo.length()];
     }
 
@@ -77,7 +70,6 @@ public class DamerauLevenshtein implements Serializable{
                 }
             }
         }
-
         calculated = true;
         //displayMatrix();
     }
@@ -109,7 +101,6 @@ public class DamerauLevenshtein implements Serializable{
         if (s < m) {
             m = s;
         }
-
         return m;
     }
 
@@ -122,7 +113,6 @@ public class DamerauLevenshtein implements Serializable{
         if (t < m) {
             m = t;
         }
-
         return m;
     }
 }

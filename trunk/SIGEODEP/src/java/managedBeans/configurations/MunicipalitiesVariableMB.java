@@ -127,8 +127,6 @@ public class MunicipalitiesVariableMB implements Serializable {
                 createCell(row, 3, municipalitiesList.get(j).getMunicipalityName());//NOMBRE            
                 pos++;
             }
-
-
         }
     }
 

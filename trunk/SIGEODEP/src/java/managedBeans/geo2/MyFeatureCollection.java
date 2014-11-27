@@ -17,7 +17,10 @@ import org.mapfish.geo.MfFeatureCollection;
 import org.mapfish.geo.MfGeoJSONWriter;
 
 /**
- *The class  MyFeatureCollection is responsible to obtain the appropriate values to establish the geometry of the polygons of neighborhood, corridor,commune and quadrant, the values that have the polygon
+ * The class MyFeatureCollection is responsible to obtain the appropriate values
+ * to establish the geometry of the polygons of neighborhood, corridor,commune
+ * and quadrant, the values that have the polygon
+ *
  * @author and
  */
 public class MyFeatureCollection {
@@ -30,23 +33,29 @@ public class MyFeatureCollection {
     private String vars;
     private RangeFactory rf;
     private ArrayList<Range> ranges;
-/**
- * This method is the constructor of the class, also is responsible for connecting to the database.
- * @param user
- * @param pass
- * @param host
- * @param name 
- */
+
+    /**
+     * This method is the constructor of the class, also is responsible for
+     * connecting to the database.
+     *
+     * @param user
+     * @param pass
+     * @param host
+     * @param name
+     */
     public MyFeatureCollection(String user, String pass, String host, String name) {
         this.geo = new GeoDBConnection(user, pass, host, name);
     }
-/**
- * This method is responsible for passing the parameters obtained to variable instantiated in this class.
- * @param indicator_id
- * @param user_id
- * @param vars
- * @param rf 
- */
+
+    /**
+     * This method is responsible for passing the parameters obtained to
+     * variable instantiated in this class.
+     *
+     * @param indicator_id
+     * @param user_id
+     * @param vars
+     * @param rf
+     */
     public MyFeatureCollection(int indicator_id, int user_id, String vars, RangeFactory rf) {
         this.indicator_id = indicator_id;
         this.user_id = user_id;
@@ -57,10 +66,14 @@ public class MyFeatureCollection {
     public void setConnection(String user, String pass, String host, String name) {
         this.geo = new GeoDBConnection(user, pass, host, name);
     }
-/**
- * This method is responsible for obtaining the appropriate values to establish the geometry of the polygon neighborhood, commune, quadrant and corridor 
- * @return 
- */
+
+    /**
+     * This method is responsible for obtaining the appropriate values to
+     * establish the geometry of the polygon neighborhood, commune, quadrant and
+     * corridor
+     *
+     * @return
+     */
     public Writer getGeoJSON() {
         try {
             //GeoDBConnection geo = new GeoDBConnection();
@@ -111,10 +124,13 @@ public class MyFeatureCollection {
         }
         return w;
     }
-/**
- * This method allows to obtain the values for establish the  structure that will have the polygon of a neighborhood.
- * @return 
- */
+
+    /**
+     * This method allows to obtain the values for establish the structure that
+     * will have the polygon of a neighborhood.
+     *
+     * @return
+     */
     public Writer getNeighborhoodGeoJSON() {
         try {
             Collection<MfFeature> polygons = geo.getNeighborhoodPolygons();
@@ -128,11 +144,15 @@ public class MyFeatureCollection {
         }
         return w;
     }
-/**
- * This method will take care of getting the features that must have the  polygons according to the structure GeoJSON  is a format for encoding a variety of geographic data structures.
- * @param features
- * @return 
- */
+
+    /**
+     * This method will take care of getting the features that must have the
+     * polygons according to the structure GeoJSON is a format for encoding a
+     * variety of geographic data structures.
+     *
+     * @param features
+     * @return
+     */
     public Writer getFeaturesGeoJSON(String features) {
         try {
             Collection<MfFeature> polygons = geo.getFeaturesPolygons(features);
@@ -146,13 +166,15 @@ public class MyFeatureCollection {
         }
         return w;
     }
-/**
- * This method is responsible for obtain the data to be used in cake.
- * @param WHERE
- * @param geo_column
- * @param column
- * @return 
- */
+
+    /**
+     * This method is responsible for obtain the data to be used in cake.
+     *
+     * @param WHERE
+     * @param geo_column
+     * @param column
+     * @return
+     */
     public String getPieData(String WHERE, String geo_column, String column) {
         return geo.getPieData(WHERE, geo_column, column, user_id, indicator_id);
     }

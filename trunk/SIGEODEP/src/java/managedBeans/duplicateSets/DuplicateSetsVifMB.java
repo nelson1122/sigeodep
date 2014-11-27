@@ -27,12 +27,15 @@ import model.pojo.*;
  * @author SANTOS
  */
 /**
- * This class is responsible to detect duplicate records, this method displays in a table the data of victims who may have duplicate records, when the user selects the record of a victim, then the system is responsible to display the " LISTADO DE POSIBLES DUPLICADOS PARA EL REGISTRO SELECCIONADO " that so the user can select a duplicate record and then can delete it.
+ * This class is responsible to detect duplicate records, this method displays
+ * in a table the data of victims who may have duplicate records, when the user
+ * selects the record of a victim, then the system is responsible to display the
+ * " LISTADO DE POSIBLES DUPLICADOS PARA EL REGISTRO SELECCIONADO " that so the
+ * user can select a duplicate record and then can delete it.
  *
  */
 @ManagedBean(name = "duplicateSetsVifMB")
 @SessionScoped
-
 public class DuplicateSetsVifMB implements Serializable {
 
     //--------------------
@@ -92,14 +95,15 @@ public class DuplicateSetsVifMB implements Serializable {
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
      */
+
     /**
      * Get current instance of the connection to the database
-     */ 
+     */
     @PostConstruct
-   
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
+
     /**
      * This method is the class constructor.
      */
@@ -109,19 +113,24 @@ public class DuplicateSetsVifMB implements Serializable {
     public String openForm() {
         return openForm;
     }
-/**
- * This method is used to display messages of the actions that are realizing.
- * @param s
- * @param title
- * @param messageStr 
- */
+
+    /**
+     * This method is used to display messages of the actions that are
+     * realizing.
+     *
+     * @param s
+     * @param title
+     * @param messageStr
+     */
     public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
         FacesMessage msg = new FacesMessage(s, title, messageStr);
         FacesContext.getCurrentInstance().addMessage(null, msg);
     }
-/**
- * This method generates a list of all records that are possibly duplicate of a selected victim.
- */
+
+    /**
+     * This method generates a list of all records that are possibly duplicate
+     * of a selected victim.
+     */
     public void loadDuplicatedRecords() {
         /*
          * saca la lista con todos lo s campos de los registros que pueden ser
@@ -146,7 +155,7 @@ public class DuplicateSetsVifMB implements Serializable {
                     sql = sql + "AND levenshtein(t1.victim_nid, t2.victim_nid) < 4 ";
                     sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 4 ";
                     ResultSet resultSetCount = connectionJdbcMB.consult(sql);
-                    
+
                     int cont = 0;
                     while (resultSetCount.next()) {
                         cont++;
@@ -164,11 +173,15 @@ public class DuplicateSetsVifMB implements Serializable {
             }
         }
     }
-/**
- * This method is called the recordsets class when the user presses the button “DETECTAR DUPLICADOS”. 
- * This method is used to display a list of all possible duplicates that exist given a starting date and an ending date.
- * @param selectedRowsDataTableTags 
- */
+
+    /**
+     * This method is called the recordsets class when the user presses the
+     * button “DETECTAR DUPLICADOS”. This method is used to display a list of
+     * all possible duplicates that exist given a starting date and an ending
+     * date.
+     *
+     * @param selectedRowsDataTableTags
+     */
     public void loadValues(RowDataTable[] selectedRowsDataTableTags) {
         /*
          * se llama a esta funcion desde record sets cuando se presiona el boton
@@ -307,9 +320,11 @@ public class DuplicateSetsVifMB implements Serializable {
             System.out.println("Error: " + ex.toString());
         }
     }
-/**
- * This method creates a new array to store all possible duplicate records of the selected victim.
- */
+
+    /**
+     * This method creates a new array to store all possible duplicate records
+     * of the selected victim.
+     */
     public void rowDuplicatedTableListSelect() {
         selectedRowDataTable = null;
         rowDataTableList = new ArrayList<>();
@@ -319,9 +334,11 @@ public class DuplicateSetsVifMB implements Serializable {
             loadDuplicatedRecords();
         }
     }
-/**
- * This method enables the delete button after selecting a row of a duplicate record.
- */
+
+    /**
+     * This method enables the delete button after selecting a row of a
+     * duplicate record.
+     */
     public void rowDataTableListSelect() {
         //currentNonFatalInjury = null;
         btnRemoveDisabled = true;
@@ -332,14 +349,15 @@ public class DuplicateSetsVifMB implements Serializable {
             //currentNonFatalInjury = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
         }
     }
-/**
- * This method is used to delete a duplicate record has been selected.
- */
+
+    /**
+     * This method is used to delete a duplicate record has been selected.
+     */
     public void deleteRegistry() {
         if (selectedRowDataTable != null) {
             NonFatalInjuries nonFatalInjurySelect = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
             if (nonFatalInjurySelect != null) {
-            
+
                 SivigilaEvent auxSivigilaEvent = null;
                 SivigilaVictim auxSivigilaVictim = null;
                 SivigilaAggresor auxSivigilaAggresor = null;
@@ -368,9 +386,9 @@ public class DuplicateSetsVifMB implements Serializable {
                 if (auxDomesticViolence != null) {
                     nonFatalDomesticViolenceFacade.remove(auxDomesticViolence);
                 }
-                
-                    nonFatalInjuriesFacade.remove(nonFatalInjurySelect);
-                
+
+                nonFatalInjuriesFacade.remove(nonFatalInjurySelect);
+
                 if (nonFatalInjurySelect.getVictimId() != null) {
                     victimsFacade.remove(nonFatalInjurySelect.getVictimId());
                 }
@@ -380,22 +398,6 @@ public class DuplicateSetsVifMB implements Serializable {
                 if (auxSivigilaAggresor != null) {
                     sivigilaAggresorFacade.remove(auxSivigilaAggresor);
                 }
-//                    if (nonFatalInjuriesList.get(j).getNonFatalDomesticViolence() != null) {
-//                        nonFatalDomesticViolenceFacade.remove(nonFatalInjuriesList.get(j).getNonFatalDomesticViolence());
-//                    }
-//                    if (nonFatalInjuriesList.get(j).getNonFatalInterpersonal() != null) {
-//                        nonFatalInterpersonalFacade.remove(nonFatalInjuriesList.get(j).getNonFatalInterpersonal());
-//                    }
-//                    if (nonFatalInjuriesList.get(j).getNonFatalSelfInflicted() != null) {
-//                        nonFatalSelfInflictedFacade.remove(nonFatalInjuriesList.get(j).getNonFatalSelfInflicted());
-//                    }
-//                    if (nonFatalInjuriesList.get(j).getNonFatalTransport() != null) {
-//                        nonFatalTransportFacade.remove(nonFatalInjuriesList.get(j).getNonFatalTransport());
-//                    }
-//                    nonFatalInjuriesFacade.remove(nonFatalInjuriesList.get(j));
-//                    victimsFacade.remove(nonFatalInjuriesList.get(j).getVictimId());
-                //----------------------------------------------------------
-            
             }
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
             //quito los elementos seleccionados de rowsDataTableList

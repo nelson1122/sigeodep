@@ -18,7 +18,11 @@ import javax.faces.context.FacesContext;
 import org.apache.poi.hssf.usermodel.*;
 
 /**
- *GenericVariableMB class allows the management of a variable (edit, delete, create,categories):accidentClass,activities,destinations_of_patient,diagnoses,ethnic_groups,involved_vehicles,jobs,health_professionals,insurance,places,non_fatal_places,non_fatal_data_sources_from_where,murder_contexts, mechanisms, protectiveMeasures, relatedEvents, serviceType, victimCharacteristics, vulnerableGroup, weaponType.
+ * GenericVariableMB class allows the management of a variable (edit, delete,
+ * create,categories):accidentClass,activities,destinations_of_patient,diagnoses,ethnic_groups,involved_vehicles,jobs,health_professionals,insurance,places,non_fatal_places,non_fatal_data_sources_from_where,murder_contexts,
+ * mechanisms, protectiveMeasures, relatedEvents, serviceType,
+ * victimCharacteristics, vulnerableGroup, weaponType.
+ *
  * @author SANTOS
  */
 @ManagedBean(name = "genericVariableMB")
@@ -51,16 +55,21 @@ public class GenericVariableMB implements Serializable {
     private String currentVariableTable = "";
     private String currentVariableTypePrimaryKey = "";
     private String currentVariableObligatoryId = "";
-/**
- * This method is the class constructor and is responsible for connecting to the database.
- */
+
+    /**
+     * This method is the class constructor and is responsible for connecting to
+     * the database.
+     */
     public GenericVariableMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-/**
- * This method is used to load the data of the variable that is to be managed.
- * @param variableId: id variable to manage. 
- */
+
+    /**
+     * This method is used to load the data of the variable that is to be
+     * managed.
+     *
+     * @param variableId: id variable to manage.
+     */
     public void loadVariableData(int variableId) {
         //funcion para cargar los datos de la variable que se va a gestionar
         try {
@@ -110,34 +119,41 @@ public class GenericVariableMB implements Serializable {
         currentSearchCriteria = 1;
         createDynamicTable();
     }
-/**
- * It is responsible to create a cell within the row.
- * @param cellStyle: Style that will have the cell.
- * @param fila: row where create the cell
- * @param position: Determines the position where anger cell within the row.
- * @param value: Sets the value that will be created within the cell. 
- */
+
+    /**
+     * It is responsible to create a cell within the row.
+     *
+     * @param cellStyle: Style that will have the cell.
+     * @param fila: row where create the cell
+     * @param position: Determines the position where anger cell within the row.
+     * @param value: Sets the value that will be created within the cell.
+     */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
         cell.setCellStyle(cellStyle);
     }
-/**
- *  It is responsible to create a cell within the row.
- * @param fila: row where create the cell 
- * @param position: Determines the position where anger cell within the row.
- * @param value: Sets the value that will be created within the cell. 
- */
+
+    /**
+     * It is responsible to create a cell within the row.
+     *
+     * @param fila: row where create the cell
+     * @param position: Determines the position where anger cell within the row.
+     * @param value: Sets the value that will be created within the cell.
+     */
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
-/**
- * runs a xls file where the user inserts a row within a worksheet where two fields are set: CODE, NAME.
- * @param document: Document to modify the name and code field. 
- */
+
+    /**
+     * runs a xls file where the user inserts a row within a worksheet where two
+     * fields are set: CODE, NAME.
+     *
+     * @param document: Document to modify the name and code field.
+     */
     public void postProcessXLS(Object document) {
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
@@ -163,9 +179,10 @@ public class GenericVariableMB implements Serializable {
         } catch (Exception e) {
         }
     }
-/**
- * load data categorical a manage
- */
+
+    /**
+     * load data categorical a manage
+     */
     public void loadCategoryData() {
         if (selectedRowDataTable != null) {
             btnEditDisabled = true;
@@ -185,9 +202,10 @@ public class GenericVariableMB implements Serializable {
             }
         }
     }
-/**
- * tries to delete a record.
- */
+
+    /**
+     * tries to delete a record.
+     */
     private void tryDeleteRegistry() {
         /*
          * se trata de eliminar un registro 
@@ -211,9 +229,11 @@ public class GenericVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-/**
- * It is called when the delete record button is pressed, this method is responsible to remove the selected category.
- */
+
+    /**
+     * It is called when the delete record button is pressed, this method is
+     * responsible to remove the selected category.
+     */
     public void deleteRegistry() {
         /*
          * se llama cuando se presiona el boton eliminar registro
@@ -241,9 +261,10 @@ public class GenericVariableMB implements Serializable {
         btnEditDisabled = true;
         btnRemoveDisabled = true;
     }
-/**
- * Allows perform updating a category.
- */
+
+    /**
+     * Allows perform updating a category.
+     */
     public void updateRegistry() {
         boolean continueProcess = false;
         String categoryColumnName = "";
@@ -325,9 +346,11 @@ public class GenericVariableMB implements Serializable {
             createDynamicTable();
         }
     }
-/**
- * Saves a record, but in turn makes the verification code and name exist, otherwise sends an erros saying that these fields are mandatory.
- */
+
+    /**
+     * Saves a record, but in turn makes the verification code and name exist,
+     * otherwise sends an erros saying that these fields are mandatory.
+     */
     public void saveRegistry() {
         boolean continueProcess = true;
 
@@ -377,16 +400,18 @@ public class GenericVariableMB implements Serializable {
             createDynamicTable();
         }
     }
-/**
- * Initializes the fields to add a new record.
- */
+
+    /**
+     * Initializes the fields to add a new record.
+     */
     public void newRegistry() {
         name = "";
         newName = "";
     }
-/**
- * Create a dynamic table with the results of a search.
- */
+
+    /**
+     * Create a dynamic table with the results of a search.
+     */
     public void createDynamicTable() {
         rowDataTableList = new ArrayList<>();
         selectedRowDataTable = null;
@@ -414,13 +439,6 @@ public class GenericVariableMB implements Serializable {
     }
 
     public void reset() {
-//        rowDataTableList = new ArrayList<RowDataTable>();
-//        diagnosesList = diagnosesFacade.findAll();
-//        for (int i = 0; i < diagnosesList.size(); i++) {
-//            rowDataTableList.add(new RowDataTable(
-//                    diagnosesList.get(i).getDiagnosisId().toString(),
-//                    diagnosesList.get(i).getDiagnosisName()));
-//        }
     }
 
     public List<RowDataTable> getRowDataTableList() {

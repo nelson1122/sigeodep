@@ -8,6 +8,7 @@ import java.awt.Color;
 
 /**
  * The Range class represents a range of numbers of the same type.
+ *
  * @author and
  */
 public class Range {
@@ -18,9 +19,11 @@ public class Range {
     private String hexcolor;
     private String label;
     private Integer count;
-/**
- * This is the constructor of the class and is responsible for building a new range.
- */
+
+    /**
+     * This is the constructor of the class and is responsible for building a
+     * new range.
+     */
     public Range() {
         this.start = 0.0;
         this.end = 0.0;
@@ -120,10 +123,12 @@ public class Range {
     public void increaseCount() {
         this.count++;
     }
-/**
- * It is a string of representation.
- * @return 
- */
+
+    /**
+     * It is a string of representation.
+     *
+     * @return
+     */
     @Override
     public String toString() {
         String str;

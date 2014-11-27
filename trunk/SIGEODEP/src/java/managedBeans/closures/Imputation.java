@@ -17,7 +17,9 @@ import weka.filters.unsupervised.attribute.NumericToNominal;
 import weka.filters.unsupervised.attribute.StringToNominal;
 
 /**
- *Imputation is a class that is responsible for conducting the process of replacing null values to non-zero values.
+ * Imputation is a class that is responsible for conducting the process of
+ * replacing null values to non-zero values.
+ *
  * @author santos
  */
 public class Imputation {
@@ -31,19 +33,25 @@ public class Imputation {
     private Instances predict;
     private ArrayList<Imputed> J48Prediction;
     private ArrayList<Imputed> KNNPrediction;
-/**
- * This method is responsible for replacing null values for non-zero values.
- */
+
+    /**
+     * This method is responsible for replacing null values for non-zero values.
+     */
     public Imputation() {
         stringToNominal = new StringToNominal();
         numericToNominal = new NumericToNominal();
         strings = "";
         numerics = "";
     }
-/**
- * This method is responsible of establishing the files not null that are prepared for the imputation by model. This type of imputation is realize when the percentage of null is greater than 10% and less than or equal to 33%.
- * @param to_train 
- */
+
+    /**
+     * This method is responsible of establishing the files not null that are
+     * prepared for the imputation by model. This type of imputation is realize
+     * when the percentage of null is greater than 10% and less than or equal to
+     * 33%.
+     *
+     * @param to_train
+     */
     public void setTrainingSet(String to_train) {
         try {
             train = ConverterUtils.DataSource.read(to_train);
@@ -52,18 +60,25 @@ public class Imputation {
             Logger.getLogger(Imputation.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-/**
- * Sets the class index of the set.
- * @param theClass 
- */
+
+    /**
+     * Sets the class index of the set.
+     *
+     * @param theClass
+     */
     public void setClassIndex(String theClass) {
         classIndex = getTrain().attribute(theClass).index();
         getTrain().setClassIndex(getClassIndex()); //O-index based
     }
-/**
- * This method is responsible of establishing the files null that are  used to predict the result of the imputation by model this type of imputation is realize when the percentage of null is greater than 10% and less than or equal to 33%.
- * @param to_predict 
- */
+
+    /**
+     * This method is responsible of establishing the files null that are used
+     * to predict the result of the imputation by model this type of imputation
+     * is realize when the percentage of null is greater than 10% and less than
+     * or equal to 33%.
+     *
+     * @param to_predict
+     */
     public void setPredictionSet(String to_predict) {
         try {
             predict = ConverterUtils.DataSource.read(to_predict);
@@ -108,10 +123,12 @@ public class Imputation {
             return getJ48Prediction();
         }
     }
-/**
- * It is the function that is using the algorithm of neighbors.
- * @return 
- */
+
+    /**
+     * It is the function that is using the algorithm of neighbors.
+     *
+     * @return
+     */
     public ArrayList<Imputed> runKNNPrediction() {
         try {
             IBk knn = new IBk(1);
@@ -123,9 +140,9 @@ public class Imputation {
                 //System.out.println(returned);//+"--"
                 double[] dist = knn.distributionForInstance(getPredict().instance(i));
                 Imputed imputed = new Imputed();
-                
+
                 imputed.setTuple(returned.toString());//colocar la tupla correspondiente
-                
+
                 imputed.setOrder(i + 1);
                 // print the actual value
                 imputed.setActual(getPredict().instance(i).toString(getPredict().classIndex()));
@@ -141,12 +158,17 @@ public class Imputation {
             return getKNNPrediction();
         }
     }
-/**
- * This method is responsible of establishing the files null  and not null that are prepared and  used to predict the result of the imputation by model this type of imputation is realize when the percentage of null is greater than 10% and less than or equal to 33%.
- * @param data
- * @return
- * @throws Exception 
- */
+
+    /**
+     * This method is responsible of establishing the files null and not null
+     * that are prepared and used to predict the result of the imputation by
+     * model this type of imputation is realize when the percentage of null is
+     * greater than 10% and less than or equal to 33%.
+     *
+     * @param data
+     * @return
+     * @throws Exception
+     */
     private Instances filterAttributeTypes(Instances data) throws Exception {
         for (int i = 0; i < data.numAttributes(); i++) {
             if (data.attribute(i).isString()) {

@@ -33,8 +33,10 @@ import model.pojo.*;
  * @author SANTOS
  */
 /**
- * LcenfMB is responsible to request the user data about the occurrence of events of a LCENF and 
- * details of the victim to be processed and recorded in the database.
+ * LcenfMB is responsible to request the user data about the occurrence of
+ * events of a LCENF and details of the victim to be processed and recorded in
+ * the database.
+ *
  * @author Aspire
  */
 @ManagedBean(name = "lcenfMB")
@@ -45,6 +47,7 @@ public class LcenfMB implements Serializable {
     // DECLARACION DE VARIABLES --------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+
     @EJB
     QuadrantsFacade quadrantsFacade;
     private SelectItem[] quadrantsEvent;
@@ -427,10 +430,11 @@ public class LcenfMB implements Serializable {
     // FUNCIONES VARIAS ----------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-     /**
-     * This constructor is responsible for verifying the start of session and make the connection to database
-     * 
-     */  
+    /**
+     * This constructor is responsible for verifying the start of session and
+     * make the connection to database
+     *
+     */
     public LcenfMB() {
         idElements1 = "IdHealthInstitution IdName IdIdentificationType IdIdentificationNumber IdMeasureOfAge "
                 + "IdValueAge IdGender IdJob IdDisplaced IdHandicapped IdEthnicGroup IdOtherEthnicGroup "
@@ -479,7 +483,7 @@ public class LcenfMB implements Serializable {
                 + ":IdForm1:IdInsurance :IdForm1:IdFormId";
 
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);        
+        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         applicationControlMB = (ApplicationControlMB) FacesContext.getCurrentInstance().getExternalContext().getApplicationMap().get("applicationControlMB");
     }
 
@@ -488,9 +492,11 @@ public class LcenfMB implements Serializable {
      * esta funcion es llamada desde la seccion de conjuntos de registros
      */
     /**
-     * This method is responsible to load the information corresponding to a victim within the form.
+     * This method is responsible to load the information corresponding to a
+     * victim within the form.
+     *
      * @param tagsList
-     * @param currentNonFatalI 
+     * @param currentNonFatalI
      */
     public void loadValues(List<Tags> tagsList, NonFatalInjuries currentNonFatalI) {
         for (int i = 0; i < tagsList.size(); i++) {
@@ -509,11 +515,13 @@ public class LcenfMB implements Serializable {
         }
     }
 
-/**
- * This method is responsible for reset all form fields, also this method load the default values for that the user can to register data of a victim.
- */
-    public void reset() {        
-        
+    /**
+     * This method is responsible for reset all form fields, also this method
+     * load the default values for that the user can to register data of a
+     * victim.
+     */
+    public void reset() {
+
         currentUser = loginMB.getCurrentUser();
         currentYearConsult = Integer.toString(c.get(Calendar.YEAR));
         currentYearEvent = Integer.toString(c.get(Calendar.YEAR));
@@ -788,9 +796,11 @@ public class LcenfMB implements Serializable {
         save = true;
         stylePosition = "color: #1471B1;";
     }
-/**
- * This method is responsible to load the information corresponding to a victim within the form.
- */
+
+    /**
+     * This method is responsible to load the information corresponding to a
+     * victim within the form.
+     */
     public void loadValues() {
         save = true;
         stylePosition = "color: #1471B1;";
@@ -1208,12 +1218,6 @@ public class LcenfMB implements Serializable {
             currentActivities = 0;
             otherActivityDisabled = true;
         }
-
-//        try {
-//            currentActivities = currentNonFatalInjury.getActivityId().getActivityId();
-//        } catch (Exception e) {
-//            currentActivities = 0;
-//        }
         //******intentionality_id
         try {
             currentIntentionality = currentNonFatalInjury.getIntentionalityId().getIntentionalityId();
@@ -1392,24 +1396,6 @@ public class LcenfMB implements Serializable {
         } catch (Exception e) {
             currentHealthInstitution = 0;
         }
-
-        //determino el tipo de lesion
-
-//        short injury_type = currentNonFatalInjury.getInjuryId().getInjuryId();
-//
-//        switch (injury_type) {
-//
-//            case 50://interpersonal
-        //                break;
-//            case 51://accidente de transito
-//                break;
-//            case 52://intencional autoinflingida
-//                break;
-//            case 54://no intencional
-//                break;
-//            case 55://intrafamiliar
-//                break;
-//        }
 
         //------------------------------------------------------------
         //SE CARGA VARIABLE PARA VIOLENCIA INTERPERSONAL
@@ -1803,10 +1789,13 @@ public class LcenfMB implements Serializable {
         stylePosition = "color: #1471B1;";
         loading = false;
     }
-/**
- * validates required fields before register a form. validates user permission, the date of the event and the existence of errors.
- * @return 
- */
+
+    /**
+     * validates required fields before register a form. validates user
+     * permission, the date of the event and the existence of errors.
+     *
+     * @return
+     */
     private boolean validateFields() {
         validationsErrors = new ArrayList<>();
         //---------VALIDAR EL USUARIO TENGA PERMISMOS SUFIENTES
@@ -1916,10 +1905,14 @@ public class LcenfMB implements Serializable {
             return false;
         }
     }
-/**
- * register all data of a new victim obtained from the form, this registry is made in the database, whether it is a form already registered, can update the information.
- * @return 
- */
+
+    /**
+     * register all data of a new victim obtained from the form, this registry
+     * is made in the database, whether it is a form already registered, can
+     * update the information.
+     *
+     * @return
+     */
     private boolean saveRegistry() {
         //realizo validaciones
         if (validateFields()) {
@@ -1946,13 +1939,7 @@ public class LcenfMB implements Serializable {
                 if (currentName.trim().length() != 0) {
                     newVictim.setVictimName(currentName);
                 }
-
-//                if (currentName.trim().length() != 0) {
-//                    newVictim.setVictimFirstname(currentName);
-//                }
-//                if (currentSurname.trim().length() != 0) {
-//                    newVictim.setVictimLastname(currentSurname);
-//                }
+                
                 if (currentMeasureOfAge != 0) {
                     newVictim.setAgeTypeId(currentMeasureOfAge);
                 }
@@ -1984,15 +1971,13 @@ public class LcenfMB implements Serializable {
                 if (currentNeighborhoodHomeCode.trim().length() != 0) {
                     newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find(Integer.parseInt(currentNeighborhoodHomeCode)));
                 }
-                //newVictim.setVictimDateOfBirth(new Date());
-                //newVictim.setEpsId(null);
+                
                 if (currentNeighborhoodHomeCode.trim().length() != 0) {
                 }
-                //newVictim.setVictimClass(null);            
-                //if (currentMunicipalitie != 0) {
+                
                 newVictim.setResidenceMunicipality(currentMunicipalitie);
                 newVictim.setResidenceDepartment(currentDepartamentHome);
-                //}
+                
 
                 //informacion de grupos vunerables
                 List<VulnerableGroups> vulnerableGroupsList = new ArrayList<>();
@@ -2013,26 +1998,15 @@ public class LcenfMB implements Serializable {
                     newVictim.setInsuranceId(insuranceFacade.findByName(currentInsurance));
                 }
 
-
                 //------------------------------------------------------------
                 //SE CREA VARIABLE PARA LA NUEVA LESION DE CAUSA EXTERNA NO FATAL
                 //------------------------------------------------------------
                 NonFatalInjuries newNonFatalInjuries = new NonFatalInjuries();
-
-
-                //newNonFatalInjuries.setInjuryId(injuriesFacade.find((short) 54));//es 54 por ser no fatal
-
-//                if (currentDepartamentHome != 0) {
-//                    newNonFatalInjuries.setResidenceDepartament(currentDepartamentHome);
-//                }
-                //if (currentDepartamentHome != 0) {
-
-                //}
-
+                
                 if (currentNonFatalInjuriId == -1) {//SI ES NUEVO
                     //newNonFatalInjuries.setNonFatalInjuryId(nonFatalInjuriesFacade.findMax() + 1);
                     newNonFatalInjuries.setNonFatalInjuryId(applicationControlMB.addNonfatalReservedIdentifiers());
-                    
+
                 } else {//SI SE ESTA MODIFICANDO
                     newNonFatalInjuries.setNonFatalInjuryId(currentNonFatalInjury.getNonFatalInjuryId());
                     newVictim.setTagId(currentNonFatalInjury.getVictimId().getTagId());
@@ -2350,9 +2324,6 @@ public class LcenfMB implements Serializable {
                             }
                             newNonFatalDomesticViolence.setNonFatalInjuries(newNonFatalInjuries);
 
-
-
-
                             //---LISTA DE AGRESORES-----------------------------------
                             List<AggressorTypes> aggressorTypesList = new ArrayList<>();
 
@@ -2593,7 +2564,7 @@ public class LcenfMB implements Serializable {
                 } else {
                     newVictim.setAgeTypeId((short) 4);//tiṕo de edad sin determinar
                 }
-                
+
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newVictim.getVictimNeighborhoodId() == null) {
                     newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
@@ -2844,6 +2815,7 @@ public class LcenfMB implements Serializable {
             return false;
         }
     }
+
     /**
      * save changes realized to a victim and proceeds to next form
      */
@@ -2852,9 +2824,11 @@ public class LcenfMB implements Serializable {
             next();
         }
     }
-/**
- * This method save all changes realized to a victim and proceeds to the previous form.
- */
+
+    /**
+     * This method save all changes realized to a victim and proceeds to the
+     * previous form.
+     */
     public void saveAndGoPrevious() {//guarda cambios si se han realizado y se dirije al anterior
         if (currentNonFatalInjuriId != -1) {
             if (saveRegistry()) {
@@ -2866,33 +2840,39 @@ public class LcenfMB implements Serializable {
             }
         }
     }
-/**
- * save changes realized to a victim and proceeds to first form
- */
+
+    /**
+     * save changes realized to a victim and proceeds to first form
+     */
     public void saveAndGoFirst() {//guarda cambios si se han realizado y se dirije al primero
         if (saveRegistry()) {
             first();
         }
     }
-/**
- * save changes realized to a victim and proceeds to last form
- */
+
+    /**
+     * save changes realized to a victim and proceeds to last form
+     */
     public void saveAndGoLast() {//guarda cambios si se han realizado y se dirije al ultimo
         if (saveRegistry()) {
             last();
         }
     }
-/**
- * This method save all changes realized to a victim and this method creates a new form.
- */
+
+    /**
+     * This method save all changes realized to a victim and this method creates
+     * a new form.
+     */
     public void saveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
         if (saveRegistry()) {
             newForm();
         }
     }
-/**
- * Discards all changes realized to a victim and this method creates a new form.
- */
+
+    /**
+     * Discards all changes realized to a victim and this method creates a new
+     * form.
+     */
     public void noSaveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
         openDialogFirst = "-";
         openDialogNext = "-";
@@ -2904,9 +2884,11 @@ public class LcenfMB implements Serializable {
         stylePosition = "color: #1471B1;";
         newForm();
     }
-/**
- * This method save all changes realized to a victim and this method creates a new form.
- */
+
+    /**
+     * This method save all changes realized to a victim and this method creates
+     * a new form.
+     */
     public void noSaveAndGoNext() {//va al siguiente sin guardar cambios si se han realizado
         openDialogFirst = "-";
         openDialogNext = "-";
@@ -2918,9 +2900,11 @@ public class LcenfMB implements Serializable {
         stylePosition = "color: #1471B1;";
         next();
     }
-/**
- * Discards all changes realized to a victim and proceeds to the previous form.
- */
+
+    /**
+     * Discards all changes realized to a victim and proceeds to the previous
+     * form.
+     */
     public void noSaveAndGoPrevious() {//va al anterior sin guardar cambios si se han realizado
         openDialogFirst = "-";
         openDialogNext = "-";
@@ -2936,9 +2920,11 @@ public class LcenfMB implements Serializable {
             last();
         }
     }
-/**
- * This method save all changes realized to a victim and proceeds to the first form.
- */
+
+    /**
+     * This method save all changes realized to a victim and proceeds to the
+     * first form.
+     */
     public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
         openDialogFirst = "-";
         openDialogNext = "-";
@@ -2950,9 +2936,11 @@ public class LcenfMB implements Serializable {
         stylePosition = "color: #1471B1;";
         first();
     }
-/**
- * This method save all changes realized to a victim and proceeds to the last form.
- */
+
+    /**
+     * This method save all changes realized to a victim and proceeds to the
+     * last form.
+     */
     public void noSaveAndGoLast() {//va al ultimo sin guardar cambios si se han realizado
         openDialogFirst = "-";
         openDialogNext = "-";
@@ -2964,9 +2952,12 @@ public class LcenfMB implements Serializable {
         stylePosition = "color: #1471B1;";
         last();
     }
-/**
- * This method displays the next record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record.
- */
+
+    /**
+     * This method displays the next record, if the current record is not
+     * recorded then this method displays a dialog that allows the user to save
+     * the current record.
+     */
     public void next() {
         if (save) {
             //System.out.println("cargando siguiente registro");
@@ -2985,9 +2976,12 @@ public class LcenfMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar siguiente registro)");
         }
     }
-/**
- * This method displays the previous record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record.
- */
+
+    /**
+     * This method displays the previous record, if the current record is not
+     * recorded then this method displays a dialog that allows the user to save
+     * the current record.
+     */
     public void previous() {
         if (save) {
             //System.out.println("cargando anterior registro");
@@ -3007,9 +3001,12 @@ public class LcenfMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar anterior registro)");
         }
     }
-/**
- * This method displays the first record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record.
- */
+
+    /**
+     * This method displays the first record, if the current record is not
+     * recorded then this method displays a dialog that allows the user to save
+     * the current record.
+     */
     public void first() {
         ////System.out.println("Entra en first(): " + openDialogFirst + " save:" + String.valueOf(save));
         if (save) {
@@ -3033,9 +3030,12 @@ public class LcenfMB implements Serializable {
         }
         //System.out.println("dialog firts sale en : " + openDialogFirst);
     }
-/**
- * This method displays the last record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record. 	
- */
+
+    /**
+     * This method displays the last record, if the current record is not
+     * recorded then this method displays a dialog that allows the user to save
+     * the current record.
+     */
     public void last() {
         if (save) {
             //System.out.println("cargando ultimo registro");
@@ -3051,9 +3051,10 @@ public class LcenfMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar ultimo registro)");
         }
     }
-/**
- * This method clears all form fields to enter data for a new victim.
- */
+
+    /**
+     * This method clears all form fields to enter data for a new victim.
+     */
     public void clearForm() {
         currentAmPmEvent = "AM";
         currentAmPmConsult = "AM";
@@ -3278,9 +3279,12 @@ public class LcenfMB implements Serializable {
         save = true;
         loading = false;
     }
-/**
- * This method displays a blank form for the user to enter data about a victim, if fields without saving then this method displays a dialog that allows the user to save the changes.
- */
+
+    /**
+     * This method displays a blank form for the user to enter data about a
+     * victim, if fields without saving then this method displays a dialog that
+     * allows the user to save the changes.
+     */
     public void newForm() {
         //currentNonFatalDomesticViolence = null;
         if (save) {
@@ -3291,9 +3295,11 @@ public class LcenfMB implements Serializable {
             //System.out.println("No esta guardado (para poder limpiar formulario)");
         }
     }
-/**
- * This method deletes a record from the database, for this verifies that the user has sufficient privileges.
- */
+
+    /**
+     * This method deletes a record from the database, for this verifies that
+     * the user has sufficient privileges.
+     */
     public void deleteRegistry() {
         if (currentNonFatalInjuriId != -1) {
             if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentNonFatalInjury.getUserId().getUserId()) {
@@ -3322,9 +3328,11 @@ public class LcenfMB implements Serializable {
             }
         }
     }
-/**
- * This method is responsible to fill the fields of DIAGNOSTICO CIE-10 selected from the dialog list.
- */
+
+    /**
+     * This method is responsible to fill the fields of DIAGNOSTICO CIE-10
+     * selected from the dialog list.
+     */
     public void putDiagnose() {
         //llenas las casillas CIE_CASMPO_1 y TXT_CIE_10_1 seleccionadas del dialog que lista los diagnosticos
         String[] splitDiagnose;
@@ -3352,37 +3360,48 @@ public class LcenfMB implements Serializable {
             changeForm();
         }
     }
-/**
- * Este metodo es utilizad para saber que se dio click sobre la casilla txt de diagnostico 1
- */
+
+    /**
+     * Este metodo es utilizad para saber que se dio click sobre la casilla txt
+     * de diagnostico 1
+     */
     public void setCIE_1() {
         //funcion para saber que se dio clik sobre la casilla txt de diagnostico 1
         CIE_selected = 1;
     }
-/**
- * Este metodo es utilizad para saber que se dio click sobre la casilla txt de diagnostico 2
- */
+
+    /**
+     * Este metodo es utilizad para saber que se dio click sobre la casilla txt
+     * de diagnostico 2
+     */
     public void setCIE_2() {
         //funcion para saber que se dio clik sobre la casilla txt de diagnostico 2
         CIE_selected = 2;
     }
-/**
- * Este metodo es utilizad para saber que se dio click sobre la casilla txt de diagnostico 3
- */
+
+    /**
+     * Este metodo es utilizad para saber que se dio click sobre la casilla txt
+     * de diagnostico 3
+     */
     public void setCIE_3() {
         //funcion para saber que se dio clik sobre la casilla txt de diagnostico 3
         CIE_selected = 3;
     }
-/**
- * Este metodo es utilizad para saber que se dio click sobre la casilla txt de diagnostico 4
- */
+
+    /**
+     * Este metodo es utilizad para saber que se dio click sobre la casilla txt
+     * de diagnostico 4
+     */
     public void setCIE_4() {
         //funcion para saber que se dio clik sobre la casilla txt de diagnostico 4
         CIE_selected = 4;
     }
-/**
- * This method determines the position of the data  of a victim to be loaded into the form, this method is used with the following function: next, previous, first, last, and when the form is reset.
- */
+
+    /**
+     * This method determines the position of the data of a victim to be loaded
+     * into the form, this method is used with the following function: next,
+     * previous, first, last, and when the form is reset.
+     */
     public void determinePosition() {
         totalRegisters = nonFatalInjuriesFacade.countLCENF(currentTag);
         if (currentNonFatalInjuriId == -1) {
@@ -3420,9 +3439,11 @@ public class LcenfMB implements Serializable {
     public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
         this.selectedRowDataTable = selectedRowDataTable;
     }
-/**
- * This method is responsible to load the corresponding form to a victim who was selected in the option "Buscar" .
- */
+
+    /**
+     * This method is responsible to load the corresponding form to a victim who
+     * was selected in the option "Buscar" .
+     */
     public void openForm() {
         if (selectedRowDataTable != null) {
             //auxNonFatalInjury = nonFatalInjuriesFacade.findByIdVictim(selectedRowDataTable.getColumn1());
@@ -3437,18 +3458,22 @@ public class LcenfMB implements Serializable {
         }
         clearSearch();
     }
-/**
- * This method cleans all fields of result of a search for realize a new one.
- */
+
+    /**
+     * This method cleans all fields of result of a search for realize a new
+     * one.
+     */
     public void clearSearch() {
         currentSearchValue = "";
         currentSearchCriteria = 1;
         rowDataTableList = new ArrayList<>();
 
     }
-/**
- * This method creates a Dinamic Table to display the fields of a search realized.
- */
+
+    /**
+     * This method creates a Dinamic Table to display the fields of a search
+     * realized.
+     */
     public void createDynamicTable() {
         boolean s = true;
         if (currentSearchValue.trim().length() == 0) {
@@ -3517,11 +3542,13 @@ public class LcenfMB implements Serializable {
     // FUNCIONES PARA AUTOCOMPLETAR ----------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-/**
- * This method is responsible to display a insurances list that have a similar name to which the user is typing.
- * @param entered
- * @return 
- */ 
+    /**
+     * This method is responsible to display a insurances list that have a
+     * similar name to which the user is typing.
+     *
+     * @param entered
+     * @return
+     */
     public List<String> suggestInsurances(String entered) {
         List<String> list = new ArrayList<>();
         try {
@@ -3542,11 +3569,14 @@ public class LcenfMB implements Serializable {
         }
         return list;
     }
-/**
- * This method is responsible to display a jobs list that have a similar name to which the user is typing.
- * @param entered
- * @return 
- */
+
+    /**
+     * This method is responsible to display a jobs list that have a similar
+     * name to which the user is typing.
+     *
+     * @param entered
+     * @return
+     */
     public List<String> suggestJobs(String entered) {
         List<String> list = new ArrayList<>();
         try {
@@ -3567,11 +3597,14 @@ public class LcenfMB implements Serializable {
         }
         return list;
     }
-/**
- * This method is responsible to display a neighborhoods list that have a similar name to which the user is typing.
- * @param entered
- * @return 
- */
+
+    /**
+     * This method is responsible to display a neighborhoods list that have a
+     * similar name to which the user is typing.
+     *
+     * @param entered
+     * @return
+     */
     public List<String> suggestNeighborhoods(String entered) {
         List<String> list = new ArrayList<>();
         try {
@@ -3592,11 +3625,14 @@ public class LcenfMB implements Serializable {
         }
         return list;
     }
-/**
- * This method is responsible to display a CIE10 list that have a similar name to which the user is typing.
- * @param entered
- * @return 
- */
+
+    /**
+     * This method is responsible to display a CIE10 list that have a similar
+     * name to which the user is typing.
+     *
+     * @param entered
+     * @return
+     */
     public List<String> suggestCIE10(String entered) {
         List<String> list = new ArrayList<>();
         try {
@@ -3617,11 +3653,14 @@ public class LcenfMB implements Serializable {
         }
         return list;
     }
-/**
- * This method is responsible to display a health professionals list that have a similar name to which the user is typing.
- * @param entered
- * @return 
- */
+
+    /**
+     * This method is responsible to display a health professionals list that
+     * have a similar name to which the user is typing.
+     *
+     * @param entered
+     * @return
+     */
     public List<String> suggestHealthProfessionals(String entered) {
         List<String> list = new ArrayList<>();
         try {
@@ -3648,9 +3687,9 @@ public class LcenfMB implements Serializable {
     // FUNCIONES CUANDO LISTAS Y CAMPOS CAMBIAN DE VALOR -------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-/**
- * This method restores the values of stranger
- */
+    /**
+     * This method restores the values of stranger
+     */
     public void changeStranger() {
         if (loading == false) {
             changeForm();
@@ -3671,9 +3710,11 @@ public class LcenfMB implements Serializable {
             currentMunicipalitieDisabled = false;
         }
     }
-/**
- * This method disables all other checkboxes when the user clicks on the check box "SIN DATO" corresponding to the type of aggressor. 
- */
+
+    /**
+     * This method disables all other checkboxes when the user clicks on the
+     * check box "SIN DATO" corresponding to the type of aggressor.
+     */
     public void changeUnknownAG() {
         if (loading == false) {
             changeForm();
@@ -3692,9 +3733,11 @@ public class LcenfMB implements Serializable {
             isAG10 = false;
         }
     }
-/**
- * This method disables all other checkboxes when the user clicks on the check box "SIN DATO" corresponding to the type of abuse.
- */
+
+    /**
+     * This method disables all other checkboxes when the user clicks on the
+     * check box "SIN DATO" corresponding to the type of abuse.
+     */
     public void changeUnknownMA() {
         if (loading == false) {
             changeForm();
@@ -3711,9 +3754,11 @@ public class LcenfMB implements Serializable {
             otherMADisabled = true;
         }
     }
-/**
- * This method disables all other checkboxes when the user clicks on the check box "SIN DATO" corresponding to the nature of injury.
- */
+
+    /**
+     * This method disables all other checkboxes when the user clicks on the
+     * check box "SIN DATO" corresponding to the nature of injury.
+     */
     public void changeUnknownNatureOfInjurye() {
         if (loading == false) {
             changeForm();
@@ -3733,9 +3778,13 @@ public class LcenfMB implements Serializable {
             otherInjuryDisabled = true;
         }
     }
-/**
- * This method is responsible to enable the box "CUAL OTRO" inside the box of the type of aggressor when the user selects the item "OTRO", this is done in order to allow to the user to define an aggressor who is not on the list.
- */
+
+    /**
+     * This method is responsible to enable the box "CUAL OTRO" inside the box
+     * of the type of aggressor when the user selects the item "OTRO", this is
+     * done in order to allow to the user to define an aggressor who is not on
+     * the list.
+     */
     public void changeOtherAG() {
         if (loading == false) {
             changeForm();
@@ -3748,9 +3797,13 @@ public class LcenfMB implements Serializable {
             otherAG = "";
         }
     }
-/**
- * This method is responsible to enable the box "CUAL OTRO" inside the box of the TIPO DE MALTRATO when the user selects the item "OTRO", this is done in order to allow to the user to define an abuse who is not on the list.
- */
+
+    /**
+     * This method is responsible to enable the box "CUAL OTRO" inside the box
+     * of the TIPO DE MALTRATO when the user selects the item "OTRO", this is
+     * done in order to allow to the user to define an abuse who is not on the
+     * list.
+     */
     public void changeOtherMA() {
         if (loading == false) {
             changeForm();
@@ -3763,9 +3816,11 @@ public class LcenfMB implements Serializable {
             otherMA = "";
         }
     }
-/**
- * This method enables or disables the types of identification depending on the selected option.
- */
+
+    /**
+     * This method enables or disables the types of identification depending on
+     * the selected option.
+     */
     public void changeIdentificationType() {
 
         if (loading == false) {
@@ -3786,15 +3841,18 @@ public class LcenfMB implements Serializable {
             currentIdentificationNumber = "";
         }
     }
-/**
- * This method changes the records set.
- */
+
+    /**
+     * This method changes the records set.
+     */
     public void changeTag() {//cambia el conjunto de registros
         noSaveAndGoNew();
     }
-/**
- * This method changes the form according to the modifications that have been made.
- */
+
+    /**
+     * This method changes the form according to the modifications that have
+     * been made.
+     */
     public void changeForm() {//el formulario fue modificado        
         openDialogFirst = "dialogFirst.show();";
         openDialogNext = "dialogNext.show();";
@@ -3805,9 +3863,10 @@ public class LcenfMB implements Serializable {
         save = false;
         stylePosition = "color: red; font-weight: 900;";
     }
-/**
- * This method displays all departments of residence.
- */
+
+    /**
+     * This method displays all departments of residence.
+     */
     public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
@@ -3837,9 +3896,10 @@ public class LcenfMB implements Serializable {
 
         changeMunicipalitieHome();
     }
-/**
- * This method is responsible to Show all municipalities of residence
- */
+
+    /**
+     * This method is responsible to Show all municipalities of residence
+     */
     public void changeMunicipalitieHome() {
         //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, currentDepartamentHome);
         if (loading == false) {
@@ -3860,9 +3920,12 @@ public class LcenfMB implements Serializable {
 
         }
     }
-/**
- * This method is responsible to validate the burn percentage which should be between 1 and 100, this value is entered when the mechanism of injury to the victim is “LIQUIDO / OBJETO CALIENTE”.
- */
+
+    /**
+     * This method is responsible to validate the burn percentage which should
+     * be between 1 and 100, this value is entered when the mechanism of injury
+     * to the victim is “LIQUIDO / OBJETO CALIENTE”.
+     */
     public void changePercentBurned() {
 
         try {
@@ -3881,9 +3944,11 @@ public class LcenfMB implements Serializable {
             }
         }
     }
-/**
- * This method verifies that the value of age is correct, if not, then display an error message and clean the field.
- */
+
+    /**
+     * This method verifies that the value of age is correct, if not, then
+     * display an error message and clean the field.
+     */
     public void changeValueAge() {
         try {
             int ageInt = Integer.parseInt(currentAge);
@@ -3901,10 +3966,11 @@ public class LcenfMB implements Serializable {
             }
         }
     }
-/**
- * This method verifies that the entered date is correct, if it is wrong then display an error 
- * message and clean the field.
- */
+
+    /**
+     * This method verifies that the entered date is correct, if it is wrong
+     * then display an error message and clean the field.
+     */
     public void changeDayEvent() {
         try {
             int dayInt = Integer.parseInt(currentDayEvent);
@@ -3923,9 +3989,11 @@ public class LcenfMB implements Serializable {
         calculateDate1();
 
     }
-/**
- * This method checks that the month entered is correct, if not, then display an error message and clean the field.
- */
+
+    /**
+     * This method checks that the month entered is correct, if not, then
+     * display an error message and clean the field.
+     */
     public void changeMonthEvent() {
         try {
             int monthInt = Integer.parseInt(currentMonthEvent);
@@ -3945,9 +4013,11 @@ public class LcenfMB implements Serializable {
         }
         calculateDate1();
     }
-/**
- * This method verifies that the year of the event entered is correct, if not, then display a message and clean the field.
- */
+
+    /**
+     * This method verifies that the year of the event entered is correct, if
+     * not, then display a message and clean the field.
+     */
     public void changeYearEvent() {
         Calendar cal = Calendar.getInstance();
         int yearSystem = cal.get(Calendar.YEAR);
@@ -3968,9 +4038,11 @@ public class LcenfMB implements Serializable {
         }
         calculateDate1();
     }
-/**
- * This method checks that the hour entered is correct, if it is not then display an error message and clean the field.
- */
+
+    /**
+     * This method checks that the hour entered is correct, if it is not then
+     * display an error message and clean the field.
+     */
     public void changeHourEvent() {
         try {
             int hourInt = Integer.parseInt(currentHourEvent);
@@ -3989,10 +4061,11 @@ public class LcenfMB implements Serializable {
         }
         calculateTime1();
     }
-/**
- * This method verifies that the hour AM PM entered is correct, if is NO DATO, then disable the box 
- * of event time and the minute event.
- */
+
+    /**
+     * This method verifies that the hour AM PM entered is correct, if is NO
+     * DATO, then disable the box of event time and the minute event.
+     */
     public void changeAmPmEvent() {
 
         if (loading == false) {
@@ -4015,10 +4088,13 @@ public class LcenfMB implements Serializable {
             currentHourEventDisabled = false;
         }
     }
-/**
- * This method is responsible to enable or disable the fields of hours and minutes according to the option AMPM selected by the user, 
- * if the user selects the option "SIN DATO" then the fields of hours and minutes are hidden.
- */
+
+    /**
+     * This method is responsible to enable or disable the fields of hours and
+     * minutes according to the option AMPM selected by the user, if the user
+     * selects the option "SIN DATO" then the fields of hours and minutes are
+     * hidden.
+     */
     public void changeAmPmConsult() {
 
         if (loading == false) {
@@ -4041,9 +4117,11 @@ public class LcenfMB implements Serializable {
             currentHourConsultDisabled = false;
         }
     }
-/**
- * This method verifies that the minutes entered are correct, if not, then display an error message and clean the field.
- */
+
+    /**
+     * This method verifies that the minutes entered are correct, if not, then
+     * display an error message and clean the field.
+     */
     public void changeMinuteEvent() {
         try {
             int minuteInt = Integer.parseInt(currentMinuteEvent);
@@ -4062,10 +4140,11 @@ public class LcenfMB implements Serializable {
         }
         calculateTime1();
     }
-/**
- * This method verifies that the entered date of consult is correct, if it is wrong 
- * then display an error message and clean the field.
- */
+
+    /**
+     * This method verifies that the entered date of consult is correct, if it
+     * is wrong then display an error message and clean the field.
+     */
     public void changeDayConsult() {
         try {
             int dayInt = Integer.parseInt(currentDayConsult);
@@ -4083,9 +4162,11 @@ public class LcenfMB implements Serializable {
         }
         calculateDate2();
     }
-/**
- * This method checks that the month of consult entered is correct, if not, then display an error message and clean the field.
- */
+
+    /**
+     * This method checks that the month of consult entered is correct, if not,
+     * then display an error message and clean the field.
+     */
     public void changeMonthConsult() {
         try {
             int monthInt = Integer.parseInt(currentMonthConsult);
@@ -4103,9 +4184,11 @@ public class LcenfMB implements Serializable {
         }
         calculateDate2();
     }
-/**
- * This method verifies that the year consult of the event entered is correct, if not, then display a message and clean the field.
- */
+
+    /**
+     * This method verifies that the year consult of the event entered is
+     * correct, if not, then display a message and clean the field.
+     */
     public void changeYearConsult() {
         Calendar cal = Calendar.getInstance();
         int yearSystem = cal.get(Calendar.YEAR);
@@ -4126,9 +4209,11 @@ public class LcenfMB implements Serializable {
         }
         calculateDate2();
     }
-/**
- * This method checks that the hour entered of consult is correct, if it is not then display an error message and clean the field.
- */
+
+    /**
+     * This method checks that the hour entered of consult is correct, if it is
+     * not then display an error message and clean the field.
+     */
     public void changeHourConsult() {
         try {
             int hourInt = Integer.parseInt(currentHourConsult);
@@ -4147,9 +4232,11 @@ public class LcenfMB implements Serializable {
         }
         calculateTime2();
     }
-/**
- * This method verifies that the minutes of consult entered are correct, if not, then display an error message and clean the field.
- */
+
+    /**
+     * This method verifies that the minutes of consult entered are correct, if
+     * not, then display an error message and clean the field.
+     */
     public void changeMinuteConsult() {
         try {
             int minuteInt = Integer.parseInt(currentMinuteConsult);
@@ -4168,9 +4255,13 @@ public class LcenfMB implements Serializable {
         }
         calculateTime2();
     }
-/**
- * This method is responsible to enable the box "CUAL OTRO" inside the box of the precipitating factor when the user selects the item "OTRO", this is done in order to allow to the user to define a factor who is not on the list.
- */
+
+    /**
+     * This method is responsible to enable the box "CUAL OTRO" inside the box
+     * of the precipitating factor when the user selects the item "OTRO", this
+     * is done in order to allow to the user to define a factor who is not on
+     * the list.
+     */
     public void changeOtherFactor() {
         if (loading == false) {
             changeForm();
@@ -4182,9 +4273,14 @@ public class LcenfMB implements Serializable {
             otherFactor = "";
         }
     }
-/**
- * This method is responsible to enable the box "OTRA RELACIÓN inside the box of the VIOLENCIA INTERPERSONAL when the user selects the item "OTRO, CUAL?" of the list RELACION AGRESOR - VICTIMA, this is done in order to allow to the user to define a relationship between the aggressor and the victim who is not on the list.
- */
+
+    /**
+     * This method is responsible to enable the box "OTRA RELACIÓN inside the
+     * box of the VIOLENCIA INTERPERSONAL when the user selects the item "OTRO,
+     * CUAL?" of the list RELACION AGRESOR - VICTIMA, this is done in order to
+     * allow to the user to define a relationship between the aggressor and the
+     * victim who is not on the list.
+     */
     public void changeRelationshipToVictim() {
         if (loading == false) {
             changeForm();
@@ -4196,9 +4292,13 @@ public class LcenfMB implements Serializable {
             otherRelation = "";
         }
     }
-/**
- * This method is responsible to enable the box "CUAL OTRA LESION" inside the box of the NATURALEZA DE LA LESIÓN when the user selects the item "OTRA LESIÓN", this is done in order to allow to the user to define an injury who is not on the list.
- */
+
+    /**
+     * This method is responsible to enable the box "CUAL OTRA LESION" inside
+     * the box of the NATURALEZA DE LA LESIÓN when the user selects the item
+     * "OTRA LESIÓN", this is done in order to allow to the user to define an
+     * injury who is not on the list.
+     */
     public void changeOtherInjury() {
         if (loading == false) {
             changeForm();
@@ -4211,10 +4311,13 @@ public class LcenfMB implements Serializable {
             txtOtherInjury = "";
         }
     }
-/**
- * This method is responsible to enable or disable the field “OTRO DESTINO” depending on the option selected by the user. if the user selects “OTRO DESTINO”, 
- * then the field “OTRO ” will be enabled for the user can specify the new destination.
- */
+
+    /**
+     * This method is responsible to enable or disable the field “OTRO DESTINO”
+     * depending on the option selected by the user. if the user selects “OTRO
+     * DESTINO”, then the field “OTRO ” will be enabled for the user can specify
+     * the new destination.
+     */
     public void changeDestinationPatient() {
         if (loading == false) {
             changeForm();
@@ -4227,9 +4330,13 @@ public class LcenfMB implements Serializable {
             otherDestinationPatient = "";
         }
     }
-/**
- * This method is responsible to enable the box "CUAL OTRO" inside the box of the SITIO ANATÓMICO when the user selects the item "OTRO SITIO", this is done in order to allow to the user to define an anatomical place who is not on the list.
- */
+
+    /**
+     * This method is responsible to enable the box "CUAL OTRO" inside the box
+     * of the SITIO ANATÓMICO when the user selects the item "OTRO SITIO", this
+     * is done in order to allow to the user to define an anatomical place who
+     * is not on the list.
+     */
     public void changeOtherPlace() {
         if (loading == false) {
             changeForm();
@@ -4241,10 +4348,11 @@ public class LcenfMB implements Serializable {
             txtOtherPlace = "";
         }
     }
-/**
- * This method is responsible to display the forms of domestic or interpersonal violence 
- * according to the option selected by the user.
- */
+
+    /**
+     * This method is responsible to display the forms of domestic or
+     * interpersonal violence according to the option selected by the user.
+     */
     public void changeAggressionOrSuspicion() {
         if (loading == false) {
             changeForm();
@@ -4269,9 +4377,10 @@ public class LcenfMB implements Serializable {
                 break;
         }
     }
-/**
- * This method is responsible to display the box of the security features.
- */
+
+    /**
+     * This method is responsible to display the box of the security features.
+     */
     public void changeSecurityElements() {
         if (loading == false) {
             changeForm();
@@ -4287,9 +4396,11 @@ public class LcenfMB implements Serializable {
             displaySecurityElements = "none";
         }
     }
-/**
- * This method is responsible to validate the height of the victim typed by the user, showing error messages if the height entered is incorrect.
- */
+
+    /**
+     * This method is responsible to validate the height of the victim typed by
+     * the user, showing error messages if the height entered is incorrect.
+     */
     public void changeHeightWhich() {
         if (loading == false) {
             changeForm();
@@ -4309,9 +4420,11 @@ public class LcenfMB implements Serializable {
             }
         }
     }
-/**
- * Show all Neighborhoods having a similar name to which the user is writing.
- */
+
+    /**
+     * Show all Neighborhoods having a similar name to which the user is
+     * writing.
+     */
     public void changeNeighborhoodHomeName() {
         List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
         for (int i = 0; i < neighborhoodsList.size(); i++) {
@@ -4321,9 +4434,11 @@ public class LcenfMB implements Serializable {
             }
         }
     }
-/**
- * this method is responsible to complete the fields: CODIGO BARRIO, CUADRANTE and AREA DEL HECHO when a neighborhood is selected by the user.
- */
+
+    /**
+     * this method is responsible to complete the fields: CODIGO BARRIO,
+     * CUADRANTE and AREA DEL HECHO when a neighborhood is selected by the user.
+     */
     public void changeNeighborhoodEvent() {
         if (loading == false) {
             changeForm();
@@ -4359,9 +4474,13 @@ public class LcenfMB implements Serializable {
             currentNeighborhoodEventCode = "";
         }
     }
-/**
- * This method is responsible to enable the box "DE DONDE?” when the user press in the button "REMITIDO", this is done in order to allow to the user to define the place of submission of the victim, this option is located in “DATOS GENERALES DEL EVENTO”.
- */
+
+    /**
+     * This method is responsible to enable the box "DE DONDE?” when the user
+     * press in the button "REMITIDO", this is done in order to allow to the
+     * user to define the place of submission of the victim, this option is
+     * located in “DATOS GENERALES DEL EVENTO”.
+     */
     public void changeSubmitted() {
         if (loading == false) {
             changeForm();
@@ -4374,9 +4493,12 @@ public class LcenfMB implements Serializable {
             currentFromWhere = 0;
         }
     }
-/**
- * This method is responsible to enable the necessary fields to specify specific details of each mechanism, and also disables the fields that are not needed to prevent the user fills inconsistent data.
- */
+
+    /**
+     * This method is responsible to enable the necessary fields to specify
+     * specific details of each mechanism, and also disables the fields that are
+     * not needed to prevent the user fills inconsistent data.
+     */
     public void changeMechanisms() {
 
         if (loading == false) {
@@ -4434,9 +4556,13 @@ public class LcenfMB implements Serializable {
                 break;
         }
     }
-/**
- * This method is responsible to enable the box “CUAL OTRO TIPO DE TRANSPORTE DE CONTRAPARTE” when the user press in the button " OTRO TIPO DE TRANSPORTE", this is done in order to allow to the user to define a type of transport who is not on the list.
- */
+
+    /**
+     * This method is responsible to enable the box “CUAL OTRO TIPO DE
+     * TRANSPORTE DE CONTRAPARTE” when the user press in the button " OTRO TIPO
+     * DE TRANSPORTE", this is done in order to allow to the user to define a
+     * type of transport who is not on the list.
+     */
     public void changeTransportCounterpart() {
         if (loading == false) {
             changeForm();
@@ -4448,9 +4574,13 @@ public class LcenfMB implements Serializable {
             otherTransportCounterpartsType = "";
         }
     }
-/**
- * This method is responsible to enable the box “CUAL OTRO TIPO DE TRANSPORTE” when the user press in the button " OTRO TIPO DE TRANSPORTE", this is done in order to allow to the user to define a type of transport who is not on the list.
- */
+
+    /**
+     * This method is responsible to enable the box “CUAL OTRO TIPO DE
+     * TRANSPORTE” when the user press in the button " OTRO TIPO DE TRANSPORTE",
+     * this is done in order to allow to the user to define a type of transport
+     * who is not on the list.
+     */
     public void changeTransportType() {
 
         if (loading == false) {
@@ -4502,9 +4632,13 @@ public class LcenfMB implements Serializable {
                 break;
         }
     }
-/**
- * This method is responsible to enable the box “CUAL OTRO TIPO DE TRANSPORTE” when the user press in the button " OTRO TIPO DE TRANSPORTE", this is done in order to allow to the user to define a type of transport of the user who is not on the list.
- */
+
+    /**
+     * This method is responsible to enable the box “CUAL OTRO TIPO DE
+     * TRANSPORTE” when the user press in the button " OTRO TIPO DE TRANSPORTE",
+     * this is done in order to allow to the user to define a type of transport
+     * of the user who is not on the list.
+     */
     public void changeTransportUser() {
         if (loading == false) {
             changeForm();
@@ -4516,9 +4650,11 @@ public class LcenfMB implements Serializable {
             otherTransportUserType = "";
         }
     }
-/**
- * This method is responsible to display all ethnic groups, if the option is selected is “OTROS”, then the field “CUAL OTRO” is enabled.
- */
+
+    /**
+     * This method is responsible to display all ethnic groups, if the option is
+     * selected is “OTROS”, then the field “CUAL OTRO” is enabled.
+     */
     public void changeEthnicGroups() {
         if (loading == false) {
             changeForm();
@@ -4531,9 +4667,11 @@ public class LcenfMB implements Serializable {
             otherEthnicGroup = "";
         }
     }
-/**
- * This method enables or disables the measure of age according to the selected option.
- */
+
+    /**
+     * This method enables or disables the measure of age according to the
+     * selected option.
+     */
     public void changeMeasuresOfAge() {
         if (loading == false) {
             changeForm();
@@ -4548,10 +4686,11 @@ public class LcenfMB implements Serializable {
         //System.out.println("----" + currentEthnicGroup + "----" + ethnicGroupsDisabled);
 
     }
-/**
- * This method is responsible to enable or disable the field "Cual otra actividad" depending 
- * of which option the user selected.
- */
+
+    /**
+     * This method is responsible to enable or disable the field "Cual otra
+     * actividad" depending of which option the user selected.
+     */
     public void changeActivities() {
         if (loading == false) {
             changeForm();
@@ -4563,9 +4702,13 @@ public class LcenfMB implements Serializable {
             currentOtherActivitie = "";
         }
     }
-/**
- * This method is responsible to enable the box "CUAL OTRO LUGAR?" inside the box of the DATOS GENERALES DEL EVENTO when the user selects the item "OTRO, CUAL?" of the list LUGAR DEL HECHO, this is done in order to allow to the user to define a place who is not on the list.
- */
+
+    /**
+     * This method is responsible to enable the box "CUAL OTRO LUGAR?" inside
+     * the box of the DATOS GENERALES DEL EVENTO when the user selects the item
+     * "OTRO, CUAL?" of the list LUGAR DEL HECHO, this is done in order to allow
+     * to the user to define a place who is not on the list.
+     */
     public void changePlace() {
         if (loading == false) {
             changeForm();
@@ -4577,9 +4720,13 @@ public class LcenfMB implements Serializable {
             currentOtherPlace = "";
         }
     }
-/**
- * This method is responsible to reset all values that correspond to the type of intention selected by the user, the intentions that the user can select are: NO INTENCIONAL, AUTOINFLINGIDA INTENCIONAL, VIOLENCIA / AGRESION O SOSPECHA.
- */
+
+    /**
+     * This method is responsible to reset all values that correspond to the
+     * type of intention selected by the user, the intentions that the user can
+     * select are: NO INTENCIONAL, AUTOINFLINGIDA INTENCIONAL, VIOLENCIA /
+     * AGRESION O SOSPECHA.
+     */
     private void clearTransit() {
         currentTransportTypes = 0;
         otherTransportType = "";
@@ -4598,9 +4745,13 @@ public class LcenfMB implements Serializable {
         isVestUse = false;
         isOtherElementUse = false;
     }
-/**
- * This method is responsible to reset all values that correspond to the type of intention selected by the user, the intentions that the user can select are: NO INTENCIONAL, AUTOINFLINGIDA INTENCIONAL, VIOLENCIA / AGRESION O SOSPECHA.
- */
+
+    /**
+     * This method is responsible to reset all values that correspond to the
+     * type of intention selected by the user, the intentions that the user can
+     * select are: NO INTENCIONAL, AUTOINFLINGIDA INTENCIONAL, VIOLENCIA /
+     * AGRESION O SOSPECHA.
+     */
     private void clearSelfInflected() {
         previousAttempt = 0;
         mentalPastDisorder = 0;
@@ -4608,9 +4759,13 @@ public class LcenfMB implements Serializable {
         otherFactor = "";
         otherFactorDisabled = true;
     }
-/**
- * This method is responsible to reset all values that correspond to the type of intention selected by the user, the intentions that the user can select are: NO INTENCIONAL, AUTOINFLINGIDA INTENCIONAL, VIOLENCIA / AGRESION O SOSPECHA.
- */
+
+    /**
+     * This method is responsible to reset all values that correspond to the
+     * type of intention selected by the user, the intentions that the user can
+     * select are: NO INTENCIONAL, AUTOINFLINGIDA INTENCIONAL, VIOLENCIA /
+     * AGRESION O SOSPECHA.
+     */
     private void clearDomesticViolence() {
         isAG1 = false;
         isAG2 = false;
@@ -4636,9 +4791,13 @@ public class LcenfMB implements Serializable {
         otherMADisabled = true;
         otherMA = "";
     }
-/**
- * This method is responsible to reset all values that correspond to the type of intention selected by the user, the intentions that the user can select are: NO INTENCIONAL, AUTOINFLINGIDA INTENCIONAL, VIOLENCIA / AGRESION O SOSPECHA.
- */
+
+    /**
+     * This method is responsible to reset all values that correspond to the
+     * type of intention selected by the user, the intentions that the user can
+     * select are: NO INTENCIONAL, AUTOINFLINGIDA INTENCIONAL, VIOLENCIA /
+     * AGRESION O SOSPECHA.
+     */
     private void clearInterpersonalViolence() {
         aggressionPast = 0;
         currentRelationshipToVictim = 0;
@@ -4647,9 +4806,12 @@ public class LcenfMB implements Serializable {
         currentContext = 0;
         currentAggressorGenders = 0;
     }
-/**
- * This method displays the appropriate form to a intentionality selected by the user, the intentions to be selected are: NO INTENCIONAL, AUTOINFLINGIDA INTENCIONAL, VIOLENCIA / AGRESION O SOSPECHA. 
- */
+
+    /**
+     * This method displays the appropriate form to a intentionality selected by
+     * the user, the intentions to be selected are: NO INTENCIONAL,
+     * AUTOINFLINGIDA INTENCIONAL, VIOLENCIA / AGRESION O SOSPECHA.
+     */
     public void changeIntentionality() {
         if (loading == false) {
             changeForm();
@@ -4763,9 +4925,13 @@ public class LcenfMB implements Serializable {
                 break;
         }
     }
-/**
- * This method verifies that the identification of the diagnosis CIE10 CAMPO1 exists, namely that the diagnosis have a name assigned, if so then fill the field TXT CIE10 1 with the name, otherwise clean the field CIE10 CAMPO1 
- */
+
+    /**
+     * This method verifies that the identification of the diagnosis CIE10
+     * CAMPO1 exists, namely that the diagnosis have a name assigned, if so then
+     * fill the field TXT CIE10 1 with the name, otherwise clean the field CIE10
+     * CAMPO1
+     */
     public void changeIdCIE10_1() {
         //if (loading == false) {             changeForm();         }
         Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_1.toUpperCase());
@@ -4777,9 +4943,13 @@ public class LcenfMB implements Serializable {
             idCIE10_1 = "";
         }
     }
-/**
- * This method verifies that the identification of the diagnosis CIE10 CAMPO2 exists, namely that the diagnosis have a name assigned, if so then fill the field TXT CIE10 2 with the name, otherwise clean the field CIE10 CAMPO2
- */
+
+    /**
+     * This method verifies that the identification of the diagnosis CIE10
+     * CAMPO2 exists, namely that the diagnosis have a name assigned, if so then
+     * fill the field TXT CIE10 2 with the name, otherwise clean the field CIE10
+     * CAMPO2
+     */
     public void changeIdCIE10_2() {
         //if(!loading)if (loading == false) {             changeForm();         }
         Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_2.toUpperCase());
@@ -4791,9 +4961,13 @@ public class LcenfMB implements Serializable {
             idCIE10_2 = "";
         }
     }
-/**
- * This method verifies that the identification of the diagnosis CIE10 CAMPO3 exists, namely that the diagnosis have a name assigned, if so then fill the field TXT CIE10 3 with the name, otherwise clean the field CIE10 CAMPO3
- */
+
+    /**
+     * This method verifies that the identification of the diagnosis CIE10
+     * CAMPO3 exists, namely that the diagnosis have a name assigned, if so then
+     * fill the field TXT CIE10 3 with the name, otherwise clean the field CIE10
+     * CAMPO3
+     */
     public void changeIdCIE10_3() {
         //if (loading == false) {             changeForm();         }
         Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_3.toUpperCase());
@@ -4805,9 +4979,13 @@ public class LcenfMB implements Serializable {
             idCIE10_3 = "";
         }
     }
-/**
- * This method verifies that the identification of the diagnosis CIE10 CAMPO4 exists, namely that the diagnosis have a name assigned, if so then fill the field TXT CIE10 4 with the name, otherwise clean the field CIE10 CAMPO4
- */
+
+    /**
+     * This method verifies that the identification of the diagnosis CIE10
+     * CAMPO4 exists, namely that the diagnosis have a name assigned, if so then
+     * fill the field TXT CIE10 4 with the name, otherwise clean the field CIE10
+     * CAMPO4
+     */
     public void changeIdCIE10_4() {
         //if (loading == false) {             changeForm();         }
         Diagnoses selectDiagnoses = diagnosesFacade.findByFormId(this.idCIE10_4.toUpperCase());
@@ -4825,11 +5003,12 @@ public class LcenfMB implements Serializable {
     // FUNCIONES DE CALCULO DE FECHA Y HORA MILITAR ------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-/**
- * gets the name day from the number day
- * @param i
- * @return 
- */
+    /**
+     * gets the name day from the number day
+     *
+     * @param i
+     * @return
+     */
     private String intToDay(int i) {
         if (i == Calendar.MONDAY) {
             return "Lunes";
@@ -4847,9 +5026,10 @@ public class LcenfMB implements Serializable {
             return "Domingo";
         }
     }
-/**
- * calculates the date on which the event occurred
- */
+
+    /**
+     * calculates the date on which the event occurred
+     */
     private void calculateDate1() {
         try {
             fechaI = formato.parse(currentDayEvent + "/" + currentMonthEvent + "/" + currentYearEvent);
@@ -4863,10 +5043,12 @@ public class LcenfMB implements Serializable {
             currentWeekdayEvent = "";
         }
     }
-/**
- * calculates the time on which the event occurred
- * @return 
- */
+
+    /**
+     * calculates the time on which the event occurred
+     *
+     * @return
+     */
     private boolean calculateTime1() {
         int hourInt = 0;
         int minuteInt = 0;
@@ -4954,9 +5136,10 @@ public class LcenfMB implements Serializable {
         }
         return continuar;
     }
-/**
- * calculates the date on which the consult is realized
- */
+
+    /**
+     * calculates the date on which the consult is realized
+     */
     private void calculateDate2() {
         try {
             fechaI = formato.parse(currentDayConsult + "/" + currentMonthConsult + "/" + currentYearConsult);
@@ -4970,10 +5153,12 @@ public class LcenfMB implements Serializable {
             currentWeekdayConsult = "";
         }
     }
-/**
- * calculates the time on which the consult is realized
- * @return 
- */
+
+    /**
+     * calculates the time on which the consult is realized
+     *
+     * @return
+     */
     private boolean calculateTime2() {
         int hourInt = 0;
         int minuteInt = 0;
@@ -5467,10 +5652,7 @@ public class LcenfMB implements Serializable {
     public void setValueAgeDisabled(boolean valueAgeDisabled) {
         this.valueAgeDisabled = valueAgeDisabled;
     }
-
-//    public SelectItem[] getJobs() {
-//        return jobs;
-//    }
+    
     public boolean isNeighborhoodHomeNameDisabled() {
         return neighborhoodHomeNameDisabled;
     }
@@ -5670,20 +5852,7 @@ public class LcenfMB implements Serializable {
     public void setAggressionPast(short aggressionPast) {
         this.aggressionPast = aggressionPast;
     }
-
-//    public boolean isAggressorGendersDisabled() {
-//        return aggressorGendersDisabled;
-//    }
-//    public void setAggressorGendersDisabled(boolean aggressorGendersDisabled) {
-//        this.aggressorGendersDisabled = aggressorGendersDisabled;
-//    }
-//    public boolean isContextDisabled() {
-//        return contextDisabled;
-//    }
-//
-//    public void setContextDisabled(boolean contextDisabled) {
-//        this.contextDisabled = contextDisabled;
-//    }
+    
     public boolean isOtherRelationDisabled() {
         return otherRelationDisabled;
     }
@@ -5691,14 +5860,6 @@ public class LcenfMB implements Serializable {
     public void setOtherRelationDisabled(boolean otherRelationDisabled) {
         this.otherRelationDisabled = otherRelationDisabled;
     }
-
-//    public boolean isRelationshipToVictimDisabled() {
-//        return relationshipToVictimDisabled;
-//    }
-
-//    public void setRelationshipToVictimDisabled(boolean relationshipToVictimDisabled) {
-//        this.relationshipToVictimDisabled = relationshipToVictimDisabled;
-//    }
     
     public String getOtherRelation() {
         return otherRelation;
@@ -6227,14 +6388,7 @@ public class LcenfMB implements Serializable {
     public void setIsOtherElementUse(boolean isOtherElementUse) {
         this.isOtherElementUse = isOtherElementUse;
     }
-
-//    public String getCurrentSurname() {
-//        return currentSurname;
-//    }
-//
-//    public void setCurrentSurname(String currentSurname) {
-//        this.currentSurname = currentSurname;
-//    }
+    
     public boolean isIsAG1() {
         return isAG1;
     }
@@ -6814,8 +6968,7 @@ public class LcenfMB implements Serializable {
     public void setStylePosition(String stylePosition) {
         this.stylePosition = stylePosition;
     }
-
-    //----------------------
+    
     public boolean isCurrentAmPmConsultDisabled() {
         return currentAmPmConsultDisabled;
     }
@@ -6895,38 +7048,7 @@ public class LcenfMB implements Serializable {
     public void setCurrentMonthEventDisabled(boolean currentMonthEventDisabled) {
         this.currentMonthEventDisabled = currentMonthEventDisabled;
     }
-
-//    public Short getCurrentStateDateConsult() {
-//        return currentStateDateConsult;
-//    }
-//
-//    public void setCurrentStateDateConsult(Short currentStateDateConsult) {
-//        this.currentStateDateConsult = currentStateDateConsult;
-//    }
-//
-//    public Short getCurrentStateDateEvent() {
-//        return currentStateDateEvent;
-//    }
-//
-//    public void setCurrentStateDateEvent(Short currentStateDateEvent) {
-//        this.currentStateDateEvent = currentStateDateEvent;
-//    }
-//
-//    public Short getCurrentStateTimeConsult() {
-//        return currentStateTimeConsult;
-//    }
-//
-//    public void setCurrentStateTimeConsult(Short currentStateTimeConsult) {
-//        this.currentStateTimeConsult = currentStateTimeConsult;
-//    }
-//
-//    public Short getCurrentStateTimeEvent() {
-//        return currentStateTimeEvent;
-//    }
-//
-//    public void setCurrentStateTimeEvent(Short currentStateTimeEvent) {
-//        this.currentStateTimeEvent = currentStateTimeEvent;
-//    }
+    
     public boolean isCurrentYearConsultDisabled() {
         return currentYearConsultDisabled;
     }
@@ -6942,22 +7064,7 @@ public class LcenfMB implements Serializable {
     public void setCurrentYearEventDisabled(boolean currentYearEventDisabled) {
         this.currentYearEventDisabled = currentYearEventDisabled;
     }
-
-//    public SelectItem[] getStateDateList() {
-//        return stateDateList;
-//    }
-//
-//    public void setStateDateList(SelectItem[] stateDateList) {
-//        this.stateDateList = stateDateList;
-//    }
-//
-//    public SelectItem[] getStateTimeList() {
-//        return stateTimeList;
-//    }
-//
-//    public void setStateTimeList(SelectItem[] stateTimeList) {
-//        this.stateTimeList = stateTimeList;
-//    }
+    
     public boolean isStranger() {
         return stranger;
     }
@@ -6989,14 +7096,7 @@ public class LcenfMB implements Serializable {
     public void setStrangerDisabled(boolean strangerDisabled) {
         this.strangerDisabled = strangerDisabled;
     }
-
-//    public SelectItem[] getInsurances() {
-//        return insurances;
-//    }
-//
-//    public void setInsurances(SelectItem[] insurances) {
-//        this.insurances = insurances;
-//    }
+    
     public String getCurrentInsurance() {
         return currentInsurance;
     }

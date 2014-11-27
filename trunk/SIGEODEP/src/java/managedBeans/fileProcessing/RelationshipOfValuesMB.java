@@ -7,7 +7,6 @@ package managedBeans.fileProcessing;
 import beans.connection.ConnectionJdbcMB;
 import beans.enumerators.DataTypeEnum;
 import beans.util.DamerauLevenshtein;
-import beans.util.JaroWinkler;
 import beans.util.RowDataTable;
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -57,8 +56,7 @@ public class RelationshipOfValuesMB implements Serializable {
     private List<String> valuesDiscardedSelectedInRelationValues = new ArrayList<>();
     private List<String> valuesFound;
     private List<String> valuesRelated;
-    private DamerauLevenshtein damerauLevenshtein = new DamerauLevenshtein();
-    private JaroWinkler jaroWinkler = new JaroWinkler();
+    private DamerauLevenshtein damerauLevenshtein = new DamerauLevenshtein();    
     private String[] splitFilterText;
     private String[] splitFoundText;
     private String sql;

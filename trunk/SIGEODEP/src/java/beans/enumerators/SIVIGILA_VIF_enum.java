@@ -5,10 +5,12 @@
 package beans.enumerators;
 
 /**
- *This class handles enumerators related with SIVIGILA_VIF
+ * This class handles enumerators related with SIVIGILA_VIF
+ *
  * @author SANTOS
  */
 public enum SIVIGILA_VIF_enum {
+
     accion_salud_anticonceptivo,
     accion_salud_atencion,
     accion_salud_autoridad,
@@ -73,11 +75,12 @@ public enum SIVIGILA_VIF_enum {
     zona_conflicto,
     NOVALUE;
 
- /**
- * converts a string to an enumerator, if not possible then returns NOVALUE
- * @param str
- * @return 
- */    
+    /**
+     * converts a string to an enumerator, if not possible then returns NOVALUE
+     *
+     * @param str
+     * @return
+     */
     public static SIVIGILA_VIF_enum convert(String str) {
         try {
             return valueOf(str);

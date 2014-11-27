@@ -15,7 +15,9 @@ import managedBeans.login.ApplicationControlMB;
 import managedBeans.login.LoginMB;
 
 /**
- *The DefaultPhaseListener class is called when request is made to the server, request are: load a page, pressing a button and the database is queried.
+ * The DefaultPhaseListener class is called when request is made to the server,
+ * request are: load a page, pressing a button and the database is queried.
+ *
  * @author santos
  */
 
@@ -27,10 +29,14 @@ public class DefaultPhaseListener implements PhaseListener {
 
     ApplicationControlMB applicationControlMB;
     private LoginMB loginMB;
-/**
- * It is responsible for searching the list of sessions, the ID of the current session, as well to allows determine if there is inactivity, otherwise it redirects to the home page of SIGEODEP.
- * @param event 
- */
+
+    /**
+     * It is responsible for searching the list of sessions, the ID of the
+     * current session, as well to allows determine if there is inactivity,
+     * otherwise it redirects to the home page of SIGEODEP.
+     *
+     * @param event
+     */
     @Override
     public void afterPhase(PhaseEvent event) {
         FacesContext facesContext = event.getFacesContext();
@@ -63,7 +69,7 @@ public class DefaultPhaseListener implements PhaseListener {
                 isLoginPage = (currentPage.lastIndexOf("indexInvited.xhtml") > -1);//determinar si es index para usuario invitado
             }
             HttpSession session = (HttpSession) facesContext.getExternalContext().getSession(false);
-            
+
             if (!isLoginPage) {
                 if (session == null) {
                     try {//System.out.println("salida del programa por que sesion es null" + ctxPath);
@@ -84,10 +90,13 @@ public class DefaultPhaseListener implements PhaseListener {
             }
         }
     }
-/**
- * is called this function when the request ends of be processed by the server.
- * @param event 
- */
+
+    /**
+     * is called this function when the request ends of be processed by the
+     * server.
+     *
+     * @param event
+     */
     @Override
     public void beforePhase(PhaseEvent event) {
     }

@@ -5,7 +5,8 @@
 package beans.enumerators;
 
 /**
- *This class handles enumerators related with variables
+ * This class handles enumerators related with variables
+ *
  * @author SANTOS
  */
 public enum VariablesEnum {
@@ -57,8 +58,7 @@ public enum VariablesEnum {
     transport_users,
     involved_vehicles,
     road_types,
-    
-    abuse_types,    
+    abuse_types,
     aggressor_types,
     degree,
     ethnic_groups,
@@ -71,7 +71,7 @@ public enum VariablesEnum {
     sivigila_no_relative,
     sivigila_tip_ss,
     sivigila_vulnerability,
-    vulnerable_groups,    
+    vulnerable_groups,
     kinds_of_injury,
     anatomical_locations,
     actions_to_take,
@@ -80,11 +80,12 @@ public enum VariablesEnum {
     non_fatal_data_sources,
     NOVALUE;
 
- /**
- * converts a string to an enumerator, if not possible then returns NOVALUE
- * @param str
- * @return 
- */    
+    /**
+     * converts a string to an enumerator, if not possible then returns NOVALUE
+     *
+     * @param str
+     * @return
+     */
     public static VariablesEnum convert(String str) {
         try {
             return valueOf(str);
