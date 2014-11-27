@@ -360,17 +360,14 @@ public class RecordSetsHomicideMB implements Serializable {
     public void load() {
         currentFatalInjuryMurder = null;
         btnEditDisabled = true;
-//        btnRemoveDisabled = true;
         if (selectedRowsDataTable != null) {
             if (selectedRowsDataTable.length == 1) {
                 currentFatalInjuryMurder = fatalInjuryMurderFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
             }
             if (selectedRowsDataTable.length > 1) {
                 btnEditDisabled = true;
-//                btnRemoveDisabled = false;
             } else {
                 btnEditDisabled = false;
-//                btnRemoveDisabled = false;
             }
         }
     }
@@ -448,14 +445,7 @@ public class RecordSetsHomicideMB implements Serializable {
     public void setBtnEditDisabled(boolean btnEditDisabled) {
         this.btnEditDisabled = btnEditDisabled;
     }
-
-//    public boolean isBtnRemoveDisabled() {
-//        return btnRemoveDisabled;
-//    }
-//
-//    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
-//        this.btnRemoveDisabled = btnRemoveDisabled;
-//    }
+    
     public String getData() {
         return data;
     }

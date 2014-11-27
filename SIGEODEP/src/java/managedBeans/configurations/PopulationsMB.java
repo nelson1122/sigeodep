@@ -5,22 +5,17 @@
 package managedBeans.configurations;
 
 import beans.connection.ConnectionJdbcMB;
-import beans.util.RowDataTable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PushbackReader;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -28,10 +23,7 @@ import javax.faces.context.FacesContext;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import model.dao.AreasFacade;
-import model.dao.GendersFacade;
 import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -39,15 +31,13 @@ import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
 import org.apache.poi.xssf.model.StylesTable;
+import org.primefaces.context.RequestContext;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
-import org.primefaces.context.RequestContext;
 
 /**
  *

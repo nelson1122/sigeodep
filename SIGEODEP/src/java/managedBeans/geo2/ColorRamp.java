@@ -5,7 +5,9 @@
 package managedBeans.geo2;
 
 /**
- *This class is a utility class which allows other classes to find ramped and interpolated color values.
+ * This class is a utility class which allows other classes to find ramped and
+ * interpolated color values.
+ *
  * @author and
  */
 /*
@@ -213,14 +215,14 @@ public class ColorRamp {
     }
 
     public ArrayList<String> createBiRamp(Color start, Color end, double bins) {
-        ArrayList<String> scale = new ArrayList<>((int)bins);
+        ArrayList<String> scale = new ArrayList<>((int) bins);
         ColorRamp ramp = new ColorRamp();
         Color[] colors = new Color[2];
         colors[0] = start;
         colors[1] = end;
         ramp.rampColors(colors);
         for (double i = 0; i <= bins; i++) {
-            Color back = new Color(ramp.getRampedValueRGB( i / bins));
+            Color back = new Color(ramp.getRampedValueRGB(i / bins));
             MyRamp.add(back);
             String hexString = Integer.toHexString(back.getRGB() & 0x00FFFFFF);
             while (hexString.length() < 6) {
@@ -232,17 +234,17 @@ public class ColorRamp {
     }
 
     public ArrayList<String> createTriRamp(Color start, Color middle, Color end, double bins) {
-        double limit1 = Math.ceil(bins/2) - 1.0;
+        double limit1 = Math.ceil(bins / 2) - 1.0;
         double limit2 = bins - limit1 - 1.0;
-        
-        ArrayList<String> scale = new ArrayList<>((int)bins);
+
+        ArrayList<String> scale = new ArrayList<>((int) bins);
         ColorRamp ramp = new ColorRamp();
         Color[] colors = new Color[2];
         colors[0] = start;
         colors[1] = middle;
         ramp.rampColors(colors);
         for (double i = 0; i <= limit1; i++) {
-            Color back = new Color(ramp.getRampedValueRGB( i / limit1));
+            Color back = new Color(ramp.getRampedValueRGB(i / limit1));
             MyRamp.add(back);
             String hexString = Integer.toHexString(back.getRGB() & 0x00FFFFFF);
             while (hexString.length() < 6) {
@@ -268,8 +270,6 @@ public class ColorRamp {
     public ArrayList<Color> getMyRamp() {
         return MyRamp;
     }
-    
-    
 
     /**
      * Main method for testing.

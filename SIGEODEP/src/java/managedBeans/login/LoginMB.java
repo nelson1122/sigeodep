@@ -9,7 +9,6 @@ import beans.util.StringEncryption;
 import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PreDestroy;
@@ -25,9 +24,6 @@ import managedBeans.fileProcessing.*;
 import managedBeans.filters.FilterMB;
 import model.dao.UsersFacade;
 import model.pojo.Users;
-import org.joda.time.DateTime;
-import org.joda.time.Interval;
-import org.joda.time.Years;
 import org.primefaces.context.RequestContext;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -37,12 +33,12 @@ import org.primefaces.model.StreamedContent;
  * @author santos
  */
 /**
- * This class is responsible to Manage the login and logout of the users, also this method permitie access for guests.
- * 
+ * This class is responsible to Manage the login and logout of the users, also
+ * this method permitie access for guests.
+ *
  */
 @ManagedBean(name = "loginMB")
 @SessionScoped
-
 public class LoginMB {
 
     private String idSession = "";//identificador de la session
@@ -78,9 +74,9 @@ public class LoginMB {
     private boolean autenticado = false;
     //private String realPath = "";
 
-/**
- * This method is the class constructor.
- */    
+    /**
+     * This method is the class constructor.
+     */
     public LoginMB() {
     }
     private StreamedContent fileHelp;
@@ -90,11 +86,14 @@ public class LoginMB {
         fileHelp = new DefaultStreamedContent(stream, "application/pdf", "manual.pdf");
         return fileHelp;
     }
-/**
- * This method is responsible to destroy an active session, first deletes temporary user data, This method is called when the user has stopped using the software for a specified time, has stopped the server or the user has decided to close their session.
- */
-    @PreDestroy
 
+    /**
+     * This method is responsible to destroy an active session, first deletes
+     * temporary user data, This method is called when the user has stopped
+     * using the software for a specified time, has stopped the server or the
+     * user has decided to close their session.
+     */
+    @PreDestroy
     public void destroySession() {
         /*
          * antes de destruir esta clase se eliminan datos temporales a el usuario 
@@ -111,9 +110,11 @@ public class LoginMB {
         } catch (Exception e) {
         }
     }
-/**
- * This method ends the session when a session with the same user on another computer
- */
+
+    /**
+     * This method ends the session when a session with the same user on another
+     * computer
+     */
     public void logout1() {
         /*
          * fin de session por que se inicio una nueva session en otro equipo      
@@ -130,9 +131,11 @@ public class LoginMB {
         } catch (Exception ex) {//System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
         }
     }
-/**
- * This method ends a session when the user decides to close a current session.
- */
+
+    /**
+     * This method ends a session when the user decides to close a current
+     * session.
+     */
     public void logout2() {
         /*
          * fin de sesion dada por el usuario: botón "cerrar cesion"
@@ -150,9 +153,11 @@ public class LoginMB {
             System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
         }
     }
-/**
- * This method resets all the values of the activities that have been going on for the activity of a user.
- */
+
+    /**
+     * This method resets all the values of the activities that have been going
+     * on for the activity of a user.
+     */
     public void reset() {
         projectsMB.reset();
         relationshipOfVariablesMB.reset();
@@ -161,10 +166,13 @@ public class LoginMB {
         errorsControlMB.reset();
         filterMB.reset();
     }
-/**
- * This method is used when a user tries to access to the system from 2 different locations.
- * @return 
- */
+
+    /**
+     * This method is used when a user tries to access to the system from 2
+     * different locations.
+     *
+     * @return
+     */
     public String closeSessionAndLogin() {
         /*
          * terminar una session iniciada en otra terminal y continuar abriendo una nueva;
@@ -174,10 +182,14 @@ public class LoginMB {
         applicationControlMB.removeSession(currentUser.getUserId());
         return continueLogin();
     }
-/**
- * This method is responsible to instantiate all the variables necessary for a user to log in, as to establish connection to the database and specify that permissions are assigned to user 
- * @return 
- */
+
+    /**
+     * This method is responsible to instantiate all the variables necessary for
+     * a user to log in, as to establish connection to the database and specify
+     * that permissions are assigned to user
+     *
+     * @return
+     */
     private String continueLogin() {
         /*
          * instanciar todas las variables necesarias para que un usuario inicie una session
@@ -220,9 +232,11 @@ public class LoginMB {
         }
         return inicializeVariables();
     }
-/**
- * This method is functional only when the user Santos accesses to the system, This method allows the user realize management operations.
- */
+
+    /**
+     * This method is functional only when the user Santos accesses to the
+     * system, This method allows the user realize management operations.
+     */
     public void corregirDB() {
         /*
          * funcion exclusiva cuando accede el usuario santos
@@ -230,284 +244,18 @@ public class LoginMB {
          */
 
         boolean continuar = true;
-        double num;
-
         if (continuar) {
-            try {
-                ResultSet rs = connectionJdbcMB.consult(""
-                        + " select "
-                        + "    non_fatal_injury_id,"
-                        + "    injury_date,"
-                        + "    checkup_date "
-                        + " from "
-                        + "    non_fatal_injuries "
-                        + " where "
-                        + "    injury_date > checkup_date;");
-                int count = 0;
-                while (rs.next()) {
-                    String nonFatalInjuryId = rs.getString(1);
-                    String injuryDate = rs.getString(2);
-                    String checkupDate = rs.getString(3);
-                    connectionJdbcMB.non_query(""
-                            + " UPDATE "
-                            + "    non_fatal_injuries "
-                            + " SET"
-                            + "    injury_date = to_date('" + checkupDate + "','yyyy/MM/dd'), "
-                            + "    checkup_date = to_date('" + injuryDate + "','yyyy/MM/dd') "
-                            + " WHERE "
-                            + "    non_fatal_injury_id = "+nonFatalInjuryId );
-                    System.out.println(nonFatalInjuryId + "\t\t" + injuryDate + "\t" + checkupDate);
-                    count++;
-                }
-                System.out.println("Registros prcesados: " + count);
-            } catch (Exception e) {
-            }
-
-        }
-
-
-//        if (continuar) {
-//            int countNecesitaCalculo = 0;
-//            int countNoNecesitaCalculo = 0;
-//            int fuenteDeDatos = 0;
-//
-//            //--------------------------------------------------
-//            //--------- accion a realizar en VIF ---21483------------
-//            //--------------------------------------------------
-//            //*
-//            try {
-//                ArrayList<String> conjuntosDeRegistrosBuscados = new ArrayList<>();
-//                ResultSet rs = connectionJdbcMB.consult(""
-//                        + " SELECT "
-//                        + "   * "
-//                        + " FROM "
-//                        + "   public.ungrouped_tags "
-//                        + " WHERE "
-//                        + "   form_id like 'SCC-F-033'");
-//                while (rs.next()) {
-//                    conjuntosDeRegistrosBuscados.add(rs.getString("ungrouped_tag_id"));
-//                }
-//
-//                for (String idConjunto : conjuntosDeRegistrosBuscados) {
-//                    //determino la fuente que se uso para este registro  
-//
-//                    rs = connectionJdbcMB.consult(""
-//                            + " SELECT "
-//                            + "    projects.source_id "
-//                            + " FROM "
-//                            + "    projects, "
-//                            + "    ungrouped_tags "
-//                            + " WHERE "
-//                            + "    projects.project_name like ungrouped_tags.ungrouped_tag_name AND "
-//                            + "    ungrouped_tags.ungrouped_tag_id = " + idConjunto);
-//                    if (rs.next()) {//puede ser que haya sido creado por formulario por lo que no tiene conjunto
-//                        fuenteDeDatos = rs.getShort(1);//fuente de datos del proyecto
-//                    } else {
-//                        fuenteDeDatos = 14;//fuente de datos del proyecto ATENCION EN SALUD
-//                    }
-//
-//
-//                    //determino todos los registros para este conjunto
-//                    rs = connectionJdbcMB.consult(""
-//                            + " SELECT "
-//                            + "    * "
-//                            + " FROM "
-//                            + "    victims, "
-//                            + "    non_fatal_injuries "
-//                            + " WHERE "
-//                            + "    victims.victim_id = non_fatal_injuries.victim_id and "
-//                            + "    victims.first_tag_id = " + idConjunto);
-//
-//                    while (rs.next()) {
-//                        ResultSet rs2 = connectionJdbcMB.consult(""
-//                                + " SELECT "
-//                                + "   * "
-//                                + " FROM "
-//                                + "   domestic_violence_action_to_take "
-//                                + " WHERE "
-//                                + "   non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
-//                        ArrayList<String> encontrados = new ArrayList<>();
-//                        while (rs2.next()) {
-//                            encontrados.add(rs2.getString("action_id"));
-//                        }
-//
-//
-//                        boolean necesitaCalculo = false;
-//                        boolean necesitaEliminacion = false;
-//                        if (encontrados.isEmpty()) {
-//                            necesitaCalculo = true;//necesita calculo de accion a realizar
-//                        } else if (encontrados.size() == 1) {
-//                            if (encontrados.get(0).compareTo("13") == 0) {
-//                                necesitaEliminacion = true;//necesita Eliminacion de accion a realizar sin dato
-//                                necesitaCalculo = true;//necesita calculo de accion a realizar                                
-//                            }
-//                        }
-//
-//
-//                        if (necesitaEliminacion) {
-//                            connectionJdbcMB.non_query("DELETE FROM domestic_violence_action_to_take WHERE non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
-//                        }
-//                        if (necesitaCalculo) {
-//                            countNecesitaCalculo++;
-//                            boolean realizo = false;
-//                            switch (fuenteDeDatos) {
-//                                case 14://VIF
-//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",14)");//ATENCION EN SALUD                                    
-//                                    realizo = true;
-//                                    break;
-//                                case 70://INSTITUTO DE MEDICINA LEGAL Y CIENCIAS FORENSES
-//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",3)");//dictamen medicina legal
-//                                    realizo = true;
-//                                    break;
-//
-//                                case 66://ZONAL 1 ICBF
-//                                case 67://ZONAL 2 ICBF
-//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",8)");//medidas de proteccion
-//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",10)");//atencion psicosocial
-//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",11)");//restablecimiento de derechos                
-//                                    realizo = true;
-//                                    break;
-//                                case 82://"CAIVAS 15 FISCALIA"
-//                                case 80://CAIVAS 52"
-//                                case 68://CAIVAS FISCALIA 15"
-//                                case 71://CAIVAS FISCALIA 52"
-//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",5)");//remision a medicina legal
-//                                    realizo = true;
-//                                    break;
-//                                case 69://CAVIF  FISCALIA 10"
-//                                    connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",12)");//OTRO
-//                                    realizo = true;
-//                                    break;
-//                            }
-//                            //si ids sigue vacio se verifica si la fuente 
-//                            if (!realizo) {
-//                                connectionJdbcMB.non_query("INSERT INTO domestic_violence_action_to_take VALUES (" + rs.getString("non_fatal_injury_id") + ",14)");//atencion en salud
-//                            }
-//                        } else {
-//                            countNoNecesitaCalculo++;
-//                        }
-//                    }
-//                }
-//                System.out.println("---VIF------- SE ACTUALIZARON  " + String.valueOf(countNecesitaCalculo) + "No fueron necesarios " + String.valueOf(countNoNecesitaCalculo));
-//            } catch (Exception e) {
-//                System.out.println("ERROR 002: count:" + countNecesitaCalculo + "" + e.getMessage());
-//            }
-//            //--------------------------------------------------
-//            //--------- accion a realizar en SIVIGILA ---------------
-//            //--------------------------------------------------
-//            countNoNecesitaCalculo = 0;
-//            countNecesitaCalculo = 0;
-//            try {
-//                ArrayList<String> conjuntosDeRegistrosBuscados = new ArrayList<>();
-//                ResultSet rs = connectionJdbcMB.consult(""
-//                        + " SELECT "
-//                        + "   * "
-//                        + " FROM "
-//                        + "   public.ungrouped_tags "
-//                        + " WHERE "
-//                        + "   form_id like 'SIVIGILA-VIF'");
-//                while (rs.next()) {
-//                    conjuntosDeRegistrosBuscados.add(rs.getString("ungrouped_tag_id"));
-//                }
-//
-//                for (String idConjunto : conjuntosDeRegistrosBuscados) {
-//                    //determino todos los registros para este conjunto
-//                    rs = connectionJdbcMB.consult(""
-//                            + " SELECT "
-//                            + "    * "
-//                            + " FROM "
-//                            + "    victims, "
-//                            + "    non_fatal_injuries "
-//                            + " WHERE "
-//                            + "    victims.victim_id = non_fatal_injuries.victim_id and "
-//                            + "    victims.first_tag_id = " + idConjunto);
-//
-//                    while (rs.next()) {
-//                        ResultSet rs2 = connectionJdbcMB.consult(""
-//                                + " SELECT "
-//                                + "   * "
-//                                + " FROM "
-//                                + "   sivigila_event_public_health "
-//                                + " WHERE "
-//                                + "   non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
-//                        ArrayList<String> encontrados = new ArrayList<>();
-//                        while (rs2.next()) {
-//                            encontrados.add(rs2.getString("action_id"));
-//                        }
-//
-//
-//                        boolean necesitaCalculo = false;
-//                        boolean necesitaEliminacion = false;
-//                        if (encontrados.isEmpty()) {
-//                            necesitaCalculo = true;//necesita calculo de accion a realizar
-//                        } else if (encontrados.size() == 1) {
-//                            if (encontrados.get(0).compareTo("8") == 0) {
-//                                necesitaEliminacion = true;//necesita Eliminacion de accion a realizar sin dato
-//                                necesitaCalculo = true;//necesita calculo de accion a realizar                                
-//                            }
-//                        }
-//
-//                        if (necesitaEliminacion) {
-//                            connectionJdbcMB.non_query("DELETE FROM sivigila_event_public_health WHERE non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));
-//                        }
-//                        if (necesitaCalculo) {
-//                            connectionJdbcMB.non_query("INSERT INTO sivigila_event_public_health VALUES (" + rs.getString("non_fatal_injury_id") + ",9)");//public_healt_action ATENCION EN SALUD
-//                            countNecesitaCalculo++;
-//                        } else {
-//                            countNoNecesitaCalculo++;
-//                        }
-//                    }
-//                }
-//                System.out.println("-------SIVIGILA VIF ---SE ACTUALIZARON  " + String.valueOf(countNecesitaCalculo) + "No fueron necesarios " + String.valueOf(countNoNecesitaCalculo));
-//            } catch (Exception e) {
-//                System.out.println("ERROR 002: count:" + countNecesitaCalculo + "" + e.getMessage());
-//            }
-//            //*/
-//            //--------------------------------------------------
-//            //--------- accion a realizar en LCENF ---------------
-//            //--------------------------------------------------            
-//            countNecesitaCalculo = 0;
-//            countNoNecesitaCalculo = 0;
-//            try {
-//                ArrayList<String> conjuntosDeRegistrosBuscados = new ArrayList<>();
-//                ResultSet rs = connectionJdbcMB.consult(""
-//                        + " SELECT "
-//                        + "   * "
-//                        + " FROM "
-//                        + "   public.ungrouped_tags "
-//                        + " WHERE "
-//                        + "   form_id like 'SCC-F-032'");
-//                while (rs.next()) {
-//                    conjuntosDeRegistrosBuscados.add(rs.getString("ungrouped_tag_id"));
-//                }
-//
-//                for (String idConjunto : conjuntosDeRegistrosBuscados) {
-//                    //determino todos los registros para este conjunto
-//                    rs = connectionJdbcMB.consult(""
-//                            + " SELECT "
-//                            + "    * "
-//                            + " FROM "
-//                            + "    victims, "
-//                            + "    non_fatal_injuries "
-//                            + " WHERE "
-//                            + "    victims.victim_id = non_fatal_injuries.victim_id and "
-//                            + "    victims.first_tag_id = " + idConjunto + " AND "
-//                            + "    non_fatal_injuries.destination_patient_id IS NULL");
-//                    while (rs.next()) {
-//                        connectionJdbcMB.non_query("UPDATE non_fatal_injuries SET destination_patient_id = 11 WHERE non_fatal_injury_id = " + rs.getString("non_fatal_injury_id"));//destination_patient_id = 11 ATENCION EN SALUD
-//                        countNecesitaCalculo++;
-//                    }
-//                }
-//                System.out.println("-------LCENF ---SE ACTUALIZARON  " + String.valueOf(countNecesitaCalculo));
-//            } catch (Exception e) {
-//                System.out.println("ERROR 002: count:" + countNecesitaCalculo + "" + e.getMessage());
-//            }
-//        }
+        }            
     }
-/**
- * This method is responsible to initialize all variables used by the system to function properly, as error control variables, variables used in the creation of new forms, relations of variables, filters and sets the current configuration the system has.
- * @return 
- */
+
+    /**
+     * This method is responsible to initialize all variables used by the system
+     * to function properly, as error control variables, variables used in the
+     * creation of new forms, relations of variables, filters and sets the
+     * current configuration the system has.
+     *
+     * @return
+     */
     private String inicializeVariables() {
         if (connectionJdbcMB.connectToDb()) {
             connectionJdbcMB.setCurrentUser(currentUser);
@@ -563,10 +311,15 @@ public class LoginMB {
             return "indexConfiguration";
         }
     }
-/**
- * This method allows the login to a guest user, returns the page that should be addressed once the system determines whether the guest can enter or not, this method sets unique identification for guest  user different to system users.
- * @return 
- */
+
+    /**
+     * This method allows the login to a guest user, returns the page that
+     * should be addressed once the system determines whether the guest can
+     * enter or not, this method sets unique identification for guest user
+     * different to system users.
+     *
+     * @return
+     */
     public String CheckValidInvited() {
         /*
          * permitir el acceso de un usuario como invitado
@@ -611,10 +364,13 @@ public class LoginMB {
             return inicializeVariables();
         }
     }
-/**
- * This method checks if the user is registered in the database and if your account is still active, for to allow access to the system.
- * @return 
- */
+
+    /**
+     * This method checks if the user is registered in the database and if your
+     * account is still active, for to allow access to the system.
+     *
+     * @return
+     */
     public String CheckValidUser() {
         /*
          * determinar si el usuario puede acceder al sistema determinando si exite
@@ -715,14 +471,7 @@ public class LoginMB {
     public void setActiveIndexAcoordion2(String activeIndexAcoordion2) {
         this.activeIndexAcoordion2 = activeIndexAcoordion2;
     }
-
-//    public String getCloseSessionDialog() {
-//        return closeSessionDialog;
-//    }
-//
-//    public void setCloseSessionDialog(String closeSessionDialog) {
-//        this.closeSessionDialog = closeSessionDialog;
-//    }
+    
     public String getIdSession() {
         return idSession;
     }
@@ -770,46 +519,7 @@ public class LoginMB {
     public void setPermissionAdministrator(boolean permissionAdministrator) {
         this.permissionAdministrator = permissionAdministrator;
     }
-
-//    public boolean isDisableNonFatalSection() {
-//        return disableNonFatalSection;
-//    }
-//
-//    public void setDisableNonFatalSection(boolean disableNonFatalSection) {
-//        this.disableNonFatalSection = disableNonFatalSection;
-//    }
-//
-//    public boolean isDisableFatalSection() {
-//        return disableFatalSection;
-//    }
-//
-//    public void setDisableFatalSection(boolean disableFatalSection) {
-//        this.disableFatalSection = disableFatalSection;
-//    }
-//
-//    public boolean isDisableVifSection() {
-//        return disableVifSection;
-//    }
-//
-//    public void setDisableVifSection(boolean disableVifSection) {
-//        this.disableVifSection = disableVifSection;
-//    }
-//
-//    public boolean isDisableIndicatorsSection() {
-//        return disableIndicatorsSection;
-//    }
-//
-//    public void setDisableIndicatorsSection(boolean disableIndicatorsSection) {
-//        this.disableIndicatorsSection = disableIndicatorsSection;
-//    }
-//
-//    public boolean isDisableAdministratorSection() {
-//        return disableAdministratorSection;
-//    }
-//
-//    public void setDisableAdministratorSection(boolean disableAdministratorSection) {
-//        this.disableAdministratorSection = disableAdministratorSection;
-//    }
+    
     public boolean isPermissionRegistryDataSection() {
         return permissionRegistryDataSection;
     }

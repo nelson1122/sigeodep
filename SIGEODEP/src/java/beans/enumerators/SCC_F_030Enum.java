@@ -5,12 +5,12 @@
 package beans.enumerators;
 
 /**
- *This class handles enumerators related with SCC_F_030
+ * This class handles enumerators related with SCC_F_030
+ *
  * @author SANTOS
  */
 public enum SCC_F_030Enum {
 
-    
     departamento_evento,
     municipio_evento,
     certificado_defuncion,
@@ -53,12 +53,13 @@ public enum SCC_F_030Enum {
     nivel_alcohol_desconocido,
     nivel_alcohol_negativo,
     NOVALUE;
-    
- /**
- * converts a string to an enumerator, if not possible then returns NOVALUE
- * @param str
- * @return 
- */
+
+    /**
+     * converts a string to an enumerator, if not possible then returns NOVALUE
+     *
+     * @param str
+     * @return
+     */
     public static SCC_F_030Enum convert(String str) {
         try {
             return valueOf(str);

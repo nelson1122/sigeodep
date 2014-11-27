@@ -29,7 +29,9 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 /**
- *The RecordDataMB class is responsible for managing everything related to the progress bar data processing and validation.
+ * The RecordDataMB class is responsible for managing everything related to the
+ * progress bar data processing and validation.
+ *
  * @author santos
  */
 @ManagedBean(name = "recordDataMB")
@@ -206,7 +208,6 @@ public class RecordDataMB implements Serializable {
     private ErrorsControlMB errorsControlMB;
     private ArrayList<String> columnsNames;
     private String nameForm = "";
-    //private boolean isValidate = false;//se ha realizado la validacion de los datos
     private RelationVariables relationVar;
     private int tuplesNumber;
     private int tuplesProcessed;
@@ -233,7 +234,6 @@ public class RecordDataMB implements Serializable {
     private String dia = "";//dia evento
     private String mes = "";//mes evento
     private String ao = "";//año del evento
-    //private String diacon = "";//dia de la semana cnsulta
     private String sql = "";
     private String dia1 = "";//dia de la consulta
     private String mes1 = "";//mes de la consulta
@@ -276,9 +276,11 @@ public class RecordDataMB implements Serializable {
     public void setProgress(Integer progress) {
         this.progress = progress;
     }
-/**
- * This method shows the progress bar records when performing data processing.
- */
+
+    /**
+     * This method shows the progress bar records when performing data
+     * processing.
+     */
     public void onComplete() {
         if (errorOnComplete.length() == 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la adición de " + String.valueOf(tuplesProcessed)
@@ -287,9 +289,12 @@ public class RecordDataMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", errorOnComplete));
         }
     }
-/**
- * This method is responsible for displaying the progress bar of the  data validation. The data validation is done in order that these are correct, using this option to  indicate errors and alerts determine its correction.
- */
+
+    /**
+     * This method is responsible for displaying the progress bar of the data
+     * validation. The data validation is done in order that these are correct,
+     * using this option to indicate errors and alerts determine its correction.
+     */
     public void onCompleteValidate() {
         progressValidate = 100;
         if (errorsNumber != 0) {
@@ -300,9 +305,10 @@ public class RecordDataMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha superado el proceso de validacion, presione el boton registrar datos para que sean almacenados."));
         }
     }
-/**
- * canceled the process of the progress bars of processing and validation.
- */
+
+    /**
+     * canceled the process of the progress bars of processing and validation.
+     */
     public void cancel() {
         progress = null;
         progressValidate = null;
@@ -314,17 +320,19 @@ public class RecordDataMB implements Serializable {
     //FUNCIONES DE PROPOSITO GENERAL ---------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-/**
- * allows connection to the database and performs validation of user permissions. 
- */    
+    /**
+     * allows connection to the database and performs validation of user
+     * permissions.
+     */
     public RecordDataMB() {
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         applicationControlMB = (ApplicationControlMB) FacesContext.getCurrentInstance().getExternalContext().getApplicationMap().get("applicationControlMB");
     }
-/**
- * recharge form with initial values.
- */
+
+    /**
+     * recharge form with initial values.
+     */
     public void reset() {
         /*
          * Cargar el formulario con los valores iniciales
@@ -333,10 +341,13 @@ public class RecordDataMB implements Serializable {
         btnRegisterDataDisabled = true;
         //btnValidateDisabled = true;
     }
-/**
- * can handle related with the relationships that must exist obligatorily for  intentionality, identification and date fact.
- * @return 
- */
+
+    /**
+     * can handle related with the relationships that must exist obligatorily
+     * for intentionality, identification and date fact.
+     *
+     * @return
+     */
     private boolean relationshipsRequired() {
         /*
          * deben existir obligatoriamente relaciones para
@@ -383,11 +394,14 @@ public class RecordDataMB implements Serializable {
         }
         return noErrors;
     }
-/**
- * It is responsible for  determining if a name already exists otherwise it should assign 1,2,3, ... and so on until you find one that does not exist
- * @param name: name to determine
- * @return 
- */
+
+    /**
+     * It is responsible for determining if a name already exists otherwise it
+     * should assign 1,2,3, ... and so on until you find one that does not exist
+     *
+     * @param name: name to determine
+     * @return
+     */
     private String determineTagName(String name) {
         /*
          * determina si el nombre ya existe sino aumentarle 1,2,3...
@@ -416,10 +430,12 @@ public class RecordDataMB implements Serializable {
         }
         return nameReturn;
     }
-/**
- * This method is responsible for determining the registration process.
- * @return 
- */
+
+    /**
+     * This method is responsible for determining the registration process.
+     *
+     * @return
+     */
     private ResultSet determineRecords() {
         ResultSet rsReturn = connectionJdbcMB.consult(""
                 + " SELECT "
@@ -436,10 +452,13 @@ public class RecordDataMB implements Serializable {
                 + "    project_records.record_id ");
         return rsReturn;
     }
-/**
- * It is responsible for determining the name of the column with the data to be processed.
- * @return 
- */
+
+    /**
+     * It is responsible for determining the name of the column with the data to
+     * be processed.
+     *
+     * @return
+     */
     private ArrayList<String> determineColumnNames() {
         ArrayList<String> listReturn = new ArrayList<>();
         try {
@@ -467,10 +486,12 @@ public class RecordDataMB implements Serializable {
         return listReturn;
 
     }
-/**
- * makes a query to determine the number of tuples.
- * @return 
- */
+
+    /**
+     * makes a query to determine the number of tuples.
+     *
+     * @return
+     */
     private int determineTuplesNumber() {
         int intReturn = 0;
         try {
@@ -492,12 +513,15 @@ public class RecordDataMB implements Serializable {
 
         return intReturn;
     }
-/**
- * It is responsible for determining the data record, in order to obtain a value of a given  tuple a column.
- * @param arrayInJava
- * @param columnName
- * @return 
- */
+
+    /**
+     * It is responsible for determining the data record, in order to obtain a
+     * value of a given tuple a column.
+     *
+     * @param arrayInJava
+     * @param columnName
+     * @return
+     */
     private String determineRegistryData(Object[] arrayInJava, String columnName) {
         /*
          * obtener un valor de una tupla dada una columna
@@ -516,11 +540,14 @@ public class RecordDataMB implements Serializable {
         }
         return returnValue;
     }
-/**
- * This method it is responsible  eliminate or remove the expression "_v" of a data type, so as to take the categorical table.
- * @param field_type
- * @return 
- */
+
+    /**
+     * This method it is responsible eliminate or remove the expression "_v" of
+     * a data type, so as to take the categorical table.
+     *
+     * @param field_type
+     * @return
+     */
     private String remove_v(String field_type) {
         /*
          * remueve '_v' de un tipo de dato (para que tome la tabla categorica)
@@ -534,9 +561,11 @@ public class RecordDataMB implements Serializable {
         }
         return strReturn;
     }
-/**
- * this button (start validation) is responsible for conducting validations, here  is generated the errors that occur when analyzing the file.
- */
+
+    /**
+     * this button (start validation) is responsible for conducting validations,
+     * here is generated the errors that occur when analyzing the file.
+     */
     public void btnValidateClick() {
         /*
          * click sobre el boton iniciar validacion aqui se generaran los errores
@@ -874,10 +903,8 @@ public class RecordDataMB implements Serializable {
                     progressValidate = (int) (tuplesProcessed * 100) / tuplesNumber;
                     //System.out.println("PROGRESO VALIDANDO: " + String.valueOf(progressValidate));
                 }
-                progress = 100;
-                //System.out.println("PROGRESO: " + String.valueOf(progressValidate));
+                progress = 100;//System.out.println("PROGRESO: " + String.valueOf(progressValidate));
                 errorsControlMB.setSizeErrorsList(errorsNumber);
-                //errorsControlMB.updateErrorsArrayList();
                 progress = 0;
             } catch (Exception ex) {
                 progress = 100;
@@ -885,16 +912,21 @@ public class RecordDataMB implements Serializable {
             }
         }
     }
-/**
- * determines if there are inconsistencies between variables INTENTIONALITY <-> MECHANISM <-> SPECIFIC DATA EVENT
- * @param rowId: id of the row.
- * @param intencionality1: variable that loaded the type of intentionality: NO INTENTIONAL (ACCIDENT) Intentional self-inflicted (SUICIDE) .
- * @param mechanism: variable that loaded the type mechanism of injury: bite person, sexual violence, ...
- * @param traficValues: load the values of traffic.
- * @param interpersonalValues: load the values of interpersonal violence.
- * @param selftInflictedValues: load the values of self-inflicted violence.
- * @param domesticViolenceValues: load the values of domestic violence. 
- */
+
+    /**
+     * determines if there are inconsistencies between variables INTENTIONALITY
+     * <-> MECHANISM <-> SPECIFIC DATA EVENT
+     *
+     * @param rowId: id of the row.
+     * @param intencionality1: variable that loaded the type of intentionality:
+     * NO INTENTIONAL (ACCIDENT) Intentional self-inflicted (SUICIDE) .
+     * @param mechanism: variable that loaded the type mechanism of injury: bite
+     * person, sexual violence, ...
+     * @param traficValues: load the values of traffic.
+     * @param interpersonalValues: load the values of interpersonal violence.
+     * @param selftInflictedValues: load the values of self-inflicted violence.
+     * @param domesticViolenceValues: load the values of domestic violence.
+     */
     private void validateIntentionalityMechanismAndDataEvent(String rowId, String intencionality1, String mechanism, String traficValues, String interpersonalValues, String selftInflictedValues, String domesticViolenceValues) {
         /*
          * determina si existen incoherencias entre las variables INTENCIONALIDAD <-> MECANISMO <-> DATOS ESPECIFICOS DEL EVENTO
@@ -916,13 +948,6 @@ public class RecordDataMB implements Serializable {
         //---------------- VALIDACION ENTRE INTENCIONALIDAD Y MECANISMO ----
         //------------------------------------------------------------------
         if (intencionality1 != null && mechanism.length() != 0) {
-            //--------------------------------------------------------------
-            //el mecanismo es transporte pero no hay datos de transporte
-//            if (mechanism.compareTo("1") == 0 && traficValues.length() == 0) {//transporte y no hay datos especificos de transporte                
-//                errorsNumber++;
-//                errorsControlMB.addError(errorsNumber * -1, null, "El mecanismo es LESION DE TRANSPORTE pero no hay datos especificos sobre la lesión de transporte", rowId);
-//            }
-
             if (intencionality1.compareTo("1") == 0) {//NO INTENCIONAL (ACCIDENTES)
                 //--------------------------------------------------------------
                 if (mechanism.compareTo("2") == 0) {//VIOLENCIA SEXUAL
@@ -933,10 +958,6 @@ public class RecordDataMB implements Serializable {
                     errorsNumber++;
                     errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' el mecanismo no puede ser 'MORDEDURA DE PERSONA' ", rowId);
                 }
-//                if (traficValues.length() != 0) {
-//                    errorsNumber++;
-//                    errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' no pueden haber datos de LESION DE TRANSPORTE: (" + traficValues + ")", rowId);
-//                }
                 if (interpersonalValues.length() != 0) {
                     errorsNumber++;
                     errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'NO INTENCIONAL (ACCIDENTES)' no pueden haber datos de VIOLENCIA INTERPERSONAL: (" + interpersonalValues + ")", rowId);
@@ -999,12 +1020,6 @@ public class RecordDataMB implements Serializable {
                     errorsNumber++;
                     errorsControlMB.addError(errorsNumber * -1, null, "Cuando la intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' no pueden haber datos de VIOLENCIA INRAFAMILIAR: (" + domesticViolenceValues + ")", rowId);
                 }
-//                //--------------------------------------------------------------
-//                //intencionalidad autoinflingida y no hay datos de autoinflingida
-//                if (mechanism.compareTo("1") == 0 && traficValues.length() == 0) {
-//                    errorsNumber++;
-//                    errorsControlMB.addError(errorsNumber * -1, null, "La intencionalidad es: 'AUTOINFLINGIDA INTENCIONAL (SUICIDIO)' pero no hay datos especificos sobre la lesión autoinflingida", rowId);
-//                }
             } else if (intencionality1.compareTo("3") == 0) {//VIOLENCIA / AGRESION O SOSPECHA
                 //------------------------------------------------------------------                
                 if (mechanism.compareTo("1") == 0) {//LESION DE TRANSPORTE
@@ -1031,20 +1046,16 @@ public class RecordDataMB implements Serializable {
                     errorsNumber++;
                     errorsControlMB.addError(errorsNumber * -1, null, "No pueden Haber datos de VIOLENCIA INTERPERSONAL Y VIOLENCIA INTRAFAMILIAR en el mismo registro; INTERPERSONAL: (" + interpersonalValues + "), INTRAFAMILIAR: (" + domesticViolenceValues + ")", rowId);
                 }
-//                //--------------------------------------------------------------
-//                //intencionalidad violencia/agresion y no hay datos de VIOLENCIA INTERPERSONAL o VIOLENCIA INTRAFAMILIAR
-//                if (interpersonalValues.length() == 0 && domesticViolenceValues.length() == 0) {
-//                    errorsNumber++;
-//                    errorsControlMB.addError(errorsNumber * -1, null, "La intencionalidad es 'VIOLENCIA / AGRESION O SOSPECHA' pero no hay datos especificos de VIOLENCIA INTERPERSONAL o VIOLENCIA INTRAFAMILIAR en el registro; ", rowId);
-//                }
             }
         }
     }
-/**
- * obtains the data from a string.
- * @param a
- * @return 
- */
+
+    /**
+     * obtains the data from a string.
+     *
+     * @param a
+     * @return
+     */
     private String haveData(String a) {
         if (a != null) {
             if (a.length() == 0) {
@@ -1053,9 +1064,10 @@ public class RecordDataMB implements Serializable {
         }
         return a;
     }
-/**
- * allows to load  the record  corresponding to  the tab the homicide .
- */
+
+    /**
+     * allows to load the record corresponding to the tab the homicide .
+     */
     public void registerSCC_F_028() {
         /**
          * *********************************************************************
@@ -1511,9 +1523,11 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 8 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-/**
- * allows to load  the record  corresponding to  the tab the traffic accident deaths.
- */
+
+    /**
+     * allows to load the record corresponding to the tab the traffic accident
+     * deaths.
+     */
     public void registerSCC_F_029() {
         /**
          * ******************************************************************
@@ -1990,9 +2004,10 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 12 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-/**
- * allows to load  the record  corresponding to  the tab the suicide.
- */
+
+    /**
+     * allows to load the record corresponding to the tab the suicide.
+     */
     public void registerSCC_F_030() {
         /**
          * *********************************************************************
@@ -2449,9 +2464,10 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 16 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-/**
- * allows to load  the record  corresponding to  the tab the accidental deaths.
- */
+
+    /**
+     * allows to load the record corresponding to the tab the accidental deaths.
+     */
     public void registerSCC_F_031() {
         /**
          * *********************************************************************
@@ -2909,9 +2925,11 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 20 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-/**
- * load the records of the   LCENF tab  ( injuries of external causes no Fatales).
- */
+
+    /**
+     * load the records of the LCENF tab ( injuries of external causes no
+     * Fatales).
+     */
     public void registerSCC_F_032() {
         /**
          * *********************************************************************
@@ -3821,7 +3839,7 @@ public class RecordDataMB implements Serializable {
                 }
                 //SI FECHA DE EVENTO MAYOR A FECHA DE CONSULTA SE INVIERTEN                
                 if (newNonFatalInjury.getInjuryDate().getTime() > newNonFatalInjury.getCheckupDate().getTime()) {
-                    Date auxInjuryDate=newNonFatalInjury.getInjuryDate();
+                    Date auxInjuryDate = newNonFatalInjury.getInjuryDate();
                     newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
                     newNonFatalInjury.setCheckupDate(auxInjuryDate);
                 }
@@ -3892,8 +3910,8 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                
-                
+
+
 
                 //DETERMINO TIPO DE LESION//////////////////////////////////////
                 if (selectInjuryDetermined == null) {//no se pudo determinar se coloca por defecto //54. No intencional
@@ -3929,16 +3947,16 @@ public class RecordDataMB implements Serializable {
 
                 //destino del paciente
                 //
-                if (newNonFatalInjury.getDestinationPatientId()==null) {
-                    newNonFatalInjury.setDestinationPatientId(destinationsOfPatientFacade.find((short)11));//se usa acciones en salud
-                    
+                if (newNonFatalInjury.getDestinationPatientId() == null) {
+                    newNonFatalInjury.setDestinationPatientId(destinationsOfPatientFacade.find((short) 11));//se usa acciones en salud
+
                 }
-                
+
                 //AGREGO LAS LISTAS NO VACIAS///////////////////////////////////
-                
-                
-                
-                
+
+
+
+
                 if (!anatomicalLocationsList.isEmpty()) {
                     newNonFatalInjury.setAnatomicalLocationsList(anatomicalLocationsList);
                 } else {
@@ -4072,9 +4090,10 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 23 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-/**
- * allows  to load the records the VIF tab (family intra violence).
- */
+
+    /**
+     * allows to load the records the VIF tab (family intra violence).
+     */
     public void registerSCC_F_033() {
         /**
          * *********************************************************************
@@ -4745,9 +4764,9 @@ public class RecordDataMB implements Serializable {
                     if (newNonFatalInjury.getCheckupDate() != null) {
                         newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
                     }
-                }               
-                
-                
+                }
+
+
                 //SI NO HAY HORA DE EVENTO PASAR LA DE CONSULTA
                 if (newNonFatalInjury.getInjuryTime() == null) {
                     if (newNonFatalInjury.getCheckupTime() != null) {
@@ -4775,11 +4794,11 @@ public class RecordDataMB implements Serializable {
                         cal.setTime(newNonFatalInjury.getInjuryDate());
                         newNonFatalInjury.setInjuryDayOfWeek(intToDay(cal.get(Calendar.DAY_OF_WEEK)));
                     }
-                }                
-                
+                }
+
                 //SI FECHA DE EVENTO MAYOR A FECHA DE CONSULTA SE INVIERTEN                
                 if (newNonFatalInjury.getInjuryDate().getTime() > newNonFatalInjury.getCheckupDate().getTime()) {
-                    Date auxInjuryDate=newNonFatalInjury.getInjuryDate();
+                    Date auxInjuryDate = newNonFatalInjury.getInjuryDate();
                     newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
                     newNonFatalInjury.setCheckupDate(auxInjuryDate);
                 }
@@ -4888,12 +4907,12 @@ public class RecordDataMB implements Serializable {
                     actionsToTakeList = calculeActionToTake(projectsMB.getCurrentSourceId(), projectsMB.getCurrentFormId());
 
                     if (actionsToTakeList.isEmpty()) { //no se pudo determinar accion a realizar a traves de fuente
-                        actionsToTakeList.add(new ActionsToTake((short) 13));                        
+                        actionsToTakeList.add(new ActionsToTake((short) 13));
                     } else { //se determino la accion a realizar a traves de la fuente
                         newNonFatalDomesticViolence.setActionsToTakeList(actionsToTakeList);
                     }
                 }
-                
+
                 //grupo vulnerable
                 if (!vulnerableGroupList.isEmpty()) {
                     newVictim.setVulnerableGroupsList(vulnerableGroupList);
@@ -4980,9 +4999,10 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 27 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-/**
- * allows charge the tab SIVIGILA-VIF.
- */
+
+    /**
+     * allows charge the tab SIVIGILA-VIF.
+     */
     private List<ActionsToTake> calculeActionToTake(int source, String form) {
         List<ActionsToTake> ids = new ArrayList<>();
         switch (source) {
@@ -5014,13 +5034,8 @@ public class RecordDataMB implements Serializable {
                 case "SIVIGILA-VIF"://SIVIGILA
                     ids.add(actionsToTakeFacade.find((short) 14));//atencion en salud
                     break;
-
             }
         }
-
-
-
-
         return ids;
     }
 
@@ -5406,11 +5421,11 @@ public class RecordDataMB implements Serializable {
                 }
                 //SI FECHA DE EVENTO MAYOR A FECHA DE CONSULTA SE INVIERTEN                
                 if (newNonFatalInjury.getInjuryDate().getTime() > newNonFatalInjury.getCheckupDate().getTime()) {
-                    Date auxInjuryDate=newNonFatalInjury.getInjuryDate();
+                    Date auxInjuryDate = newNonFatalInjury.getInjuryDate();
                     newNonFatalInjury.setInjuryDate(newNonFatalInjury.getCheckupDate());
                     newNonFatalInjury.setCheckupDate(auxInjuryDate);
-                }                
-                
+                }
+
                 //SI NO SE DETERMINA EL BARRIO SE COLOCA SIN DATO URBANO
                 if (newVictim.getVictimNeighborhoodId() == null) {
                     newVictim.setVictimNeighborhoodId(neighborhoodsFacade.find((int) 52001));
@@ -5475,7 +5490,7 @@ public class RecordDataMB implements Serializable {
                         }
                     }
                 }
-                
+
                 //agrego las listas no vacias
                 if (!publicHealthActionsList.isEmpty()) {
                     newSivigilaEvent.setPublicHealthActionsList(publicHealthActionsList);
@@ -5581,10 +5596,12 @@ public class RecordDataMB implements Serializable {
             System.out.println("Error 31 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-/**
- * allows recording data on the various tabs or forms.
- * @throws ParseException 
- */
+
+    /**
+     * allows recording data on the various tabs or forms.
+     *
+     * @throws ParseException
+     */
     public void btnRegisterDataClick() throws ParseException {
         nameForm = projectsMB.getCurrentFormId();
         currentRelationsGroup = relationGroupFacade.find(projectsMB.getCurrentRelationsGroupId());//tomo el grupos_vulnerables de relaciones de valores y de variables
@@ -5644,11 +5661,12 @@ public class RecordDataMB implements Serializable {
     //VALIDACIONES ---------------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-/**
- * determines the day.
- * @param i: variable that contains the day.
- * @return 
- */    
+    /**
+     * determines the day.
+     *
+     * @param i: variable that contains the day.
+     * @return
+     */
     private String intToDay(int i) {
         if (i == Calendar.MONDAY) {
             return "Lunes";
@@ -5666,11 +5684,14 @@ public class RecordDataMB implements Serializable {
             return "Domingo";
         }
     }
-/**
- * it is responsible for performing the validation of an identification number of victims in percentage 1-100
- * @param str
- * @return 
- */
+
+    /**
+     * it is responsible for performing the validation of an identification
+     * number of victims in percentage 1-100
+     *
+     * @param str
+     * @return
+     */
     private String isPercentage(String str) {
         /*
          * validacion de si un numero_identificacion_victima es porcentaje 1-100
@@ -5691,11 +5712,14 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-/**
- * allows perform validation of whether an identification number of a victim is greater  or equal to zero
- * @param str
- * @return 
- */
+
+    /**
+     * allows perform validation of whether an identification number of a victim
+     * is greater or equal to zero
+     *
+     * @param str
+     * @return
+     */
     private String isLevel(String str) {
         /*
          * validacion de si un numero_identificacion_victima es >= 0
@@ -5713,11 +5737,13 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-/**
- * allows to validate whether an identification number  victim  1-31
- * @param str
- * @return 
- */
+
+    /**
+     * allows to validate whether an identification number victim 1-31
+     *
+     * @param str
+     * @return
+     */
     private String isDay(String str) {
         /*
          * validacion de si un numero_identificacion_victima de 1 y 31
@@ -5737,11 +5763,13 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-/**
- * validates that the month this between 1-12
- * @param str
- * @return 
- */
+
+    /**
+     * validates that the month this between 1-12
+     *
+     * @param str
+     * @return
+     */
     private String isMonth(String str) {
         /*
          * validacion de si un numero_identificacion_victima de 1 y 12
@@ -5761,11 +5789,13 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-/**
- * validate the range of the year this between 1-12
- * @param str
- * @return 
- */
+
+    /**
+     * validate the range of the year this between 1-12
+     *
+     * @param str
+     * @return
+     */
     private String isYear(String str) {
         /*
          * validacion de si un numero_identificacion_victima de 1 y 12
@@ -5785,11 +5815,13 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-/**
- * validates if is a number between 0-59
- * @param str
- * @return 
- */
+
+    /**
+     * validates if is a number between 0-59
+     *
+     * @param str
+     * @return
+     */
     private String isMinute(String str) {
         /*
          * validacion de si un numero_identificacion_victima de 1 y 12
@@ -5809,11 +5841,13 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-/**
- * validates if is a number between 1 - 12
- * @param str
- * @return 
- */
+
+    /**
+     * validates if is a number between 1 - 12
+     *
+     * @param str
+     * @return
+     */
     private String isHour(String str) {
         /*
          * validacion de si un numero_identificacion_victima de 1 y 12
@@ -5833,11 +5867,13 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-/**
- * validates if a string is integer
- * @param str
- * @return 
- */
+
+    /**
+     * validates if a string is integer
+     *
+     * @param str
+     * @return
+     */
     private String isNumeric(String str) {
         /*
          * validacion de si un string es entero null=invalido ""=aceptado pero
@@ -5855,12 +5891,14 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-/**
- * determine if a date is  found from the year 2002 to the current year.
- * @param f: year format
- * @param format: variable that holds the format to convert
- * @return 
- */
+
+    /**
+     * determine if a date is found from the year 2002 to the current year.
+     *
+     * @param f: year format
+     * @param format: variable that holds the format to convert
+     * @return
+     */
     private boolean validYear(String f, String format) {
         /*
          *  determinar si una fecha se encuentra desde el año 2002 hasta el año actual
@@ -5882,12 +5920,14 @@ public class RecordDataMB implements Serializable {
             return false;//invalida
         }
     }
-/**
- * determine if a birth date does not exceed the system date.
- * @param f
- * @param format
- * @return 
- */
+
+    /**
+     * determine if a birth date does not exceed the system date.
+     *
+     * @param f
+     * @param format
+     * @return
+     */
     private boolean validDateOfBirth(String f, String format) {
         /*
          *  determinar si una fecha de naciemiento no supera a la fecha de sistema
@@ -5909,12 +5949,15 @@ public class RecordDataMB implements Serializable {
             return false;//invalida
         }
     }
-/**
- * validates the format of a date, given a text string and the supplied format.
- * @param f
- * @param format
- * @return 
- */
+
+    /**
+     * validates the format of a date, given a text string and the supplied
+     * format.
+     *
+     * @param f
+     * @param format
+     * @return
+     */
     private String isDate(String f, String format) {
         /*
          *  null=invalido ""=aceptado pero vacio "valor"=aceptado (valor para db)
@@ -5931,11 +5974,13 @@ public class RecordDataMB implements Serializable {
             return null;//invalida
         }
     }
-/**
- * valid if the string contains a  military hour   format
- * @param strIn
- * @return 
- */
+
+    /**
+     * valid if the string contains a military hour format
+     *
+     * @param strIn
+     * @return
+     */
     private String isMilitary(String strIn) {
         /*
          * validacion de si un string es un hora_evento militar null=invalido
@@ -6114,11 +6159,13 @@ public class RecordDataMB implements Serializable {
         return null;
         //return "Valor no aceptado como hora_evento militar";
     }
-/**
- * validates if a string is an integer or a defined age in months and years.
- * @param str
- * @return 
- */
+
+    /**
+     * validates if a string is an integer or a defined age in months and years.
+     *
+     * @param str
+     * @return
+     */
     private String isAge(String str) {
         /*
          * validacion de si un string es numero_identificacion_victima entero o
@@ -6164,12 +6211,15 @@ public class RecordDataMB implements Serializable {
             return null;
         }
     }
-/**
- * validate whether a value is within a category, or discarded, return the id  respective of the table categorical
- * @param valueFound
- * @param relationVar
- * @return 
- */
+
+    /**
+     * validate whether a value is within a category, or discarded, return the
+     * id respective of the table categorical
+     *
+     * @param valueFound
+     * @param relationVar
+     * @return
+     */
     private String isCategorical(String valueFound, RelationVariables relationVar) {
         /*
          * validacion de si un valor esta dentro de una categoria, o es

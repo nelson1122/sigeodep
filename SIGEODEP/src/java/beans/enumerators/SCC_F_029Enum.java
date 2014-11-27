@@ -5,12 +5,13 @@
 package beans.enumerators;
 
 /**
- *This class handles enumerators related with SCC_F_029
+ * This class handles enumerators related with SCC_F_029
+ *
  * @author SANTOS
  */
 public enum SCC_F_029Enum {
 
-    departamento_evento,    
+    departamento_evento,
     municipio_evento,
     certificado_defuncion,
     dia_evento,
@@ -47,7 +48,7 @@ public enum SCC_F_029Enum {
     vehiculo_involucrado_contraparte_1,
     vehiculo_involucrado_contraparte_2,
     vehiculo_involucrado_contraparte_3,
-    tipo_servicio_vehiculo_victima,    
+    tipo_servicio_vehiculo_victima,
     tipo_servicio_contraparte_1,
     tipo_servicio_contraparte_2,
     tipo_servicio_contraparte_3,
@@ -59,12 +60,13 @@ public enum SCC_F_029Enum {
     nivel_alcohol_culpable,
     detalle_nivel_alcohol_culpable,
     NOVALUE;
-    
- /**
- * converts a string to an enumerator, if not possible then returns NOVALUE
- * @param str
- * @return 
- */
+
+    /**
+     * converts a string to an enumerator, if not possible then returns NOVALUE
+     *
+     * @param str
+     * @return
+     */
     public static SCC_F_029Enum convert(String str) {
         try {
             return valueOf(str);

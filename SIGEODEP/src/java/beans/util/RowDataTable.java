@@ -9,7 +9,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *The RowDataTable class is responsible for giving the appropriate structure to tables so they can be used appropriately for PrimeFaces.
+ * The RowDataTable class is responsible for giving the appropriate structure to
+ * tables so they can be used appropriately for PrimeFaces.
+ *
  * @author SANTOS
  */
 public class RowDataTable {
@@ -18,7 +20,7 @@ public class RowDataTable {
     private String column2;
     private String column3;
     private String column4;
-    private String column5;    
+    private String column5;
     private String column6;
     private String column7;
     private String column8;
@@ -144,11 +146,8 @@ public class RowDataTable {
     private String column128;
     private String column129;
     private String column130;
-    
-    
-    
-    public RowDataTable()
-    {
+
+    public RowDataTable() {
         this.column1 = "";
         this.column2 = "";
         this.column3 = "";
@@ -160,18 +159,18 @@ public class RowDataTable {
         this.column9 = "";
         this.column10 = "";
     }
-    
+
     public void resetear() throws NoSuchFieldException {
         Field[] propieties;
-        propieties= this.getClass().getFields();
+        propieties = this.getClass().getFields();
         for (int i = 0; i < propieties.length; i++) {
             try {
                 Field field = propieties[i];
-                this.getClass().getField(field.getName()).set(this.getClass().newInstance(),"sss");
-            } catch (    InstantiationException | IllegalAccessException ex) {
+                this.getClass().getField(field.getName()).set(this.getClass().newInstance(), "sss");
+            } catch (InstantiationException | IllegalAccessException ex) {
                 Logger.getLogger(RowDataTable.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+
         }
     }
 
@@ -187,6 +186,7 @@ public class RowDataTable {
         this.column9 = column9;
         this.column10 = column10;
     }
+
     public RowDataTable(String column1, String column2, String column3, String column4, String column5, String column6, String column7, String column8, String column9) {
         this.column1 = column1;
         this.column2 = column2;
@@ -197,8 +197,9 @@ public class RowDataTable {
         this.column7 = column7;
         this.column8 = column8;
         this.column9 = column9;
-    
+
     }
+
     public RowDataTable(String column1, String column2, String column3, String column4, String column5, String column6, String column7, String column8) {
         this.column1 = column1;
         this.column2 = column2;
@@ -209,6 +210,7 @@ public class RowDataTable {
         this.column7 = column7;
         this.column8 = column8;
     }
+
     public RowDataTable(String column1, String column2, String column3, String column4, String column5, String column6, String column7) {
         this.column1 = column1;
         this.column2 = column2;
@@ -218,6 +220,7 @@ public class RowDataTable {
         this.column6 = column6;
         this.column7 = column7;
     }
+
     public RowDataTable(String column1, String column2, String column3, String column4, String column5, String column6) {
         this.column1 = column1;
         this.column2 = column2;
@@ -226,6 +229,7 @@ public class RowDataTable {
         this.column5 = column5;
         this.column6 = column6;
     }
+
     public RowDataTable(String column1, String column2, String column3, String column4, String column5) {
         this.column1 = column1;
         this.column2 = column2;
@@ -233,26 +237,28 @@ public class RowDataTable {
         this.column4 = column4;
         this.column5 = column5;
     }
+
     public RowDataTable(String column1, String column2, String column3, String column4) {
         this.column1 = column1;
         this.column2 = column2;
         this.column3 = column3;
         this.column4 = column4;
     }
+
     public RowDataTable(String column1, String column2, String column3) {
         this.column1 = column1;
         this.column2 = column2;
         this.column3 = column3;
     }
+
     public RowDataTable(String column1, String column2) {
         this.column1 = column1;
         this.column2 = column2;
     }
-    
+
     public RowDataTable(String column1) {
         this.column1 = column1;
     }
-    
 
     public String getColumn1() {
         return column1;
@@ -1293,8 +1299,4 @@ public class RowDataTable {
     public void setColumn99(String column99) {
         this.column99 = column99;
     }
-    
-    
-    
-    
 }

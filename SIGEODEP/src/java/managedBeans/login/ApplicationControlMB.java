@@ -38,12 +38,13 @@ import javax.swing.Timer;
  * @author santos
  */
 /**
- * This class is responsible for identifying the server path, set different record identifiers to prevent that two users use the same login ID and add a session to  the list of active sessions.
- * 
+ * This class is responsible for identifying the server path, set different
+ * record identifiers to prevent that two users use the same login ID and add a
+ * session to the list of active sessions.
+ *
  */
 @ManagedBean(name = "applicationControlMB")
 @ApplicationScoped
-
 public class ApplicationControlMB {
 
     @Resource(name = "jdbc/od")
@@ -66,9 +67,11 @@ public class ApplicationControlMB {
     private String realPath = "";
     public Connection conn;
 
-/**
- * This method is the class constuctor, this method is responsible to gets the actual path of the server and starts a timer that is called every hour.
- */    
+    /**
+     * This method is the class constuctor, this method is responsible to gets
+     * the actual path of the server and starts a timer that is called every
+     * hour.
+     */
     public ApplicationControlMB() {
         /*
          * Constuctor de la clase: obtiene la ruta real del servidor e 
@@ -83,8 +86,8 @@ public class ApplicationControlMB {
 //        } catch (Exception e) {
 //            System.out.println("error:    " + e);
 //        }
-        
-        
+
+
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/");
         timer.start();
@@ -98,11 +101,12 @@ public class ApplicationControlMB {
     private void event() {
         connectToDb();
     }
-/**
- * This method is responsable to destroy a session, this is done when the system is not connected to the database or the connection is closed.
- */
-    @PreDestroy
 
+    /**
+     * This method is responsable to destroy a session, this is done when the
+     * system is not connected to the database or the connection is closed.
+     */
+    @PreDestroy
     private void destroySession() {
         try {
             if (conn != null && !conn.isClosed()) {
@@ -112,9 +116,10 @@ public class ApplicationControlMB {
             //System.out.println("Termina session por inactividad 003 " + e.toString());
         }
     }
-/**
- * This method allows the system to disconnect of database.
- */
+
+    /**
+     * This method allows the system to disconnect of database.
+     */
     public void disconnect() {
         try {
             if (!conn.isClosed()) {
@@ -132,9 +137,11 @@ public class ApplicationControlMB {
             actionsPerHour();
         }
     });
-/**
- * This method is called every hour, and if no users were logged in to the system, this method performs a backup
- */
+
+    /**
+     * This method is called every hour, and if no users were logged in to the
+     * system, this method performs a backup
+     */
     private void actionsPerHour() {
         /*
          * Metodo que se ejecuta cada hora, y si no hay usuarios logeados en el sistema realiza una copia de seguridad
@@ -255,11 +262,14 @@ public class ApplicationControlMB {
             //System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.getMessage());
         }
     }
-/**
- * This method is responsible to display by console the progress of an external process invoked
- * @param p: Process name
- * @param description: Description process 
- */
+
+    /**
+     * This method is responsible to display by console the progress of an
+     * external process invoked
+     *
+     * @param p: Process name
+     * @param description: Description process
+     */
     private void printOutputFromProcces(Process p, String description) {
         /*
          * mostrar por consola el progreso de un proceso externo invocado
@@ -279,10 +289,14 @@ public class ApplicationControlMB {
         }
         System.out.println("Termina proceso " + description + " /////////////////////////////////////////\n");
     }
-/**
- * This method allows the system to connect to the database via a datasource (Connection configured by GlassFish), and generate a normal connection by JDBC.
- * @return 
- */
+
+    /**
+     * This method allows the system to connect to the database via a datasource
+     * (Connection configured by GlassFish), and generate a normal connection by
+     * JDBC.
+     *
+     * @return
+     */
     public final boolean connectToDb() {
         /*
          * Nos conectamos a la base de datos atraves 
@@ -332,11 +346,14 @@ public class ApplicationControlMB {
         }
         return returnValue;
     }
-/**
- * It is responsible to process a query that returns one or more rows of data base on a ResultSet.
- * @param query
- * @return 
- */
+
+    /**
+     * It is responsible to process a query that returns one or more rows of
+     * data base on a ResultSet.
+     *
+     * @param query
+     * @return
+     */
     public ResultSet consult(String query) {
         /*
          * se encarga de procesar una consulta que retorne una o varias tuplas
@@ -358,11 +375,14 @@ public class ApplicationControlMB {
             return null;
         }
     }
-/**
- * This method is responsible to process a query that does not return tuples for example: INSERT, UPDATE, DELETE ...
- * @param query
- * @return 
- */
+
+    /**
+     * This method is responsible to process a query that does not return tuples
+     * for example: INSERT, UPDATE, DELETE ...
+     *
+     * @param query
+     * @return
+     */
     public int non_query(String query) {
         /*
          * se encarga de procesar una consulta que no retorne tuplas
@@ -383,11 +403,13 @@ public class ApplicationControlMB {
         }
         return reg;
     }
-/**
- * This method is responsible to determine if a user is logged on.
- * @param idUser
- * @return 
- */
+
+    /**
+     * This method is responsible to determine if a user is logged on.
+     *
+     * @param idUser
+     * @return
+     */
     public boolean hasLogged(int idUser) {
         /*
          * determina si un usario tiene una sesion iniciada 
@@ -403,11 +425,14 @@ public class ApplicationControlMB {
         }
         return foundIdUser;
     }
-/**
- * This method is responsible to add a session to the list of active sessions.
- * @param idUser
- * @param idSession 
- */
+
+    /**
+     * This method is responsible to add a session to the list of active
+     * sessions.
+     *
+     * @param idUser
+     * @param idSession
+     */
     public void addSession(int idUser, String idSession) {
         /*
          * adicionar a la lista de sesiones activas
@@ -415,10 +440,13 @@ public class ApplicationControlMB {
         currentIdSessions.add(idSession);
         currentUserIdSessions.add(idUser);//System.out.println("Agregada Nueva sesion: " + idSession + "  usuario: " + idUser);
     }
-/**
- * This method allows the system to remove a session from the list of active sessions depending of the user id.
- * @param idUser 
- */
+
+    /**
+     * This method allows the system to remove a session from the list of active
+     * sessions depending of the user id.
+     *
+     * @param idUser
+     */
     public void removeSession(int idUser) {
         /*
          * eliminar de la lista de sesiones activas dependiento del id del usuario
@@ -435,10 +463,13 @@ public class ApplicationControlMB {
             System.out.println("Error 9 en " + this.getClass().getName() + ":" + e.getMessage());
         }
     }
-/**
- * This method allows the system to delete a session from the list of active sessions depending of the session id.
- * @param idSession 
- */
+
+    /**
+     * This method allows the system to delete a session from the list of active
+     * sessions depending of the session id.
+     *
+     * @param idSession
+     */
     public void removeSession(String idSession) {
         /*
          * eliminar de la lista de sesiones actuales dependiento del id de la sesion
@@ -455,11 +486,14 @@ public class ApplicationControlMB {
             System.out.println("Error 10 en " + this.getClass().getName() + ":" + e.getMessage());
         }
     }
-/**
- * This method allows the system to search for a session according to its ID.
- * @param idSessionSearch
- * @return 
- */
+
+    /**
+     * This method allows the system to search for a session according to its
+     * ID.
+     *
+     * @param idSessionSearch
+     * @return
+     */
     public boolean findIdSession(String idSessionSearch) {
         /*
          * buscar una session segun su id
@@ -473,9 +507,11 @@ public class ApplicationControlMB {
         }
         return booleanReturn;
     }
-/**
- * This method is responsible to remove all active sessions (used when restoring the backup is done).
- */
+
+    /**
+     * This method is responsible to remove all active sessions (used when
+     * restoring the backup is done).
+     */
     public void closeAllSessions() {
         /*
          * eliminar todas las sessiones activas (se usa cuando se realiza una 
@@ -489,10 +525,13 @@ public class ApplicationControlMB {
 
 
     }
-/**
- * This method determines what the maximum identifier of the users who are in the system, the guest starting in 1000.
- * @return 
- */
+
+    /**
+     * This method determines what the maximum identifier of the users who are
+     * in the system, the guest starting in 1000.
+     *
+     * @return
+     */
     public int getMaxUserId() {
         //deteminar cual es el maximo identificador de los usuarios que esten en el sistema
         //los invitados inician en 1000
@@ -508,10 +547,13 @@ public class ApplicationControlMB {
             return 0;
         }
     }
-/**
- * This method is responsible to book the ID for a new record, so two users do not enter a record with the same identifier.
- * @return 
- */
+
+    /**
+     * This method is responsible to book the ID for a new record, so two users
+     * do not enter a record with the same identifier.
+     *
+     * @return
+     */
     public synchronized int addNonfatalReservedIdentifiers() {
         /*
          * se reserva el identificador para un nuevo registro asi dos 
@@ -546,10 +588,13 @@ public class ApplicationControlMB {
         }
         return intReturn;
     }
-/**
- * This method allows the system to remove a session identifier of an active user.
- * @param id 
- */
+
+    /**
+     * This method allows the system to remove a session identifier of an active
+     * user.
+     *
+     * @param id
+     */
     public synchronized void removeNonfatalReservedIdentifiers(int id) {
         for (int i = 0; i < nonfatalReservedIdentifiers.size(); i++) {
             if (nonfatalReservedIdentifiers.get(i) == id) {
@@ -557,10 +602,13 @@ public class ApplicationControlMB {
             }
         }
     }
-/**
- * This method is responsible to book the ID for a new record, so two users do not enter a record with the same identifier.
- * @return 
- */
+
+    /**
+     * This method is responsible to book the ID for a new record, so two users
+     * do not enter a record with the same identifier.
+     *
+     * @return
+     */
     public synchronized int addFatalReservedIdentifiers() {
         /*
          * se reserva el identificador para un nuevo registro asi dos 
@@ -595,10 +643,13 @@ public class ApplicationControlMB {
         }
         return intReturn;
     }
-/**
- * This method allows the system to remove a session identifier of an active user.
- * @param id 
- */
+
+    /**
+     * This method allows the system to remove a session identifier of an active
+     * user.
+     *
+     * @param id
+     */
     public synchronized void removeFatalReservedIdentifiers(int id) {
         for (int i = 0; i < fatalReservedIdentifiers.size(); i++) {
             if (fatalReservedIdentifiers.get(i) == id) {
@@ -606,10 +657,13 @@ public class ApplicationControlMB {
             }
         }
     }
-/**
- * This method is responsible to book the ID for a new record, so two users do not enter a record with the same identifier.
- * @return 
- */
+
+    /**
+     * This method is responsible to book the ID for a new record, so two users
+     * do not enter a record with the same identifier.
+     *
+     * @return
+     */
     public synchronized int addVictimsReservedIdentifiers() {
         /*
          * se reserva el identificador para un nuevo registro asi dos 
@@ -645,10 +699,13 @@ public class ApplicationControlMB {
         return intReturn;
 
     }
-/**
- * This method allows the system to remove a session identifier of an active user.
- * @param id 
- */
+
+    /**
+     * This method allows the system to remove a session identifier of an active
+     * user.
+     *
+     * @param id
+     */
     public synchronized void removeVictimsReservedIdentifiers(int id) {
         for (int i = 0; i < victimsReservedIdentifiers.size(); i++) {
             if (victimsReservedIdentifiers.get(i) == id) {
@@ -656,10 +713,13 @@ public class ApplicationControlMB {
             }
         }
     }
-/**
- * This method is responsible to book the ID for a new record, so two users do not enter a record with the same identifier.
- * @return 
- */
+
+    /**
+     * This method is responsible to book the ID for a new record, so two users
+     * do not enter a record with the same identifier.
+     *
+     * @return
+     */
     public synchronized int addSivigilaVictimReservedIdentifiers() {
         /*
          * se reserva el identificador para un nuevo registro asi dos 
@@ -695,10 +755,13 @@ public class ApplicationControlMB {
         return intReturn;
 
     }
-/**
- * This method allows the system to remove a session identifier of an active user.
- * @param id 
- */
+
+    /**
+     * This method allows the system to remove a session identifier of an active
+     * user.
+     *
+     * @param id
+     */
     public synchronized void removeSivigilaVictimReservedIdentifiers(int id) {
         for (int i = 0; i < sivigilaVictimReservedIdentifiers.size(); i++) {
             if (sivigilaVictimReservedIdentifiers.get(i) == id) {
@@ -706,10 +769,13 @@ public class ApplicationControlMB {
             }
         }
     }
-/**
- * This method is responsible to book the ID for a new record, so two users do not enter a record with the same identifier.
- * @return 
- */
+
+    /**
+     * This method is responsible to book the ID for a new record, so two users
+     * do not enter a record with the same identifier.
+     *
+     * @return
+     */
     public synchronized int addSivigilaAggresorReservedIdentifiers() {
         /*
          * se reserva el identificador para un nuevo registro asi dos 
@@ -745,10 +811,13 @@ public class ApplicationControlMB {
         return intReturn;
 
     }
-/**
- * This method allows the system to remove a session identifier of an active user.
- * @param id 
- */
+
+    /**
+     * This method allows the system to remove a session identifier of an active
+     * user.
+     *
+     * @param id
+     */
     public synchronized void removeSivigilaAggresorReservedIdentifiers(int id) {
         for (int i = 0; i < sivigilaAggresorReservedIdentifiers.size(); i++) {
             if (sivigilaAggresorReservedIdentifiers.get(i) == id) {

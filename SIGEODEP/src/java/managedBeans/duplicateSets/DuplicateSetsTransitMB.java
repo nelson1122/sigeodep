@@ -27,12 +27,15 @@ import model.pojo.*;
  * @author SANTOS
  */
 /**
- * This class is responsible to detect duplicate records, this method displays in a table the data of victims who may have duplicate records, when the user selects the record of a victim, then the system is responsible to display the " LISTADO DE POSIBLES DUPLICADOS PARA EL REGISTRO SELECCIONADO " that so the user can select a duplicate record and then can delete it.
+ * This class is responsible to detect duplicate records, this method displays
+ * in a table the data of victims who may have duplicate records, when the user
+ * selects the record of a victim, then the system is responsible to display the
+ * " LISTADO DE POSIBLES DUPLICADOS PARA EL REGISTRO SELECCIONADO " that so the
+ * user can select a duplicate record and then can delete it.
  *
  */
 @ManagedBean(name = "duplicateSetsTransitMB")
 @SessionScoped
-
 public class DuplicateSetsTransitMB implements Serializable {
 
     //--------------------
@@ -88,40 +91,42 @@ public class DuplicateSetsTransitMB implements Serializable {
     private int tuplesProcessed = 0;
     private String initialDateStr = "";
     private String endDateStr = "";
-    /*
-     * primer funcion que se ejecuta despues del constructor que inicializa
-     * variables y carga la conexion por jdbc
-     */
+
     /**
      * Get current instance of the connection to the database
-     */ 
+     */
     @PostConstruct
-   
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-/**
- * This method is the class constructor. 
- */
+
+    /**
+     * This method is the class constructor.
+     */
     public DuplicateSetsTransitMB() {
     }
 
     public String openForm() {
         return openForm;
     }
-/**
- * This method is used to display messages of the actions that are realizing.
- * @param s
- * @param title
- * @param messageStr 
- */
+
+    /**
+     * This method is used to display messages of the actions that are
+     * realizing.
+     *
+     * @param s
+     * @param title
+     * @param messageStr
+     */
     public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
         FacesMessage msg = new FacesMessage(s, title, messageStr);
         FacesContext.getCurrentInstance().addMessage(null, msg);
     }
-/**
- * This method generates a list of all records that are possibly duplicate of a selected victim.
- */
+
+    /**
+     * This method generates a list of all records that are possibly duplicate
+     * of a selected victim.
+     */
     public void loadDuplicatedRecords() {
         /*
          * saca la lista con todos lo s campos de los registros que pueden ser
@@ -135,20 +140,6 @@ public class DuplicateSetsTransitMB implements Serializable {
                     printMessage(FacesMessage.SEVERITY_WARN, "Registro eliminado", "Se ha eliminado el registro con el cual se estaba comparando");
                 } else {
                     rowDataTableList.add(newRow);
-//                int id;
-//                //cargo el registro con el que estoy comparando
-//                ResultSet resultSet2 = connectionJdbcMB.consult(""
-//                        + "SELECT "
-//                        + "   fatal_injuries.fatal_injury_id "
-//                        + "FROM "
-//                        + "   fatal_injuries "
-//                        + "WHERE"
-//                        + "   fatal_injuries.victim_id = " + selectedRowDuplicatedTable.getColumn1() + "");
-//                resultSet2.next();
-//                id = Integer.parseInt(resultSet2.getString(1));
-//                rowDataTableList.add(loadValues("", fatalInjuryTrafficFacade.find(id)));
-
-
                     String sql = "";
                     sql = sql + "SELECT ";
                     sql = sql + "t1.victim_id ";
@@ -161,24 +152,10 @@ public class DuplicateSetsTransitMB implements Serializable {
                     sql = sql + "AND levenshtein(t1.victim_name, t2.victim_name) < 4 ";
                     ResultSet resultSetCount = connectionJdbcMB.consult(sql);
 
-
-                    //id = -1;
                     int cont = 0;
-                    //cargo los posibles duplicados 
-
-                    while (resultSetCount.next()) {
-//                    resultSet2 = connectionJdbcMB.consult(""
-//                            + "SELECT "
-//                            + "   fatal_injuries.fatal_injury_id "
-//                            + "FROM "
-//                            + "   fatal_injuries "
-//                            + "WHERE"
-//                            + "   fatal_injuries.victim_id = " + resultSetCount.getString("victim_id") + "");
-//                    resultSet2.next();
+                    while (resultSetCount.next()) {//cargo los posibles duplicados 
                         cont++;
                         rowDataTableList.add(connectionJdbcMB.loadFatalInjuryTraafficRecord(resultSetCount.getString("victim_id")));
-//                    id = Integer.parseInt(resultSet2.getString(1));
-//                    rowDataTableList.add(loadValues("", fatalInjuryTrafficFacade.find(id)));
                     }
                     if (cont == 0) {
                         printMessage(FacesMessage.SEVERITY_WARN, "Sin datos", "Este registro ya no tiene posibles duplicados");
@@ -192,11 +169,15 @@ public class DuplicateSetsTransitMB implements Serializable {
             }
         }
     }
-/**
- * This method is called the recordsets class when the user presses the button “DETECTAR DUPLICADOS”. 
- * This method is used to display a list of all possible duplicates that exist given a starting date and an ending date.
- * @param selectedRowsDataTableTags 
- */
+
+    /**
+     * This method is called the recordsets class when the user presses the
+     * button “DETECTAR DUPLICADOS”. This method is used to display a list of
+     * all possible duplicates that exist given a starting date and an ending
+     * date.
+     *
+     * @param selectedRowsDataTableTags
+     */
     public void loadValues(RowDataTable[] selectedRowsDataTableTags) {
         /*
          * se llama a esta funcion desde record sets cuando se presiona el boton
@@ -339,9 +320,11 @@ public class DuplicateSetsTransitMB implements Serializable {
             System.out.println("Error: " + ex.toString());
         }
     }
-/**
- * This method creates a new array to store all possible duplicate records of the selected victim.
- */
+
+    /**
+     * This method creates a new array to store all possible duplicate records
+     * of the selected victim.
+     */
     public void rowDuplicatedTableListSelect() {
         selectedRowDataTable = null;
         rowDataTableList = new ArrayList<>();
@@ -351,9 +334,11 @@ public class DuplicateSetsTransitMB implements Serializable {
             loadDuplicatedRecords();
         }
     }
-/**
- * This method enables the delete button after selecting a row of a duplicate record.
- */
+
+    /**
+     * This method enables the delete button after selecting a row of a
+     * duplicate record.
+     */
     public void rowDataTableListSelect() {
         //currentNonFatalInjury = null;
         btnRemoveDisabled = true;
@@ -364,9 +349,10 @@ public class DuplicateSetsTransitMB implements Serializable {
             //currentNonFatalInjury = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
         }
     }
-/**
- * This method is used to delete a duplicate record has been selected.
- */
+
+    /**
+     * This method is used to delete a duplicate record has been selected.
+     */
     public void deleteRegistry() {
         if (selectedRowDataTable != null) {
             FatalInjuryTraffic fatalInjuryTrafficSelect = fatalInjuryTrafficFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1()));
@@ -375,7 +361,7 @@ public class DuplicateSetsTransitMB implements Serializable {
             Victims auxVictims = fatalInjuryTrafficSelect.getFatalInjuries().getVictimId();
             fatalInjuryTrafficFacade.remove(fatalInjuryTrafficSelect);
             fatalInjuriesFacade.remove(auxFatalInjuries);
-            victimsFacade.remove(auxVictims);            
+            victimsFacade.remove(auxVictims);
             //quito los elementos seleccionados de rowsDataTableList seleccion de 
             for (int i = 0; i < rowDataTableList.size(); i++) {
                 if (selectedRowDataTable.getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
@@ -386,49 +372,12 @@ public class DuplicateSetsTransitMB implements Serializable {
             //deselecciono los controles
             selectedRowDataTable = null;
             btnRemoveDisabled = true;
-            
-            
+
+
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
         } else {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
         }
-//        if (selectedRowDataTable != null) {
-//            List<NonFatalInjuries> nonFatalInjuriesList = new ArrayList<NonFatalInjuries>();
-//            nonFatalInjuriesList.add(nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowDataTable.getColumn1())));
-//            if (nonFatalInjuriesList != null) {
-//                for (int j = 0; j < nonFatalInjuriesList.size(); j++) {
-//                    if (nonFatalInjuriesList.get(j).getNonFatalDomesticViolence() != null) {
-//                        nonFatalDomesticViolenceFacade.remove(nonFatalInjuriesList.get(j).getNonFatalDomesticViolence());
-//                    }
-//                    if (nonFatalInjuriesList.get(j).getNonFatalInterpersonal() != null) {
-//                        nonFatalInterpersonalFacade.remove(nonFatalInjuriesList.get(j).getNonFatalInterpersonal());
-//                    }
-//                    if (nonFatalInjuriesList.get(j).getNonFatalSelfInflicted() != null) {
-//                        nonFatalSelfInflictedFacade.remove(nonFatalInjuriesList.get(j).getNonFatalSelfInflicted());
-//                    }
-//                    if (nonFatalInjuriesList.get(j).getNonFatalTransport() != null) {
-//                        nonFatalTransportFacade.remove(nonFatalInjuriesList.get(j).getNonFatalTransport());
-//                    }
-//                    nonFatalInjuriesFacade.remove(nonFatalInjuriesList.get(j));
-//                    victimsFacade.remove(nonFatalInjuriesList.get(j).getVictimId());
-//                    //----------------------------------------------------------
-//                }
-//                printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
-//            } else {
-//                printMessage(FacesMessage.SEVERITY_WARN, "Alerta", "El registro seleccionado es quien se esta comparando, por tanto no se puede eliminar");
-//            }
-//            //quito los elementos seleccionados de rowsDataTableList seleccion de 
-//            for (int i = 0; i < rowDataTableList.size(); i++) {
-//                if (selectedRowDataTable.getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
-//                    rowDataTableList.remove(i);
-//                    break;
-//                }
-//            }
-//            //deselecciono los controles
-//            selectedRowDataTable = null;
-//            btnRemoveDisabled = true;
-//
-//        }
     }
 
     public List<RowDataTable> getRowDataTableList() {

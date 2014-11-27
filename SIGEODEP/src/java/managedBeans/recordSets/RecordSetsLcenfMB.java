@@ -117,92 +117,7 @@ public class RecordSetsLcenfMB implements Serializable {
         lcenfMB.loadValues(tagsList, currentNonFatalInjury);
         openForm = "LCENF";
     }
-
-//    void loadValues(RowDataTable[] selectedRowsDataTableTags) {
-//        try {
-//            //CREO LA LISTA DE TAGS SELECCIONADOS   
-//            exportFileName = "LCENF - " + initialDateStr + " - " + endDateStr;
-//
-//            //DETERMINO TOTAL DE REGISTROS
-////            sql =  " "//mecanismo es transito
-////                    + " SELECT \n"
-////                    + " count(*) \n"
-////                    + " FROM \n"
-////                    + " public.victims, \n"
-////                    + " public.non_fatal_injuries \n"
-////                    + " WHERE \n"
-////                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
-////                    + " non_fatal_injuries.injury_id = 54 AND "
-////                    + " non_fatal_injuries.mechanism_id = 1 ";
-//            
-////            sql =  " "
-////                    + " SELECT \n"
-////                    + " count(*) \n"
-////                    + " FROM \n"
-////                    + " public.victims, \n"
-////                    + " public.non_fatal_injuries \n"
-////                    + " WHERE \n"
-////                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
-////                    + " non_fatal_injuries.injury_id = 54 AND "
-////                    + " non_fatal_injuries.intentionality_id = 2 ";//auntoinflingida
-//            
-//            sql =  " "
-//                    + " SELECT \n"
-//                    + " count(*) \n"
-//                    + " FROM \n"
-//                    + " public.victims, \n"
-//                    + " public.non_fatal_injuries \n"
-//                    + " WHERE \n"
-//                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
-//                    + " non_fatal_injuries.injury_id = 54 AND "
-//                    + " non_fatal_injuries.intentionality_id = 3 ";//violencia agresion o sospecha
-//
-//            ResultSet resultSet = connection.consult(sql);
-//            totalRecords = "0";
-//            if (resultSet.next()) {
-//                totalRecords = String.valueOf(resultSet.getInt(1));
-//            }
-//            //System.out.println("Total de registros = " + totalRecords);
-//            //DETERMINO EL ID DE CADA REGISTRO                        
-////            sql =  " "
-////                    + " SELECT \n"
-////                    + " non_fatal_injuries.victim_id \n"
-////                    + " FROM \n"
-////                    + " public.victims, \n"
-////                    + " public.non_fatal_injuries \n"
-////                    + " WHERE \n"
-////                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
-////                    + " non_fatal_injuries.injury_id = 54 AND "
-////                    + " non_fatal_injuries.mechanism_id = 1 ";    
-//            
-////            sql =  " "
-////                    + " SELECT \n"
-////                    + " non_fatal_injuries.victim_id \n"
-////                    + " FROM \n"
-////                    + " public.victims, \n"
-////                    + " public.non_fatal_injuries \n"
-////                    + " WHERE \n"
-////                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
-////                    + " non_fatal_injuries.injury_id = 54 AND "
-////                    + " non_fatal_injuries.intentionality_id = 2 ";//auntoinflingida
-//            
-//            sql =  " "
-//                    + " SELECT \n"
-//                    + " non_fatal_injuries.victim_id \n"
-//                    + " FROM \n"
-//                    + " public.victims, \n"
-//                    + " public.non_fatal_injuries \n"
-//                    + " WHERE \n"
-//                    + " non_fatal_injuries.victim_id = victims.victim_id AND  \n"
-//                    + " non_fatal_injuries.injury_id = 54 AND "
-//                    + " non_fatal_injuries.intentionality_id = 3 ";//violencia agresion o sospecha
-//
-//            //CONSTRUYO EL TABLE_MODEL
-//            table_model = new LazyRecordSetsDataModel(Integer.parseInt(totalRecords), sql, FormsEnum.SCC_F_032);
-//        } catch (SQLException ex) {
-//            Logger.getLogger(RecordSetsLcenfMB.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
+    
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
         try {
             //CREO LA LISTA DE TAGS SELECCIONADOS   
@@ -713,18 +628,14 @@ public class RecordSetsLcenfMB implements Serializable {
     public void load() {
         currentNonFatalInjury = null;
         btnEditDisabled = true;
-//        btnRemoveDisabled = true;
         if (selectedRowsDataTable != null) {
             if (selectedRowsDataTable.length == 1) {
                 currentNonFatalInjury = nonFatalInjuriesFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
             }
             if (selectedRowsDataTable.length > 1) {
-
                 btnEditDisabled = true;
-//                btnRemoveDisabled = false;
             } else {
                 btnEditDisabled = false;
-//                btnRemoveDisabled = false;
             }
         }
     }
@@ -765,14 +676,7 @@ public class RecordSetsLcenfMB implements Serializable {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
         }
     }
-
-//    public List<RowDataTable> getRowDataTableList() {
-//        return rowDataTableList;
-//    }
-//
-//    public void setRowDataTableList(List<RowDataTable> rowDataTableList) {
-//        this.rowDataTableList = rowDataTableList;
-//    }
+    
     public RowDataTable[] getSelectedRowsDataTable() {
         return selectedRowsDataTable;
     }
@@ -820,14 +724,7 @@ public class RecordSetsLcenfMB implements Serializable {
     public void setBtnEditDisabled(boolean btnEditDisabled) {
         this.btnEditDisabled = btnEditDisabled;
     }
-
-//    public boolean isBtnRemoveDisabled() {
-//        return btnRemoveDisabled;
-//    }
-//
-//    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
-//        this.btnRemoveDisabled = btnRemoveDisabled;
-//    }
+    
     public String getData() {
         return data;
     }

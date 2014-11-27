@@ -32,7 +32,9 @@ import managedBeans.configurations.BackupsMB;
 import org.joda.time.DateTime;
 
 /**
- *ClosuresMB handles everything related to the closure of an event of injury, in addition to perform imputation the analyzed data.
+ * ClosuresMB handles everything related to the closure of an event of injury,
+ * in addition to perform imputation the analyzed data.
+ *
  * @author santos
  */
 @ManagedBean(name = "closuresMB")
@@ -119,18 +121,21 @@ public class ClosuresMB {
     private ArrayList<Short> injuriesToImputation;//lista de lesiones que se imputaran(ejemplo: 'Todas las LCENF' son varias al tiempo)
     private String realPath = "";
     private String outputMessage = "-";//mensaje que se muestra cuando la pantalla esta deshabilitada y el proceso es largo
-/**
- * Establishes the connection to the database.
- */
+
+    /**
+     * Establishes the connection to the database.
+     */
     public ClosuresMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         backupsMB = (BackupsMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{backupsMB}", BackupsMB.class);
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/");
     }
-/**
- * Allows activation of a tab considering the type of injury with which one Works.
- */
+
+    /**
+     * Allows activation of a tab considering the type of injury with which one
+     * Works.
+     */
     private void activeTabs() {
         /*
          * se realiza la activacion de una determinada pestaña dependiendo del tipo de lesion que se este trabajando
@@ -180,9 +185,10 @@ public class ClosuresMB {
             }
         }
     }
-/**
- * It handles reset all controls used during the execution of a closure.
- */
+
+    /**
+     * It handles reset all controls used during the execution of a closure.
+     */
     public void reset() {
         /*
          * reinicio de todos los controles
@@ -334,9 +340,10 @@ public class ClosuresMB {
         }
 
     }
-/**
- * It is responsible for perform the start of operations imputation
- */
+
+    /**
+     * It is responsible for perform the start of operations imputation
+     */
     public void startImputation() {
         /*
          * se realiza las operaciones de imputacion
@@ -532,10 +539,13 @@ public class ClosuresMB {
         renderedImputationResult = true;
         renderedStoreDataResult = false;
     }
-/**
- * It is responsible for replacing  symbol the  "-" to ","  in those columns that are multiple choice
- * @param table: table with which it will work.
- */
+
+    /**
+     * It is responsible for replacing symbol the "-" to "," in those columns
+     * that are multiple choice
+     *
+     * @param table: table with which it will work.
+     */
     private void replaceToCommaStaTemp(String table) {
         /*
          * aquellas columnas que sean de multiple opcion se reemplaza - por ,
@@ -575,11 +585,15 @@ public class ClosuresMB {
         }
 
     }
-/**
- * Takes care of the execution of a script which is responsible for passing data from tables to the data warehouse , in case of  the not it   run repeats  process  last copy
- * @param table: table with which it will work.
- * @return 
- */
+
+    /**
+     * Takes care of the execution of a script which is responsible for passing
+     * data from tables to the data warehouse , in case of the not it run
+     * repeats process last copy
+     *
+     * @param table: table with which it will work.
+     * @return
+     */
     private boolean runPdi(String table) {
         /*
          * se ejecutan scripts que se encargan de pasar los datos de tal tablas sta a la 
@@ -798,14 +812,18 @@ public class ClosuresMB {
         renderedImputationResult = true;
         renderedStoreDataResult = true;
     }
-/**
- * is responsible for generating a sql query depending on the table and the data obtained are used for the construction of a csv file.
- * @param table: table with which it will work.
- * @param column: column with which it will work.
- * @param takeNulls: taking the null fields or not null  in column.
- * @param whitCache: parameter used to determine if you should  take or   the not cache.
- * @return 
- */
+
+    /**
+     * is responsible for generating a sql query depending on the table and the
+     * data obtained are used for the construction of a csv file.
+     *
+     * @param table: table with which it will work.
+     * @param column: column with which it will work.
+     * @param takeNulls: taking the null fields or not null in column.
+     * @param whitCache: parameter used to determine if you should take or the
+     * not cache.
+     * @return
+     */
     private String createStaConsultForCsv(String table, String column, boolean takeNulls, boolean whitCache) {
         String strReturn = "";
         /*
@@ -1276,11 +1294,14 @@ public class ClosuresMB {
 
         return strReturn;
     }
-/**
- * taking the results of the sql query and stores them in a file.
- * @param sql: parameter that is used to extract the query via a connection to the cellar
- * @param nameFile: file name to search. 
- */
+
+    /**
+     * taking the results of the sql query and stores them in a file.
+     *
+     * @param sql: parameter that is used to extract the query via a connection
+     * to the cellar
+     * @param nameFile: file name to search.
+     */
     private void createCsvFile(String sql, String nameFile) {
         /*
          * Se almacena el resultado de la consulta sql en un archivo
@@ -1336,10 +1357,13 @@ public class ClosuresMB {
             System.out.println("No se encuentra la carpeta");
         }
     }
-/**
- * makes a copy of the consultations carried out depending on the type of injury and stores them in a temporary table.
- * @param table: table with which it will work. 
- */
+
+    /**
+     * makes a copy of the consultations carried out depending on the type of
+     * injury and stores them in a temporary table.
+     *
+     * @param table: table with which it will work.
+     */
     private void copyToStaTemp(String table) {
         switch (ClosuresEnum.convert(table)) {//nombre de variable                                                             
             case fatal_injury_murder_sta:
@@ -1414,9 +1438,11 @@ public class ClosuresMB {
                 break;
         }
     }
-/**
- * It is responsible for analysis and printing of the results obtained and stored in a temporary table.
- */
+
+    /**
+     * It is responsible for analysis and printing of the results obtained and
+     * stored in a temporary table.
+     */
     public void startClosure() {
         /*
          * se analiza y imprime el resultado del analisis
@@ -1519,12 +1545,17 @@ public class ClosuresMB {
 
         //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Empieza proceso de cierre"));
     }
-/**
- * It is responsible for an analysis of the columns and generated the imputation in relation to fashion and returning  the  average corresponding  imputation process information
- * @param table: Table to be used.
- * @param analyzedColumn: Variable charge of realize the analysis to a column.
- * @return 
- */
+
+    /**
+     * It is responsible for an analysis of the columns and generated the
+     * imputation in relation to fashion and returning the average corresponding
+     * imputation process information
+     *
+     * @param table: Table to be used.
+     * @param analyzedColumn: Variable charge of realize the analysis to a
+     * column.
+     * @return
+     */
     private String imputeForModeAndAverage(String table, AnalysisColumn analyzedColumn) {
         /*
          * imputacion(moda y promedio)
@@ -1545,12 +1576,16 @@ public class ClosuresMB {
                 + " <font color=\"blue\">Moda:</font> <b>" + analyzedColumn.getModePerColumnWhitCache() + "</b>";
         return strReturn;
     }
-/**
- * It generates and returns a list of identifiers of the records that have null value in a determined column in a table, this function is used to determine where imputation (replacing null values) is required.
- * @param table: table with which it will work.
- * @param column: column with which it will work.
- * @return 
- */
+
+    /**
+     * It generates and returns a list of identifiers of the records that have
+     * null value in a determined column in a table, this function is used to
+     * determine where imputation (replacing null values) is required.
+     *
+     * @param table: table with which it will work.
+     * @param column: column with which it will work.
+     * @return
+     */
     private ArrayList<String> determineIdFromNullData(String table, String column) {
         ArrayList<String> arrayReturn = new ArrayList<>();
         try {
@@ -1575,12 +1610,15 @@ public class ClosuresMB {
         }
         return arrayReturn;
     }
-/**
- * is responsible for determining if more than a different value and if so the imputation of data  for columns is performed.
- * @param table: table with which it will work.
- * @param columnName: receives  the name column
- * @return 
- */
+
+    /**
+     * is responsible for determining if more than a different value and if so
+     * the imputation of data for columns is performed.
+     *
+     * @param table: table with which it will work.
+     * @param columnName: receives the name column
+     * @return
+     */
     private boolean determineHaveMoreOneDistinct(String table, String columnName) {
         try {
             /*
@@ -1603,12 +1641,16 @@ public class ClosuresMB {
         }
         return false;
     }
-/**
- * It is responsible   convert the csv file tuples in  data base  tuple, because in  the csv if handled  column the year, month and day but the database column only the date is handled.
- * @param tuple
- * @param table: table with which it will work.
- * @return 
- */
+
+    /**
+     * It is responsible convert the csv file tuples in data base tuple, because
+     * in the csv if handled column the year, month and day but the database
+     * column only the date is handled.
+     *
+     * @param tuple
+     * @param table: table with which it will work.
+     * @return
+     */
     private String[] convertTupleCsvToTupleDb(String tuple, String table) {
         //se convierte una tupla del archivo csv a una tupla de la base de datos
         //se realiza esta conversion por que en el archivo csv se usan las columnas
@@ -1732,12 +1774,15 @@ public class ClosuresMB {
         //strReturn = strR.split(",");
         return strReturn;
     }
-/**
- * This method is responsible to realize the analysis columns  then realize the  imputation model, is responsible to take the nearest data.
- * @param table
- * @param analyzedColumn
- * @return 
- */
+
+    /**
+     * This method is responsible to realize the analysis columns then realize
+     * the imputation model, is responsible to take the nearest data.
+     *
+     * @param table
+     * @param analyzedColumn
+     * @return
+     */
     private String imputeForModel(String table, AnalysisColumn analyzedColumn) {
         /*
          * imputacion por modelo 
@@ -1832,11 +1877,13 @@ public class ClosuresMB {
         }
         return strReturn;
     }
-/**
- * Prints the results obtained from the analysis by column.
- * @param analyzedColumns
- * @return 
- */
+
+    /**
+     * Prints the results obtained from the analysis by column.
+     *
+     * @param analyzedColumns
+     * @return
+     */
     private String printResultOfAnalisis(ArrayList<AnalysisColumn> analyzedColumns) {
         //------------------------------------------------------------------
         //--- IMPRIMO RESULTADOS   -----------------------------------------
@@ -1927,12 +1974,15 @@ public class ClosuresMB {
         outputTextAnalysis = outputTextAnalysis + "</table>";
         return outputTextAnalysis;
     }
-/**
- * It is responsible for transferring the results obtained to the data warehouse.
- * @param table: select the type of injury
- * @param pos: current position in the vector
- * @return 
- */
+
+    /**
+     * It is responsible for transferring the results obtained to the data
+     * warehouse.
+     *
+     * @param table: select the type of injury
+     * @param pos: current position in the vector
+     * @return
+     */
     private boolean copyToDataWarehouse(String table, int pos) {
 
 
@@ -1981,10 +2031,13 @@ public class ClosuresMB {
             return false;
         }
     }
-/**
- * is responsible for  convert to null those categories that have  information as: no data, no rural data, none, not known and unknown.
- * @param table 
- */
+
+    /**
+     * is responsible for convert to null those categories that have information
+     * as: no data, no rural data, none, not known and unknown.
+     *
+     * @param table
+     */
     private void preProcessCategoryToNull(String table) {
         //1. SE CONVIERTE EN NULO AQUELLAS CATEGORIAS: sin dato,sin dato urbano,sin dato rural,ninguno,no se sabe,desconocido
         //2. SE APLICAN REGLAS INICIALES PARA CATEGORIAS DE MULTIPLE OPCION
@@ -2541,11 +2594,13 @@ public class ClosuresMB {
         } catch (Exception e) {
         }
     }
-/**
- * is responsible for  analysis  each column
- * @param table
- * @return 
- */
+
+    /**
+     * is responsible for analysis each column
+     *
+     * @param table
+     * @return
+     */
     private ArrayList<AnalysisColumn> analyzeColumnsOfTableSta(String table) {
         ArrayList<AnalysisColumn> analyzedColumns = new ArrayList<>();
         try {
@@ -2697,9 +2752,11 @@ public class ClosuresMB {
         }
         return analyzedColumns;
     }
-/**
- * Logs  the data belonging perhaps nonfatal and unintentional,that in  a given date range to the table which they were stored
- */
+
+    /**
+     * Logs the data belonging perhaps nonfatal and unintentional,that in a
+     * given date range to the table which they were stored
+     */
     private void insertNonFatalNonIntentionalSta() {
         /*
          * SE REGISTRAN LOS DATOS PERTENECIENTES A 'NO FATALES NO INTENCIONALES'
@@ -2911,9 +2968,11 @@ public class ClosuresMB {
         } catch (Exception e) {
         }
     }
-/**
- * insert the  data belonging to interpersonal nonfatal are given in a date range.
- */
+
+    /**
+     * insert the data belonging to interpersonal nonfatal are given in a date
+     * range.
+     */
     private void insertNonFatalInterpersonalSta() {
         /*
          * SE REGISTRAN LOS DATOS PERTENECIENTES A 'NO FATALES INTERPERSONAL'
@@ -3129,9 +3188,11 @@ public class ClosuresMB {
         } catch (Exception e) {
         }
     }
-/**
- * insert the  data belonging to non-fatal self-inflicted that in are given in a date range.
- */
+
+    /**
+     * insert the data belonging to non-fatal self-inflicted that in are given
+     * in a date range.
+     */
     private void insertNonFatalSelfInflictedSta() {
         /*
          * SE REGISTRAN LOS DATOS PERTENECIENTES A 'NO FATALES AUTOINFLINGIDA'
@@ -3347,9 +3408,11 @@ public class ClosuresMB {
         } catch (Exception e) {
         }
     }
-/**
- * insert the  data belonging to non-fatal  traffic   inthat  are given in a date range.
- */
+
+    /**
+     * insert the data belonging to non-fatal traffic inthat are given in a date
+     * range.
+     */
     private void insertNonFatalTraficcSta() {
         /*
          * SE REGISTRAN LOS DATOS PERTENECIENTES A 'NO FATALES EN TRANSITO'
@@ -3593,9 +3656,11 @@ public class ClosuresMB {
         } catch (Exception e) {
         }
     }
-/**
- * insert data belonging to non-fatal domestic violence that are determined by a given date range in Sta table.
- */
+
+    /**
+     * insert data belonging to non-fatal domestic violence that are determined
+     * by a given date range in Sta table.
+     */
     private void insertNonFatalDomesticViolenceSta() {
         /*
          * SE REGISTRAN LOS DATOS PERTENECIENTES A 'NO FATALES VIOLENCIA INTRAFAMILIAR'
@@ -3987,9 +4052,11 @@ public class ClosuresMB {
         } catch (Exception e) {
         }
     }
-/**
- * Record data belonging to fatal homicide that are determined in a given date range to Sta table.
- */
+
+    /**
+     * Record data belonging to fatal homicide that are determined in a given
+     * date range to Sta table.
+     */
     private void insertFatalInjuryMurderSta() {
         /*
          * SE REGISTRAN LOS DATOS PERTENECIENTES A 'FATALES HOMICIDIO'
@@ -4062,9 +4129,11 @@ public class ClosuresMB {
         } catch (Exception e) {
         }
     }
-/**
- * Record data belonging to fatal suicide that are determined in a given date range to Sta table.
- */
+
+    /**
+     * Record data belonging to fatal suicide that are determined in a given
+     * date range to Sta table.
+     */
     private void insertFatalInjurySuicideSta() {
         /*
          * SE REGISTRAN LOS DATOS PERTENECIENTES A 'FATALES SUICIDIO'
@@ -4137,9 +4206,11 @@ public class ClosuresMB {
         } catch (Exception e) {
         }
     }
-/**
- * Record data belonging to fatal accidental that are determined in a given date range to Sta table.
- */
+
+    /**
+     * Record data belonging to fatal accidental that are determined in a given
+     * date range to Sta table.
+     */
     private void insertFatalInjuryAccidentSta() {
         /*
          * SE REGISTRAN LOS DATOS PERTENECIENTES A 'FATALES ACCIDENTALES'
@@ -4220,9 +4291,11 @@ public class ClosuresMB {
         }
 
     }
-/**
- * Record data belonging to fatal transitl that are determined in a given date range to Sta table.
- */
+
+    /**
+     * Record data belonging to fatal transitl that are determined in a given
+     * date range to Sta table.
+     */
     private void insertFatalInjuryTrafficSta() {
         /*
          * SE REGISTRAN LOS DATOS PERTENECIENTES A 'FATALES TRANSITO'
@@ -4308,9 +4381,11 @@ public class ClosuresMB {
         } catch (Exception e) {
         }
     }
-/**
- * Record data belonging to fatal SIVIGILA that are determined in a given date range to Sta table.
- */
+
+    /**
+     * Record data belonging to fatal SIVIGILA that are determined in a given
+     * date range to Sta table.
+     */
     private void insertSivigilaSta() {
         /*
          * SE REGISTRAN LOS DATOS PERTENECIENTES A 'NO FATALES NO INTENCIONALES'
@@ -4434,8 +4509,8 @@ public class ClosuresMB {
                     + "   JOIN sivigila_victim USING (sivigila_victim_id)\n"
                     + " WHERE\n"
                     + "   injury_id = 56   AND"
-//                    + "       non_fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
-//                    + "       non_fatal_injuries.injury_date <= to_date('01/01/2015','dd/MM/yyyy') ";
+                    //                    + "       non_fatal_injuries.injury_date >= to_date('01/01/2002','dd/MM/yyyy') AND \n"
+                    //                    + "       non_fatal_injuries.injury_date <= to_date('01/01/2015','dd/MM/yyyy') ";
                     + "   non_fatal_injuries.injury_date >= to_date('" + startDate + "','dd/MM/yyyy') AND \n"
                     + "   non_fatal_injuries.injury_date <= to_date('" + endDate + "','dd/MM/yyyy') ";
             //System.out.println("\nCONSULTA INSERT\n" + sql + "\n");
@@ -4444,13 +4519,15 @@ public class ClosuresMB {
         } catch (Exception e) {
         }
     }
-/**
- * determined the mode by column  that are not cached.
- * @param table: table to determine.
- * @param column: determining column mode
- * @param filter: check  existence for filter.
- * @return 
- */
+
+    /**
+     * determined the mode by column that are not cached.
+     *
+     * @param table: table to determine.
+     * @param column: determining column mode
+     * @param filter: check existence for filter.
+     * @return
+     */
     private String determineModeColumnWhitOutCache(String table, String column, String filter) {
         try {
             String sql;
@@ -4482,13 +4559,15 @@ public class ClosuresMB {
             return "Sin determinar";
         }
     }
-/**
- * determined by column mode that are in cache.
- * @param table: table to determine.
- * @param column: determining column mode.
- * @param filter: check  existence for filter.
- * @return 
- */
+
+    /**
+     * determined by column mode that are in cache.
+     *
+     * @param table: table to determine.
+     * @param column: determining column mode.
+     * @param filter: check existence for filter.
+     * @return
+     */
     private String determineModeColumnWhitCache(String table, String column, String filter) {
         try {
             String sql;
@@ -4519,13 +4598,15 @@ public class ClosuresMB {
             return "Sin determinar";
         }
     }
-/**
- * determines the percentages for null columns that are in cache.
- * @param table: table to be used.
- * @param column: column that will undertake the analysis.
- * @param filter: sql to limit query.
- * @return 
- */
+
+    /**
+     * determines the percentages for null columns that are in cache.
+     *
+     * @param table: table to be used.
+     * @param column: column that will undertake the analysis.
+     * @param filter: sql to limit query.
+     * @return
+     */
     private double determineNullsPercentagePerColumnWhitCache(String table, String column, String filter) {
         //table:     tabla que se usara
         //column:    columna a la que se le realizara el analisis
@@ -4572,13 +4653,15 @@ public class ClosuresMB {
             return -1;
         }
     }
-/**
- * determines the percentages of  null columns that  aren't in cache.
- * @param table: table to be used
- * @param column: column that will undertake the analysis.
- * @param filter: sql to limit query.
- * @return 
- */
+
+    /**
+     * determines the percentages of null columns that aren't in cache.
+     *
+     * @param table: table to be used
+     * @param column: column that will undertake the analysis.
+     * @param filter: sql to limit query.
+     * @return
+     */
     private double determineNullsPercentagePerColumnWhitOutCache(String table, String column, String filter) {
         //determina el porcentaje de nulos en los datos a cargar(sin cache)
         //table:     tabla que se usara
@@ -4612,12 +4695,15 @@ public class ClosuresMB {
             return -1;
         }
     }
-/**
- * determines the data to be loaded that are out of cache and do not apply to accountants.
- * @param table: table to be used
- * @param filter: sql to limit query.
- * @return 
- */
+
+    /**
+     * determines the data to be loaded that are out of cache and do not apply
+     * to accountants.
+     *
+     * @param table: table to be used
+     * @param filter: sql to limit query.
+     * @return
+     */
     private int determineNotApplicableCountPerColumnWhitOutCache(String table, String filter) {
         try {
             String sql;
@@ -4633,12 +4719,15 @@ public class ClosuresMB {
             return -1;
         }
     }
-/**
- * determines the data to be loaded that are  of cache and do not apply to accountants
- * @param table: table to be used.
- * @param filter: sql to limit query.
- * @return 
- */
+
+    /**
+     * determines the data to be loaded that are of cache and do not apply to
+     * accountants
+     *
+     * @param table: table to be used.
+     * @param filter: sql to limit query.
+     * @return
+     */
     private int determineNotApplicableCountPerColumnWhitCache(String table, String filter) {
         try {
             String sql;
@@ -4654,13 +4743,16 @@ public class ClosuresMB {
             return -1;
         }
     }
-/**
- * determines the data to be loaded of the  counters null  by column that are out of cache.
- * @param table: table to be used.
- * @param column: column that will undertake the analysis 
- * @param filter: sql to limit query.
- * @return 
- */
+
+    /**
+     * determines the data to be loaded of the counters null by column that are
+     * out of cache.
+     *
+     * @param table: table to be used.
+     * @param column: column that will undertake the analysis
+     * @param filter: sql to limit query.
+     * @return
+     */
     private int determineNullsCountPerColumnWhitOutCache(String table, String column, String filter) {
         try {
             String sql;
@@ -4676,11 +4768,13 @@ public class ClosuresMB {
             return -1;
         }
     }
-/**
- * is responsible for the record counters that are out of cache.
- * @param table: table to be used.
- * @return 
- */
+
+    /**
+     * is responsible for the record counters that are out of cache.
+     *
+     * @param table: table to be used.
+     * @return
+     */
     private int determineCountRecordsWhitOutCache(String table) {
         try {
             String sql = "SELECT COUNT(*) FROM " + table + " WHERE estado = 3 ";
@@ -4691,11 +4785,13 @@ public class ClosuresMB {
             return -1;
         }
     }
-/**
- * is responsible for the record counters that are of cache.
- * @param table: table to be used.
- * @return 
- */
+
+    /**
+     * is responsible for the record counters that are of cache.
+     *
+     * @param table: table to be used.
+     * @return
+     */
     private int determineCountRecordsInCache(String table) {
         try {
             String sql = "SELECT COUNT(*) FROM " + table + " WHERE estado = 1 ";
@@ -4706,13 +4802,15 @@ public class ClosuresMB {
             return -1;
         }
     }
-/**
- * determined by column nonzero counters are out of cache.
- * @param table: table to be used.
- * @param column: column that will undertake the analysis
- * @param filter: sql to limit query.
- * @return 
- */
+
+    /**
+     * determined by column nonzero counters are out of cache.
+     *
+     * @param table: table to be used.
+     * @param column: column that will undertake the analysis
+     * @param filter: sql to limit query.
+     * @return
+     */
     private int determineNotNullsCountPerColumnWhitOutCache(String table, String column, String filter) {
         try {
             String sql;
@@ -4729,13 +4827,16 @@ public class ClosuresMB {
             return -1;
         }
     }
-/**
- * determines the data to be loaded by the nonnull column counters are cached.
- * @param table: table to be used.
- * @param column: column that will undertake the analysis
- * @param filter: sql to limit query.
- * @return 
- */
+
+    /**
+     * determines the data to be loaded by the nonnull column counters are
+     * cached.
+     *
+     * @param table: table to be used.
+     * @param column: column that will undertake the analysis
+     * @param filter: sql to limit query.
+     * @return
+     */
     private int determineNotNullsCountPerColumnInCache(String table, String column, String filter) {
         try {
             String sql;
@@ -4755,13 +4856,15 @@ public class ClosuresMB {
             return -1;
         }
     }
-/**
- * determines the data are loaded into cache with a frequency = 5.
- * @param table: table to be used.
- * @param column: analyzing column.
- * @param filter: checks  existence for filters.
- * @return 
- */
+
+    /**
+     * determines the data are loaded into cache with a frequency = 5.
+     *
+     * @param table: table to be used.
+     * @param column: analyzing column.
+     * @param filter: checks existence for filters.
+     * @return
+     */
     private String determineFiveFrecuentsWhitCache(String table, String column, String filter) {
         try {
             String sql;

@@ -51,13 +51,17 @@ public class RampConverter implements Converter {
         ramp.setColors(Color.WHITE, Color.GREEN);
         rampDB.add(ramp);
     }
-/**
- * Convert the specified string value, which is associated with the specified UIComponent, into a model data object that is appropriate for being stored during the Apply Request Values phase .
- * @param facesContext
- * @param component
- * @param submittedValue
- * @return 
- */
+
+    /**
+     * Convert the specified string value, which is associated with the
+     * specified UIComponent, into a model data object that is appropriate for
+     * being stored during the Apply Request Values phase .
+     *
+     * @param facesContext
+     * @param component
+     * @param submittedValue
+     * @return
+     */
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
         if (submittedValue.trim().equals("")) {
@@ -75,13 +79,15 @@ public class RampConverter implements Converter {
         }
         return null;
     }
-/**
- * This method is responsible for converting an object in string.
- * @param facesContext
- * @param component
- * @param value
- * @return 
- */
+
+    /**
+     * This method is responsible for converting an object in string.
+     *
+     * @param facesContext
+     * @param component
+     * @param value
+     * @return
+     */
     @Override
     public String getAsString(FacesContext facesContext, UIComponent component, Object value) {
         if (value == null || value.equals("")) {

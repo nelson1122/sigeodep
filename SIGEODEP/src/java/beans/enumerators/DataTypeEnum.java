@@ -5,7 +5,8 @@
 package beans.enumerators;
 
 /**
- *This class handles enumerators related with data types
+ * This class handles enumerators related with data types
+ *
  * @author SANTOS
  */
 public enum DataTypeEnum {
@@ -31,11 +32,12 @@ public enum DataTypeEnum {
     places_v,
     NOVALUE;
 
-/**
- * converts a string to an enumerator, if not possible then returns NOVALUE
- * @param str
- * @return 
- */    
+    /**
+     * converts a string to an enumerator, if not possible then returns NOVALUE
+     *
+     * @param str
+     * @return
+     */
     public static DataTypeEnum convert(String str) {
         try {
             return valueOf(str);

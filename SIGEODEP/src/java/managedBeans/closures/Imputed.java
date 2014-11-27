@@ -7,7 +7,9 @@ package managedBeans.closures;
 import java.text.DecimalFormat;
 
 /**
- *This class is used by the imputation class which is responsible for managing everything related to data imputation.
+ * This class is used by the imputation class which is responsible for managing
+ * everything related to data imputation.
+ *
  * @author and
  */
 public class Imputed {
@@ -86,18 +88,18 @@ public class Imputed {
     public void setTuple(String tuple) {
         this.tuple = tuple;
     }
-    
-    
-/**
- * is a string representation
- * @return 
- */
+
+    /**
+     * is a string representation
+     *
+     * @return
+     */
     @Override
     public String toString() {
-        return "# " + order 
-                + "\tActual: " + actual 
-                + "\tPredicted: " + predicted 
+        return "# " + order
+                + "\tActual: " + actual
+                + "\tPredicted: " + predicted
                 + "\tConfidence: " + f.format(confidence * 100) + "%"
-                + "\tTuple: " + tuple ;
+                + "\tTuple: " + tuple;
     }
 }

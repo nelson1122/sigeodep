@@ -20,7 +20,10 @@ import javax.faces.model.SelectItem;
 import javax.servlet.ServletContext;
 
 /**
- *The CategoricalVariablesMB class is responsible for handling categorical variables, which refer to the different characteristics that are managed by the observatory.
+ * The CategoricalVariablesMB class is responsible for handling categorical
+ * variables, which refer to the different characteristics that are managed by
+ * the observatory.
+ *
  * @author SANTOS
  */
 @ManagedBean(name = "categoricalVariablesMB")
@@ -43,9 +46,12 @@ public class CategoricalVariablesMB implements Serializable {
     private FormSourceMB formSourceMB;
     private Short currentInjury = 0;
     private SelectItem[] injuries;
-/**
- * It is responsible for making a connection to the database and also load those variables that contain the various injuries this makes using the filter.
- */
+
+    /**
+     * It is responsible for making a connection to the database and also load
+     * those variables that contain the various injuries this makes using the
+     * filter.
+     */
     public CategoricalVariablesMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         genericVariableMB = (GenericVariableMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{genericVariableMB}", GenericVariableMB.class);
@@ -59,9 +65,10 @@ public class CategoricalVariablesMB implements Serializable {
         communesVariableMB = (CommunesVariableMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{communesVariableMB}", CommunesVariableMB.class);
         formSourceMB = (FormSourceMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{formSourceMB}", FormSourceMB.class);
     }
-/**
- * Displays a page depending on the variable you have selected.
- */
+
+    /**
+     * Displays a page depending on the variable you have selected.
+     */
     public void open() {
         /*
          * cargar una pagina dependiendo de la variable que se haya seleccionado          
@@ -119,9 +126,11 @@ public class CategoricalVariablesMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se pudo redireccionar a la pagina correspondiente"));
         }
     }
-/**
- * create a dynamic table where the data is loaded variable that was selected and stored in a list.
- */
+
+    /**
+     * create a dynamic table where the data is loaded variable that was
+     * selected and stored in a list.
+     */
     public void createDynamicTable() {
         selectedRowDataTable = null;
         rowDataTableList = new ArrayList<>();
@@ -153,9 +162,10 @@ public class CategoricalVariablesMB implements Serializable {
         } catch (Exception e) {
         }
     }
-/**
- * Resets the fields with the values of the selected variable.
- */
+
+    /**
+     * Resets the fields with the values of the selected variable.
+     */
     public void reset() {
         currentSearchValue = "";
         injuries = new SelectItem[12];

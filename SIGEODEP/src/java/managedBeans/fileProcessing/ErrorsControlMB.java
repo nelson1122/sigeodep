@@ -33,7 +33,10 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 /**
- *The ErrorsControlMB class is responsible for keeping track of errors that are executed during the processing that is done to the data or uploaded files in a new project or an existing one.
+ * The ErrorsControlMB class is responsible for keeping track of errors that are
+ * executed during the processing that is done to the data or uploaded files in
+ * a new project or an existing one.
+ *
  * @author santos
  */
 @ManagedBean(name = "errorsControlMB")
@@ -48,7 +51,6 @@ public class ErrorsControlMB implements Serializable {
     private boolean btnViewDisabled = true;
     private String currentAceptedValue = "";
     private SelectItem[] aceptedValues;
-    //private List<RowDataTable> moreInfoDataTableList;
     private int sizeErrorsList = 0;
     private String currentDateFormat = "dd/MM/yyyy";
     private String currentDateFormatAcepted;
@@ -60,43 +62,35 @@ public class ErrorsControlMB implements Serializable {
     private RelationshipOfVariablesMB relationshipOfVariablesMB;
     DinamicTable dinamicTable = new DinamicTable();
     ConnectionJdbcMB connectionJdbcMB;
-    //private LoginMB loginMB;
     private RowDataTable selectedErrorRowTable;
     private List<RowDataTable> errorsList = new ArrayList<>();
     private RowDataTable selectedCorrectionRowTable;
     private List<RowDataTable> correctionList = new ArrayList<>();
     private List<ValueNewValue> moreInfoModel;
 
-    //private SelectItem[] correctionList;
-    //private String currentCorrection;
-    /*
-     * primer funcion que se ejecuta despues del constructor que inicializa
-     * variables y carga la conexion por jdbc
-     */
     /**
-     * first function executed after the constructor that initializes variables and load the connection to the database.
+     * first function executed after the constructor that initializes variables
+     * and load the connection to the database.
      */
     @PostConstruct
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         recordDataMB = (RecordDataMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{recordDataMB}", RecordDataMB.class);
     }
-/**
- * It is the class constructor.
- */
+
+    /**
+     * It is the class constructor.
+     */
     public ErrorsControlMB() {
-        //connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        //loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
-        //recordDataMB = (RecordDataMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{recordDataMB}", RecordDataMB.class);
     }
-/**
- * This method is responsible to load the errors occurred in each record.
- */
+
+    /**
+     * This method is responsible to load the errors occurred in each record.
+     */
     public void loadErrorData() {
         /*
          * se selecciona una fila de la tabla e errores
          */
-
         if (selectedErrorRowTable != null) {
             if (selectedErrorRowTable.getColumn2().compareTo("-") == 0) {
                 //NO EXISTE NUMERO DE LINEA, POR QUE ES UN ERROR POR QUE FALTA RELACION DE VARIABLES
@@ -181,9 +175,10 @@ public class ErrorsControlMB implements Serializable {
             }
         }
     }
-/**
- * delete a record and corresponding registration errors.
- */
+
+    /**
+     * delete a record and corresponding registration errors.
+     */
     public void deleteRecordClick() {
         if (selectedErrorRowTable != null) {
             ResultSet rs;
@@ -225,9 +220,10 @@ public class ErrorsControlMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un error de la lista"));
         }
     }
-/**
- * This method is used to update a record stored in the database.
- */
+
+    /**
+     * This method is used to update a record stored in the database.
+     */
     public void updateRecordClick() {
         if (selectedErrorRowTable != null) {
             ResultSet rs;
@@ -268,9 +264,10 @@ public class ErrorsControlMB implements Serializable {
             }
         }
     }
-/**
- * creates a table with information from the records that have a conflict.
- */
+
+    /**
+     * creates a table with information from the records that have a conflict.
+     */
     public final void createDynamicTable() {
         /*
          * crea una tabla con los datos del registro que presenta el conflicto
@@ -339,9 +336,10 @@ public class ErrorsControlMB implements Serializable {
             System.out.println("Error 2 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-/**
- * restore the values.
- */
+
+    /**
+     * restore the values.
+     */
     public void reset() {
         //correctionList = new ArrayList<RowDataTable>();
         moreInfoModel = null;
@@ -355,13 +353,16 @@ public class ErrorsControlMB implements Serializable {
         currentNewValue = "";
         currentDateFormatAcepted = "";
     }
-/**
- * added when there are errors: inconsistency in registration, no mandatory relationship and a value failures.
- * @param errorsNumber: error number.
- * @param relationVar: relationship of variables obligatory.
- * @param value: error description.
- * @param rowId: record identifier. 
- */
+
+    /**
+     * added when there are errors: inconsistency in registration, no mandatory
+     * relationship and a value failures.
+     *
+     * @param errorsNumber: error number.
+     * @param relationVar: relationship of variables obligatory.
+     * @param value: error description.
+     * @param rowId: record identifier.
+     */
     public void addError(int errorsNumber, RelationVariables relationVar, String value, String rowId) {
         if (errorsNumber < 0) {//error cuando existe incoherencia en el registro(ejem: vienen datos de transito y Vif al mismo tiempo)
             errorsList.add(new RowDataTable(
@@ -392,12 +393,14 @@ public class ErrorsControlMB implements Serializable {
                     relationVar.getDateFormat()));                  //  column9 ==> formato de fecha    
         }
     }
-/**
- * Create descriptions of error.
- * @param relationVar: relationship of variables obligatory.
- * @param value: error description.
- * @return 
- */
+
+    /**
+     * Create descriptions of error.
+     *
+     * @param relationVar: relationship of variables obligatory.
+     * @param value: error description.
+     * @return
+     */
     private String createDescriptions(RelationVariables relationVar, String value) {
         String strReturn = null;
 
@@ -455,10 +458,13 @@ public class ErrorsControlMB implements Serializable {
         }
         return strReturn;
     }
-/**
- * discard the errors when they are selected from the list of errors to correct.
- * @return 
- */
+
+    /**
+     * discard the errors when they are selected from the list of errors to
+     * correct.
+     *
+     * @return
+     */
     public int discardError() {
         boolean correction = false;
         if (selectedErrorRowTable == null) {
@@ -565,10 +571,13 @@ public class ErrorsControlMB implements Serializable {
         }
         return 0;
     }
-/**
- * It is responsible to resolve errors by entering a valid value for the user to run the correction.
- * @return 
- */
+
+    /**
+     * It is responsible to resolve errors by entering a valid value for the
+     * user to run the correction.
+     *
+     * @return
+     */
     public int solveError() {
         boolean correction = false;
         if (currentNewValue == null || currentNewValue.trim().length() == 0) {
@@ -753,11 +762,14 @@ public class ErrorsControlMB implements Serializable {
         }
         return 0;
     }
-/**
- * is responsible to remove '_v', of a type of data (to take the categorical table)
- * @param field_type
- * @return 
- */
+
+    /**
+     * is responsible to remove '_v', of a type of data (to take the categorical
+     * table)
+     *
+     * @param field_type
+     * @return
+     */
     private String remove_v(String field_type) {
         /*
          * remueve '_v' de un tipo de dato (para que tome la tabla categorica)
@@ -777,11 +789,12 @@ public class ErrorsControlMB implements Serializable {
     //VALIDACIONES ---------------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-/**
- * valid if it is a number from 1 to 31.
- * @param str
- * @return 
- */    
+    /**
+     * valid if it is a number from 1 to 31.
+     *
+     * @param str
+     * @return
+     */
     private boolean isDay(String str) {
         /*
          * validacion de si un numero de 1 y 31
@@ -799,11 +812,13 @@ public class ErrorsControlMB implements Serializable {
             return false;
         }
     }
-/**
- * valid if it is a number from 1 to 12.
- * @param str
- * @return 
- */
+
+    /**
+     * valid if it is a number from 1 to 12.
+     *
+     * @param str
+     * @return
+     */
     private boolean isMonth(String str) {
         /*
          * validacion de si un numero de 1 y 12
@@ -821,11 +836,13 @@ public class ErrorsControlMB implements Serializable {
             return false;
         }
     }
-/**
- * valid if it is a number from 1 to 12.
- * @param str
- * @return 
- */
+
+    /**
+     * valid if it is a number from 1 to 12.
+     *
+     * @param str
+     * @return
+     */
     private boolean isYear(String str) {
         /*
          * validacion de si un numero de 1 y 12
@@ -843,11 +860,13 @@ public class ErrorsControlMB implements Serializable {
             return false;
         }
     }
-/**
- * valid if a number of percentage comprised in the range 1-100.
- * @param str
- * @return 
- */
+
+    /**
+     * valid if a number of percentage comprised in the range 1-100.
+     *
+     * @param str
+     * @return
+     */
     private boolean isPercentage(String str) {
         /*
          * validacion de si un numero es porcentaje 1-100
@@ -865,11 +884,13 @@ public class ErrorsControlMB implements Serializable {
             return false;
         }
     }
-/**
- * validates the degree of burn: grade 1, grade 2 and grade 3.
- * @param str
- * @return 
- */
+
+    /**
+     * validates the degree of burn: grade 1, grade 2 and grade 3.
+     *
+     * @param str
+     * @return
+     */
     private boolean isDegree(String str) {
         /*
          * Grado quemadura 1,2,3
@@ -887,11 +908,13 @@ public class ErrorsControlMB implements Serializable {
             return false;
         }
     }
-/**
- * valid if it is a number between 0-59.
- * @param str
- * @return 
- */
+
+    /**
+     * valid if it is a number between 0-59.
+     *
+     * @param str
+     * @return
+     */
     private boolean isMinute(String str) {
         /*
          * validacion de si un numero de 1 y 12
@@ -909,11 +932,13 @@ public class ErrorsControlMB implements Serializable {
             return false;
         }
     }
-/**
- * valid if it is a number between 1 – 12.
- * @param str
- * @return 
- */
+
+    /**
+     * valid if it is a number between 1 – 12.
+     *
+     * @param str
+     * @return
+     */
     private boolean isHour(String str) {
         /*
          * validacion de si un numero de 1 y 12
@@ -931,12 +956,15 @@ public class ErrorsControlMB implements Serializable {
             return false;
         }
     }
-/**
- * is responsible to determine if a date of birth does not exceed the system date.
- * @param f
- * @param format
- * @return 
- */
+
+    /**
+     * is responsible to determine if a date of birth does not exceed the system
+     * date.
+     *
+     * @param f
+     * @param format
+     * @return
+     */
     private boolean validDateOfBirth(String f, String format) {
         /*
          *  determinar si una fecha de naciemiento no supera a la fecha de sistema
@@ -958,11 +986,13 @@ public class ErrorsControlMB implements Serializable {
             return false;//invalida
         }
     }
-/**
- * validates if a string is an integer
- * @param str
- * @return 
- */
+
+    /**
+     * validates if a string is an integer
+     *
+     * @param str
+     * @return
+     */
     private boolean isNumeric(String str) {
         /*
          * validacion de si un string es entero
@@ -979,12 +1009,14 @@ public class ErrorsControlMB implements Serializable {
             return false;
         }
     }
-/**
- * determine if a date is from 2002 to the current year.
- * @param f
- * @param format
- * @return 
- */
+
+    /**
+     * determine if a date is from 2002 to the current year.
+     *
+     * @param f
+     * @param format
+     * @return
+     */
     private boolean validYear(String f, String format) {
         /*
          *  determinar si una fecha se encuentra desde el año 2002 hasta el año actual
@@ -1006,12 +1038,14 @@ public class ErrorsControlMB implements Serializable {
             return false;//invalida
         }
     }
-/**
- * validates the format of a date, given a text string and format supplied.
- * @param f
- * @param format
- * @return 
- */
+
+    /**
+     * validates the format of a date, given a text string and format supplied.
+     *
+     * @param f
+     * @param format
+     * @return
+     */
     private boolean isDate(String f, String format) {
         /*
          *  null=inválido ""=aceptado pero vacio "valor"=aceptado (valor para db)
@@ -1027,11 +1061,13 @@ public class ErrorsControlMB implements Serializable {
             return false;//invalida
         }
     }
-/**
- * validates if the string contains military time format
- * @param str
- * @return 
- */
+
+    /**
+     * validates if the string contains military time format
+     *
+     * @param str
+     * @return
+     */
     private String isMilitary(String str) {
         /*
          * validacion de si un string es un hora miitar
@@ -1146,11 +1182,13 @@ public class ErrorsControlMB implements Serializable {
         //si llego a esta linea es que no supero ningun tipo de validacion
         return "Valor no aceptado como hora militar";
     }
-/**
- * validates if a string is an integer or a defined age in months and years
- * @param str
- * @return 
- */
+
+    /**
+     * validates if a string is an integer or a defined age in months and years
+     *
+     * @param str
+     * @return
+     */
     private boolean isAge(String str) {
         /*
          * validacion de si un string es numero entero o edad definida en meses
@@ -1179,14 +1217,16 @@ public class ErrorsControlMB implements Serializable {
             return false;
         }
     }
-/**
- * validates if a string is within a category.
- * @param str
- * @param category
- * @param compareForCode
- * @param relationValueList
- * @return 
- */
+
+    /**
+     * validates if a string is within a category.
+     *
+     * @param str
+     * @param category
+     * @param compareForCode
+     * @param relationValueList
+     * @return
+     */
     private boolean isCategorical(String str, String category, boolean compareForCode, List<RelationValues> relationValueList) {
         /*
          * validacion de si un string esta dentro de una categoria
@@ -1222,9 +1262,10 @@ public class ErrorsControlMB implements Serializable {
     //CLIK SOBRE BOTONES Y LISTAS --------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-/**
- * undoes the correction of an current error.
- */
+
+    /**
+     * undoes the correction of an current error.
+     */
     public void btnUndoErrorClick() {
         String sql;
         if (selectedCorrectionRowTable != null) {
@@ -1273,9 +1314,10 @@ public class ErrorsControlMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Seleccione una corrección de la lista"));
         }
     }
-/**
- * establishes a list of accepted values to change.
- */
+
+    /**
+     * establishes a list of accepted values to change.
+     */
     public void changeAcceptedValuesList() {
         currentNewValue = currentAceptedValue;
         btnSolveDisabled = false;
@@ -1303,20 +1345,6 @@ public class ErrorsControlMB implements Serializable {
         this.btnSolveDisabled = btnSolveDisabled;
     }
 
-//    public boolean isBtnDeleteRecordDisabled() {
-//        return btnDeleteRecordDisabled;
-//    }
-//
-//    public void setBtnDeleteRecordDisabled(boolean btnDeleteRecordDisabled) {
-//        this.btnDeleteRecordDisabled = btnDeleteRecordDisabled;
-//    }
-//    public boolean isBtnDiscardDisabled() {
-//        return btnDiscardDisabled;
-//    }
-//
-//    public void setBtnDiscardDisabled(boolean btnDiscardDisabled) {
-//        this.btnDiscardDisabled = btnDiscardDisabled;
-//    }
     public String getCurrentAceptedValue() {
         return currentAceptedValue;
     }
@@ -1424,14 +1452,7 @@ public class ErrorsControlMB implements Serializable {
     public void setErrorsList(List<RowDataTable> errorsList) {
         this.errorsList = errorsList;
     }
-
-//    public List<RowDataTable> getMoreInfoDataTableList() {
-//        return moreInfoDataTableList;
-//    }
-//
-//    public void setMoreInfoDataTableList(List<RowDataTable> moreInfoDataTableList) {
-//        this.moreInfoDataTableList = moreInfoDataTableList;
-//    }
+    
     public List<ValueNewValue> getMoreInfoModel() {
         return moreInfoModel;
     }

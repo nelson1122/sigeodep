@@ -95,12 +95,15 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 /**
- *This class allow identify whether the cases of a type of injury have increased or decreased by a percentage calculation, the percentage calculation is determined by calculating a percentage by row, by column or in based on the total of the data.
+ * This class allow identify whether the cases of a type of injury have
+ * increased or decreased by a percentage calculation, the percentage
+ * calculation is determined by calculating a percentage by row, by column or in
+ * based on the total of the data.
+ *
  * @author SANTOS
  */
 @ManagedBean(name = "indicatorsPercentageVariationMB")
 @SessionScoped
-
 public class IndicatorsPercentageVariationMB {
 
     /**
@@ -209,7 +212,7 @@ public class IndicatorsPercentageVariationMB {
     private int widthGraph = 660;
     private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
-    private String currentTypeGraph="barras";
+    private String currentTypeGraph = "barras";
     String variablesName = "";
     String categoryAxixLabel = "";
     String indicatorName = "";
@@ -217,9 +220,14 @@ public class IndicatorsPercentageVariationMB {
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy", new Locale("ES"));
     String serieName = "";
     double increment = 0;
-/**
- * This method is the class constructor, is responsible for instantiating the current connection to the database, verify that the user has successfully logged in, this method instance items needed to start working as well as are the start and end date, also the temporary dissagregations.
- */
+
+    /**
+     * This method is the class constructor, is responsible for instantiating
+     * the current connection to the database, verify that the user has
+     * successfully logged in, this method instance items needed to start
+     * working as well as are the start and end date, also the temporary
+     * dissagregations.
+     */
     public IndicatorsPercentageVariationMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
@@ -246,9 +254,11 @@ public class IndicatorsPercentageVariationMB {
         temporalDisaggregationTypes.add("Diaria");
         currentTemporalDisaggregation = "Mensual";
     }
-/**
- * This method is responsible to display messages on the screen for that the user can see what is happening.
- */
+
+    /**
+     * This method is responsible to display messages on the screen for that the
+     * user can see what is happening.
+     */
     public void showMessage() {
         if (message != null) {
             FacesContext.getCurrentInstance().addMessage(null, message);
@@ -257,9 +267,12 @@ public class IndicatorsPercentageVariationMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", diferentTemporalWarning));
         }
     }
-/**
- * This method is responsible of obtain the names and values of the variables that are going to cross to be visible on the graph where the results of the cross shown.
- */
+
+    /**
+     * This method is responsible of obtain the names and values of the
+     * variables that are going to cross to be visible on the graph where the
+     * results of the cross shown.
+     */
     public void loadValuesGraph() {
         valuesGraph1 = new ArrayList<>();
         valuesGraph2 = new ArrayList<>();
@@ -284,13 +297,18 @@ public class IndicatorsPercentageVariationMB {
         }
         createImage();
     }
-/**
- * This method is responsible for find the difference that exist between the dates supplied by the user to perform the cross  of variables, also specifies the type of disaggregation that handles the difference in dates.
- * @param date1
- * @param date2
- * @param typeDifference
- * @return 
- */
+
+    /**
+     * This method is responsible for find the difference that exist between the
+     * dates supplied by the user to perform the cross of variables, also
+     * specifies the type of disaggregation that handles the difference in
+     * dates.
+     *
+     * @param date1
+     * @param date2
+     * @param typeDifference
+     * @return
+     */
     private int getDateDifference(Date date1, Date date2, String typeDifference) {
         Interval interval = new Interval(new DateTime(date1), (new DateTime(date2)).plusDays(1));
         if (typeDifference.compareTo("anual") == 0) {
@@ -308,10 +326,18 @@ public class IndicatorsPercentageVariationMB {
         }
         return 0;
     }
-/**
- * This method is responsible to validate the date range checking different possibilities that the user has the moment of completing these fields as: the start date must be less than the end date, the start date can not be less than 2002, if the  disaggregation is daily then there must be at least one difference day, if the disaggregation is monthly must be at least one month difference, if the disaggregation is annual must be at least one year difference.
- * @return 
- */
+
+    /**
+     * This method is responsible to validate the date range checking different
+     * possibilities that the user has the moment of completing these fields as:
+     * the start date must be less than the end date, the start date can not be
+     * less than 2002, if the disaggregation is daily then there must be at
+     * least one difference day, if the disaggregation is monthly must be at
+     * least one month difference, if the disaggregation is annual must be at
+     * least one year difference.
+     *
+     * @return
+     */
     private boolean validateDateRange() {
 
         c1A.setTime(initialDateA);
@@ -385,9 +411,11 @@ public class IndicatorsPercentageVariationMB {
         }
         return true;
     }
-/**
- * This method is responsible of delete  all records that have saved for a previous cross of variables.
- */
+
+    /**
+     * This method is responsible of delete all records that have saved for a
+     * previous cross of variables.
+     */
     private void removeIndicatorRecords() {
         //---------------------------------------------------------        
         //elimino los datos de este indicador
@@ -405,9 +433,12 @@ public class IndicatorsPercentageVariationMB {
         //System.out.println("ELIMINACIONES \n " + sql);
         connectionJdbcMB.non_query(sql);
     }
-/**
- * This method is responsible to delete all empty results presented at the time of cross of  variables specified by the user, as delete the rows and columns where  exist records empty.
- */
+
+    /**
+     * This method is responsible to delete all empty results presented at the
+     * time of cross of variables specified by the user, as delete the rows and
+     * columns where exist records empty.
+     */
     private void removeEmpty() {
         //------------------------------------------------------------------
         //SE ELIMINAN LOS VALORES VACIOS
@@ -532,9 +563,15 @@ public class IndicatorsPercentageVariationMB {
             }
         }
     }
-/**
- * This method is responsible to do the cross of variables according to specified by the user, validates the date range, the number of variables is less than or equal to the limit set, This method gets the variables to cross, This method does all possible crosses, the results are grouped and results matrix is created and finally the result table and the graph is shown.
- */
+
+    /**
+     * This method is responsible to do the cross of variables according to
+     * specified by the user, validates the date range, the number of variables
+     * is less than or equal to the limit set, This method gets the variables to
+     * cross, This method does all possible crosses, the results are grouped and
+     * results matrix is created and finally the result table and the graph is
+     * shown.
+     */
     public void process() {
         message = null;
         variablesGraph = new ArrayList<>();
@@ -648,10 +685,13 @@ public class IndicatorsPercentageVariationMB {
             //message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Cruze realizado");
         }
     }
-/**
- * This method is responsible of separate the records when relationships variable are realized  from one to many.
- * @param increment 
- */
+
+    /**
+     * This method is responsible of separate the records when relationships
+     * variable are realized from one to many.
+     *
+     * @param increment
+     */
     private void separateRecordsFunction(int increment) {
         ResultSet rs;
         ResultSet rs2;
@@ -762,11 +802,14 @@ public class IndicatorsPercentageVariationMB {
             System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-/**
- * This method is responsible to perform  all possible combinations for the data to be order according as the configuration is found.
- * @param incrementTarget
- * @param incrementSource 
- */
+
+    /**
+     * This method is responsible to perform all possible combinations for the
+     * data to be order according as the configuration is found.
+     *
+     * @param incrementTarget
+     * @param incrementSource
+     */
     private void createCombinations(int incrementTarget, int incrementSource) {
         //---------------------------------------------------------
         //FORMAR POSIBLES COMBINACIONES PARA QUE LOS DATOS QUEDEN ORDENADOS SEGUN COMO SE ENCUENTRE LA CONFIGURACION
@@ -851,11 +894,14 @@ public class IndicatorsPercentageVariationMB {
             System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-/**
- * This method stores in the database the records of the cross that is realice, the records is stored in the table indicators_records 
- * @param sqlConsult
- * @param increment 
- */
+
+    /**
+     * This method stores in the database the records of the cross that is
+     * realice, the records is stored in the table indicators_records
+     *
+     * @param sqlConsult
+     * @param increment
+     */
     private void saveIndicatorRecords(String sqlConsult, int increment) {
         //------------------------------------------------------------------
         //AGEGAR UNA CONSULTA A LA TABLA indicators_records 
@@ -897,11 +943,15 @@ public class IndicatorsPercentageVariationMB {
             System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-/**
- * This method is responsible  of group all the values obtained from the cross of variables which were saved on indicators_records, arrange it according to the options specified by the user.
- * @param incrementTarget
- * @param incrementSource 
- */
+
+    /**
+     * This method is responsible of group all the values obtained from the
+     * cross of variables which were saved on indicators_records, arrange it
+     * according to the options specified by the user.
+     *
+     * @param incrementTarget
+     * @param incrementSource
+     */
     private void groupingOfValues(int incrementTarget, int incrementSource) {
         //------------------------------------------------------------------
         //SE AGRUPAN LOS VALORES Y SE REALIZA EL CONTEO
@@ -952,10 +1002,14 @@ public class IndicatorsPercentageVariationMB {
             System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-/**
- * This method is responsible for adding an additional table if is necessary, this is done in the section FROM and in the section WHERE of the query SQL.
- * @param tableName 
- */
+
+    /**
+     * This method is responsible for adding an additional table if is
+     * necessary, this is done in the section FROM and in the section WHERE of
+     * the query SQL.
+     *
+     * @param tableName
+     */
     private void addToSourceTable(String tableName) {
         /*
          * cuando se necesita una tabla adicional se agrega
@@ -995,16 +1049,19 @@ public class IndicatorsPercentageVariationMB {
             sourceTable = sourceTable + " LEFT JOIN non_fatal_domestic_violence USING (non_fatal_injury_id) \n";
         }
     }
-/**
- * This method is responsible for establishing the case to be handled in the SQL query depending on the value of the parameters. 
- * @param sqlReturn
- * @param source_table
- * @param column_whit_name
- * @param category_table
- * @param column_whit_id
- * @param as_name
- * @return 
- */
+
+    /**
+     * This method is responsible for establishing the case to be handled in the
+     * SQL query depending on the value of the parameters.
+     *
+     * @param sqlReturn
+     * @param source_table
+     * @param column_whit_name
+     * @param category_table
+     * @param column_whit_id
+     * @param as_name
+     * @return
+     */
     private String createCase(String sqlReturn, String source_table, String column_whit_name, String category_table, String column_whit_id, String as_name) {
         String strReturn = sqlReturn + ""
                 + " CASE \n\r"
@@ -1021,12 +1078,18 @@ public class IndicatorsPercentageVariationMB {
                 + " END AS " + as_name;
         return strReturn;
     }
-/**
- * This method is responsible for assemble the necessary query to the indicator that the user is working, where are determined all necessary parameters that must have the SQL query to perform the crossing variable as is the type of temporal the disaggregation, type of injury, age, available variables.
- * @param initialDateStr
- * @param endDateStr
- * @return 
- */
+
+    /**
+     * This method is responsible for assemble the necessary query to the
+     * indicator that the user is working, where are determined all necessary
+     * parameters that must have the SQL query to perform the crossing variable
+     * as is the type of temporal the disaggregation, type of injury, age,
+     * available variables.
+     *
+     * @param initialDateStr
+     * @param endDateStr
+     * @return
+     */
     private String createIndicatorConsult(String initialDateStr, String endDateStr) {
         String sqlReturn = " SELECT  \n\r";
         separateRecords = false;
@@ -1153,7 +1216,7 @@ public class IndicatorsPercentageVariationMB {
                             + "          quadrants.quadrant_name \n\r"
                             + "       FROM \n\r"
                             + "          public.quadrants \n\r"
-                            + "       WHERE \n\r"                            
+                            + "       WHERE \n\r"
                             + "          quadrants.quadrant_id=" + currentIndicator.getInjuryType() + ".quadrant_id \n\r"
                             + "    )"
                             + " END AS cuadrante";
@@ -1612,18 +1675,24 @@ public class IndicatorsPercentageVariationMB {
         //System.out.println("CONSULTA (indicators ercentage variation) \n " + sqlReturn);
         return sqlReturn;
     }
-/**
- * if the user have not categorical varables selected at the time of crossing variables, this method is responsible for disabling the button that allows the user to remove categorical variables.
- */
+
+    /**
+     * if the user have not categorical varables selected at the time of
+     * crossing variables, this method is responsible for disabling the button
+     * that allows the user to remove categorical variables.
+     */
     public void changeCategoticalList() {
         if (!currentCategoricalValuesSelected.isEmpty()) {
             btnRemoveCategoricalValueDisabled = false;
         }
     }
-/**
- * This method is responsible of delete the settings that has a categorical variable to leave it in its original form.
- * @return 
- */
+
+    /**
+     * This method is responsible of delete the settings that has a categorical
+     * variable to leave it in its original form.
+     *
+     * @return
+     */
     public int btnRemoveConfigurationClick() {
         //System.out.println("currentConfigurationSelected es " + currentConfigurationSelected);
         if (currentConfigurationSelected == null || currentConfigurationSelected.isEmpty()) {//VALOR INICIAL INGRESADO
@@ -1643,10 +1712,13 @@ public class IndicatorsPercentageVariationMB {
         }
         return 0;
     }
-/**
- * This method is responsible of load a configuration of a categorical variable created previously.
- * @return 
- */
+
+    /**
+     * This method is responsible of load a configuration of a categorical
+     * variable created previously.
+     *
+     * @return
+     */
     public int btnOpenConfigurationClick() {
         //realizar la carga de la configuracion indicada
         if (currentConfigurationSelected == null || currentConfigurationSelected.isEmpty()) {//VALOR INICIAL INGRESADO
@@ -1685,9 +1757,11 @@ public class IndicatorsPercentageVariationMB {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Configuración cargada"));
         return 0;
     }
-/**
- * This method is responsible of reload all existing configurations on the selected categorical variable.
- */
+
+    /**
+     * This method is responsible of reload all existing configurations on the
+     * selected categorical variable.
+     */
     public void btnLoadConfigurationClick() {
         //recargar las configuraciones existentes
         //System.out.println("inicia carga de configuraciones");
@@ -1701,10 +1775,14 @@ public class IndicatorsPercentageVariationMB {
             //System.out.println("inicia carga de configuraciones");
         }
     }
-/**
- * This method allows the user to save a configuration to a variable specifies, to save the user must assign a name and this name must be different to the names of the settings already realized.
- * @return 
- */
+
+    /**
+     * This method allows the user to save a configuration to a variable
+     * specifies, to save the user must assign a name and this name must be
+     * different to the names of the settings already realized.
+     *
+     * @return
+     */
     public int btnSaveConfigurationClick() {
         if (newConfigurationName.trim().length() == 0) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Digite el nombre para la nueva configuración"));
@@ -1745,11 +1823,14 @@ public class IndicatorsPercentageVariationMB {
 
         return 0;
     }
-/**
- * This method allows the user to add a new category to variables of open fields such as the age where the user can define ranges.
- * @return 
- */
-   public int btnAddCategoricalValueClick() {
+
+    /**
+     * This method allows the user to add a new category to variables of open
+     * fields such as the age where the user can define ranges.
+     *
+     * @return
+     */
+    public int btnAddCategoricalValueClick() {
         if (initialValue.trim().length() == 0) {//VALOR INICIAL INGRESADO
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Digite un valor inicial"));
             return 0;
@@ -1771,11 +1852,15 @@ public class IndicatorsPercentageVariationMB {
         }
         return 0;
     }
-/**
- * This method allows  to add a new range to the category hour for this we must realize  a series of validations such as the start hour  should be less than the end hour, must be within the range 0-23
- * @return 
- */  
-   private int addCategoricalHour() {
+
+    /**
+     * This method allows to add a new range to the category hour for this we
+     * must realize a series of validations such as the start hour should be
+     * less than the end hour, must be within the range 0-23
+     *
+     * @return
+     */
+    private int addCategoricalHour() {
         int i;
         int e;
         String msj = "";
@@ -1869,10 +1954,15 @@ public class IndicatorsPercentageVariationMB {
             return 0;
         }
     }
-/**
- * This method allows adding a new range to the Year category, for it must realize a series of validations for example the initial year must be less than the final year, the range defined should not be  within an existing range, the input values must be numeric.
- * @return 
- */
+
+    /**
+     * This method allows adding a new range to the Year category, for it must
+     * realize a series of validations for example the initial year must be less
+     * than the final year, the range defined should not be within an existing
+     * range, the input values must be numeric.
+     *
+     * @return
+     */
     private int addCategoricalAge() {
         int i;
         int e;
@@ -1975,9 +2065,12 @@ public class IndicatorsPercentageVariationMB {
             return 0;
         }
     }
-/**
- * This method allows the user remove a category values that the user wishes to do, the user must select the value the user to want to remove and then to press the button.
- */
+
+    /**
+     * This method allows the user remove a category values that the user wishes
+     * to do, the user must select the value the user to want to remove and then
+     * to press the button.
+     */
     public void btnRemoveCategoryValueClick() {
         //btnRemoveCategoricalValueDisabled = false;
         if (currentVariableConfiguring != null) {
@@ -1996,9 +2089,12 @@ public class IndicatorsPercentageVariationMB {
             }
         }
     }
-/**
- * This method is responsible for restoring the values of a categorical variable, if the values were modified or removed, then this method sets the default values that had this variable.
- */
+
+    /**
+     * This method is responsible for restoring the values of a categorical
+     * variable, if the values were modified or removed, then this method sets
+     * the default values that had this variable.
+     */
     public void btnResetCategoryListClick() {
         currentCategoricalValuesSelected = new ArrayList<>();
         //btnRemoveCategoricalValueDisabled = false;
@@ -2015,9 +2111,11 @@ public class IndicatorsPercentageVariationMB {
             }
         }
     }
-/**
- * This method is responsible of enable or disable the buttons to add and remove variables according to the selection realized by that user.
- */
+
+    /**
+     * This method is responsible of enable or disable the buttons to add and
+     * remove variables according to the selection realized by that user.
+     */
     public void changeVariable() {
         btnAddVariableDisabled = true;
         btnRemoveVariableDisabled = true;
@@ -2032,9 +2130,11 @@ public class IndicatorsPercentageVariationMB {
             }
         }
     }
-/**
- * This method is responsible of load the values of a categorical variable selected.
- */
+
+    /**
+     * This method is responsible of load the values of a categorical variable
+     * selected.
+     */
     public void changeCrossVariable() {
         btnRemoveVariableDisabled = true;
         btnRemoveCategoricalValueDisabled = true;
@@ -2067,9 +2167,11 @@ public class IndicatorsPercentageVariationMB {
 
     public void changeVariableCross() {
     }
-/**
- * This method is responsible for adding a new variable selected by the user, this is done to make the crossing of variables.
- */
+
+    /**
+     * This method is responsible for adding a new variable selected by the
+     * user, this is done to make the crossing of variables.
+     */
     public void addVariableClick() {
         String error = "";
         boolean nextStep = true;
@@ -2097,9 +2199,11 @@ public class IndicatorsPercentageVariationMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
         }
     }
-/**
- * This method is responsible to remove a variable selected by the user, the variables that can be removed are in the box "variables a cruzar".
- */
+
+    /**
+     * This method is responsible to remove a variable selected by the user, the
+     * variables that can be removed are in the box "variables a cruzar".
+     */
     public void removeVariableClick() {
         String error = "";
         boolean nextStep = true;
@@ -2125,9 +2229,11 @@ public class IndicatorsPercentageVariationMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Alerta", error));
         }
     }
-/**
- * This method is responsible for creating an image with all the results obtained from the crossing of variables.
- */
+
+    /**
+     * This method is responsible for creating an image with all the results
+     * obtained from the crossing of variables.
+     */
     public void createImage() {
         try {
             JFreeChart chart = null;
@@ -2179,10 +2285,14 @@ public class IndicatorsPercentageVariationMB {
             System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-/**
- * This method is responsible to take the results of cross of variables and assemble the structure DefaultCategoryDataset for that the library do the bar graph, lines or areas.
- * @return 
- */
+
+    /**
+     * This method is responsible to take the results of cross of variables and
+     * assemble the structure DefaultCategoryDataset for that the library do the
+     * bar graph, lines or areas.
+     *
+     * @return
+     */
     private DefaultCategoryDataset createDataSet() {
         /*
          * creacion del conjunto de datos para generar grafico
@@ -2299,9 +2409,12 @@ public class IndicatorsPercentageVariationMB {
         }
         return datSet;
     }
-/**
- * This method is responsible to restore all modifications have been realized to the form that allows to realize the cross of variables as well as the settings for the categorical variables.
- */
+
+    /**
+     * This method is responsible to restore all modifications have been
+     * realized to the form that allows to realize the cross of variables as
+     * well as the settings for the categorical variables.
+     */
     public void reset() {
         showGraphic = false;
         showTableResult = false;
@@ -2344,12 +2457,17 @@ public class IndicatorsPercentageVariationMB {
         currentVariablesCrossSelected = null;
 
     }
-/**
- * This method is responsible to create the temporal disaggregation to work in variables indicated by the user, the disaggregation may be a day, month or year, this disaggregation is shown in the graph where are all the results of cross of variables.
- * @param initialDate
- * @param endDate
- * @return 
- */
+
+    /**
+     * This method is responsible to create the temporal disaggregation to work
+     * in variables indicated by the user, the disaggregation may be a day,
+     * month or year, this disaggregation is shown in the graph where are all
+     * the results of cross of variables.
+     *
+     * @param initialDate
+     * @param endDate
+     * @return
+     */
     private Variable createTemporalDisaggregationVariable(Date initialDate, Date endDate) {
         Variable newVariable = new Variable("Desagregación temporal", "temporalDisaggregation", false, "");
         int diferenceRank;
@@ -2412,14 +2530,19 @@ public class IndicatorsPercentageVariationMB {
         newVariable.setValuesConfigured(valuesConf);
         return newVariable;
     }
-/**
- * This method is responsible to create a variable so it can be selected by the user and used to realize the cross of  variables, for it is necesary of type of variable, the values correspond to variable and it should be the structure of these values.
- * @param name
- * @param generic_table
- * @param conf
- * @param source_table
- * @return 
- */
+
+    /**
+     * This method is responsible to create a variable so it can be selected by
+     * the user and used to realize the cross of variables, for it is necesary
+     * of type of variable, the values correspond to variable and it should be
+     * the structure of these values.
+     *
+     * @param name
+     * @param generic_table
+     * @param conf
+     * @param source_table
+     * @return
+     */
     private Variable createVariable(String name, String generic_table, boolean conf, String source_table) {
         //conf me indica si es permitida la configuracion de esta variable
         Variable newVariable = new Variable(name, generic_table, conf, source_table);
@@ -2683,10 +2806,13 @@ public class IndicatorsPercentageVariationMB {
         newVariable.setValuesConfigured(valuesConf);
         return newVariable;
     }
-/**
- * This method is responsible for obtain a list of all variables  available for work on this indicator.
- * @return 
- */
+
+    /**
+     * This method is responsible for obtain a list of all variables available
+     * for work on this indicator.
+     *
+     * @return
+     */
     public ArrayList<Variable> getVariablesIndicator() {
         ArrayList<Variable> arrayReturn = new ArrayList<>();
         currentIndicator = indicatorsFacade.find(currentIndicator.getIndicatorId());
@@ -2700,10 +2826,13 @@ public class IndicatorsPercentageVariationMB {
         }
         return arrayReturn;
     }
-/**
- * This method is responsible to configure the bgcolor of the table that contains the result of the cross of variable.
- * @return 
- */
+
+    /**
+     * This method is responsible to configure the bgcolor of the table that
+     * contains the result of the cross of variable.
+     *
+     * @return
+     */
     private String getColorType() {
         if (colorType) {
             return "bgcolor=\"#DDDDFF\"";
@@ -2711,9 +2840,11 @@ public class IndicatorsPercentageVariationMB {
             return "bgcolor=\"#FFFFFF\"";
         }
     }
-/**
- * This method is responsible of enable or disable the bgcolor of the table that contains the result of the cross of variable.
- */
+
+    /**
+     * This method is responsible of enable or disable the bgcolor of the table
+     * that contains the result of the cross of variable.
+     */
     private void changeColorType() {
         if (colorType) {
             colorType = false;
@@ -2721,13 +2852,17 @@ public class IndicatorsPercentageVariationMB {
             colorType = true;
         }
     }
-/**
- * This function is responsible of realize a calculation on a matrix of results A when a cross of variables of an indicator is performed, this calculation is performed for the first time period selected by the user.
- * @param type
- * @param col
- * @param row
- * @return 
- */
+
+    /**
+     * This function is responsible of realize a calculation on a matrix of
+     * results A when a cross of variables of an indicator is performed, this
+     * calculation is performed for the first time period selected by the user.
+     *
+     * @param type
+     * @param col
+     * @param row
+     * @return
+     */
     private String getMatrixValueA(String type, int col, int row) {
         String strReturn = "-1";
 
@@ -2810,13 +2945,17 @@ public class IndicatorsPercentageVariationMB {
         }
         return strReturn;
     }
-/**
- * This function is responsible of realize a calculation on a matrix of results B when a cross of variables of an indicator is performed, this calculation is performed for the second time period selected by the user.
- * @param type
- * @param col
- * @param row
- * @return 
- */
+
+    /**
+     * This function is responsible of realize a calculation on a matrix of
+     * results B when a cross of variables of an indicator is performed, this
+     * calculation is performed for the second time period selected by the user.
+     *
+     * @param type
+     * @param col
+     * @param row
+     * @return
+     */
     private String getMatrixValueB(String type, int col, int row) {
         String strReturn = "-1";
 
@@ -2900,11 +3039,14 @@ public class IndicatorsPercentageVariationMB {
         }
         return strReturn;
     }
-/**
- * This method is responsible of determine the header for the table and columns containing all  results of the cross of variable.
- * @param value
- * @return 
- */
+
+    /**
+     * This method is responsible of determine the header for the table and
+     * columns containing all results of the cross of variable.
+     *
+     * @param value
+     * @return
+     */
     private String determineHeader(String value) {
         for (int i = 0; i < value.length(); i++) {
             if (value.charAt(i) != '0' && value.charAt(i) != '1' && value.charAt(i) != '2'
@@ -2928,10 +3070,13 @@ public class IndicatorsPercentageVariationMB {
         }
         return value;
     }
-/**
- * This method allows to export the results of the cross of variable to a excel file of vertical form.
- * @param document 
- */
+
+    /**
+     * This method allows to export the results of the cross of variable to a
+     * excel file of vertical form.
+     *
+     * @param document
+     */
     private void exportVerticalResult(Object document) {
         /*
          * Exportar los datos a un archivo excell de forma vertical
@@ -3094,10 +3239,13 @@ public class IndicatorsPercentageVariationMB {
             }
         }
     }
-/**
- * This method allows to export the results of the cross of variable to a excel file of horizontal way.
- * @param document 
- */
+
+    /**
+     * This method allows to export the results of the cross of variable to a
+     * excel file of horizontal way.
+     *
+     * @param document
+     */
     private void exportHorizontalResult(Object document) {
         /*
          * Exportar los datos a un archivo excell de forma horizontal
@@ -3261,10 +3409,14 @@ public class IndicatorsPercentageVariationMB {
             }
         }
     }
-/**
- * This method is called when the user presses the button "exportar", this method determines the orientation of the results and then this method calls the method in charge of export these results.
- * @param document 
- */
+
+    /**
+     * This method is called when the user presses the button "exportar", this
+     * method determines the orientation of the results and then this method
+     * calls the method in charge of export these results.
+     *
+     * @param document
+     */
     public void postProcessXLS(Object document) {
         if (invertMatrix) {
             exportVerticalResult(document);
@@ -3272,11 +3424,14 @@ public class IndicatorsPercentageVariationMB {
             exportHorizontalResult(document);
         }
     }
-/**
- * This method is responsible of determine whether the value to stored in a cell in the excel file must be numeric or string
- * @param celda
- * @param strValue 
- */
+
+    /**
+     * This method is responsible of determine whether the value to stored in a
+     * cell in the excel file must be numeric or string
+     *
+     * @param celda
+     * @param strValue
+     */
     private void setValueCell(HSSFCell celda, String strValue) {
         /*determina si el valor a almacenar en una celda del 
          archivo excell debe ser numerica o cadena*/
@@ -3287,9 +3442,11 @@ public class IndicatorsPercentageVariationMB {
             celda.setCellValue(new HSSFRichTextString(strValue));
         }
     }
-/**
- * This method is responsible of invert the results matrix of the cross variables horizontally to vertically and vertically to horizontally.
- */
+
+    /**
+     * This method is responsible of invert the results matrix of the cross
+     * variables horizontally to vertically and vertically to horizontally.
+     */
     public void invertMatrixClick() {
         if (invertMatrix) {
             invertMatrix = false;
@@ -3300,10 +3457,13 @@ public class IndicatorsPercentageVariationMB {
             dataTableHtml = createDataTableResult();
         }
     }
-/**
- * This method is responsible for order the results of the cross of variables in the matrix of vertical way. 
- * @return 
- */
+
+    /**
+     * This method is responsible for order the results of the cross of
+     * variables in the matrix of vertical way.
+     *
+     * @return
+     */
     private String verticalResult() {
 
         headers1 = new ArrayList<>();
@@ -3470,10 +3630,13 @@ public class IndicatorsPercentageVariationMB {
         //System.out.println("777777777777777777777777\n"+strReturn+"77777777777777777777777777777\n");
         return strReturn;
     }
-/**
- * This method is responsible for order the results of the cross of variables in the matrix of horizontal way. 
- * @return 
- */
+
+    /**
+     * This method is responsible for order the results of the cross of
+     * variables in the matrix of horizontal way.
+     *
+     * @return
+     */
     private String horizontalResult() {
 
         headers1 = new ArrayList<>();
@@ -3673,10 +3836,14 @@ public class IndicatorsPercentageVariationMB {
         //System.out.println("777777777777777777777777\n"+strReturn+"77777777777777777777777777777\n");
         return strReturn;
     }
-/**
- * This method is responsible of realize the cross of variable and call to the methods responsibles of ordering the result of vertical or horizontal way and displays in screen
- * @return 
- */
+
+    /**
+     * This method is responsible of realize the cross of variable and call to
+     * the methods responsibles of ordering the result of vertical or horizontal
+     * way and displays in screen
+     *
+     * @return
+     */
     private String createDataTableResult() {
         btnExportDisabled = true;
         if (matrixResultA.length == 0) {
@@ -3702,9 +3869,11 @@ public class IndicatorsPercentageVariationMB {
             }
         }
     }
-/**
- * This method is responsible of create the matrix of results with the percentage difference between the 2 period ranges selected.
- */
+
+    /**
+     * This method is responsible of create the matrix of results with the
+     * percentage difference between the 2 period ranges selected.
+     */
     private void createMatrixDifference() {
         try {
             columNamesFinal = new ArrayList<>();
@@ -3878,10 +4047,12 @@ public class IndicatorsPercentageVariationMB {
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
-/**
- * This method is responsible of loaded the indicator in the which the user is  working
- * @param n 
- */
+    /**
+     * This method is responsible of loaded the indicator in the which the user
+     * is working
+     *
+     * @param n
+     */
     private void loadIndicator(int n) {
         currentIndicator = indicatorsFacade.find(n);
         reset();

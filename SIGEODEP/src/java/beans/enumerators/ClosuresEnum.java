@@ -5,10 +5,10 @@
 package beans.enumerators;
 
 /**
- *This class handles enumerators related with closures
+ * This class handles enumerators related with closures
+ *
  * @author SANTOS
  */
-
 public enum ClosuresEnum {
 
     //----------------------------------------------------------
@@ -98,23 +98,23 @@ public enum ClosuresEnum {
     mayor_edad_agresor,
     ocupacion_victima,
     ocupacion_agresor,
-    pertenencia_etnica,    
+    pertenencia_etnica,
     grupo_poblacional,
     escolaridad_victima,
     factor_vulnerabilidad,
-    antecedentes_hecho_similar,    
+    antecedentes_hecho_similar,
     presencia_alcohol_victima,
     presencia_alcohol_agresor,
-    tipo_regimen,    
-    zona_conflicto,    
-    escenario,        
+    tipo_regimen,
+    zona_conflicto,
+    escenario,
     escolaridad_agresor,
     relacion_familiar_victima,
-    relacion_no_familiar,    
-    convive_con_agresor,    
-    armas_utilizadas,    
-    naturaleza_violencia,    
-    atencion_salud,    
+    relacion_no_familiar,
+    convive_con_agresor,
+    armas_utilizadas,
+    naturaleza_violencia,
+    atencion_salud,
     recomienda_proteccion,
     trabajo_de_campo,
     //-------enumeraciones para tablas de cierres--------
@@ -133,11 +133,13 @@ public enum ClosuresEnum {
     mode_imputation,
     none_imputation,
     NOVALUE;
-/**
- * converts a string to an enumerator, if not possible then returns NOVALUE
- * @param str
- * @return 
- */
+
+    /**
+     * converts a string to an enumerator, if not possible then returns NOVALUE
+     *
+     * @param str
+     * @return
+     */
     public static ClosuresEnum convert(String str) {
         try {
             return valueOf(str);

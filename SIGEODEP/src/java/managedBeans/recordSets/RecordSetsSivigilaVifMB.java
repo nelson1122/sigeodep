@@ -37,10 +37,11 @@ import org.primefaces.model.LazyDataModel;
 @ManagedBean(name = "recordSetsSivigilaVifMB")
 @SessionScoped
 /**
- * This class handles  record set that correspond to SIVIGILA VIF
+ * This class handles record set that correspond to SIVIGILA VIF
  */
 public class RecordSetsSivigilaVifMB implements Serializable {
     //--------------------
+
     @EJB
     TagsFacade tagsFacade;
     @EJB
@@ -60,7 +61,7 @@ public class RecordSetsSivigilaVifMB implements Serializable {
     private int currentSearchCriteria = 0;
     private String currentSearchValue = "";
     private String name = "";
-    private String newName = "";    
+    private String newName = "";
     private String data = "-";
     private String exportFileName = "";
     private LazyDataModel<RowDataTable> table_model;
@@ -74,36 +75,34 @@ public class RecordSetsSivigilaVifMB implements Serializable {
     private int progress = 0;//PROGRESO AL CREAR XLS
     private String sql = "";
 
-//    public void onCompleteLoad() {
-//        //progress = 0;
-//        System.out.println("Termino generacion de XLSX");
-//    }
-/**
- * This method Instance tag list, the table model and gets the current instance of the connection to the database.
- */
+    /**
+     * This method Instance tag list, the table model and gets the current
+     * instance of the connection to the database.
+     */
     public RecordSetsSivigilaVifMB() {
         tagsList = new ArrayList<>();
         table_model = new LazyRecordSetsDataModel(0, "", FormsEnum.SCC_F_033);
         connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-/**
- * This method is used to display messages about the actions that the user is performing.
- * @param s
- * @param title
- * @param messageStr 
- */
+
+    /**
+     * This method is used to display messages about the actions that the user
+     * is performing.
+     *
+     * @param s
+     * @param title
+     * @param messageStr
+     */
     public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
         FacesMessage msg = new FacesMessage(s, title, messageStr);
         FacesContext.getCurrentInstance().addMessage(null, msg);
     }
-
-//    public String openForm() {
-//        return openForm;
-//    }
-/**
- * load the information corresponding to a victim within the form
- * @param selectedRowsDataTableTags 
- */    
+    
+    /**
+     * load the information corresponding to a victim within the form
+     *
+     * @param selectedRowsDataTableTags
+     */
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
         try {
             //CREO LA LISTA DE TAGS SELECCIONADOS        
@@ -168,33 +167,40 @@ public class RecordSetsSivigilaVifMB implements Serializable {
             Logger.getLogger(RecordSetsLcenfMB.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-/**
- * This method is used when the user  wants to export all records found. this method creates a cell acording to the specified parameters
- * @param cellStyle
- * @param fila
- * @param position
- * @param value 
- */
+
+    /**
+     * This method is used when the user wants to export all records found. this
+     * method creates a cell acording to the specified parameters
+     *
+     * @param cellStyle
+     * @param fila
+     * @param position
+     * @param value
+     */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
         cell.setCellStyle(cellStyle);
     }
-/**
- * This method is used when the user  wants to export all records found. this method creates a cell acording to the specified parameters
- * @param fila
- * @param position
- * @param value 
- */
+
+    /**
+     * This method is used when the user wants to export all records found. this
+     * method creates a cell acording to the specified parameters
+     *
+     * @param fila
+     * @param position
+     * @param value
+     */
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
-/**
- * This method is responsible to export all records found.
- */
+
+    /**
+     * This method is responsible to export all records found.
+     */
     public void postProcessXLS1() {
         try {
             progress = 0;
@@ -214,9 +220,10 @@ public class RecordSetsSivigilaVifMB implements Serializable {
         }
         progress = 100;
     }
-/**
- * This method is responsible for exporting all records found
- */
+
+    /**
+     * This method is responsible for exporting all records found
+     */
     public void postProcessXLS(Object document) {
         try {
             progress = 0;
@@ -306,7 +313,7 @@ public class RecordSetsSivigilaVifMB implements Serializable {
 
             String[] splitDate;
             for (int i = 0; i < rowsDataTableArrayList.size(); i++) {
-                colPosition=0;
+                colPosition = 0;
                 RowDataTable rowDataTableList = rowsDataTableArrayList.get(i);
                 rowPosition++;
                 row = sheet.createRow(rowPosition);
@@ -383,30 +390,10 @@ public class RecordSetsSivigilaVifMB implements Serializable {
             Logger.getLogger(RecordSetsHomicideMB.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-/**
- * This method enables or disables the button “MOSTRAR FORMULARIO” according to the selected rows and then display the content.
- */
-    public void load() {
-        //currentNonFatalDomesticViolence = null;
-        //btnEditDisabled = true;
-//        btnRemoveDisabled = true;
-        if (selectedRowsDataTable != null) {
 
-//            if (selectedRowsDataTable.length == 1) {
-//                currentNonFatalDomesticViolence = nonFatalDomesticViolenceFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
-//            }
-            if (selectedRowsDataTable.length > 1) {
-                //btnEditDisabled = true;
-//                btnRemoveDisabled = false;
-            } else {
-                //btnEditDisabled = false;
-//                btnRemoveDisabled = false;
-            }
-        }
-    }
-/**
- * This method is used to remove a registry of the database.
- */
+    /**
+     * This method is used to remove a registry of the database.
+     */
     public void deleteRegistry() {
         if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
             for (int j = 0; j < selectedRowsDataTable.length; j++) {
@@ -417,7 +404,6 @@ public class RecordSetsSivigilaVifMB implements Serializable {
                 SivigilaVictim auxSivigilaVictim = auxSivigilaEvent.getSivigilaVictimId();
                 SivigilaAggresor auxSivigilaAggresor = auxSivigilaEvent.getSivigilaAgresorId();
                 sivigilaEventFacade.remove(auxSivigilaEvent);
-                //nnFatalDomesticViolenceFacade.remove(auxDomesticViolence);
                 nonFatalDomesticViolenceFacade.remove(auxDomesticViolence);
                 nonFatalInjuriesFacade.remove(auxNonFatalInjury);
                 victimsFacade.remove(auxVictim);
@@ -425,20 +411,13 @@ public class RecordSetsSivigilaVifMB implements Serializable {
                 sivigilaAggresorFacade.remove(auxSivigilaAggresor);
             }//deselecciono los controles
             selectedRowsDataTable = null;
-            totalRecords=String.valueOf(Integer.parseInt(totalRecords)-1);
+            totalRecords = String.valueOf(Integer.parseInt(totalRecords) - 1);
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
         } else {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
         }
     }
-
-//    public List<RowDataTable> getRowDataTableList() {
-//        return rowDataTableList;
-//    }
-//
-//    public void setRowDataTableList(List<RowDataTable> rowDataTableList) {
-//        this.rowDataTableList = rowDataTableList;
-//    }
+    
     public RowDataTable[] getSelectedRowsDataTable() {
         return selectedRowsDataTable;
     }
@@ -478,21 +457,7 @@ public class RecordSetsSivigilaVifMB implements Serializable {
     public void setNewName(String newName) {
         this.newName = newName;
     }
-
-//    public boolean isBtnEditDisabled() {
-//        return btnEditDisabled;
-//    }
-//    public void setBtnEditDisabled(boolean btnEditDisabled) {
-//        this.btnEditDisabled = btnEditDisabled;
-//    }
-//    public boolean isBtnRemoveDisabled() {
-//        return btnRemoveDisabled;
-//    }
-//
-//    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
-//        this.btnRemoveDisabled = btnRemoveDisabled;
-//    }
-
+    
     public String getData() {
         return data;
     }

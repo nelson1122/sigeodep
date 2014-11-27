@@ -10,10 +10,13 @@ import javax.faces.model.ListDataModel;
 import org.primefaces.model.SelectableDataModel;
 
 /**
- * This class allows the system to handle the pagination in the tables, allows the system to query the database to be realized each time the user presses on the next, previous button or any position in the table to not consume a lot of server memory.
- * 
+ * This class allows the system to handle the pagination in the tables, allows
+ * the system to query the database to be realized each time the user presses on
+ * the next, previous button or any position in the table to not consume a lot
+ * of server memory.
+ *
  */
-public class QueryDataModel extends ListDataModel<FieldCount> implements SelectableDataModel<FieldCount>, Serializable{
+public class QueryDataModel extends ListDataModel<FieldCount> implements SelectableDataModel<FieldCount>, Serializable {
 
     private List<FieldCount> model;
 
@@ -23,7 +26,7 @@ public class QueryDataModel extends ListDataModel<FieldCount> implements Selecta
 
     @Override
     public Object getRowKey(FieldCount record) {
-            return record.getField();
+        return record.getField();
     }
 
     @Override
@@ -43,5 +46,4 @@ public class QueryDataModel extends ListDataModel<FieldCount> implements Selecta
     public void setModel(List<FieldCount> model) {
         this.model = model;
     }
-
 }

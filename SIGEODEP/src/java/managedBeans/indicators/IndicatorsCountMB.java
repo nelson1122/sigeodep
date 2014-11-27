@@ -116,7 +116,6 @@ public class IndicatorsCountMB {
     private String initialDateStr;
     private String endDateStr;
     private boolean invertMatrix = false;
-    //private List<String> variablesGraph = new ArrayList<>();
     private List<String> valuesGraph = new ArrayList<>();
     private List<String> variablesList = new ArrayList<>();//lista de nombres de variables disponibles que sepueden cruzar(se visualizan en pagina)
     private List<String> variablesCrossList = new ArrayList<>();//ista de nombres de variables que se van a cruzar(se visualizan en pagina)
@@ -166,7 +165,6 @@ public class IndicatorsCountMB {
     private int sizeFont = 12;
     private List<String> typesGraph = new ArrayList<>();
     private String currentTypeGraph = "barras";
-    //DecimalFormat formateador = new DecimalFormat("0.00");
     String variablesName = "";
     String categoryAxixLabel = "";
     String indicatorName = "";

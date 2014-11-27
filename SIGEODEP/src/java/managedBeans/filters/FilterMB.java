@@ -26,7 +26,10 @@ import org.primefaces.model.DualListModel;
 import org.primefaces.model.LazyDataModel;
 
 /**
- *This class allows the user to copy, delete, split, join columns, filter, replicate records, rename values​​, alsto this class is responsible to tandle a history of the realized filters.
+ * This class allows the user to copy, delete, split, join columns, filter,
+ * replicate records, rename values​​, alsto this class is responsible to tandle
+ * a history of the realized filters.
+ *
  * @author santos
  */
 @ManagedBean(name = "filterMB")
@@ -88,11 +91,13 @@ public class FilterMB {
     private List<RowDataTable> filtersAppliedList = new ArrayList<>();
     private String sqlUndo = "";
     private String filterDescription = "";
-    private String filterName = ""; 
-    
-/**
- * This method is responsible of instantiating variables needed to filter data as relations variables, error control, record data, and connection to the database.
- */
+    private String filterName = "";
+
+    /**
+     * This method is responsible of instantiating variables needed to filter
+     * data as relations variables, error control, record data, and connection
+     * to the database.
+     */
     public FilterMB() {
         FacesContext context = FacesContext.getCurrentInstance();
         relationshipOfVariablesMB = (RelationshipOfVariablesMB) context.getApplication().evaluateExpressionGet(context, "#{relationshipOfVariablesMB}", RelationshipOfVariablesMB.class);
@@ -106,9 +111,11 @@ public class FilterMB {
         }
     }
     //boolean ya = true;
-/**
- * This method is used to set all variables to their default values to begin the processing the data.
- */
+
+    /**
+     * This method is used to set all variables to their default values to begin
+     * the processing the data.
+     */
     public void reset() {
 
         //---- copy ------
@@ -187,11 +194,13 @@ public class FilterMB {
     private int currentNumberInserts = 0;//numero de inserts actual
 
     /**
-     * This method adds a record to the table project_records using the COPY method of postgres
+     * This method adds a record to the table project_records using the COPY
+     * method of postgres
+     *
      * @param projectId
      * @param recordId
      * @param columnId
-     * @param dataValue 
+     * @param dataValue
      */
     private void addTableProjectRecords(int projectId, int recordId, int columnId, String dataValue) {
         /*
@@ -218,11 +227,13 @@ public class FilterMB {
             System.out.println(sb.toString());
         }
     }
-/**
- * This method is used to check if a string has spaces.
- * @param text
- * @return 
- */
+
+    /**
+     * This method is used to check if a string has spaces.
+     *
+     * @param text
+     * @return
+     */
     private boolean haveSpaces(String text) {
         boolean returnBoolean = false;
         for (int i = 0; i < text.length(); i++) {
@@ -232,11 +243,13 @@ public class FilterMB {
         }
         return returnBoolean;
     }
-/**
- * This method is used to search columns that contain a specific text.
- * @param text
- * @return 
- */
+
+    /**
+     * This method is used to search columns that contain a specific text.
+     *
+     * @param text
+     * @return
+     */
     private boolean searchColumn(String text) {
         boolean returnBoolean = false;
         if (projectsMB != null) {
@@ -260,11 +273,13 @@ public class FilterMB {
         }
         return returnBoolean;
     }
-/**
- * This method is used to determine the name of a column
- * @param name
- * @return 
- */
+
+    /**
+     * This method is used to determine the name of a column
+     *
+     * @param name
+     * @return
+     */
     private String determineColumnName(String name) {
         String strReturn = name;
         int number = 0;
@@ -291,11 +306,14 @@ public class FilterMB {
         }
         return strReturn;
     }
-/**
- * This method is responsible to create a list of values of a particular column from the file with no repeated values
- * @param column
- * @return 
- */
+
+    /**
+     * This method is responsible to create a list of values of a particular
+     * column from the file with no repeated values
+     *
+     * @param column
+     * @return
+     */
     private ArrayList<String> loadFoundValues(String column) {
         /*
          * crear una lista de valores de una determinada columna proveniente del
@@ -329,13 +347,13 @@ public class FilterMB {
         return arrayReturn;
     }
 
-    
-/**
- * This method is responsible for obtaining the list of variables found in a specific project, regardless if they are related or not
- * @param filter
- * @return 
- */    
-
+    /**
+     * This method is responsible for obtaining the list of variables found in a
+     * specific project, regardless if they are related or not
+     *
+     * @param filter
+     * @return
+     */
     private ArrayList<String> loadFoundVariables(String filter) {
         /*
          * se saca el listado de variables encontradas, sin importar
@@ -368,10 +386,13 @@ public class FilterMB {
         }
         return arrayReturn;
     }
-/**
- * This method gets the list of variables found removing the variables which are related.
- * @return 
- */
+
+    /**
+     * This method gets the list of variables found removing the variables which
+     * are related.
+     *
+     * @return
+     */
     private ArrayList<String> loadFoundVariablesRemovingRelated() {
         /*
          * se saca el listado de variables encontradas, se quitan las 
@@ -410,9 +431,11 @@ public class FilterMB {
         }
         return arrayReturn;
     }
-/**
- * This method is used to undo the last filter has been done in the current project.
- */
+
+    /**
+     * This method is used to undo the last filter has been done in the current
+     * project.
+     */
     public void btnUndoFilterClick() {
         if (filtersAppliedList != null && !filtersAppliedList.isEmpty()) {
             try {
@@ -432,16 +455,20 @@ public class FilterMB {
     //--------------------------------------------------------------------------
     //-------------------------- COPY ------------------------------------------
     //--------------------------------------------------------------------------
-/**
- * This method is responsible of obtain the values of the variable to copy, this method also is responsible to get the name in a new variable.
- */ 
+    /**
+     * This method is responsible of obtain the values of the variable to copy,
+     * this method also is responsible to get the name in a new variable.
+     */
     public void changeVariableFoundToCopy() {
         valuesFoundToCopy = loadFoundValues(variableNameToCopy);
         copyPrefix = variableNameToCopy;
     }
-/**
- * This method is responsible to copy a selected column, the user must specify the name of the new column, select an existing column and finally this method inserts the new column created in project_columns
- */
+
+    /**
+     * This method is responsible to copy a selected column, the user must
+     * specify the name of the new column, select an existing column and finally
+     * this method inserts the new column created in project_columns
+     */
     public void copyColumnsClick() {
         boolean continueProcess = true;
         if (continueProcess) {
@@ -529,9 +556,10 @@ public class FilterMB {
             }
         }
     }
-/**
- * This method is used to obtain the values of a variable to be copied.
- */
+
+    /**
+     * This method is used to obtain the values of a variable to be copied.
+     */
     public void changeVariableNameToCopyFilter() {
         loadFoundVariables(variableNameToCopyFilter);
         copyPrefix = "";
@@ -542,9 +570,11 @@ public class FilterMB {
     //--------------------------------------------------------------------------
     //------------------------- DELETE -----------------------------------------
     //--------------------------------------------------------------------------
-/**
- * This method is responsible for deleting a selected column of the project the user is working, to remove the column is necessary that the user has previously selected a column.
- */
+    /**
+     * This method is responsible for deleting a selected column of the project
+     * the user is working, to remove the column is necessary that the user has
+     * previously selected a column.
+     */
     public void deleteVariables() {
         if (variablesPickToDelete.getTarget().isEmpty()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Agrege a la segunda lista las variables a eliminar"));
@@ -649,15 +679,19 @@ public class FilterMB {
     //--------------------------------------------------------------------------
     //------------------------- SPLIT -----------------------------------------
     //--------------------------------------------------------------------------
-/**
- * This method is responsible to Load the values corresponding to the variable to be separated.
- */    
+    /**
+     * This method is responsible to Load the values corresponding to the
+     * variable to be separated.
+     */
     public void changeVariableFoundToSplit() {
         valuesFoundToSplit = loadFoundValues(variableNameToSplit);
     }
-/**
- * This method is responsible for separating the selected column in 2 new columns, for it is necessary to specify a separator and assign different names to the new generated columns.
- */
+
+    /**
+     * This method is responsible for separating the selected column in 2 new
+     * columns, for it is necessary to specify a separator and assign different
+     * names to the new generated columns.
+     */
     public void splitColumnsClick() {
         boolean continueProcess = true;
         if (continueProcess) {
@@ -782,12 +816,17 @@ public class FilterMB {
             }
         }
     }
-/**
- * This method is responsible to divide the values of a column through a delimiter that is digit.
- * the part that is before the specified digit corresponds to the first column and the part that is after the digit corresponding to the second column. if the delimiter is not a digit then do a normal division by character.
- * @param text
- * @return 
- */
+
+    /**
+     * This method is responsible to divide the values of a column through a
+     * delimiter that is digit. the part that is before the specified digit
+     * corresponds to the first column and the part that is after the digit
+     * corresponding to the second column. if the delimiter is not a digit then
+     * do a normal division by character.
+     *
+     * @param text
+     * @return
+     */
     public String[] splitByDigit(String text) {
         String[] split;
         char chr;
@@ -829,11 +868,14 @@ public class FilterMB {
         }
         return split;
     }
-/**
- * This method is used to check if a character corresponds to a digit or not.
- * @param chr
- * @return 
- */
+
+    /**
+     * This method is used to check if a character corresponds to a digit or
+     * not.
+     *
+     * @param chr
+     * @return
+     */
     private boolean isDigit(char chr) {
         if (chr >= 48 && chr <= 57) {
             return true;
@@ -841,9 +883,11 @@ public class FilterMB {
             return false;
         }
     }
-/**
- * This method is used to check if a delimiter is set to realize the division.
- */
+
+    /**
+     * This method is used to check if a delimiter is set to realize the
+     * division.
+     */
     public void setRenders() {
         if ("#".equals(splitDelimiter.trim())) {
             splitRendered = true;
@@ -855,9 +899,12 @@ public class FilterMB {
     //--------------------------------------------------------------------------
     //---------------------------- MERGE ---------------------------------------
     //--------------------------------------------------------------------------
-/**
- * This method is responsible to join two or more columns and generate a new column that subsequently is goint to register in project_columns. The records that made up the ancient columns are joined according to the specified separator.
- */  
+    /**
+     * This method is responsible to join two or more columns and generate a new
+     * column that subsequently is goint to register in project_columns. The
+     * records that made up the ancient columns are joined according to the
+     * specified separator.
+     */
     public void mergeFieldsClick() {
         boolean continueProcess = true;
         if (mergeDelimiter == null) {
@@ -1013,20 +1060,24 @@ public class FilterMB {
     //--------------------------------------------------------------------------
     //---------------------- FILTER RECORDS ------------------------------------
     //--------------------------------------------------------------------------
-/**
- * This method is responsible for allocating all the records to be filtered according to the variables selected by the user.
- */
+    /**
+     * This method is responsible for allocating all the records to be filtered
+     * according to the variables selected by the user.
+     */
     public void changeVariablesFoundToFilterRecords() {
         filter_queryModel = new QueryDataModel(getFieldCounts(filter_field));
         filter_field_names = new ArrayList<>();
         filter_field_names.add(filter_field);
         filter_field_names.add("# de Registros");
     }
-/**
- * This method is responsible to obtain all records be filtered according to what the user has selected.
- * @param field
- * @return 
- */
+
+    /**
+     * This method is responsible to obtain all records be filtered according to
+     * what the user has selected.
+     *
+     * @param field
+     * @return
+     */
     public List<FieldCount> getFieldCounts(String field) {
         try {
             List<FieldCount> data = new ArrayList<>();
@@ -1060,9 +1111,13 @@ public class FilterMB {
             return null;
         }
     }
-/**
- * This method allows the user to filter the records according to the selection made by that user, so that it displays only the records that are really important to be stored in the current project. for the filter the user need to select a variable and a least one  value to filter.
- */
+
+    /**
+     * This method allows the user to filter the records according to the
+     * selection made by that user, so that it displays only the records that
+     * are really important to be stored in the current project. for the filter
+     * the user need to select a variable and a least one value to filter.
+     */
     public void filterRecordsClick() {
         boolean continueProcess = true;
 
@@ -1158,11 +1213,13 @@ public class FilterMB {
     //-------------------------------------------------------------
     //---------------------- RENAME -------------------------------
     //-------------------------------------------------------------
-/**
- * This method is responsible to Returns the values of a field sorted by frequency
- * @param field
- * @return 
- */    
+    /**
+     * This method is responsible to Returns the values of a field sorted by
+     * frequency
+     *
+     * @param field
+     * @return
+     */
     public List<ValueNewValue> getValuesOrderedByFrecuency(String field) {
         /*
          * Retorna los valores de un campo ordenados por su frecuencia
@@ -1198,18 +1255,22 @@ public class FilterMB {
             return null;
         }
     }
-/**
- * This method allows the user to get the value that is to rename of selected column.
- */
+
+    /**
+     * This method allows the user to get the value that is to rename of
+     * selected column.
+     */
     public void changeFieldRename() {
         rename_model = getValuesOrderedByFrecuency(the_field);
         rename_field_names = new ArrayList<>();
         rename_field_names.add(the_field);
         rename_field_names.add("# de Registros");
     }
-/**
- * This method allows to rename all values that were changed corresponding to a selected variable.
- */
+
+    /**
+     * This method allows to rename all values that were changed corresponding
+     * to a selected variable.
+     */
     public void renameRecordsClick() {
         boolean continueProcess = true;
         sqlUndo = "";
@@ -1277,12 +1338,14 @@ public class FilterMB {
     //--------------------------------------------------------------------------
     //---------------------- REPLICATE -------------------------------
     //--------------------------------------------------------------------------
-/**
- * This method is responsible to perform the necessary operations to a variable that is loaded into an array to be replicated correctly.
- * @param arrayInJava
- * @param splitOperations
- * @return 
- */
+    /**
+     * This method is responsible to perform the necessary operations to a
+     * variable that is loaded into an array to be replicated correctly.
+     *
+     * @param arrayInJava
+     * @param splitOperations
+     * @return
+     */
     private ArrayList<String> realizeOperations(Object[] arrayInJava, String[] splitOperations) {
         /*
          * arrayInJava      arreglo con todos los campos de un registro
@@ -1327,12 +1390,16 @@ public class FilterMB {
             return null;
         }
     }
-/**
- * This method is responsable to obtain all records corresponding to a variable, this method is called when a variables replication is performed.
- * @param arrayInJava
- * @param columnName
- * @return 
- */
+
+    /**
+     * This method is responsable to obtain all records corresponding to a
+     * variable, this method is called when a variables replication is
+     * performed.
+     *
+     * @param arrayInJava
+     * @param columnName
+     * @return
+     */
     private String searchValueAcoordinColumn(ArrayList<String> arrayInJava, String columnName) {
         for (int i = 0; i < arrayInJava.size(); i++) {//Ciclo para cada uno de los registros
             String[] splitElement = arrayInJava.get(i).toString().split("<=>"); //splitElement[0]=columnId splitElement[1]=columnName splitElement[2]=datavalue
@@ -1342,9 +1409,11 @@ public class FilterMB {
         }
         return null;
     }
-/**
- * This method is responsible to replicate the selected variables for the user.
- */
+
+    /**
+     * This method is responsible to replicate the selected variables for the
+     * user.
+     */
     public void replicateClick() {
         boolean continueProcess = true;
         String fieldsSource = "";
@@ -1557,12 +1626,15 @@ public class FilterMB {
     //--------------------------------------------------------------------------
     //---------------------- FILTER HISTORY ------------------------------------
     //--------------------------------------------------------------------------
-/**
- * This method is responsible to insert the name of a filter along with its description in the history of filters for the user can look all the filters that have been realized and if necessary to undo.
- * @param filterName_:Filter Name
- * @param filterDescription_:Filter Description
- * @param sqlUndo_ :Sql that undo the filter
- */    
+    /**
+     * This method is responsible to insert the name of a filter along with its
+     * description in the history of filters for the user can look all the
+     * filters that have been realized and if necessary to undo.
+     *
+     * @param filterName_:Filter Name
+     * @param filterDescription_:Filter Description
+     * @param sqlUndo_ :Sql that undo the filter
+     */
     private void insertingFilterInHistory(String filterName_, String filterDescription_, String sqlUndo_) {
         try {
             sqlUndo_ = sqlUndo_.replaceAll("'", "\"");
@@ -1594,9 +1666,11 @@ public class FilterMB {
         filterDescription = "";
         sqlUndo = "";
     }
-/**
- * This method is responsible to update the history of realized filters, this is done every time a new filter is recorded in the history.
- */
+
+    /**
+     * This method is responsible to update the history of realized filters,
+     * this is done every time a new filter is recorded in the history.
+     */
     private void refreshHistoryList() {
         filtersAppliedList = new ArrayList<>();
         //selectedFiltersAppliedRow = null;
@@ -1929,8 +2003,4 @@ public class FilterMB {
     public void setFiltersAppliedList(List<RowDataTable> filtersAppliedList) {
         this.filtersAppliedList = filtersAppliedList;
     }
-
-    
-    
-    
 }

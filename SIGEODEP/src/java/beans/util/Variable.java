@@ -9,7 +9,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
- *The class variable is responsible of establishing a  filter of the list of years that is between two dates, that is start date and end date that are used in the different indicators. 
+ * The class variable is responsible of establishing a filter of the list of
+ * years that is between two dates, that is start date and end date that are
+ * used in the different indicators.
+ *
  * @author and
  */
 public class Variable {
@@ -24,15 +27,19 @@ public class Variable {
     private List<String> valuesId;//identificadores de los valores que puede tomar en la categoria
     private List<String> valuesConfigured;//valores que se configuraron(los mismos o menos valores que valuesId)
     private boolean configurable = false;//me dice si esta variable acepta o no realizarle configuracion (adicionar categoria)
-/**
- * class constructor, this method is  responsible for the  allocation   of variables to values sent as parameters.
- * @param name: variable name.
- * @param table: table where this  data.
- * @param field: column of the table where the data is.
- * @param generic_table: table where  located category.
- * @param conf: say if this varialbe accepts or not perform configuration (add category).
- * @param source_table: table where you should look for value. 
- */
+
+    /**
+     * class constructor, this method is responsible for the allocation of
+     * variables to values sent as parameters.
+     *
+     * @param name: variable name.
+     * @param table: table where this data.
+     * @param field: column of the table where the data is.
+     * @param generic_table: table where located category.
+     * @param conf: say if this varialbe accepts or not perform configuration
+     * (add category).
+     * @param source_table: table where you should look for value.
+     */
     public Variable(String name, String table, String field, String generic_table, boolean conf, String source_table) {
         this.name = name;
         this.table = table;
@@ -44,13 +51,17 @@ public class Variable {
         this.configurable = conf;
         this.source_table = source_table;
     }
-/**
- * class constructor   Variable is  responsible for the  allocation   of variables to values sent as parameters.
- * @param name: variable name.
- * @param generic_table: table where  located category.
- * @param conf: say if this varialbe accepts or not perform configuration (add category).
- * @param source_table: table where you should look for value. 
- */
+
+    /**
+     * class constructor Variable is responsible for the allocation of variables
+     * to values sent as parameters.
+     *
+     * @param name: variable name.
+     * @param generic_table: table where located category.
+     * @param conf: say if this varialbe accepts or not perform configuration
+     * (add category).
+     * @param source_table: table where you should look for value.
+     */
     public Variable(String name, String generic_table, boolean conf, String source_table) {
         this.name = name;
         this.generic_table = generic_table;
@@ -141,11 +152,14 @@ public class Variable {
     public void setConfigurable(boolean configurable) {
         this.configurable = configurable;
     }
-/**
- * This method creates a list of years that is between two dates, is say start date and end date.
- * @param initialDate: initial date.
- * @param endDate: end date. 
- */
+
+    /**
+     * This method creates a list of years that is between two dates, is say
+     * start date and end date.
+     *
+     * @param initialDate: initial date.
+     * @param endDate: end date.
+     */
     public void filterYear(Date initialDate, Date endDate) {
         //crear la lista de años que se encuentran entre dos fechas
         int initialYear = initialDate.getYear() + 1900;
@@ -166,7 +180,5 @@ public class Variable {
 
     public void setSource_table(String source_table) {
         this.source_table = source_table;
-    }   
-    
-    
+    }
 }

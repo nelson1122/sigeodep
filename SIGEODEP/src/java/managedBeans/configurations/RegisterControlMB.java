@@ -19,7 +19,10 @@ import javax.faces.context.FacesContext;
 import org.apache.poi.hssf.usermodel.*;
 
 /**
- *The RegisterControlMB class is responsible  for keeping track of records by a date range to  which a report in xls format,Which yields control is done by the user who entered the system.
+ * The RegisterControlMB class is responsible for keeping track of records by a
+ * date range to which a report in xls format,Which yields control is done by
+ * the user who entered the system.
+ *
  * @author SANTOS
  */
 @ManagedBean(name = "registerControlMB")
@@ -38,35 +41,40 @@ public class RegisterControlMB implements Serializable {
     SimpleDateFormat format_es = new SimpleDateFormat("dd MMM yyyy", new Locale("ES"));
     SimpleDateFormat format_sql = new SimpleDateFormat("dd/MM/yyyy");
     SimpleDateFormat format_postgres = new SimpleDateFormat("yyyy-MM-dd");
-/**
- * It is responsible to connect to the database and perform validations if month, day, valid year.
- */
+
+    /**
+     * It is responsible to connect to the database and perform validations if
+     * month, day, valid year.
+     */
     public RegisterControlMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        
+
         initialDate.setDate(1);
         initialDate.setMonth(0);
         initialDate.setYear(2012 - 1900);
         endDate.setDate(1);
         endDate.setMonth(5);
-        endDate.setYear(2012-1900);
-        
+        endDate.setYear(2012 - 1900);
+
         exportFileName = format_es.format(initialDate) + " - " + format_es.format(endDate);
-        
+
     }
-/**
- * permit to change the date.
- */
+
+    /**
+     * permit to change the date.
+     */
     public void changeDate() {
         exportFileName = format_es.format(initialDate) + " - " + format_es.format(endDate);
     }
-/**
- * It is responsible to create a cell within the row.
- * @param cellStyle: Style that will have the cell.
- * @param fila: row where create the cell
- * @param position: Determines the position where anger cell within the row.
- * @param value: Sets the value that will be created within the cell. 
- */
+
+    /**
+     * It is responsible to create a cell within the row.
+     *
+     * @param cellStyle: Style that will have the cell.
+     * @param fila: row where create the cell
+     * @param position: Determines the position where anger cell within the row.
+     * @param value: Sets the value that will be created within the cell.
+     */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                                
@@ -75,15 +83,17 @@ public class RegisterControlMB implements Serializable {
             cell.setCellValue(valueDouble);
         } catch (Exception e) {
             cell.setCellValue(new HSSFRichTextString(value));
-        }        
+        }
         cell.setCellStyle(cellStyle);
     }
-/**
- * It is responsible to create a cell within the row.
- * @param fila: row where create the cell 
- * @param position: Determines the position where anger cell within the row.
- * @param value: Sets the value that will be created within the cell. 
- */
+
+    /**
+     * It is responsible to create a cell within the row.
+     *
+     * @param fila: row where create the cell
+     * @param position: Determines the position where anger cell within the row.
+     * @param value: Sets the value that will be created within the cell.
+     */
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
@@ -94,10 +104,13 @@ public class RegisterControlMB implements Serializable {
             cell.setCellValue(new HSSFRichTextString(value));
         }
     }
-/**
- * runs a xls file where the user inserts a row within a worksheet where two fields are set: CODE, NAME.
- * @param document: Document to modify the name and code field. 
- */
+
+    /**
+     * runs a xls file where the user inserts a row within a worksheet where two
+     * fields are set: CODE, NAME.
+     *
+     * @param document: Document to modify the name and code field.
+     */
     public void postProcessXLS(Object document) {
 
         boolean continueProcess = true;
@@ -171,8 +184,8 @@ public class RegisterControlMB implements Serializable {
                 //CALCULAR GRAN TOTAL-------------------------------------------
                 rs = connectionJdbcMB.consult("SELECT SUM(count) from register_control");
                 rs.next();
-                int granTotal=rs.getInt(1);
-                
+                int granTotal = rs.getInt(1);
+
                 //PRIMER COLUMNA----------------------------------------
                 int posRow = 1;
                 rs = connectionJdbcMB.consult("SELECT DISTINCT(input_timestamp) from register_control order by 1");
@@ -226,17 +239,16 @@ public class RegisterControlMB implements Serializable {
                             createCell(rowXls, col, text);
                         }
                     }
-                    if(row == numRows-1){
-                        createCell(rowXls, numColumns-1, String.valueOf(granTotal));
+                    if (row == numRows - 1) {
+                        createCell(rowXls, numColumns - 1, String.valueOf(granTotal));
                     }
                 }
-                
+
             } catch (SQLException | NumberFormatException e) {
                 System.out.println(e.getMessage());
             }
         }
     }
-    
 
     public void reset() {
     }

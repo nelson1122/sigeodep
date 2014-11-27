@@ -34,7 +34,11 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 
 /**
- *The NeighborhoodsVariableMB class is responsible for managing everything related to neighborhoods, allowing user to have available a list of neighborhoods available which can be added, edited, deleted and exported in xls list.
+ * The NeighborhoodsVariableMB class is responsible for managing everything
+ * related to neighborhoods, allowing user to have available a list of
+ * neighborhoods available which can be added, edited, deleted and exported in
+ * xls list.
+ *
  * @author SANTOS
  */
 @ManagedBean(name = "neighborhoodsVariableMB")
@@ -93,42 +97,51 @@ public class NeighborhoodsVariableMB implements Serializable {
     private String newPopuation = "0";
     private String popuation = "0";
     private String realPath = "";//ruta real en el servidor de la aplicacion
-/**
- * This method is responsible to create the connection to the database and set the path.
- */
+
+    /**
+     * This method is responsible to create the connection to the database and
+     * set the path.
+     */
     public NeighborhoodsVariableMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/");
     }
-/**
- * It is responsible to create a cell within the row.
- * @param cellStyle: Style that will have the cell.
- * @param fila: row where create the cell
- * @param position: Determines the position where anger cell within the row.
- * @param value: Sets the value that will be created within the cell. 
- */
+
+    /**
+     * It is responsible to create a cell within the row.
+     *
+     * @param cellStyle: Style that will have the cell.
+     * @param fila: row where create the cell
+     * @param position: Determines the position where anger cell within the row.
+     * @param value: Sets the value that will be created within the cell.
+     */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
         cell.setCellStyle(cellStyle);
     }
-/**
- * It is responsible to create a cell within the row.
- * @param fila: row where create the cell 
- * @param position: Determines the position where anger cell within the row.
- * @param value: Sets the value that will be created within the cell. 
- */
+
+    /**
+     * It is responsible to create a cell within the row.
+     *
+     * @param fila: row where create the cell
+     * @param position: Determines the position where anger cell within the row.
+     * @param value: Sets the value that will be created within the cell.
+     */
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
-/**
- * runs a xls file where the user inserts a row within a worksheet where two fields are set: CODE, NAME.
- * @param document: Document to modify the name and code field. 
- */
+
+    /**
+     * runs a xls file where the user inserts a row within a worksheet where two
+     * fields are set: CODE, NAME.
+     *
+     * @param document: Document to modify the name and code field.
+     */
     public void postProcessXLS(Object document) {
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
@@ -157,11 +170,13 @@ public class NeighborhoodsVariableMB implements Serializable {
             }
         }
     }
-/**
- * copy the file to the geometry of the neighborhood.
- * @param fileName
- * @param in 
- */
+
+    /**
+     * copy the file to the geometry of the neighborhood.
+     *
+     * @param fileName
+     * @param in
+     */
     private void copyFile(String fileName, InputStream in) {
         disabledShowGeomFile = true;
         nameGeomFile = "Archivo no cargado";
@@ -197,10 +212,12 @@ public class NeighborhoodsVariableMB implements Serializable {
             System.out.println("No se pudo procesar el archivo");
         }
     }
-/**
- * upload the geometry of the neighborhood.
- * @param event 
- */
+
+    /**
+     * upload the geometry of the neighborhood.
+     *
+     * @param event
+     */
     public void handleFileUpload(FileUploadEvent event) {
         /*
          * cargar el archivo de geometria del varrio
@@ -216,12 +233,9 @@ public class NeighborhoodsVariableMB implements Serializable {
         }
     }
 
-//    public void cualArchivo() {
-//        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Archivo es", newNameGeomFile));
-//    }
-/**
- * This method is responsible to add a quadrant in a new neighborhood.
- */    
+    /**
+     * This method is responsible to add a quadrant in a new neighborhood.
+     */
     public void addQuadrantInNewNeighborhoodClick() {
         /*
          * adicionar un cuadrante en un nuevo barrio
@@ -243,9 +257,11 @@ public class NeighborhoodsVariableMB implements Serializable {
         //newQuadrantsFilter = "";
         //changeNewQuadrantsFilter();
     }
-/**
- * This method is responsible to add one quadrant to the list of aggregates, when you are editing an existing neighborhood.
- */
+
+    /**
+     * This method is responsible to add one quadrant to the list of aggregates,
+     * when you are editing an existing neighborhood.
+     */
     public void addQuadrantInExistingNeighborhoodClick() {
         /*
          * adicionar un cuadrante a la lista de agregados, cuando se esta editando un barrio existente
@@ -267,9 +283,11 @@ public class NeighborhoodsVariableMB implements Serializable {
         //quadrantsFilter = "";
         //changeQuadrantsFilter();
     }
-/**
- * Remove one quadrant of the aggregate list when you are creating a new neighborhood.
- */
+
+    /**
+     * Remove one quadrant of the aggregate list when you are creating a new
+     * neighborhood.
+     */
     public void removeQuadrantInNewNeighborhoodClick() {
         /*
          * quitar un cuadrante de la lista de agregados, cuando se esta creando un nuevo barrio
@@ -291,9 +309,11 @@ public class NeighborhoodsVariableMB implements Serializable {
         //newQuadrantsFilter = "";
         //changeNewQuadrantsFilter();
     }
-/**
- * Remove one quadrant of the list of aggregates, when you are editing an existing neighborhood.
- */
+
+    /**
+     * Remove one quadrant of the list of aggregates, when you are editing an
+     * existing neighborhood.
+     */
     public void removeQuadrantInExistingNeighborhoodClick() {
         /*
          * quitar un cuadrante de la lista de agregados, cuando se esta editando un barrio existente
@@ -313,9 +333,11 @@ public class NeighborhoodsVariableMB implements Serializable {
             selectedAvailableAddQuadrants = new ArrayList<>();
         }
     }
-/**
- * load the data of a record when the user selects a row of the table  that show the  existing neighborhoods
- */
+
+    /**
+     * load the data of a record when the user selects a row of the table that
+     * show the existing neighborhoods
+     */
     public void loadRegistry() {
         /*
          * carga de los datos de un registro cuando se selecciona una fila de 
@@ -413,15 +435,17 @@ public class NeighborhoodsVariableMB implements Serializable {
             }
         }
     }
-/**
- * Initialize the variable that receives the text of the loaded polygon.
- */
+
+    /**
+     * Initialize the variable that receives the text of the loaded polygon.
+     */
     public void showGeomFileClick() {
         poligonText = "";
     }
-/**
- * load the selected geometry.
- */
+
+    /**
+     * load the selected geometry.
+     */
     public void loadGeometrySelected() {
         if (poligonText != null && poligonText.trim().length() != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "la geometria ha sido cargada"));
@@ -430,9 +454,11 @@ public class NeighborhoodsVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado ninguna geometria"));
         }
     }
-/**
- * removes a neighborhood, but before making their removal verify that it is not in use.
- */
+
+    /**
+     * removes a neighborhood, but before making their removal verify that it is
+     * not in use.
+     */
     public void deleteRegistry() {
         if (currentNeighborhood != null) {
             //se elimina de la tabla cuadrantes 
@@ -453,9 +479,12 @@ public class NeighborhoodsVariableMB implements Serializable {
             connectionJdbcMB.setShowMessages(true);
         }
     }
-/**
- * updates a record corresponding to a neighborhood, in updating neighborhood_quadrant inserted into the table, the id of the neighborhood and the corridor.
- */
+
+    /**
+     * updates a record corresponding to a neighborhood, in updating
+     * neighborhood_quadrant inserted into the table, the id of the neighborhood
+     * and the corridor.
+     */
     public void updateRegistry() {
         if (currentNeighborhood != null) {
             boolean continueProcess = true;
@@ -562,9 +591,11 @@ public class NeighborhoodsVariableMB implements Serializable {
             }
         }
     }
-/**
- * Save the registration of a new neighborhood and verify that the new row to be inserted does not exist in the neighborhoods table.
- */
+
+    /**
+     * Save the registration of a new neighborhood and verify that the new row
+     * to be inserted does not exist in the neighborhoods table.
+     */
     public void saveRegistry() {
         /*
          * 
@@ -668,9 +699,10 @@ public class NeighborhoodsVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-/**
- * clean the form is initialized to add a new neighborhood.
- */
+
+    /**
+     * clean the form is initialized to add a new neighborhood.
+     */
     public void newRegistry() {
         //se quita elemento seleccionado de la tabla, se inhabilitan controles
         selectedRowDataTable = null;
@@ -693,9 +725,10 @@ public class NeighborhoodsVariableMB implements Serializable {
         poligonText = "";
         disabledShowGeomFile = true;
     }
-/**
- * change the type of neighborhood considering if it is rural or urban area.
- */
+
+    /**
+     * change the type of neighborhood considering if it is rural or urban area.
+     */
     public void changeArea() {//cambia tipo de barrio
         String sql;
         if (neighborhoodType.compareTo("1") == 0) {//ZONA URBANA
@@ -717,9 +750,11 @@ public class NeighborhoodsVariableMB implements Serializable {
         } catch (Exception e) {
         }
     }
-/**
- * change the new type of neighborhood is ignored unless it is rural or urban area.
- */
+
+    /**
+     * change the new type of neighborhood is ignored unless it is rural or
+     * urban area.
+     */
     public void changeNewArea() {//cambia nuevo tipo de barrio
         String sql;
         if (newNeighborhoodType.compareTo("1") == 0) {//ZONA URBANA
@@ -742,9 +777,10 @@ public class NeighborhoodsVariableMB implements Serializable {
         }
         calculateCode();
     }
-/**
- * This method permit to calculate the code of a neighborhood
- */
+
+    /**
+     * This method permit to calculate the code of a neighborhood
+     */
     public void calculateCode() {
         if (newNeighborhoodType == null || newNeighborhoodType.length() == 0) {
             newNeighborhoodType = "1";
@@ -768,9 +804,10 @@ public class NeighborhoodsVariableMB implements Serializable {
             }
         }
     }
-/**
- * This method is used to change a new code.
- */
+
+    /**
+     * This method is used to change a new code.
+     */
     public void changeNewCode() {
         try {
             int c = Integer.parseInt(newNeighborhoodId);
@@ -787,9 +824,10 @@ public class NeighborhoodsVariableMB implements Serializable {
             newNeighborhoodId = "";
         }
     }
-/**
- * change the value to a new population.
- */
+
+    /**
+     * change the value to a new population.
+     */
     public void changeNewPopulation() {
         try {
             int c = Integer.parseInt(newPopuation);
@@ -806,9 +844,10 @@ public class NeighborhoodsVariableMB implements Serializable {
             newPopuation = "0";
         }
     }
-/**
- * changes the value of the population.
- */
+
+    /**
+     * changes the value of the population.
+     */
     public void changePopulation() {
         try {
             int c = Integer.parseInt(popuation);
@@ -825,9 +864,10 @@ public class NeighborhoodsVariableMB implements Serializable {
             popuation = "0";
         }
     }
-/**
- * change the code used and the number must be positive.
- */
+
+    /**
+     * change the code used and the number must be positive.
+     */
     public void changeCode() {
         try {
             int c = Integer.parseInt(neighborhoodId);
@@ -845,9 +885,11 @@ public class NeighborhoodsVariableMB implements Serializable {
             neighborhoodId = "";
         }
     }
-/**
- * This method is used to filters the quadrants available to change  a new one
- */
+
+    /**
+     * This method is used to filters the quadrants available to change a new
+     * one
+     */
     public void changeNewQuadrantsFilter() {
         newAvailableQuadrants = new ArrayList<>();
         newSelectedAvailableQuadrants = new ArrayList<>();
@@ -882,9 +924,10 @@ public class NeighborhoodsVariableMB implements Serializable {
         } catch (Exception e) {
         }
     }
-/**
- * This method is used to filter the quadrants available to change.
- */
+
+    /**
+     * This method is used to filter the quadrants available to change.
+     */
     public void changeQuadrantsFilter() {
         availableQuadrants = new ArrayList<>();
         selectedAvailableQuadrants = new ArrayList<>();
@@ -920,9 +963,10 @@ public class NeighborhoodsVariableMB implements Serializable {
         } catch (Exception e) {
         }
     }
-/**
- * Create a dynamic table with the results of a search.
- */
+
+    /**
+     * Create a dynamic table with the results of a search.
+     */
     public void createDynamicTable() {
         boolean s = true;
         if (currentSearchValue.trim().length() == 0) {
@@ -957,9 +1001,10 @@ public class NeighborhoodsVariableMB implements Serializable {
             }
         }
     }
-/**
- * This method is used to reset values of the variables.
- */
+
+    /**
+     * This method is used to reset values of the variables.
+     */
     public void reset() {
         rowDataTableList = new ArrayList<>();
         neighborhoodsList = neighborhoodsFacade.findAll();
@@ -986,24 +1031,6 @@ public class NeighborhoodsVariableMB implements Serializable {
                     neighborhoodsList.get(i).getNeighborhoodName(),
                     type));
         }
-        //cargo las comunas
-//        ResultSet rs = connectionJdbcMB.consult("SELECT * FROM communes WHERE area_id = 1 ORDER BY commune_id");
-//
-//        ArrayList<SelectItem> comList = new ArrayList<>();
-//        try {
-//            while (rs.next()) {
-//                comList.add(new SelectItem(rs.getInt(1), rs.getString(2)));
-//            }
-//            communesList = new SelectItem[comList.size()];
-//            for (int i = 0; i < comList.size(); i++) {
-//                communesList[i] = new SelectItem(comList.get(i).getValue(), comList.get(i).getLabel());
-//            }
-//        } catch (Exception e) {
-//        }
-
-
-
-
 
         //cargo los corredores
         List<Corridors> corridorsAll = corridorsFacade.findAll();

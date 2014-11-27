@@ -71,10 +71,6 @@ public class RecordSetsVifMB implements Serializable {
     private int progress = 0;//PROGRESO AL CREAR XLS
     private String sql = "";
 
-//    public void onCompleteLoad() {
-//        //progress = 0;
-//        System.out.println("Termino generacion de XLSX");
-//    }
     /**
      * This method Instance tag list, the table model and gets the current
      * instance of the connection to the database.
@@ -501,19 +497,14 @@ public class RecordSetsVifMB implements Serializable {
     public void load() {
         currentNonFatalDomesticViolence = null;
         btnEditDisabled = true;
-//        btnRemoveDisabled = true;
         if (selectedRowsDataTable != null) {
-
             if (selectedRowsDataTable.length == 1) {
                 currentNonFatalDomesticViolence = nonFatalDomesticViolenceFacade.find(Integer.parseInt(selectedRowsDataTable[0].getColumn1()));
             }
             if (selectedRowsDataTable.length > 1) {
-
                 btnEditDisabled = true;
-//                btnRemoveDisabled = false;
             } else {
                 btnEditDisabled = false;
-//                btnRemoveDisabled = false;
             }
         }
     }
@@ -536,16 +527,7 @@ public class RecordSetsVifMB implements Serializable {
                     victimsFacade.remove(auxVictims);
                 }
             }
-//            //quito los elementos seleccionados de rowsDataTableList seleccion de 
-//            for (int j = 0; j < selectedRowsDataTable.length; j++) {
-//                for (int i = 0; i < rowDataTableList.size(); i++) {
-//                    if (selectedRowsDataTable[j].getColumn1().compareTo(rowDataTableList.get(i).getColumn1()) == 0) {
-//                        rowDataTableList.remove(i);
-//                        break;
-//                    }
-//                }
-//            }//deselecciono los controles
-            selectedRowsDataTable = null;
+            selectedRowsDataTable = null;//deselecciono los controles
             btnEditDisabled = true;
             totalRecords = String.valueOf(Integer.parseInt(totalRecords) - 1);
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "Se ha realizado la eliminacion de los registros seleccionados");
@@ -553,14 +535,7 @@ public class RecordSetsVifMB implements Serializable {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un o varios registros a eliminar");
         }
     }
-
-//    public List<RowDataTable> getRowDataTableList() {
-//        return rowDataTableList;
-//    }
-//
-//    public void setRowDataTableList(List<RowDataTable> rowDataTableList) {
-//        this.rowDataTableList = rowDataTableList;
-//    }
+    
     public RowDataTable[] getSelectedRowsDataTable() {
         return selectedRowsDataTable;
     }
@@ -608,14 +583,7 @@ public class RecordSetsVifMB implements Serializable {
     public void setBtnEditDisabled(boolean btnEditDisabled) {
         this.btnEditDisabled = btnEditDisabled;
     }
-
-//    public boolean isBtnRemoveDisabled() {
-//        return btnRemoveDisabled;
-//    }
-//
-//    public void setBtnRemoveDisabled(boolean btnRemoveDisabled) {
-//        this.btnRemoveDisabled = btnRemoveDisabled;
-//    }
+    
     public String getData() {
         return data;
     }

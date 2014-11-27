@@ -19,7 +19,11 @@ import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
 /**
- *This class allows the system to handle the pagination in the tables in recordset, allows to system to query the database to be realized each time the user presses on the next, previous button or any position in the table to not consume a lot of server memory.
+ * This class allows the system to handle the pagination in the tables in
+ * recordset, allows to system to query the database to be realized each time
+ * the user presses on the next, previous button or any position in the table to
+ * not consume a lot of server memory.
+ *
  * @author and
  */
 public class LazyRecordSetsDataModel extends LazyDataModel<RowDataTable> {

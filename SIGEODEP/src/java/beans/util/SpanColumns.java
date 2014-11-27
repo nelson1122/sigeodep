@@ -5,19 +5,21 @@
 package beans.util;
 
 /**
- *The SpanColumns class is used by the indicators for the management and  manage column.
+ * The SpanColumns class is used by the indicators for the management and manage
+ * column.
+ *
  * @author santos
  */
-public class SpanColumns 
-{
+public class SpanColumns {
+
     private String label;
     private int columns;
 
     public SpanColumns() {
-        label="";
-        columns=0;
+        label = "";
+        columns = 0;
     }
-    
+
     public int getColumns() {
         return columns;
     }
@@ -33,5 +35,4 @@ public class SpanColumns
     public void setLabel(String label) {
         this.label = label;
     }
-    
 }
