@@ -30,7 +30,7 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 
 /**
- *
+ *The CorridorsVariableMB class is responsible to manage everything related to the corridors, which are associated with it a set of neighborhoods to specify what adding or adding lists of available neighborhoods and districts added to the current broker.
  * @author SANTOS
  */
 @ManagedBean(name = "corridorsVariableMB")
@@ -75,26 +75,42 @@ public class CorridorsVariableMB implements Serializable {
     private List<String> newSelectedAvailableAddNeighborhoods = new ArrayList<>();
     ConnectionJdbcMB connectionJdbcMB;
     private String realPath = "";
-
+/**
+ * Establishes the connection to the database, along with its directory.
+ */
     public CorridorsVariableMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/");
     }
-
+/**
+ * It is responsible for creating a cell within the row.
+ * @param cellStyle: Style that will have the cell.
+ * @param fila: row where create the cell
+ * @param position: Determines the position where anger cell within the row.
+ * @param value: Sets the value that will be created within the cell. 
+ */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
         cell.setCellStyle(cellStyle);
     }
-
+/**
+ * It is responsible for creating a cell within the row.
+ * @param fila: row where create the cell 
+ * @param position: Determines the position where anger cell within the row.
+ * @param value: Sets the value that will be created within the cell. 
+ */
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
-
+/**
+ * runs a xls file where the user insert a row within a worksheet where two fields are set: CODE, NAME.
+ * @param document: Document to modify the name and code field. 
+ */
     public void postProcessXLS(Object document) {
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
@@ -115,7 +131,11 @@ public class CorridorsVariableMB implements Serializable {
 
         }
     }
-
+/**
+ * copy the file geometry.
+ * @param fileName
+ * @param in 
+ */
     private void copyFile(String fileName, InputStream in) {
 
 
@@ -153,7 +173,10 @@ public class CorridorsVariableMB implements Serializable {
             System.out.println("No se pudo procesar el archivo");
         }
     }
-
+/**
+ * Allows upload the file of geometry of the neighborhood.
+ * @param event 
+ */
     public void handleFileUpload(FileUploadEvent event) {
         /*
          * cargar el archivo de geometria del varrio
@@ -168,7 +191,9 @@ public class CorridorsVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se pudo realizar la carga de este archivo"));
         }
     }
-
+/**
+ * Add a neighborhood to a new corridor.
+ */
     public void addNeighborhoodInNewQuadrantClick() {
         /*
          * adicionar un barrio en un nuevo corredor
@@ -190,7 +215,9 @@ public class CorridorsVariableMB implements Serializable {
         //newQuadrantsFilter = "";
         //changeNewQuadrantsFilter();
     }
-
+/**
+ * This method is responsible to add a neighborhood to the list  added , when editing an existing corridor.
+ */
     public void addNeighborhoodInExistingQuadrantClick() {
         /*
          * adicionar un barrio a la lista de agregados, cuando se esta editando un corredor existente
@@ -212,7 +239,9 @@ public class CorridorsVariableMB implements Serializable {
         //quadrantsFilter = "";
         //changeQuadrantsFilter();
     }
-
+/**
+ * permits to remove a neighborhood the list of aggregates, when you are creating a new corridor
+ */
     public void removeNeighborhoodInNewQuadrantClick() {
         /*
          * quitar un barrio de la lista de agregados, cuando se esta creando un nuevo corredor
@@ -234,7 +263,9 @@ public class CorridorsVariableMB implements Serializable {
         //newQuadrantsFilter = "";
         //changeNewQuadrantsFilter();
     }
-
+/**
+ * permits to remove of a neighborhood the list of aggregates, when you are editing an existing corridor.
+ */
     public void removeNeighborhoodInExistingQuadrantClick() {
         /*
          * quitar un barrio de la lista de agregados, cuando se esta editando un corredor existente
@@ -256,7 +287,9 @@ public class CorridorsVariableMB implements Serializable {
         //quadrantsFilter = "";
         //changeQuadrantsFilter();
     }
-
+/**
+ * load  data of a record when select a row of the table that show the  existent corridor
+ */
     public void loadRegistry() {
         /*
          * carga de los datos de un registro cuando se selecciona una fila de 
@@ -321,7 +354,9 @@ public class CorridorsVariableMB implements Serializable {
     public void showGeomFileClick() {
         poligonText = "";
     }
-
+/**
+ * Load the geometry of a selected commune
+ */
     public void loadGeometrySelected() {
         if (poligonText != null && poligonText.trim().length() != 0) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "la geometria ha sido cargada"));
@@ -330,7 +365,9 @@ public class CorridorsVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se ha seleccionado ninguna geometria"));
         }
     }
-
+/**
+ * Deletes a record from the table corridor.
+ */
     public void deleteRegistry() {
         if (currentCorridor != null) {
             //se elimina de la tabla corredors 
@@ -350,7 +387,9 @@ public class CorridorsVariableMB implements Serializable {
             connectionJdbcMB.setShowMessages(true);
         }
     }
-
+/**
+ * Updates a record in table corridors.
+ */
     public void updateRegistry() {
         if (currentCorridor != null) {
             boolean continueProcess = true;
@@ -411,7 +450,9 @@ public class CorridorsVariableMB implements Serializable {
             }
         }
     }
-
+/**
+ * Save the registration of a new corridor and verify that the new row to be inserted does not exist in the table corridor.
+ */
     public void saveRegistry() {
         boolean continueProcess = true;
 
@@ -483,7 +524,9 @@ public class CorridorsVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-
+/**
+ * This method allows add a new record
+ */
     public void newRegistry() {
         //se quita elemento seleccionado de la tabla, se inhabilitan controles
         selectedRowDataTable = null;
@@ -504,7 +547,9 @@ public class CorridorsVariableMB implements Serializable {
         poligonText = "";
         disabledShowGeomFile = true;
     }
-
+/**
+ * changes the value of population field by a  value numeric new greater or equal zero
+ */
     public void changeNewPopulation() {
         try {
             int c = Integer.parseInt(newCorridorPopuation);
@@ -521,7 +566,9 @@ public class CorridorsVariableMB implements Serializable {
             newCorridorPopuation = "0";
         }
     }
-
+/**
+ * changes the value of population field by a  value numeric greater or equal zero
+ */
     public void changePopulation() {
         try {
             int c = Integer.parseInt(corridorPopuation);
@@ -538,7 +585,9 @@ public class CorridorsVariableMB implements Serializable {
             corridorPopuation = "0";
         }
     }
-
+/**
+ * Make filter of neighborhoods available through the search for a string entered.
+ */
     public void changeNewNeighborhoodFilter() {
         newAvailableNeighborhoods = new ArrayList<>();
         newSelectedAvailableNeighborhoods = new ArrayList<>();
@@ -573,7 +622,9 @@ public class CorridorsVariableMB implements Serializable {
         } catch (Exception e) {
         }
     }
-
+/**
+ * Make filter of neighborhoods available through the search for a string entered.
+ */
     public void changeNeighborhoodFilter() {
         availableNeighborhoods = new ArrayList<>();
         selectedAvailableNeighborhoods = new ArrayList<>();
@@ -608,7 +659,9 @@ public class CorridorsVariableMB implements Serializable {
         } catch (Exception e) {
         }
     }
-
+/**
+ * Create a dynamic table with the results of a search.
+ */
     public void createDynamicTable() {
 
         if (currentSearchValue == null || currentSearchValue.trim().length() == 0) {
@@ -633,7 +686,9 @@ public class CorridorsVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-
+/**
+ * Resets the values of the DynamicTable.
+ */
     public void reset() {
         rowDataTableList = new ArrayList<>();
         createDynamicTable();
