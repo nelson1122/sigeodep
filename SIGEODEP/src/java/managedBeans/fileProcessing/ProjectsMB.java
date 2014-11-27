@@ -53,7 +53,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
- *
+ *The ProjectsMB class allows the user to manage projects, where a project refers to all activities that allow that a file containing the information of various events of a  type of injury  determined can have a correct treatment that involves the storage of these events in SIGEODEP.
  * @author santos
  */
 @ManagedBean(name = "projectsMB")
@@ -162,6 +162,9 @@ public class ProjectsMB implements Serializable {
      * primer funcion que se ejecuta despues del constructor que inicializa
      * variables y carga la conexion por jdbc
      */
+/**
+ * first function executed after the constructor that initializes variables and load the connection to the database.
+ */    
     @PostConstruct
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
@@ -171,7 +174,9 @@ public class ProjectsMB implements Serializable {
         if (selectedProjectTable != null) {
         }
     }
-
+/**
+ * Change the copied groups relationships.
+ */
     public void changeRelationGroupInCopy() {
         newRelationsCopyName = "";
         if (selectedRelationsNameInCopy != null && selectedRelationsNameInCopy.trim().length() != 0) {
@@ -199,13 +204,17 @@ public class ProjectsMB implements Serializable {
             newRelationsCopyName = newName;
         }
     }
-
+/**
+ * This method is used to change the form.
+ */
     public void changeForm() {
         //System.out.println("Cambia el formulario");
         loadSources();
         //loadVarsExpected();
     }
-
+/**
+ * Class constructor also takes care of connecting to the database, authenticate users and to establish the necessary connections.
+ */
     public ProjectsMB() {
         /*
          * Constructor de la clase
@@ -223,7 +232,9 @@ public class ProjectsMB implements Serializable {
         //connectionJdbcMB.setTableName(nameTableTemp);
 
     }
-
+/**
+ * This method is used to load projects.
+ */
     public void loadProjects() {
         List<Projects> projectsList = projectsFacade.findAll();
         rowProjectsTableList = new ArrayList<>();
@@ -239,7 +250,9 @@ public class ProjectsMB implements Serializable {
             }
         }
     }
-
+/**
+ * restores the form with initial values.
+ */
     public void reset() {//@PostConstruct 
         /*
          * Cargar el formulario con los valores iniciales
@@ -284,9 +297,9 @@ public class ProjectsMB implements Serializable {
     //FUNCIONES QUE CARGAN VALORES -----------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
-    /*
-     * Cargar los grupos relaciones existentes
-     */
+/**
+ * Load the groups  existing relationships.
+ */
     public void loadRelatedGroups() {
         //-----------------------------------------------
         List<RelationGroup> relationGroupList = relationGroupFacade.findAll();
@@ -314,7 +327,9 @@ public class ProjectsMB implements Serializable {
             }
         }
     }
-
+/**
+ * This method is used to load the delimiters for the data process.
+ */
     private void loadDelimiters() {
         /*
          * Cargar los delimitadores
@@ -324,7 +339,9 @@ public class ProjectsMB implements Serializable {
             new SelectItem(";", ";"),
             new SelectItem(",", ","),};
     }
-
+/**
+ * load the list of existing forms.
+ */
     private void loadForms() {
         /*
          * cargar la lista de formularios existentes
@@ -340,7 +357,9 @@ public class ProjectsMB implements Serializable {
             System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-
+/**
+ * load the list of suppliers (sources) of data depending on a given form.
+ */
     private void loadSources() {
         /*
          * cargar la lista de proveedores(fuentes) de datos dependiendo de un
@@ -388,7 +407,9 @@ public class ProjectsMB implements Serializable {
 //            newSourceName = Integer.parseInt(sources[0].getValue().toString());
 //        }
     }
-
+/**
+ * recharge the variables found (coming from the file).
+ */
     private void reloadVarsFound() {
         /*
          * recargar las variables encontradas(vienen del archivo)
@@ -437,7 +458,12 @@ public class ProjectsMB implements Serializable {
 //            System.out.println("******PRIMER INGRESO******");
 //        }
     }
-
+/**
+ * This method is used to prints messages in the screen when the user realizes a action.
+ * @param s
+ * @param title
+ * @param messageStr 
+ */
     public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
         FacesMessage msg = new FacesMessage(s, title, messageStr);
         FacesContext.getCurrentInstance().addMessage(null, msg);
@@ -447,7 +473,11 @@ public class ProjectsMB implements Serializable {
     //CLIK SOBRE BOTONES --------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------    
-
+/**
+ * It is responsible for copying the files.
+ * @param fileName
+ * @param in 
+ */
     private void copyFile(String fileName, InputStream in) {
         try {
             try (OutputStream out = new FileOutputStream(new File(fileName))) {
@@ -464,7 +494,9 @@ public class ProjectsMB implements Serializable {
             System.out.println("Error 4 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-
+/**
+ * It is responsible to load the file containing delimiters.
+ */
     private void uploadFileDelimiter() {
         /*
          * CARGA DE UN ARCHIVO CON DELIMITADOR
@@ -536,7 +568,9 @@ public class ProjectsMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error al cargar el archivo", ex.toString()));
         }
     }
-
+/**
+ * determines whether relations of variable correspond to the  loaded  file  group and returns true if there are inconsistencies.
+ */
     private void determineInconsistentRelations() {
         /*
          * determina si las relaciones de variables corresponden al 
@@ -737,7 +771,10 @@ public class ProjectsMB implements Serializable {
             }
         }
     }
-
+/**
+ * This method is responsible to load a file from a xlsx file.
+ * @throws IOException 
+ */
     private void uploadXls() throws IOException {
         /*
          * realizar la carga de una archivo desde un xlsx
@@ -824,7 +861,10 @@ public class ProjectsMB implements Serializable {
             error = "El archivo especificado no pudo ser leido 2";
         }
     }
-
+/**
+ * This method creates a xls file where this method inserts a row within a worksheet where two fields are set: CODE, NAME.
+ * @param document: Document to modify the name and code field. 
+ */
     public void postProcessXLS(Object document) {
         /*
          * crear un archivo xlsx con los registros del proyecto actual
@@ -901,7 +941,12 @@ public class ProjectsMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe cargar un proyecto"));
         }
     }
-
+/**
+ * It is responsible for creating a cell within the row.
+ * @param fila: row where create the cell 
+ * @param position: Determines the position where anger cell within the row.
+ * @param value: Sets the value that will be created within the cell. 
+ */
     private void createCell(HSSFRow fila, int position, String value) {
         /*
          * creacion de una celda en un xlsx determinada una fila y columna(position)
@@ -910,7 +955,13 @@ public class ProjectsMB implements Serializable {
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
-
+/**
+ * creation of a cell in a xlsx in a determined row and column (position) and a certain style for the cell (usually style is BOLD).
+ * @param cellStyle: Style that will have the cell.
+ * @param fila: row where create the cell
+ * @param position: Determines the position where anger cell within the row.
+ * @param value: Sets the value that will be created within the cell. 
+ */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         /*
          * creacion de una celda en un xlsx determinada una fila y columna(position) y un 
@@ -921,7 +972,9 @@ public class ProjectsMB implements Serializable {
         cell.setCellValue(new HSSFRichTextString(value));
         cell.setCellStyle(cellStyle);
     }
-
+/**
+ * add a record to the table project_columns.
+ */
     private void addTableProjectColumns() {
         try {
             //determino el maximo de project_columns            
@@ -959,7 +1012,11 @@ public class ProjectsMB implements Serializable {
             System.out.println("Error 18 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-
+/**
+ * is responsible to add a record to the table project_records based on a list.
+ * @param rowFileData
+ * @param numLine 
+ */
     private void addTableProjectRecords(ArrayList<String> rowFileData, int numLine) {
         /*
          * AGREGA UN REGISTRO A LA TABLA project_records EN BASE A UN ARRAY LIST
@@ -1004,7 +1061,11 @@ public class ProjectsMB implements Serializable {
             }
         }
     }
-
+/**
+ * This method is responsible for preparation of the headers in order to avoid repetitions of names, spaces or invalid characters.
+ * @param rowFile: file of the row corresponding to the header
+ * @return 
+ */
     private ArrayList<String> prepareArray(ArrayList<String> rowFile) {
         //preparacion de una cabecera: no se repitan nombres, no inicien con numeros ni tengan simbolos
         String data1, data2;
@@ -1089,7 +1150,10 @@ public class ProjectsMB implements Serializable {
         variablesFound = rowFile;
         return rowFile;
     }
-
+/**
+ * allows  to upload a file
+ * @param event 
+ */
     public void handleFileUpload(FileUploadEvent event) {
         try {
             file = event.getFile();
@@ -1101,7 +1165,9 @@ public class ProjectsMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-
+/**
+ * It is responsible for performing acceptable relationships for a new project, also verifies that the new name that relationships exist receive also allows  to copy existing relationships.
+ */
     public void createProjectWithAcceptedRelationships() {
         ResultSet rs, rs2;
         if (aceptedRelationsName != null && aceptedRelationsName.length() != 0) {
@@ -1222,7 +1288,9 @@ public class ProjectsMB implements Serializable {
             }
         }
     }
-
+/**
+ * is responsible for creating a new project, also verifies that the name of the new project does not exist and that all required data are loaded correctly.
+ */
     public void createProject() {
         /*
          * CREACION DE UN NUEVO PROYECTO
@@ -1264,7 +1332,9 @@ public class ProjectsMB implements Serializable {
             completeCreateProject();
         }
     }
-
+/**
+ * It is responsible for  to completion to the creation of a new project once passed all relevant validations.
+ */
     private void completeCreateProject() {
         /*
          * crea el proyecto una vez se superaron todas las validaciones
@@ -1335,7 +1405,9 @@ public class ProjectsMB implements Serializable {
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Ocurrió un error procesando el archivo", ex.toString()));
         }
     }
-
+/**
+ * This method is responsible for opening a project from projects stored and assign to the user who opened it also verifies that the project belongs to another user in if necessary  whoever access this should make a copy.
+ */
     public void openProject() {
         /*
          * ABRIR PROYECTO DESDE "PROYECTOS ALMACENADOS"
@@ -1389,7 +1461,10 @@ public class ProjectsMB implements Serializable {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Debe seleccionarse un proyecto de la tabla");
         }
     }
-
+/**
+ * is responsible for opening the project when you log ie the last loaded project by the user .
+ * @param proyectId: id of the last project loaded by the user. 
+ */
     public void openProject(int proyectId) {
         /*
          * ABRIR PROYECTO CUANDO USUARIO INICIA SESION
@@ -1438,7 +1513,9 @@ public class ProjectsMB implements Serializable {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "El proyecto no pudo ser encontrado");
         }
     }
-
+/**
+ * It is responsible for removing a project.
+ */
     public void removeProject() {
         String sql;
         if (selectedProjectTable != null) {
@@ -1490,7 +1567,9 @@ public class ProjectsMB implements Serializable {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Debe seleccionarse un proyecto de la tabla");
         }
     }
-
+/**
+ * It is responsible  for load the user configuration if this is already loaded nothing is done otherwise be loaded.
+ */
     public void loadConfigurationUser() {
         if (configurationLoaded) {//la configuracion ya se cargo una vez, no hacer nada            
         } else {// es la primera vez que entra al sistema se debe cargar configuracion
@@ -1505,7 +1584,9 @@ public class ProjectsMB implements Serializable {
             //este metodo debe recargar los diferentes proyectos
         }
     }
-
+/**
+ * It is responsible for creating relationships variable groups also verifies that the name you assign does not exist.
+ */
     public void createRelationVariablesGroup() {
         boolean continueProcess = true;
         List<RelationGroup> relationGroupList = relationGroupFacade.findAll();
@@ -1535,7 +1616,9 @@ public class ProjectsMB implements Serializable {
             printMessage(FacesMessage.SEVERITY_INFO, "Correcto", "El grupo de relaciones (" + newGroupRelationsName + ") ha sido creado.");
         }
     }
-
+/**
+ * It is responsible for eliminating relationships of groups that have been created  also verify that it is not in use for a project.
+ */
     public void removeRelationGroup() {
         if (currentRelationsGroupNameInLoad != null && currentRelationsGroupNameInLoad.trim().length() != 0) {
             try {
@@ -1631,7 +1714,9 @@ public class ProjectsMB implements Serializable {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un grupo de relaciones");
         }
     }
-
+/**
+ * is responsible for making a copy of the relationship, it does so by finding the relationship id to copied.
+ */
     public void createRelationsCopy() {
         ResultSet rs, rs2;
         if (newRelationsCopyName != null && newRelationsCopyName.length() != 0) {
@@ -1729,7 +1814,9 @@ public class ProjectsMB implements Serializable {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe digitar un nombre para el nuevo grupo de relaciones");
         }
     }
-
+/**
+ * It is responsible for loading the  groups existing relationships.
+ */
     public void loadGroup() {
         if (currentRelationsGroupNameInLoad != null && currentRelationsGroupNameInLoad.trim().length() != 0) {
             newRelationsGroupName = currentRelationsGroupNameInLoad;
@@ -1738,7 +1825,9 @@ public class ProjectsMB implements Serializable {
             printMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un grupo de relaciones");
         }
     }
-
+/**
+ * clean the fields of group relationships of variables.
+ */
     public void clearRelationGroup() {
         newRelationsGroupName = "";
         relationsFilter = "";

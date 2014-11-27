@@ -33,7 +33,7 @@ import model.pojo.RelationsDiscardedValues;
 import org.primefaces.model.LazyDataModel;
 
 /**
- *
+ *The RelationshipOfValuesMB class shows the relationship of values is performed only with the relations of variables that are categorical since they must find the correspondence between the expected values and  the values found.
  * @author santos
  */
 @ManagedBean(name = "relationshipOfValuesMB")
@@ -90,15 +90,16 @@ public class RelationshipOfValuesMB implements Serializable {
     private List<RowDataTable> moreInfoDataTableList;
     
     
-    /*
-     * primer funcion que se ejecuta despues del constructor que inicializa
-     * variables y carga la conexion por jdbc
-     */
+/**
+ * first function executed after the constructor that initializes variables and establishes the connection to the database.
+ */
     @PostConstruct
     private void initialize() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-
+/**
+ * allows loading of matching records belonging to a categorical variable.
+ */
     public void loadCoincidentsRgisters() {
         ResultSet rs;
         coincidentNewValue = "";
@@ -185,7 +186,9 @@ public class RelationshipOfValuesMB implements Serializable {
             }
         }
     }
-
+/**
+ * allows change  the values   a data,  found  in the coincidence of the values related this change is executed when button is pressed "change".
+ */
     public void changeCoincidentValue() {
         try {
             sql = ""
@@ -221,7 +224,9 @@ public class RelationshipOfValuesMB implements Serializable {
             System.out.println("Error 3 en " + this.getClass().getName() + ":" + e.toString());
         }
     }
-
+/**
+ * allows to change the relations of categorical variables.
+ */
     public void changeCategoricalRelatedVariables() {
         expectedValuesFilter = "";
         foundValuesFilter = "";
@@ -277,7 +282,11 @@ public class RelationshipOfValuesMB implements Serializable {
     public void setProjectsMB(ProjectsMB projectsMB) {
         this.projectsMB = projectsMB;
     }
-
+/**
+ * allows to obtain or determine the  type of variable expected.
+ * @param varExpected: variable expected
+ * @return 
+ */
     private String getTypeVariableExpected(String varExpected) {
         String strReturn = "";
         try {
@@ -302,7 +311,9 @@ public class RelationshipOfValuesMB implements Serializable {
         }
         return strReturn;
     }
-
+/**
+ * allows load the relationship of categorical variable
+ */
     public void loadCategoricalRelatedVariables() {
 
         valuesFound = new ArrayList<>();
@@ -360,6 +371,9 @@ public class RelationshipOfValuesMB implements Serializable {
     //FUNCIONES DE PROPOSITO GENERAL ---------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+/**
+ * class constructor, responsible for connecting to the database and user verification.
+ */
     public RelationshipOfValuesMB() {
         /*
          * Constructor de la clase
@@ -368,7 +382,9 @@ public class RelationshipOfValuesMB implements Serializable {
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         nameTableTemp = "temp" + loginMB.getLoginname();
     }
-
+/**
+ *  initializes or restores the initial values of the fields.
+ */
     public void reset() {
         nameOfValueExpected = "";
         expectedValuesFilter = "";
@@ -390,6 +406,9 @@ public class RelationshipOfValuesMB implements Serializable {
     //FUNCIONES QUE CARGAN VALORES -----------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+/**
+ * allows  to load those values that are discarded once they are relations made categorical variables this function is performed in various methods
+ */
     private void loadDiscardedValues() {
         valuesDiscardedSelectedInRelationValues = new ArrayList<>();
         valuesDiscarded = new ArrayList<>();
@@ -416,7 +435,9 @@ public class RelationshipOfValuesMB implements Serializable {
             System.out.println("Error 7 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-
+/**
+ * allows  to load the list of relations of values, this function is used by different methods.
+ */
     private void loadRelatedValues() {
         valuesRelatedSelectedInRelationValues = new ArrayList<>();
         valuesRelated = new ArrayList<>();
@@ -463,7 +484,11 @@ public class RelationshipOfValuesMB implements Serializable {
             System.out.println("Error 8 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-
+/**
+ * This method allows to return a list of  found values  for a certain categorical relationship
+ * @param limit: variable to set the limit of the list and the limit is 50.
+ * @return 
+ */
     private ArrayList<String> foundValuesList(boolean limit) {
         /*
          *RETORNA UNA LISTA DE VALORES ENCONTRADOS PARA UNA DETERMINADA RELACION CATEGORICA 
@@ -519,10 +544,9 @@ public class RelationshipOfValuesMB implements Serializable {
         return returnList;
     }
 
-    /*
-     * crear una lista de valores de una determinada columna proveniente del
-     * archivo con valores no repetidos
-     */
+/**
+ * create a list of values from a certain column  coming from file    with no duplicate values.
+ */
     public void loadFoundValues() {
         valuesFoundSelectedInRelationValues = new ArrayList<>();
         valuesFound = foundValuesList(true);
@@ -531,7 +555,11 @@ public class RelationshipOfValuesMB implements Serializable {
         coincidentNewValue = "";//elimino los datos del dialog coincidentes
         selectedRowDataTable = new ArrayList<>();//elimino los datos del dialog coincidentes
     }
-
+/**
+ * returns a list with the expected values for a realtionship of categorical variables.
+ * @param limit
+ * @return 
+ */
     public ArrayList<String> categoricalList(boolean limit) {
         /*
          * RETORNA UNA LISTA CON LOS VALORES ESPERADOS PARA UNA RELACION DE VARIABLES
@@ -651,7 +679,11 @@ public class RelationshipOfValuesMB implements Serializable {
         }
         return returnList;
     }
-
+/**
+ * This method it is responsible  eliminate or remove the expression "_v" of a data type, so as to take the categorical table.
+ * @param field_type
+ * @return 
+ */
     private String remove_v(String field_type) {
         /*
          * remueve '_v' de un tipo de dato (para que tome la tabla categorica)
@@ -667,7 +699,9 @@ public class RelationshipOfValuesMB implements Serializable {
         }
         return strReturn;
     }
-
+/**
+ * This method allows  to load  the expected values depending on  the variable expected.
+ */
     public void loadExpectedValues() {
         /*
          * cargar los valores esperados dependiendo la variable esperada
@@ -684,7 +718,11 @@ public class RelationshipOfValuesMB implements Serializable {
             }
         }
     }
-
+/**
+ * allows create a list of valuess of a determined column coming from  a record
+ * @param column
+ * @return 
+ */
     public ArrayList createListOfValuesFromFile(String column) {
         /*
          * crear una lista de valores de una determinada columna proveniente del
@@ -708,6 +746,9 @@ public class RelationshipOfValuesMB implements Serializable {
     //FUNCIONES CUANDO LISTAS CAMBIAN DE VALOR -----------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+/**
+ * allows to obtain the expected values of a variable  selected for  user, this method is called when user selects a value to related.
+ */
     public void changeValuesExpected() {
         nameOfValueExpected = "";
         projectsMB.setToolTipText("");
@@ -722,7 +763,9 @@ public class RelationshipOfValuesMB implements Serializable {
             projectsMB.setToolTipText(currentValueExpected.get(0));
         }
     }
-
+/**
+ * allows  to change a value related to another.
+ */
     public void changeValuesRelated() {
         if (valuesRelatedSelectedInRelationValues != null && !valuesRelatedSelectedInRelationValues.isEmpty()) {
             projectsMB.setToolTipText(valuesRelatedSelectedInRelationValues.get(0));
@@ -730,7 +773,9 @@ public class RelationshipOfValuesMB implements Serializable {
             projectsMB.setToolTipText("");
         }
     }
-
+/**
+ * allows change from one value to another of the  list of   values discarded selected.
+ */
     public void changeValuesDiscarded() {
         if (valuesDiscardedSelectedInRelationValues != null && !valuesDiscardedSelectedInRelationValues.isEmpty()) {
             projectsMB.setToolTipText(valuesDiscardedSelectedInRelationValues.get(0));
@@ -738,7 +783,9 @@ public class RelationshipOfValuesMB implements Serializable {
             projectsMB.setToolTipText("");
         }
     }
-
+/**
+ * allows change of a values to another of the list of values found.
+ */
     public void changeValuesFound() {
         coincidentNewValue = "";
         variableFoundToModify = "";
@@ -752,7 +799,9 @@ public class RelationshipOfValuesMB implements Serializable {
             projectsMB.setToolTipText("");
         }
     }
-
+/**
+ * create a dynamic table in which you can display a list of records of the values found in the relations of variables.
+ */
     public final void createDynamicTable() {
         ArrayList<String> titles = new ArrayList<>();
         ArrayList<ArrayList<String>> listOfRecords = new ArrayList<>();
@@ -850,7 +899,9 @@ public class RelationshipOfValuesMB implements Serializable {
             System.out.println("Error 12 en " + this.getClass().getName() + ":" + ex.toString());
         }
     }
-
+/**
+ * allows to change a group of copy relationships to another.
+ */
     public void changeCopyRelationGroup() {
         //SE CARGAN LAS RELACIONES DE VARIABLES PERTENECIENTES A ESTE CONJUNTO
         copyRelationsVariablesList = new ArrayList<>();
@@ -873,7 +924,9 @@ public class RelationshipOfValuesMB implements Serializable {
             }
         }
     }
-
+/**
+ * load each of these existent relationships that can be visualized by using the button "importar relaciones de valores".
+ */
     public void loadRelationsGroups() {
         //CARGAR GRUPO DE RELACIONES EXISTENTES
         copyRelationGroupsList = new ArrayList<>();
@@ -897,7 +950,9 @@ public class RelationshipOfValuesMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una relacion categorica de la lista"));
         }
     }
-
+/**
+ * allows do copying relationships created in other projects.
+ */
     public void btnCopyFromClick() {
         int numberCopy = 0;
         foundValuesFilter = "";
@@ -992,6 +1047,9 @@ public class RelationshipOfValuesMB implements Serializable {
     //CLIK SOBRE BOTONOES --------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+/**
+ * This method allows to remove a value discarded  from the list discarded by using the button "Remove value Discarded".
+ */
     public void btnRemoveDiscardedValuesClick() {
 //        //---------------------------------------------------------------------------
 //        //como se quita de la lista un item se determina que item quedara seleccionado
@@ -1015,7 +1073,9 @@ public class RelationshipOfValuesMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar un los valores descartados que desea quitar"));
         }
     }
-
+/**
+ * This method is executed when a value from the list of values found is selected and pressed the "Discard value" which makes pass this value to the list of discarded values.
+ */
     public void btnDiscardValueClick() {
 
 //        //---------------------------------------------------------------------------
@@ -1038,7 +1098,9 @@ public class RelationshipOfValuesMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se deben seleccionar los valores encontrados que desea descartar"));
         }
     }
-
+/**
+ * This method is responsible for perform  relationship the values by selecting two values and use button "Relating values."
+ */
     public void btnAssociateRelationValueClick() {
         //---------------------------------------------------------------------------
         //como se quita de la lista un item se determina que item quedara seleccionado
@@ -1103,7 +1165,9 @@ public class RelationshipOfValuesMB implements Serializable {
         }
         return false;
     }
-
+/**
+ * allows perform an automatic association of expected values and the values found.
+ */
     public void btnAutomaticRelationClick() {
         /*
          * Asociación automática de valores esperados y valores encontrados
@@ -1146,7 +1210,9 @@ public class RelationshipOfValuesMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una relacion categórica de la lista para generar las relaciones de valores automáticamente"));
         }
     }
-
+/**
+ * This method allows you to remove the relationship of values performed  by the selecting one of these, this method runs when pressed the "Remove  values relationship   " button.
+ */
     public void btnRemoveRelationValueClick() {
 //        //---------------------------------------------------------------------------
 //        //como se quita de la lista un item se determina que item quedara seleccionado
