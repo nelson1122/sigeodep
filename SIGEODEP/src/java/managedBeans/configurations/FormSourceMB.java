@@ -21,7 +21,7 @@ import model.pojo.Forms;
 import model.pojo.NonFatalDataSources;
 
 /**
- *
+ *he FormSourceMB class is responsible for managing everything related to the sources of data for each record of the forms, enabling aggregated or disaggregated sources that are available.
  * @author SANTOS
  */
 @ManagedBean(name = "formSourceMB")
@@ -44,11 +44,15 @@ public class FormSourceMB implements Serializable {
     private List<String> selectedAvailableSources = new ArrayList<>();
     private List<String> availableAddSources = new ArrayList<>();
     private List<String> selectedAvailableAddSources = new ArrayList<>();
-
+/**
+ * It is the class constructor and is also responsible for connecting to the database.
+ */
     public FormSourceMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-
+/**
+ * allows the user to load all related forms and also charges the sources for a record.
+ */
     public void load() {
         currentForm = null;
         if (selectedRowDataTable != null) {
@@ -86,7 +90,9 @@ public class FormSourceMB implements Serializable {
             }
         }
     }
-
+/**
+ * Add a quadrant in a new neighborhood.
+ */
     public void addSourceClick() {
         /*
          * adicionar un cuadrante en un nuevo barrio
@@ -108,7 +114,9 @@ public class FormSourceMB implements Serializable {
         //newQuadrantsFilter = "";
         //changeNewQuadrantsFilter();
     }
-
+/**
+ * Remove one quadrant of the aggregate list when you are creating a new neighborhood.
+ */
     public void removeSourceClick() {
         /*
          * quitar un cuadrante de la lista de agregados, cuando se esta creando un nuevo barrio
@@ -130,7 +138,9 @@ public class FormSourceMB implements Serializable {
         //newQuadrantsFilter = "";
         //changeNewQuadrantsFilter();
     }
-
+/**
+ * This method allows relating the sources indicated to the page and save the update.
+ */
     public void updateRegistry() {
         if (currentForm != null) {
             try {
@@ -162,7 +172,9 @@ public class FormSourceMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-
+/**
+ * Resets the values of the Dynamic Table.
+ */
     public void reset() {
         rowDataTableList = new ArrayList<>();
         formsList = formsFacade.findAll();
