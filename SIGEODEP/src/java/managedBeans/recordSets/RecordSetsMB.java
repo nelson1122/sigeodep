@@ -92,6 +92,11 @@ public class RecordSetsMB implements Serializable {
     String sizeData = "Número de registros no determinado";
     int sizeInt = 0;
 
+    /**
+     * This method is the class constructor, this method is responsible to
+     * instantiate all the variables needed for the management of recordset,
+     * algo this method gets the current connection to the database.
+     */
     public RecordSetsMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         Calendar c = Calendar.getInstance();
@@ -115,7 +120,6 @@ public class RecordSetsMB implements Serializable {
 
 
     }
-    
 
     public void onCompleteLoad() {
         progress = 100;
@@ -131,10 +135,20 @@ public class RecordSetsMB implements Serializable {
         FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
+    /**
+     * This method displays the records set corresponding to a type of injury
+     * selected.
+     *
+     * @return
+     */
     public String openRecordSets() {
         return openRecordSets;
     }
 
+    /**
+     * This method is responsible to determine the number of records which the
+     * method it going to realize the detection of duplicates.
+     */
     public void determineSizeData() {
         //determinar el numero de registros sobre los que se va a realizar la deteccion de duplicados
         sizeData = "Número de registros no determinado";
@@ -192,12 +206,16 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to detecte the duplicate records that are in a
+     * given set
+     */
     public void detectDuplicateClick() {
         openRecordSets = null;
         openDuplicateSets = null;
 
         if (sizeInt > 3000) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La detección de duĺicados debe realizarce en un número inferior a 3000 registros."));            
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La detección de duĺicados debe realizarce en un número inferior a 3000 registros."));
 
         } else {
             FacesContext context = FacesContext.getCurrentInstance();
@@ -285,10 +303,21 @@ public class RecordSetsMB implements Serializable {
         progress = 100;
     }
 
+    /**
+     * This method is responsible to open the list of duplicate records when the
+     * user press the button "INICIAR DETECCION".
+     *
+     * @return
+     */
     public String openDuplicateSets() {
         return openDuplicateSets;
     }
 
+    /**
+     * This method is responsible for Show All Records that are part of a data
+     * set, This method is called when the user presses the button "Mostrar
+     * Datos".
+     */
     public void selectTagClick() {
 
         if (selectedRowsDataTable[0].getColumn3().compareTo("SCC-F-028") == 0) {
@@ -381,11 +410,25 @@ public class RecordSetsMB implements Serializable {
         progress = 0;
     }
 
+    /**
+     * This method is responsible to display messages on the screen so the user
+     * can see what is happening.
+     *
+     * @param s
+     * @param title
+     * @param messageStr
+     */
     public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
         FacesMessage msg2 = new FacesMessage(s, title, messageStr);
         FacesContext.getCurrentInstance().addMessage(null, msg2);
     }
 
+    /**
+     * This method is called when a row that contains a set of registers is
+     * selected, this method enables or disables buttons of rename, delete,
+     * display data, detect duplicates and group sets, this activation or
+     * deactivation depends of which sets are selected in the table
+     */
     public void load() {
 
         currentTag = null;
@@ -447,6 +490,12 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to delete a selected record from a dataset of
+     * homicides
+     *
+     * @param currentTagRemove
+     */
     private void removeMurder(Tags currentTagRemove) {
         /*
          * Eliminacion de registros que pertenecen a un conjunto de registros de homicidios
@@ -471,6 +520,12 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to delete a selected record from a dataset of
+     * accidents
+     *
+     * @param currentTagRemove
+     */
     private void removeAccident(Tags currentTagRemove) {
         try {
             //FATAL INJURY ACCIDENT
@@ -492,6 +547,12 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to delete a selected record from a dataset of
+     * suicides
+     *
+     * @param currentTagRemove
+     */
     private void removeSuicide(Tags currentTagRemove) {
         try {
             //FATAL INJURY SUICIDE
@@ -513,6 +574,12 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to delete a selected record from a dataset of
+     * transit accidents
+     *
+     * @param currentTagRemove
+     */
     private void removeTransit(Tags currentTagRemove) {
         try {
             //counterpart_involved_vehicle
@@ -549,6 +616,12 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to delete a selected record from a dataset of
+     * LCENF
+     *
+     * @param currentTagRemove
+     */
     private void removeLCENF(Tags currentTagRemove) {
         try {
             //OTHERS
@@ -669,6 +742,12 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to delete a selected record from a dataset of
+     * domestic violence
+     *
+     * @param currentTagRemove
+     */
     private void removeVIF(Tags currentTagRemove) {
 
         //OTHERS
@@ -736,6 +815,12 @@ public class RecordSetsMB implements Serializable {
         progressDelete = 95;
     }
 
+    /**
+     * This method is responsible to delete a selected record from a dataset of
+     * Sivigila VIF
+     *
+     * @param currentTagRemove
+     */
     private void removeSivigilaVif(Tags currentTagRemove) {
         //victim_vulnerable_group
         connectionJdbcMB.non_query(""
@@ -815,6 +900,14 @@ public class RecordSetsMB implements Serializable {
         progressDelete = 95;
     }
 
+    /**
+     * This method is responsible to determine if the name already exists, if
+     * not this method increases the digit 1,2,3 until this method find one that
+     * does not exist.
+     *
+     * @param name
+     * @return
+     */
     private String determineTagName(String name) {
         /*
          * determina si el nombre ya existe sino aumentarle 1,2,3...
@@ -844,6 +937,10 @@ public class RecordSetsMB implements Serializable {
         return nameReturn;
     }
 
+    /**
+     * This method is responsible to ungroup a record set in the original record
+     * set.
+     */
     public void ungroupTags() {
         System.out.print("ENTRANDO EN DESAGRUPACION DE CONJUNTOS");
         boolean continueProcess = true;
@@ -893,6 +990,11 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method allows the user to group a set in an existing set to maintain
+     * order in the data set, to group sets the user needs to select at least 2
+     * sets.
+     */
     public void joinTags() {
         System.out.print("ENTRANDO EN UNION DE CONJUNTOS");
         currentTag = null;
@@ -962,6 +1064,10 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method allows the user to delete a selected set, this method only
+     * allows eliminate sets that are not in the system.
+     */
     public void deleteTag() {
         currentTag = null;
         System.out.print("ENTRANDO EN ELIMINAR CONJUNTO");
@@ -1018,6 +1124,10 @@ public class RecordSetsMB implements Serializable {
         btnRemoveDisabled = true;
     }
 
+    /**
+     * This method allows rename a selected set, for realize the modification,
+     * the set must not be of the system.
+     */
     public void updateRegistry() {
 
 
@@ -1055,6 +1165,10 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method creates a new data set, for it is necessary to assign a name
+     * and this name must be different to existing names.
+     */
     public void saveRegistry() {
         int a = 0;
         a++;
@@ -1081,6 +1195,10 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to create the table where shows all datasets
+     * existing in the database.
+     */
     public final void createDynamicTable() {
         selectedRowsDataTable = null;
         btnEditDisabled = true;
@@ -1107,6 +1225,10 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to create the table where displays all groups
+     * of sets.
+     */
     public final void createDynamicTable2() {
         selectedRowsDataTable2 = null;
         currentSearchValue2 = currentSearchValue2.toUpperCase();
@@ -1149,6 +1271,10 @@ public class RecordSetsMB implements Serializable {
         }
     }
 
+    /**
+     * This method Resets all controls and load the data of the tables of sets
+     * and groups.
+     */
     @PostConstruct
     public void reset() {
 
