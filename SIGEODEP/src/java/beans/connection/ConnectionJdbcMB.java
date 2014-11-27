@@ -22,11 +22,17 @@ import model.dao.*;
 import model.pojo.*;
 
 /**
+ * This class is responsible for the management connection to the database, also
+ * this class is responsible to make the necessary queries for the system to
+ * function properly.
  *
  * @author SANTOS
  */
 @ManagedBean(name = "connectionJdbcMB")
 @SessionScoped
+/**
+ *
+ */
 public class ConnectionJdbcMB implements Serializable {
 
     @Resource(name = "jdbc/od")
@@ -76,11 +82,15 @@ public class ConnectionJdbcMB implements Serializable {
     private boolean showMessages = true;//determinar si mostrar o no los mensajes de error
 
     /**
-     * Creates a new instance of ConnectionJdbcMB
+     * This method is responsible to creates a new instance of ConnectionJdbcMB.
      */
     public ConnectionJdbcMB() {
     }
 
+    /**
+     * This method is responsible for closing the connection established to the
+     * database
+     */
     @PreDestroy
     public synchronized void disconnect() {
         try {
@@ -93,6 +103,13 @@ public class ConnectionJdbcMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible for checking if the system can to connect to
+     * the data warehouse and database, and stores this data in the table
+     * settings
+     *
+     * @return
+     */
     public String checkConnection() {
         /*
          * verifica si se puede conectar a la bodega y db observatorio y almacena
@@ -130,7 +147,7 @@ public class ConnectionJdbcMB implements Serializable {
                     if (conn != null && !conn.isClosed()) {
                         msj = " Conexión a bodega de datos Correcta.";
                         if (!conn.isClosed()) {
-                        conn.close();
+                            conn.close();
                         }
                     } else {
                         msj = " Conexión a bodega de datos Fallida.";
@@ -169,6 +186,12 @@ public class ConnectionJdbcMB implements Serializable {
         return "";
     }
 
+    /**
+     * This method is responsible for connecting to the database, if there is an
+     * error, it is shown in the screen
+     *
+     * @return
+     */
     public final boolean connectToDb() {
         /*
          * conectarse a la base datos observatorio y bodega
@@ -227,7 +250,7 @@ public class ConnectionJdbcMB implements Serializable {
                         if (conn != null && !conn.isClosed()) {
                             msj = " Conexión a bodega de datos Correcta.";
                             if (!conn.isClosed()) {
-                            conn.close();
+                                conn.close();
                             }
                         } else {
                             msj = " Conexión a bodega de datos Fallida.";
@@ -273,6 +296,12 @@ public class ConnectionJdbcMB implements Serializable {
         this.conn = con;
     }
 
+    /**
+     * this method is used to query to database.
+     *
+     * @param query
+     * @return
+     */
     public ResultSet consult(String query) {
         msj = "";
         try {
@@ -292,6 +321,13 @@ public class ConnectionJdbcMB implements Serializable {
         }
     }
 
+    /**
+     * this method is used to query to database that do not return any value as
+     * INSERT, UPDATE or DELETE.
+     *
+     * @param query
+     * @return
+     */
     public int non_query(String query) {
         msj = "";
         int reg;
@@ -305,13 +341,21 @@ public class ConnectionJdbcMB implements Serializable {
 
         } catch (SQLException e) {
             if (showMessages) {
-                System.out.println("Error: " + e.toString() + " -- Clase: " + this.getClass().getName()+" -  "+ query);
+                System.out.println("Error: " + e.toString() + " -- Clase: " + this.getClass().getName() + " -  " + query);
             }
             msj = "ERROR: " + e.getMessage();
         }
         return reg;
     }
 
+    /**
+     * this method is used to insert data into a specific table in the database.
+     *
+     * @param Tabla
+     * @param elementos
+     * @param registro
+     * @return
+     */
     public String insert(String Tabla, String elementos, String registro) {
         msj = "";
         int reg = 1;
@@ -339,6 +383,13 @@ public class ConnectionJdbcMB implements Serializable {
         return success;
     }
 
+    /**
+     * this method is used to remove data from a specified table in the
+     * database.
+     *
+     * @param Tabla
+     * @param condicion
+     */
     public void remove(String Tabla, String condicion) {
         msj = "";
 
@@ -360,6 +411,14 @@ public class ConnectionJdbcMB implements Serializable {
         }
     }
 
+    /**
+     * this method is used to update data into a specified table in the
+     * database.
+     *
+     * @param Tabla
+     * @param campos
+     * @param donde
+     */
     public void update(String Tabla, String campos, String donde) {
         msj = "";
         int reg;
@@ -390,6 +449,13 @@ public class ConnectionJdbcMB implements Serializable {
 
     /*
      * ------------METODOS PARA MANEJOS DE CONJUNTOS----------
+     */
+    /**
+     * This method is responsible to load all data corresponding to a murder
+     * victim selected for subsequently display the data in a table.
+     *
+     * @param idVIctim
+     * @return
      */
     public RowDataTable loadFatalInjuryMurderRecord(String idVIctim) {
         //CARGO LOS DATOS DE UN REGISTRO DE LESION FATAL EN UNA FILA PARA LA TABLA
@@ -651,6 +717,13 @@ public class ConnectionJdbcMB implements Serializable {
         return newRowDataTable;
     }
 
+    /**
+     * This method is responsible to load all data corresponding to a accident
+     * victim selected for subsequently display the data in a table.
+     *
+     * @param idVIctim
+     * @return
+     */
     public RowDataTable loadFatalInjuryAccidentRecord(String idVIctim) {
         //CARGO LOS DATOS DE UNA DETERMINA FATAL ACCIDENTAL EN UNA FILA PARA LA TABLA
         //btnEditDisabled = true;
@@ -913,6 +986,13 @@ public class ConnectionJdbcMB implements Serializable {
         return newRowDataTable;
     }
 
+    /**
+     * This method is responsible to load all data corresponding to a LCENF
+     * victim selected for subsequently display the data in a table.
+     *
+     * @param idVIctim
+     * @return
+     */
     public RowDataTable loadNonFatalInjuryRecord(String idVIctim) {
         //CARGO LOS DATOS DE UNA DETERMINA LESION NO FATAL EN UNA FILA PARA LA TABLA
         //btnEditDisabled = true;
@@ -1674,6 +1754,13 @@ public class ConnectionJdbcMB implements Serializable {
         return newRowDataTable;
     }
 
+    /**
+     * This method is responsible to load all data corresponding to a suicide
+     * victim selected for subsequently display the data in a table.
+     *
+     * @param idVIctim
+     * @return
+     */
     public RowDataTable loadFatalInjurySuicideRecord(String idVIctim) {
         //CARGO LOS DATOS DE UN SUICIDIO EN UNA FILA PARA LA TABLA
         //btnEditDisabled = true;
@@ -1950,6 +2037,13 @@ public class ConnectionJdbcMB implements Serializable {
         return newRowDataTable;
     }
 
+    /**
+     * This method is responsible to load all data corresponding to a traffic
+     * accident victim selected for subsequently display the data in a table.
+     *
+     * @param idVIctim
+     * @return
+     */
     public RowDataTable loadFatalInjuryTraafficRecord(String idVIctim) {
         //CARGO LOS DATOS ACCIDENTE FALTAL POR TRANSITO
         //btnEditDisabled = true;
@@ -2273,6 +2367,13 @@ public class ConnectionJdbcMB implements Serializable {
         return newRowDataTable;
     }
 
+    /**
+     * This method is responsible to load all data corresponding to a domestic
+     * violence victim selected for subsequently display the data in a table.
+     *
+     * @param idVIctim
+     * @return
+     */
     public RowDataTable loadNonFatalDomesticViolenceRecord(String idVIctim) {
         //CARGO LOS DATOS DE UNA DETERMINADA LESION VIF EN UNA FILA PARA LA TABLA
 
@@ -2765,6 +2866,13 @@ public class ConnectionJdbcMB implements Serializable {
         return newRowDataTable;
     }
 
+    /**
+     * This method is responsible to load all data corresponding to a sivigila
+     * vif victim selected for subsequently display the data in a table.
+     *
+     * @param idVIctim
+     * @return
+     */
     public RowDataTable loadSivigilaVifRecord(String idVIctim) {
         //CARGO LOS DATOS DE UN EVENTO SIVIGILA EN UNA FILA PARA LA TABLA
 
@@ -3091,6 +3199,13 @@ public class ConnectionJdbcMB implements Serializable {
     /*
      * METODOS PARA RELACIONES DE VARIABLES
      */
+    /**
+     * This method is responsible to obtain the identification of a country with
+     * the department and municipality through a string containing its name.
+     *
+     * @param value
+     * @return
+     */
     public String searchCountry(String value) {
         /*
          * COMO PARAMETRO LLEGA UNA CADENA: COLOMBIA-NARIÑO-PASTO ME RETORNA UNA
@@ -3156,6 +3271,13 @@ public class ConnectionJdbcMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to obtain the identification of a municipality
+     * through its name.
+     *
+     * @param value
+     * @return
+     */
     public String searchMunicipalitie(String value) {
 
         List<Municipalities> municipalitiesList = municipalitiesFacade.findAll();
@@ -3171,6 +3293,14 @@ public class ConnectionJdbcMB implements Serializable {
         return null;
     }
 
+    /**
+     * This method is responsible to search a code in a category and returns its
+     * name, if the system does not find any related code then returns null.
+     *
+     * @param category
+     * @param value
+     * @return
+     */
     public String findNameByCategoricalCode(String category, String value) {
         /*
          * busca un codigo dentro de una categoria y me retorna su nombre,
@@ -3196,6 +3326,14 @@ public class ConnectionJdbcMB implements Serializable {
         return null;
     }
 
+    /**
+     * This method is responsible to search a name in a category and returns its
+     * ID, if the system does not find any related name then returns null.
+     *
+     * @param category
+     * @param value
+     * @return
+     */
     public String findCodeByCategoricalName(String category, String value) {
         /*
          * busca un nombre dentro de una categoria y me retorna su id, cuando
@@ -3221,6 +3359,16 @@ public class ConnectionJdbcMB implements Serializable {
         return null;
     }
 
+    /**
+     * This method is responsible to returns a list of names belonging to a
+     * category. amount tells the system how many records have the list, if
+     * amount is 0 then indicates to system that the list contain all the
+     * records that exist.
+     *
+     * @param typeVarExepted
+     * @param amount
+     * @return
+     */
     public ArrayList<String> categoricalNameList(String typeVarExepted, int amount) {
         /*
          * retorna una lista con los nombres pertenecientes a una categoria
@@ -3279,6 +3427,16 @@ public class ConnectionJdbcMB implements Serializable {
         return returnList;
     }
 
+    /**
+     * This method is responsible to returns a list of codes belonging to a
+     * category. amount tells the system how many records have the list, if
+     * amount is 0 then indicates to system that the list contain all the
+     * records that exist.
+     *
+     * @param typeVarExepted
+     * @param amount
+     * @return
+     */
     public ArrayList<String> categoricalCodeList(String typeVarExepted, int amount) {
         /*
          * retorna una lista con los codigos pertenecientes a una categoria
@@ -3340,6 +3498,13 @@ public class ConnectionJdbcMB implements Serializable {
     /*     
      * -- METODOS DE FILTER CONNECTION -----
      */
+    /**
+     * This method is responsible to obtain the number of rows which will be
+     * shown in the results to do more agile the data queries.
+     *
+     * @param projectId
+     * @return
+     */
     public int getTempRowCount(int projectId) {
         try {
             String query = ""
@@ -3358,6 +3523,12 @@ public class ConnectionJdbcMB implements Serializable {
         }
     }
 
+    /**
+     * This method returns a list with the names of the columns of a project.
+     *
+     * @param projectId
+     * @return
+     */
     public List<String> getColumns(int projectId) {
         /*
          * retorna una lista con los nombres de las columnas de un proyecto
@@ -3394,6 +3565,16 @@ public class ConnectionJdbcMB implements Serializable {
         }
     }
 
+    /**
+     * This method returns a list with the query result, is necessary to define
+     * the beginning of the list, the page size and the identification of the
+     * project in which the user is working.
+     *
+     * @param first
+     * @param pageSize
+     * @param pojectId
+     * @return
+     */
     public List<List> getListFromQuery(int first, int pageSize, int pojectId) {
         /*
          * Devuelve una lista con el resultado del query.
@@ -3531,5 +3712,5 @@ public class ConnectionJdbcMB implements Serializable {
 
     public void setDb_dwh(String db_dwh) {
         this.db_dwh = db_dwh;
-    }    
+    }
 }
