@@ -37,6 +37,9 @@ import org.primefaces.model.LazyDataModel;
  */
 @ManagedBean(name = "recordSetsHomicideMB")
 @SessionScoped
+/**
+ * This class handles record set that correspond to homicides
+ */
 public class RecordSetsHomicideMB implements Serializable {
 
     @EJB
@@ -70,24 +73,42 @@ public class RecordSetsHomicideMB implements Serializable {
     private String exportFileName = "";
     private String sql = "";
 
-//    public void onCompleteLoad() {
-//        System.out.println("Termino generacion de XLSX");
-//    }
+    /**
+     * This method Instance tag list, the table model and gets the current
+     * instance of the connection to the database.
+     */
     public RecordSetsHomicideMB() {
         tagsList = new ArrayList<>();
         table_model = new LazyRecordSetsDataModel(0, "", FormsEnum.SCC_F_028);
         connection = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
+    /**
+     * This method is used to display messages about the actions that the user
+     * is performing.
+     *
+     * @param s
+     * @param title
+     * @param messageStr
+     */
     public void printMessage(FacesMessage.Severity s, String title, String messageStr) {
         FacesMessage msg = new FacesMessage(s, title, messageStr);
         FacesContext.getCurrentInstance().addMessage(null, msg);
     }
 
+    /**
+     * This method is responsible to display the corresponding form of a
+     * selected victim.
+     *
+     * @return
+     */
     public String openForm() {
         return openForm;
     }
 
+    /**
+     * Open the corresponding form to a selected record.
+     */
     public void openInForm() {
         FacesContext context = FacesContext.getCurrentInstance();
         homicideMB = (HomicideMB) context.getApplication().evaluateExpressionGet(context, "#{homicideMB}", HomicideMB.class);
@@ -95,6 +116,11 @@ public class RecordSetsHomicideMB implements Serializable {
         openForm = "homicide";
     }
 
+    /**
+     * load the information corresponding to a victim within the form
+     *
+     * @param selectedRowsDataTableTags
+     */
     void loadValues(RowDataTable[] selectedRowsDataTableTags) {
 
         try {
@@ -161,6 +187,15 @@ public class RecordSetsHomicideMB implements Serializable {
         }
     }
 
+    /**
+     * This method is used when the user wants to export all records found. this
+     * method creates a cell acording to the parameters
+     *
+     * @param cellStyle
+     * @param fila
+     * @param position
+     * @param value
+     */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
@@ -168,12 +203,23 @@ public class RecordSetsHomicideMB implements Serializable {
         cell.setCellStyle(cellStyle);
     }
 
+    /**
+     * This method is used when the user wants to export all records found. this
+     * method creates a cell acording to the parameters
+     *
+     * @param fila
+     * @param position
+     * @param value
+     */
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
 
+    /**
+     * This method is responsible to export all records found.
+     */
     public void postProcessXLS1() {
         try {
             progress = 0;
@@ -193,6 +239,9 @@ public class RecordSetsHomicideMB implements Serializable {
         progress = 100;
     }
 
+    /**
+     * This method is responsible for exporting all records found
+     */
     public void postProcessXLS(Object document) {
         try {
             progress = 0;
@@ -304,6 +353,10 @@ public class RecordSetsHomicideMB implements Serializable {
         }
     }
 
+    /**
+     * This method enables or disables the button “MOSTRAR FORMULARIO” according
+     * to the selected rows and then display the content.
+     */
     public void load() {
         currentFatalInjuryMurder = null;
         btnEditDisabled = true;
@@ -322,6 +375,9 @@ public class RecordSetsHomicideMB implements Serializable {
         }
     }
 
+    /**
+     * This method is used to remove a registry of the database.
+     */
     public void deleteRegistry() {
         if (selectedRowsDataTable != null && selectedRowsDataTable.length != 0) {
             List<FatalInjuryMurder> fatalInjuryMurderList = new ArrayList<>();
