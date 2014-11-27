@@ -34,7 +34,7 @@ import javax.servlet.http.HttpSession;
 import managedBeans.login.ApplicationControlMB;
 
 /**
- *
+ * This class allows you to manage everything related to the backs of all the information contained SIGEODEP also has functions that allow to have backups in case of loss or any kind of error.
  * @author santos
  */
 @ManagedBean(name = "backupsMB")
@@ -50,7 +50,9 @@ public class BackupsMB {
     private String newName = "";//Nombre del la copia de seguridad.
     private String newNameDwh = "";//Nombre del la copia de seguridad.
     private String realPath = "";
-
+/**
+ * It is responsible to connect to the database and specify the directory to use.
+ */
     public BackupsMB() {
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/"); // Sustituye "/" por el directorio ej: "/upload"
@@ -59,7 +61,9 @@ public class BackupsMB {
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         applicationControlMB = (ApplicationControlMB) context.getApplicationMap().get("applicationControlMB");
     }
-
+/**
+ * is responsible to clear the fields for creating a new Backup.
+ */
     public void reset() {
         removeNotFoundBackups();
         rowDataTableList = new ArrayList<>();
@@ -71,7 +75,9 @@ public class BackupsMB {
         createDynamicTable();
         createDynamicTableDwh();
     }
-
+/**
+ * Delete backups that do not have the file stored in the server folder.
+ */
     public void removeNotFoundBackups() {
         /*
          * elimina las copias de seguridad que no tengan el archivo 
@@ -109,7 +115,9 @@ public class BackupsMB {
         } catch (Exception x) {
         }
     }
-
+/**
+ * Create the backup od (Sigeodep) also determines whether you've entered a name and if it exists and stores the information to create the copy.
+ */
     public void createBackupClick() {
         /*
          * click sobre crear backup de od(sigeodep)
@@ -207,7 +215,9 @@ public class BackupsMB {
         }
 
     }
-
+/**
+ * Create the backup od (Bodega) also determines whether you've entered a name and if it exists and stores the information to create the copy.
+ */
     public void createBackupClickDwh() {
         /*
          * click sobre crear copia de seguridad de od_dwh(bodega)
@@ -350,7 +360,11 @@ public class BackupsMB {
             }
         }
     }
-
+/**
+ * Show console the progress of an invoked external process.
+ * @param p
+ * @param description 
+ */
     private void printOutputFromProcces(Process p, String description) {
         /*
          * mostrar por consola el progreso de un proceso externo invocado
@@ -370,7 +384,9 @@ public class BackupsMB {
         }        
         System.out.println("Termina proceso " + description + " /////////////////////////////////////////");
     }
-
+/**
+ * Restore a backup of the crime observatory (Sigeodep).
+ */
     public void restoreBackupClick() {
         /*
          * click sobre restaurar una copia de seguridad de od(sigeodep)
@@ -428,7 +444,9 @@ public class BackupsMB {
             }
         }
     }
-
+/**
+ * Restore the latest backup of the Warehouse.
+ */
     public void restoreLastBackupDwh() {
         /*
          * restauración de la última copia de seguridad de la bodega
@@ -453,7 +471,9 @@ public class BackupsMB {
         } catch (SQLException ex) {
         }
     }
-
+/**
+ * Allows restores the backup od_dwh (Bodega), also performs validation is selected a backup of the table.
+ */
     public void restoreBackupClickDwh() {
         /*
          * click sobre restaurar una copia de seguridad de od_dwh(bodega)
@@ -520,7 +540,9 @@ public class BackupsMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Correcto", "La copia de seguridad se ha restaurado correctamente"));
         }
     }
-
+/**
+ * Deletes a backup Crime Observatory (Sigeodep)
+ */
     public void deleteBackupClick() {
         /*
          * click sobre eliminar un backup de od(sigeodep)
@@ -542,7 +564,9 @@ public class BackupsMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una copia de seguridad para realizar la eliminación"));
         }
     }
-
+/**
+ * Deletes a backup Crime Observatory (Warehouse).
+ */
     public void deleteBackupClickDwh() {
         /*
          * click sobre eliminar un backup de od_dwh(bodega)
@@ -568,7 +592,9 @@ public class BackupsMB {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Se debe seleccionar una copia de seguridad para realizar la eliminación"));
         }
     }
-
+/**
+ * Create a table with listings backups od (sigeodep).
+ */
     private void createDynamicTable() {
         /*
          * creacion de la tabla con el listado de backups de od(sigeodep)
@@ -589,7 +615,9 @@ public class BackupsMB {
             System.out.println("Error 5 en " + this.getClass().getName() + ":" + e.getMessage());
         }
     }
-
+/**
+ * Create a table with listings od_dwh backups (Warehouse).
+ */
     private void createDynamicTableDwh() {
         /*
          * creacion de la tabla con el listado de backups de od_dwh(bodega)
