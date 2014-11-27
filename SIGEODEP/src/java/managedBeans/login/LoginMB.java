@@ -36,8 +36,13 @@ import org.primefaces.model.StreamedContent;
  *
  * @author santos
  */
+/**
+ * This class is responsible to Manage the login and logout of the users, also this method permitie access for guests.
+ * 
+ */
 @ManagedBean(name = "loginMB")
 @SessionScoped
+
 public class LoginMB {
 
     private String idSession = "";//identificador de la session
@@ -73,6 +78,9 @@ public class LoginMB {
     private boolean autenticado = false;
     //private String realPath = "";
 
+/**
+ * This method is the class constructor.
+ */    
     public LoginMB() {
     }
     private StreamedContent fileHelp;
@@ -82,8 +90,11 @@ public class LoginMB {
         fileHelp = new DefaultStreamedContent(stream, "application/pdf", "manual.pdf");
         return fileHelp;
     }
-
+/**
+ * This method is responsible to destroy an active session, first deletes temporary user data, This method is called when the user has stopped using the software for a specified time, has stopped the server or the user has decided to close their session.
+ */
     @PreDestroy
+
     public void destroySession() {
         /*
          * antes de destruir esta clase se eliminan datos temporales a el usuario 
@@ -100,7 +111,9 @@ public class LoginMB {
         } catch (Exception e) {
         }
     }
-
+/**
+ * This method ends the session when a session with the same user on another computer
+ */
     public void logout1() {
         /*
          * fin de session por que se inicio una nueva session en otro equipo      
@@ -117,7 +130,9 @@ public class LoginMB {
         } catch (Exception ex) {//System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
         }
     }
-
+/**
+ * This method ends a session when the user decides to close a current session.
+ */
     public void logout2() {
         /*
          * fin de sesion dada por el usuario: botón "cerrar cesion"
@@ -135,7 +150,9 @@ public class LoginMB {
             System.out.println("Excepcion cuando usuario cierra sesion sesion: " + ex.toString());
         }
     }
-
+/**
+ * This method resets all the values of the activities that have been going on for the activity of a user.
+ */
     public void reset() {
         projectsMB.reset();
         relationshipOfVariablesMB.reset();
@@ -144,7 +161,10 @@ public class LoginMB {
         errorsControlMB.reset();
         filterMB.reset();
     }
-
+/**
+ * This method is used when a user tries to access to the system from 2 different locations.
+ * @return 
+ */
     public String closeSessionAndLogin() {
         /*
          * terminar una session iniciada en otra terminal y continuar abriendo una nueva;
@@ -154,7 +174,10 @@ public class LoginMB {
         applicationControlMB.removeSession(currentUser.getUserId());
         return continueLogin();
     }
-
+/**
+ * This method is responsible to instantiate all the variables necessary for a user to log in, as to establish connection to the database and specify that permissions are assigned to user 
+ * @return 
+ */
     private String continueLogin() {
         /*
          * instanciar todas las variables necesarias para que un usuario inicie una session
@@ -197,7 +220,9 @@ public class LoginMB {
         }
         return inicializeVariables();
     }
-
+/**
+ * This method is functional only when the user Santos accesses to the system, This method allows the user realize management operations.
+ */
     public void corregirDB() {
         /*
          * funcion exclusiva cuando accede el usuario santos
@@ -479,7 +504,10 @@ public class LoginMB {
 //            }
 //        }
     }
-
+/**
+ * This method is responsible to initialize all variables used by the system to function properly, as error control variables, variables used in the creation of new forms, relations of variables, filters and sets the current configuration the system has.
+ * @return 
+ */
     private String inicializeVariables() {
         if (connectionJdbcMB.connectToDb()) {
             connectionJdbcMB.setCurrentUser(currentUser);
@@ -535,7 +563,10 @@ public class LoginMB {
             return "indexConfiguration";
         }
     }
-
+/**
+ * This method allows the login to a guest user, returns the page that should be addressed once the system determines whether the guest can enter or not, this method sets unique identification for guest  user different to system users.
+ * @return 
+ */
     public String CheckValidInvited() {
         /*
          * permitir el acceso de un usuario como invitado
@@ -580,7 +611,10 @@ public class LoginMB {
             return inicializeVariables();
         }
     }
-
+/**
+ * This method checks if the user is registered in the database and if your account is still active, for to allow access to the system.
+ * @return 
+ */
     public String CheckValidUser() {
         /*
          * determinar si el usuario puede acceder al sistema determinando si exite
