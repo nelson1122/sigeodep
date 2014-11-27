@@ -23,7 +23,7 @@ import model.pojo.NonFatalDataSources;
 import org.apache.poi.hssf.usermodel.*;
 
 /**
- *
+ *The HealtInstitutionsVariableMB class is responsible for managing everything related to health institutions, allowing the user to edit, delete, add and export the list of health institutions / receiver.
  * @author SANTOS
  */
 @ManagedBean(name = "healtInstitutionsVariableMB")
@@ -58,24 +58,40 @@ public class HealtInstitutionsVariableMB implements Serializable {
     private ConnectionJdbcMB connectionJdbcMB;
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
-
+/**
+ * class constructor, This method is responsible of connect to system to database.
+ */
     public HealtInstitutionsVariableMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-
+/**
+ * It is responsible to create a cell within the row.
+ * @param cellStyle: Style that will have the cell.
+ * @param fila: row where create the cell
+ * @param position: Determines the position where anger cell within the row.
+ * @param value: Sets the value that will be created within the cell. 
+ */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
         cell.setCellStyle(cellStyle);
     }
-
+/**
+ * It is responsible to create a cell within the row.
+ * @param fila: row where create the cell 
+ * @param position: Determines the position where anger cell within the row.
+ * @param value: Sets the value that will be created within the cell. 
+ */
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
-
+/**
+ * runs a xls file where the user inserts a row within a worksheet where two fields are set: CODE, NAME.
+ * @param document: Document to modify the name and code field. 
+ */
     public void postProcessXLS(Object document) {
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
@@ -95,7 +111,11 @@ public class HealtInstitutionsVariableMB implements Serializable {
             createCell(row, 1, nonFatalDataSourcesList.get(i).getNonFatalDataSourceName());//NOMBRE            
         }
     }
-
+/**
+ * Suggests a name list of neighborhoods according to an initial letter to then be added to a health institution.
+ * @param entered
+ * @return 
+ */
     public List<String> suggestNeighborhoods(String entered) {
         List<Neighborhoods> neighborhoodsList = neighborhoodsFacade.findAll();
         List<String> list = new ArrayList<>();
@@ -112,7 +132,9 @@ public class HealtInstitutionsVariableMB implements Serializable {
         }
         return list;
     }
-
+/**
+ * Load the data belonging to a health facility.
+ */
     public void load() {
         currentNonFatalDataSources = null;
         if (selectedRowDataTable != null) {
@@ -160,7 +182,9 @@ public class HealtInstitutionsVariableMB implements Serializable {
             }
         }
     }
-
+/**
+ * Deletes a category prior to verify that this is not associated with any record.
+ */
     public void deleteRegistry() {
         if (currentNonFatalDataSources != null) {
             if (currentNonFatalDataSources.getNonFatalDataSourceId() <= 77) {//hasta el 77 vienen las categorias por defecto
@@ -194,7 +218,9 @@ public class HealtInstitutionsVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-
+/**
+ * Updates the information in a record and verify that there is no duplication of information to be added.
+ */
     public void updateRegistry() {
         boolean continueProcess = true;
         if (currentNonFatalDataSources == null) {
@@ -262,7 +288,9 @@ public class HealtInstitutionsVariableMB implements Serializable {
             btnRemoveDisabled = true;
         }
     }
-
+/**
+ * Save a new record, also evaluates or makes a check that the name of the new record does not exist.
+ */
     public void saveRegistry() {
         boolean continueProcess = true;
 
@@ -331,7 +359,9 @@ public class HealtInstitutionsVariableMB implements Serializable {
             newRegistry();
         }
     }
-
+/**
+ * Initializes the fields to add a new record.
+ */
     public void newRegistry() {
         nameInstitution = "";
         addressInstitution = "";
@@ -343,7 +373,9 @@ public class HealtInstitutionsVariableMB implements Serializable {
         newReceptorInstitution = true;
         newHealtInstitution = true;
     }
-
+/**
+ * Create a dynamic table with the results of a search.
+ */
     public void createDynamicTable() {
         btnEditDisabled = true;
         btnRemoveDisabled = true;
@@ -383,7 +415,9 @@ public class HealtInstitutionsVariableMB implements Serializable {
 //            }
         }
     }
-
+/**
+ * Resets the values of the Dynamic Table.
+ */
     public void reset() {
         rowDataTableList = new ArrayList<>();
         nonFatalDataSourcesList = nonFatalDataSourcesFacade.findAll();
