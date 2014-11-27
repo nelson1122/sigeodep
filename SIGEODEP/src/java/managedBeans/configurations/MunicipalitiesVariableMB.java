@@ -26,6 +26,9 @@ import model.pojo.MunicipalitiesPK;
 import org.apache.poi.hssf.usermodel.*;
 
 /**
+ * The MunicipalitiesVariableMB class is responsible for managing everything
+ * related to municipalities, allowing user to have available a list of
+ * municipalities available which can be added, edited, deleted and exported.
  *
  * @author SANTOS
  */
@@ -56,10 +59,21 @@ public class MunicipalitiesVariableMB implements Serializable {
     private boolean btnRemoveDisabled = true;
     private ConnectionJdbcMB connectionJdbcMB;
 
+    /**
+     * This is the class constructor.
+     */
     public MunicipalitiesVariableMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
 
+    /**
+     * It is responsible to create a cell within the row.
+     *
+     * @param cellStyle: Style that will have the cell.
+     * @param fila: row where create the cell
+     * @param position: Determines the position where anger cell within the row.
+     * @param value: Sets the value that will be created within the cell.
+     */
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
@@ -67,12 +81,25 @@ public class MunicipalitiesVariableMB implements Serializable {
         cell.setCellStyle(cellStyle);
     }
 
+    /**
+     * It is responsible to create a cell within the row.
+     *
+     * @param fila: row where create the cell
+     * @param position: Determines the position where anger cell within the row.
+     * @param value: Sets the value that will be created within the cell.
+     */
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
 
+    /**
+     * runs a xls file where the user inserts a row within a worksheet where two
+     * fields are set: CODE, NAME.
+     *
+     * @param document: Document to modify the name and code field.
+     */
     public void postProcessXLS(Object document) {
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
@@ -105,6 +132,9 @@ public class MunicipalitiesVariableMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to load the data corresponding to a municipe
+     */
     public void load() {
         currentMunicipalities = null;
         if (selectedRowDataTable != null) {
@@ -121,6 +151,9 @@ public class MunicipalitiesVariableMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to delete a selected record (municipe).
+     */
     public void deleteRegistry() {
         if (currentMunicipalities != null) {
             municipalitiesFacade.remove(currentMunicipalities);
@@ -134,6 +167,9 @@ public class MunicipalitiesVariableMB implements Serializable {
         btnRemoveDisabled = true;
     }
 
+    /**
+     * This method allows the user to update a selected record.
+     */
     public void updateRegistry() {
         //determinar consecutivo
         if (currentMunicipalities != null) {
@@ -156,6 +192,9 @@ public class MunicipalitiesVariableMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to save a new record.
+     */
     public void saveRegistry() {
         //determinar consecutivo
         if (newName.trim().length() != 0) {
@@ -185,11 +224,17 @@ public class MunicipalitiesVariableMB implements Serializable {
         }
     }
 
+    /**
+     * initializes variables to add a new record.
+     */
     public void newRegistry() {
         name = "";
         newName = "";
     }
 
+    /**
+     * Create a dynamic table with the results of a search.
+     */
     public void createDynamicTable() {
         boolean s = true;
         if (currentSearchValue.trim().length() == 0) {
@@ -199,7 +244,7 @@ public class MunicipalitiesVariableMB implements Serializable {
             rowDataTableList = new ArrayList<>();
             ResultSet rs;
             try {
-                if (currentSearchCriteria == 1) {                    
+                if (currentSearchCriteria == 1) {
                     rs = connectionJdbcMB.consult(""
                             + " select "
                             + "    municipalities.municipality_id, "
@@ -248,6 +293,9 @@ public class MunicipalitiesVariableMB implements Serializable {
         }
     }
 
+    /**
+     * This method is responsible to reset the values of the variables.
+     */
     @PostConstruct
     public void reset() {
         rowDataTableList = new ArrayList<>();
