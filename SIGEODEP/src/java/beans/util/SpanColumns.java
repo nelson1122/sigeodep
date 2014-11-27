@@ -5,7 +5,7 @@
 package beans.util;
 
 /**
- *
+ *The SpanColumns class is used by the indicators for the management and  manage column.
  * @author santos
  */
 public class SpanColumns 

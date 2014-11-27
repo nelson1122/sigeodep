@@ -7,7 +7,7 @@ package beans.util;
 import java.io.Serializable;
 
 /**
- *
+ *is a pre-built class that provides various functions to other classes, this class is used by the RelationshipOfValues class. The functionality of this class is reflected in it searches the proximity between words.
  * @author SANTOS
  */
 public class DamerauLevenshtein implements Serializable{

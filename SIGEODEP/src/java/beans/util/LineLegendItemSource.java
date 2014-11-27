@@ -8,7 +8,7 @@ import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.LegendItemSource;
 
 /**
- *
+ *The LineLegendItemSource class lets you create one of the items of a legend in jfreechart graphs, to perform the custom mapping of color or pattern to a particular series. This class is used by the indicators package.
  * @author santos
  */
 public class LineLegendItemSource implements LegendItemSource {
