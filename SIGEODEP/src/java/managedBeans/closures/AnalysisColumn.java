@@ -5,7 +5,7 @@
 package managedBeans.closures;
 
 /**
- *
+ *AnalysisColumn is responsible for performing  analysis columns according to data which will perform the imputation. It also provides a detailed report of invalid data have not yet been loaded into the data warehouse and those who are registered and to determine if fashion column.
  * @author santos
  */
 public class AnalysisColumn {
@@ -33,7 +33,9 @@ public class AnalysisColumn {
     private int countRedordsInCache = -1;//conteo de registros en cache
     private String modePerColumnWhitCache = null;//moda que tiene la columna con cache
     private String fiveFrecuentsWhitCache = null;//frecuentes (maximo 5) con cache
-
+/**
+ * This method is the class constructor
+ */
     public AnalysisColumn() {
     }
 

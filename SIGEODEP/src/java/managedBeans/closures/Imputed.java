@@ -7,7 +7,7 @@ package managedBeans.closures;
 import java.text.DecimalFormat;
 
 /**
- *
+ *This class is used by the imputation class which is responsible for managing everything related to data imputation.
  * @author and
  */
 public class Imputed {
@@ -88,7 +88,10 @@ public class Imputed {
     }
     
     
-
+/**
+ * is a string representation
+ * @return 
+ */
     @Override
     public String toString() {
         return "# " + order 
