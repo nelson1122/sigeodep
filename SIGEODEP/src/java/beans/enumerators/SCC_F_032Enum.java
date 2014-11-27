@@ -5,7 +5,7 @@
 package beans.enumerators;
 
 /**
- *
+ *This class handles enumerators related with SCC_F_032
  * @author SANTOS
  */
 public enum SCC_F_032Enum {
@@ -143,6 +143,12 @@ public enum SCC_F_032Enum {
   digitador_ficha,
   fecha_nacimiento,
   NOVALUE;
+  
+ /**
+ * converts a string to an enumerator, if not possible then returns NOVALUE
+ * @param str
+ * @return 
+ */  
   public static SCC_F_032Enum convert(String str)
     {
         try {
