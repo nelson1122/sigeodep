@@ -5,7 +5,7 @@
 package managedBeans.geo2;
 
 /**
- *
+ * This class is responsible for everything related to the color and images that will have the  polygons.
  * @author and
  */
 import java.awt.Color;
@@ -18,7 +18,12 @@ public class Ramp implements Serializable {
     private String name;
     private String image;
     private ArrayList<Color> colors;
-
+/**
+ * class constructor also is responsible of initializing variables.
+ * @param number
+ * @param name
+ * @param image 
+ */
     public Ramp(int number, String name, String image) {
         this.number = number;
         this.name = name;
@@ -85,7 +90,10 @@ public class Ramp implements Serializable {
         this.colors.add(startColor);
         this.colors.add(endColor);
     }
-
+/**
+ * It is a string of representation.
+ * @return 
+ */
     @Override
     public String toString() {
         return this.name;

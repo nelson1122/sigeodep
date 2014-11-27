@@ -5,7 +5,7 @@
 package managedBeans.geo2;
 
 /**
- *
+ *This class is a utility class which allows other classes to find ramped and interpolated color values.
  * @author and
  */
 /*
