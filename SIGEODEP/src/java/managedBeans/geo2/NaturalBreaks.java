@@ -18,7 +18,7 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Discretize;
 
 /**
- *
+ * The class NaturalBreaks uses a statistical formula to determine natural clusters of attribute values. This attempts to minimize the variance within a class and to maximize the variance between classes.
  * @author and
  */
 public class NaturalBreaks {
@@ -47,7 +47,11 @@ public class NaturalBreaks {
         ArrayList<String> createTriRamp = ramp.createTriRamp(Color.GREEN, Color.yellow, Color.RED, bins);
         System.out.println(createTriRamp);
     }
-
+/**
+ * This method performs a grouping unrestricted of a  set given data element in a given number of groups.
+ * @param numclass
+ * @return 
+ */
     public ArrayList<String> getJenksBreaks(int numclass) {
         breaks.clear();
         ArrayList<Double> list = numbers;
@@ -103,7 +107,11 @@ public class NaturalBreaks {
         //System.out.println(this.completeRanges());
         return this.completeRanges();
     }
-
+/**
+ * This method is reponsible of find the significance that exist between classes.
+ * @param bins
+ * @return 
+ */
     public ArrayList<String> getKMeansBreaks(int bins) {
         try {
             breaks.clear();
@@ -140,7 +148,11 @@ public class NaturalBreaks {
             return null;
         }
     }
-
+/**
+ * This method allows obtain  the division of the variation in the data by the number of the desired rating.
+ * @param bins
+ * @return 
+ */
     public ArrayList<String> getEqualBreaks(int bins) {
         try {
             breaks.clear();
@@ -178,7 +190,11 @@ public class NaturalBreaks {
             return null;
         }
     }
-
+/**
+ * This method allows obtain the same frequency between class.
+ * @param bins
+ * @return 
+ */
     public ArrayList<String> getEqualFrequency(int bins) {
         try {
             breaks.clear();
@@ -216,7 +232,10 @@ public class NaturalBreaks {
             return null;
         }
     }
-
+/**
+ * This method is responsible of  that the established range are complete.
+ * @return 
+ */
     public ArrayList<String> completeRanges() {
         ArrayList<String> ranges = new ArrayList<>();
         ArrayList<Double> copy = (ArrayList<Double>) breaks.clone();

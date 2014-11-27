@@ -13,7 +13,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
 /**
- *
+ *The class RangeFactory is responsible of the creation and account of the ranges that are established.
  * @author and
  */
 @ManagedBean
@@ -33,7 +33,9 @@ public class RangeFactory {
     private Color endColor;
     private Ramp selectedRamp;
     private ArrayList<Ramp> ramps;
-
+/**
+ * Class constructor  and initiates variables.
+ */
     public RangeFactory() {
         this.bins = 3;
         this.splitMethod = RangeFactory.FREQUENCY_METHOD;
@@ -45,7 +47,10 @@ public class RangeFactory {
         this.endColor = Color.RED;
         ramps = RampConverter.rampDB;
     }
-
+/**
+ * Class constructor.
+ * @param params 
+ */
     public RangeFactory(String params) {
         System.out.println(params);
         String[] txt_ranges = params.split("<end>");
@@ -63,7 +68,10 @@ public class RangeFactory {
             this.ranges.add(range);
         }
     }
-
+/**
+ * This method walking the values of a array assigned number  density  of element to each range.
+ * @return 
+ */
     public ArrayList<Range> createRanges() {
         ranges.clear();
         NaturalBreaks nb = new NaturalBreaks();
@@ -101,7 +109,9 @@ public class RangeFactory {
         setCounts();
         return ranges;
     }
-
+/**
+ * This method is responsible for perform a recount of the ranges
+ */
     public void setCounts() {
         for (Double number : numbers) {
             for (Range range : ranges) {
@@ -112,7 +122,11 @@ public class RangeFactory {
             }
         }
     }
-
+/**
+ * Returns the color by the relative position on the scale with a determined "resolution".
+ * @param value
+ * @return 
+ */
     public String getColorByValue(Double value) {
         for (Iterator<Range> it = getRanges().iterator(); it.hasNext();) {
             Range range = it.next();
@@ -126,7 +140,10 @@ public class RangeFactory {
     public void printRanges() {
         System.out.println(this.toString());
     }
-    
+/**
+ * This method is responsible for export ranges
+ * @return 
+ */    
     public String exportRanges(){
         StringBuilder sb = new StringBuilder();
         for (Iterator<Range> it = getRanges().iterator(); it.hasNext();) {
@@ -135,7 +152,10 @@ public class RangeFactory {
         }
         return sb.toString();        
     }
-
+/**
+ * It is a string of representation.
+ * @return 
+ */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

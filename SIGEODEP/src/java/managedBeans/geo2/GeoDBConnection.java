@@ -26,7 +26,10 @@ import org.json.JSONWriter;
 import org.mapfish.geo.MfFeature;
 import org.mapfish.geo.MfGeometry;
 import org.primefaces.event.RowEditEvent;
-
+/**
+ * 
+ * The class GeoDBConnection is responsible of the connection to the database, select the database manager system and create the url considering variables as: indicator_id, user_id, vars and the cross of the variable rf.
+ */
 @ManagedBean(name = "geoDBConnectionMB")
 @SessionScoped
 public class GeoDBConnection implements Serializable {
@@ -57,7 +60,9 @@ public class GeoDBConnection implements Serializable {
     private Color middleColor;
     private Color endColor;
     private boolean hasToRender;
-
+/**
+ * This method is the constructor of the class, also establishes the connection to the database and initiates the variables: bins, gap,  splitMethod, selectedRamp ,startColor ,middleColor ,  endColor , ramps, numbers ,hasToRender .
+ */
     public GeoDBConnection() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         conn = connectionJdbcMB.getConn();
@@ -72,7 +77,13 @@ public class GeoDBConnection implements Serializable {
         numbers = new ArrayList<>();
         hasToRender = false;
     }
-
+/**
+ * This class is responsible  for select the manager system  of database  and allow the server connection .
+ * @param user: system user 
+ * @param pass: user password
+ * @param host: server
+ * @param name: database name 
+ */
     public GeoDBConnection(String user, String pass, String host, String name) {
         url = "jdbc:postgresql://" + host + "/" + name;
         try {
@@ -92,7 +103,9 @@ public class GeoDBConnection implements Serializable {
     public void setConnection(Connection conn) {
         this.conn = conn;
     }
-
+/**
+ * This method is responsible for creating the url, taking into account varaibles as indicator_id, user_id, vars and the crossing of the rf variable.
+ */
     public void crearURL() {
         try {
             ExternalContext ext = FacesContext.getCurrentInstance().getExternalContext();
@@ -107,7 +120,12 @@ public class GeoDBConnection implements Serializable {
         }
 
     }
-
+/**
+ * This method allows refresh the indicator of data using the variables: * user_id, indicator_id and order. 
+ * @param user_id: user id 
+ * @param indicator_id: indicator id 
+ * @param order 
+ */
     public void refreshIndicatorData(int user_id, int indicator_id, ArrayList<Variable> order) {
         this.setUser_id(user_id);
         this.setIndicator_id(indicator_id);
@@ -151,7 +169,11 @@ public class GeoDBConnection implements Serializable {
         rf.setNumbers(this.numbers);
         createRanges();
     }
-
+/**
+ * This method is responsible for  calculate difference of  for that places certain restrictions such as: 
+ * if the gap> 10 then gap = 10 
+ * if the gap <1 then gap 1
+ */
     public void calculateGap() {
         Set<Double> uniqueNumbers = new HashSet<>(numbers);
         gap = uniqueNumbers.size();
@@ -162,7 +184,9 @@ public class GeoDBConnection implements Serializable {
             gap = 1;
         }
     }
-
+/**
+ * This method is responsible for creating the range, also provides methods of separation so you can create ranges.
+ */
     public void createRanges() {
         if (this.rf != null) {
             System.out.println(numbers);
@@ -178,7 +202,10 @@ public class GeoDBConnection implements Serializable {
             this.ranges = rf.getRanges();
         }
     }
-    
+/**
+ * This method allows established the maximum number of ranges
+ * @return 
+ */    
     private int getMaxNumberOfRanges(){
         Set<Double> uniques = new HashSet<>(numbers);
         return uniques.size();
@@ -187,7 +214,11 @@ public class GeoDBConnection implements Serializable {
     public void onEdit(RowEditEvent event) {
         System.out.println(((Range) event.getObject()).getLabel());
     }
-
+/**
+ * This method is responsible for performing a query when exists a connection in case otherwise sends a message that says  no exists connection to the database .
+ * @param query
+ * @return 
+ */
     public ResultSet consult(String query) {
         msj = "";
         try {
@@ -209,6 +240,11 @@ public class GeoDBConnection implements Serializable {
     /*
      * New methods for geo!!!
      */
+/**
+ * This method is responsible for obtaining the polygons using a sql query that uses the tables neighborhoods, communes, quadrants and corridors.
+ * @param rf
+ * @return 
+ */    
     public List<MfFeature> getPolygons(RangeFactory rf) {
         String query = "SELECT "
                 + "         record_id, "
@@ -312,7 +348,10 @@ public class GeoDBConnection implements Serializable {
             return null;
         }
     }
-
+/**
+ * This method allows obtain the number of communes by sql query with which counting is done communes.
+ * @return 
+ */
     public ArrayList<Double> getCommunesNumbers() {
         numbers = new ArrayList<>();
         String query = "SELECT "
@@ -351,7 +390,11 @@ public class GeoDBConnection implements Serializable {
         }
         return null;
     }
-
+/**
+ * This method allows obtain the polygons  of a commune   using a query also perform a count thereof .
+ * @param rf
+ * @return 
+ */
     public List<MfFeature> getCommunesPolygons(RangeFactory rf) {
         String query = "SELECT "
                 + "        record_id, commune_name, count, geom "
@@ -423,7 +466,10 @@ public class GeoDBConnection implements Serializable {
             return null;
         }
     }
-
+/**
+ * allows obtain the number of tests using a query that is responsible for perform a count of the neighborhoods table
+ * @return 
+ */
     public ArrayList<Double> getTestNumbers() {
         numbers = new ArrayList<>();
         String query = "SELECT "
@@ -462,7 +508,10 @@ public class GeoDBConnection implements Serializable {
         }
         return null;
     }
-
+/**
+ * This method allows obtain  the polygons of a neighborhood through a sql query
+ * @return 
+ */
     public List<MfFeature> getNeighborhoodPolygons() {
         String query = ""
                 + "SELECT "
@@ -508,7 +557,11 @@ public class GeoDBConnection implements Serializable {
             return null;
         }
     }
-
+/**
+ * This method allows obtain  the characteristics of polygons, in addition to  perform some validations that provide information if is a corridor, commune or quadrant.
+ * @param f
+ * @return 
+ */
     public List<MfFeature> getFeaturesPolygons(String f) {
         if (f.compareToIgnoreCase("comunas") == 0) {
             f = "commune";
@@ -563,7 +616,10 @@ public class GeoDBConnection implements Serializable {
             return null;
         }
     }
-
+/**
+ * This method allows obtain the number of quadrants by a sql query with which the  is performed the count of the quadrant.
+ * @return 
+ */
     public ArrayList<Double> getQuadrantsNumbers() {
         numbers = new ArrayList<>();
         String query = "SELECT "
@@ -602,7 +658,11 @@ public class GeoDBConnection implements Serializable {
         }
         return null;
     }
-
+/**
+ * This method allows obtain the polygons of a  quadrant  using a sql query
+ * @param rf
+ * @return 
+ */
     public List<MfFeature> getQuadrantsPolygons(RangeFactory rf) {
         String query = ""
                 + " SELECT "
@@ -691,7 +751,10 @@ public class GeoDBConnection implements Serializable {
             return null;
         }
     }
-
+/**
+ * This method allows obtain  the number of corridors using a sql query with which performed corridors count .
+ * @return 
+ */
     public ArrayList<Double> getCorridorsNumbers() {
         numbers = new ArrayList<>();
         String query = "SELECT "
@@ -730,7 +793,11 @@ public class GeoDBConnection implements Serializable {
         }
         return null;
     }
-
+/**
+ * This method allows obtain  the  polygons of a corridor using a sql query
+ * @param rf
+ * @return 
+ */
     public List<MfFeature> getCorridorsPolygons(RangeFactory rf) {
         String query = "SELECT "
                 + "        record_id, corridor_name, count, geom "
@@ -802,7 +869,15 @@ public class GeoDBConnection implements Serializable {
             return null;
         }
     }
-
+/**
+ * This method allows establish which  are for perform a analysis of the diagram of cake, also  Retrieves information using a sql query  to the indicators_records table.
+ * @param WHERE
+ * @param geo_column
+ * @param column
+ * @param user_id
+ * @param indicator_id
+ * @return 
+ */
     public String getPieData(String WHERE, String geo_column, String column, int user_id, int indicator_id) {
         String query = "SELECT "
                 + "	min(record_id) AS id, " + column + " AS label, sum(count) AS count "
@@ -838,7 +913,11 @@ public class GeoDBConnection implements Serializable {
             return "EPIC FAIL!!!";
         }
     }
-
+/**
+ * This method is responsible for obtaining the name of the map by using the variable indicator_id by a sql query that contains the indicator_name which will be assigned as the  title this.
+ * @param indicator_id
+ * @return 
+ */
     public String getMapName(int indicator_id) {
         try {
             String query = "SELECT indicator_name FROM indicators WHERE indicator_id=" + indicator_id;
