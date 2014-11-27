@@ -5,13 +5,17 @@
 package managedBeans.filters;
 
 /**
- *
+ *This class allows the software to set a header and a alias to a particular column.
  * @author and
  */
 public class ColumnModel {
     private String header;
     private String alias;
-    
+    /**
+     * This method is the class constructor, this method receives as a parameter the header and alias.
+     * @param header
+     * @param alias 
+     */
     public ColumnModel(String header, String alias){
         this.header = header;
         this.alias = alias;
