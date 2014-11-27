@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ *The RowDataTable class is responsible for giving the appropriate structure to tables so they can be used appropriately for PrimeFaces.
  * @author SANTOS
  */
 public class RowDataTable {
