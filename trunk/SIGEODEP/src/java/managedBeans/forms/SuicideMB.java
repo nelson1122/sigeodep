@@ -32,8 +32,13 @@ import model.pojo.*;
  *
  * @author SANTOS
  */
+/**
+ * SuicideMB is responsible to request the user data about the occurrence of events of a suicide and details of the victim to be processed and recorded in the database.
+ * 
+ */
 @ManagedBean(name = "suicideMB")
 @SessionScoped
+
 public class SuicideMB implements Serializable {
 
     //----------------------------------------------------------------------
@@ -211,12 +216,21 @@ public class SuicideMB implements Serializable {
     // FUNCIONES VARIAS ----------------------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+      /**
+     * This constructor is responsible for verifying the start of session and make the connection to database
+     * 
+     */  
+    
     public SuicideMB() {
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         applicationControlMB = (ApplicationControlMB) FacesContext.getCurrentInstance().getExternalContext().getApplicationMap().get("applicationControlMB");
     }
-
+/**
+ * This method is responsible to load the information corresponding to a victim within the form.
+ * @param tagsList
+ * @param currentFatalInjuryS 
+ */
     public void loadValues(List<Tags> tagsList, FatalInjurySuicide currentFatalInjuryS) {
         for (int i = 0; i < tagsList.size(); i++) {
             try {
@@ -233,7 +247,9 @@ public class SuicideMB implements Serializable {
             }
         }
     }
-
+/**
+ * This method is responsible for reset all form fields, also this method load the default values for that the user can to register data of a victim.
+ */
     public void reset() {   
         currentUser = loginMB.getCurrentUser();
         loading = true;
@@ -380,7 +396,9 @@ public class SuicideMB implements Serializable {
         //System.out.println("//////////////FORMULARIO REINICIADO//////////////////////////s");
         loading = false;
     }
-
+/**
+ * This method is responsible to load the information corresponding to a victim within the form.
+ */
     public void loadValues() {
         save = true;
         stylePosition = "color: #1471B1;";
@@ -764,7 +782,10 @@ public class SuicideMB implements Serializable {
         //******fatal_injury_id
         loading = false;
     }
-
+/**
+ * validates required fields before register a form. validates user permission, the date of the event and the existence of errors.
+ * @return 
+ */
     private boolean validateFields() {
         validationsErrors = new ArrayList<String>();
         //---------VALIDAR EL USUARIO TENGA PERMISMOS SUFIENTES
@@ -802,7 +823,10 @@ public class SuicideMB implements Serializable {
             return false;
         }
     }
-
+/**
+ * register all data of a new victim obtained from the form, this registry is made in the database, whether it is a form already registered, can update the information.
+ * @return 
+ */
     private boolean saveRegistry() {
         //realizo validaciones
         if (validateFields()) {
@@ -1050,7 +1074,12 @@ public class SuicideMB implements Serializable {
             return false;
         }
     }
-
+/**
+ * updated data of a victim who is already registered
+ * @param victim
+ * @param fatalInjurie
+ * @param fatalInjurySuicide 
+ */
     private void updateRegistry(Victims victim, FatalInjuries fatalInjurie, FatalInjurySuicide fatalInjurySuicide) {
 
         try {
@@ -1122,7 +1151,9 @@ public class SuicideMB implements Serializable {
         }
 
     }
-
+/**
+ * This method determines the position of the data  of a victim to be loaded into the form, this method is used with the following function: next, previous, first, last, and when the form is reset.
+ */
     public void determinePosition() {
         totalRegisters = fatalInjurySuicideFacade.countSuicide(currentTag);
         if (currentFatalInjuriId == -1) {
@@ -1137,7 +1168,9 @@ public class SuicideMB implements Serializable {
         }
         //System.out.println("POSICION DETERMINADA: " + currentPosition);
     }
-
+/**
+ * This method save all changes realized to a victim and proceeds to the next form.
+ */
     public void saveAndGoNext() {//guarda cambios si se han realizado y se dirije al siguiente
         if (saveRegistry()) {
             next();
@@ -1145,7 +1178,9 @@ public class SuicideMB implements Serializable {
             //System.out.println("No se guardo");
         }
     }
-
+/**
+ * This method save all changes realized to a victim and proceeds to the previous form.
+ */
     public void saveAndGoPrevious() {//guarda cambios si se han realizado y se dirije al anterior
         if (currentFatalInjuriId != -1) {
             if (saveRegistry()) {
@@ -1157,25 +1192,33 @@ public class SuicideMB implements Serializable {
             }
         }
     }
-
+/**
+ * save changes realized to a victim and proceeds to first form
+ */
     public void saveAndGoFirst() {//guarda cambios si se han realizado y se dirije al primero
         if (saveRegistry()) {
             first();
         }
     }
-
+/**
+ * save changes realized to a victim and proceeds to last form
+ */
     public void saveAndGoLast() {//guarda cambios si se han realizado y se dirije al ultimo
         if (saveRegistry()) {
             last();
         }
     }
-
+/**
+ * This method save all changes realized to a victim and this method creates a new form.
+ */
     public void saveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
         if (saveRegistry()) {
             newForm();
         }
     }
-
+/**
+ * Discards all changes realized to a victim and this method creates a new form.
+ */
     public void noSaveAndGoNew() {//guarda cambios si se han realizado y se dirije al ultimo
         openDialogFirst = "";
         openDialogNext = "";
@@ -1188,7 +1231,9 @@ public class SuicideMB implements Serializable {
         newForm();
 
     }
-
+/**
+ * Discards all changes realized to a victim and proceeds to the next form.
+ */
     public void noSaveAndGoNext() {//va al siguiente sin guardar cambios si se han realizado
         openDialogFirst = "";
         openDialogNext = "";
@@ -1200,7 +1245,9 @@ public class SuicideMB implements Serializable {
         stylePosition = "color: #1471B1;";
         next();
     }
-
+/**
+ * Discards all changes realized to a victim and proceeds to the previous form.
+ */
     public void noSaveAndGoPrevious() {//va al anterior sin guardar cambios si se han realizado
         openDialogFirst = "";
         openDialogNext = "";
@@ -1216,7 +1263,9 @@ public class SuicideMB implements Serializable {
             last();
         }
     }
-
+/**
+ * This method save all changes realized to a victim and proceeds to the first form.
+ */
     public void noSaveAndGoFirst() {//va al primero sin guardar cambios si se han realizado
         openDialogFirst = "";
         openDialogNext = "";
@@ -1228,7 +1277,9 @@ public class SuicideMB implements Serializable {
         stylePosition = "color: #1471B1;";
         first();
     }
-
+/**
+ * This method save all changes realized to a victim and proceeds to the last form.
+ */
     public void noSaveAndGoLast() {//va al ultimo sin guardar cambios si se han realizado
         openDialogFirst = "";
         openDialogNext = "";
@@ -1240,7 +1291,9 @@ public class SuicideMB implements Serializable {
         stylePosition = "color: #1471B1;";
         last();
     }
-
+/**
+ * This method displays the next record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record. 	
+ */
     public void next() {
         if (save) {//se busca el siguiente se el registro esta guardado (si esta guardado se abrira un dialogo que pregunta si guardar)             
             //System.out.println("cargando siguiente registro");
@@ -1259,7 +1312,9 @@ public class SuicideMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar siguiente registro)");
         }
     }
-
+/**
+ * This method displays the previous record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record.
+ */
     public void previous() {
         if (save) {
             //System.out.println("cargando anterior registro");
@@ -1279,7 +1334,9 @@ public class SuicideMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar anterior registro)");
         }
     }
-
+/**
+ * This method displays the first record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record.
+ */
     public void first() {
         if (save) {
             //System.out.println("cargando primer registro");
@@ -1295,7 +1352,9 @@ public class SuicideMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar primer registro)");
         }
     }
-
+/**
+ * This method displays the last record, if the current record is not recorded then this method displays a dialog that allows the user to save the current record. 
+ */
     public void last() {
         if (save) {
             //System.out.println("cargando ultimo registro");
@@ -1311,7 +1370,9 @@ public class SuicideMB implements Serializable {
             //System.out.println("No esta guardadado (para poder cargar ultimo registro)");
         }
     }
-
+/**
+ * This method clears all form fields to enter data for a new victim.
+ */
     public void clearForm() {
 
         //System.out.println("Limpiando formulario");
@@ -1397,7 +1458,9 @@ public class SuicideMB implements Serializable {
         isNegativeAlcoholLevel = false;
         loading = false;
     }
-
+/**
+ * This method displays a blank form for the user to enter data about a victim, if fields without saving then this method displays a dialog that allows the user to save the changes.
+ */
     public void newForm() {
         //currentFatalInjurySuicide = null;
         if (save) {
@@ -1412,7 +1475,9 @@ public class SuicideMB implements Serializable {
 
     public void nada() {
     }
-
+/**
+ * This method deletes a record from the database, for this verifies that the user has sufficient privileges.
+ */
     public void deleteRegistry() {
         if (currentFatalInjuriId != -1) {
             if (!loginMB.isPermissionAdministrator() && loginMB.getCurrentUser().getUserId() != currentFatalInjurySuicide.getFatalInjuries().getUserId().getUserId()) {
@@ -1459,7 +1524,9 @@ public class SuicideMB implements Serializable {
     public void setSelectedRowDataTable(RowDataTable selectedRowDataTable) {
         this.selectedRowDataTable = selectedRowDataTable;
     }
-
+/**
+ * This method is responsible to load the corresponding form to a victim who was selected in the option "Buscar" .
+ */
     public void openForm() {
         if (selectedRowDataTable != null) {
             //auxFatalInjurySuicide = fatalInjurySuicideFacade.findByIdVictim(selectedRowDataTable.getColumn1());
@@ -1474,14 +1541,18 @@ public class SuicideMB implements Serializable {
         }
         clearSearch();
     }
-
+/**
+ * This method cleans all fields of result of a search for realize a new one.
+ */
     public void clearSearch() {
         currentSearchValue = "";
         currentSearchCriteria = 1;
         rowDataTableList = new ArrayList<RowDataTable>();
 
     }
-
+/**
+ * This method creates a Dinamic Table to display the fields of a search realized.
+ */
     public void createDynamicTable() {
         boolean s = true;
         if (currentSearchValue.trim().length() == 0) {
@@ -1550,6 +1621,11 @@ public class SuicideMB implements Serializable {
     // FUNCIONES PARA AUTOCOMPLETAR ----------------------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+/**
+ * This method is responsible to display a neighborhoods list that have a similar name to which the user is typing.
+ * @param entered
+ * @return 
+ */
     public List<String> suggestNeighborhoods(String entered) {
         List<String> list = new ArrayList<String>();
         try {
@@ -1570,7 +1646,11 @@ public class SuicideMB implements Serializable {
         }
         return list;
     }
-
+/**
+ * This method is responsible to display a jobs list that have a similar name to which the user is typing.
+ * @param entered
+ * @return 
+ */
     public List<String> suggestJobs(String entered) {
         List<String> list = new ArrayList<String>();
         try {
@@ -1597,10 +1677,15 @@ public class SuicideMB implements Serializable {
     // FUNCIONES CUANDO LISTAS CAMBIAN DE VALOR ----------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+/**
+ * This method changes the records set.
+ */
     public void changeTag() {//cambia el conjunto de registros
         noSaveAndGoNew();
     }
-
+/**
+ * This method restores the values of stranger
+ */
     public void changeStranger() {
         if (loading == false) {
             changeForm();
@@ -1672,6 +1757,9 @@ public class SuicideMB implements Serializable {
 //                break;
 //        }
 //    }
+/**
+ * This method is responsible to display all departments corresponding to a country.
+ */
     public void findSourceDepartaments() {
 
         if (loading == false) {
@@ -1706,7 +1794,9 @@ public class SuicideMB implements Serializable {
         }
 
     }
-
+/**
+ * This method is responsible to display all municipalities corresponding to a departament.
+ */
     public void findSourceMunicipalities() {
 
         if (loading == false) {
@@ -1727,7 +1817,9 @@ public class SuicideMB implements Serializable {
         }
 
     }
-
+/**
+ * This method enables or disables the types of identification depending on the selected option.
+ */
     public void changeIdentificationType() {
 
         if (loading == false) {
@@ -1747,7 +1839,9 @@ public class SuicideMB implements Serializable {
             currentIdentificationNumber = "";
         }
     }
-
+/**
+ * This method changes the form according to the modifications that have been made.
+ */
     public void changeForm() {//el formulario fue modificado        
         openDialogFirst = "dialogFirst.show();";
         openDialogNext = "dialogNext.show();";
@@ -1758,7 +1852,9 @@ public class SuicideMB implements Serializable {
         save = false;
         stylePosition = "color: red; font-weight: 900;";
     }
-
+/**
+ * This method verifies that the entered date is correct, if it is wrong then display an error message and clean the field.
+ */
     public void changeDayEvent() {
 
         try {
@@ -1778,7 +1874,9 @@ public class SuicideMB implements Serializable {
         calculateDate1();
 
     }
-
+/**
+ * This method checks that the month entered is correct, if not, then display an error message and clean the field.
+ */
     public void changeMonthEvent() {
         try {
             int monthInt = Integer.parseInt(currentMonthEvent);
@@ -1796,7 +1894,9 @@ public class SuicideMB implements Serializable {
         }
         calculateDate1();
     }
-
+/**
+ * This method verifies that the year of the event entered is correct, if not, then display a message and clean the field.
+ */
     public void changeYearEvent() {
         Calendar cal = Calendar.getInstance();
         int yearSystem = cal.get(Calendar.YEAR);
@@ -1817,7 +1917,9 @@ public class SuicideMB implements Serializable {
         }
         calculateDate1();
     }
-
+/**
+ * This method checks that the hour entered is correct, if it is not then display an error message and clean the field.
+ */
     public void changeHourEvent() {
         try {
             int hourInt = Integer.parseInt(currentHourEvent);
@@ -1836,7 +1938,9 @@ public class SuicideMB implements Serializable {
         }
         calculateTime1();
     }
-
+/**
+ * This method verifies that the hour AM PM entered is correct, if is NO DATO, then disable the box of event time and the minute event.
+ */
     public void changeAmPmEvent() {
 
         if (loading == false) {
@@ -1859,7 +1963,9 @@ public class SuicideMB implements Serializable {
             currentHourEventDisabled = false;
         }
     }
-
+/**
+ * This method verifies that the minutes entered are correct, if not, then display an error message and clean the field.
+ */
     public void changeMinuteEvent() {
         try {
             int minuteInt = Integer.parseInt(currentMinuteEvent);
@@ -1878,7 +1984,9 @@ public class SuicideMB implements Serializable {
         }
         calculateTime1();
     }
-
+/**
+ * This method verifies that the number of victims entered is correct, if not, then display an error message and clean the field.
+ */
     public void changeNumberVictims() {
         //if (loading == false) {             changeForm();         }
         try {
@@ -1897,7 +2005,9 @@ public class SuicideMB implements Serializable {
             }
         }
     }
-
+/**
+ * This method verifies that the value of age is correct, if not, then display an error message and clean the field.
+ */
     public void changeValueAge() {
         try {
             int ageInt = Integer.parseInt(currentAge);
@@ -1915,7 +2025,9 @@ public class SuicideMB implements Serializable {
             }
         }
     }
-
+/**
+ * This method verifies that the alcohol level is entered correctly, if is wrong then display an error message and clean  the field.
+ */
     public void changeAlcoholLevelNumber() {
         try {
             int alcoholLevel = Integer.parseInt(currentAlcoholLevel);
@@ -1932,7 +2044,9 @@ public class SuicideMB implements Serializable {
             }
         }
     }
-
+/**
+ * This method is responsible to Load municipalities of residence.
+ */
     public void findMunicipalities() {
 
         Departaments d = departamentsFacade.findById((short) 52);
@@ -1951,7 +2065,9 @@ public class SuicideMB implements Serializable {
             currentNeighborhoodHomeCode = "";
         }
     }
-
+/**
+ * This method displays all departments of residence.
+ */
     public void changeDepartamentHome() {
         if (loading == false) {
             changeForm();
@@ -1979,7 +2095,9 @@ public class SuicideMB implements Serializable {
         }
         changeMunicipalitieHome();
     }
-
+/**
+ * This method is responsible to Show all municipalities of residence
+ */
     public void changeMunicipalitieHome() {
         //Municipalities m = municipalitiesFacade.findById(currentMunicipalitie, currentDepartamentHome);
         if (loading == false) {
@@ -1997,7 +2115,9 @@ public class SuicideMB implements Serializable {
             currentDirectionHome = "";
         }
     }
-
+/**
+ * This method is responsible to display all levels of alcohol, so that the user can select one. The alcohol levels are: NO DATO, PENDIENTE, NEGATIVO and DESCONOCIDO.
+ */
     public void changeAlcoholLevel() {
         if (loading == false) {
             changeForm();
@@ -2045,7 +2165,9 @@ public class SuicideMB implements Serializable {
             }
         }
     }
-
+/**
+ * Shows all Neighborhoods having a similar name to which the user is writing.
+ */
     public void changeNeighborhoodHomeName() {
         if (loading == false) {
             changeForm();
@@ -2058,7 +2180,9 @@ public class SuicideMB implements Serializable {
             }
         }
     }
-
+/**
+ * this method is responsible to complete the fields: CODIGO BARRIO, CUADRANTE and AREA DEL HECHO when a neighborhood is selected by the user.
+ */
     public void changeNeighborhoodEvent() {
         if (loading == false) {
             changeForm();
@@ -2109,7 +2233,9 @@ public class SuicideMB implements Serializable {
             currentArea = 0;
         }
     }
-
+/**
+ * This method enables or disables the measure of age according to the selected option.
+ */
     public void changeMeasuresOfAge() {
         if (loading == false) {
             changeForm();
@@ -2128,6 +2254,11 @@ public class SuicideMB implements Serializable {
     // FUNCIONES DE CALCULO DE FECHA Y HORA MILITAR ------------------------
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
+ /**
+  * gets the name day from the number day
+  * @param i
+  * @return 
+  */  
     private String intToDay(int i) {
         if (i == Calendar.MONDAY) {
             return "Lunes";
@@ -2145,7 +2276,9 @@ public class SuicideMB implements Serializable {
             return "Domingo";
         }
     }
-
+/**
+ * calculates the date on which the event occurred
+ */
     private void calculateDate1() {
         try {
             fechaI = formato.parse(currentDayEvent + "/" + currentMonthEvent + "/" + currentYearEvent);
@@ -2159,7 +2292,9 @@ public class SuicideMB implements Serializable {
             currentWeekdayEvent = "";
         }
     }
-
+/**
+ * calculates the time on which the event occurred
+ */
     private boolean calculateTime1() {
         int hourInt = 0;
         int minuteInt = 0;
