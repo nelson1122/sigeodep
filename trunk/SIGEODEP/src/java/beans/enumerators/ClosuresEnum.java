@@ -5,9 +5,10 @@
 package beans.enumerators;
 
 /**
- *
+ *This class handles enumerators related with closures
  * @author SANTOS
  */
+
 public enum ClosuresEnum {
 
     //----------------------------------------------------------
@@ -132,7 +133,11 @@ public enum ClosuresEnum {
     mode_imputation,
     none_imputation,
     NOVALUE;
-
+/**
+ * converts a string to an enumerator, if not possible then returns NOVALUE
+ * @param str
+ * @return 
+ */
     public static ClosuresEnum convert(String str) {
         try {
             return valueOf(str);

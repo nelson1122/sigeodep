@@ -5,7 +5,7 @@
 package beans.enumerators;
 
 /**
- *
+ *This class handles enumerators related with indicator types
  * @author SANTOS
  */
 public enum IndicatorTypeEnum {
@@ -20,6 +20,11 @@ public enum IndicatorTypeEnum {
     specified_percentage,
     NOVALUE;
 
+ /**
+ * converts a string to an enumerator, if not possible then returns NOVALUE
+ * @param str
+ * @return 
+ */
     public static IndicatorTypeEnum convert(String str) {
         try {
             return valueOf(str);

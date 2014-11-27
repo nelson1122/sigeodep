@@ -5,7 +5,7 @@
 package beans.enumerators;
 
 /**
- *
+ *This class handles enumerators related with SCC_F_028
  * @author SANTOS
  */
 public enum SCC_F_028Enum {
@@ -51,6 +51,11 @@ public enum SCC_F_028Enum {
     nivel_alcohol_negativo,
     NOVALUE;
 
+ /**
+ * converts a string to an enumerator, if not possible then returns NOVALUE
+ * @param str
+ * @return 
+ */
     public static SCC_F_028Enum convert(String str) {
         try {
             return valueOf(str);

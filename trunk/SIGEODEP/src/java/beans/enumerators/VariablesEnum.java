@@ -5,7 +5,7 @@
 package beans.enumerators;
 
 /**
- *
+ *This class handles enumerators related with variables
  * @author SANTOS
  */
 public enum VariablesEnum {
@@ -80,6 +80,11 @@ public enum VariablesEnum {
     non_fatal_data_sources,
     NOVALUE;
 
+ /**
+ * converts a string to an enumerator, if not possible then returns NOVALUE
+ * @param str
+ * @return 
+ */    
     public static VariablesEnum convert(String str) {
         try {
             return valueOf(str);
