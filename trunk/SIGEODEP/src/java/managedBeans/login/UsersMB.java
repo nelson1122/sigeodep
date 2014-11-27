@@ -23,6 +23,10 @@ import model.pojo.Users;
  *
  * @author SANTOS
  */
+/**
+ * This class is responsible to controll the user permissions, in addition to create a connection to the database.
+ * 
+ */
 @ManagedBean(name = "usersMB")
 @SessionScoped
 public class UsersMB {
@@ -71,13 +75,15 @@ public class UsersMB {
     private ConnectionJdbcMB connectionJdbcMB;
     StringEncryption stringEncryption = new StringEncryption();
 
-    /**
-     * Creates a new instance of UsersMB
-     */
+/**
+ * This method is responsible to Create a connection to the database.
+ */
     public UsersMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-
+/**
+ * This method loads all the values of the users that are registered in the system.
+ */
     public void load() {
         currentUser = null;
         if (selectedRowDataTable != null) {
@@ -164,7 +170,9 @@ public class UsersMB {
             }
         }
     }
-
+/**
+ * This method removes a user of the system, for it is necessary to select a user from the list and this user is not active at this moment.
+ */
     public void deleteRegistry() {
         boolean continueProcess = true;
         if (currentUser == null) {
@@ -215,7 +223,9 @@ public class UsersMB {
         btnEditDisabled = true;
         btnRemoveDisabled = true;
     }
-
+/**
+ * This method allows the administrator to update user information, the required fields must be completed as name, login and password and finally the user name must be available. 
+ */
     public void updateRegistry() {
 
         boolean continueProcess = true;
@@ -328,7 +338,9 @@ public class UsersMB {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-
+/**
+ * This method allows to register a new user, the user must complete required fields such as name, login and password, finally the user name must be available.
+ */
     public void saveRegistry() {
         boolean continueProcess = true;
         if (newName.trim().length() == 0 || newPasword.trim().length() == 0 || newLogin.trim().length() == 0) {
@@ -415,7 +427,9 @@ public class UsersMB {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-
+/**
+ * This method is used to display the registration form completely empty to register a new user.
+ */
     public void newRegistry() {
         name = "";
         newName = "";
@@ -441,7 +455,9 @@ public class UsersMB {
         stateUser = "Activa";
         newStateUser = "Activa";
     }
-
+/**
+ * This method creates a table to show all users that are registered in the database.
+ */
     public void createDynamicTable() {
         if (currentSearchValue.trim().length() == 0) {
             reset();
@@ -484,7 +500,9 @@ public class UsersMB {
             }
         }
     }
-
+/**
+ * This method resets all the values found in the table, is called from the method “createDynamicTable”.
+ */
     public void reset() {
         rowDataTableList = new ArrayList<>();
         usersList = usersFacade.findAll();
@@ -507,7 +525,9 @@ public class UsersMB {
                     usersList.get(i).getUserAddress()));
         }
     }
-
+/**
+ * This method automatically determines the permissions accepted when the user select or deselect a checkbox permission.
+ */
     public void changePermission1() {
         /*
          * determinar automaticamente permisos aceptados seleccione o desseleccione
@@ -519,7 +539,9 @@ public class UsersMB {
             permission5 = true;
         }
     }
-
+/**
+ * This method automatically determines the permissions accepted when the user select or deselect a checkbox permission.
+ */
     public void changePermission2() {
         /*
          * determinar automaticamente permisos aceptados seleccione o desseleccione
@@ -531,7 +553,9 @@ public class UsersMB {
             permission5 = true;
         }
     }
-
+/**
+ * This method automatically determines the permissions accepted when the user select or deselect a checkbox permission.
+ */
     public void changePermission3() {
         if (permission3 == false) {
             permission5 = false;
@@ -539,7 +563,9 @@ public class UsersMB {
             permission5 = true;
         }
     }
-
+/**
+ * This method automatically determines the permissions accepted when the user select or deselect a checkbox permission.
+ */
     public void changePermission4() {
         if (permission4 == false) {
             permission5 = false;
@@ -547,7 +573,9 @@ public class UsersMB {
             permission5 = true;
         }
     }
-
+/**
+ * This method automatically determines the permissions accepted when the user select or deselect a checkbox permission.
+ */
     public void changePermission5() {
         if (permission5 == true) {
             permission1 = true;
@@ -559,7 +587,9 @@ public class UsersMB {
             permission5 = true;
         }
     }
-
+/**
+ * This method automatically determines the permissions accepted when the user select or deselect a checkbox permission.
+ */
     public void changeNewPermission1() {
         if (newPermission1 == false) {
             newPermission5 = false;
@@ -567,7 +597,9 @@ public class UsersMB {
             newPermission5 = true;
         }
     }
-
+/**
+ * This method automatically determines the permissions accepted when the user select or deselect a checkbox permission.
+ */
     public void changeNewPermission2() {
         if (newPermission2 == false) {
             newPermission5 = false;
@@ -575,7 +607,9 @@ public class UsersMB {
             newPermission5 = true;
         }
     }
-
+/**
+ * This method automatically determines the permissions accepted when the user select or deselect a checkbox permission.
+ */
     public void changeNewPermission3() {
         if (newPermission3 == false) {
             newPermission5 = false;
@@ -583,7 +617,9 @@ public class UsersMB {
             newPermission5 = true;
         }
     }
-
+/**
+ * This method automatically determines the permissions accepted when the user select or deselect a checkbox permission.
+ */
     public void changeNewPermission4() {
         if (newPermission4 == false) {
             newPermission5 = false;
@@ -591,7 +627,9 @@ public class UsersMB {
             newPermission5 = true;
         }
     }
-
+/**
+ * This method automatically determines the permissions accepted when the user select or deselect a checkbox permission.
+ */
     public void changeNewPermission5() {
         if (newPermission5 == true) {
             newPermission1 = true;
