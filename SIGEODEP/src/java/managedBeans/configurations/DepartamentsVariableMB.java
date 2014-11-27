@@ -21,7 +21,7 @@ import model.pojo.Departaments;
 import org.apache.poi.hssf.usermodel.*;
 
 /**
- *
+ *The DepartamentsVariableMB class is responsible for managing everything related departments, allowing user to have available a list of apartments available which can be added, edited, deleted and exported.
  * @author SANTOS
  */
 @ManagedBean(name = "departamentsVariableMB")
@@ -44,24 +44,40 @@ public class DepartamentsVariableMB implements Serializable {
     private boolean btnEditDisabled = true;
     private boolean btnRemoveDisabled = true;
     private ConnectionJdbcMB connectionJdbcMB;
-
+/**
+ * This method is the class constructor.
+ */
     public DepartamentsVariableMB() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
     }
-
+/**
+ * It is responsible for creating a cell within the row.
+ * @param cellStyle: Style that will have the cell.
+ * @param fila: row where create the cell
+ * @param position: Determines the position where anger cell within the row.
+ * @param value: Sets the value that will be created within the cell. 
+ */    
     private void createCell(HSSFCellStyle cellStyle, HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
         cell.setCellStyle(cellStyle);
     }
-
+/**
+ * It is responsible for creating a cell within the row.
+ * @param fila: row where create the cell 
+ * @param position: Determines the position where anger cell within the row.
+ * @param value: Sets the value that will be created within the cell. 
+ */
     private void createCell(HSSFRow fila, int position, String value) {
         HSSFCell cell;
         cell = fila.createCell((short) position);// Se crea una cell dentro de la fila                        
         cell.setCellValue(new HSSFRichTextString(value));
     }
-
+/**
+ * runs a xls file where the user inserts a row within a worksheet where two fields are set: CODE, NAME.
+ * @param document: Document to modify the name and code field. 
+ */
     public void postProcessXLS(Object document) {
         HSSFWorkbook book = (HSSFWorkbook) document;
         HSSFSheet sheet = book.getSheetAt(0);// Se toma hoja del libro
@@ -81,7 +97,9 @@ public class DepartamentsVariableMB implements Serializable {
             createCell(row, 1, departamentsList.get(i).getDepartamentName());//NOMBRE            
         }
     }
-
+/**
+ * This method is responsible for loading the required values when required to manage departments.
+ */
     public void load() {
         currentDepartament = null;
         if (selectedRowDataTable != null) {
@@ -97,7 +115,9 @@ public class DepartamentsVariableMB implements Serializable {
             }
         }
     }
-
+/**
+ * This method is responsible to delete a selected record.
+ */
     public void deleteRegistry() {
         if (currentDepartament != null) {
             departamentsFacade.remove(currentDepartament);
@@ -110,7 +130,9 @@ public class DepartamentsVariableMB implements Serializable {
         btnEditDisabled = true;
         btnRemoveDisabled = true;
     }
-
+/**
+ * This method allows to update a record.
+ */
     public void updateRegistry() {
         //determinar consecutivo
         if (currentDepartament != null) {
@@ -133,7 +155,9 @@ public class DepartamentsVariableMB implements Serializable {
         }
 
     }
-
+/**
+ * This method is responsible to save a new record.
+ */
     public void saveRegistry() {
         //determinar consecutivo
         if (newName.trim().length() != 0) {
@@ -154,12 +178,16 @@ public class DepartamentsVariableMB implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, msg);
         }
     }
-
+/**
+ * Initializes the fields to add a new record.
+ */
     public void newRegistry() {
         name = "";
         newName = "";
     }
-
+/**
+ * Create a Dynamic table with the results of a search.
+ */
     public void createDynamicTable() {
         boolean s = true;
         if (currentSearchValue.trim().length() == 0) {
@@ -195,7 +223,9 @@ public class DepartamentsVariableMB implements Serializable {
 //            }
         }
     }
-
+/**
+ * Resets the values of the DynamicTable.
+ */
     public void reset() {
         rowDataTableList = new ArrayList<RowDataTable>();
         departamentsList = departamentsFacade.findAll();
