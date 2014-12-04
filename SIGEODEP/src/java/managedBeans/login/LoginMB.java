@@ -245,7 +245,7 @@ public class LoginMB {
 
         boolean continuar = true;
         if (continuar) {
-        }            
+        }
     }
 
     /**
@@ -471,7 +471,7 @@ public class LoginMB {
     public void setActiveIndexAcoordion2(String activeIndexAcoordion2) {
         this.activeIndexAcoordion2 = activeIndexAcoordion2;
     }
-    
+
     public String getIdSession() {
         return idSession;
     }
@@ -519,7 +519,7 @@ public class LoginMB {
     public void setPermissionAdministrator(boolean permissionAdministrator) {
         this.permissionAdministrator = permissionAdministrator;
     }
-    
+
     public boolean isPermissionRegistryDataSection() {
         return permissionRegistryDataSection;
     }

@@ -64,11 +64,20 @@
                             <br/><br/>
                             <h:outputText value="Desagregación temporal:" />
                             <h:selectOneMenu 
-                                id="IdEspacialType" value="#{indicatorsSpecifiedRateMB.currentTemporalDisaggregation}">
+                                id="IdTimeType" value="#{indicatorsSpecifiedRateMB.currentTemporalDisaggregation}">
                                 <f:selectItems value="#{indicatorsSpecifiedRateMB.temporalDisaggregationTypes}"/>
+                            </h:selectOneMenu>                            
+                            <br/><br/>        
+                            <h:outputText value="Desagregación espacial:" />
+                            <h:selectOneMenu 
+                                id="IdEspacialType" value="#{indicatorsSpecifiedRateMB.currentSpatialDisaggregation}"> 
+                                <f:selectItems value="#{indicatorsSpecifiedRateMB.spatialDisaggregationTypes}"/>                                                
+                                <f:ajax 
+                                    event="change"
+                                    listener="#{indicatorsSpecifiedRateMB.changeSpatialDisaggregation}"
+                                    render="IdSelectOneListVariables IdSelectOneListCrossVariables :IdTabView:IdForm:message IdBtnRemove IdBtnAdd IdBtnOptions"/>
                             </h:selectOneMenu>
-                            
-                            <br/><br/>                            
+                            <br/><br/>
                             <h:outputText value="Cifras por:" />
                             <h:selectOneMenu 
                                 id="IdMultiplerType" value="#{indicatorsSpecifiedRateMB.currentMultipler}"> 
@@ -98,7 +107,7 @@
                                     <p:column>
                                         <h:selectManyListbox 
                                             id="IdSelectOneListVariables" 
-                                            value="#{indicatorsSpecifiedRateMB.currentVariablesSelected}"
+                                            value="#{indicatorsSpecifiedRateMB.currentAvailableVariablesNamesSelected}"
                                             style="height:110px; width: 200px;"
                                             converterMessage="Fallo de comunicación, por favor intente nuevamente.">
                                             <f:selectItems value="#{indicatorsSpecifiedRateMB.variablesList}"/>                                                                                                
@@ -147,7 +156,7 @@
                                             value="#{indicatorsSpecifiedRateMB.currentVariablesCrossSelected}"
                                             style="height:110px; width: 200px;"
                                             converterMessage="Fallo de comunicación, por favor intente nuevamente.">
-                                            <f:selectItems value="#{indicatorsSpecifiedRateMB.variablesCrossList}"/>                                                            
+                                            <f:selectItems value="#{indicatorsSpecifiedRateMB.listOfCrossVariablesNames}"/>                                                            
                                             <f:ajax 
                                                 event="change"                                                                                                           
                                                 listener="#{indicatorsSpecifiedRateMB.changeCrossVariable}" 
