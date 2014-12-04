@@ -186,10 +186,12 @@ public class IndicatorsRateMB {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         Calendar c = Calendar.getInstance();
-        currentYear = c.get(Calendar.YEAR);
+        currentYear = c.get(Calendar.YEAR);        
+        
         initialDate.setDate(1);
         initialDate.setMonth(0);
-        initialDate.setYear(2002 - 1900);
+        initialDate.setYear(c.get(Calendar.YEAR) - 1900);
+        
         endDate.setDate(c.get(Calendar.DATE));
         endDate.setMonth(c.get(Calendar.MONTH));
         endDate.setYear(c.get(Calendar.YEAR) - 1900);
@@ -368,6 +370,27 @@ public class IndicatorsRateMB {
             } else {
                 continueProcess = false;
                 message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "En la lista de variables a cruzar deben haber 1 o máximo dos variables");
+            }
+        }
+        
+        if (continueProcess) {//AGREGUE ZONA, COMUNA O MUNICIPIO
+            continueProcess = false;
+            for (int i = 0; i < listOfCrossVariablesNames.size(); i++) {
+                if (listOfCrossVariablesNames.get(i).compareTo("zona") == 0) {
+                    continueProcess = true;
+                    break;
+                }
+                if (listOfCrossVariablesNames.get(i).compareTo("comuna") == 0) {
+                    continueProcess = true;
+                    break;
+                }
+                if (listOfCrossVariablesNames.get(i).compareTo("municipio") == 0) {
+                    continueProcess = true;
+                    break;
+                }
+            }
+            if (!continueProcess) {
+                message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Debe adicionar la variable zona, comuna o municipio para determinar que población se usará");
             }
         }
 
@@ -1062,12 +1085,6 @@ public class IndicatorsRateMB {
                             + "          neighborhoods.neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id \n\r"
                             + "    )"
                             + " END AS zona";
-//                    sqlPopulate = ""
-//                            + " CASE \n\r"
-//                            + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO' \n\r"
-//                            + "    ELSE \n\r"
-//                            + "      CAST((SELECT population FROM areas WHERE area_id=(SELECT neighborhood_area FROM neighborhoods WHERE neighborhood_id=" + currentIndicator.getInjuryType() + ".injury_neighborhood_id)) as text) \n\r"
-//                            + " END AS poblacion ";
                     sqlPopulate = ""
                             + " CASE  "
                             + "    WHEN " + currentIndicator.getInjuryType() + ".injury_neighborhood_id is null THEN 'SIN DATO'  "
@@ -1084,6 +1101,17 @@ public class IndicatorsRateMB {
                             + "        "
                             + "      ) as text)  "
                             + " END AS poblacion ";
+                    break;
+                case municipality:
+                    sqlReturn = sqlReturn + "(select 'Municipio'::text) as municipio";
+                    sqlPopulate = ""                            
+                            + "(SELECT  "
+                            + "    sum(population) "
+                            + " FROM  "
+                            + "    populations_by_area "
+                            + " WHERE  "
+                            + "    year_population::text = extract(year from " + currentIndicator.getInjuryType() + ".injury_date)::text "                            
+                            + ") AS poblacion ";
                     break;
                 case genders://GENERO  ----------------------
                     if (variablesCrossData.get(i).getSource_table().compareTo("sivigila_aggresor.gender") == 0) {
@@ -1968,6 +1996,12 @@ public class IndicatorsRateMB {
         endValue = "";
         //cargo la lista de valores categoricos para la variable
         if (!currentVariablesCrossSelected.isEmpty()) {
+            for (String str : currentVariablesCrossSelected) {
+                if (str.contains("municipio")) {
+                    currentVariablesCrossSelected = new ArrayList<>();
+                    return;
+                }
+            }
             btnRemoveCategoricalValueDisabled = true;
             btnRemoveVariableDisabled = false;
             firstVariablesCrossSelected = currentVariablesCrossSelected.get(0);
@@ -2031,6 +2065,12 @@ public class IndicatorsRateMB {
             nextStep = false;
         }
         if (nextStep) {
+            for (String str : currentVariablesCrossSelected) {
+                if (str.contains("municipio")||str.contains("zona")||str.contains("comuna")) {
+                    currentVariablesCrossSelected = new ArrayList<>();
+                    return;
+                }
+            }
             for (int i = 0; i < listOfCrossVariablesNames.size(); i++) {
                 for (int j = 0; j < currentVariablesCrossSelected.size(); j++) {
                     if (listOfCrossVariablesNames.get(i).compareTo(currentVariablesCrossSelected.get(j)) == 0) {//esta es la variable encontrada que saldra de la lista                    
@@ -2424,19 +2464,16 @@ public class IndicatorsRateMB {
         titlePage = currentIndicator.getIndicatorGroup();
         titleIndicator = currentIndicator.getIndicatorGroup();
         subTitleIndicator = currentIndicator.getIndicatorName();
-        listOfCrossVariablesNames = new ArrayList<>();//SelectItem[listOfAvailableVariablesNames.size()];
+        
         listOfAvailableVariablesNames = new ArrayList<>();//SelectItem[completeListOfVariableData.size()];        
         completeListOfVariableData = getVariablesIndicator();
         for (int i = 0; i < completeListOfVariableData.size(); i++) {
             listOfAvailableVariablesNames.add(completeListOfVariableData.get(i).getName());
-        }
-        //completeListOfVariableData.add(createVariable("zona", "areas", false, ""));//agrego de ultima la desagregacion espacial
-        //listOfCrossVariablesNames.add("zona");//agrego de primera en la lista de nombres a cruzar
+        }        
 
         completeListOfVariableData.add(createVariable("comuna", "communes", false, ""));//agrego de ultima la desagregacion espacial
         listOfCrossVariablesNames.add("comuna");//agrego de primera en la lista de nombres a cruzar                        
 
-//        variablesGraph = new ArrayList<>();
         valuesGraph = new ArrayList<>();
         currentValueGraph = "";
         currentVariableGraph = "";
@@ -2449,16 +2486,13 @@ public class IndicatorsRateMB {
 
         spatialDisaggregationTypes = new ArrayList<>();
         spatialDisaggregationTypes.add("Zona");
-        //spatialDisaggregationTypes.add("Cuadrante");
         spatialDisaggregationTypes.add("Comuna");
-        //spatialDisaggregationTypes.add("Corredor");
-        //spatialDisaggregationTypes.add("Barrio");
+        spatialDisaggregationTypes.add("Municipio");
         currentSpatialDisaggregation = "Comuna";
 
         temporalDisaggregationTypes = new ArrayList<>();
         temporalDisaggregationTypes.add("Anual");
-        temporalDisaggregationTypes.add("Mensual");
-        //temporalDisaggregationTypes.add("Diaria");
+        temporalDisaggregationTypes.add("Mensual");        
         currentTemporalDisaggregation = "Mensual";
 
         typesGraph = new ArrayList<>();
@@ -2503,6 +2537,10 @@ public class IndicatorsRateMB {
         if (currentSpatialDisaggregation.compareTo("Zona") == 0) {
             completeListOfVariableData.add(createVariable("zona", "areas", false, ""));//agrego de ultima la desagregacion espacial
             listOfCrossVariablesNames.add("zona");//agrego de primera en la lista de nombres a cruzar                                    
+        }
+        if (currentSpatialDisaggregation.compareTo("Municipio") == 0) {
+            completeListOfVariableData.add(createVariable("municipio", "municipality", false, ""));//agrego de ultima la desagregacion espacial
+            listOfCrossVariablesNames.add("municipio");//agrego de primera en la lista de nombres a cruzar                                    
         }
         //agrego las variables que copie anteriormente(todas menos la primera que este en el listado de variables acruzar)
         for (int i = 0; i < listOfCrossVariablesNamesAux.size(); i++) {
@@ -2811,7 +2849,11 @@ public class IndicatorsRateMB {
                 } catch (Exception e) {
                 }
                 break;
-
+            case municipality:
+                valuesName.add("Municipio");
+                valuesConf.add("Municipio");
+                valuesId.add("Municipio");
+                break;
             case non_fatal_data_sources:
             case neighborhoods://barrio,
 

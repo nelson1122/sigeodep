@@ -17,6 +17,7 @@ public enum VariablesEnum {
     communes,//comuna,
     corridors,//corredor,
     areas,//zona,
+    municipality,//municipio
     genders,//genero,
     days,//dia_semana,
     year,//año

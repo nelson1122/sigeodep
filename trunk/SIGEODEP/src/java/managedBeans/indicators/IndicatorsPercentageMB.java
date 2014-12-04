@@ -197,9 +197,11 @@ public class IndicatorsPercentageMB {
         loginMB = (LoginMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{loginMB}", LoginMB.class);
         Calendar c = Calendar.getInstance();
         currentYear = c.get(Calendar.YEAR);
+        
         initialDate.setDate(1);
         initialDate.setMonth(0);
-        initialDate.setYear(2002 - 1900);
+        initialDate.setYear(c.get(Calendar.YEAR) - 1900);
+        
         endDate.setDate(c.get(Calendar.DATE));
         endDate.setMonth(c.get(Calendar.MONTH));
         endDate.setYear(c.get(Calendar.YEAR) - 1900);
