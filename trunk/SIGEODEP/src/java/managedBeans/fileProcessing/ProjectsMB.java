@@ -805,6 +805,13 @@ public class ProjectsMB implements Serializable {
                                     rowFileData.add("");//completar casillas vacias
                                 }
                                 rowFileData.add(formattedValue.replace("\n", " "));
+                                rowFileData.add(formattedValue.replace("\r", " "));
+                                rowFileData.add(formattedValue.replace((char) 13, ' '));
+
+                                //if (formattedValue.indexOf(13) != -1) {
+                                //System.out.println("AQUI-------------------------------  " + formattedValue);
+                                //}
+                                rowFileData.add(formattedValue.replace("x000D", " "));
                             }
 
                             @Override
@@ -1021,12 +1028,19 @@ public class ProjectsMB implements Serializable {
                         if (rowFileData.get(i).trim().length() != 0
                                 && rowFileData.get(i).compareToIgnoreCase("NULL") != 0
                                 && rowFileData.get(i).compareToIgnoreCase("None") != 0) {
+
+
+                            //if (rowFileData.get(i).indexOf(13) != -1) {
+                            //    System.out.println("AQUI-------------------------------  " + rowFileData.get(i));
+                            //}
+                            //rowFileData.add(formattedValue.replace((char) 13, ' '));
+
                             currentNumberInserts++;
                             sb.
                                     append(currentProjectId).append("\t").
                                     append(numLine).append("\t").
                                     append(headerFileIds.get(i)).append("\t").
-                                    append(rowFileData.get(i).trim().replace('\t', ' ').replace('\'', ' ')).append("\n");
+                                    append(rowFileData.get(i).trim().replace('\t', ' ').replace('\'', ' ').replace((char) 13, ' ')).append("\n");
                             if (currentNumberInserts % maxNumberInserts == 0) {//se llego al limite de inserts
                                 //reader.unread(sb.toString().toCharArray());
                                 cpManager.copyIn("COPY project_records FROM STDIN", new StringReader(sb.toString()));
