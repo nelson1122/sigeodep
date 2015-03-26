@@ -804,14 +804,7 @@ public class ProjectsMB implements Serializable {
                                 for (int i = 0; i < empyColumns; i++) {
                                     rowFileData.add("");//completar casillas vacias
                                 }
-                                rowFileData.add(formattedValue.replace("\n", " "));
-                                rowFileData.add(formattedValue.replace("\r", " "));
-                                rowFileData.add(formattedValue.replace((char) 13, ' '));
-
-                                //if (formattedValue.indexOf(13) != -1) {
-                                //System.out.println("AQUI-------------------------------  " + formattedValue);
-                                //}
-                                rowFileData.add(formattedValue.replace("x000D", " "));
+                                rowFileData.add(formattedValue.replace("\n", " ").replace((char) 13, ' '));
                             }
 
                             @Override
