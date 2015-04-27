@@ -382,7 +382,7 @@ public class BackupsMB {
         /*
          * mostrar por consola el progreso de un proceso externo invocado
          */
-        System.out.println("\nInicia proceso " + description + " /////////////////////////////////////////");
+        //System.out.println("\nInicia proceso " + description + " /////////////////////////////////////////");
         try {
             //CODIGO PARA MOSTRAR EL PROGESO DE LA GENERACION DEL ARCHIVO
             InputStream is = p.getInputStream();
@@ -395,7 +395,7 @@ public class BackupsMB {
         } catch (IOException e) {
             System.out.println("Error 99 " + e.getMessage());
         }
-        System.out.println("Termina proceso " + description + " /////////////////////////////////////////");
+        //System.out.println("Termina proceso " + description + " /////////////////////////////////////////");
     }
 
     /**

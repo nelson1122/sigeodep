@@ -227,7 +227,7 @@ public class RecordSetsVifMB implements Serializable {
                 rowsDataTableArrayList.add(connection.loadNonFatalDomesticViolenceRecord(resultSet.getString(1)));
                 tuplesProcessed++;
                 progress = (int) (tuplesProcessed * 100) / tuplesNumber;
-                System.out.println(progress);
+                //System.out.println(progress);
             }
             progress = 100;
         } catch (SQLException ex) {

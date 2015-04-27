@@ -227,7 +227,7 @@ public class RecordSetsLcenfMB implements Serializable {
                 rowsDataTableArrayList.add(connection.loadNonFatalInjuryRecord(resultSet.getString(1)));
                 tuplesProcessed++;
                 progress = (int) (tuplesProcessed * 100) / tuplesNumber;
-                System.out.println(progress);
+                //System.out.println(progress);
             }
         } catch (SQLException ex) {
             Logger.getLogger(RecordSetsHomicideMB.class.getName()).log(Level.SEVERE, null, ex);
