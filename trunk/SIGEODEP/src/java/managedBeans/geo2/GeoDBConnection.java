@@ -38,14 +38,6 @@ import org.primefaces.event.RowEditEvent;
 public class GeoDBConnection implements Serializable {
 
     private ConnectionJdbcMB connectionJdbcMB;
-    private String msj;
-    private String url = "";
-    String bd;
-    String login;
-    String table;
-    public Connection conn;
-    Statement st;
-    ResultSet rs;
     private String geo_column;
     private int user_id;
     private int indicator_id;
@@ -72,7 +64,6 @@ public class GeoDBConnection implements Serializable {
      */
     public GeoDBConnection() {
         connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        conn = connectionJdbcMB.getConn();
         bins = 3;
         gap = bins;
         splitMethod = -1;
@@ -95,23 +86,7 @@ public class GeoDBConnection implements Serializable {
      * @param name: database name
      */
     public GeoDBConnection(String user, String pass, String host, String name) {
-        url = "jdbc:postgresql://" + host + "/" + name;
-        try {
-            Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
-        }
-        try {
-            // Realizar la conexion
-            conn = DriverManager.getConnection(url, user, pass);// Realizar la conexion
-        } catch (SQLException ex) {
-            Logger.getLogger(MyFeatureCollection.class.getName()).log(Level.SEVERE, null, ex);
-        }
         bins = 3;
-    }
-
-    public void setConnection(Connection conn) {
-        this.conn = conn;
     }
 
     /**
@@ -236,32 +211,6 @@ public class GeoDBConnection implements Serializable {
         System.out.println(((Range) event.getObject()).getLabel());
     }
 
-    /**
-     * This method is responsible for performing a query when exists a
-     * connection in case otherwise sends a message that says no exists
-     * connection to the database .
-     *
-     * @param query
-     * @return
-     */
-    public ResultSet consult(String query) {
-        msj = "";
-        try {
-            if (conn != null) {
-                st = conn.createStatement();
-                rs = st.executeQuery(query);
-                return rs;
-            } else {
-                msj = "There don't exist connection";
-                return null;
-            }
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.toString() + " --- Clase: " + this.getClass().getName());
-            msj = "ERROR: " + e.getMessage();
-            return null;
-        }
-    }
-
     /*
      * New methods for geo!!!
      */
@@ -318,7 +267,7 @@ public class GeoDBConnection implements Serializable {
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
         System.out.println(query);
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         try {
             while (records.next()) {
                 final int fid = records.getInt("record_id");
@@ -408,7 +357,7 @@ public class GeoDBConnection implements Serializable {
                 + " ORDER BY "
                 + "         count";
         System.out.println(query);
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         try {
             while (records.next()) {
                 numbers.add(new Double(records.getString("count")));
@@ -454,7 +403,7 @@ public class GeoDBConnection implements Serializable {
                 + "         count DESC";
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         try {
             while (records.next()) {
                 final int fid = records.getInt("record_id");
@@ -531,7 +480,7 @@ public class GeoDBConnection implements Serializable {
                 + "         geom IS NOT NULL "
                 + " ORDER BY "
                 + "         count";
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         System.out.println(query);
         try {
             while (records.next()) {
@@ -559,7 +508,7 @@ public class GeoDBConnection implements Serializable {
                 + "	barrios_900913";
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         try {
             while (records.next()) {
                 final int fid = records.getInt("osm_id");
@@ -622,7 +571,7 @@ public class GeoDBConnection implements Serializable {
                 + "     geom IS NOT NULL";
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         try {
             while (records.next()) {
                 final int fid = records.getInt("id");
@@ -692,7 +641,7 @@ public class GeoDBConnection implements Serializable {
                 + " ORDER BY "
                 + "         count";
         System.out.println(query);
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         try {
             while (records.next()) {
                 numbers.add(new Double(records.getString("count")));
@@ -750,7 +699,7 @@ public class GeoDBConnection implements Serializable {
         System.out.println(query);
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         try {
             while (records.next()) {
                 final int fid = records.getInt("record_id");
@@ -832,7 +781,7 @@ public class GeoDBConnection implements Serializable {
                 + " ORDER BY "
                 + "         count";
         System.out.println(query);
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         try {
             while (records.next()) {
                 numbers.add(new Double(records.getString("count")));
@@ -877,7 +826,7 @@ public class GeoDBConnection implements Serializable {
                 + "         count DESC";
         WKTReader wktReader = new WKTReader();
         List<MfFeature> polygons = new ArrayList<>();
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         try {
             while (records.next()) {
                 final int fid = records.getInt("record_id");
@@ -948,7 +897,7 @@ public class GeoDBConnection implements Serializable {
                 + "	" + column + " "
                 + "ORDER BY "
                 + "	1";
-        ResultSet records = this.consult(query);
+        ResultSet records = connectionJdbcMB.consult(query);
         try {
             JSONObject obj = new JSONObject();
             obj.put("title", "a name for this data");
@@ -982,7 +931,7 @@ public class GeoDBConnection implements Serializable {
     public String getMapName(int indicator_id) {
         try {
             String query = "SELECT indicator_name FROM indicators WHERE indicator_id=" + indicator_id;
-            ResultSet records = this.consult(query);
+            ResultSet records = connectionJdbcMB.consult(query);
             JSONObject obj = new JSONObject();
             while (records.next()) {
                 String map_name = records.getString("indicator_name");

@@ -25,13 +25,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
-import javax.sql.DataSource;
 import javax.swing.Timer;
+import model.dao.ConfigurationsFacade;
+import model.pojo.Configurations;
 
 /**
  *
@@ -47,8 +48,10 @@ import javax.swing.Timer;
 @ApplicationScoped
 public class ApplicationControlMB {
 
-    @Resource(name = "jdbc/od")
-    private DataSource ds;//fuente de datos(es configurada por glassfish)  
+//    @Resource(name = "jdbc/od")
+//    private DataSource ds;//fuente de datos(es configurada por glassfish)  
+    @EJB
+    ConfigurationsFacade configurationsFacade;
     private ResultSet rs;
     private Statement st;
     private String user;
@@ -86,8 +89,6 @@ public class ApplicationControlMB {
 //        } catch (Exception e) {
 //            System.out.println("error:    " + e);
 //        }
-
-
         ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         realPath = (String) servletContext.getRealPath("/");
         timer.start();
@@ -99,6 +100,12 @@ public class ApplicationControlMB {
 
     @PostConstruct
     private void event() {
+        Configurations dbConfiguration = configurationsFacade.findAll().get(0);
+        user = dbConfiguration.getUserDb();
+        db = dbConfiguration.getNameDb();
+        db_dwh = dbConfiguration.getNameDbDwh();
+        password = dbConfiguration.getPasswordDb();
+        server = dbConfiguration.getServerDb();
         connectToDb();
     }
 
@@ -127,7 +134,7 @@ public class ApplicationControlMB {
                 System.out.println("Cerrada conexion a base de datos " + url + " ... OK  " + this.getClass().getName());
             }
         } catch (Exception e) {
-            System.out.println("Error al cerrar conexion a base de datos " + url + " ... " + e.toString());
+            System.out.println("Error al cerrar conexion a base de datos " + url + " " + this.getClass().getName() + " ... " + e.toString());
         }
     }
     Timer timer = new Timer(3600000, new ActionListener() {//cada hora
@@ -241,14 +248,14 @@ public class ApplicationControlMB {
                         pb.environment().put("PGPASSWORD", password);
                         pb.redirectErrorStream(true);
                         p = pb.start();
-                        printOutputFromProcces(p, " crear copia de seguridad automatica : " + realPath + "backups/" + fileName + "_od.backup");
+                        //printOutputFromProcces(p, " crear copia de seguridad automatica : " + realPath + "backups/" + fileName + "_od.backup");
 
                         //copia de seguridad de od_dwh(bodega)
                         pb = new ProcessBuilder("pg_dump", "-i", "-h", server, "-p", "5432", "-U", user, "-F", "c", "-b", "-v", "-f", realPath + "backups/" + fileName + "_od_dwh.backup", db_dwh);
                         pb.environment().put("PGPASSWORD", password);
                         pb.redirectErrorStream(true);
                         p = pb.start();
-                        printOutputFromProcces(p, " crear copia de seguridad automatica : " + realPath + "backups/" + fileName + "_od_dwh.backup");
+                        //printOutputFromProcces(p, " crear copia de seguridad automatica : " + realPath + "backups/" + fileName + "_od_dwh.backup");
                     } else {
                         System.out.println("Error 4 en " + this.getClass().getName() + ": Directorio 'backups' no existe en el servidor");
                     }
@@ -307,41 +314,22 @@ public class ApplicationControlMB {
         if (conn == null) {
             returnValue = false;
             try {
-                if (ds == null) {
-                    System.out.println("ERROR: No se obtubo data source... applicationControlMB");
+                url = "jdbc:postgresql://" + server + "/" + db;
+                try {
+                    Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                    System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.getMessage());
+                }
+                //conn.close();
+                conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
+                if (conn != null) {
+                    System.out.println("Conexion a base de datos " + url + " " + this.getClass().getName());
+                    returnValue = true;
                 } else {
-                    conn = ds.getConnection();
-                    if (conn == null) {
-                        System.out.println("Error: No se obtubo conexion");
-                    } else {
-                        ResultSet rs1 = consult("Select * from configurations");
-                        if (rs1.next()) {
-                            user = rs1.getString("user_db");
-                            db = rs1.getString("name_db");
-                            db_dwh = rs1.getString("name_db_dwh");
-                            password = rs1.getString("password_db");
-                            server = rs1.getString("server_db");
-                            url = "jdbc:postgresql://" + server + "/" + db;
-                            try {
-                                Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
-                            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                                System.out.println("Error 1 en " + this.getClass().getName() + ":" + e.getMessage());
-                            }
-                            //conn.close();
-                            conn = DriverManager.getConnection(url, user, password);// Realizar la conexion
-                            if (conn != null) {
-                                System.out.println("Conexion a base de datos " + url + " " + this.getClass().getName());
-                                returnValue = true;
-                            } else {
-                                System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
-                            }
-                        } else {
-                            System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
-                        }
-                    }
+                    System.out.println("No se pudo conectar a base de datos " + url + " " + this.getClass().getName() + " ... FAIL");
                 }
             } catch (Exception e) {
-                System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.getMessage());
+                System.out.println("Error 2 en " + this.getClass().getName() + ":" + e.toString());
             }
         }
         return returnValue;
@@ -522,7 +510,6 @@ public class ApplicationControlMB {
             currentIdSessions.remove(0);
             i = -1;
         }
-
 
     }
 

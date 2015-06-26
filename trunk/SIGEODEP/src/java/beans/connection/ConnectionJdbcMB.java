@@ -10,6 +10,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -35,8 +36,10 @@ import model.pojo.*;
  */
 public class ConnectionJdbcMB implements Serializable {
 
-    @Resource(name = "jdbc/od")
-    private DataSource ds;
+//    @Resource(name = "jdbc/od")
+//    private DataSource ds;
+    @EJB
+    ConfigurationsFacade configurationsFacade;
     @EJB
     NonFatalDomesticViolenceFacade nonFatalDomesticViolenceFacade;
     @EJB
@@ -81,6 +84,16 @@ public class ConnectionJdbcMB implements Serializable {
     private Users currentUser;
     private boolean showMessages = true;//determinar si mostrar o no los mensajes de error
 
+    @PostConstruct
+    private void event() {
+        Configurations dbConfiguration = configurationsFacade.findAll().get(0);
+        user = dbConfiguration.getUserDb();
+        db = dbConfiguration.getNameDb();
+        db_dwh = dbConfiguration.getNameDbDwh();
+        password = dbConfiguration.getPasswordDb();
+        server = dbConfiguration.getServerDb();
+    }
+
     /**
      * This method is responsible to creates a new instance of ConnectionJdbcMB.
      */
@@ -99,7 +112,7 @@ public class ConnectionJdbcMB implements Serializable {
                 System.out.println("Cerrada conexion a base de datos " + url + " ... OK  " + this.getClass().getName());
             }
         } catch (Exception e) {
-            System.out.println("Error al cerrar conexion a base de datos " + url + " ... " + e.toString());
+            System.out.println("Error al cerrar conexion a base de datos " + url + " " + this.getClass().getName() + " ... " + e.toString());
         }
     }
 
@@ -118,17 +131,6 @@ public class ConnectionJdbcMB implements Serializable {
          */
         boolean continueProcess = true;
         try {
-            if (ds == null) {
-                System.out.println("ERROR: No se obtubo data source");
-                continueProcess = false;
-            }
-            if (continueProcess) {
-                conn = ds.getConnection();
-                if (conn == null || conn.isClosed()) {
-                    System.out.println("Error: No se obtubo conexion");
-                    continueProcess = false;
-                }
-            }
             if (continueProcess) {
                 try {
                     Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
@@ -200,21 +202,6 @@ public class ConnectionJdbcMB implements Serializable {
         boolean continueProcess = true;
         try {
             if (conn == null || conn.isClosed()) {
-                if (ds == null) {
-                    System.out.println("ERROR: No se obtubo data source");
-                    continueProcess = false;
-                }
-                if (continueProcess) {
-                    try {
-                        conn = ds.getConnection();
-                    } catch (Exception e) {
-                    }
-                    if (conn == null || conn.isClosed()) {
-                        System.out.println("Error: No se obtubo conexion");
-                        continueProcess = false;
-                    }
-                }
-
                 if (continueProcess) {
                     try {
                         Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
@@ -223,27 +210,8 @@ public class ConnectionJdbcMB implements Serializable {
                         continueProcess = false;
                     }
                 }
-
-                if (continueProcess) {
-                    ResultSet rs1 = consult("Select * from configurations");
-                    try {
-                        if (rs1.next()) {
-                            user = rs1.getString("user_db");
-                            db = rs1.getString("name_db");
-                            db_dwh = rs1.getString("name_db_dwh");
-                            password = rs1.getString("password_db");
-                            server = rs1.getString("server_db");
-                        } else {
-                            continueProcess = false;
-                        }
-                    } catch (Exception e) {
-                        continueProcess = false;
-                    }
-                }
-
                 if (continueProcess) {
                     boolean correctConnection = true;
-
                     try {
                         url = "jdbc:postgresql://" + server + "/" + db_dwh;
                         conn = DriverManager.getConnection(url, user, password);//conectarse a bodega de datos                
@@ -278,7 +246,7 @@ public class ConnectionJdbcMB implements Serializable {
                         System.out.println("Conexion a base de datos " + url + " ... OK  " + this.getClass().getName());
                         return true;
                     } else {
-                        System.out.println("No se pudo conectar a base de datos " + url + " ... FAIL");
+                        System.out.println("No se pudo conectar a base de datos " + url + " " + this.getClass().getName() + " ... FAIL");
                         return false;
                     }
                 }
@@ -534,13 +502,10 @@ public class ConnectionJdbcMB implements Serializable {
         } catch (Exception e) {
         }
 
-
         //******vulnerable_group_id
         //******ethnic_group_id        
         //******victim_telephone
         //******victim_address
-
-
         //******victim_neighborhood_id
         try {
             if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
@@ -554,7 +519,6 @@ public class ConnectionJdbcMB implements Serializable {
         //******eps_id
         //******victim_class
         //******victim_id       
-
         //******residence_municipality
         try {
             if (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceDepartment() != null && (currentFatalInjuryMurder.getFatalInjuries().getVictimId().getResidenceMunicipality() != null)) {
@@ -574,7 +538,6 @@ public class ConnectionJdbcMB implements Serializable {
         }
 
         //******insurance_id
-
         //------------------------------------------------------------
         //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
         //------------------------------------------------------------
@@ -802,13 +765,10 @@ public class ConnectionJdbcMB implements Serializable {
         } catch (Exception e) {
         }
 
-
         //******vulnerable_group_id
         //******ethnic_group_id        
         //******victim_telephone
         //******victim_address
-
-
         //******victim_neighborhood_id
         try {
             if (currentFatalInjuryA.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
@@ -822,7 +782,6 @@ public class ConnectionJdbcMB implements Serializable {
         //******eps_id
         //******victim_class
         //******victim_id       
-
         //******residence_municipality
         try {
             if (currentFatalInjuryA.getFatalInjuries().getVictimId().getResidenceDepartment() != null && (currentFatalInjuryA.getFatalInjuries().getVictimId().getResidenceMunicipality() != null)) {
@@ -842,7 +801,6 @@ public class ConnectionJdbcMB implements Serializable {
         }
 
         //******insurance_id
-
         //------------------------------------------------------------
         //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
         //------------------------------------------------------------
@@ -1657,7 +1615,6 @@ public class ConnectionJdbcMB implements Serializable {
         //------------------------------------------------------------
         //AUTOINFLINGIDA INTENCIONAL
         //------------------------------------------------------------
-
         try {
 
             if (currentNonFatalI.getNonFatalSelfInflicted() != null) {
@@ -1689,7 +1646,6 @@ public class ConnectionJdbcMB implements Serializable {
         //------------------------------------------------------------
         //SE CARGA DATOS PARA TRANSITO
         //------------------------------------------------------------
-
         try {
             if (currentNonFatalI.getNonFatalTransport() != null) {
                 if (currentNonFatalI.getNonFatalTransport().getTransportTypeId() != null) {
@@ -1716,7 +1672,6 @@ public class ConnectionJdbcMB implements Serializable {
             }
         } catch (Exception e) {
         }
-
 
         try {
             if (currentNonFatalI.getNonFatalTransport() != null) {
@@ -1839,13 +1794,10 @@ public class ConnectionJdbcMB implements Serializable {
         } catch (Exception e) {
         }
 
-
         //******vulnerable_group_id
         //******ethnic_group_id        
         //******victim_telephone
         //******victim_address
-
-
         //******victim_neighborhood_id
         try {
             if (currentFatalInjuryS.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
@@ -1859,7 +1811,6 @@ public class ConnectionJdbcMB implements Serializable {
         //******eps_id
         //******victim_class
         //******victim_id       
-
         //******residence_municipality
         try {
             if (currentFatalInjuryS.getFatalInjuries().getVictimId().getResidenceDepartment() != null && (currentFatalInjuryS.getFatalInjuries().getVictimId().getResidenceMunicipality() != null)) {
@@ -1879,7 +1830,6 @@ public class ConnectionJdbcMB implements Serializable {
         }
 
         //******insurance_id
-
         //------------------------------------------------------------
         //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
         //------------------------------------------------------------
@@ -2121,13 +2071,10 @@ public class ConnectionJdbcMB implements Serializable {
         } catch (Exception e) {
         }
 
-
         //******vulnerable_group_id
         //******ethnic_group_id        
         //******victim_telephone
         //******victim_address
-
-
         //******victim_neighborhood_id
         try {
             if (currentFatalInjuryT.getFatalInjuries().getVictimId().getVictimNeighborhoodId() != null) {
@@ -2141,7 +2088,6 @@ public class ConnectionJdbcMB implements Serializable {
         //******eps_id
         //******victim_class
         //******victim_id       
-
         //******residence_municipality
         try {
             if (currentFatalInjuryT.getFatalInjuries().getVictimId().getResidenceDepartment() != null && (currentFatalInjuryT.getFatalInjuries().getVictimId().getResidenceMunicipality() != null)) {
@@ -2161,7 +2107,6 @@ public class ConnectionJdbcMB implements Serializable {
         }
 
         //******insurance_id
-
         //------------------------------------------------------------
         //SE CARGAN VARIABLES LESION DE CAUSA EXTERNA FATAL
         //------------------------------------------------------------
@@ -2317,7 +2262,6 @@ public class ConnectionJdbcMB implements Serializable {
                 }
             }
         }
-
 
         //******number_non_fatal_victims
         if (currentFatalInjuryT.getNumberNonFatalVictims() != null) {
@@ -3542,8 +3486,6 @@ public class ConnectionJdbcMB implements Serializable {
 //                    + " ORDER BY ordinal_position";
 //            ResultSet field_names = consult(query);
             //funciona---funciona-----funciona           
-
-
             String query = ""
                     + " SELECT "
                     + "    column_name, "
@@ -3601,7 +3543,6 @@ public class ConnectionJdbcMB implements Serializable {
                     + " LIMIT " + pageSize + " OFFSET " + first;
             ResultSet records = this.consult(query);
             titles = getColumns(pojectId);
-
 
             while (records.next()) {
                 //en la tercer columna esta definido un arreglo con id_columna <=> valor encontrado                
