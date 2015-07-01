@@ -33,6 +33,10 @@ public class MyFeatureCollection {
     private String vars;
     private RangeFactory rf;
     private ArrayList<Range> ranges;
+    private String user;
+    private String pass;
+    private String host;
+    private String name;
 
     /**
      * This method is the constructor of the class, also is responsible for
@@ -44,7 +48,11 @@ public class MyFeatureCollection {
      * @param name
      */
     public MyFeatureCollection(String user, String pass, String host, String name) {
-        this.geo = new GeoDBConnection(user, pass, host, name);
+        this.user = user;
+        this.pass = pass;
+        this.host = host;
+        this.name = name;
+        this.geo = new GeoDBConnection();
     }
 
     /**
@@ -61,10 +69,14 @@ public class MyFeatureCollection {
         this.user_id = user_id;
         this.vars = vars;
         this.rf = rf;
+        this.geo = new GeoDBConnection();
     }
 
     public void setConnection(String user, String pass, String host, String name) {
-        this.geo = new GeoDBConnection(user, pass, host, name);
+        this.user = user;
+        this.pass = pass;
+        this.host = host;
+        this.name = name;
     }
 
     /**
@@ -79,6 +91,8 @@ public class MyFeatureCollection {
             //GeoDBConnection geo = new GeoDBConnection();
             //geo = (GeoDBConnection) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{geoDBConnectionMB}", GeoDBConnection.class);
 
+            this.geo.createConnection(user, pass, host, name);
+            
             geo.setUser_id(user_id);
             geo.setIndicator_id(indicator_id);
             geo.setVars(vars);
@@ -119,6 +133,8 @@ public class MyFeatureCollection {
             JSONWriter writer = new JSONWriter(w);
             MfGeoJSONWriter gjw = new MfGeoJSONWriter(writer);
             gjw.encodeFeatureCollection(collection, 0, 0.0, 0.0);
+            
+            geo.destroyConnection();
         } catch (JSONException ex) {
             Logger.getLogger(MyFeatureCollection.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -133,12 +149,16 @@ public class MyFeatureCollection {
      */
     public Writer getNeighborhoodGeoJSON() {
         try {
+            geo.createConnection(user, pass, host, name);
+            
             Collection<MfFeature> polygons = geo.getNeighborhoodPolygons();
             MfFeatureCollection collection = new MfFeatureCollection(polygons);
             w = new StringWriter();
             JSONWriter writer = new JSONWriter(w);
             MfGeoJSONWriter gjw = new MfGeoJSONWriter(writer);
             gjw.encodeFeatureCollection(collection, 0, 0.0, 0.0);
+            
+            geo.destroyConnection();
         } catch (JSONException ex) {
             Logger.getLogger(MyFeatureCollection.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -155,18 +175,19 @@ public class MyFeatureCollection {
      */
     public Writer getFeaturesGeoJSON(String features) {
         try {
+            geo.createConnection(user, pass, host, name);
             Collection<MfFeature> polygons = geo.getFeaturesPolygons(features);
             MfFeatureCollection collection = new MfFeatureCollection(polygons);
             w = new StringWriter();
             JSONWriter writer = new JSONWriter(w);
             MfGeoJSONWriter gjw = new MfGeoJSONWriter(writer);
             gjw.encodeFeatureCollection(collection, 0, 0.0, 0.0);
+            geo.destroyConnection();
         } catch (JSONException ex) {
             Logger.getLogger(MyFeatureCollection.class.getName()).log(Level.SEVERE, null, ex);
         }
         return w;
     }
-
     /**
      * This method is responsible for obtain the data to be used in cake.
      *
@@ -176,11 +197,19 @@ public class MyFeatureCollection {
      * @return
      */
     public String getPieData(String WHERE, String geo_column, String column) {
-        return geo.getPieData(WHERE, geo_column, column, user_id, indicator_id);
+        geo.createConnection(user, pass, host, name);
+        String pie_data = geo.getPieData(WHERE, geo_column, column, user_id, indicator_id);
+        geo.destroyConnection();
+        
+        return pie_data;
     }
 
     public String getMapName() {
-        return geo.getMapName(indicator_id);
+        geo.createConnection(user, pass, host, name);
+        String map_name = geo.getMapName(indicator_id);
+        geo.destroyConnection();
+        
+        return map_name;
     }
 
     public ArrayList<Range> getRanges() {

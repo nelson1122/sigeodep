@@ -479,12 +479,14 @@ public class IndicatorsCountMB {
                     }
                 }
                 if (loadGeo) {//cuadrante comuna barrio corredor(solo entre aqui  )            
+                    geoDBConnection.createConnection(connectionJdbcMB.getUser(), connectionJdbcMB.getPassword(), connectionJdbcMB.getServer(), connectionJdbcMB.getDb());
                     geoDBConnection.refreshIndicatorData(loginMB.getCurrentUser().getUserId(), currentIndicator.getIndicatorId(), variablesCrossData);
                     indicator_id = currentIndicator.getIndicatorId();
                     vars = "";
                     for (Variable var : variablesCrossData) {
                         vars += var.getName() + ",";
                     }
+                    geoDBConnection.destroyConnection();
                 }
             }
             //System.out.println("tamaño: " + matrixResult.length);
