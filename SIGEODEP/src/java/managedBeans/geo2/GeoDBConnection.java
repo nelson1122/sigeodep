@@ -64,12 +64,15 @@ public class GeoDBConnection implements Serializable {
     private Color middleColor;
     private Color endColor;
     private boolean hasToRender;
-
+    
+    
+    
     /**
      * This method is the constructor of the class, also establishes the
      * connection to the database and initiates the variables: bins, gap,
      * splitMethod, selectedRamp ,startColor ,middleColor , endColor , ramps,
      * numbers ,hasToRender .
+     * 
      */
     public GeoDBConnection() {
         bins = 3;
@@ -115,6 +118,7 @@ public class GeoDBConnection implements Serializable {
         }
     }
     
+    @PreDestroy
     public void destroyConnection(){
         try {
             if(conn != null && !conn.isClosed()){
