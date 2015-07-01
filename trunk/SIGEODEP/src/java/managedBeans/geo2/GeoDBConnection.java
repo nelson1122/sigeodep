@@ -64,11 +64,6 @@ public class GeoDBConnection implements Serializable {
     private Color middleColor;
     private Color endColor;
     private boolean hasToRender;
-    
-    @PreDestroy
-    public void desconectar(){
-        
-    }
 
     /**
      * This method is the constructor of the class, also establishes the
@@ -77,10 +72,6 @@ public class GeoDBConnection implements Serializable {
      * numbers ,hasToRender .
      */
     public GeoDBConnection() {
-        connectionJdbcMB = (ConnectionJdbcMB) FacesContext.getCurrentInstance().getApplication().evaluateExpressionGet(FacesContext.getCurrentInstance(), "#{connectionJdbcMB}", ConnectionJdbcMB.class);
-        if (conn == null) {
-            conn = connectionJdbcMB.getConn();
-        }
         bins = 3;
         gap = bins;
         splitMethod = -1;
@@ -102,26 +93,36 @@ public class GeoDBConnection implements Serializable {
      * @param host: server
      * @param name: database name
      */
-    public GeoDBConnection(String user, String pass, String host, String name) {
-        url = "jdbc:postgresql://" + host + "/" + name;
-        if (conn == null) {
-        try {
-            Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
-        }
-        try {
-            // Realizar la conexion
-            conn = DriverManager.getConnection(url, user, pass);// Realizar la conexion
-        } catch (SQLException ex) {
-            Logger.getLogger(MyFeatureCollection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        }
-        bins = 3;
-    }
 
     public void setConnection(Connection conn) {
         this.conn = conn;
+    }
+
+    public void createConnection(String user, String pass, String host, String name) {
+        url = "jdbc:postgresql://" + host + "/" + name;
+        if (conn == null) {
+            try {
+                Class.forName("org.postgresql.Driver").newInstance();// seleccionar SGBD
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                System.out.println("Error1: " + e.toString() + " --- Clase: " + this.getClass().getName());
+            }
+            try {
+                // Realizar la conexion
+                conn = DriverManager.getConnection(url, user, pass);// Realizar la conexion
+            } catch (SQLException ex) {
+                Logger.getLogger(MyFeatureCollection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    public void destroyConnection(){
+        try {
+            if(conn != null && !conn.isClosed()){
+                conn.close();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(GeoDBConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -153,6 +154,7 @@ public class GeoDBConnection implements Serializable {
      * @param order
      */
     public void refreshIndicatorData(int user_id, int indicator_id, ArrayList<Variable> order) {
+        //createConnection(msj, vars, msj, table);
         this.setUser_id(user_id);
         this.setIndicator_id(indicator_id);
         this.order = order;
