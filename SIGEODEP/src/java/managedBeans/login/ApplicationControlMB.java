@@ -192,8 +192,7 @@ public class ApplicationControlMB {
                         max = rs.getInt(1);
                     }
                     if (max == 10) {//ya existen 10 copias se debe sobreescribir una existente
-                        rs = consult("SELECT MIN(date_backup) FROM backups where id_backup < 11");
-                        String minDate = "";//fecha 
+                        rs = consult("SELECT MIN(date_backup) FROM backups where id_backup < 11");                        String minDate = "";//fecha 
                         if (rs.next()) {
                             minDate = rs.getString(1);
                         }
